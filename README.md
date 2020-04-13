@@ -1,17 +1,19 @@
-## My Project
+## Smithy Kotlin
 
-TODO: Fill this README out!
+Smithy code generators for Kotlin.
 
-Be sure to:
+**WARNING: All interfaces are subject to change.**
 
-* Change the title in this README
-* Edit your repository description on GitHub
+[![License][apache-badge]][apache-url]
 
-## Security
-
-See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
+[apache-badge]: https://img.shields.io/badge/License-Apache%202.0-blue.svg
+[apache-url]: LICENSE
 
 ## License
 
 This project is licensed under the Apache-2.0 License.
+
+## Security
+
+See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.
 
