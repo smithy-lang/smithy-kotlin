@@ -1,4 +1,3 @@
-
 # Kotlin Smithy SDK 
 
 Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
@@ -128,12 +127,34 @@ structure Foo {
 }
 ```
 
+##### ALTERNATIVE 1
 
 ```kotlin
 class Foo {
     var bar: String? = null
     var baz: Int = 0
     var quux: List<String>? = null
+}
+```
+
+##### ALTERNATIVE 2
+
+```kotlin
+data class Foo(
+    var bar: String? = null
+    var baz: Int = 0
+    var quux: List<String>? = null)
+}
+```
+
+
+The problem with this approach is readability since the number of constructor arguments could be potentially large. The form in alternative 1 can easily be initialized with the following code which makes this alternate less useful.
+
+```kotlin
+val f = Foo().apply {
+    bar = "bar"
+    baz = 12
+    quux = listOf("foo", "bar", "quux")
 }
 ```
 
@@ -238,7 +259,73 @@ class Foo
 
 #### `error` trait
 
-**TODO**
+The `error` trait will be processed as an exception type in Kotlin. This requires support from the client-runtime lib. See "Exceptions" in the Appendix.
+
+
+Note the Smithy core spec indicates: `The message member of an error structure is special-cased. It contains the human-readable message that describes the error. If the message member is not defined in the structure, code generated for the error may not provide an idiomatic way to access the error message (e.g., an exception message in Java).`
+
+If present these should be translated to the `ServiceException::errorMessage` property.
+
+
+The `httpError` trait should not need additional processing assuming the HTTP response itself is exposed in someway on `ServiceException`. 
+
+
+```
+@error("server")
+@httpError(501)
+structure NotImplemented {}
+
+@error("client")
+@retryable
+structure ThrottlingError {
+    @required
+    message: String,
+}
+
+```
+
+
+```kotlin
+import software.amazon.smithy.kotlin.core.ServiceException
+
+class NotImplementedException: ServiceException {
+
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+
+    override val serviceName: String = "MyService"
+
+    override val errorType: ErrorType = ErrorType.Server
+
+    override val isRetryable: Boolean = false
+}
+
+
+class ThrottlingError : ServiceException {
+
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+
+    override val serviceName: String = "MyService"
+
+    override val errorType: ErrorType = ErrorType.Client
+
+    override val isRetryable: Boolean = true
+}
+
+
+```
+
 
 ### Constraint traits
 
@@ -416,8 +503,268 @@ Not processed
 
 #### `retryable` trait
 
+This trait influences errors, see the `error` trait for how it will be handled.
+
 
 #### `paginated` trait
 
+**TODO**
 
 
+## Appendix
+
+### Exceptions
+
+The client runtime lib will expose the common exception types that all generated service/operation errors will be translated to (and inherit from).
+
+#### Background: Current aws-sdk-android exception hierarchy
+
+```
+java.lang.Object
+   java.lang.Throwable
+       java.lang.Exception
+           java.lang.RuntimeException
+               com.amazonaws.AmazonClientException
+                   com.amazonaws.AmazonServiceException 
+                       ... all service specific exceptions/errors
+```
+
+
+`AmazonClientException`
+
+Base exception class for any errors that occur while attempting to use an AWS client to make service calls to Amazon Web Services.
+
+Error responses from services will be handled as AmazonServiceExceptions. This class is primarily for errors that occur when unable to get a response from a service, or when the client is unable to understand a response from a service. For example, if a caller tries to use a client to make a service call, but no network connection is present, an AmazonClientException will be thrown to indicate that the client wasn't able to successfully make the service call, and no information from the service is available.
+
+Callers should typically deal with exceptions through AmazonServiceException, which represent error responses returned by services. AmazonServiceException has much more information available for callers to appropriately deal with different types of errors that can occur.
+
+
+The API currently looks like this:
+
+```
+// Creates a new AmazonClientException with the specified message.
+AmazonClientException(java.lang.String message)
+
+// Creates a new AmazonClientException with the specified message, and root cause.
+AmazonClientException(java.lang.String message, java.lang.Throwable t)
+
+// Create an AmazonClientException with an exception cause.
+AmazonClientException(java.lang.Throwable throwable)
+
+// Returns a hint as to whether it makes sense to retry upon this exception
+boolean isRetryable()
+```
+
+
+`AmazonServiceException`
+
+Extension of AmazonClientException that represents an error response returned by an Amazon web service. Receiving an exception of this type indicates that the caller's request was correctly transmitted to the service, but for some reason, the service was not able to process it, and returned an error response instead.
+
+AmazonServiceException provides callers several pieces of information that can be used to obtain more information about the error and why it occurred. In particular, the errorType field can be used to determine if the caller's request was invalid, or the service encountered an error on the server side while processing it.
+
+
+The API currently looks like this:
+```java
+enum class ErrorType {
+    Client, Service, Unknown
+}
+
+
+// Constructs a new AmazonServiceException with the specified message.
+AmazonServiceException(java.lang.String errorMessage)
+
+// Constructs a new AmazonServiceException with the specified message and exception indicating the root cause.
+AmazonServiceException(java.lang.String errorMessage, java.lang.Exception cause)
+
+// Returns the AWS error code represented by this exception.
+String 	getErrorCode()
+
+// Sets the AWS error code represented by this exception.
+void 	setErrorCode(java.lang.String errorCode)
+
+String 	getErrorMessage() 
+
+void 	setErrorMessage(java.lang.String errorMessage) 
+
+// Indicates who is responsible for this exception (caller, service, or unknown).
+AmazonServiceException.ErrorType 	getErrorType()
+
+// Sets the type of error represented by this exception (sender, receiver, or unknown), indicating if this exception was the caller's fault, or the service's fault.
+void 	setErrorType(AmazonServiceException.ErrorType errorType)
+
+String 	getMessage() 
+
+// Returns the AWS request ID that uniquely identifies the service request the caller made.
+String 	getRequestId()
+
+// Sets the AWS requestId for this exception.
+void 	setRequestId(java.lang.String requestId)
+
+// Returns the name of the service that sent this error response.
+String 	getServiceName()
+
+// Sets the name of the service that sent this error response.
+void 	setServiceName(java.lang.String serviceName)
+
+
+// Returns the HTTP status code that was returned with this service exception.
+int 	getStatusCode()
+
+// Sets the HTTP status code that was returned with this service exception.
+void 	setStatusCode(int statusCode)
+
+```
+
+
+
+#### New Client Runtime Exception Hierarchy 
+
+One of the problems is that the `smithy-LANG` packages are supposed to be AWS agnostic. They generate code for a target language and set of protocols supported. As such we really shouldn't introduce things like `AmazonException` into such a package. That is the point of the higher level codegen package to decorate and specialize codegen for AWS specific behaviors.
+
+
+Given that, generated errors (from smithy-kotlin) will all inherit from a common exception hierarchy independent of AWS/Amazon.
+
+
+```
+RuntimeException
+    SdkBaseException
+        ClientException
+            ServiceException
+```
+
+
+The actual `aws-sdk-kotlin` Smithy code generator should customize these error types so that the exceptions thrown match what's existing (e.g. AmazonClientException instead of ClientException).
+
+
+The following exceptions would be defined in whatever the client runtime lib is that the generated smithy-kotlin code depends on. Everything in this hierarchy is independent of AWS specifics.
+
+
+```kotlin
+
+package software.amazon.smithy.kotlin.core
+
+
+/**
+ * Base exception class for all exceptions thrown by the SDK. Exception may be a client side exception or a service exception
+ */
+open class SdkBaseException: RuntimeException {
+
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+}
+
+/**
+ * Base exception class for any errors that occur while attempting to use an SDK client to make (Smithy) service calls.
+ */
+open class ClientException: SdkBaseException {
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+
+    open val isRetryable: Boolean = true
+}
+
+/**
+ * ServiceException - Base exception class for any error response returned by a service. Receiving an exception of this
+ * type indicates that the caller's request was successfully transmitted to the service and the service sent back an
+ * error response.
+ */
+open class ServiceException: ClientException {
+
+    /**
+     * Indicates who (if known) is at fault for this exception.
+     */
+    enum class ErrorType {
+        Client,
+        Server,
+        Unknown
+    }
+
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+
+    /**
+     * The name of the service that sent this error response
+     */
+    open val serviceName: String = ""
+
+    /**
+     * Indicates who is responsible for this exception (caller, service, or unknown)
+     */
+    open val errorType: ErrorType = ErrorType.Unknown
+
+    /**
+     * The human-readable error message provided by the service
+     */
+    open var errorMessage: String = ""
+
+    // TODO - HTTP response/protocol response
+    // What about non-HTTP protocols?
+    open var httpResponse: HttpResponse? = null
+}
+
+```
+
+**TODO** Exposing `httpResponse` directly feels "wrong" here. Can we do it in a protocol agnostic way? Or is it actually ok since codegen is usually specific to a protocol?
+
+
+
+The higher level AWS specific client runtime lib would build on top of those agnostic service exceptions. Error traits would be customized and processed using these exceptions instead of the generic ones.
+
+```kotlin
+
+package com.amazonaws
+
+import software.amazon.smithy.kotlin.core.ServiceException
+
+open class AmazonServiceException: ServiceException {
+
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+
+    /**
+     * The AWS request ID that uniquely identifies the service request the caller made
+     */
+    open var requestId: String = ""
+
+    /**
+     * The AWS error code represented by this exception
+     */
+    open var errorCode: String = ""
+
+    /**
+     * The HTTP Status code if known.
+     * NOTE: This is here to match the legacy AmazonServiceException currently in use.
+     */
+    @Deprecated("Use the HttpResponse of ServiceException directly")
+    val statusCode: Int
+        // pull from the HTTPResponse of ServiceException if available otherwise default it
+        get() = this.httpResponse?.statusCode ?: 0
+}
+```
+
+**QUESTION** Can we actually make the exceptions backwards compatible or will the package rearrangement make that impossible? If it's not impossible what does the inheritance need to look like to make it work out? I believe it would be something like `RuntimeException <- SdkBaseException <- ClientException <- AmazonClientException <- ServiceException <- AmazonServiceException`. This all depends on what the split looks like for the runtime libraries. These needs more thought...
+
+
+### Marshalling/Unmarshalling
+
+**TODO** - Need to define how types will be marshalled and interact with the client runtime package.
