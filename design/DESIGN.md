@@ -2,7 +2,9 @@
 
 Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
 
-## Identifiers and Naming
+## Core Spec
+
+### Identifiers and Naming
 Kotlin keywords can be found [here](https://kotlinlang.org/docs/reference/keyword-reference.html). Kotlin has both hard keywords and soft keywords (context sensitive).
 
 The list of hard keywords that can never be identifiers in Kotlin is:
@@ -38,7 +40,7 @@ The list of hard keywords that can never be identifiers in Kotlin is:
 * `when`
 * `while`
 
-## Simple Shapes
+### Simple Shapes
 
 
 |Smithy Type| Description                                                       | Kotlin Type
@@ -60,7 +62,7 @@ The list of hard keywords that can never be identifiers in Kotlin is:
 **QUESTION**: We should support the `document` type but perhaps we can wait until it's stable?
 **QUESTION**: The JVM has big number support but it is not MP (multi-platform) compatible. This is probably ok depending on how we structure the relationship between the generated SDK and the client runtime which will support MP.
 
-### `document` Type
+#### `document` Type
 
 The `document` type is an  untyped JSON-like value that can take on the following types: null, boolean, string, byte, short, integer, long, float, double, an array of these types, or a map of these types where the key is string.
 
@@ -96,7 +98,7 @@ fun Double.toDocument(): Document = SmithyDouble(this)
 
 
 
-## Aggregate types
+### Aggregate types
 
 
 | Smithy Type | Kotlin Type
@@ -108,7 +110,7 @@ fun Double.toDocument(): Document = SmithyDouble(this)
 | union       | *sealed class
 
 
-### Structure
+#### Structure
 
 A [structure](https://awslabs.github.io/smithy/spec/core.html#structure) type represents a fixed set of named heterogeneous members. In Kotlin this can be represented
 as either a normal class or a data class. 
@@ -143,8 +145,8 @@ class Foo {
 data class Foo(
     var bar: String? = null
     var baz: Int = 0
-    var quux: List<String>? = null)
-}
+    var quux: List<String>? = null
+)
 ```
 
 
@@ -158,7 +160,7 @@ val f = Foo().apply {
 }
 ```
 
-### Union
+#### Union
 
 A [union](https://awslabs.github.io/smithy/spec/core.html#union) is a fixed set of types where only one type is used at any one time. In Kotlin this maps well to a [sealed class](https://kotlinlang.org/docs/reference/sealed-classes.html)
 
@@ -181,13 +183,11 @@ data class Foo(val foo: String): MyUnion()
 ```
 
 
-## Service types
+### Service types
 
+### Resource types
 
-## Resource types
-
-
-## Traits
+### Traits
 
 ### Type Refinement Traits
 
@@ -511,6 +511,139 @@ This trait influences errors, see the `error` trait for how it will be handled.
 **TODO**
 
 
+
+## Event Stream Spec
+
+Reference to the (Event Stream spec)[https://awslabs.github.io/smithy/spec/event-streams.html] which builds on top of the Core spec
+
+### What is an Event Stream?
+
+An event stream is an abstraction that allows multiple messages to be sent asynchronously between a client and server.  Serialization and format of message sent are defined by the protocol in the smithy model.
+
+The operation input or output can be marked with an **`eventStream`** trait. A member that targets a structure is a single-event event stream, and a member that targets a union is a multi-event event stream.
+
+### Single Event Stream Behavior
+
+Clients that send or receive single-event event streams are expected to provide an abstraction to end-users that allows values to be produced or consumed asynchronously for the targeted event structure.
+
+Given this structure where `@eventStream` is on the input of the structure:
+
+```
+namespace smithy.example
+
+operation PublishMessages {
+    input: PublishMessagesInput
+}
+
+structure PublishMessagesInput {
+    room: String,
+
+    @eventStream
+    messages: Message,
+}
+
+structure Message {
+    message: String,
+}
+```
+
+In Kotlin we can use channels to represent this:
+
+```kotlin
+//generated code
+class PublishMessagesInput {
+    var room: String? = null
+    var messages: Message
+}
+
+class Message {
+    var message: String? = null
+}
+
+
+class PublishMessageRequest {
+    var input: PublishMessagesInput
+    //....any other necessary props for a request
+}
+
+val channel = PublishMessagesChannel<Unit>()
+
+suspend fun publishMessages(request: PublishMessagesRequest) {
+    launch {
+        channel.send(request)
+        channel.close() //close the channel after we send the request, the output does not need to receive asychronously and all the senders are guaranteed to send before the close.
+        //trying to send all the results at once since receiver is not asynchronous??? not sure if this is the right way to do this?
+    }
+}
+
+```
+
+**Note:** Produce in the below example is an experimental api. Behaviour of producers that work as children in a parent scope with respect to cancellation and error handling may change in the future.
+
+If the `@eventStream` trait were on the output of the smithy model like this:
+
+```
+namespace smithy.example
+
+operation SubscribeToMovements {
+    output: SubscribeToMovementsOutput
+}
+
+structure SubscribeToMovementsOutput {
+    @eventStream
+    movements: Movement,
+}
+
+structure Movement {
+    angle: Float,
+    velocity: Float,
+}
+```
+
+our code would differ in that it would use a produce channel to send so that it could receive from that channel asynchronously.
+
+```kotlin
+class Movement {
+    var angle: Float
+    var velocity: Float
+}
+
+class SubscribeToMovementsOutput {
+    var movements: Movement
+}
+
+class SubscribeToMovementsResponse {
+    var output:SubscribeToMovementsOutput
+}
+
+fun subscribeToMovements(): SubscribeToMovementsResponse {
+    //does something to subscribe to movements via given protocol
+}
+
+fun CoroutineScope.produceMovements():          ReceiveChannel<SubscribeToMovementsResponse>> = produce {
+        subscribeToMovements()
+}
+
+fun CoroutineScope.subscribeToMovementsProcessor(channel: ReceiveChannel<SubscribeToMovementsResponse>): SubscribeToMovementsResponse {
+    launch {
+        for (movement in channel) {
+            return movement
+        }
+    }
+}
+
+//to use this generated code in code as a developer you might do something like below:
+val producer = produceMovements()
+launch { 
+    subscribeToMovementsProcessor(producer)
+}
+
+producer.cancel() // cancel producer coroutine and thus kill subscription
+
+
+```
+
+
 ## Appendix
 
 ### Exceptions
@@ -767,4 +900,5 @@ open class AmazonServiceException: ServiceException {
 
 ### Marshalling/Unmarshalling
 
-**TODO** - Need to define how types will be marshalled and interact with the client runtime package.
+**TODO** - Need to define how types will be marshalled and interact with the client runtime package. Middleware?
+
