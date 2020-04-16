@@ -1,8 +1,8 @@
 # Kotlin Smithy SDK 
 
-Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
-
 ## Core Spec
+
+Reference the Smithy [Core Spec](https://awslabs.github.io/smithy/spec/core.html)
 
 ### Identifiers and Naming
 Kotlin keywords can be found [here](https://kotlinlang.org/docs/reference/keyword-reference.html). Kotlin has both hard keywords and soft keywords (context sensitive).
@@ -57,9 +57,9 @@ The list of hard keywords that can never be identifiers in Kotlin is:
 |bigInteger | Arbitrarily large signed integer                                  | **TBD**
 |bigDecimal | Arbitrary precision signed decimal number                         | **TBD**
 |timestamp  | Represents an instant in time with no UTC offset or timezone. The serialization of a timestamp is determined by a protocol. | TBD (Kotlin 1.4 should bring a Datetime lib that is MPP compatible, if we can wait for that we should)
-|document   | Unstable Represents an untyped JSON-like value that can take on one of the following types: null, boolean, string, byte, short, integer, long, float, double, an array of these types, or a map of these types where the key is string. | *Unsupported
+|document   | Unstable Represents an untyped JSON-like value that can take on one of the following types: null, boolean, string, byte, short, integer, long, float, double, an array of these types, or a map of these types where the key is string. | Custom type provided by client runtime
 
-**QUESTION**: We should support the `document` type but perhaps we can wait until it's stable?
+**QUESTION**: We should support the `document` type but perhaps we can wait until it's marked stable to do anything with it? At the very least we should annotate the type as unstable if it's going to be in a public API
 **QUESTION**: The JVM has big number support but it is not MP (multi-platform) compatible. This is probably ok depending on how we structure the relationship between the generated SDK and the client runtime which will support MP.
 
 #### `document` Type
@@ -67,32 +67,352 @@ The list of hard keywords that can never be identifiers in Kotlin is:
 The `document` type is an  untyped JSON-like value that can take on the following types: null, boolean, string, byte, short, integer, long, float, double, an array of these types, or a map of these types where the key is string.
 
 
-**TODO** Finish the design of document. This type is probably best represented as a Sum type (sealed class is closest we can get in Kotlin). See the [JSON type](https://github.com/Kotlin/kotlinx.serialization/blob/master/runtime/commonMain/src/kotlinx/serialization/json/JsonElement.kt) from the kotlinx.serialization lib for an example.
+This type is best represented as a Sum type (sealed class is closest we can get in Kotlin). See the [JSON type](https://github.com/Kotlin/kotlinx.serialization/blob/master/runtime/commonMain/src/kotlinx/serialization/json/JsonElement.kt) from the kotlinx.serialization lib for an example on which the following is derived. We should provide our own type but we may be able to internally deal with serialization by going through the one from the kotlinx.serialization library.
 
 
 ```kotlin
+package com.amazonaws.smithy.runtime
 
-sealed class Document
+
+/**
+ * Class representing a Smithy Document type.
+ * Can be a [SmithyNumber], [SmithyBool], [SmithyString], [SmithyNull], [SmithyArray], or [SmithyMap]
+ */
+sealed class Document {
+    /**
+     * Checks whether the current element is [SmithyNull]
+     */
+    val isNull: Boolean
+        get() = this == SmithyNull
+}
+
+/**
+ * Class representing document `null` type.
+ */
+object SmithyNull : Document() {
+    override fun toString(): String = "null"
+}
+
+/**
+ * Class representing document `bool` type
+ */
+data class SmithyBool(val value: Boolean): Document() {
+    override fun toString(): String = when(value) {
+        true -> "true"
+        false -> "false"
+    }
+}
+
+/**
+ * Class representing document `string` type
+ */
+data class SmithyString(val value: String) : Document() {
+    override fun toString(): String {
+        return "\"$value\""
+    }
+}
 
 
-object SmithyNull : Document()
-data class SmithyInt(val value: Int): Document()
-data class SmithyByte(val value: Byte): Document()
-data class SmithyShort(val value: Short): Document()
-data class SmithyLong(val value: Long): Document()
-data class SmithyFloat(val value: Float): Document()
-data class SmithyDouble(val value: Double): Document()
-data class SmithyArray(val values: List<Document>): Document()
-data class SmithyMap(val values: Map<String, Document>): Document()
+/**
+ * Class representing document numeric types.
+ *
+ * Creates a Document from a number literal: Int, Long, Short, Byte, Float, Double
+ */
+class SmithyNumber(val content: Number) : Document() {
 
-fun Int.toDocument(): Document = SmithyInt(this)
-fun Byte.toDocument(): Document = SmithyByte(this)
-fun Short.toDocument(): Document = SmithyShort(this)
-fun Long.toDocument(): Document = SmithyLong(this)
-fun Float.toDocument(): Document = SmithyFloat(this)
-fun Double.toDocument(): Document = SmithyDouble(this)
+    /**
+     * Returns the content as a byte which may involve rounding
+     */
+    val byte: Byte get() = content.toByte()
 
-// TODO - define a Document builder DSL for easy creation of more complex document types. See [JSON builders](https://github.com/Kotlin/kotlinx.serialization/blob/master/runtime/commonMain/src/kotlinx/serialization/json/JsonElementBuilders.kt)
+    /**
+     * Returns the content as a int which may involve rounding
+     */
+    val int: Int get() = content.toInt()
+
+    /**
+     * Returns the content as a long which may involve rounding
+     */
+    val long: Long get() = content.toLong()
+
+    /**
+     * Returns the content as a float which may involve rounding
+     */
+    val float: Float get() = content.toFloat()
+
+    /**
+     * Returns the content as a double which may involve rounding
+     */
+    val double: Double get() = content.toDouble()
+
+    override fun toString(): String = content.toString()
+}
+
+
+/**
+ * Class representing document `array` type
+ */
+data class SmithyArray(val content: List<Document>): Document(), List<Document> by content{
+    /**
+     * Returns [index] th element of an array as [SmithyNumber] if the element is of that type or null if not.
+     *
+     * @throws IndexOutOfBoundsException if there is no element with given index
+     */
+    fun getNumber(index: Int) = content[index] as? SmithyNumber
+
+    /**
+     * Returns [index] th element of an array as [SmithyBool] if the element is of that type or null if not.
+     *
+     * @throws IndexOutOfBoundsException if there is no element with given index
+     */
+    fun getBoolean(index: Int) = content[index] as? SmithyBool
+
+    /**
+     * Returns [index] th element of an array as [SmithyString] if the element is of that type or null if not.
+     *
+     * @throws IndexOutOfBoundsException if there is no element with given index
+     */
+    fun getString(index: Int) = content[index] as? SmithyString
+
+    /**
+     * Returns [index] th element of an array as [SmithyArray] if the element is of that type or null if not.
+     *
+     * @throws IndexOutOfBoundsException if there is no element with given index
+     */
+    fun getArray(index: Int) = content[index] as? SmithyArray
+
+    /**
+     * Returns [index] th element of an array as [SmithyMap] if the element is of that type or null if not.
+     *
+     * @throws IndexOutOfBoundsException if there is no element with given index
+     */
+    fun getMap(index: Int) = content[index] as? SmithyMap
+
+    override fun toString(): String = content.joinToString( separator = ",", prefix = "[", postfix = "]" )
+}
+
+/**
+ * Class representing document `map` type
+ *
+ * Map consists of name-value pairs, where the value is an arbitrary Document. This is much like a JSON object.
+ */
+data class SmithyMap(val content: Map<String, Document>): Document(), Map<String, Document> by content {
+
+    /**
+     * Returns [SmithyNumber] associated with given [key] or `null` if element is not present or has a different type
+     */
+    fun getNumber(key: String): SmithyNumber? = getValue(key) as? SmithyNumber
+
+    /**
+     * Returns [SmithyBool] associated with given [key] or `null` if element is not present or has a different type
+     */
+    fun getBoolean(key: String): SmithyBool? = getValue(key) as? SmithyBool
+
+    /**
+     * Returns [SmithyString] associated with given [key] or `null` if element is not present or has a different type
+     */
+    fun getString(key: String): SmithyString? = getValue(key) as? SmithyString
+
+    /**
+     * Returns [SmithyArray] associated with given [key] or `null` if element is not present or has a different type
+     */
+    fun getArray(key: String): SmithyArray? = getValue(key) as? SmithyArray
+
+    /**
+     * Returns [SmithyMap] associated with given [key] or `null` if element is not present or has a different type
+     */
+    fun getMap(key: String): SmithyMap? = getValue(key) as? SmithyMap
+
+
+    override fun toString(): String {
+        return content.entries.joinToString(
+            separator = ",",
+            prefix = "{",
+            postfix = "}",
+            transform = {(k, v) -> """"$k":$v"""}
+        )
+    }
+
+}
+
+fun Boolean.toDocument() = SmithyBool(this)
+fun Number.toDocument() = SmithyNumber(this)
+fun String.toDocument() = SmithyString(this)
+
+
+/**
+ * DSL builder for a [SmithyArray]
+ */
+class DocumentArrayBuilder internal constructor() {
+    internal val content: MutableList<Document> = mutableListOf()
+
+    /**
+     * Adds [this] value to the current [SmithyArray] as [SmithyString]
+     */
+    operator fun String.unaryPlus() {
+        content.add(SmithyString(this))
+    }
+
+    /**
+     * Adds [this] value to the current [SmithyArray] as [SmithyBool]
+     */
+    operator fun Boolean.unaryPlus() {
+        content.add(SmithyBool(this))
+    }
+
+    /**
+     * Adds [this] value to the current [SmithyArray] as [Document]
+     */
+    operator fun Document.unaryPlus() {
+        content.add(this)
+    }
+
+    /**
+     * Convenience function to wrap raw numeric literals
+     *
+     * Use as `+n()` inside of [documentArray] builder init().
+     */
+    fun n(number: Number): SmithyNumber = SmithyNumber(number)
+
+}
+
+/**
+ * Builds [SmithyArray] with given [init] builder.
+ *
+ * NOTE: raw numeric types need to be wrapped as a [SmithyNumber]. Use the [DocumentArrayBuilder::a] builder
+ * as a shorthand.
+ */
+fun documentArray(init: DocumentArrayBuilder.() -> Unit): Document {
+    val builder = DocumentArrayBuilder()
+    builder.init()
+    return SmithyArray(builder.content)
+}
+
+
+/**
+ * DSL builder for a [Document] as a [SmithyMap]
+ */
+class DocumentBuilder internal constructor() {
+    internal val content: MutableMap<String, Document> = linkedMapOf()
+
+    /**
+     * Adds given [value] as [SmithyBool] to the current [SmithyMap] with [this] as a key
+     */
+    infix fun String.to(value: Boolean) {
+       require(content[this] == null) {"Key $this is already registered in builder"}
+        content[this] = value.toDocument()
+    }
+
+    /**
+     * Adds given [value] as [SmithyNumber] to the current [SmithyMap] with [this] as a key
+     */
+    infix fun String.to(value: Number) {
+        require(content[this] == null) {"Key $this is already registered in builder"}
+        content[this] = value.toDocument()
+    }
+
+    /**
+     * Adds given [value] as [SmithyString] to the current [SmithyMap] with [this] as a key
+     */
+    infix fun String.to(value: String) {
+        require(content[this] == null) {"Key $this is already registered in builder"}
+        content[this] = value.toDocument()
+    }
+
+    /**
+     * Adds given [value] to the current [SmithyMap] with [this] as a key
+     */
+    infix fun String.to(value: Document) {
+        require(content[this] == null) {"Key $this is already registered in builder"}
+        content[this] = value
+    }
+
+}
+
+/**
+ * Builds [Document] with given [init] builder.
+ *
+ * ```
+ * val doc = document {
+ *     "foo" to 1
+ *     "baz" to document {
+ *         "quux" to documentArray {
+ *             +n(202L)
+ *             +n(12)
+ *             +true
+ *             +"blah"
+ *         }
+ *     }
+ *     "foobar" to document {
+ *         "nested" to "a string"
+ *         "blerg" to documentArray {
+ *             +documentArray {
+ *                 +n(2.02)
+ *              }
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * This generates the following JSON:
+ * {"foo":1,"baz":{"quux":[202,12,true,"blah"]},"foobar":{"nested":"a string","blerg":[[2.02]]}}
+ */
+fun document(init: DocumentBuilder.() -> Unit): Document {
+    val builder = DocumentBuilder()
+    builder.init()
+    return SmithyMap(builder.content)
+}
+
+```
+
+Example usage of building a doc or processing one
+
+```kotlin
+fun foo() {
+    val doc = document {
+        "foo" to 1
+        "baz" to document {
+            "quux" to documentArray {
+                +n(202L)
+                +n(12)
+                +true
+                +"blah"
+            }
+        }
+        "foobar" to document {
+            "nested" to "a string"
+            "blerg" to documentArray {
+                +documentArray {
+                    +n(2.02)
+                }
+            }
+        }
+    }
+    println(doc)
+
+    processDoc(doc)
+}
+
+fun processDoc(doc: Document) {
+    when(doc) {
+        is SmithyNumber -> println("number: $doc")
+        is SmithyBool -> println("bool: ${doc.value}")
+        is SmithyString -> println("str: ${doc.value}")
+        is SmithyNull -> println("str: $doc")
+        is SmithyArray-> {
+            println("array")
+            for (d in doc) processDoc(d)
+        }
+        is SmithyMap -> {
+            println("map")
+            for((k,d) in doc) {
+                print("$k: ")
+                processDoc(d)
+            }
+        }
+    }
+
+}
 
 ```
 
@@ -185,7 +505,185 @@ data class Foo(val foo: String): MyUnion()
 
 ### Service types
 
+Services will generate both an interface as well as a concrete client implementation.
+
+Each operation will generate a method with the given operation name and the `input` and `output` shapes of that operation.
+
+
+The following example from the Smithy quickstart has been abbreviated. All input/output operation structure bodies have been omitted as they aren't important to how a service is defined.
+
+```
+service Weather {
+    version: "2006-03-01",
+    resources: [City],
+    operations: [GetCurrentTime]
+}
+
+@readonly
+operation GetCurrentTime {
+    output: GetCurrentTimeOutput
+}
+
+structure GetCurrentTimeOutput {
+    @required
+    time: Timestamp
+}
+
+resource City {
+    identifiers: { cityId: CityId },
+    read: GetCity,
+    list: ListCities,
+    resources: [Forecast],
+}
+
+resource Forecast {
+    identifiers: { cityId: CityId },
+    read: GetForecast,
+}
+
+// "pattern" is a trait.
+@pattern("^[A-Za-z0-9 ]+$")
+string CityId
+
+@readonly
+operation GetCity {
+    input: GetCityInput,
+    output: GetCityOutput,
+    errors: [NoSuchResource]
+}
+
+structure GetCityInput { ... }
+
+structure GetCityOutput { ...  }
+
+@error("client")
+structure NoSuchResource { ... } 
+
+@readonly
+@paginated(items: "items")
+operation ListCities {
+    input: ListCitiesInput,
+    output: ListCitiesOutput
+}
+
+structure ListCitiesInput { ... }
+
+structure ListCitiesOutput { ... }
+
+@readonly
+operation GetForecast {
+    input: GetForecastInput,
+    output: GetForecastOutput
+}
+
+structure GetForecastInput { ... }
+structure GetForecastOutput { ... }
+```
+
+
+```kotlin
+interface Weather {
+    suspend fun getCurrentTime(): GetCurrentTimeOutput
+
+    /**
+     * ...
+     * 
+     * @throws NoSuchResource
+     */
+    suspend fun getCity(input: GetCityInput): GetCityOutput
+
+
+    suspend fun listCities(input: ListCitiesInput): ListCitiesOutput
+
+
+    suspend fun getForecast(input: GetForecastInput): GetForecastOutput
+}
+
+class WeatherClient : Weather {
+
+    suspend fun getCurrentTime(): GetCurrentTimeOutput { ... }
+
+    suspend fun getCity(input: GetCityInput): GetCityOutput { ... }
+
+    suspend fun listCities(input: ListCitiesInput): ListCitiesOutput { ... }
+
+    suspend fun getForecast(input: GetForecastInput): GetForecastOutput { ... }
+}
+
+```
+
+
+#### Considerations
+
+1. Why `suspend` functions? 
+
+All service operations are expected to be async operations under the hood since they imply a network call. Making this explicit in the interface sets expectations up front.
+
+As of Kotlin 1.3 Coroutines are marked stable, they are shipped by default with the stdlib, and it is our belief that Coroutines are the future of async programming in Kotlin.
+
+As Coroutines become the default choice for async in Kotlin our customers will expect a coroutine compatible API. Deviating from this with normal threading models is generally incompatible and will create friction.
+
+As such choosing a Coroutine compatible API is "Customer Obsessed" as we strive to provide the most idiomatic API for the target ecosystem. This design is also "Think Big" as we define a bold direction for the Android SDK. 
+
+2. Why not provide both synchronous and asynchronous interfaces?
+
+Coroutines take a different mindset because they are not heavyweight like threads. They have much easier ways to compose them and share results. One of the design philosophies to follow (w.r.t coroutiens) is `let the caller decide`. What this means is when you design an API that is inherently async you let the caller decide how to handle concurrency. Perhaps they want to process results in the background, or maybe they want to launch several requests and wait for all of them to complete before continuing, and of course possibly they want to block on each call. You can't account for each scenario and by the nature of Coroutines in Kotlin we don't have to decide up front. 
+
+
+As an example to turn our async client call to a synchronous one in Kotlin is very easy
+
+```
+
+val service = WeatherService()
+
+runBlocking {
+    val forecast = service.getForecast(input)
+}
+
+```
+
+Here is another example where the `getForecast()` and `getCity()` operations happen concurrently and we wait for both results to complete. 
+
+```
+val service = WeatherService()
+
+runBlocking {
+    val forecastDef = async { service.getForecast(forecastInput) }
+    val cityDef = async { service.getCity(cityInput) } 
+
+    val forecast = forecastDef.await()
+    val cityDef = forecastDef.await()
+}
+
+```
+
+
+By providing Coroutine compatible API we can let the caller decide what kind of concurrency makes sense for their use case/application and compose results as needed. 
+
+
+See [Composing Suspend Functions](https://kotlinlang.org/docs/reference/coroutines/composing-suspending-functions.html) for more details.
+
+
+3. Backwards Compatibility
+
+
+This design choice would be a breaking change with the existing `aws-sdk-android` service definitions that are generated. The current SDK generates an interface and concrete client implementation of that interface as proposed here. The difference is it generates both synchronous and an asyncronous version. The asyncronous version is based on Java's [Future](https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/Future.html) and uses a thread pool executor to run the request to completion in the background.
+
+We could provide a generated syncronous API that matches the existing by doing the `runBlocking` call for the consumer but there is little value in doing so. The asyncronous version cannot be made to match if we are to support Coroutines though.
+
+The recommendation would be to make the breaking change and embrace Coroutines for the reasons outlined since this is a new SDK.
+
+
 ### Resource types
+
+Each resources will be processed for each of the corresponding lifecycle operations as well as the non-lifecycle operations. 
+
+Every operation, both lifecycle and non-lifecycle, will generate a method on the service class to which the resource belongs. 
+
+This will happen recursively since resources can have child resources. 
+
+See the Service section which has a detailed example of how resources show up on a service.
+
 
 ### Traits
 
@@ -335,7 +833,7 @@ Kotlin has first class support for enums and the SDK should make use of them to 
 
 When no `name` is provided the enum name will be the same as the value, otherwise the Kotlin SDK will use the provided enum name.
 
-The value will be stored as an additional property on the enum and passed in the constructor. This allows enums to be applied to other types in the future if Smithy evolves to allow it.
+The value will be stored as an additional property on the enum and passed in the constructor. This allows enums to be applied to other types in the future if Smithy [evolves to allow it](https://github.com/awslabs/smithy/issues/98).
 
 
 ```
@@ -440,6 +938,7 @@ Not processed
 
 #### `length` trait
 **TODO**
+**QUESTION** I don't even see where these constraints (length, range, pattern, etc) are processed in the smithy-typescript/smithy-go code generators. Are they not implemented?
 
 #### `pattern` trait
 **TODO**
@@ -481,7 +980,7 @@ class Foo {
 
 
 NOTE: Regardless of which way we go we should mark the field with the `@Required` annotation. This forces serialization to be mandatory and always present/expected in serialized form.
-See [kotlinx.serialization annotations](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/examples.md#annotations) 
+See [kotlinx.serialization annotations](https://github.com/Kotlin/kotlinx.serialization/blob/master/docs/examples.md#annotations). If we don't utilize kotlinx.serialization then we need to account for `required` fields in whatever our chosen serde implementation is.
 
 #### `uniqueItems` trait
 **TODO**
@@ -508,170 +1007,202 @@ This trait influences errors, see the `error` trait for how it will be handled.
 
 #### `paginated` trait
 
+Not processed
+
+**QUESTION** If I understood correctly the members targeted by `inputToken`/`outputToken`/`items` all MUST be defined in the input/output structures. As in the generator isn't expected to create those members if they don't exist?
+**QUESTION** Would it be useful to process the trait for documentation purposes on those class members or is it expected that those fields would already have attached documentation traits?
+
+### Resource traits
+
+#### `references` trait
+Not processed
+
+#### `resourceIdentifier` trait
+Not processed
+
+### Protocol traits
+
+#### `protocols` trait
+
+Inspected to see if the protocol is supported by the code generator/client-runtime. If no protocol is supported codegen will fail.
+
+The `auth` peroperty of this trait will be inspected just to confirm at least one of the authentication schemes is supported.
+
+All of the built-in HTTP authentication schemes will be supported by being able to customize the request headers.
+
+
+**QUESTION** Should we have codegen validate the request has one of the auth schemes expected for a particular operation before sending the request? 
+    * (AJT) - I think this would be nice but not necessary, at least out the gate, presumably we'll get an error response from the server that will make sense.
+
+#### `auth` trait
+
+Processed the same as the `auth` property of the `protocols` trait. 
+
+#### `jsonName` trait
+
+The generated class member will have the `@SerialName("...")` annotation added to the property. 
+
+* **TODO**: Assumes we utilize kotlinx.serialization to handle JSON serialization. Regardless of which way we go this trait will influence serde.
+
+#### `mediaType` trait
+
+The media type trait SHOULD influence the HTTP Content-Type header if not already set.
+
+**QUESTION** Can we ship an initial version without supporting this (as long as the client has the ability to set the Content-Type header)? 
+
+
+#### `timestampFormat` trait
+
+**TODO** - This depends on the datetime lib we use and how we plug serde into everything. Roughly this just affects the serde step of any `timestamp` shape.
+
+### Documentation traits
+
+#### `documentation` trait
+
+All top level classes, enums, and their members will be generated with the given documentation.
+
+#### `examples` trait
+
+Not processed
+
+**FUTURE** We probably should process this but I think it's ok to put it lower priority
+
+#### `externalDocumentation` trait
+
+Processed the same as the `documentation` trait. The link will be processed appropriately for the target documentation engine (e.g. [dokka](https://github.com/Kotlin/dokka)).
+
+#### `sensitive` trait
+
+Not processed
+
+#### `since` trait
+
+Not processed
+
+**FUTURE** We should probably process this into the generated documentation at least.
+
+#### `tags` trait
+
+Not processed
+
+#### `title` trait
+
+Combined with the generated documentation as the first text to show up for a service or resource.
+
+
+### Endpoint traits
+
+#### `endpoint` trait
+**TODO**
+
+#### `hostLabel` trait
 **TODO**
 
 
+# HTTP Protocol Bindings
 
-## Event Stream Spec
+**TODO** We have decided to split the design and implementation. HTTP protocol bindings will be fleshed out further in an initial POC.
 
-Reference to the (Event Stream spec)[https://awslabs.github.io/smithy/spec/event-streams.html] which builds on top of the Core spec
+# Event Stream Spec
 
-### What is an Event Stream?
-
-An event stream is an abstraction that allows multiple messages to be sent asynchronously between a client and server.  Serialization and format of message sent are defined by the protocol in the smithy model.
-
-The operation input or output can be marked with an **`eventStream`** trait. A member that targets a structure is a single-event event stream, and a member that targets a union is a multi-event event stream.
-
-### Single Event Stream Behavior
-
-Clients that send or receive single-event event streams are expected to provide an abstraction to end-users that allows values to be produced or consumed asynchronously for the targeted event structure.
-
-Given this structure where `@eventStream` is on the input of the structure:
-
-```
-namespace smithy.example
-
-operation PublishMessages {
-    input: PublishMessagesInput
-}
-
-structure PublishMessagesInput {
-    room: String,
-
-    @eventStream
-    messages: Message,
-}
-
-structure Message {
-    message: String,
-}
-```
-
-In Kotlin we can use channels to represent this:
-
-```kotlin
-//generated code
-class PublishMessagesInput constructor(capacity: Int = Channel.RENDEZVOUS) {
-    var room: String? = null
-    var messages = Channel<Message>(capacity)
-}
-
-class Message {
-    var message: String? = null
-}
-
-class FooService {
-    public suspend fun publishMessages(input: PublishMessagesInput) {
-
-        //send request to server
-        launch {
-            consumeMessages(input.messages)
-        }
-    }
-    //this is private because the event stream is on the input therefore they dont need the receiving end to be exposed but we need to be able to handle the messages the client is sending from the SDK point of view
-    private suspend fun consumeMessages(messages: ReceiveChannel<Message>) {
-        for (msg in messages){
-            println("recv'd: ${msg.message}...sending to server")
-        }
-
-        println("event stream closed")
-    }
-}
-
-// example client code
-fun main() {
-    val service = FooService()
-    val input = PublishMessagesInput().apply {room = "foo room"}
-    runBlocking {
-        launch {
-            repeat(5) {
-                println("sending $it")
-                input.messages.send(Message().apply{message = "message: $it"})
-            }
-            input.messages.close() ///closes the channel to not send or receive anymore 
-        }
-        
-        service.publishMessages(input)
-    }
-}
-
-```
-
-**Note:** Produce in the below example is an experimental api. Behaviour of producers that work as children in a parent scope with respect to cancellation and error handling may change in the future.
-
-If the `@eventStream` trait were on the output of the smithy model like this:
-
-```
-namespace smithy.example
-
-operation SubscribeToMovements {
-    output: SubscribeToMovementsOutput
-}
-
-structure SubscribeToMovementsOutput {
-    @eventStream
-    movements: Movement,
-}
-
-structure Movement {
-    angle: Float,
-    velocity: Float,
-}
-```
-
-our code would differ in that it would use a produce to send so that it could receive from that channel asynchronously. Produce is a coroutine builder that simplifies the process of creating a coroutine and a channel. It will create a new Receieve Channel
-
-```kotlin
-class Movement {
-    var angle: Float
-    var velocity: Float
-}
-
-class SubscribeToMovementsOutput {
-    var movements: Movement
-}
+The design of event stream bindings is still in progress. It will be reviewed separately.
 
 
-class FooService {
+# Appendix
 
-    private val movements: List<Movement>
+## Client Runtime (multiplatform)
 
-    fun subscribeToMovements(): SubscribeToMovementsOutput {
-        //does something to send movements to channel
-        for (movement in movements) {
-            send(movement)
-        }
-    }
-
-    fun CoroutineScope.receiveMovements():          ReceiveChannel<SubscribeToMovementsOutput>> = produce {
-            subscribeToMovements()
-    }
+Service clients generated by the smithy-kotlin generator requires support from a runtime package. One of the areas of exploration is whether we can share a large majority of a client runtime using Kotlin Multiplatform. It is not yet clear whether this is doable or what problems we might hit. The general consensus at the moment is that we have to design such a package for the Kotlin SDK anyway so it's worthwhile to pursue and see what benefits we can get out of going that route. This is a two way door since we only risk some time to try and make multiplatform work and if it doesn't we can always go back and implement a client runtime in swift. 
 
 
-}
-
-//to use this generated code in code as a developer you might do something like below:
-
-fun main() {
-    val service = FooService()
- 
-    runBlocking {
-        val movements = service.receiveMovements()
-
-        movements.consumeEach {println(it)}
-    }
-}
+The following gives an example of how all these packages relate to each-other.
 
 ```
 
 
-## Appendix
 
-### Exceptions
+smithy-kotlin  ----R----> client-rt (MPP)
+smithy-swift   ----R----> client-rt (MPP)
+
+
+aws-sdk-kotlin ----C---> smithy-kotlin 
+              \----R---> client-rt (MPP)
+              \----R---> aws-client-rt (MPP)
+
+aws-sdk-swift  ----C---> smithy-swift
+              \----R---> client-rt (MPP)
+              \----R---> aws-client-rt (MPP)
+
+
+Legend:
+--------
+The `C` and `R` denote compile time vs runtime dependencies.
+client-rt = Generic smithy client runtime, (protocol(s), orchestration, etc)
+aws-client-rt = AWS specific client runtime, credentials, Sigv4 signing, etc
+
+```
+
+
+More than likely we expect that not everything will be doable in Kotlin multiplatform or be too much effort (e.g. serialization). In which case the multiplatform client runtime would have to be supplemented with additional packages for the target language/environment. That might look something more like this:
+
+```
+smithy-kotlin  ----R----> client-rt (MPP)
+              \----R----> client-rt-android (Kotlin)
+
+smithy-swift   ----R----> client-rt (MPP)
+              \----R----> client-rt-ios (Swift)
+
+aws-sdk-kotlin ----C---> smithy-kotlin 
+              \----R---> client-rt (MPP)
+              \----R---> client-rt-android (Kotlin)
+              \----R---> aws-client-rt (MPP)
+
+aws-sdk-swift  ----C---> smithy-swift
+              \----R---> client-rt-ios (Swift)
+              \----R---> aws-core (MPP)
+              \----R---> aws-client-rt (MPP)
+
+```
+
+
+The Smithy team indicated we probably want the runtime package to live with the code generator so that code reviews can be more seamless and not coordinated across repos. This makes sense but if the client runtime is a multiplatform package there will end up being some cross repo coordination at some point. I've shown a rough example below of what that structure might look like if we just assume it lives with the `smithy-kotlin` code generator.
+
+
+```
+smithy-kotlin/
+
+    client-runtime/
+        aws-smithy-clientrt-core/                        Package: com.amazonaws.clientrt    (multiplatform core package)
+            commonMain/
+                smithy/                       - smithy types (e.g. Document)
+                Exceptions.kt                 - Generic client/service exceptions
+                http/
+                ...
+             androidMain/
+                ...
+             iosMain/
+                ...
+
+        aws-smithy-clientrt-android/                      Package: com.amazonaws.clientrt.android
+
+    smithy-kotlin-codegen/
+        smithy code generator for kotlin
+    smithy-kotlin-codegen-test/
+        integration test for smithy-kotlin-codegen
+
+
+NOTES:
+    * A `aws-smithy-clientrt-ios` would be a pure Swift package that builds on top of or supplements MPP clientrt-core.
+     It would provide the additional things that can't exist in the MPP core and be analogous to `aws-smithy-clientrt-android`
+    * The rough rule for what can go in clientrt-core is anything concrete that doesn't use generics (or is very limited generics: See the limitations of generics in Kotlin MPP)
+```
+
+
+## Exceptions
 
 The client runtime lib will expose the common exception types that all generated service/operation errors will be translated to (and inherit from).
 
-#### Background: Current aws-sdk-android exception hierarchy
+### Background: Current aws-sdk-android exception hierarchy
 
 ```
 java.lang.Object
@@ -771,7 +1302,7 @@ void 	setStatusCode(int statusCode)
 
 
 
-#### New Client Runtime Exception Hierarchy 
+### New Client Runtime Exception Hierarchy 
 
 One of the problems is that the `smithy-LANG` packages are supposed to be AWS agnostic. They generate code for a target language and set of protocols supported. As such we really shouldn't introduce things like `AmazonException` into such a package. That is the point of the higher level codegen package to decorate and specialize codegen for AWS specific behaviors.
 
@@ -873,7 +1404,7 @@ open class ServiceException: ClientException {
 
 ```
 
-**TODO** Exposing `httpResponse` directly feels "wrong" here. Can we do it in a protocol agnostic way? Or is it actually ok since codegen is usually specific to a protocol?
+**FIXME** Exposing `httpResponse` directly feels "wrong" here. Can we do it in a protocol agnostic way? Or is it actually ok since codegen is usually specific to a protocol?
 
 
 
@@ -919,7 +1450,129 @@ open class AmazonServiceException: ServiceException {
 **QUESTION** Can we actually make the exceptions backwards compatible or will the package rearrangement make that impossible? If it's not impossible what does the inheritance need to look like to make it work out? I believe it would be something like `RuntimeException <- SdkBaseException <- ClientException <- AmazonClientException <- ServiceException <- AmazonServiceException`. This all depends on what the split looks like for the runtime libraries. These needs more thought...
 
 
-### Marshalling/Unmarshalling
+## Marshalling/Unmarshalling
 
-**TODO** - Need to define how types will be marshalled and interact with the client runtime package. Middleware?
+**TODO** - See the `serialization.md` doc for some discussion.
+
+
+## Project Structure
+
+See the [example](https://github.com/aws-amplify/amplify-codegen/tree/smithy-kotlin/smithy-kotlin/design/example) in the staging repo.
+
+
+## Pipeline (Request/Response Orchestration)
+
+Other SDK's call this "middleware". The name isn't terribly important at the moment and we can change it, right now we are referring to it as a pipeline though. What is presented is a very early rough draft.
+
+Ktor (which is our target HTTP client ATM) actually has a (generic) pipeline concept baked in. There are a few problems with using this out of the box though. One there doesn't seem to be a way to do per-request pipelines. The pipeline is attached at the [HttpClient](https://api.ktor.io/1.3.2/io.ktor.client/-http-client/index.html) level and is used for all requests sent by the client. This is useful for static things perhaps like setting a known `User-Agent` header but not for customizing individual requests and responses. We don't want to necessarily create a new HttpClient per request either since a client consumes resources. It is conceivable that we may want to share a client across multiple HTTP requests which is supported by Ktor. The second issue is we don't necessarily want to expose a library type we don't have control of. There are also concerns with the use of `suspend` in the function signature of [intercept](https://api.ktor.io/1.3.2/io.ktor.util.pipeline/-pipeline/intercept.html) which may not play well with iOS. 
+
+[Ktor Generic Pipeline](https://github.com/ktorio/ktor/blob/d940855ac493aaadeeec4cd3c41b1c8de044311a/ktor-utils/common/src/io/ktor/util/pipeline/Pipeline.kt)
+[Ktor HttpRequest Pipeline](https://github.com/ktorio/ktor/blob/master/ktor-client/ktor-client-core/common/src/io/ktor/client/request/HttpRequestPipeline.kt)
+[Ktor HttpResponse Pipleine](https://github.com/ktorio/ktor/blob/3ce3906c2bfa3c86238d40e9b67006b2b020bdaf/ktor-client/ktor-client-core/common/src/io/ktor/client/statement/HttpResponsePipeline.kt)
+
+
+That being said the design of the Ktor pipeline abstraction is _almost_ exactly what we want to define.  I think we can build heavily off this design with a few modifications such as making the interception points synchronous and tailored to our specific use case.
+
+
+**TODO** We probably want to define the way phases proceed from one to the next as well as ways for a phase to fail and stop execution. When the intercept `block` runs to completion obviously it will move onto the next interceptor or phase. As example, Ktor allows a phase to modify the type being passed to the next phase with `proceedWith()`. 
+
+```kotlin
+class PipelinePhase(val name: String)
+
+/**
+ * Represents an execution pipeline for extensible computations in a defined sequence.
+ */
+open class Pipeline<TSubject: Any, TContext: Any> {
+    constructor(vararg phases: PipelinePhase)
+
+    fun addPhase(phase: PipelinePhase)
+    fun insertPhaseAfter(target: PipelinePhase, phase: PipelinePhase)
+    fun insertPhaseBefore(target: PipelinePhase, phase: PipelinePhase)
+
+    fun intercept(phase: PipelinePhase, block: PipelineContext.(TSubject) -> Unit)
+
+    fun execute(context: TContext, subject: TSubject): TSubject
+}
+
+
+class HttpRequestPipeline : Pipeline<Any, HttpRequestBuilder>(Before, Build, Transform, Finalize) {
+
+    companion object Phases {
+
+        /**
+         * Execute any tasks before any starting transformations and building the request (e.g. input validation)
+         */
+        val Before = PipelinePhase("Before")
+
+        /**
+         * Modify the outgoing request properties (e.g. set headers)
+         */
+        val Build = PipelinePhase("Build")
+
+        /**
+         * Transform the input to a request body in the expected format (e.g. JSON)
+         */
+        val Transform = PipelinePhase("Transform")
+
+        /**
+         * Perform final preparations before sending the message (e.g. SigV4 request signing)
+         */
+        val Finalize = PipelinePhase("Finalize")
+    }
+}
+
+
+/**
+ * Wrapper class containing a single HTTP request/response pair representing a single round-trip.
+ */
+data class HttpCall(val request: HttpRequest, val response: HttpResponse)
+
+class HttpResponsePipeline : Pipeline<Any, HttpCall>(Receive, Transform, Finalize) {
+
+    companion object Phases {
+        /**
+         * Execute any tasks before starting transformations on the response (e.g. inspect HTTP response headers)
+         */
+        val Receive = PipelinePhase("Receive")
+
+        /**
+         * Transform the response body to the expected format
+         */
+        val Transform = PipelinePhase("Transform")
+
+        /**
+         * Perform any final modifications to the response
+         */
+        val Finalize = PipelinePhase("Finalize")
+    }
+}
+
+
+```
+
+
+Possible usage:
+
+```kotlin
+
+class FooService {
+    suspend fun getFoos(input: FooInput): FooOutput {
+        var reqPipeline = HttpRequestPipeline()
+        val respPipeline = HttpResponsePipeline()
+
+        reqPipeline.intercept(HttpRequestPipeline.Before, input.validate)
+        reqPipeline.intercept(HttpRequestPipeline.Build, setDefaults)
+        reqPipeline.intercept(HttpRequestPipeline.Transform, input.serialize)
+        respPipeline.intercept(HttpResponsePipeline.Transform, input.deserialize)
+
+        return roundTrip<FooOutput>(input, reqPipeline, respPipeline)
+        
+    }
+}
+
+```
+
+**TODO** This isn't really how we want to expose it since the client won't have access to customize the pipeline. This needs quite a bit more thought put into it but hopefully this gives a rough idea of where we might land.
+**QUESTION** Should a pipeline be per request/response? The Go middleware indicates `A stack will use the ordered list of middleware to decorate a underlying handler. A handler could be something like an HTTP Client that round trips an API operation over HTTP.`. This is more typical of middleware I've seen (and how Ktor) works. As far as I can tell the Typescript SDK creates a new stack per command structure and inserts that types serialize/deserialize steps, etc.
+
 
