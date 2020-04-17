@@ -551,28 +551,47 @@ In Kotlin we can use channels to represent this:
 
 ```kotlin
 //generated code
-class PublishMessagesInput {
+class PublishMessagesInput constructor(capacity: Int = Channel.RENDEZVOUS) {
     var room: String? = null
-    var messages: Message
+    var messages = Channel<Message>(capacity)
 }
 
 class Message {
     var message: String? = null
 }
 
+class FooService {
+    public suspend fun publishMessages(input: PublishMessagesInput) {
 
-class PublishMessageRequest {
-    var input: PublishMessagesInput
-    //....any other necessary props for a request
+        //send request to server
+        launch {
+            consumeMessages(input.messages)
+        }
+    }
+    //this is private because the event stream is on the input therefore they dont need the receiving end to be exposed but we need to be able to handle the messages the client is sending from the SDK point of view
+    private suspend fun consumeMessages(messages: ReceiveChannel<Message>) {
+        for (msg in messages){
+            println("recv'd: ${msg.message}...sending to server")
+        }
+
+        println("event stream closed")
+    }
 }
 
-val channel = PublishMessagesChannel<Unit>()
-
-suspend fun publishMessages(request: PublishMessagesRequest) {
-    launch {
-        channel.send(request)
-        channel.close() //close the channel after we send the request, the output does not need to receive asychronously and all the senders are guaranteed to send before the close.
-        //trying to send all the results at once since receiver is not asynchronous??? not sure if this is the right way to do this?
+// example client code
+fun main() {
+    val service = FooService()
+    val input = PublishMessagesInput().apply {room = "foo room"}
+    runBlocking {
+        launch {
+            repeat(5) {
+                println("sending $it")
+                input.messages.send(Message().apply{message = "message: $it"})
+            }
+            input.messages.close() ///closes the channel to not send or receive anymore 
+        }
+        
+        service.publishMessages(input)
     }
 }
 
@@ -600,7 +619,7 @@ structure Movement {
 }
 ```
 
-our code would differ in that it would use a produce channel to send so that it could receive from that channel asynchronously.
+our code would differ in that it would use a produce to send so that it could receive from that channel asynchronously. Produce is a coroutine builder that simplifies the process of creating a coroutine and a channel. It will create a new Receieve Channel
 
 ```kotlin
 class Movement {
@@ -612,34 +631,36 @@ class SubscribeToMovementsOutput {
     var movements: Movement
 }
 
-class SubscribeToMovementsResponse {
-    var output:SubscribeToMovementsOutput
-}
 
-fun subscribeToMovements(): SubscribeToMovementsResponse {
-    //does something to subscribe to movements via given protocol
-}
+class FooService {
 
-fun CoroutineScope.produceMovements():          ReceiveChannel<SubscribeToMovementsResponse>> = produce {
-        subscribeToMovements()
-}
+    private val movements: List<Movement>
 
-fun CoroutineScope.subscribeToMovementsProcessor(channel: ReceiveChannel<SubscribeToMovementsResponse>): SubscribeToMovementsResponse {
-    launch {
-        for (movement in channel) {
-            return movement
+    fun subscribeToMovements(): SubscribeToMovementsOutput {
+        //does something to send movements to channel
+        for (movement in movements) {
+            send(movement)
         }
     }
+
+    fun CoroutineScope.receiveMovements():          ReceiveChannel<SubscribeToMovementsOutput>> = produce {
+            subscribeToMovements()
+    }
+
+
 }
 
 //to use this generated code in code as a developer you might do something like below:
-val producer = produceMovements()
-launch { 
-    subscribeToMovementsProcessor(producer)
+
+fun main() {
+    val service = FooService()
+ 
+    runBlocking {
+        val movements = service.receiveMovements()
+
+        movements.consumeEach {println(it)}
+    }
 }
-
-producer.cancel() // cancel producer coroutine and thus kill subscription
-
 
 ```
 
