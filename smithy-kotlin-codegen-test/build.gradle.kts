@@ -13,20 +13,17 @@
  * permissions and limitations under the License.
  */
 
-package software.amazon.smithy.kotlin.codegen
+extra["displayName"] = "Smithy :: Kotlin :: Codegen :: Test"
+extra["moduleName"] = "software.amazon.smithy.kotlin.codegen.test"
 
-import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.build.SmithyBuildPlugin
+tasks["jar"].enabled = false
 
-/**
- * Plugin to generate Kotlin code generation.
- */
-class KotlinCodegenPlugin : SmithyBuildPlugin {
-    override fun getName(): String = "kotlin-codegen"
+plugins {
+    id("software.amazon.smithy").version("0.4.3")
+}
 
-    override fun execute(context: PluginContext?) {
-        println("executing kotlin codegen")
-        TODO("Not yet implemented")
-    }
 
+dependencies {
+    implementation(project(":smithy-kotlin-codegen"))
+    implementation("software.amazon.smithy:smithy-protocol-test-traits:0.9.9")
 }
