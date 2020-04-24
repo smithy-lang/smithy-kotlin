@@ -16,10 +16,9 @@ kotlin {
         }
     }
     sourceSets {
-//        darwinMain.dependencies {
-//            implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core-native', version: coroutines_version
-//            implementation "org.jetbrains.kotlinx:atomicfu-native:$atomicfu_version"
-//        }
+        darwinMain.dependencies {
+            implementation group: 'org.jetbrains.kotlinx', name: 'kotlinx-coroutines-core-native', version: coroutinesVersion
+        }
 
         darwinMain { dependsOn commonMain }
         darwinTest

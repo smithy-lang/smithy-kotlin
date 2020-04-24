@@ -36,6 +36,8 @@ subprojects {
     group = "com.amazonaws"
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
+        plugin("org.jetbrains.dokka")
+        plugin("jacoco")
     }
 
     println("Configuring: $project")
@@ -65,4 +67,39 @@ subprojects {
             }
         }
     }
+
+    tasks.dokka {
+        outputFormat = "html"
+        outputDirectory = "$buildDir/kdoc"
+    }
+
+//    tasks.test {
+//        useJUnitPlatform()
+//        testLogging {
+//            events("passed", "skipped", "failed")
+//            showStandardStreams = true
+//        }
+//    }
+
+//    // Configure jacoco (code coverage) to generate an HTML report
+//    tasks.jacocoTestReport {
+//        reports {
+//            xml.isEnabled = false
+//            csv.isEnabled = false
+//            html.destination = file("$buildDir/reports/jacoco")
+//        }
+//    }
+
+    // Always run the jacoco test report after testing.
+//    tasks["test"].finalizedBy(tasks["jacocoTestReport"])
+//    tasks {
+//        named<JacocoReport>("jacocoTestReport") {
+//            reports {
+//                xml.isEnabled = false
+//                csv.isEnabled = false
+//                html.destination = file("$buildDir/reports/jacoco")
+//            }
+//        }
+//    }
 }
+
