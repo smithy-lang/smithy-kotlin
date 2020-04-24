@@ -1,0 +1,6 @@
+
+kotlin.sourceSets {
+    commonMain.dependencies {
+        api "org.jetbrains.kotlin:kotlin-stdlib-common"
+    }
+}

@@ -14,13 +14,16 @@
  */
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.dokka") version "0.10.0"
+    id("org.jetbrains.dokka")
     jacoco
 }
 
 description = "Generates Kotlin code from Smithy models"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
+
+group = "software.amazon.smithy"
+version = "0.1.0"
 
 
 dependencies {

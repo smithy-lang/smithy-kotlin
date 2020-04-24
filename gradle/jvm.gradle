@@ -1,0 +1,25 @@
+
+
+kotlin {
+    targets {
+        fromPreset(presets.jvm, 'jvm')
+    }
+
+    sourceSets {
+        jvmMain.dependencies {
+            api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlinVersion
+            api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
+        }
+
+        jvmTest.dependencies {
+            api 'org.jetbrains.kotlin:kotlin-test'
+            api 'org.jetbrains.kotlin:kotlin-test-junit'
+//            api "junit:junit:$junit_version"
+
+//            api group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: kotlin_version
+//            api group: 'junit', name: 'junit', version: junit_version
+//            implementation "org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutines_version"
+        }
+    }
+
+}

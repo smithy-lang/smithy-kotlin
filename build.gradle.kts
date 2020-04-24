@@ -13,16 +13,14 @@
  * permissions and limitations under the License.
  */
 plugins {
-    kotlin("jvm") version "1.3.71"
+    kotlin("jvm") version "1.3.72"
+    id("org.jetbrains.dokka") version "0.10.0"
 }
 
 // root project doesn't create a JAR
 tasks["jar"].enabled = false
 
 allprojects {
-    group = "software.amazon.smithy"
-    version = "0.1.0"
-
     repositories {
         mavenLocal()
         mavenCentral()
