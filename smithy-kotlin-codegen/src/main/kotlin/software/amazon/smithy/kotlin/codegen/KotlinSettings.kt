@@ -40,6 +40,19 @@ class KotlinSettings(
     val moduleDescription: String = ""
 ) {
 
+    /**
+     * Get the corresponding [ServiceShape] from a model.
+     * @return Returns the found `Service`
+     * @throws CodegenException if the service is invalid or not found
+     */
+    fun getService(model: Model): ServiceShape {
+        return model
+            .getShape(service)
+            .orElseThrow { CodegenException("Service shape not found: $service") }
+            .asServiceShape()
+            .orElseThrow { CodegenException("Shape is not a service: $service")}
+    }
+
     companion object {
         private val LOGGER: Logger = Logger.getLogger(KotlinSettings::class.java.name)
 
