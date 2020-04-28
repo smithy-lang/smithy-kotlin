@@ -23,21 +23,24 @@ import software.amazon.smithy.model.traits.ErrorTrait
  * Renders Smithy structure shapes
  */
 class StructureGenerator(
-    val model: Model, val symbolProvider: SymbolProvider, val writer: KotlinWriter, val shape: StructureShape
+    val model: Model,
+    private val symbolProvider: SymbolProvider,
+    private val writer: KotlinWriter,
+    private val shape: StructureShape
 ) {
 
     fun render() {
-       if (!shape.hasTrait(ErrorTrait::class.java)) {
-           renderStructure()
-       }else {
-           renderError()
-       }
+        if (!shape.hasTrait(ErrorTrait::class.java)) {
+            renderStructure()
+        } else {
+            renderError()
+        }
     }
 
     /**
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
-    fun renderStructure() {
+    private fun renderStructure() {
         val symbol = symbolProvider.toSymbol(shape)
         // TODO write shape docs
         writer.openBlock("class \$L {", symbol.name)
@@ -52,7 +55,7 @@ class StructureGenerator(
     /**
      * Renders a Smithy error type to a Kotlin exception type
      */
-    fun renderError() {
+    private fun renderError() {
         // TODO
     }
 

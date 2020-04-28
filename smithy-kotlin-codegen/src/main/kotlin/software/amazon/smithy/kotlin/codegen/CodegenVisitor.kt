@@ -37,7 +37,7 @@ class CodegenVisitor(context: PluginContext): ShapeVisitor.Default<Void>() {
     private val settings = KotlinSettings.from(context.model, context.settings)
     private val service: ServiceShape = settings.getService(model)
     private val fileManifest: FileManifest = context.fileManifest
-    private val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+    private val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, settings.moduleName)
     private val writers: KotlinDelegator = KotlinDelegator(settings, model, fileManifest, symbolProvider)
 
     fun execute() {

@@ -35,9 +35,11 @@ class KotlinCodegenPlugin : SmithyBuildPlugin {
         /**
          * Creates a Kotlin symbol provider.
          * @param model The model to generate symbols for
+         * @param namespace The root package name (e.g. com.foo.bar). All symbols will be generated as part of this
+         * package (or as a child of it)
          * @return Returns the created provider
          */
-        fun createSymbolProvider(model: Model): SymbolProvider = SymbolVisitor(model)
+        fun createSymbolProvider(model: Model, namespace: String): SymbolProvider = SymbolVisitor(model, namespace)
     }
 
 }

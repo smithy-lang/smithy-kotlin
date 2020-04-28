@@ -55,12 +55,19 @@ fun Symbol.defaultValue(): String? {
     return if (default.isPresent) default.get() else null
 }
 
+/**
+ * Get the default name for a shape (for code generation)
+ */
 fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
 
+/**
+ * Get the default name for a member shape (for code generation)
+ */
 fun MemberShape.defaultName(): String = StringUtils.uncapitalize(this.memberName)
 
 
-class SymbolVisitor(private val model: Model) : SymbolProvider, ShapeVisitor<Symbol> {
+class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") : SymbolProvider,
+    ShapeVisitor<Symbol> {
     val LOGGER = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
 
@@ -112,7 +119,7 @@ class SymbolVisitor(private val model: Model) : SymbolProvider, ShapeVisitor<Sym
         escaper = ReservedWordSymbolProvider.builder()
             .nameReservedWords(reservedWords)
             // only escape words when the symbol has a definition file to prevent escaping intentional references to built-in shapes
-            .escapePredicate() { _, symbol -> !symbol.definitionFile.isEmpty() }
+            .escapePredicate { _, symbol -> !symbol.definitionFile.isEmpty() }
             .buildEscaper()
     }
 
@@ -139,7 +146,9 @@ class SymbolVisitor(private val model: Model) : SymbolProvider, ShapeVisitor<Sym
     override fun doubleShape(shape: DoubleShape?): Symbol = numberShape(shape, "Double", "0.0")
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
-        return createSymbolBuilder(shape, typeName).putProperty(DEFAULT_VALUE_KEY, defaultValue).build()
+        return createSymbolBuilder(shape, typeName)
+            .putProperty(DEFAULT_VALUE_KEY, defaultValue)
+            .build()
     }
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
@@ -155,12 +164,13 @@ class SymbolVisitor(private val model: Model) : SymbolProvider, ShapeVisitor<Sym
     // TODO - handle enum types
     override fun stringShape(shape: StringShape?): Symbol = createSymbolBuilder(shape, "String", boxed = true).build()
 
-    override fun booleanShape(shape: BooleanShape?): Symbol = createSymbolBuilder(shape, "Boolean").putProperty(DEFAULT_VALUE_KEY, "false").build()
+    override fun booleanShape(shape: BooleanShape?): Symbol =
+        createSymbolBuilder(shape, "Boolean").putProperty(DEFAULT_VALUE_KEY, "false").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName()
         // TODO - handle error types
-        return createSymbolBuilder(shape, name, boxed = true).definitionFile("./models/${shape.id.name}.kt").build()
+        return createSymbolBuilder(shape, name, "model", boxed = true).definitionFile("${shape.id.name}.kt").build()
     }
 
     override fun listShape(shape: ListShape): Symbol {
@@ -170,7 +180,8 @@ class SymbolVisitor(private val model: Model) : SymbolProvider, ShapeVisitor<Sym
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        return createSymbolBuilder(shape, "Map<String, ${reference.name}>", boxed = true).addReference(reference).build()
+        return createSymbolBuilder(shape, "Map<String, ${reference.name}>", boxed = true).addReference(reference)
+            .build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
@@ -212,8 +223,16 @@ class SymbolVisitor(private val model: Model) : SymbolProvider, ShapeVisitor<Sym
         return createSymbolBuilder(shape, "Client").definitionFile("./Client.kt").build()
     }
 
+
+    /**
+     * Creates a symbol builder for the shape with the given type name in the root namespace.
+     */
     private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
-        val builder = Symbol.builder().putProperty("shape", shape).name(typeName)
+        val builder = Symbol.builder()
+            .putProperty("shape", shape)
+            .name(typeName)
+            .namespace(rootNamespace, ".")
+
         val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
         if (explicitlyBoxed || boxed) {
             builder.putProperty(BOXED_KEY, true)
@@ -221,13 +240,18 @@ class SymbolVisitor(private val model: Model) : SymbolProvider, ShapeVisitor<Sym
         return builder
     }
 
+    /**
+     * Creates a symbol builder for the shape with the given type name in a child namespace relative
+     * to the root namespace e.g. `relativeNamespace = bar` with a root namespace of `foo` would set
+     * the namespace (and ultimately the package name) to `foo.bar` for the symbol.
+     */
     private fun createSymbolBuilder(
         shape: Shape?,
         typeName: String,
-        namespace: String,
+        relativeNamespace: String,
         boxed: Boolean = false
     ): Symbol.Builder {
-        return createSymbolBuilder(shape, typeName, boxed).namespace(namespace, ".")
+        return createSymbolBuilder(shape, typeName, boxed).namespace("${rootNamespace}.${relativeNamespace}", ".")
     }
 
     fun createNamespaceReference(dependency: KotlinDependency, alias: String): SymbolReference {

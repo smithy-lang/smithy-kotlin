@@ -38,7 +38,7 @@ class KotlinDelegator(private val settings: KotlinSettings,
      * Writes all pending writers to disk and then clears them out.
      */
     fun flushWriters() {
-        writers.forEach() { (filename, writer) ->
+        writers.forEach { (filename, writer) ->
             fileManifest.writeFile(filename, writer.toString())
         }
         writers.clear()
@@ -76,7 +76,9 @@ class KotlinDelegator(private val settings: KotlinSettings,
     }
 
     private fun checkoutWriter(filename: String, namespace: String): KotlinWriter {
-        val formattedFilename = Paths.get(filename).normalize().toString()
+        // src/main/kotlin/namespace/filename
+        val root = "./src/main/kotlin/" + namespace.replace(".", "/")
+        val formattedFilename = Paths.get(root, filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)
         val writer = writers.getOrPut(formattedFilename) { KotlinWriter(namespace) }
 
