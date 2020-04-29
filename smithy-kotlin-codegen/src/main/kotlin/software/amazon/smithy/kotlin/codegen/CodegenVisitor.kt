@@ -25,6 +25,9 @@ import software.amazon.smithy.model.shapes.ShapeVisitor
 import software.amazon.smithy.model.shapes.StructureShape
 import java.util.logging.Logger
 
+/**
+ * Orchestrates Kotlin code generation
+ */
 class CodegenVisitor(context: PluginContext): ShapeVisitor.Default<Void>() {
 
     override fun getDefault(shape: Shape?): Void? {
@@ -49,6 +52,8 @@ class CodegenVisitor(context: PluginContext): ShapeVisitor.Default<Void>() {
 
         println("flushing writers")
         writers.flushWriters()
+
+        writeGradleBuild(settings, fileManifest)
     }
 
     override fun structureShape(shape: StructureShape): Void? {
