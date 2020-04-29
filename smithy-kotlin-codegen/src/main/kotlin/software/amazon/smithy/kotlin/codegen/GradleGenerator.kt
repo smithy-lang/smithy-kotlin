@@ -28,15 +28,14 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest) {
         setIndentText("    ")
     }
 
-    writer.openBlock("plugins {")
-    writer.write("kotlin(\"jvm\")")
-    writer.closeBlock("}")
-    writer.write("")
+    writer.withBlock("plugins {", "}\n") {
+        write("kotlin(\"jvm\")")
+    }
 
-    writer.openBlock("dependencies {")
-    writer.write("implementation(kotlin(\"stdlib\"))")
-    // TODO pass in the dependencies and dump them here
-    writer.closeBlock("}")
+    writer.withBlock("dependencies {", "}\n"){
+        // TODO pass in the dependencies and dump them here
+        write("implementation(kotlin(\"stdlib\"))")
+    }
 
     val contents = writer.toString()
     manifest.writeFile("build.gradle.kts", contents)

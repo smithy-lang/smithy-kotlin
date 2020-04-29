@@ -8,6 +8,32 @@ import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
 
+/**
+ * Extension function that is more idiomatic Kotlin that is roughly the same purpose as
+ * the provided function `openBlock(String textBeforeNewline, String textAfterNewline, Runnable r)`
+ *
+ * Example:
+ * ```
+ * writer.withBlock("{", "}") {
+ *     write("foo")
+ * }
+ * ```
+ *
+ * Equivalent to:
+ * ```
+ * writer.openBlock("{")
+ * writer.write("foo")
+ * writer.closeBlock("}")
+ * ```
+ */
+fun CodeWriter.withBlock(textBeforeNewLine: String, textAfterNewLine: String, block: CodeWriter.() -> Unit): CodeWriter {
+    openBlock(textBeforeNewLine)
+    block(this)
+    closeBlock(textAfterNewLine)
+    return this
+}
+
+
 class KotlinWriter(private val fullPackageName: String): CodeWriter() {
     init {
         trimBlankLines()
