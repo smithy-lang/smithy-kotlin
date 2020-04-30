@@ -15,6 +15,7 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import java.util.logging.Logger
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -23,12 +24,11 @@ import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeVisitor
 import software.amazon.smithy.model.shapes.StructureShape
-import java.util.logging.Logger
 
 /**
  * Orchestrates Kotlin code generation
  */
-class CodegenVisitor(context: PluginContext): ShapeVisitor.Default<Void>() {
+class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun getDefault(shape: Shape?): Void? {
         return null
@@ -48,7 +48,7 @@ class CodegenVisitor(context: PluginContext): ShapeVisitor.Default<Void>() {
 
         LOGGER.info("Walking shapes from ${settings.service} to find shapes to generate")
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
-        serviceShapes.forEach{ it.accept(this) }
+        serviceShapes.forEach { it.accept(this) }
 
         println("flushing writers")
         writers.flushWriters()
@@ -57,7 +57,7 @@ class CodegenVisitor(context: PluginContext): ShapeVisitor.Default<Void>() {
     }
 
     override fun structureShape(shape: StructureShape): Void? {
-        writers.useShapeWriter(shape){ StructureGenerator(model, symbolProvider, it, shape).render() }
+        writers.useShapeWriter(shape) { StructureGenerator(model, symbolProvider, it, shape).render() }
         return null
     }
 
@@ -68,4 +68,3 @@ class CodegenVisitor(context: PluginContext): ShapeVisitor.Default<Void>() {
         return null
     }
 }
-

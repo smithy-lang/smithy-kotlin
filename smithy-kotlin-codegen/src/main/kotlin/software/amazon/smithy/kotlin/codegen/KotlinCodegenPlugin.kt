@@ -41,5 +41,4 @@ class KotlinCodegenPlugin : SmithyBuildPlugin {
          */
         fun createSymbolProvider(model: Model, namespace: String): SymbolProvider = SymbolVisitor(model, namespace)
     }
-
 }

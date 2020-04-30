@@ -17,7 +17,7 @@ package com.amazonaws.clientrt
 /**
  * Base exception class for all exceptions thrown by the SDK. Exception may be a client side exception or a service exception
  */
-open class SdkBaseException: RuntimeException {
+open class SdkBaseException : RuntimeException {
 
     constructor() : super()
 
@@ -31,7 +31,7 @@ open class SdkBaseException: RuntimeException {
 /**
  * Base exception class for any errors that occur while attempting to use an SDK client to make (Smithy) service calls.
  */
-open class ClientException: SdkBaseException {
+open class ClientException : SdkBaseException {
     constructor() : super()
 
     constructor(message: String?) : super(message)
@@ -48,7 +48,7 @@ open class ClientException: SdkBaseException {
  * type indicates that the caller's request was successfully transmitted to the service and the service sent back an
  * error response.
  */
-open class ServiceException: ClientException {
+open class ServiceException : ClientException {
 
     /**
      * Indicates who (if known) is at fault for this exception.
@@ -84,6 +84,5 @@ open class ServiceException: ClientException {
 
     // TODO - HTTP response/protocol response
     // What about non-HTTP protocols?
-    //open var httpResponse: HttpResponse? = null
+    // open var httpResponse: HttpResponse? = null
 }
-

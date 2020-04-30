@@ -123,7 +123,6 @@ class SymbolProviderTest {
         assertEquals(true, memberSymbol.isBoxed())
 
         assertEquals("ByteArray", memberSymbol.name)
-
     }
 
     @Test fun `creates lists`() {
@@ -200,7 +199,7 @@ class SymbolProviderTest {
     @DisplayName("creates bigNumbers")
     @ParameterizedTest(name = "{index} ==> ''{0}''")
     @ValueSource(strings = ["BigInteger", "BigDecimal"])
-    fun `creates bigNumbers`(type: String){
+    fun `creates bigNumbers`(type: String) {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#$type").build()
         val struct = StructureShape.builder()
             .id("foo.bar#MyStruct")
@@ -219,6 +218,4 @@ class SymbolProviderTest {
         assertEquals(true, bigSymbol.isBoxed())
         assertEquals("$type", bigSymbol.name)
     }
-
-
 }

@@ -1,7 +1,6 @@
 package com.amazonaws.clientrt
 
 import com.amazonaws.clientrt.smithy.*
-
 import kotlin.test.*
 
 class DocumentBuilderTest {

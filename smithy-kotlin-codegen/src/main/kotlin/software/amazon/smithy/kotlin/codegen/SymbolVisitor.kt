@@ -14,13 +14,12 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.utils.StringUtils
-import java.util.logging.Logger
-
 
 // PropertyBag keys
 
@@ -64,7 +63,6 @@ fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
  * Get the default name for a member shape (for code generation)
  */
 fun MemberShape.defaultName(): String = StringUtils.uncapitalize(this.memberName)
-
 
 /**
  * Convert shapes to Kotlin types
@@ -177,7 +175,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName()
         // TODO - handle error types
-        val namespace = "${rootNamespace}.model"
+        val namespace = "$rootNamespace.model"
         return createSymbolBuilder(shape, name, namespace, boxed = true)
             .definitionFile("${shape.id.name}.kt")
             .build()

@@ -47,7 +47,6 @@ class DocumentArrayBuilder internal constructor() {
      * Use as `+n()` inside of [documentArray] builder init().
      */
     fun n(number: Number): SmithyNumber = SmithyNumber(number)
-
 }
 
 /**
@@ -62,7 +61,6 @@ fun documentArray(init: DocumentArrayBuilder.() -> Unit): Document {
     return SmithyArray(builder.content)
 }
 
-
 /**
  * DSL builder for a [Document] as a [SmithyMap]
  */
@@ -73,7 +71,7 @@ class DocumentBuilder internal constructor() {
      * Adds given [value] as [SmithyBool] to the current [SmithyMap] with [this] as a key
      */
     infix fun String.to(value: Boolean) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
+        require(content[this] == null) { "Key $this is already registered in builder" }
         content[this] = value.toDocument()
     }
 
@@ -81,7 +79,7 @@ class DocumentBuilder internal constructor() {
      * Adds given [value] as [SmithyNumber] to the current [SmithyMap] with [this] as a key
      */
     infix fun String.to(value: Number) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
+        require(content[this] == null) { "Key $this is already registered in builder" }
         content[this] = value.toDocument()
     }
 
@@ -89,7 +87,7 @@ class DocumentBuilder internal constructor() {
      * Adds given [value] as [SmithyString] to the current [SmithyMap] with [this] as a key
      */
     infix fun String.to(value: String) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
+        require(content[this] == null) { "Key $this is already registered in builder" }
         content[this] = value.toDocument()
     }
 
@@ -97,10 +95,9 @@ class DocumentBuilder internal constructor() {
      * Adds given [value] to the current [SmithyMap] with [this] as a key
      */
     infix fun String.to(value: Document) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
+        require(content[this] == null) { "Key $this is already registered in builder" }
         content[this] = value
     }
-
 }
 
 /**

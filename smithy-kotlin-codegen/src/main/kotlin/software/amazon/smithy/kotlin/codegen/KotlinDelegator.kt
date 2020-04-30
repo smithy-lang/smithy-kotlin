@@ -14,25 +14,25 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import java.nio.file.Paths
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
-import java.nio.file.Paths
-
 
 /**
  * Manages writers for Kotlin files.
  */
-class KotlinDelegator(private val settings: KotlinSettings,
-                      private val model: Model,
-                      private val fileManifest: FileManifest,
-                      private val symbolProvider: SymbolProvider){
+class KotlinDelegator(
+    private val settings: KotlinSettings,
+    private val model: Model,
+    private val fileManifest: FileManifest,
+    private val symbolProvider: SymbolProvider
+) {
 
     private val writers: MutableMap<String, KotlinWriter> = mutableMapOf()
-
 
     /**
      * Writes all pending writers to disk and then clears them out.
@@ -87,5 +87,4 @@ class KotlinDelegator(private val settings: KotlinSettings,
         }
         return writer
     }
-
 }

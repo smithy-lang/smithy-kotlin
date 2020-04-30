@@ -17,7 +17,7 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 
-enum class KotlinDependency (val type: String, val namespace: String, val version: String): SymbolDependencyContainer {
+enum class KotlinDependency(val type: String, val namespace: String, val version: String) : SymbolDependencyContainer {
     BIG("stdlib", "java.math", "");
 
     override fun getDependencies(): List<SymbolDependency> {
@@ -28,5 +28,4 @@ enum class KotlinDependency (val type: String, val namespace: String, val versio
             .build()
         return listOf(dependency)
     }
-
 }

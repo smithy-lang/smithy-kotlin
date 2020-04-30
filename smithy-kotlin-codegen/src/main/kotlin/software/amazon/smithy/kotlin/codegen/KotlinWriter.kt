@@ -1,12 +1,11 @@
 package software.amazon.smithy.kotlin.codegen
 
+import java.util.function.BiFunction
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.utils.CodeWriter
-import java.util.function.BiFunction
-
 
 /**
  * Extension function that is more idiomatic Kotlin that is roughly the same purpose as
@@ -33,8 +32,7 @@ fun CodeWriter.withBlock(textBeforeNewLine: String, textAfterNewLine: String, bl
     return this
 }
 
-
-class KotlinWriter(private val fullPackageName: String): CodeWriter() {
+class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     init {
         trimBlankLines()
         trimTrailingSpaces()
@@ -45,7 +43,6 @@ class KotlinWriter(private val fullPackageName: String): CodeWriter() {
     internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
 //    private val imports = ImportDeclarations()
 
-
     fun addImport(symbol: Symbol, alias: String, vararg options: SymbolReference.Option) {
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
@@ -53,16 +50,15 @@ class KotlinWriter(private val fullPackageName: String): CodeWriter() {
 //        if (!symbol.namespace.isEmpty() && !symbol.namespace.equals(fullPackageName)) {
 //            addImport(symbol.namespace, symbol.name, alias)
 //        }
-
     }
 
 //    fun addImport(packageName: String, symbolName: String, alias: String) {
 //        imports.addImport(packageName, symbolName, alias)
 //    }
 
-    fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption){
-        symbol.references.forEach {reference ->
-            for(option in options) {
+    fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
+        symbol.references.forEach { reference ->
+            for (option in options) {
                 if (reference.hasOption(option)) {
                     addImport(reference.symbol, reference.alias, *options)
                     break
@@ -110,9 +106,9 @@ class KotlinWriter(private val fullPackageName: String): CodeWriter() {
     /**
      * Implements Kotlin symbol formatting for the `$T` formatter
      */
-    private class KotlinSymbolFormatter: BiFunction<Any, String, String> {
+    private class KotlinSymbolFormatter : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
-            when(type) {
+            when (type) {
                 is Symbol -> {
                     var formatted = type.name
                     if (type.isBoxed()) {
@@ -132,5 +128,4 @@ class KotlinWriter(private val fullPackageName: String): CodeWriter() {
             }
         }
     }
-
 }

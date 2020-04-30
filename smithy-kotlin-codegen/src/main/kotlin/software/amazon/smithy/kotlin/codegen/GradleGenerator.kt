@@ -17,7 +17,6 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.utils.CodeWriter
 
-
 /**
  * Create the gradle build file for the generated code
  */
@@ -32,7 +31,7 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest) {
         write("kotlin(\"jvm\")")
     }
 
-    writer.withBlock("dependencies {", "}\n"){
+    writer.withBlock("dependencies {", "}\n") {
         // TODO pass in the dependencies and dump them here
         write("implementation(kotlin(\"stdlib\"))")
     }
@@ -40,4 +39,3 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest) {
     val contents = writer.toString()
     manifest.writeFile("build.gradle.kts", contents)
 }
-

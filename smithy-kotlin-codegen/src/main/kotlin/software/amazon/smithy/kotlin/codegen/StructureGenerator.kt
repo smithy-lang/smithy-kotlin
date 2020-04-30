@@ -58,6 +58,4 @@ class StructureGenerator(
     private fun renderError() {
         // TODO
     }
-
-
 }

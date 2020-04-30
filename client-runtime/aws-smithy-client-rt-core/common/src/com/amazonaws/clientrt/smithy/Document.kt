@@ -14,7 +14,6 @@
  */
 package com.amazonaws.clientrt.smithy
 
-
 /**
  * Class representing a Smithy Document type.
  * Can be a [SmithyNumber], [SmithyBool], [SmithyString], [SmithyNull], [SmithyArray], or [SmithyMap]
@@ -37,8 +36,8 @@ object SmithyNull : Document() {
 /**
  * Class representing document `bool` type
  */
-data class SmithyBool(val value: Boolean): Document() {
-    override fun toString(): String = when(value) {
+data class SmithyBool(val value: Boolean) : Document() {
+    override fun toString(): String = when (value) {
         true -> "true"
         false -> "false"
     }
@@ -52,7 +51,6 @@ data class SmithyString(val value: String) : Document() {
         return "\"$value\""
     }
 }
-
 
 /**
  * Class representing document numeric types.
@@ -89,11 +87,10 @@ class SmithyNumber(val content: Number) : Document() {
     override fun toString(): String = content.toString()
 }
 
-
 /**
  * Class representing document `array` type
  */
-data class SmithyArray(val content: List<Document>): Document(), List<Document> by content{
+data class SmithyArray(val content: List<Document>) : Document(), List<Document> by content {
     /**
      * Returns [index] th element of an array as [SmithyNumber] if the element is of that type or null if not.
      *
@@ -129,7 +126,7 @@ data class SmithyArray(val content: List<Document>): Document(), List<Document> 
      */
     fun getMap(index: Int) = content[index] as? SmithyMap
 
-    override fun toString(): String = content.joinToString( separator = ",", prefix = "[", postfix = "]" )
+    override fun toString(): String = content.joinToString(separator = ",", prefix = "[", postfix = "]")
 }
 
 /**
@@ -137,7 +134,7 @@ data class SmithyArray(val content: List<Document>): Document(), List<Document> 
  *
  * Map consists of name-value pairs, where the value is an arbitrary Document. This is much like a JSON object.
  */
-data class SmithyMap(val content: Map<String, Document>): Document(), Map<String, Document> by content {
+data class SmithyMap(val content: Map<String, Document>) : Document(), Map<String, Document> by content {
 
     /**
      * Returns [SmithyNumber] associated with given [key] or `null` if element is not present or has a different type
@@ -164,19 +161,16 @@ data class SmithyMap(val content: Map<String, Document>): Document(), Map<String
      */
     fun getMap(key: String): SmithyMap? = getValue(key) as? SmithyMap
 
-
     override fun toString(): String {
         return content.entries.joinToString(
             separator = ",",
             prefix = "{",
             postfix = "}",
-            transform = {(k, v) -> """"$k":$v"""}
+            transform = { (k, v) -> """"$k":$v""" }
         )
     }
-
 }
 
 fun Boolean.toDocument() = SmithyBool(this)
 fun Number.toDocument() = SmithyNumber(this)
 fun String.toDocument() = SmithyString(this)
-
