@@ -66,6 +66,12 @@ fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
 fun MemberShape.defaultName(): String = StringUtils.uncapitalize(this.memberName)
 
 
+/**
+ * Convert shapes to Kotlin types
+ * @param model The smithy model to generate for
+ * @param rootNamespace All symbols will be created under this namespace (package) or as a direct child of it.
+ * e.g. `com.foo` would create symbols under the `com.foo` package or `com.foo.model` package, etc.
+ */
 class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") : SymbolProvider,
     ShapeVisitor<Symbol> {
     val LOGGER = Logger.getLogger(javaClass.name)
@@ -74,11 +80,11 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     init {
         // FIXME - Loading of reserved-words.txt file from resources fails randomly with exception:
         //  `Projection source failed: java.io.UncheckedIOException: java.util.zip.ZipException: ZipFile invalid LOC header (bad signature)`
-        // For now we are going to hard code the hard reserved words and debug this later
 //        val reservedWords = ReservedWordsBuilder()
 //            .loadWords(KotlinCodegenPlugin::class.java.getResource("reserved-words.txt"))
 //            .build()
 
+        // For now we are going to hard code the hard reserved words and debug this later
         val hardReservedWords = listOf(
             "as",
             "as?",
@@ -118,6 +124,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
         escaper = ReservedWordSymbolProvider.builder()
             .nameReservedWords(reservedWords)
+            .memberReservedWords(reservedWords)
             // only escape words when the symbol has a definition file to prevent escaping intentional references to built-in shapes
             .escapePredicate { _, symbol -> !symbol.definitionFile.isEmpty() }
             .buildEscaper()
@@ -170,17 +177,23 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName()
         // TODO - handle error types
-        return createSymbolBuilder(shape, name, "model", boxed = true).definitionFile("${shape.id.name}.kt").build()
+        val namespace = "${rootNamespace}.model"
+        return createSymbolBuilder(shape, name, namespace, boxed = true)
+            .definitionFile("${shape.id.name}.kt")
+            .build()
     }
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "List<${reference.name}>", boxed = true).addReference(reference).build()
+        return createSymbolBuilder(shape, "List<${reference.name}>", boxed = true)
+            .addReference(reference)
+            .build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        return createSymbolBuilder(shape, "Map<String, ${reference.name}>", boxed = true).addReference(reference)
+        return createSymbolBuilder(shape, "Map<String, ${reference.name}>", boxed = true)
+            .addReference(reference)
             .build()
     }
 
@@ -223,7 +236,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, "Client").definitionFile("./Client.kt").build()
     }
 
-
     /**
      * Creates a symbol builder for the shape with the given type name in the root namespace.
      */
@@ -231,7 +243,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         val builder = Symbol.builder()
             .putProperty("shape", shape)
             .name(typeName)
-            .namespace(rootNamespace, ".")
 
         val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
         if (explicitlyBoxed || boxed) {
@@ -248,18 +259,20 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     private fun createSymbolBuilder(
         shape: Shape?,
         typeName: String,
-        relativeNamespace: String,
+        namespace: String,
         boxed: Boolean = false
     ): Symbol.Builder {
-        return createSymbolBuilder(shape, typeName, boxed).namespace("${rootNamespace}.${relativeNamespace}", ".")
+        return createSymbolBuilder(shape, typeName, boxed)
+            .namespace(namespace, ".")
     }
 
-    fun createNamespaceReference(dependency: KotlinDependency, alias: String): SymbolReference {
+    // Create a reference to the given symbol from the dependency
+    fun createNamespaceReference(dependency: KotlinDependency, symbolName: String): SymbolReference {
         val namespace = dependency.namespace
         val nsSymbol = Symbol.builder()
-            .name(alias)
+            .name(symbolName)
             .namespace(namespace, ".")
             .build()
-        return SymbolReference.builder().symbol(nsSymbol).alias(alias).build()
+        return SymbolReference.builder().symbol(nsSymbol).options(SymbolReference.ContextOption.DECLARE).build()
     }
 }

@@ -43,16 +43,22 @@ class KotlinWriter(private val fullPackageName: String): CodeWriter() {
     }
 
     internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
+//    private val imports = ImportDeclarations()
 
 
-    fun addImport(symbol: Symbol, packageName: String, vararg options: SymbolReference.Option) {
+    fun addImport(symbol: Symbol, alias: String, vararg options: SymbolReference.Option) {
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
 
 //        if (!symbol.namespace.isEmpty() && !symbol.namespace.equals(fullPackageName)) {
-//            addImport(symbol.namespace, packageName)
+//            addImport(symbol.namespace, symbol.name, alias)
 //        }
+
     }
+
+//    fun addImport(packageName: String, symbolName: String, alias: String) {
+//        imports.addImport(packageName, symbolName, alias)
+//    }
 
     fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption){
         symbol.references.forEach {reference ->
@@ -119,6 +125,9 @@ class KotlinWriter(private val fullPackageName: String): CodeWriter() {
                     }
                     return formatted
                 }
+//                is SymbolReference -> {
+//                    return type.alias
+//                }
                 else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
             }
         }

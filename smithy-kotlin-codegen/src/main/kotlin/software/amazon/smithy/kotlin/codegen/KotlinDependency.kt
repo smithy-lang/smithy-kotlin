@@ -17,18 +17,15 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 
-enum class KotlinDependency (val type: String, val namespace: String): SymbolDependencyContainer {
-    BIG("stdlib", "java.math");
-
-    val dependency: SymbolDependency
-
-    init {
-        dependency = SymbolDependency.builder()
-            .dependencyType(type)
-            .build()
-    }
+enum class KotlinDependency (val type: String, val namespace: String, val version: String): SymbolDependencyContainer {
+    BIG("stdlib", "java.math", "");
 
     override fun getDependencies(): List<SymbolDependency> {
+        val dependency = SymbolDependency.builder()
+            .dependencyType(type)
+            .packageName(namespace)
+            .version(version)
+            .build()
         return listOf(dependency)
     }
 
