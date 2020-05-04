@@ -63,7 +63,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun serviceShape(shape: ServiceShape?): Void? {
         writers.useShapeWriter(shape) {
-           // TODO - generate client(s)
+            // TODO - generate client(s)
         }
         return null
     }
