@@ -212,8 +212,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val bigSymbol = provider.toSymbol(member)
-        // FIXME - should it be a reference or generated directly with the namespace?
-//        assertEquals("java.math", bigSymbol.namespace)
+        assertEquals("java.math", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
         assertEquals(true, bigSymbol.isBoxed())
         assertEquals("$type", bigSymbol.name)

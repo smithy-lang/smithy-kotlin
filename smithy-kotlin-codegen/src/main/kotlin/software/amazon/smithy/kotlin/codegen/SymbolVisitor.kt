@@ -161,9 +161,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     override fun bigDecimalShape(shape: BigDecimalShape?): Symbol = createBigSymbol(shape, "BigDecimal")
 
     private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol {
-        return createSymbolBuilder(shape, symbolName, boxed = true)
-            .addReference(createNamespaceReference(KotlinDependency.BIG, symbolName))
-            .build()
+        return createSymbolBuilder(shape, symbolName, namespace = "java.math", boxed = true).build()
     }
 
     // TODO - handle enum types
@@ -176,9 +174,20 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         val name = shape.defaultName()
         // TODO - handle error types
         val namespace = "$rootNamespace.model"
-        return createSymbolBuilder(shape, name, namespace, boxed = true)
+        val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
             .definitionFile("${shape.id.name}.kt")
-            .build()
+
+        // add a reference to each member symbol
+        shape.allMembers.values.forEach {
+            val memberSymbol = toSymbol(it)
+            val ref = SymbolReference.builder()
+                .symbol(memberSymbol)
+                .options(SymbolReference.ContextOption.DECLARE)
+                .build()
+            builder.addReference(ref)
+        }
+
+        return builder.build()
     }
 
     override fun listShape(shape: ListShape): Symbol {

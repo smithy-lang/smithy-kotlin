@@ -31,6 +31,7 @@ dependencies {
     api("software.amazon.smithy:smithy-codegen-core:0.9.9")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:0.9.9")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.1")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.5")
 }
 
 // Reusable license copySpec
