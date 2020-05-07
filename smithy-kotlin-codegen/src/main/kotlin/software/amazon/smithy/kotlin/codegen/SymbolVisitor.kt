@@ -188,7 +188,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         // TODO - handle error types
         val namespace = "$rootNamespace.model"
         val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
-            .definitionFile("${shape.id.name}.kt")
+            .definitionFile("${shape.defaultName()}.kt")
 
         // add a reference to each member symbol
         shape.allMembers.values.forEach {

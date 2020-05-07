@@ -15,28 +15,54 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContain
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StructureGeneratorTest {
-    @Test
-    fun `it renders structures`() {
+    // Structure generation is rather involved, instead of one giant substr search to see that everything is right we
+    // look for parts of the whole as individual tests
+    private val commonTestContents: String
+
+    init {
         val member1 = MemberShape.builder().id("com.test#MyStruct\$foo").target("smithy.api#String").build()
         val member2 = MemberShape.builder().id("com.test#MyStruct\$bar").target("smithy.api#PrimitiveInteger").build()
         val member3 = MemberShape.builder().id("com.test#MyStruct\$baz").target("smithy.api#Integer").build()
+
+        // struct 2 will be of type `Qux` under `MyStruct::quux` member
+        val struct2 = StructureShape.builder()
+            .id("com.test#Qux")
+            .build()
+        // structure member shape
+        val member4 = MemberShape.builder().id("com.test#MyStruct\$quux").target(struct2).build()
 
         val struct = StructureShape.builder()
             .id("com.test#MyStruct")
             .addMember(member1)
             .addMember(member2)
             .addMember(member3)
+            .addMember(member4)
             .build()
+
+        /*
+        namespace com.test
+        structure Qux { }
+
+        structure MyStruct {
+            foo: String,
+            bar: PrimitiveInteger,
+            baz: Integer,
+            quux: Qux
+        }
+        */
         val model = Model.assembler()
-            .addShapes(struct, member1, member2, member3)
+            .addShapes(struct, struct2, member1, member2, member3)
             .assemble()
             .unwrap()
 
@@ -45,17 +71,131 @@ class StructureGeneratorTest {
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
 
-        val contents = writer.toString()
-        assertTrue(contents.contains("package com.test"))
+        commonTestContents = writer.toString()
+    }
+    @Test
+    fun `it renders package decl`() {
+        assertTrue(commonTestContents.contains("package com.test"))
+    }
 
+    @Test
+    fun `it syntactic sanity checks`() {
+        // sanity check since we are testing fragments
+        var openBraces = 0
+        var closedBraces = 0
+        var openParens = 0
+        var closedParens = 0
+        commonTestContents.forEach {
+            when (it) {
+                '{' -> openBraces++
+                '}' -> closedBraces++
+                '(' -> openParens++
+                ')' -> closedParens++
+            }
+        }
+        assertEquals(openBraces, closedBraces)
+        assertEquals(openParens, closedParens)
+    }
+
+    @Test
+    fun `it renders constructors`() {
         val expectedClassDecl = """
-class MyStruct {
-    var bar: Integer = 0
-    var baz: Integer? = null
-    var foo: String? = null
-}
+class MyStruct private constructor(builder: BuilderImpl) {
+    val bar: Integer = builder.bar
+    val baz: Integer? = builder.baz
+    val foo: String? = builder.foo
+    val quux: Qux? = builder.quux
 """
 
-        contents.shouldContain(expectedClassDecl)
+        commonTestContents.shouldContain(expectedClassDecl)
+    }
+
+    @Test
+    fun `it renders a companion object`() {
+        val expected = """
+    companion object {
+        @JvmStatic
+        fun builder(): Builder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> Unit): MyStruct = BuilderImpl().apply(block).build()
+
+    }
+"""
+        commonTestContents.shouldContain(expected)
+    }
+
+    @Test
+    fun `it renders a copy implementation`() {
+        val expected = """
+    fun copy(
+        bar: Integer = this.bar,
+        baz: Integer? = this.baz,
+        foo: String? = this.foo,
+        quux: Qux? = this.quux
+    ): MyStruct = BuilderImpl(this).apply {
+        this.bar = bar
+        this.baz = baz
+        this.foo = foo
+        this.quux = quux
+    }
+"""
+        commonTestContents.shouldContain(expected)
+    }
+
+    @Test
+    fun `it renders a java builder`() {
+        val expected = """
+    interface Builder {
+        fun build(): MyStruct
+        fun bar(bar: Integer): Builder
+        fun baz(baz: Integer): Builder
+        fun foo(foo: String): Builder
+        fun quux(quux: Qux): Builder
+    }
+"""
+        commonTestContents.shouldContain(expected)
+    }
+
+    @Test
+    fun `it renders a dsl builder`() {
+        val expected = """
+    interface DslBuilder {
+        var bar: Integer
+        var baz: Integer?
+        var foo: String?
+        var quux: Qux?
+
+        fun quux(block: Qux.DslBuilder.() -> Unit) {
+            this.quux = Qux.invoke(block)
+        }
+    }
+"""
+        commonTestContents.shouldContain(expected)
+    }
+
+    @Test
+    fun `it renders a builder impl`() {
+        val expected = """
+    private class BuilderImpl() : Builder, DslBuilder {
+        override var bar: Integer = 0
+        override var baz: Integer? = null
+        override var foo: String? = null
+        override var quux: Qux? = null
+
+        constructor(x: MyStruct) : this() {
+            this.bar = x.bar
+            this.baz = x.baz
+            this.foo = x.foo
+            this.quux = x.quux
+        }
+
+        override fun build(): MyStruct = MyStruct(this)
+        override fun bar(bar: Integer): Builder = apply { this.bar = bar }
+        override fun baz(baz: Integer): Builder = apply { this.baz = baz }
+        override fun foo(foo: String): Builder = apply { this.foo = foo }
+        override fun quux(quux: Qux): Builder = apply { this.quux = quux }
+    }
+"""
+        commonTestContents.shouldContain(expected)
     }
 }

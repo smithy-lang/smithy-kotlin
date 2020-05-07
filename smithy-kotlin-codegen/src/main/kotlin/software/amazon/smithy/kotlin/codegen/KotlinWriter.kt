@@ -37,6 +37,9 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
+        // type with default set
+        putFormatter('D', KotlinSymbolFormatter(setDefault = true))
+        // type only
         putFormatter('T', KotlinSymbolFormatter())
     }
 
@@ -104,7 +107,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     /**
      * Implements Kotlin symbol formatting for the `$T` formatter
      */
-    private class KotlinSymbolFormatter : BiFunction<Any, String, String> {
+    private class KotlinSymbolFormatter(val setDefault: Boolean = false) : BiFunction<Any, String, String> {
         override fun apply(type: Any, indent: String): String {
             when (type) {
                 is Symbol -> {
@@ -114,7 +117,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
                     }
 
                     val defaultValue = type.defaultValue()
-                    if (defaultValue != null) {
+                    if (defaultValue != null && setDefault) {
                         formatted += " = $defaultValue"
                     }
                     return formatted
