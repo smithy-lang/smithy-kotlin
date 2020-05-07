@@ -20,10 +20,8 @@ import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.neighbor.Walker
-import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeVisitor
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.EnumTrait
 
 /**
  * Orchestrates Kotlin code generation
@@ -58,6 +56,13 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
 
     override fun structureShape(shape: StructureShape): Void? {
         writers.useShapeWriter(shape) { StructureGenerator(model, symbolProvider, it, shape).render() }
+        return null
+    }
+
+    override fun stringShape(shape: StringShape): Void? {
+        if (shape.hasTrait(EnumTrait::class.java)) {
+            writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
+        }
         return null
     }
 

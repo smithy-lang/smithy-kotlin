@@ -19,6 +19,7 @@ import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
@@ -164,8 +165,20 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, symbolName, namespace = "java.math", boxed = true).build()
     }
 
-    // TODO - handle enum types
-    override fun stringShape(shape: StringShape?): Symbol = createSymbolBuilder(shape, "String", boxed = true).build()
+    override fun stringShape(shape: StringShape): Symbol {
+        val enumTrait = shape.getTrait(EnumTrait::class.java)
+        if (enumTrait.isPresent) {
+            return createEnumSymbol(shape, enumTrait.get())
+        }
+        return createSymbolBuilder(shape, "String", boxed = true).build()
+    }
+
+    fun createEnumSymbol(shape: StringShape, trait: EnumTrait): Symbol {
+        val namespace = "$rootNamespace.model"
+        return createSymbolBuilder(shape, shape.defaultName(), namespace, boxed = true)
+            .definitionFile("${shape.defaultName()}.kt")
+            .build()
+    }
 
     override fun booleanShape(shape: BooleanShape?): Symbol =
         createSymbolBuilder(shape, "Boolean").putProperty(DEFAULT_VALUE_KEY, "false").build()

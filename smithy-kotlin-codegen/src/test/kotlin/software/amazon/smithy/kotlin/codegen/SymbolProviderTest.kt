@@ -23,6 +23,8 @@ import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.EnumConstantBody
+import software.amazon.smithy.model.traits.EnumTrait
 
 class SymbolProviderTest {
     @Test fun `escapes reserved member names`() {
@@ -216,5 +218,32 @@ class SymbolProviderTest {
         assertEquals("null", bigSymbol.defaultValue())
         assertEquals(true, bigSymbol.isBoxed())
         assertEquals("$type", bigSymbol.name)
+    }
+
+    @Test
+    fun `creates enums`() {
+        val trait = EnumTrait.builder()
+            .addEnum("FOO", EnumConstantBody.builder().build())
+            .addEnum("BAR", EnumConstantBody.builder().build())
+            .build()
+
+        val shape = StringShape.builder()
+            .id("com.test#Baz")
+            .addTrait(trait)
+            .build()
+
+        val model = Model.assembler()
+            .addShapes(shape)
+            .assemble()
+            .unwrap()
+
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val symbol = provider.toSymbol(shape)
+
+        assertEquals("test.model", symbol.namespace)
+        assertEquals("null", symbol.defaultValue())
+        assertEquals(true, symbol.isBoxed())
+        assertEquals("Baz", symbol.name)
+        assertEquals("Baz.kt", symbol.definitionFile)
     }
 }
