@@ -19,6 +19,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.ErrorTrait
 
 /**
@@ -58,7 +59,6 @@ class StructureGenerator(
         // push context to be used throughout generation of the class
         writer.putContext("class.name", symbol.name)
 
-        // FIXME - enum members take special considerations
         // TODO write shape docs
         // constructor
         writer.openBlock("class \$class.name:L private constructor(builder: BuilderImpl) {")
@@ -83,7 +83,18 @@ class StructureGenerator(
         sortedMembers.forEach {
             val (memberName, memberSymbol) = byMemberShape[it]!!
             // TODO write member docs
-            writer.write("val \$1L: \$2T = builder.\$1L", memberName, memberSymbol)
+
+            // handle enums
+            val targetShape = model.getShape(it.target).get()
+            if (targetShape.hasTrait(EnumTrait::class.java)) {
+                writer.write("val \$1LAsString: \$2L = builder.\$1LAsString", memberName, "String?")
+                    .write("val \$1L: \$2T", memberName, memberSymbol)
+                    .indent()
+                    .write("get() = \$1LAsString?.let { \$2L.fromValue(it) }", memberName, memberSymbol.name)
+                    .dedent()
+            } else {
+                writer.write("val \$1L: \$2T = builder.\$1L", memberName, memberSymbol)
+            }
         }
     }
 
@@ -121,7 +132,7 @@ class StructureGenerator(
                     }
                 }
             .dedent()
-            .withBlock("): \$class.name:L = BuilderImpl(this).apply {", "}") {
+            .withBlock("): \$class.name:L = BuilderImpl(this).apply {", "}.build()") {
                 for (member in sortedMembers) {
                     val (memberName, _) = byMemberShape[member]!!
                     writer.write("this.\$1L = \$1L", memberName)
@@ -137,6 +148,16 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     // we want the type names sans nullability (?) for arguments
                     write("fun \$1L(\$1L: \$2L): Builder", memberName, memberSymbol.name)
+
+                    // handle enums which get an additional override
+                    val targetShape = model.getShape(member.target).get()
+                    if (targetShape.hasTrait(EnumTrait::class.java)) {
+                        // NOTE: we break the fluent builder here on purpose. The BuilderImpl implements both the
+                        // Java and Dsl builder interfaces. The overrides that allow a raw string conflict. Rather
+                        // than different method names for the override or different builders we chose to break
+                        // the fluency for the Java builder since this is an escape hatch not meant to be often used.
+                        write("fun \$1L(\$1L: \$2L)", memberName, "String")
+                    }
                 }
             }
     }
@@ -145,15 +166,24 @@ class StructureGenerator(
         writer.write("")
             .withBlock("interface DslBuilder {", "}") {
                 val structMembers: MutableList<MemberShape> = mutableListOf()
+                val enumMembers: MutableList<MemberShape> = mutableListOf()
 
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     val targetShape = model.getShape(member.target).get()
-                    if (targetShape.isStructureShape) {
-                        structMembers.add(member)
+                    when {
+                        targetShape.isStructureShape -> structMembers.add(member)
+                        targetShape.hasTrait(EnumTrait::class.java) -> enumMembers.add(member)
                     }
 
                     write("var \$L: \$T", memberName, memberSymbol)
+                }
+
+                // generate overloads for enums
+                for (member in enumMembers) {
+                    val (memberName, _) = byMemberShape[member]!!
+                    write("")
+                    write("fun \$1L(\$1L: \$2L)", memberName, "String")
                 }
 
                 for (member in structMembers) {
@@ -169,11 +199,31 @@ class StructureGenerator(
     private fun renderBuilderImpl() {
         writer.write("")
             .withBlock("private class BuilderImpl() : Builder, DslBuilder {", "}") {
-                // write only the non-struct shapes, struct shapes invoke the DSL builders of the underlying shape and is handled
-                // in the DslBuilder interface itself
+                // override DSL properties
+                val enumMembers: MutableList<MemberShape> = mutableListOf()
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
-                    write("override var \$L: \$D", memberName, memberSymbol)
+
+                    val targetShape = model.getShape(member.target).get()
+                    if (targetShape.hasTrait(EnumTrait::class.java)) {
+                        enumMembers.add(member)
+                    } else {
+                        write("override var \$L: \$D", memberName, memberSymbol)
+                    }
+                }
+
+                // generate enum gymnastics
+                for (member in enumMembers) {
+                    val (memberName, memberSymbol) = byMemberShape[member]!!
+                    write("var \$1LAsString: String? = null", memberName)
+                    write("override var \$1L: \$2D", memberName, memberSymbol)
+                        .indent()
+                            .openBlock("set(value) {")
+                                .write("\$1LAsString = value.toString()", memberName)
+                                .write("field = value")
+                            .closeBlock("}")
+                        .dedent()
+                    write("")
                 }
 
                 write("")
@@ -182,17 +232,29 @@ class StructureGenerator(
                 withBlock("constructor(x: \$class.name:L) : this() {", "}") {
                     for (member in sortedMembers) {
                         val (memberName, _) = byMemberShape[member]!!
-                        write("this.\$1L = x.\$1L", memberName)
+                        val targetShape = model.getShape(member.target).get()
+                        // enums are always set using the backing string field not the typed enum
+                        val suffix = if (targetShape.hasTrait(EnumTrait::class.java)) "AsString" else ""
+                        write("this.\$1L$suffix = x.\$1L$suffix", memberName)
                     }
                 }
 
                 // generate the Java builder overrides
+                // NOTE: The enum overloads are the same in both the Java and DslBuilder interfaces, generating
+                // the Java builder implementation will satisfy the DslInterface w.r.t enum overloads
                 write("")
                 write("override fun build(): \$class.name:L = \$class.name:L(this)")
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
-                    // we want the type names sans nullability (?) for arguments
-                    write("override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1L = \$1L }", memberName, memberSymbol.name)
+                    val targetShape = model.getShape(member.target).get()
+                    // enums are always set using the backing string field not the typed enum
+                    if (targetShape.hasTrait(EnumTrait::class.java)) {
+                        write("override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1LAsString = \$1L.toString() }", memberName, memberSymbol.name)
+                        write("override fun \$1L(\$1L: \$2L) { this.\$1LAsString = \$1L }", memberName, "String")
+                    } else {
+                        // we want the type names sans nullability (?) for arguments
+                        write("override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1L = \$1L }", memberName, memberSymbol.name)
+                    }
                 }
             }
     }

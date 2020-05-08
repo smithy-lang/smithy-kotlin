@@ -22,7 +22,10 @@ import org.junit.jupiter.api.TestInstance
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.EnumDefinition
+import software.amazon.smithy.model.traits.EnumTrait
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StructureGeneratorTest {
@@ -137,7 +140,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         this.baz = baz
         this.foo = foo
         this.quux = quux
-    }
+    }.build()
 """
         commonTestContents.shouldContain(expected)
     }
@@ -197,5 +200,93 @@ class MyStruct private constructor(builder: BuilderImpl) {
     }
 """
         commonTestContents.shouldContain(expected)
+    }
+
+    @Test
+    fun `it handles enum overloads`() {
+        // enums are backed by strings internally to provide forwards compatibility
+        val trait = EnumTrait.builder()
+            .addEnum(EnumDefinition.builder().value("t2.nano").name("T2_NANO").build())
+            .addEnum(EnumDefinition.builder().value("t2.micro").name("T2_MICRO").build())
+            .build()
+
+        val enumShape = StringShape.builder()
+            .id("com.test#InstanceSize")
+            .addTrait(trait)
+            .build()
+
+        val member1 = MemberShape.builder().id("com.test#MyStruct\$foo").target(enumShape).build()
+
+        val struct = StructureShape.builder()
+            .id("com.test#MyStruct")
+            .addMember(member1)
+            .build()
+
+        /*
+        namespace com.test
+
+        @enum("t2.nano": {name: "T2_NANO"}, "t2.micro": {name: "T2_MICRO"})
+        String InstanceSize
+
+        structure MyStruct {
+            foo: InstanceSize,
+        }
+        */
+        val model = Model.assembler()
+            .addShapes(struct, member1, enumShape)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        StructureGenerator(model, provider, writer, struct).render()
+
+        val contents = writer.toString()
+
+        val expectedDecl = """
+class MyStruct private constructor(builder: BuilderImpl) {
+    val fooAsString: String? = builder.fooAsString
+    val foo: InstanceSize?
+        get() = fooAsString?.let { InstanceSize.fromValue(it) }
+"""
+        contents.shouldContain(expectedDecl)
+
+        val expectedBuilderInterface = """
+    interface Builder {
+        fun build(): MyStruct
+        fun foo(foo: InstanceSize): Builder
+        fun foo(foo: String)
+    }
+"""
+        contents.shouldContain(expectedBuilderInterface)
+
+        val expectedDslBuilderInterface = """
+    interface DslBuilder {
+        var foo: InstanceSize?
+
+        fun foo(foo: String)
+    }
+"""
+        contents.shouldContain(expectedDslBuilderInterface)
+
+        val expectedBuilderImpl = """
+    private class BuilderImpl() : Builder, DslBuilder {
+        var fooAsString: String? = null
+        override var foo: InstanceSize? = null
+            set(value) {
+                fooAsString = value.toString()
+                field = value
+            }
+
+        constructor(x: MyStruct) : this() {
+            this.fooAsString = x.fooAsString
+        }
+
+        override fun build(): MyStruct = MyStruct(this)
+        override fun foo(foo: InstanceSize): Builder = apply { this.fooAsString = foo.toString() }
+        override fun foo(foo: String) { this.fooAsString = foo }
+    }
+"""
+        contents.shouldContain(expectedBuilderImpl)
     }
 }
