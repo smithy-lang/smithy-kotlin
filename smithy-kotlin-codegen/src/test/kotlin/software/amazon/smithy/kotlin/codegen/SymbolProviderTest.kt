@@ -23,7 +23,7 @@ import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumConstantBody
+import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 
 class SymbolProviderTest {
@@ -223,8 +223,8 @@ class SymbolProviderTest {
     @Test
     fun `creates enums`() {
         val trait = EnumTrait.builder()
-            .addEnum("FOO", EnumConstantBody.builder().build())
-            .addEnum("BAR", EnumConstantBody.builder().build())
+            .addEnum(EnumDefinition.builder().value("FOO").build())
+            .addEnum(EnumDefinition.builder().value("BAR").build())
             .build()
 
         val shape = StringShape.builder()

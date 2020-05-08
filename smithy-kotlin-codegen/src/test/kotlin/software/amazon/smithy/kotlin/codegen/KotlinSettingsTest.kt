@@ -25,6 +25,7 @@ class KotlinSettingsTest {
     @Test fun `infers default service`() {
         val model = Model.assembler()
             .addImport(KotlinSettingsTest::class.java.getResource("simple-service.smithy"))
+            .discoverModels()
             .assemble()
             .unwrap()
 

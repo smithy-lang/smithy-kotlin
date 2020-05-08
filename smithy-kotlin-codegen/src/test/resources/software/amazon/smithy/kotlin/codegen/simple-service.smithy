@@ -1,6 +1,10 @@
+$version: "1.0"
+
 namespace smithy.example
 
-@protocols([{name: "aws.rest-json-1.1"}])
+use aws.protocols#awsJson1_1
+
+@awsJson1_1
 service Example {
     version: "1.0.0"
 }

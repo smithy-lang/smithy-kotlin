@@ -16,8 +16,9 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.model.traits.EnumConstantBody
+import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.utils.CaseUtils
 
 /**
  * Generates a Kotlin enum from a Smithy enum string
@@ -64,10 +65,9 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
         writer.withBlock("enum class ${symbol.name}(val value: String) {", "}") {
             enumTrait
                 .values
-                .entries
-                .sortedBy { it.value.name.orElse(it.key) }
+                .sortedBy { it.name.orElse(it.value) }
                 .forEach {
-                    generateEnumConstant(it.key, it.value)
+                    generateEnumConstant(it)
                 }
 
             // generate the unknown which will always be last
@@ -86,9 +86,11 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
         }
     }
 
-    fun generateEnumConstant(value: String, body: EnumConstantBody) {
+    fun generateEnumConstant(definition: EnumDefinition) {
         // TODO - write constant documentation (body.documentation)
-        val constName = body.name.orElse(value.toUpperCase())
-        writer.write("$constName(\"$value\"),")
+        val constName = definition.name.orElseGet {
+                CaseUtils.toSnakeCase(definition.value).replace(".", "_")
+            }.toUpperCase()
+        writer.write("$constName(\"${definition.value}\"),")
     }
 }

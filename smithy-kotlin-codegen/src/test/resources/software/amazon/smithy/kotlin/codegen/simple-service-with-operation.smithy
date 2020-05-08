@@ -1,13 +1,20 @@
+$version: "1.0"
 namespace smithy.example
 
+use aws.protocols#awsJson1_1
 
-@protocols([{name: "aws.rest-json-1.1"}])
+@awsJson1_1
 service Example {
     version: "1.0.0",
     operations: [GetFoo]
 }
 
-operation GetFoo(GetFooInput) -> GetFooOutput errors [GetFooError]
+operation GetFoo {
+    input: GetFooInput,
+    output: GetFooOutput,
+    errors: [GetFooError]
+}
+
 structure GetFooInput {
     bigInt: BigInteger
 }

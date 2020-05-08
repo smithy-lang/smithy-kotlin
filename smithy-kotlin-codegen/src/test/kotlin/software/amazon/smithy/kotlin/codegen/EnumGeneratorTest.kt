@@ -18,7 +18,7 @@ import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.model.traits.EnumConstantBody
+import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 
 class EnumGeneratorTest {
@@ -26,8 +26,8 @@ class EnumGeneratorTest {
     @Test
     fun `generates unnamed enums`() {
         val trait = EnumTrait.builder()
-            .addEnum("FOO", EnumConstantBody.builder().build())
-            .addEnum("BAR", EnumConstantBody.builder().build())
+            .addEnum(EnumDefinition.builder().value("FOO").build())
+            .addEnum(EnumDefinition.builder().value("BAR").build())
             .build()
 
         val shape = StringShape.builder()
@@ -69,8 +69,8 @@ enum class Baz(val value: String) {
     @Test
     fun `generates named enums`() {
         val trait = EnumTrait.builder()
-            .addEnum("t2.nano", EnumConstantBody.builder().name("T2_NANO").build())
-            .addEnum("t2.micro", EnumConstantBody.builder().name("T2_MICRO").build())
+            .addEnum(EnumDefinition.builder().value("t2.nano").name("T2_NANO").build())
+            .addEnum(EnumDefinition.builder().value("t2.micro").name("T2_MICRO").build())
             .build()
 
         val shape = StringShape.builder()

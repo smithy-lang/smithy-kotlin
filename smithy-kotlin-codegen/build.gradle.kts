@@ -28,8 +28,9 @@ version = "0.1.0"
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    api("software.amazon.smithy:smithy-codegen-core:0.9.9")
-    implementation("software.amazon.smithy:smithy-protocol-test-traits:0.9.9")
+    api("software.amazon.smithy:smithy-codegen-core:1.0.0")
+    implementation("software.amazon.smithy:smithy-aws-traits:1.0.0")
+    implementation("software.amazon.smithy:smithy-protocol-test-traits:1.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.1")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.5")
 }

@@ -1,12 +1,14 @@
-$version: "0.4.0"
+$version: "1.0"
 namespace example.weather
 
 use smithy.test#httpRequestTests
 use smithy.test#httpResponseTests
+use aws.protocols#awsJson1_1
+
 
 /// Provides weather forecasts.
-@protocols([{name: "aws.rest-json-1.1"}])
 @paginated(inputToken: "nextToken", outputToken: "nextToken", pageSize: "pageSize")
+@awsJson1_1
 service Weather {
     version: "2006-03-01",
     resources: [City],
@@ -47,7 +49,7 @@ apply GetCity @httpRequestTests([
     {
         id: "WriteGetCityAssertions",
         documentation: "Does something",
-        protocol: "aws.rest-json-1.1",
+        protocol: "aws.protocols#awsJson1_1",
         method: "GET",
         uri: "/cities/123",
         body: "",
@@ -61,7 +63,7 @@ apply GetCity @httpResponseTests([
     {
         id: "WriteGetCityResponseAssertions",
         documentation: "Does something",
-        protocol: "aws.rest-json-1.1",
+        protocol: "aws.protocols#awsJson1_1",
         code: 200,
         body: """
             {
@@ -139,7 +141,7 @@ apply NoSuchResource @httpResponseTests([
     {
         id: "WriteNoSuchResourceAssertions",
         documentation: "Does something",
-        protocol: "aws.rest-json-1.1",
+        protocol: "aws.protocols#awsJson1_1",
         code: 404,
         body: """
             {
@@ -168,7 +170,7 @@ apply ListCities @httpRequestTests([
     {
         id: "WriteListCitiesAssertions",
         documentation: "Does something",
-        protocol: "aws.rest-json-1.1",
+        protocol: "aws.protocols#awsJson1_1",
         method: "GET",
         uri: "/cities",
         body: "",
@@ -256,10 +258,10 @@ union Precipitation {
 
 structure OtherStructure {}
 
-@enum("YES": {}, "NO": {})
+@enum([{value: "YES"}, {value: "NO"}])
 string SimpleYesNo
 
-@enum("YES": {name: "YES"}, "NO": {name: "NO"})
+@enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
 string TypedYesNo
 
 map StringMap {
@@ -281,9 +283,9 @@ structure GetCityImageInput {
 }
 
 structure GetCityImageOutput {
-    @streaming
     @httpPayload
     image: CityImageData,
 }
 
+@streaming
 blob CityImageData
