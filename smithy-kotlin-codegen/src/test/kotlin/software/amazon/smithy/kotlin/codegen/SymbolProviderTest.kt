@@ -246,4 +246,31 @@ class SymbolProviderTest {
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
+
+    @Test
+    fun `creates unions`() {
+        val member1 = MemberShape.builder().id("com.test#MyUnion\$foo").target("smithy.api#String").build()
+        val member2 = MemberShape.builder().id("com.test#MyUnion\$bar").target("smithy.api#PrimitiveInteger").build()
+        val member3 = MemberShape.builder().id("com.test#MyUnion\$baz").target("smithy.api#Integer").build()
+
+        val union = UnionShape.builder()
+                .id("com.test#MyUnion")
+                .addMember(member1)
+                .addMember(member2)
+                .addMember(member3)
+                .build()
+        val model = Model.assembler()
+                .addShapes(union, member1, member2, member3)
+                .assemble()
+                .unwrap()
+
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val symbol = provider.toSymbol(union)
+
+        assertEquals("test.model", symbol.namespace)
+        assertEquals("null", symbol.defaultValue())
+        assertEquals(true, symbol.isBoxed())
+        assertEquals("MyUnion", symbol.name)
+        assertEquals("MyUnion.kt", symbol.definitionFile)
+    }
 }

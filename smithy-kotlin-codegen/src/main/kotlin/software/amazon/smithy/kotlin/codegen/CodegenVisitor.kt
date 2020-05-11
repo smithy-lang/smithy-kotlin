@@ -66,6 +66,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         return null
     }
 
+    override fun unionShape(shape: UnionShape): Void? {
+        writers.useShapeWriter(shape) { UnionGenerator(model, symbolProvider, it, shape).render() }
+        return null
+    }
+
     override fun serviceShape(shape: ServiceShape?): Void? {
         writers.useShapeWriter(shape) {
             // TODO - generate client(s)

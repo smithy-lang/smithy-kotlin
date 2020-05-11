@@ -240,8 +240,23 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, "DocumentTODO", boxed = true).build()
     }
 
-    override fun unionShape(shape: UnionShape?): Symbol {
-        return createSymbolBuilder(shape, "UnionTODO").build()
+    override fun unionShape(shape: UnionShape): Symbol {
+        val name = shape.defaultName()
+        val namespace = "$rootNamespace.model"
+        val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
+                .definitionFile("${shape.id.name}.kt")
+
+        // add a reference to each member symbol
+        shape.allMembers.values.forEach {
+            val memberSymbol = toSymbol(it)
+            val ref = SymbolReference.builder()
+                    .symbol(memberSymbol)
+                    .options(SymbolReference.ContextOption.DECLARE)
+                    .build()
+            builder.addReference(ref)
+        }
+
+        return builder.build()
     }
 
     override fun resourceShape(shape: ResourceShape?): Symbol {
