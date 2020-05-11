@@ -273,4 +273,25 @@ class SymbolProviderTest {
         assertEquals("MyUnion", symbol.name)
         assertEquals("MyUnion.kt", symbol.definitionFile)
     }
+
+    @Test fun `creates structures`() {
+        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#String").build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(member)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct, member)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val structSymbol = provider.toSymbol(struct)
+        assertEquals("test.model", structSymbol.namespace)
+        assertEquals("MyStruct", structSymbol.name)
+        assertEquals("null", structSymbol.defaultValue())
+        assertEquals(true, structSymbol.isBoxed())
+        assertEquals("MyStruct.kt", structSymbol.definitionFile)
+        assertEquals(1, structSymbol.references.size)
+    }
 }
