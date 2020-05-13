@@ -5,6 +5,11 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.traits.DocumentationTrait
+import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.utils.CodeWriter
 
 /**
@@ -102,6 +107,40 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         block(this)
         popState()
         write(" */")
+    }
+
+    fun dokka(docs: String) {
+        dokka {
+            write(sanitizeDocumentation(docs))
+        }
+    }
+
+    // handles the documentation for shapes
+    fun renderDocumentation(shape: Shape) {
+        shape.getTrait(DocumentationTrait::class.java).ifPresent {
+            dokka(it.value)
+        }
+    }
+
+    // handles the documentation for member shapes
+    fun renderMemberDocumentation(model: Model, shape: MemberShape) {
+        if (shape.getTrait(DocumentationTrait::class.java).isPresent) {
+            dokka(shape.getTrait(DocumentationTrait::class.java).get().value)
+        } else if (shape.getMemberTrait(model, DocumentationTrait::class.java).isPresent) {
+            dokka(shape.getMemberTrait(model, DocumentationTrait::class.java).get().value)
+        }
+    }
+
+    // handles the documentation for enum definitions
+    fun renderEnumDefinitionDocumentation(enumDefinition: EnumDefinition) {
+        enumDefinition.documentation.ifPresent {
+            dokka(it)
+        }
+    }
+
+    private fun sanitizeDocumentation(doc: String): String {
+        // Docs can have valid $ characters that shouldn't run through formatters.
+        return doc.replace("\$", "\$\$")
     }
 
     /**

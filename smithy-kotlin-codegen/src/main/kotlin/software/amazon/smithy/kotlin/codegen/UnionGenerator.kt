@@ -37,8 +37,10 @@ class UnionGenerator(
      */
     private fun renderUnion() {
         val symbol = symbolProvider.toSymbol(shape)
+        writer.renderDocumentation(shape)
         writer.openBlock("sealed class \$L {", symbol.name)
         shape.allMembers.values.forEach {
+            writer.renderMemberDocumentation(model, it)
             val memberName = symbolProvider.toMemberName(it)
             writer.write("data class \$L(val \$L: \$L) : \$L()", memberName.capitalize(), memberName, symbolProvider.toSymbol(it).name, symbol.name)
         }

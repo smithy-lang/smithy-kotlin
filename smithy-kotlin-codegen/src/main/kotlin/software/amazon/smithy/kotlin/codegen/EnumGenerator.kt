@@ -60,7 +60,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     }
 
     fun render() {
-        // TODO - write docs for shape
+        writer.renderDocumentation(shape)
         // NOTE: The smithy spec only allows string shapes to apply to a string shape at the moment
         writer.withBlock("enum class ${symbol.name}(val value: String) {", "}") {
             enumTrait
@@ -87,7 +87,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     }
 
     fun generateEnumConstant(definition: EnumDefinition) {
-        // TODO - write constant documentation (body.documentation)
+        writer.renderEnumDefinitionDocumentation(definition)
         val constName = definition.name.orElseGet {
                 CaseUtils.toSnakeCase(definition.value).replace(".", "_")
             }.toUpperCase()

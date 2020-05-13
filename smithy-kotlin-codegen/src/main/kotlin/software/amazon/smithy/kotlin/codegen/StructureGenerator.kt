@@ -59,7 +59,7 @@ class StructureGenerator(
         // push context to be used throughout generation of the class
         writer.putContext("class.name", symbol.name)
 
-        // TODO write shape docs
+        writer.renderDocumentation(shape)
         // constructor
         writer.openBlock("class \$class.name:L private constructor(builder: BuilderImpl) {")
             .call { renderImmutableProperties() }
@@ -82,7 +82,7 @@ class StructureGenerator(
         // generate the immutable properties that are set from a builder
         sortedMembers.forEach {
             val (memberName, memberSymbol) = byMemberShape[it]!!
-            // TODO write member docs
+            writer.renderMemberDocumentation(model, it)
 
             // handle enums
             val targetShape = model.getShape(it.target).get()

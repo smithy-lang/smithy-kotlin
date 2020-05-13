@@ -24,6 +24,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 
@@ -35,7 +36,7 @@ class StructureGeneratorTest {
 
     init {
         val member1 = MemberShape.builder().id("com.test#MyStruct\$foo").target("smithy.api#String").build()
-        val member2 = MemberShape.builder().id("com.test#MyStruct\$bar").target("smithy.api#PrimitiveInteger").build()
+        val member2 = MemberShape.builder().id("com.test#MyStruct\$bar").target("smithy.api#PrimitiveInteger").addTrait(DocumentationTrait("This *is* documentation about the member.")).build()
         val member3 = MemberShape.builder().id("com.test#MyStruct\$baz").target("smithy.api#Integer").build()
 
         // struct 2 will be of type `Qux` under `MyStruct::quux` member
@@ -51,6 +52,7 @@ class StructureGeneratorTest {
             .addMember(member2)
             .addMember(member3)
             .addMember(member4)
+            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
             .build()
 
         /*
@@ -76,6 +78,7 @@ class StructureGeneratorTest {
 
         commonTestContents = writer.toString()
     }
+
     @Test
     fun `it renders package decl`() {
         assertTrue(commonTestContents.contains("package com.test"))
@@ -104,6 +107,9 @@ class StructureGeneratorTest {
     fun `it renders constructors`() {
         val expectedClassDecl = """
 class MyStruct private constructor(builder: BuilderImpl) {
+    /**
+     * This *is* documentation about the member.
+     */
     val bar: Integer = builder.bar
     val baz: Integer? = builder.baz
     val foo: String? = builder.foo
@@ -288,5 +294,67 @@ class MyStruct private constructor(builder: BuilderImpl) {
     }
 """
         contents.shouldContain(expectedBuilderImpl)
+    }
+
+    @Test
+    fun `it renders class docs`() {
+        commonTestContents.shouldContain("This *is* documentation about the shape.")
+    }
+
+    @Test
+    fun `it renders member docs`() {
+        commonTestContents.shouldContain("This *is* documentation about the member.")
+    }
+
+    @Test
+    fun `it handles shape and member docs`() {
+        /*
+        The effective documentation trait of a shape is resolved using the following process:
+        1. Use the documentation trait of the shape, if present.
+        2. If the shape is a member, then use the documentation trait of the shape targeted by the member, if present.
+
+        For example, given the following model,
+        structure Foo {
+            @documentation("Member documentation")
+            baz: Baz,
+
+            bar: Baz,
+
+            qux: String,
+        }
+
+        @documentation("Shape documentation")
+        string Baz
+        ```
+
+        the effective documentation of Foo$baz resolves to "Member documentation", Foo$bar resolves to "Shape documentation",
+        Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
+
+         */
+        val stringShape = StringShape.builder().id("com.test#Baz").addTrait(DocumentationTrait("Shape documentation")).build()
+        val member1 = MemberShape.builder().id("com.test#Foo\$bar").target("com.test#Baz").build()
+        val member2 = MemberShape.builder().id("com.test#Foo\$baz").target("com.test#Baz").addTrait(DocumentationTrait("Member documentation")).build()
+        val member3 = MemberShape.builder().id("com.test#Foo\$qux").target("smithy.api#String").build()
+
+        val struct = StructureShape.builder()
+                .id("com.test#Foo")
+                .addMember(member1)
+                .addMember(member2)
+                .addMember(member3)
+                .build()
+
+        val model = Model.assembler()
+                .addShapes(struct, member1, member2, member3, stringShape)
+                .assemble()
+                .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val generator = StructureGenerator(model, provider, writer, struct)
+        generator.render()
+
+        val generated = writer.toString()
+        generated.shouldContain("Shape documentation")
+        generated.shouldContain("Member documentation")
     }
 }

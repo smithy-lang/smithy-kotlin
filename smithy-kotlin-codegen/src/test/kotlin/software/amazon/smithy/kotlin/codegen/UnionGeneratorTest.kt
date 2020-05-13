@@ -22,11 +22,12 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
+import software.amazon.smithy.model.traits.DocumentationTrait
 
 class UnionGeneratorTest {
     @Test
     fun `it renders unions`() {
-        val member1 = MemberShape.builder().id("com.test#MyUnion\$foo").target("smithy.api#String").build()
+        val member1 = MemberShape.builder().id("com.test#MyUnion\$foo").target("smithy.api#String").addTrait(DocumentationTrait("Documentation for foo")).build()
         val member2 = MemberShape.builder().id("com.test#MyUnion\$bar").target("smithy.api#PrimitiveInteger").build()
         val member3 = MemberShape.builder().id("com.test#MyUnion\$baz").target("smithy.api#Integer").build()
         val member4 = MemberShape.builder().id("com.test#MyStruct\$qux").target("smithy.api#String").build()
@@ -41,6 +42,7 @@ class UnionGeneratorTest {
                 .addMember(member2)
                 .addMember(member3)
                 .addMember(struct.defaultName(), struct.id)
+                .addTrait(DocumentationTrait("Documentation for MyUnion"))
                 .build()
         val model = Model.assembler()
                 .addShapes(union, struct, member1, member2, member3, member4)
@@ -56,10 +58,16 @@ class UnionGeneratorTest {
         assertTrue(contents.contains("package com.test"))
 
         val expectedClassDecl = """
+/**
+ * Documentation for MyUnion
+ */
 sealed class MyUnion {
     data class MyStruct(val myStruct: MyStruct) : MyUnion()
     data class Bar(val bar: Integer) : MyUnion()
     data class Baz(val baz: Integer) : MyUnion()
+    /**
+     * Documentation for foo
+     */
     data class Foo(val foo: String) : MyUnion()
 }
 """
