@@ -12,7 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package com.amazonaws.clientrt
+package software.aws.clientrt
 
 /**
  * Base exception class for all exceptions thrown by the SDK. Exception may be a client side exception or a service exception
@@ -75,7 +75,8 @@ open class ServiceException : ClientException {
     /**
      * Indicates who is responsible for this exception (caller, service, or unknown)
      */
-    open val errorType: ErrorType = ErrorType.Unknown
+    open val errorType: ErrorType =
+        ErrorType.Unknown
 
     /**
      * The human-readable error message provided by the service

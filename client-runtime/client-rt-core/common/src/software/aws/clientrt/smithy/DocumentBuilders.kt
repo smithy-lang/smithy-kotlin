@@ -12,7 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package com.amazonaws.clientrt.smithy
+package software.aws.clientrt.smithy
 
 /**
  * DSL builder for a [SmithyArray]
@@ -46,7 +46,8 @@ class DocumentArrayBuilder internal constructor() {
      *
      * Use as `+n()` inside of [documentArray] builder init().
      */
-    fun n(number: Number): SmithyNumber = SmithyNumber(number)
+    fun n(number: Number): SmithyNumber =
+        SmithyNumber(number)
 }
 
 /**

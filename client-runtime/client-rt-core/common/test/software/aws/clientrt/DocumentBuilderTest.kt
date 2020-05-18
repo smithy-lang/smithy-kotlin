@@ -1,7 +1,7 @@
-package com.amazonaws.clientrt
+package software.aws.clientrt
 
-import com.amazonaws.clientrt.smithy.*
 import kotlin.test.*
+import software.aws.clientrt.smithy.*
 
 class DocumentBuilderTest {
     @Test
