@@ -21,6 +21,10 @@ plugins {
 
 val platforms = listOf("common", "jvm")
 
+// Allow subprojects to use internal API's
+// See: https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
+val experimentalAnnotations = listOf("kotlin.RequiresOptIn", "software.aws.clientrt.util.InternalAPI")
+
 fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
     val files = project.projectDir.listFiles()
     val hasPosix = files.any { it.name == "posix" }
@@ -58,13 +62,14 @@ subprojects {
     kotlin {
         sourceSets {
             all {
-                languageSettings.progressiveMode = true
                 val srcDir = if (name.endsWith("Main")) "src" else "test"
                 val resourcesPrefix = if (name.endsWith("Test")) "test-" else  ""
                 // the name is always the platform followed by a suffix of either "Main" or "Test" (e.g. jvmMain, commonTest, etc)
                 val platform = name.substring(0, name.length - 4)
                 kotlin.srcDir("$platform/$srcDir")
                 resources.srcDir("$platform/${resourcesPrefix}resources")
+                languageSettings.progressiveMode = true
+                experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) }
             }
         }
     }
