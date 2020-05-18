@@ -8,11 +8,9 @@ kotlin {
     sourceSets {
         jvmMain.dependencies {
             api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlinVersion
-            api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlinVersion
         }
 
         jvmTest.dependencies {
-//            dependsOn commonTest
             api 'org.jetbrains.kotlin:kotlin-test'
             api 'org.jetbrains.kotlin:kotlin-test-junit'
             api 'junit:junit:$junitVersion'
@@ -23,6 +21,7 @@ kotlin {
             api group: 'junit', name: 'junit', version: junitVersion
 //            api group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: junitVersion
             implementation "org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutinesVersion"
+            implementation "io.kotest:kotest-assertions-core-jvm:$kotestVersion"
         }
     }
 

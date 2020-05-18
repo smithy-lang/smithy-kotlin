@@ -16,6 +16,7 @@ task testCoverage(type: JacocoReport, dependsOn: jvmTest) {
     reports {
         xml.enabled = false
         csv.enabled = false
+        html.enabled = true
         html.destination = file("$buildDir/reports/jacoco")
     }
 }

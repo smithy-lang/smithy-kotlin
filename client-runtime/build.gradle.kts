@@ -29,7 +29,8 @@ fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
     if (hasPosix && platform == "darwin") return false
     if (hasDarwin && platform == "posix") return false
     if (!hasPosix && !hasDarwin && platform == "darwin") return false
-    return files.any{ it.name == "common" || it.name == platform }
+    // add implicit JVM target if it has a common module
+    return files.any{ it.name == platform || (it.name == "common" && platform == "jvm")}
 }
 
 subprojects {
@@ -48,6 +49,7 @@ subprojects {
     platforms.forEach { platform ->
         if (projectNeedsPlatform(project, platform)) {
             configure(listOf(project)){
+                println("${project.name} needs platform: $platform")
                 apply(from = rootProject.file("gradle/${platform}.gradle"))
             }
         }
@@ -73,7 +75,9 @@ subprojects {
     }
 
     // apply jacoco plugin and configure it
-    apply(from = rootProject.file("gradle/codecoverage.gradle"))
+    if (projectNeedsPlatform(project, "jvm")) {
+        apply(from = rootProject.file("gradle/codecoverage.gradle"))
+    }
 }
 
 
