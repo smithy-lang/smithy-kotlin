@@ -1,3 +1,4 @@
+// ktlint-disable filename
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -36,4 +37,3 @@ package software.aws.clientrt.util
     AnnotationTarget.CONSTRUCTOR
 )
 annotation class InternalAPI
-
