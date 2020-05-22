@@ -124,7 +124,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             "while"
         )
         val reservedWords = ReservedWordsBuilder().apply {
-            hardReservedWords.forEach { put(it, "_$it") }
+            hardReservedWords.forEach { put(it, "`$it`") }
         }.build()
 
         escaper = ReservedWordSymbolProvider.builder()

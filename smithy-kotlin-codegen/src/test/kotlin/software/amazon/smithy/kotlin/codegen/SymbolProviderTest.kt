@@ -42,7 +42,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val actual = provider.toMemberName(member)
-        assertEquals("_class", actual)
+        assertEquals("`class`", actual)
     }
 
     @Test
