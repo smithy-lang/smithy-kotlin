@@ -38,7 +38,10 @@ fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
 }
 
 subprojects {
-    group = "com.amazonaws"
+    // TODO - the group to publish under needs negotiated still
+    group = "software.aws.smithy.kotlin"
+    version = "0.0.1"
+
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
         plugin("org.jetbrains.dokka")
@@ -83,6 +86,8 @@ subprojects {
     if (projectNeedsPlatform(project, "jvm")) {
         apply(from = rootProject.file("gradle/codecoverage.gradle"))
     }
+
+    apply(from = rootProject.file("gradle/publish.gradle"))
 }
 
 
