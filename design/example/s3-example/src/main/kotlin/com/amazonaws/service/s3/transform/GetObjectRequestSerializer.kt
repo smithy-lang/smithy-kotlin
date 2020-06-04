@@ -12,18 +12,8 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-plugins {
-    kotlin("jvm") version "1.3.72" apply false
+package com.amazonaws.service.s3.transform
+
+
+class GetObjectRequestSerializer {
 }
-
-allprojects {
-    group = "com.amazonaws"
-    version = "0.0.1"
-
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        jcenter()
-    }
-}
-
