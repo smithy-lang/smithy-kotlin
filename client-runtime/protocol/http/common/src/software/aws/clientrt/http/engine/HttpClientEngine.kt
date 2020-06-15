@@ -14,6 +14,7 @@
  */
 package software.aws.clientrt.http.engine
 
+import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 
@@ -30,4 +31,9 @@ interface HttpClientEngine {
      * Shutdown and cleanup any resources
      */
     fun close() { return }
+
+    /**
+     * Install the [SdkHttpClient] into the engine
+     */
+    fun install(client: SdkHttpClient) { return }
 }

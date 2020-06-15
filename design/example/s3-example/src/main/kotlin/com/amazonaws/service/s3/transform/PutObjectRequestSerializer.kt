@@ -26,21 +26,24 @@ import com.amazonaws.service.runtime.*
 class PutObjectRequestSerializer(val input: PutObjectRequest): HttpSerialize {
     override suspend fun serialize(builder: HttpRequestBuilder, serializer: Serializer) {
         // URI
-        builder.method = HttpMethod.POST
+        builder.method = HttpMethod.PUT
         builder.url {
             // NOTE: Individual serializers do not need to concern themselves with protocol/host
-            path = "/putObject/"
+            path = "/putObject/${input.bucket}/${input.key}"
         }
 
         // Headers
         builder.headers {
-            append("Content-Type", "application/x-amz-json-1.1")
 
             // optional header params
             if (input.cacheControl != null) append("Cache-Control", input.cacheControl)
             if (input.contentDisposition != null) append("Content-Disposition", input.contentDisposition)
+            if (input.contentType != null) append("Content-Type", input.contentType)
             if (input.contentLength != null) append("Content-Length", input.contentLength.toString())
         }
+
+        // FIXME - should Content-Type should be defaulted for bytestream payloads if not set (e.g. appliciation/octet-stream)?
+        // FIXME - how do we want to deal with base64 encoded headers
 
         // payload
         builder.body = input.body?.toHttpBody() ?: HttpBody.Empty

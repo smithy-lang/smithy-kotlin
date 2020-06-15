@@ -3,3 +3,12 @@ extra["displayName"] = "Smithy :: Kotlin :: Client Runtime"
 extra["moduleName"] = "software.amazon.smithy.kotlin.runtime"
 
 
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation(project(":client-runtime:io"))
+            }
+        }
+    }
+}

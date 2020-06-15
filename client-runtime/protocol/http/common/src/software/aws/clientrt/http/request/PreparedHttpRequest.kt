@@ -40,7 +40,23 @@ class PreparedHttpRequest(
 
         val want = TypeInfo(TResponse::class)
         val responseContext = HttpResponseContext(httpResponse, want, userContext = userContext)
-        val response = client.responsePipeline.execute(responseContext, httpResponse.body)
+
+        // There are two paths for an HTTP response:
+        //     1. Response payload is consumed in the pipeline (e.g. through deserialization). Resources
+        //        are released immediately (and automatically) by consuming the payload.
+        //
+        //     2. Response payload is streaming and the end user or service call is responsible for consuming
+        //        the payload and only then resources will be released.
+        //
+        lateinit var response: Any
+        try {
+            response = client.responsePipeline.execute(responseContext, httpResponse.body)
+        } catch (ex: Exception) {
+            // if the response pipeline fails (e.g. during deserialization) then we discard the response
+            // ensuring any underlying resources are released. This ensures partial reads don't leak resources.
+            httpResponse.close()
+            throw ex
+        }
 
         if (response !is TResponse) {
             // response pipeline failed to transform the raw HttResponse content into the expected output type

@@ -14,25 +14,24 @@
  */
 package software.aws.clientrt.http.engine.ktor
 import io.kotest.matchers.booleans.shouldBeFalse
+import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.ktor.client.call.HttpClientCall
 import io.ktor.client.statement.HttpResponse
-import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 import io.ktor.http.*
 import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.date.GMTDate
-import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
+import kotlin.test.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import software.aws.clientrt.http.*
-import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.http.request.header
 import software.aws.clientrt.http.request.headers
 import software.aws.clientrt.http.request.url
 
@@ -83,29 +82,6 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `it strips Content-Type header`() {
-        val builder = HttpRequestBuilder()
-        builder.url { host = "test.aws.com" }
-        builder.header("Content-Type", "application/json")
-        val actual = builder.toKtorRequestBuilder().build()
-        actual.headers.contains("Content-Type").shouldBeFalse()
-    }
-
-    @Test
-    fun `it converts HttpBody variant Bytes`() {
-        val builder = HttpRequestBuilder()
-        builder.url { host = "test.aws.com" }
-        builder.header("Content-Type", "application/json")
-        val content = "testing".toByteArray()
-        builder.body = ByteArrayContent(content)
-        val actual = builder.toKtorRequestBuilder().build()
-        actual.headers.contains("Content-Type").shouldBeFalse()
-        assertEquals(ContentType.Application.Json, actual.body.contentType)
-        val convertedBody = actual.body as KtorByteArrayContent
-        assertEquals(content, convertedBody.bytes())
-    }
-
-    @Test
     fun `it converts responses`() {
         val builder = HttpRequestBuilder()
         builder.method = software.aws.clientrt.http.HttpMethod.POST
@@ -137,5 +113,108 @@ class KtorUtilsTest {
         assertEquals(setOf("foo", "baz"), wrapped.names())
         assertEquals(true, wrapped.contains("baz", "quz"))
         assertEquals(true, wrapped.contains("baz"))
+    }
+
+    @Test
+    fun `ktor headers are copied`() {
+        val respHeaders = Headers.build {
+            append("foo", "bar")
+            append("baz", "quux")
+            append("baz", "quz")
+        }
+
+        val wrapped = KtorHeaders(respHeaders)
+        val converted = software.aws.clientrt.http.Headers { appendAll(wrapped) }
+        assertEquals(true, converted.caseInsensitiveName)
+        assertEquals("bar", converted["foo"])
+        assertEquals(listOf("bar"), converted.getAll("foo"))
+        assertFalse(converted.isEmpty())
+        assertEquals(setOf("foo", "baz"), converted.names())
+        assertEquals(true, converted.contains("baz", "quz"))
+        assertEquals(true, converted.contains("baz"))
+    }
+
+    @Test
+    fun `KtorContentStream notifies on readAll`() = runBlocking {
+        val channel = ByteChannel(true)
+        var called = false
+        val notify = {
+            called = true
+        }
+
+        val bytes = "testing".toByteArray()
+        channel.writeFully(bytes)
+        channel.close()
+
+        val content = KtorContentStream(channel, notify)
+        val actual = content.readAll()
+        assertEquals(bytes.size, actual.size)
+        called.shouldBeTrue()
+    }
+
+    @Test
+    fun `KtorContentStream notifies on readAvailable`() = runBlocking {
+        val channel = ByteChannel(true)
+        var called = false
+        val notify = {
+            called = true
+        }
+
+        val bytes = "testing".toByteArray()
+        channel.writeFully(bytes)
+        channel.close()
+
+        val content = KtorContentStream(channel, notify)
+        val dst = ByteArray(16)
+        var read = content.readAvailable(dst, 0, 5)
+        assertEquals(5, read)
+        called.shouldBeFalse()
+        read = content.readAvailable(dst, 5, 2)
+        assertEquals(2, read)
+        called.shouldBeTrue()
+    }
+
+    @Test
+    fun `KtorContentStream notifies on readFully`() = runBlocking {
+        val channel = ByteChannel(true)
+        var called = false
+        val notify = {
+            called = true
+        }
+
+        val bytes = "testing".toByteArray()
+        channel.writeFully(bytes)
+        channel.close()
+
+        val content = KtorContentStream(channel, notify)
+        val dst = ByteArray(16)
+        content.readFully(dst, 0, 5)
+        called.shouldBeFalse()
+        content.readFully(dst, 5, 2)
+        called.shouldBeTrue()
+    }
+
+    @Test
+    fun `KtorContentStream notifies on cancel`() = runBlocking {
+        val channel = ByteChannel(true)
+        var called = false
+        val notify = {
+            called = true
+        }
+
+        val bytes = "testing".toByteArray()
+        channel.writeFully(bytes)
+
+        val content = KtorContentStream(channel, notify)
+        val dst = ByteArray(16)
+        launch {
+            assertFailsWith(RuntimeException::class, "testing") {
+                content.readFully(dst, 0, 10)
+            }
+        }
+        delay(200)
+        content.cancel(RuntimeException("testing"))
+
+        called.shouldBeTrue()
     }
 }

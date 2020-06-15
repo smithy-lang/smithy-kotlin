@@ -12,3 +12,10 @@ include(":client-runtime:protocol:http")
 include(":client-runtime:serde:serde-json")
 
 include(":client-runtime:protocol:http-client-engines:http-client-engine-ktor")
+
+// for now include the POC project
+include(":example")
+project(":example").projectDir = file("./design/example")
+include(":example:mock-server")
+include(":example:lambda-example")
+include(":example:s3-example")

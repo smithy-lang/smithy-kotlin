@@ -6,11 +6,10 @@ use smithy.test#httpResponseTests
 use aws.protocols#awsJson1_1
 
 
-@paginated(inputToken: "nextToken", outputToken: "nextToken", pageSize: "pageSize")
 @awsJson1_1
 service Lambda {
     version: "2015-03-31",
-    operations: [Invoke]
+    operations: [Invoke, CreateAlias]
 }
 
 
@@ -135,7 +134,12 @@ structure ResourceNotFoundException {
     Type: String
 }
 
-
+@error("client")
+@httpError(400)
+structure InvalidParameterValueException{
+    Message: String
+    Type: String
+}
 
 @enum([
     {
@@ -174,3 +178,61 @@ structure TooManyRequestsException {
 
 
 
+@http(method: "POST", uri: "/2015-03-31/functions/{FunctionName}/aliases", code: 201)
+operation CreateAlias{
+    input: CreateAliasRequest,
+    // FIXME - Model actually has the response as just "AliasConfiguration", we have to decide if we want to return
+    // types directly or always wrap them in a "Response" the way e.g. v2 Java SDK does (CreateAliasResponse)
+    output: AliasConfiguration,
+    errors: [
+        // real lambda model has more errors
+        InvalidParameterValueException,
+        ResourceNotFoundException,
+        TooManyRequestsException
+    ]
+}
+
+@length(min: 0, max: 256)
+string Description
+
+@length(min: 1, max: 128)
+@pattern("(?!^[0-9]+$)([a-zA-Z0-9-_]+)")
+string Alias
+
+@length(min: 1, max: 1024)
+@pattern("[0-9]+"
+string AdditionalVersion
+map<AdditionalVersion, Weight> AdditionalVersion
+
+structure AliasRoutingConfiguration {
+    AdditionalVersionWeights: AdditionalVersionWeights
+}
+
+
+structure CreateAliasRequest {
+    Description: Description
+
+    @httpLabel
+    @required
+    FunctionName: FunctionName
+
+    @required
+    FunctionVersion: Version
+
+    @required
+    Name: Alias
+
+    RoutingConfig: AliasRoutingConfiguration
+}
+
+@pattern("arn:(aws[a-zA-Z-]*)?:lambda:[a-z]{2}(-gov)?-[a-z]+-\\d{1}:\\d{12}:function:[a-zA-Z0-9-_]+(:(\\$LATEST|[a-zA-Z0-9-_]+))?")
+string FunctionArn
+
+structure AliasConfiguration {
+    AliasArn: FunctionArn
+    Description: Description
+    FunctionVersion: Version
+    Name: Alias
+    RevisionId: String
+    RoutingConfig: AliasRoutingConfiguration
+}

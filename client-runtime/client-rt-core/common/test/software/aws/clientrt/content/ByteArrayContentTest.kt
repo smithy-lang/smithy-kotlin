@@ -12,15 +12,22 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package software.aws.clientrt.content
 
-subprojects {
-    group = "com.amazonaws"
-    version = "0.0.1"
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        jcenter()
+class ByteArrayContentTest {
+    @Test
+    fun `it can be consumed as ByteStream`() {
+        val actual = byteArrayOf(0x01, 0x02, 0x03)
+        val content = ByteArrayContent(actual)
+        assertEquals(3, content.contentLength)
+        assertEquals(0x02, content.bytes()[1])
+
+        // test companion object
+        val stream = ByteStream.fromBytes(actual)
+        assertTrue(stream is ByteStream.Buffer)
     }
 }
-

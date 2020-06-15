@@ -30,6 +30,21 @@ class PutObjectResponse private constructor(builder: BuilderImpl){
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
     }
 
+    override fun toString(): String = buildString {
+        // real toString will be different this is for demo purposes
+        appendln("PutObjectResponse {")
+        appendln("\tETag: $eTag")
+        appendln("\tExpiration: $expiration")
+        appendln("\tRequestCharged: $requestCharged")
+        appendln("\tSseCustomerAlgorithm: $sseCustomerAlgorithm")
+        appendln("\tSseCustomerKeyMd5: $sseCustomerKeyMd5")
+        appendln("\tSseKmsEncryptionContext: $sseKmsEncryptionContext")
+        appendln("\tSseKmsKeyId: $sseKmsKeyId")
+        appendln("\tServerSideEncryption: $serverSideEncryption")
+        appendln("\tVersionId: $versionId")
+        appendln("}")
+    }
+
     interface Builder {
         fun build(): PutObjectResponse
         // TODO - Java fill in Java builder

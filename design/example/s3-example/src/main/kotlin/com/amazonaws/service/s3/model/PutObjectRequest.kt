@@ -19,12 +19,15 @@ class PutObjectRequest private constructor(builder: BuilderImpl){
 
     val cacheControl: String? = builder.cacheControl
     val contentDisposition: String? = builder.contentDisposition
+    val contentType: String? = builder.contentType
     val contentLength: Int? = builder.contentLength
 
     // ... 20 more headers later
 
     //
     val body: ByteStream? = builder.body
+    val bucket: String? = builder.bucket
+    val key: String? = builder.key
 
 
     companion object {
@@ -43,18 +46,31 @@ class PutObjectRequest private constructor(builder: BuilderImpl){
         // Location: HEADER; Name: "Content-Disposition"
         var contentDisposition: String?
 
+        // Location: HEADER; Name: "Content-Type"
+        var contentType: String?
+        
         // Location: HEADER; Name: "Content-Length"
         var contentLength: Int?
 
         // Location: PAYLOAD
         var body: ByteStream?
+        
+        // Location: URI
+        var bucket: String?
+        
+        // Location: URI
+        var key: String?
     }
 
     private class BuilderImpl : Builder, DslBuilder {
         override var cacheControl: String? = null
         override var contentDisposition: String? = null
+        override var contentType: String? = null
         override var contentLength: Int? = null
         override var body: ByteStream? = null
+        override var bucket: String? = null
+        override var key: String? = null
+        
         override fun build(): PutObjectRequest = PutObjectRequest(this)
     }
 }

@@ -16,12 +16,10 @@ package software.aws.clientrt.http.engine.ktor
 
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
-import io.ktor.client.utils.EmptyContent
 import io.ktor.http.*
-import io.ktor.http.content.ByteArrayContent
-import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.*
 import io.ktor.utils.io.core.readBytes
-import io.ktor.utils.io.readRemaining
+import java.nio.ByteBuffer
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.request.HttpRequest
@@ -29,8 +27,8 @@ import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 import software.aws.clientrt.io.Source
 
-// convert Sdk HttpRequestBuilder to equivalent Ktor abstraction
-fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
+// convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
+internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()
     builder.method = HttpMethod.parse(this.method.name)
     val sdkUrl = this.url
@@ -54,26 +52,15 @@ fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
         }
     }
 
-    // strip content type which ktor doesn't allow set like this
-    val contentHeaders = sdkHeaders.remove("Content-Type")
-    val contentType: ContentType? = contentHeaders?.first()?.let { ContentType.parse(it) }
     sdkHeaders.entries().forEach { (name, values) ->
         builder.headers.appendAll(name, values)
-    }
-
-    // wrap the request body
-    when (this.body) {
-        is HttpBody.Empty -> builder.body = EmptyContent
-        is HttpBody.Bytes -> builder.body = ByteArrayContent((this.body as HttpBody.Bytes).bytes(), contentType)
-        // FIXME - need to implement streaming still
-        else -> throw NotImplementedError("streaming body not implemented yet")
     }
 
     return builder
 }
 
 // wrapper around ktor headers that implements expected SDK interface for Headers
-class KtorHeaders(private val headers: Headers) : software.aws.clientrt.http.Headers {
+internal class KtorHeaders(private val headers: Headers) : software.aws.clientrt.http.Headers {
     override val caseInsensitiveName: Boolean = true
     override fun getAll(name: String): List<String>? = headers.getAll(name)
     override fun names(): Set<String> = headers.names()
@@ -83,28 +70,57 @@ class KtorHeaders(private val headers: Headers) : software.aws.clientrt.http.Hea
 }
 
 // wrapper around ByteReadChannel that implements the [Source] interface
-class KtorContentStream(val channel: ByteReadChannel) : Source {
-    override val availableForRead: Int = channel.availableForRead
-    override val isClosedForRead: Boolean = channel.isClosedForRead
-    override val isClosedForWrite: Boolean = channel.isClosedForWrite
+internal class KtorContentStream(private val channel: ByteReadChannel, private val onClose: (() -> Unit)? = null) : Source {
+    override val availableForRead: Int
+        get() = channel.availableForRead
+
+    override val isClosedForRead: Boolean
+        get() = channel.isClosedForRead
+
+    override val isClosedForWrite: Boolean
+        get() = channel.isClosedForWrite
 
     override suspend fun readAll(): ByteArray {
         val packet = channel.readRemaining()
+        notifyIfExhausted()
         return packet.readBytes()
     }
 
-    override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) =
-            channel.readFully(sink, offset, length)
+    override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) {
+        channel.readFully(sink, offset, length)
+        notifyIfExhausted()
+    }
 
-    override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int =
-            channel.readAvailable(sink, offset, length)
+    override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int {
+        val read = channel.readAvailable(sink, offset, length)
+        notifyIfExhausted()
+        return read
+    }
 
-    override fun cancel(cause: Throwable?): Boolean = channel.cancel(cause)
+    override suspend fun readAvailable(sink: ByteBuffer): Int {
+        val read = channel.readAvailable(sink)
+        notifyIfExhausted()
+        return read
+    }
+
+    override fun cancel(cause: Throwable?): Boolean {
+        try {
+            return channel.cancel(cause)
+        } finally {
+            onClose?.invoke()
+        }
+    }
+
+    private fun notifyIfExhausted() {
+        if (channel.isClosedForRead) {
+            onClose?.invoke()
+        }
+    }
 }
 
 // wrapper around a ByteReadChannel that implements the content as an SDK (streaming) HttpBody
-class KtorHttpBody(val channel: ByteReadChannel) : HttpBody.Streaming() {
-    private val source = KtorContentStream(channel)
+internal class KtorHttpBody(channel: ByteReadChannel, onClose: (() -> Unit)? = null) : HttpBody.Streaming() {
+    private val source = KtorContentStream(channel, onClose)
     override fun readFrom(): Source = source
 }
 

@@ -55,6 +55,9 @@ class SdkHttpClient(
     init {
         // wire up the features
         config.install(this)
+
+        // install ourselves into the engine
+        engine.install(this)
     }
 
     /**

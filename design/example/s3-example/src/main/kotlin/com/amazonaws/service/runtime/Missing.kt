@@ -95,3 +95,42 @@ fun ByteStream.toHttpBody(): HttpBody {
         }
     }
 }
+
+
+fun HttpBody.toByteStream(): ByteStream? {
+    val body = this
+    return when(body) {
+        is HttpBody.Bytes -> object: ByteStream.Buffer() {
+            override val contentLength: Long? = body.contentLength
+            override fun bytes(): ByteArray = body.bytes()
+        }
+        is HttpBody.Streaming -> object: ByteStream.Reader() {
+            override val contentLength: Long? = body.contentLength
+            override fun readFrom(): Source = body.readFrom()
+        }
+        else -> null
+    }
+}
+
+
+suspend fun ByteStream.toByteArray(): ByteArray {
+    val stream = this
+    return when(stream) {
+        is ByteStream.Buffer -> stream.bytes()
+        is ByteStream.Reader -> stream.readFrom().readAll()
+    }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
+
+
+// TODO - toFile(...)
+
+fun ByteStream.cancel() {
+    val stream = this
+    when(stream) {
+        is ByteStream.Buffer -> stream.bytes()
+        is ByteStream.Reader -> stream.readFrom().cancel(null)
+    }
+}

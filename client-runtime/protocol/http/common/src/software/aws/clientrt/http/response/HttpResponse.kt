@@ -39,4 +39,15 @@ data class HttpResponse(
 
     // val requestTime: Date
     //     get() = ...
+
+    /**
+     * Close the underlying response and cleanup any resources associated with it.
+     * After closing the response body is no longer valid and should not be read from.
+     */
+    fun close() {
+        when (body) {
+            is HttpBody.Streaming -> body.readFrom().cancel(null)
+            else -> return
+        }
+    }
 }

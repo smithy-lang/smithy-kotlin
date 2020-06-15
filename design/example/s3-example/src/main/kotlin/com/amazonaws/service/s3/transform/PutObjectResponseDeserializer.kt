@@ -14,6 +14,24 @@
  */
 package com.amazonaws.service.s3.transform
 
+import com.amazonaws.service.runtime.Deserializer
+import com.amazonaws.service.runtime.HttpDeserialize
+import com.amazonaws.service.s3.model.PutObjectResponse
+import software.aws.clientrt.http.response.HttpResponse
 
-class PutObjectResponseDeserializer {
+
+class PutObjectResponseDeserializer : HttpDeserialize {
+    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): Any {
+        return PutObjectResponse {
+            eTag = response.headers["ETag"]
+            expiration = response.headers["X-Amz-Expiration"]
+            requestCharged = response.headers["X-Amz-Request-Charged"]
+            sseCustomerAlgorithm = response.headers["x-amz-server-side-encryption-customer-algorithm"]
+            sseCustomerKeyMd5 = response.headers["x-amz-server-side-encryption-customer-key-MD5"]
+            sseKmsEncryptionContext = response.headers["x-amz-server-side-encryption-context"]
+            sseKmsKeyId = response.headers["x-amz-server-side-encryption-aws"]
+            serverSideEncryption = response.headers["x-amz-server-side-encryption"]
+            versionId = response.headers["x-amz-version-id"]
+        }
+    }
 }

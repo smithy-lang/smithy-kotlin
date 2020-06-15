@@ -12,15 +12,12 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+package software.aws.clientrt.content
 
-subprojects {
-    group = "com.amazonaws"
-    version = "0.0.1"
-
-    repositories {
-        mavenLocal()
-        mavenCentral()
-        jcenter()
-    }
+/**
+ * Container for wrapping a ByteArray as a [ByteStream]
+ */
+class ByteArrayContent(private val bytes: ByteArray) : ByteStream.Buffer() {
+    override val contentLength: Long? = bytes.size.toLong()
+    override fun bytes(): ByteArray = bytes
 }
-
