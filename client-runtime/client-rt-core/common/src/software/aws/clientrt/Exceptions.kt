@@ -44,6 +44,12 @@ open class ClientException : SdkBaseException {
 }
 
 /**
+ * Generic interface that any protocol (e.g. HTTP, MQTT, etc) can extend to provide additional access to
+ * protocol specific details.
+ */
+interface ProtocolResponse
+
+/**
  * ServiceException - Base exception class for any error response returned by a service. Receiving an exception of this
  * type indicates that the caller's request was successfully transmitted to the service and the service sent back an
  * error response.
@@ -83,7 +89,8 @@ open class ServiceException : ClientException {
      */
     open var errorMessage: String = ""
 
-    // TODO - HTTP response/protocol response
-    // What about non-HTTP protocols?
-    // open var httpResponse: HttpResponse? = null
+    /**
+     * The protocol response if available (this will differ depending on the underlying protocol e.g. HTTP, MQTT, etc)
+     */
+    open var protocolResponse: ProtocolResponse? = null
 }
