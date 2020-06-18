@@ -116,7 +116,6 @@ val expected: String = """[
     {
         "id": 912345678901,
         "text": "How do I stream JSON in Java?",
-        "geo": null,
         "user": {
             "name": "json_newb",
             "followers_count": 41
