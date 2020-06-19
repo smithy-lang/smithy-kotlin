@@ -15,22 +15,51 @@
 package com.amazonaws.service.lambda.transform
 
 import com.amazonaws.service.lambda.model.AliasConfiguration
-import com.amazonaws.service.runtime.Deserializer
 import com.amazonaws.service.runtime.HttpDeserialize
-import com.amazonaws.service.runtime.readAll
-import software.aws.clientrt.http.isSuccess
 import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.serde.*
 
 class AliasConfigurationDeserializer: HttpDeserialize {
-    @OptIn(ExperimentalStdlibApi::class)
+    companion object {
+        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn")
+        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description")
+        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion")
+        private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name")
+        private val REVISION_ID_FIELD_DESCRIPTOR = SdkFieldDescriptor("RevisionId")
+        private val ROUTING_CONFIG_FIELD_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig")
+
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(ALIAS_ARN_FIELD_DESCRIPTOR)
+            field(DESCRIPTION_FIELD_DESCRIPTOR)
+            field(FUNCTION_VERSION_FIELD_DESCRIPTOR)
+            field(NAME_FIELD_DESCRIPTOR)
+            field(REVISION_ID_FIELD_DESCRIPTOR)
+            field(ROUTING_CONFIG_FIELD_DESCRIPTOR)
+        }
+    }
+
     override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): AliasConfiguration {
+        val builder = AliasConfiguration.dslBuilder()
         // FIXME - expected response is 201, need to plug in error handling middleware as well as check for
         //  the specific code here (or pass it to the pipeline as metadata for a feature to check)
-        println("AliasConfiguration::deserialize: response is success: ${response.status.isSuccess()}")
-        val body = response.body.readAll()?.decodeToString()
-        println("recv'd: $body")
+        // println("AliasConfiguration::deserialize: response is success: ${response.status.isSuccess()}")
+        // val body = response.body.readAll()?.decodeToString()
+        // println("recv'd: $body")
 
-        // FIXME - need the deserializer implementation to do anything useful here...
-        return AliasConfiguration { }
+        deserializer.deserializeStruct(null) {
+            loop@while(true) {
+                when(nextField(OBJ_DESCRIPTOR)) {
+                    ALIAS_ARN_FIELD_DESCRIPTOR.index -> builder.aliasArn = deserializeString()
+                    DESCRIPTION_FIELD_DESCRIPTOR.index -> builder.description = deserializeString()
+                    FUNCTION_VERSION_FIELD_DESCRIPTOR.index -> builder.functionVersion = deserializeString()
+                    NAME_FIELD_DESCRIPTOR.index -> builder.name = deserializeString()
+                    REVISION_ID_FIELD_DESCRIPTOR.index -> builder.revisionId = deserializeString()
+                    ROUTING_CONFIG_FIELD_DESCRIPTOR.index -> builder.routingConfig = AliasRoutingConfigurationDeserializer.deserialize(deserializer)
+                    Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        return builder.build()
     }
 }

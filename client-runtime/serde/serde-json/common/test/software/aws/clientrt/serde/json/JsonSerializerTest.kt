@@ -23,10 +23,12 @@ class JsonSerializerTest {
 
     @Test
     fun `can serialize class with class field`() {
-        val a = A(B(2))
+        val a = A(
+            B(2)
+        )
         val json = JsonSerializer()
         a.serialize(json)
-        assertEquals("""{"b":{"value":2}}""", json.getBytes()!!.decodeToString())
+        assertEquals("""{"b":{"value":2}}""", json.toByteArray().decodeToString())
     }
 
     class A(private val b: B) : SdkSerializable {
@@ -55,26 +57,41 @@ class JsonSerializerTest {
 
     @Test
     fun `can serialize list of classes`() {
-        val obj = listOf(B(1), B(2), B(3))
+        val obj = listOf(
+            B(1),
+            B(2),
+            B(3)
+        )
         val json = JsonSerializer()
         json.serializeList {
             for (value in obj) {
                 value.serialize(json)
             }
         }
-        assertEquals("""[{"value":1},{"value":2},{"value":3}]""", json.getBytes()!!.decodeToString())
+        assertEquals("""[{"value":1},{"value":2},{"value":3}]""", json.toByteArray().decodeToString())
     }
 
     @Test
     fun `can serialize map`() {
-        val objs = mapOf("A1" to A(B(1)), "A2" to A(B(2)), "A3" to A(B(3)))
+        val objs = mapOf("A1" to A(
+            B(1)
+        ), "A2" to A(
+            B(
+                2
+            )
+        ), "A3" to A(
+            B(
+                3
+            )
+        )
+        )
         val json = JsonSerializer()
         json.serializeMap {
             for (obj in objs) {
                 entry(obj.key, obj.value)
             }
         }
-        assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", json.getBytes()!!.decodeToString())
+        assertEquals("""{"A1":{"b":{"value":1}},"A2":{"b":{"value":2}},"A3":{"b":{"value":3}}}""", json.toByteArray().decodeToString())
     }
 
     @Test
@@ -82,7 +99,7 @@ class JsonSerializerTest {
         val json = JsonSerializer()
         data.serialize(json)
 
-        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.getBytes()!!.decodeToString())
+        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
     }
 }
 
@@ -138,6 +155,6 @@ data class Primitives(
 }
 
 val data = Primitives(
-        Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-        null, listOf(1, 2, 3)
+    Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
+    null, listOf(1, 2, 3)
 )

@@ -19,6 +19,7 @@ import software.aws.clientrt.http.*
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.*
 import com.amazonaws.service.runtime.*
+import software.aws.clientrt.serde.Serializer
 
 class InvokeRequestSerializer(val input: InvokeRequest): HttpSerialize {
     override suspend fun serialize(builder: HttpRequestBuilder, serializer: Serializer) {

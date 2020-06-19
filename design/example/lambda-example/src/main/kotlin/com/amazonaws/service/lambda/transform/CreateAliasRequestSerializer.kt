@@ -16,16 +16,30 @@ package com.amazonaws.service.lambda.transform
 
 import com.amazonaws.service.lambda.model.CreateAliasRequest
 import com.amazonaws.service.runtime.HttpSerialize
-import com.amazonaws.service.runtime.Serializer
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
 import software.aws.clientrt.http.request.url
-
+import software.aws.clientrt.serde.*
 
 
 class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize {
+
+    companion object {
+        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description")
+        private val FUNCTION_VERSION_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion")
+        private val NAME_DESCRIPTOR = SdkFieldDescriptor("Name")
+        private val ROUTING_CONFIG_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig")
+
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(DESCRIPTION_FIELD_DESCRIPTOR)
+            field(FUNCTION_VERSION_DESCRIPTOR)
+            field(NAME_DESCRIPTOR)
+            field(ROUTING_CONFIG_DESCRIPTOR)
+        }
+    }
+
     override suspend fun serialize(builder: HttpRequestBuilder, serializer: Serializer) {
         // URI
         builder.method = HttpMethod.POST
@@ -40,37 +54,20 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
         }
 
         // payload
-        // FIXME - this is responsibility of the serializer which is not defined yet
-        // for now we'll hack it together using a string builder
-        val content = buildString {
-            append("{")
-            if (input.description != null) {
-                append("\"Description\": \"${input.description}\",")
-            }
+        serializer.serializeStruct {
+            // required fields - TODO: this assumes these are validated already which is TBD. For now assume these are known not-null
+            field(NAME_DESCRIPTOR, input.name!!)
+            field(FUNCTION_VERSION_DESCRIPTOR, input.functionVersion!!)
 
-            // version is requierd
-            if (input.functionVersion != null) {
-                append("\"FunctionVersion\": \"${input.functionVersion}\",")
-            }
-
-            if (input.routingConfig != null) {
-                append("\"RoutingConfig\": {")
-                var cnt = 0
-                input.routingConfig.forEach(){ k, v ->
-                    cnt++
-                    append("\"$k\":\"$v\"")
-                    if (cnt < input.routingConfig.size) append(",")
+            // optional fields
+            input.description?.let { field(DESCRIPTION_FIELD_DESCRIPTOR, it) }
+            input.routingConfig?.let { map ->
+                mapField(ROUTING_CONFIG_DESCRIPTOR) {
+                    map.entries.forEach{ entry(it.key, it.value) }
                 }
-                append("},")
             }
-
-            // name is required
-            if (input.name != null) {
-                append("\"Name\": \"${input.functionVersion}\"")
-            }
-            append("}")
         }
 
-        builder.body = ByteArrayContent(content.toByteArray())
+        builder.body = ByteArrayContent(serializer.toByteArray())
     }
 }

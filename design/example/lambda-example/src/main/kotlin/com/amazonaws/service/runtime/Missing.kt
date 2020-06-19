@@ -24,6 +24,10 @@ import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponsePipeline
 import software.aws.clientrt.io.Source
+import software.aws.clientrt.serde.Deserializer
+import software.aws.clientrt.serde.Serializer
+import software.aws.clientrt.serde.json.JsonDeserializer
+import software.aws.clientrt.serde.json.JsonSerializer
 
 // ######################################################################################
 // Things either missing or in-progress in the client runtime.
@@ -33,26 +37,28 @@ interface SdkClient {
     val serviceName: String
 }
 
-interface Serializer
-class JsonSerializer: Serializer
-
 interface HttpSerialize {
     suspend fun serialize(builder: HttpRequestBuilder, serializer: Serializer)
 }
-
-interface Deserializer
-class JsonDeserializer: Deserializer
 
 interface HttpDeserialize {
     suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): Any
 }
 
+interface SerdeProvider {
+    fun serializer(): Serializer
+    fun deserializer(payload: ByteArray): Deserializer
+}
+
+class JsonSerdeProvider: SerdeProvider {
+    override fun serializer(): Serializer = JsonSerializer()
+    override fun deserializer(payload: ByteArray): Deserializer = JsonDeserializer(payload)
+}
+
 // Http Serialization/Deserialization feature (handles calling the appropriate serialize/deserialize methods)
-class HttpSerde(private val serializer: Serializer, private val deserializer: Deserializer): Feature {
+class HttpSerde(private val serde: SerdeProvider): Feature {
     class Config {
-        // FIXME - this is likely more like "SerdeProvider" since a deserializer is instantiated per payload
-        var serializer: Serializer? = null
-        var deserializer: Deserializer? = null
+        var serdeProvider: SerdeProvider? = null
     }
 
     companion object Feature: HttpClientFeatureFactory<Config, HttpSerde> {
@@ -60,7 +66,7 @@ class HttpSerde(private val serializer: Serializer, private val deserializer: De
         override fun create(block: Config.() -> Unit): HttpSerde {
             val config = Config().apply(block)
             // TODO - validate config
-            return HttpSerde(config.serializer!!, config.deserializer!!)
+            return HttpSerde(config.serdeProvider!!)
         }
     }
 
@@ -68,13 +74,15 @@ class HttpSerde(private val serializer: Serializer, private val deserializer: De
         client.requestPipeline.intercept(HttpRequestPipeline.Transform) { subject ->
             when(subject) {
                 // serialize the input type to the outgoing request builder
-                is HttpSerialize -> subject.serialize(context, serializer)
+                is HttpSerialize -> subject.serialize(context, serde.serializer())
             }
         }
 
         client.responsePipeline.intercept(HttpResponsePipeline.Transform) { subject ->
             when(context.userContext) {
                 is HttpDeserialize -> {
+                    val payload = context.response.body.readAll() ?: return@intercept
+                    val deserializer = serde.deserializer(payload)
                     val content = (context.userContext as HttpDeserialize).deserialize(context.response, deserializer)
                     proceedWith(content)
                 }

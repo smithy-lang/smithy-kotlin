@@ -19,7 +19,6 @@ import java.io.BufferedWriter
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.OutputStreamWriter
-import software.aws.clientrt.serde.json.exception.JsonGenerationException
 
 /**
  * Thin wrapper around Gson's JSON generator. Uses the gson.stream library's JsonWriter.
@@ -187,6 +186,6 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
 }
 
 /*
-* Creates JsonStreamWriter to write Json using Gson in the background.
+* Creates a [JsonStreamWriter] instance to write JSON
 */
-fun JsonStreamWriter(pretty: Boolean = false): JsonStreamWriter = JsonStreamWriterGson(pretty)
+internal actual fun jsonStreamWriter(pretty: Boolean): JsonStreamWriter = JsonStreamWriterGson(pretty)

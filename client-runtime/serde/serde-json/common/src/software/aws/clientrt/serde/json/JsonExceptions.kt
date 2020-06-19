@@ -1,3 +1,4 @@
+// ktlint-disable filename
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
@@ -12,6 +13,8 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.serde.json.exception
+package software.aws.clientrt.serde.json
+
+import software.aws.clientrt.serde.SerializationException
 
 class JsonGenerationException(t: Throwable) : SerializationException(t)

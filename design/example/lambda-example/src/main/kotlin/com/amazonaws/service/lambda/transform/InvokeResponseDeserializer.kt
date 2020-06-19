@@ -18,6 +18,7 @@ import com.amazonaws.service.runtime.*
 import com.amazonaws.service.lambda.model.InvokeResponse
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.serde.Deserializer
 
 
 class InvokeResponseDeserializer: HttpDeserialize {

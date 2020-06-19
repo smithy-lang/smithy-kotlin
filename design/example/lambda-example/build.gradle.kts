@@ -7,6 +7,8 @@ dependencies {
     implementation(project(":client-runtime:client-rt-core"))
     implementation(project(":client-runtime:protocol:http"))
     implementation(project(":client-runtime:protocol:http-client-engines:http-client-engine-ktor"))
+    implementation(project(":client-runtime:serde"))
+    implementation(project(":client-runtime:serde:serde-json"))
 
     // FIXME - this is only necessary for a conversion from ByteStream to HttpBody (which belongs in client runtime)
     implementation(project(":client-runtime:io"))

@@ -14,38 +14,51 @@
  */
 package software.aws.clientrt.serde.json
 
-import java.nio.charset.Charset
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalStdlibApi::class)
 class JsonStreamWriterTest {
 
     @Test
     fun `check json serializes correctly with wrapper`() {
-        val msg1 = Message(912345678901, "How do I stream JSON in Java?", null, user1)
-        val msg2 = Message(912345678902, "@json_newb just use JsonWriter!", arrayOf(50.454722, -104.606667), user2)
-        assertEquals(expected, writeJsonStream(listOf(msg1, msg2))?.let { String(it, Charset.defaultCharset()) })
+        val msg1 = Message(
+            912345678901,
+            "How do I stream JSON in Java?",
+            null,
+            user1
+        )
+        val msg2 = Message(
+            912345678902,
+            "@json_newb just use JsonWriter!",
+            arrayOf(50.454722, -104.606667),
+            user2
+        )
+        assertEquals(
+            expected, writeJsonStream(
+                listOf(msg1, msg2)
+            )?.decodeToString())
     }
 
     @Test
     fun `check close is idempotent`() {
-        val writer = JsonStreamWriter(true)
+        val writer = jsonStreamWriter(true)
         writer.beginObject()
         writer.writeName("id")
         writer.writeValue(912345678901)
         writer.endObject()
-        assertEquals(expectedIdempotent, writer.bytes?.let { String(it, Charset.defaultCharset()) })
-        assertEquals(expectedIdempotent, writer.bytes?.let { String(it, Charset.defaultCharset()) })
+        assertEquals(expectedIdempotent, writer.bytes?.decodeToString())
+        assertEquals(expectedIdempotent, writer.bytes?.decodeToString())
     }
 
     @Test
     fun `check non human readable`() {
-        val writer = JsonStreamWriter()
+        val writer = jsonStreamWriter()
         writer.beginObject()
         writer.writeName("id")
         writer.writeValue(912345678901)
         writer.endObject()
-        assertEquals(expectedNoIndent, writer.bytes?.let { String(it, Charset.defaultCharset()) })
+        assertEquals(expectedNoIndent, writer.bytes?.decodeToString())
     }
 }
 
@@ -56,7 +69,7 @@ val expectedIdempotent = """{
 val expectedNoIndent = """{"id":912345678901}"""
 
 fun writeJsonStream(messages: List<Message>): ByteArray? {
-    val writer = JsonStreamWriter(true)
+    val writer = jsonStreamWriter(true)
     return writeMessagesArray(writer, messages)
 }
 

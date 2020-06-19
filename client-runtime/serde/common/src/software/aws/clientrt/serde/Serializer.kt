@@ -31,6 +31,11 @@ interface Serializer : PrimitiveSerializer {
      * Begin a map (i.e. in JSON this would be a '{') and return a [MapSerializer] that can be used to serialize the map's entries.
      */
     fun beginMap(): MapSerializer
+
+    /**
+     * Consume the serializer and get the payload as a [ByteArray]
+     */
+    fun toByteArray(): ByteArray
 }
 
 interface StructSerializer : PrimitiveSerializer {

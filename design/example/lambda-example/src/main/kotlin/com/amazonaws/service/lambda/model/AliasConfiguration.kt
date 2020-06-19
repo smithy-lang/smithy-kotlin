@@ -21,10 +21,23 @@ class AliasConfiguration private constructor(builder: BuilderImpl){
     val functionVersion: String? = builder.functionVersion
     val name: String? = builder.name
     val revisionId: String? = builder.revisionId
-    val routingConfig: MutableMap<String, Float>? = builder.routingConfig
+    val routingConfig: AliasRoutingConfiguration? = builder.routingConfig
+
+    // TODO - not real implementation, for debug only right now
+    override fun toString(): String = buildString {
+        appendln("AliasConfiguration(")
+        appendln("\taliasArn: $aliasArn")
+        appendln("\tdescription: $description")
+        appendln("\tfunctionVersion: $functionVersion")
+        appendln("\tname: $name")
+        appendln("\trevisionId: $revisionId")
+        appendln("\troutingConfig: $routingConfig")
+        appendln(")")
+    }
 
     companion object {
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+        fun dslBuilder(): DslBuilder = BuilderImpl()
     }
 
     interface Builder {
@@ -49,7 +62,11 @@ class AliasConfiguration private constructor(builder: BuilderImpl){
         var revisionId: String?
 
         // Location: Payload; Name: "RoutingConfig"
-        var routingConfig: MutableMap<String, Float>?
+        var routingConfig: AliasRoutingConfiguration?
+
+        fun routingConfig(block: AliasRoutingConfiguration.DslBuilder.() -> Unit) = AliasRoutingConfiguration.invoke(block)
+
+        fun build(): AliasConfiguration
     }
 
     private class BuilderImpl : Builder, DslBuilder {
@@ -58,7 +75,7 @@ class AliasConfiguration private constructor(builder: BuilderImpl){
         override var functionVersion: String? = null
         override var name: String? = null
         override var revisionId: String? = null
-        override var routingConfig: MutableMap<String, Float>? = null
+        override var routingConfig: AliasRoutingConfiguration? = null
 
         override fun build(): AliasConfiguration = AliasConfiguration(this)
     }

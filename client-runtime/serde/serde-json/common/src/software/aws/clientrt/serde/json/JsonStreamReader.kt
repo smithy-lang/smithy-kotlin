@@ -12,14 +12,29 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.aws.clientrt.serde
+package software.aws.clientrt.serde.json
 
 /**
- * Metadata that may influence how a field is serialized and deserialized.
- *
- * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
+ * Interface for deserializing JSON documents as a stream of tokens
  */
-data class SdkFieldDescriptor(val serialName: String) {
-    // only relevant in the context of an object descriptor
-    var index: Int = 0
+interface JsonStreamReader {
+    /**
+     * Grab the next token in the stream
+     */
+    fun nextToken(): JsonToken
+
+    /**
+     * Recursively skip the next token. Meant for discarding unwanted/unrecognized properties in a JSON document
+     */
+    fun skipNext()
+
+    /**
+     * Peek at the next token type
+     */
+    fun peek(): RawJsonToken
 }
+
+/*
+* Creates a [JsonStreamReader] instance
+*/
+internal expect fun jsonStreamReader(payload: ByteArray): JsonStreamReader

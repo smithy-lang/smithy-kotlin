@@ -17,8 +17,7 @@ class LambdaClient: SdkClient {
         val config = HttpClientEngineConfig()
         client = sdkHttpClient(KtorEngine(config)) {
             install(HttpSerde) {
-                serializer = JsonSerializer()
-                deserializer = JsonDeserializer()
+                serdeProvider = JsonSerdeProvider()
             }
 
             // request defaults
@@ -93,13 +92,13 @@ fun main() = runBlocking{
     }
     println(aliasConfig)
 
-    println("running invalid 'createAlias' operation")
-    client.createAlias {
-        name = "DEV"
-        description = "alias for DEV"
-        // missing version
-    }
-    println(aliasConfig)
+    // println("running invalid 'createAlias' operation")
+    // client.createAlias {
+    //     name = "DEV"
+    //     description = "alias for DEV"
+    //     // missing version
+    // }
+    // println(aliasConfig)
 
     // FIXME - why isn't this exiting...seems like OkHTTP engine dispatcher isn't closing?
     client.close()

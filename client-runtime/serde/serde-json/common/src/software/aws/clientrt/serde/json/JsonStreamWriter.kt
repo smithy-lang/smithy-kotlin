@@ -52,7 +52,7 @@ interface JsonStreamWriter {
      *
      * @param name the name of the forthcoming value. May not be null.
      */
-    fun writeName(fieldName: String)
+    fun writeName(name: String)
 
     /**
      * Encodes {@code value}.
@@ -104,3 +104,8 @@ interface JsonStreamWriter {
      */
     val bytes: ByteArray?
 }
+
+/*
+* Creates a [JsonStreamWriter] instance to write JSON
+*/
+internal expect fun jsonStreamWriter(pretty: Boolean = false): JsonStreamWriter
