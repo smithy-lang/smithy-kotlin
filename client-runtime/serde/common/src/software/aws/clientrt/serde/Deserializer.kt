@@ -40,7 +40,7 @@ package software.aws.clientrt.serde
  *     field(X_DESCRIPTOR)
  *     field(Y_DESCRIPTOR)
  * }
- * loop@while(true) {
+ * loop@ while(true) {
  *     when(struct.nextField(OBJ_DESCRIPTOR)) {
  *         X_DESCRIPTOR.index ->  x = struct.deserializeInt()
  *         Y_DESCRIPTOR.index -> y = struct.deserializeInt()

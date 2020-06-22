@@ -35,6 +35,8 @@ import software.aws.clientrt.serde.json.JsonSerializer
 
 interface SdkClient {
     val serviceName: String
+
+    fun close() {}
 }
 
 interface HttpSerialize {

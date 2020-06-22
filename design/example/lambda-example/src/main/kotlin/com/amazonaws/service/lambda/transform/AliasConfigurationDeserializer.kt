@@ -42,9 +42,6 @@ class AliasConfigurationDeserializer: HttpDeserialize {
         val builder = AliasConfiguration.dslBuilder()
         // FIXME - expected response is 201, need to plug in error handling middleware as well as check for
         //  the specific code here (or pass it to the pipeline as metadata for a feature to check)
-        // println("AliasConfiguration::deserialize: response is success: ${response.status.isSuccess()}")
-        // val body = response.body.readAll()?.decodeToString()
-        // println("recv'd: $body")
 
         deserializer.deserializeStruct(null) {
             loop@while(true) {

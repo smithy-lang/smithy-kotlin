@@ -29,6 +29,7 @@ import software.aws.clientrt.io.Source
 
 interface SdkClient {
     val serviceName: String
+    fun close() {}
 }
 
 interface Serializer

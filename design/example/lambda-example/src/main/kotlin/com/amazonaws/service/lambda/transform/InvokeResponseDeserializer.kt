@@ -29,20 +29,14 @@ class InvokeResponseDeserializer: HttpDeserialize {
            Headers: ${response.headers.entries()}
         """.trimIndent())
 
-        val body = response.body
-        println("(${Thread.currentThread().name}) deserializer: reading body")
-        val respPayload = when(body) {
-            is HttpBody.Bytes -> body.bytes()
-            is HttpBody.Streaming -> body.readFrom().readAll()
-            else -> null
-        }
+        val body = response.body.readAll()
 
         return InvokeResponse{
             statusCode = response.status.value
             // functionError: String?
             logResult = response.headers["X-Amz-Log-Result"]
             executedVersion = response.headers["X-Amz-Executed-Version"]
-            payload = respPayload
+            payload = body
         }
     }
 }

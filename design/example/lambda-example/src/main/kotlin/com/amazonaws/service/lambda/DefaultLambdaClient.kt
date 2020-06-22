@@ -4,13 +4,13 @@ import com.amazonaws.service.runtime.*
 import com.amazonaws.service.lambda.model.*
 import com.amazonaws.service.lambda.transform.*
 import kotlinx.coroutines.runBlocking
+import software.aws.clientrt.SdkBaseException
+import software.aws.clientrt.ServiceException
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
 
-class LambdaClient: SdkClient {
-    override val serviceName: String = "lambda"
-
+class DefaultLambdaClient: LambdaClient {
     private val client: SdkHttpClient
 
     init {
@@ -41,39 +41,27 @@ class LambdaClient: SdkClient {
      * @throws ClientException
      * @throws ServiceException
      */
-    suspend fun invoke(input: InvokeRequest): InvokeResponse {
+    override suspend fun invoke(input: InvokeRequest): InvokeResponse {
         return client.roundTrip(InvokeRequestSerializer(input), InvokeResponseDeserializer())
     }
-
-    suspend fun invoke(block: InvokeRequest.DslBuilder.() -> Unit): InvokeResponse {
-        val input = InvokeRequest{ block(this) }
-        return invoke(input)
-    }
-
 
     /**
      * @throws InvalidParameterValueException
      * @throws ClientException
      * @throws ServiceException
      */
-    suspend fun createAlias(input: CreateAliasRequest): AliasConfiguration {
-        // FIXME - for operation inputs/outputs should we wrap them as e.g. "CreateAliasResponse" even though this operation output was listed as "AliasConfiguration"
+    override suspend fun createAlias(input: CreateAliasRequest): AliasConfiguration {
         return client.roundTrip(CreateAliasRequestSerializer(input), AliasConfigurationDeserializer())
     }
 
-    suspend fun createAlias(block: CreateAliasRequest.DslBuilder.() -> Unit): AliasConfiguration {
-        val input = CreateAliasRequest{ block(this) }
-        return createAlias(input)
-    }
-
-    fun close() {
+    override fun close() {
         client.close()
     }
 }
 
 
 fun main() = runBlocking{
-    val client = LambdaClient()
+    val client = LambdaClient.create()
     val request = InvokeRequest {
         functionName = "myfunction"
         payload = "some payload".toByteArray()
@@ -92,13 +80,17 @@ fun main() = runBlocking{
     }
     println(aliasConfig)
 
-    // println("running invalid 'createAlias' operation")
-    // client.createAlias {
-    //     name = "DEV"
-    //     description = "alias for DEV"
-    //     // missing version
-    // }
-    // println(aliasConfig)
+    println("running invalid 'createAlias' operation")
+    try {
+        client.createAlias {
+            name = "DEV"
+            description = "alias for DEV"
+            // missing version
+        }
+    } catch (ex: SdkBaseException) {
+        println("exception processing CreateAlias operation")
+        println(ex)
+    }
 
     // FIXME - why isn't this exiting...seems like OkHTTP engine dispatcher isn't closing?
     client.close()

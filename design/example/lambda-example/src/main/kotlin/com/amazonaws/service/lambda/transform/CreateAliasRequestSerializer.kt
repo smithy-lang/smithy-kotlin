@@ -55,9 +55,8 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
 
         // payload
         serializer.serializeStruct {
-            // required fields - TODO: this assumes these are validated already which is TBD. For now assume these are known not-null
-            field(NAME_DESCRIPTOR, input.name!!)
-            field(FUNCTION_VERSION_DESCRIPTOR, input.functionVersion!!)
+            input.name?.let { field(NAME_DESCRIPTOR, it) }
+            input.functionVersion?.let { field(FUNCTION_VERSION_DESCRIPTOR, it) }
 
             // optional fields
             input.description?.let { field(DESCRIPTION_FIELD_DESCRIPTOR, it) }
