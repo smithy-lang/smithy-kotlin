@@ -25,6 +25,8 @@ allprojects {
     }
 }
 
+apply(from = rootProject.file("gradle/maincodecoverage.gradle"))
+
 val ktlint by configurations.creating
 val ktlintVersion: String by project
 
@@ -53,3 +55,33 @@ tasks.register<JavaExec>("ktlintFormat") {
     args = listOf("-F") + lintPaths
 }
 
+@Suppress("UnstableApiUsage")
+task<JacocoMerge>("jacocoMerge") {
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    description = "Merge the JaCoCo data files from all subprojects into one"
+    afterEvaluate {
+        // An empty FileCollection
+        val execFiles = objects.fileCollection()
+        val projectList = subprojects + project
+        projectList.forEach { subProject: Project ->
+            if (subProject.pluginManager.hasPlugin("jacoco")) {
+                val testTasks = subProject.tasks.withType<Test>()
+                // ensure that .exec files are actually present
+                dependsOn(testTasks)
+
+                testTasks.forEach { task: Test ->
+                    // The JacocoTaskExtension is the source of truth for the location of the .exec file.
+                    val extension = task.extensions.findByType(JacocoTaskExtension::class.java)
+                    extension?.let {
+                        execFiles.from(it.destinationFile)
+                    }
+                }
+            }
+        }
+        executionData = execFiles
+    }
+    doFirst {
+        // .exec files might be missing if a project has no tests. Filter in execution phase.
+        executionData = executionData.filter { it.canRead() }
+    }
+}

@@ -82,11 +82,6 @@ subprojects {
         outputDirectory = "$buildDir/kdoc"
     }
 
-    // apply jacoco plugin and configure it
-    if (projectNeedsPlatform(project, "jvm")) {
-        apply(from = rootProject.file("gradle/codecoverage.gradle"))
-    }
-
     apply(from = rootProject.file("gradle/publish.gradle"))
 }
 
