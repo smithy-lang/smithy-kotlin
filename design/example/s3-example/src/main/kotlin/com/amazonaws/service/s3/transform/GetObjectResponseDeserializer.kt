@@ -14,15 +14,15 @@
  */
 package com.amazonaws.service.s3.transform
 
-import com.amazonaws.service.runtime.Deserializer
-import com.amazonaws.service.runtime.HttpDeserialize
-import com.amazonaws.service.runtime.toByteStream
 import com.amazonaws.service.s3.model.GetObjectResponse
+import software.aws.clientrt.http.feature.DeserializationProvider
+import software.aws.clientrt.http.feature.HttpDeserialize
 import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.toByteStream
 
 
 class GetObjectResponseDeserializer: HttpDeserialize {
-    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): GetObjectResponse {
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): GetObjectResponse {
         return GetObjectResponse{
              deleteMarker = response.headers["x-amz-delete-marker"]?.toBoolean()
              acceptRanges = response.headers["accept-ranges"]

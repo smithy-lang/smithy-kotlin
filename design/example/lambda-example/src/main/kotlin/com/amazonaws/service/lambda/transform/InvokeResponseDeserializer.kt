@@ -14,15 +14,15 @@
  */
 package com.amazonaws.service.lambda.transform
 
-import com.amazonaws.service.runtime.*
 import com.amazonaws.service.lambda.model.InvokeResponse
-import software.aws.clientrt.http.HttpBody
+import software.aws.clientrt.http.feature.DeserializationProvider
+import software.aws.clientrt.http.feature.HttpDeserialize
+import software.aws.clientrt.http.readAll
 import software.aws.clientrt.http.response.HttpResponse
-import software.aws.clientrt.serde.Deserializer
 
 
 class InvokeResponseDeserializer: HttpDeserialize {
-    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): InvokeResponse {
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): InvokeResponse {
         println("""
            Received: 
            Status: ${response.status}

@@ -58,7 +58,7 @@ class PreparedHttpRequestTest {
         }
 
         val preparedReq = PreparedHttpRequest(client, HttpRequestBuilder())
-        val actual = preparedReq.execute<HttpResponse>()
+        val actual = preparedReq.receive<HttpResponse>()
 
         actual.request.headers.contains("x-test").shouldBeTrue()
     }
@@ -92,7 +92,7 @@ class PreparedHttpRequestTest {
 
         val preparedReq = PreparedHttpRequest(client, HttpRequestBuilder())
         try {
-            preparedReq.execute<HttpResponse>()
+            preparedReq.receive<HttpResponse>()
         } catch (ex: ResponseTransformFailed) {
             ex.message.shouldContain("Response transform failed: class kotlin.Int -> class")
             ex.message.shouldContain("200: OK")

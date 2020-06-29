@@ -15,7 +15,10 @@
 package com.amazonaws.service.lambda.transform
 
 import com.amazonaws.service.lambda.model.AliasConfiguration
-import com.amazonaws.service.runtime.HttpDeserialize
+import software.aws.clientrt.ClientException
+import software.aws.clientrt.http.feature.DeserializationProvider
+import software.aws.clientrt.http.feature.HttpDeserialize
+import software.aws.clientrt.http.readAll
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.serde.*
 
@@ -38,7 +41,10 @@ class AliasConfigurationDeserializer: HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): AliasConfiguration {
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): AliasConfiguration {
+        // FIXME - what exception do we want here?
+        val payload = response.body.readAll() ?: throw ClientException("expected a response payload deserializing AliasConfiguration")
+        val deserializer = provider(payload)
         val builder = AliasConfiguration.dslBuilder()
         // FIXME - expected response is 201, need to plug in error handling middleware as well as check for
         //  the specific code here (or pass it to the pipeline as metadata for a feature to check)

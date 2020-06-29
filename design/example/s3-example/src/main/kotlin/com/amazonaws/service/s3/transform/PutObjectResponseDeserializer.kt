@@ -14,14 +14,14 @@
  */
 package com.amazonaws.service.s3.transform
 
-import com.amazonaws.service.runtime.Deserializer
-import com.amazonaws.service.runtime.HttpDeserialize
 import com.amazonaws.service.s3.model.PutObjectResponse
+import software.aws.clientrt.http.feature.DeserializationProvider
+import software.aws.clientrt.http.feature.HttpDeserialize
 import software.aws.clientrt.http.response.HttpResponse
 
 
 class PutObjectResponseDeserializer : HttpDeserialize {
-    override suspend fun deserialize(response: HttpResponse, deserializer: Deserializer): Any {
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any {
         return PutObjectResponse {
             eTag = response.headers["ETag"]
             expiration = response.headers["X-Amz-Expiration"]

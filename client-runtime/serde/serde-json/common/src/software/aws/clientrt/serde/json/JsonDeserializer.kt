@@ -67,7 +67,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun deserializeString(): String {
         val token = nextToken<JsonToken.String>()
-        return (token as JsonToken.String).value
+        return token.value
     }
 
     override fun deserializeBool(): Boolean {

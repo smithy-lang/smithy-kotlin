@@ -18,6 +18,7 @@ import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
+import software.aws.clientrt.util.InternalAPI
 
 /**
  * A prepared HTTP request for a client to execute. This does nothing until the [execute] method is called.
@@ -31,9 +32,11 @@ class PreparedHttpRequest(
 
     /**
      * Execute this request and return the result of the [SdkHttpClient.responsePipeline]
+     * leaving the underlying HTTP connection (possibly) still open
      * @throws ResponseTransformFailed
      */
-    suspend inline fun <reified TResponse> execute(): TResponse {
+    @InternalAPI
+    suspend inline fun <reified TResponse> executeUnsafe(): Pair<HttpResponse, TResponse> {
         val subject: Any = input ?: builder.body
         client.requestPipeline.execute(builder, subject)
         val httpResponse = client.engine.roundTrip(builder)
@@ -54,7 +57,7 @@ class PreparedHttpRequest(
         } catch (ex: Exception) {
             // if the response pipeline fails (e.g. during deserialization) then we discard the response
             // ensuring any underlying resources are released. This ensures partial reads don't leak resources.
-            httpResponse.close()
+            httpResponse.complete()
             throw ex
         }
 
@@ -63,7 +66,39 @@ class PreparedHttpRequest(
             throw ResponseTransformFailed(httpResponse, response::class, want.classz)
         }
 
-        return response
+        return Pair(httpResponse, response)
+    }
+
+    /**
+     * Execute this request and return the result of the [SdkHttpClient.responsePipeline]
+     * Underlying resources are cleaned up before leaving the call.
+     * @throws ResponseTransformFailed
+     */
+    suspend inline fun <reified TResponse> receive(): TResponse = when (TResponse::class) {
+            PreparedHttpRequest::class -> this as TResponse
+            else -> {
+                val (httpResp, result) = executeUnsafe<TResponse>()
+                try {
+                    result
+                } finally {
+                    httpResp.complete()
+                }
+            }
+        }
+
+    /**
+     * Execute the request and run the [block] with the result of the [SdkHttpClient.responsePipeline].
+     * Resources will remain open until the block finishes, when the call returns underlying
+     * resources will be cleaned up.
+     */
+    suspend inline fun <reified T, R> execute(crossinline block: suspend (response: T) -> R): R {
+        val response = executeUnsafe<T>()
+        try {
+            return block(response.second)
+        } finally {
+            // signal the response can now be discarded
+            response.first.complete()
+        }
     }
 }
 

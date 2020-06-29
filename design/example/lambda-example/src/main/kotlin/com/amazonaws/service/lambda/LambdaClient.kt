@@ -15,7 +15,7 @@
 package com.amazonaws.service.lambda
 
 import com.amazonaws.service.lambda.model.*
-import com.amazonaws.service.runtime.SdkClient
+import software.aws.clientrt.SdkClient
 
 
 interface LambdaClient: SdkClient {

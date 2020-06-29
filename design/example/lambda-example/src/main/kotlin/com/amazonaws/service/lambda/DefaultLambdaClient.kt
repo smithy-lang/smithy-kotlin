@@ -1,6 +1,5 @@
 package com.amazonaws.service.lambda
 
-import com.amazonaws.service.runtime.*
 import com.amazonaws.service.lambda.model.*
 import com.amazonaws.service.lambda.transform.*
 import kotlinx.coroutines.runBlocking
@@ -9,6 +8,10 @@ import software.aws.clientrt.ServiceException
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
+import software.aws.clientrt.http.feature.DefaultRequest
+import software.aws.clientrt.http.feature.DefaultValidateResponse
+import software.aws.clientrt.http.feature.HttpSerde
+import software.aws.clientrt.serde.json.JsonSerdeProvider
 
 class DefaultLambdaClient: LambdaClient {
     private val client: SdkHttpClient

@@ -58,3 +58,20 @@ sealed class ByteStream {
         fun fromBytes(bytes: ByteArray): ByteStream = ByteArrayContent(bytes)
     }
 }
+
+suspend fun ByteStream.toByteArray(): ByteArray {
+    return when (val stream = this) {
+        is ByteStream.Buffer -> stream.bytes()
+        is ByteStream.Reader -> stream.readFrom().readAll()
+    }
+}
+
+@OptIn(ExperimentalStdlibApi::class)
+suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
+
+fun ByteStream.cancel() {
+    when (val stream = this) {
+        is ByteStream.Buffer -> stream.bytes()
+        is ByteStream.Reader -> stream.readFrom().cancel(null)
+    }
+}

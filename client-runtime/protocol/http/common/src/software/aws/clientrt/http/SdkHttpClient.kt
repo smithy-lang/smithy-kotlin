@@ -73,11 +73,24 @@ class SdkHttpClient(
  * pipeline. The output type [TResponse] is expected to be producible by the response pipeline.
  */
 suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(input: Any, responseContext: Any? = null): TResponse =
-    PreparedHttpRequest(this, HttpRequestBuilder(), input, responseContext).execute()
+    PreparedHttpRequest(this, HttpRequestBuilder(), input, responseContext).receive()
 
 /**
  * Make an HTTP request using the given [HttpRequestBuilder]. The body of the request builder will be used as the
  * subject of the request pipeline.
  */
 suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(builder: HttpRequestBuilder, responseContext: Any? = null): TResponse =
-    PreparedHttpRequest(this, builder, userContext = responseContext).execute()
+    PreparedHttpRequest(this, builder, userContext = responseContext).receive()
+
+/**
+ * Make an HTTP request with the given input type and run the [block] with the result of the response pipeline.
+ *
+ * The underlying HTTP response will remain available until the block returns making this method suitable for
+ * streaming responses.
+ */
+suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
+    input: Any,
+    responseContext: Any?,
+    crossinline block: suspend (TResponse) -> R
+): R =
+    PreparedHttpRequest(this, HttpRequestBuilder(), input, responseContext).execute(block)

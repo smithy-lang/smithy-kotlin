@@ -14,6 +14,7 @@
  */
 package software.aws.clientrt.http
 
+import software.aws.clientrt.content.ByteStream
 import software.aws.clientrt.io.Source
 
 /**
@@ -54,5 +55,49 @@ sealed class HttpBody {
          * Provides [Source] for the content
          */
         abstract fun readFrom(): Source
+    }
+}
+
+/**
+ * Convert a [ByteStream] to the equivalent [HttpBody] variant
+ */
+fun ByteStream.toHttpBody(): HttpBody {
+    return when (val bytestream = this) {
+        is ByteStream.Buffer -> object : HttpBody.Bytes() {
+            override val contentLength: Long? = bytestream.contentLength
+            override fun bytes(): ByteArray = bytestream.bytes()
+        }
+        is ByteStream.Reader -> object : HttpBody.Streaming() {
+            override val contentLength: Long? = bytestream.contentLength
+            override fun readFrom(): Source = bytestream.readFrom()
+        }
+    }
+}
+
+/**
+ * Consume the [HttpBody] and pull the entire contents into memory as a [ByteArray].
+ * Only do this if you are sure the contents fit in-memory as this will read the entire contents
+ * of a streaming variant.
+ */
+suspend fun HttpBody.readAll(): ByteArray? = when (this) {
+    is HttpBody.Empty -> null
+    is HttpBody.Bytes -> this.bytes()
+    is HttpBody.Streaming -> this.readFrom().readAll()
+}
+
+/**
+ * Convert an [HttpBody] variant to the corresponding [ByteStream] variant or null if empty.
+ */
+fun HttpBody.toByteStream(): ByteStream? {
+    return when (val body = this) {
+        is HttpBody.Empty -> null
+        is HttpBody.Bytes -> object : ByteStream.Buffer() {
+            override val contentLength: Long? = body.contentLength
+            override fun bytes(): ByteArray = body.bytes()
+        }
+        is HttpBody.Streaming -> object : ByteStream.Reader() {
+            override val contentLength: Long? = body.contentLength
+            override fun readFrom(): Source = body.readFrom()
+        }
     }
 }

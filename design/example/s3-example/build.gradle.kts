@@ -4,11 +4,13 @@ plugins {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-//    implementation(project(":client-rt"))
-//    implementation("io.ktor:ktor-client-core-jvm:1.3.2")
     implementation(project(":client-runtime:client-rt-core"))
     implementation(project(":client-runtime:protocol:http"))
+    implementation(project(":client-runtime:protocol:http:features:http-serde"))
     implementation(project(":client-runtime:protocol:http-client-engines:http-client-engine-ktor"))
+    implementation(project(":client-runtime:serde"))
+    // S3 would obviously be XML
+    implementation(project(":client-runtime:serde:serde-json"))
 
     // FIXME - this is only necessary for a conversion from ByteStream to HttpBody (which belongs in client runtime)
     implementation(project(":client-runtime:io"))
