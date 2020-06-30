@@ -30,12 +30,11 @@ class ImportDeclarations {
 
         return imports
             .map(ImportStatement::statement)
-            .distinct()
             .sorted()
             .joinToString(separator = "\n")
     }
 
-    private val imports: MutableList<ImportStatement> = mutableListOf()
+    private val imports: MutableSet<ImportStatement> = mutableSetOf()
 }
 
 private data class ImportStatement(val packageName: String, val symbolName: String, val alias: String) {

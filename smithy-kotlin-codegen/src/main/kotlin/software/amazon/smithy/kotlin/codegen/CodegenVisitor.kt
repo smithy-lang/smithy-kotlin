@@ -15,10 +15,12 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import java.util.*
 import java.util.logging.Logger
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
@@ -26,11 +28,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 /**
  * Orchestrates Kotlin code generation
  */
-class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
-
-    override fun getDefault(shape: Shape?): Void? {
-        return null
-    }
+class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     val LOGGER = Logger.getLogger(javaClass.name)
     private val model = context.model
@@ -40,6 +38,15 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
     private val fileManifest: FileManifest = context.fileManifest
     private val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, settings.moduleName)
     private val writers: KotlinDelegator = KotlinDelegator(settings, model, fileManifest, symbolProvider)
+    private val integrations: List<KotlinIntegration>
+
+    init {
+        LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
+        integrations = ServiceLoader.load(KotlinIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
+            .also { integration ->
+                LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
+            }.toList()
+    }
 
     fun execute() {
         LOGGER.info("Generating Kotlin client for service ${settings.service}")
@@ -48,33 +55,38 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Void>() {
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
 
+        val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
+        writeGradleBuild(settings, fileManifest, dependencies)
+
         println("flushing writers")
         writers.flushWriters()
-
-        writeGradleBuild(settings, fileManifest)
     }
 
-    override fun structureShape(shape: StructureShape): Void? {
+    override fun getDefault(shape: Shape?) {
+    }
+
+    override fun structureShape(shape: StructureShape) {
         writers.useShapeWriter(shape) { StructureGenerator(model, symbolProvider, it, shape).render() }
-        return null
     }
 
-    override fun stringShape(shape: StringShape): Void? {
+    override fun stringShape(shape: StringShape) {
         if (shape.hasTrait(EnumTrait::class.java)) {
             writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
         }
-        return null
     }
 
-    override fun unionShape(shape: UnionShape): Void? {
+    override fun unionShape(shape: UnionShape) {
         writers.useShapeWriter(shape) { UnionGenerator(model, symbolProvider, it, shape).render() }
-        return null
     }
 
-    override fun serviceShape(shape: ServiceShape?): Void? {
-        writers.useShapeWriter(shape) {
-            // TODO - generate client(s)
+    override fun serviceShape(shape: ServiceShape) {
+        if (service != shape) {
+            LOGGER.fine("Skipping `${shape.id}` because it is not `${service.id}`")
+            return
         }
-        return null
+
+        writers.useShapeWriter(shape) {
+            ServiceGenerator(model, symbolProvider, it, shape, settings.moduleName).render()
+        }
     }
 }

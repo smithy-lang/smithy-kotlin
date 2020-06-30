@@ -25,12 +25,13 @@ extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 group = "software.amazon.smithy"
 version = "0.1.0"
 
+val smithyVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    api("software.amazon.smithy:smithy-codegen-core:1.0.0")
-    implementation("software.amazon.smithy:smithy-aws-traits:1.0.0")
-    implementation("software.amazon.smithy:smithy-protocol-test-traits:1.0.0")
+    api("software.amazon.smithy:smithy-codegen-core:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.1")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.5")
 }

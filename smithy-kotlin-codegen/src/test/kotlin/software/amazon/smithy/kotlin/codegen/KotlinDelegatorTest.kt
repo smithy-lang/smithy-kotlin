@@ -46,6 +46,7 @@ class KotlinDelegatorTest {
 
         Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/model/GetFooInput.kt"))
         Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/model/GetFooOutput.kt"))
+        Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/ExampleClient.kt"))
     }
 
     @Test fun `it adds imports`() {

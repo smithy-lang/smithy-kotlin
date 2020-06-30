@@ -20,7 +20,7 @@ import software.amazon.smithy.utils.CodeWriter
 /**
  * Create the gradle build file for the generated code
  */
-fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest) {
+fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest, dependencies: List<KotlinDependency>) {
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
@@ -32,8 +32,10 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest) {
     }
 
     writer.withBlock("dependencies {", "}\n") {
-        // TODO pass in the dependencies and dump them here
         write("implementation(kotlin(\"stdlib\"))")
+        for (dependency in dependencies) {
+            write("${dependency.config}(\"\$L:\$L:\$L\")", dependency.group, dependency.artifact, dependency.version)
+        }
     }
 
     val contents = writer.toString()

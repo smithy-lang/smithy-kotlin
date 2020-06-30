@@ -20,6 +20,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.utils.StringUtils
 
 // PropertyBag keys
@@ -64,6 +65,11 @@ fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
  * Get the default name for a member shape (for code generation)
  */
 fun MemberShape.defaultName(): String = StringUtils.uncapitalize(this.memberName)
+
+/**
+ * Get the default name for an operation shape
+ */
+fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name)
 
 /**
  * Convert shapes to Kotlin types
@@ -232,8 +238,16 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, "TimestampTODO", boxed = true).build()
     }
 
-    override fun blobShape(shape: BlobShape?): Symbol {
-        return createSymbolBuilder(shape, "ByteArray", boxed = true).build()
+    override fun blobShape(shape: BlobShape): Symbol {
+        return if (shape.hasTrait(StreamingTrait::class.java)) {
+            val dependency = KotlinDependency.CLIENT_RT_CORE
+            createSymbolBuilder(shape, "ByteStream", boxed = true)
+                .namespace("${dependency.namespace}.content", ".")
+                .addDependency(dependency)
+                .build()
+        } else {
+            createSymbolBuilder(shape, "ByteArray", boxed = true).build()
+        }
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol {
@@ -267,8 +281,11 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, "OperationTODO").build()
     }
 
-    override fun serviceShape(shape: ServiceShape?): Symbol {
-        return createSymbolBuilder(shape, "Client").definitionFile("./Client.kt").build()
+    override fun serviceShape(shape: ServiceShape): Symbol {
+        val serviceName = shape.defaultName()
+        return createSymbolBuilder(shape, "${serviceName}Client")
+            .namespace(rootNamespace, ".")
+            .definitionFile("${serviceName}Client.kt").build()
     }
 
     /**
@@ -299,15 +316,5 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     ): Symbol.Builder {
         return createSymbolBuilder(shape, typeName, boxed)
             .namespace(namespace, ".")
-    }
-
-    // Create a reference to the given symbol from the dependency
-    fun createNamespaceReference(dependency: KotlinDependency, symbolName: String): SymbolReference {
-        val namespace = dependency.namespace
-        val nsSymbol = Symbol.builder()
-            .name(symbolName)
-            .namespace(namespace, ".")
-            .build()
-        return SymbolReference.builder().symbol(nsSymbol).options(SymbolReference.ContextOption.DECLARE).build()
     }
 }

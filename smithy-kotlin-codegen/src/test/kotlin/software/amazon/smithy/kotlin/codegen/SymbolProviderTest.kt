@@ -25,9 +25,11 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 
 class SymbolProviderTest {
-    @Test fun `escapes reserved member names`() {
+    @Test
+    fun `escapes reserved member names`() {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$class").target("smithy.api#String").build()
         val struct = StructureShape.builder()
             .id("foo.bar#MyStruct")
@@ -43,7 +45,8 @@ class SymbolProviderTest {
         assertEquals("_class", actual)
     }
 
-    @Test fun `creates symbols in correct namespace`() {
+    @Test
+    fun `creates symbols in correct namespace`() {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#String").build()
         val struct = StructureShape.builder()
             .id("foo.bar#MyStruct")
@@ -106,7 +109,8 @@ class SymbolProviderTest {
         assertEquals(expectedName, memberSymbol.name)
     }
 
-    @Test fun `creates blobs`() {
+    @Test
+    fun `creates blobs`() {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#Blob").build()
         val struct = StructureShape.builder()
             .id("foo.bar#MyStruct")
@@ -127,7 +131,34 @@ class SymbolProviderTest {
         assertEquals("ByteArray", memberSymbol.name)
     }
 
-    @Test fun `creates lists`() {
+    @Test
+    fun `creates streaming blobs`() {
+
+        val blobStream = BlobShape.builder().id("foo.bar#BodyStream").addTrait(StreamingTrait()).build()
+
+        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target(blobStream).build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(member)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct, member, blobStream)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val memberSymbol = provider.toSymbol(member)
+
+        assertEquals("software.aws.clientrt.content", memberSymbol.namespace)
+        assertEquals("null", memberSymbol.defaultValue())
+        assertEquals(true, memberSymbol.isBoxed())
+        assertEquals("ByteStream", memberSymbol.name)
+        val dependency = memberSymbol.dependencies[0].expectProperty("dependency") as KotlinDependency
+        assertEquals("CLIENT_RT_CORE", dependency.name)
+    }
+
+    @Test
+    fun `creates lists`() {
         val struct = StructureShape.builder().id("foo.bar#Record").build()
         val listMember = MemberShape.builder().id("foo.bar#Records\$member").target(struct).build()
         val list = ListShape.builder()
@@ -150,7 +181,8 @@ class SymbolProviderTest {
         assertEquals("Record", listSymbol.references[0].symbol.name)
     }
 
-    @Test fun `creates sets`() {
+    @Test
+    fun `creates sets`() {
         val struct = StructureShape.builder().id("foo.bar#Record").build()
         val setMember = MemberShape.builder().id("foo.bar#Records\$member").target(struct).build()
         val set = SetShape.builder()
@@ -173,7 +205,8 @@ class SymbolProviderTest {
         assertEquals("Record", setSymbol.references[0].symbol.name)
     }
 
-    @Test fun `creates maps`() {
+    @Test
+    fun `creates maps`() {
         val struct = StructureShape.builder().id("foo.bar#Record").build()
         val keyMember = MemberShape.builder().id("foo.bar#MyMap\$key").target("smithy.api#String").build()
         val valueMember = MemberShape.builder().id("foo.bar#MyMap\$value").target(struct).build()
@@ -274,7 +307,8 @@ class SymbolProviderTest {
         assertEquals("MyUnion.kt", symbol.definitionFile)
     }
 
-    @Test fun `creates structures`() {
+    @Test
+    fun `creates structures`() {
         val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#String").build()
         val struct = StructureShape.builder()
             .id("foo.bar#MyStruct")
