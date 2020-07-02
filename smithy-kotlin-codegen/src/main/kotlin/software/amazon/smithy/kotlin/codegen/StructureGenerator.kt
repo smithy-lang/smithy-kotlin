@@ -103,6 +103,8 @@ class StructureGenerator(
             write("@JvmStatic")
             write("fun builder(): Builder = BuilderImpl()")
             write("")
+            write("fun dslBuilder(): DslBuilder = BuilderImpl()")
+            write("")
             write("operator fun invoke(block: DslBuilder.() -> Unit): \$class.name:L = BuilderImpl().apply(block).build()")
             write("")
         }
@@ -121,23 +123,13 @@ class StructureGenerator(
     private fun renderCopy() {
         if (sortedMembers.isEmpty()) return
 
+        // copy has to go through a builder, if we were to generate a "normal"
+        // data class copy() with defaults for all properties we would end up in the same
+        // situation we have with constructors and positional arguments not playing well
+        // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-        .write("fun copy(")
-            .indent()
-                .call {
-                    for ((index, member) in sortedMembers.withIndex()) {
-                        val (memberName, memberSymbol) = byMemberShape[member]!!
-                        val terminator = if (index == sortedMembers.size - 1) "" else ","
-                        writer.write("\$1L: \$2T = this.\$1L$terminator", memberName, memberSymbol)
-                    }
-                }
-            .dedent()
-            .withBlock("): \$class.name:L = BuilderImpl(this).apply {", "}.build()") {
-                for (member in sortedMembers) {
-                    val (memberName, _) = byMemberShape[member]!!
-                    writer.write("this.\$1L = \$1L", memberName)
-                }
-            }
+        .write("fun copy(block: DslBuilder.() -> Unit = {}): \$class.name:L = BuilderImpl(this).apply(block).build()")
+            .write("")
     }
 
     private fun renderJavaBuilderInterface() {

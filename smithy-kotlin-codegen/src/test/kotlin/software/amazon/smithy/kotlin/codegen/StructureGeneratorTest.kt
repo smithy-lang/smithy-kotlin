@@ -126,6 +126,8 @@ class MyStruct private constructor(builder: BuilderImpl) {
         @JvmStatic
         fun builder(): Builder = BuilderImpl()
 
+        fun dslBuilder(): DslBuilder = BuilderImpl()
+
         operator fun invoke(block: DslBuilder.() -> Unit): MyStruct = BuilderImpl().apply(block).build()
 
     }
@@ -136,17 +138,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     @Test
     fun `it renders a copy implementation`() {
         val expected = """
-    fun copy(
-        bar: Integer = this.bar,
-        baz: Integer? = this.baz,
-        foo: String? = this.foo,
-        quux: Qux? = this.quux
-    ): MyStruct = BuilderImpl(this).apply {
-        this.bar = bar
-        this.baz = baz
-        this.foo = foo
-        this.quux = quux
-    }.build()
+    fun copy(block: DslBuilder.() -> Unit = {}): MyStruct = BuilderImpl(this).apply(block).build()
 """
         commonTestContents.shouldContain(expected)
     }
