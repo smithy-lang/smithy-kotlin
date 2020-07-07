@@ -16,6 +16,8 @@ plugins {
     kotlin("jvm")
     id("org.jetbrains.dokka")
     jacoco
+    maven
+    `maven-publish`
 }
 
 description = "Generates Kotlin code from Smithy models"
@@ -60,6 +62,13 @@ tasks.jar {
     }
 }
 
+val sourcesJar by tasks.creating(Jar::class) {
+    group = "publishing"
+    description = "Assembles Kotlin sources jar"
+    classifier = "sources"
+    from(sourceSets.getByName("main").allSource)
+}
+
 tasks.test {
     useJUnitPlatform()
     testLogging {
@@ -87,3 +96,19 @@ tasks.jacocoTestReport {
 
 // Always run the jacoco test report after testing.
 tasks["test"].finalizedBy(tasks["jacocoTestReport"])
+
+
+publishing {
+    publications {
+        create<MavenPublication>("default") {
+            from(components["java"])
+            artifact(sourcesJar)
+        }
+    }
+    repositories {
+        maven {
+            url = uri("$buildDir/repository")
+        }
+    }
+}
+

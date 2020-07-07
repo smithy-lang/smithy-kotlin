@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import java.nio.file.Paths
 import software.amazon.smithy.build.FileManifest
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
@@ -58,21 +59,46 @@ class KotlinDelegator(
      * Gets a previously created writer or creates a new one if needed.
      *
      * @param shape Shape to create the writer for.
-     * @param writerConsumer Consumer that accepts and works with the file.
+     * @param block Consumer that accepts and works with the file.
      */
     fun useShapeWriter(
-        shape: Shape?,
-        writerConsumer: (KotlinWriter) -> Unit
+        shape: Shape,
+        block: (KotlinWriter) -> Unit
     ) {
         val symbol = symbolProvider.toSymbol(shape)
+        useShapeWriter(symbol, block)
+    }
+
+    /**
+     * Gets a previously created writer or creates a new one if needed.
+     *
+     * @param symbol Symbol to create the writer for.
+     * @param block Lambda that accepts and works with the file.
+     */
+    fun useShapeWriter(
+        symbol: Symbol,
+        block: (KotlinWriter) -> Unit
+    ) {
         val writer: KotlinWriter = checkoutWriter(symbol.definitionFile, symbol.namespace)
 
         // Add any needed DECLARE symbols.
         writer.addImportReferences(symbol, SymbolReference.ContextOption.DECLARE)
         writer.dependencies.addAll(symbol.dependencies)
         writer.pushState()
-        writerConsumer(writer)
+        block(writer)
         writer.popState()
+    }
+
+    /**
+     * Gets a previously created writer or creates a new one if needed
+     * and adds a new line if the writer already exists.
+     *
+     * @param filename Name of the file to create.
+     * @param block Lambda that accepts and works with the file.
+     */
+    fun useFileWriter(filename: String, namespace: String, block: (KotlinWriter) -> Unit) {
+        val writer: KotlinWriter = checkoutWriter(filename, namespace)
+        block(writer)
     }
 
     private fun checkoutWriter(filename: String, namespace: String): KotlinWriter {

@@ -20,6 +20,7 @@ import java.util.logging.Logger
 import kotlin.streams.toList
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.ObjectNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -109,6 +110,28 @@ class KotlinSettings(
             }
         }
     }
+
+    /**
+     * Resolves the highest priority protocol from a service shape that is
+     * supported by the generator.
+     *
+     * @param serviceIndex Service index containing the support
+     * @param service Service to get the protocols from if "protocols" is not set.
+     * @param supportedProtocolTraits The set of protocol traits supported by the generator.
+     * @return Returns the resolved protocol name.
+     * @throws UnresolvableProtocolException if no protocol could be resolved.
+     */
+    fun resolveServiceProtocol(
+        serviceIndex: ServiceIndex,
+        service: ServiceShape,
+        supportedProtocolTraits: Set<ShapeId>
+    ): ShapeId {
+        val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
+        val protocol = resolvedProtocols.firstOrNull(supportedProtocolTraits::contains)
+        return protocol ?: throw UnresolvableProtocolException(
+            "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
+            "The following protocol generators were found on the class path: $supportedProtocolTraits")
+    }
 }
 
 data class BuildSettings(val rootProject: Boolean = false) {
@@ -124,3 +147,5 @@ data class BuildSettings(val rootProject: Boolean = false) {
         fun Default(): BuildSettings = BuildSettings(false)
     }
 }
+
+class UnresolvableProtocolException(message: String) : CodegenException(message)

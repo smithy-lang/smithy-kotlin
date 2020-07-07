@@ -48,8 +48,9 @@ class StructureGeneratorTest {
         val struct2 = StructureShape.builder()
             .id("com.test#Qux")
             .build()
-        // structure member shape
-        val member4 = MemberShape.builder().id("com.test#MyStruct\$quux").target(struct2).build()
+        // structure member shape - note the capitalization of the member name (generated code should use the Kotlin class member name)
+        val member4 = MemberShape.builder().id("com.test#MyStruct\$Quux").target(struct2).build()
+        val member5 = MemberShape.builder().id("com.test#MyStruct\$byteValue").target("smithy.api#Byte").build()
 
         val struct = StructureShape.builder()
             .id("com.test#MyStruct")
@@ -57,6 +58,7 @@ class StructureGeneratorTest {
             .addMember(member2)
             .addMember(member3)
             .addMember(member4)
+            .addMember(member5)
             .addTrait(DocumentationTrait("This *is* documentation about the shape."))
             .build()
 
@@ -204,6 +206,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
      */
     val bar: Int = builder.bar
     val baz: Int? = builder.baz
+    val byteValue: Byte? = builder.byteValue
     val foo: String? = builder.foo
     val quux: Qux? = builder.quux
 """
@@ -234,6 +237,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         append("MyStruct(")
         append("bar=${'$'}bar,")
         append("baz=${'$'}baz,")
+        append("byteValue=${'$'}byteValue,")
         append("foo=${'$'}foo,")
         append("quux=${'$'}quux)")
     }
@@ -247,6 +251,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     override fun hashCode(): Int {
         var result = bar
         result = 31 * result + (baz ?: 0)
+        result = 31 * result + (byteValue?.toInt() ?: 0)
         result = 31 * result + (foo?.hashCode() ?: 0)
         result = 31 * result + (quux?.hashCode() ?: 0)
         return result
@@ -266,6 +271,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
 
         if (bar != other.bar) return false
         if (baz != other.baz) return false
+        if (byteValue != other.byteValue) return false
         if (foo != other.foo) return false
         if (quux != other.quux) return false
 
@@ -290,6 +296,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         fun build(): MyStruct
         fun bar(bar: Int): Builder
         fun baz(baz: Int): Builder
+        fun byteValue(byteValue: Byte): Builder
         fun foo(foo: String): Builder
         fun quux(quux: Qux): Builder
     }
@@ -303,6 +310,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     interface DslBuilder {
         var bar: Int
         var baz: Int?
+        var byteValue: Byte?
         var foo: String?
         var quux: Qux?
 
@@ -320,12 +328,14 @@ class MyStruct private constructor(builder: BuilderImpl) {
     private class BuilderImpl() : Builder, DslBuilder {
         override var bar: Int = 0
         override var baz: Int? = null
+        override var byteValue: Byte? = null
         override var foo: String? = null
         override var quux: Qux? = null
 
         constructor(x: MyStruct) : this() {
             this.bar = x.bar
             this.baz = x.baz
+            this.byteValue = x.byteValue
             this.foo = x.foo
             this.quux = x.quux
         }
@@ -333,6 +343,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         override fun build(): MyStruct = MyStruct(this)
         override fun bar(bar: Int): Builder = apply { this.bar = bar }
         override fun baz(baz: Int): Builder = apply { this.baz = baz }
+        override fun byteValue(byteValue: Byte): Builder = apply { this.byteValue = byteValue }
         override fun foo(foo: String): Builder = apply { this.foo = foo }
         override fun quux(quux: Qux): Builder = apply { this.quux = quux }
     }

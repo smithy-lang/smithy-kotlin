@@ -94,3 +94,16 @@ suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
     crossinline block: suspend (TResponse) -> R
 ): R =
     PreparedHttpRequest(this, HttpRequestBuilder(), input, responseContext).execute(block)
+
+/**
+ * Make an HTTP request with the given [HttpRequestBuilder] and run the [block] with the result of the response pipeline.
+ *
+ * The underlying HTTP response will remain available until the block returns making this method suitable for
+ * streaming responses.
+ */
+suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
+    builder: HttpRequestBuilder,
+    responseContext: Any?,
+    crossinline block: suspend (TResponse) -> R
+): R =
+    PreparedHttpRequest(this, builder, userContext = responseContext).execute(block)

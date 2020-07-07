@@ -73,11 +73,8 @@ class Base64Test {
     @Test
     fun `zeroes`() {
         val input = ByteArray(6) { 0 }
-        val actual = input.encodeBase64()
-        for (i in actual.indices) {
-            // AAAAAA
-            assertEquals(65, actual[i])
-        }
+        val actual = input.encodeBase64String()
+        assertEquals("AAAAAAAA", actual)
     }
 
     @Test

@@ -83,6 +83,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     val LOGGER = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
 
+    // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
+    // how deep in the model we have recursed
+    private var depth = 0
+
     init {
         // FIXME - Loading of reserved-words.txt file from resources fails randomly with exception:
         //  `Projection source failed: java.io.UncheckedIOException: java.util.zip.ZipException: ZipFile invalid LOC header (bad signature)`
@@ -137,7 +141,9 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun toSymbol(shape: Shape): Symbol {
+        depth++
         val symbol: Symbol = shape.accept(this)
+        depth--
         LOGGER.info("creating symbol from $shape: $symbol")
         return escaper.escapeSymbol(shape, symbol)
     }
@@ -198,26 +204,42 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .definitionFile("${shape.defaultName()}.kt")
 
         // add a reference to each member symbol
-        shape.allMembers.values.forEach {
+        addDeclareMemberReferences(builder, shape.allMembers.values)
+
+        if (shape.hasTrait(ErrorTrait::class.java)) {
+            val exceptionSymbol = Symbol.builder()
+                .name("ServiceException")
+                .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+                .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                .build()
+            builder.addReference(exceptionSymbol)
+        }
+
+        return builder.build()
+    }
+
+    /**
+     * Add all the [members] as references needed to declare the given symbol being built.
+     */
+    private fun addDeclareMemberReferences(builder: Symbol.Builder, members: Collection<MemberShape>) {
+        // when converting a shape to a symbol we only need references to top level members
+        // in order to declare the symbol. This prevents recursive shapes from causing a stack overflow (and doing
+        // unnecessary work since we don't need the inner references)
+        if (depth > 1) return
+        members.forEach {
             val memberSymbol = toSymbol(it)
             val ref = SymbolReference.builder()
                 .symbol(memberSymbol)
                 .options(SymbolReference.ContextOption.DECLARE)
                 .build()
             builder.addReference(ref)
-        }
 
-        val dependency = KotlinDependency.CLIENT_RT_CORE
-        if (shape.hasTrait(ErrorTrait::class.java)) {
-            val exceptionSymbol = Symbol.builder()
-                    .name("ServiceException")
-                    .namespace("${dependency.namespace}", ".")
-                    .addDependency(dependency)
-                    .build()
-            builder.addReference(exceptionSymbol)
+            val targetShape = model.expectShape(it.target)
+            if (targetShape is CollectionShape) {
+                val targetSymbol = toSymbol(targetShape)
+                targetSymbol.references.forEach { builder.addReference(it) }
+            }
         }
-
-        return builder.build()
     }
 
     override fun listShape(shape: ListShape): Symbol {
@@ -276,14 +298,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .definitionFile("${shape.id.name}.kt")
 
         // add a reference to each member symbol
-        shape.allMembers.values.forEach {
-            val memberSymbol = toSymbol(it)
-            val ref = SymbolReference.builder()
-                    .symbol(memberSymbol)
-                    .options(SymbolReference.ContextOption.DECLARE)
-                    .build()
-            builder.addReference(ref)
-        }
+        addDeclareMemberReferences(builder, shape.allMembers.values)
 
         return builder.build()
     }

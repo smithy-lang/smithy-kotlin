@@ -21,6 +21,9 @@ import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
@@ -30,22 +33,60 @@ import software.amazon.smithy.model.traits.EnumTrait
  */
 class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
-    val LOGGER = Logger.getLogger(javaClass.name)
-    private val model = context.model
+    private val LOGGER = Logger.getLogger(javaClass.name)
+    private val model: Model
     private val modelWithoutTraits = context.modelWithoutTraitShapes
     private val settings = KotlinSettings.from(context.model, context.settings)
-    private val service: ServiceShape = settings.getService(model)
+    private val service: ServiceShape
     private val fileManifest: FileManifest = context.fileManifest
-    private val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, settings.moduleName)
-    private val writers: KotlinDelegator = KotlinDelegator(settings, model, fileManifest, symbolProvider)
+    private val symbolProvider: SymbolProvider
+    private val writers: KotlinDelegator
     private val integrations: List<KotlinIntegration>
+    private val protocolGenerator: ProtocolGenerator?
+    // private val applicationProtocol: ApplicationProtocol
 
     init {
         LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
             .also { integration ->
                 LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
-            }.toList()
+            }.sortedBy(KotlinIntegration::order).toList()
+
+        LOGGER.info("Preprocessing model")
+        var resolvedModel = context.model
+        for (integration in integrations) {
+            resolvedModel = integration.preprocessModel(resolvedModel, settings)
+        }
+        model = resolvedModel
+
+        service = settings.getService(model)
+        symbolProvider = integrations.fold(
+            KotlinCodegenPlugin.createSymbolProvider(model, settings.moduleName)
+        ) { provider, integration ->
+            integration.decorateSymbolProvider(settings, model, provider)
+        }
+
+        writers = KotlinDelegator(settings, model, fileManifest, symbolProvider)
+
+        protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
+    }
+
+    private fun resolveProtocolGenerator(
+        integrations: List<KotlinIntegration>,
+        model: Model,
+        service: ServiceShape,
+        settings: KotlinSettings
+    ): ProtocolGenerator? {
+        val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
+        val serviceIndex = model.getKnowledge(ServiceIndex::class.java)
+
+        try {
+            val protocolTrait = settings.resolveServiceProtocol(serviceIndex, service, generators.keys)
+            return generators[protocolTrait]
+        } catch (ex: UnresolvableProtocolException) {
+            LOGGER.warning("Unable to find protocol generator for ${service.id}: ${ex.message}")
+        }
+        return null
     }
 
     fun execute() {
@@ -54,6 +95,28 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         LOGGER.info("Walking shapes from ${settings.service} to find shapes to generate")
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
+
+        protocolGenerator?.apply {
+            val ctx = ProtocolGenerator.GenerationContext(
+                settings,
+                model,
+                service,
+                symbolProvider,
+                integrations,
+                protocolName,
+                writers
+            )
+
+            LOGGER.info("[${service.id}] Generating serde for protocol $protocol")
+            generateSerializers(ctx)
+            generateDeserializers(ctx)
+
+            LOGGER.info("[${service.id}] Generating unit tests for protocol $protocol")
+            generateProtocolUnitTests(ctx)
+
+            LOGGER.info("[${service.id}] Generating service client for protocol $protocol")
+            generateProtocolClient(ctx)
+        }
 
         val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
         writeGradleBuild(settings, fileManifest, dependencies)

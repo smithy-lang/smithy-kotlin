@@ -335,6 +335,54 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `structures references inner collection members`() {
+        // lists/sets reference the inner member, ensure that struct members
+        // also contain a reference to the collection member in addition to the
+        // collection itself
+        /*
+            timestamp MyTimestamp
+
+            list Records {
+                member: MyTimestamp
+            }
+
+            structure MyStruct {
+                quux: Records
+            }
+
+
+            // e.g.
+            import clientrt.Instant    <-- ensure we get this reference
+            class MyStruct {
+                quux: List<Instant>? = ...
+            }
+
+         */
+
+        val ts = TimestampShape.builder().id("foo.bar#MyTimestamp").build()
+        val listMember = MemberShape.builder().id("foo.bar#Records\$member").target(ts).build()
+        val list = ListShape.builder()
+            .id("foo.bar#Records")
+            .member(listMember)
+            .build()
+
+        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target(list).build()
+        val struct = StructureShape.builder()
+            .id("foo.bar#MyStruct")
+            .addMember(member)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct, member, list, listMember, ts)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val structSymbol = provider.toSymbol(struct)
+        // should get reference to List and Instant
+        assertEquals(2, structSymbol.references.size)
+    }
+
+    @Test
     fun `creates timestamps`() {
         val tsShape = TimestampShape.builder().id("foo.bar#MyTimestamp").build()
 
@@ -350,5 +398,49 @@ class SymbolProviderTest {
         assertEquals("null", timestampSymbol.defaultValue())
         assertEquals(true, timestampSymbol.isBoxed())
         assertEquals(1, timestampSymbol.dependencies.size)
+    }
+
+    @Test
+    fun `it handles recursive structures`() {
+        /*
+            structure MyStruct1{
+                quux: String,
+                nested: MyStruct2
+            }
+
+            structure MyStruct2 {
+                bar: String,
+                recursiveMember: MyStruct1
+            }
+        */
+        val memberQuux = MemberShape.builder().id("foo.bar#MyStruct1\$quux").target("smithy.api#String").build()
+        val nestedMember = MemberShape.builder().id("foo.bar#MyStruct1\$nested").target("foo.bar#MyStruct2").build()
+        val struct1 = StructureShape.builder()
+            .id("foo.bar#MyStruct1")
+            .addMember(memberQuux)
+            .addMember(nestedMember)
+            .build()
+
+        val memberBar = MemberShape.builder().id("foo.bar#MyStruct2\$bar").target("smithy.api#String").build()
+        val recursiveMember = MemberShape.builder().id("foo.bar#MyStruct2\$recursiveMember").target("foo.bar#MyStruct1").build()
+        val struct2 = StructureShape.builder()
+            .id("foo.bar#MyStruct2")
+            .addMember(memberBar)
+            .addMember(recursiveMember)
+            .build()
+        val model = Model.assembler()
+            .addShapes(struct1, memberQuux, nestedMember, struct2, memberBar, recursiveMember)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+
+        val structSymbol = provider.toSymbol(struct1)
+        assertEquals("test.model", structSymbol.namespace)
+        assertEquals("MyStruct1", structSymbol.name)
+        assertEquals("null", structSymbol.defaultValue())
+        assertEquals(true, structSymbol.isBoxed())
+        assertEquals("MyStruct1.kt", structSymbol.definitionFile)
+        assertEquals(2, structSymbol.references.size)
     }
 }

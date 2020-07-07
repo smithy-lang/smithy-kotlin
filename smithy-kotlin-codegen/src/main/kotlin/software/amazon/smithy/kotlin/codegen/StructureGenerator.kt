@@ -125,7 +125,7 @@ class StructureGenerator(
                 write("append(\")\")")
             } else {
                 sortedMembers.forEachIndexed { index, memberShape ->
-                    val memberName = memberShape.memberName
+                    val memberName = memberShape.defaultName()
                     val separator = if (index < sortedMembers.size - 1) "," else ")"
 
                     val targetShape = model.expectShape(memberShape.target)
@@ -148,7 +148,7 @@ class StructureGenerator(
             } else {
                 write(
                     "var result = \$1L\$2L",
-                    sortedMembers[0].memberName,
+                    sortedMembers[0].defaultName(),
                     selectHashFunctionForShape(sortedMembers[0])
                 )
 
@@ -158,7 +158,7 @@ class StructureGenerator(
 
                         write(
                             "result = 31 * result + (\$1L\$2L)",
-                            memberShape.memberName, selectHashFunctionForShape(memberShape)
+                            memberShape.defaultName(), selectHashFunctionForShape(memberShape)
                         )
                     }
                 }
@@ -174,10 +174,15 @@ class StructureGenerator(
         val targetSymbol = symbolProvider.toSymbol(targetShape)
 
         return when (targetShape.type) {
-            ShapeType.INTEGER, ShapeType.BYTE ->
+            ShapeType.INTEGER ->
                 when (targetSymbol.isBoxed()) {
                     true -> " ?: 0"
                     else -> ""
+                }
+            ShapeType.BYTE ->
+                when (targetSymbol.isBoxed()) {
+                    true -> "?.toInt() ?: 0"
+                    else -> ".toInt()"
                 }
             else ->
                 when (targetSymbol.isBoxed()) {
@@ -198,7 +203,7 @@ class StructureGenerator(
             write("")
 
             for (memberShape in sortedMembers) {
-                write("if (\$1L != other.\$1L) return false", memberShape.memberName)
+                write("if (\$1L != other.\$1L) return false", memberShape.defaultName())
             }
 
             write("")
