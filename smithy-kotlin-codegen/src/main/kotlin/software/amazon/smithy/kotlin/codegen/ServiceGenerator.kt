@@ -52,7 +52,6 @@ class ServiceGenerator(
                     renderOperation(operationsIndex, op)
                 }
             }
-            .call { renderClose() }
             .closeBlock("}")
             .write("")
     }
@@ -69,11 +68,6 @@ class ServiceGenerator(
 
         // import all the models generated for use in input/output shapes
         writer.addImport("$rootNamespace.model", "*", "")
-    }
-
-    private fun renderClose() {
-        writer.write("")
-            .write("fun close()")
     }
 
     private fun overrideServiceName() {

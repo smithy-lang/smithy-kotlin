@@ -77,11 +77,6 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    fun `it renders a close method`() {
-        commonTestContents.shouldContainOnlyOnce("fun close()")
-    }
-
-    @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
         var openBraces = 0
