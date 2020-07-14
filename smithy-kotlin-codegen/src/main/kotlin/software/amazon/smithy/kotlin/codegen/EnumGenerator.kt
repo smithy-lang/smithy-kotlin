@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
@@ -50,6 +51,9 @@ import software.amazon.smithy.utils.CaseUtils
  * ```
  */
 class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: KotlinWriter) {
+
+    // generated enum names must be unique, keep track of what we generate to ensure this (necessary due to prefixing)
+    private val generatedNames = mutableSetOf<String>()
 
     init {
         assert(shape.getTrait(EnumTrait::class.java).isPresent)
@@ -89,8 +93,16 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     fun generateEnumConstant(definition: EnumDefinition) {
         writer.renderEnumDefinitionDocumentation(definition)
         val constName = definition.name.orElseGet {
-                CaseUtils.toSnakeCase(definition.value).replace(".", "_")
-            }.toUpperCase()
+                val modified = CaseUtils.toSnakeCase(definition.value).replace(".", "_")
+                if (!isValidKotlinIdentifier(modified)) {
+                    "_$modified"
+                } else {
+                    modified
+                }
+        }.toUpperCase()
+        if (!generatedNames.add(constName)) {
+            throw CodegenException("prefixing invalid enum value to form a valid Kotlin identifier causes generated enum names to not be unique")
+        }
         writer.write("$constName(\"${definition.value}\"),")
     }
 }
