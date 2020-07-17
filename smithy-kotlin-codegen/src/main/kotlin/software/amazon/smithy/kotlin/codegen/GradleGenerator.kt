@@ -28,7 +28,19 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest, dependenc
     }
 
     writer.withBlock("plugins {", "}\n") {
-        write("kotlin(\"jvm\")")
+        if (settings.build.rootProject) {
+            write("kotlin(\"jvm\") version \"1.3.72\"")
+        } else {
+            write("kotlin(\"jvm\")")
+        }
+    }
+
+    if (settings.build.rootProject) {
+        writer.withBlock("repositories {", "}\n") {
+            write("mavenLocal()")
+            write("mavenCentral()")
+            write("jcenter()")
+        }
     }
 
     writer.withBlock("dependencies {", "}\n") {
@@ -40,4 +52,7 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest, dependenc
 
     val contents = writer.toString()
     manifest.writeFile("build.gradle.kts", contents)
+    if (settings.build.rootProject) {
+        manifest.writeFile("settings.gradle.kts", "")
+    }
 }

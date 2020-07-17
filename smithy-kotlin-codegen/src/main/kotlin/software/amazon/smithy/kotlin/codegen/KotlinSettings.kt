@@ -15,6 +15,7 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import java.util.Optional
 import java.util.logging.Logger
 import kotlin.streams.toList
 import software.amazon.smithy.codegen.core.CodegenException
@@ -29,6 +30,7 @@ private const val SERVICE = "service"
 private const val MODULE_NAME = "module"
 private const val MODULE_DESCRIPTION = "moduleDescription"
 private const val MODULE_VERSION = "moduleVersion"
+private const val BUILD_SETTINGS = "build"
 
 /**
  * Settings used by [KotlinCodegenPlugin]
@@ -37,7 +39,8 @@ class KotlinSettings(
     val service: ShapeId,
     val moduleName: String,
     val moduleVersion: String,
-    val moduleDescription: String = ""
+    val moduleDescription: String = "",
+    val build: BuildSettings
 ) {
 
     /**
@@ -65,7 +68,7 @@ class KotlinSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): KotlinSettings {
-            config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION))
+            config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, BUILD_SETTINGS))
 
             val service = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
@@ -74,7 +77,8 @@ class KotlinSettings(
             val moduleName = config.expectStringMember(MODULE_NAME).value
             val version = config.expectStringMember(MODULE_VERSION).value
             val desc = config.getStringMemberOrDefault(MODULE_DESCRIPTION, "$moduleName client")
-            return KotlinSettings(service, moduleName, version, desc)
+            val build = config.getObjectMember(BUILD_SETTINGS)
+            return KotlinSettings(service, moduleName, version, desc, BuildSettings.fromNode(build))
         }
 
         // infer the service to generate from a model
@@ -104,5 +108,19 @@ class KotlinSettings(
                 }
             }
         }
+    }
+}
+
+data class BuildSettings(val rootProject: Boolean = false) {
+    companion object {
+        private const val ROOT_PROJECT = "rootProject"
+        fun fromNode(node: Optional<ObjectNode>): BuildSettings {
+            return if (node.isPresent) {
+                BuildSettings(node.get().getMember(BuildSettings.ROOT_PROJECT).get().asBooleanNode().get().value)
+            } else {
+                Default()
+            }
+        }
+        fun Default(): BuildSettings = BuildSettings(false)
     }
 }

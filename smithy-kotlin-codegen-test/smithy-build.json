@@ -4,7 +4,10 @@
         "kotlin-codegen": {
             "service": "example.weather#Weather",
             "module": "weather",
-            "moduleVersion": "0.0.1"
+            "moduleVersion": "0.0.1",
+            "build": {
+                "rootProject": true
+            }
         }
     }
 }
