@@ -235,7 +235,11 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
-        return createSymbolBuilder(shape, "TimestampTODO", boxed = true).build()
+        val dependency = KotlinDependency.CLIENT_RT_CORE
+        return createSymbolBuilder(shape, "Instant", boxed = true)
+            .namespace("${dependency.namespace}.time", ".")
+            .addDependency(dependency)
+            .build()
     }
 
     override fun blobShape(shape: BlobShape): Symbol {

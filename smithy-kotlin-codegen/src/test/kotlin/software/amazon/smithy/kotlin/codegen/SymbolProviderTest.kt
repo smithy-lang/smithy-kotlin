@@ -328,4 +328,22 @@ class SymbolProviderTest {
         assertEquals("MyStruct.kt", structSymbol.definitionFile)
         assertEquals(1, structSymbol.references.size)
     }
+
+    @Test
+    fun `creates timestamps`() {
+        val tsShape = TimestampShape.builder().id("foo.bar#MyTimestamp").build()
+
+        val model = Model.assembler()
+            .addShapes(tsShape)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val timestampSymbol = provider.toSymbol(tsShape)
+        assertEquals("software.aws.clientrt.time", timestampSymbol.namespace)
+        assertEquals("Instant", timestampSymbol.name)
+        assertEquals("null", timestampSymbol.defaultValue())
+        assertEquals(true, timestampSymbol.isBoxed())
+        assertEquals(1, timestampSymbol.dependencies.size)
+    }
 }
