@@ -18,6 +18,9 @@ package software.aws.clientrt.time
 // we are stubbing this out for codegen purposes and supporting the various timestamp format parsers.
 // the actual `Instant` class has additional methods users would actually want/need.
 
+// nanoseconds/sec
+internal const val NS_PER_SEC = 1_000_000_000
+
 // represents a moment on the UTC-SLS time scale
 expect class Instant : Comparable<Instant> {
     val epochSeconds: Long
@@ -47,3 +50,8 @@ expect class Instant : Comparable<Instant> {
         fun fromEpochSeconds(seconds: Long, ns: Int): Instant
     }
 }
+
+/**
+ * Convert [Instant] to a double representing seconds and milliseconds since the epoch
+ */
+fun Instant.toEpochDouble(): Double = epochSeconds.toDouble() + (nanosecondsOfSecond.toDouble() / NS_PER_SEC)

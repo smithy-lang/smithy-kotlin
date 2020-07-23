@@ -16,6 +16,7 @@ package software.aws.clientrt.time
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 // tests for conversion from a parsed representation into an Instant instance
 
@@ -122,6 +123,16 @@ class InstantTest {
             .format(TimestampFormat.EPOCH_SECONDS)
         val expected = "1604604157"
         assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `test toEpochDouble`() {
+        val sec = 1604604157L
+        val ns = 12_345_000
+        val actual = Instant.fromEpochSeconds(sec, ns).toEpochDouble()
+        assertEquals(sec, actual.toLong())
+        val fracSecs: Double = actual - sec
+        assertTrue(kotlin.math.abs(0.012345 - fracSecs) < 0.00001)
     }
 
     // Select tests pulled from edge cases/tickets in the V2 Java SDK.
