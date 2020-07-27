@@ -243,6 +243,7 @@ structure GetForecastInput {
 
 structure GetForecastOutput {
     chanceOfRain: Float,
+    snow: SimpleYesNo,
 }
 
 union Precipitation {

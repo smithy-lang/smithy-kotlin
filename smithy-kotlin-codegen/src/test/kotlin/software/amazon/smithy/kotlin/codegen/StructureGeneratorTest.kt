@@ -243,9 +243,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
 
         val expectedDecl = """
 class MyStruct private constructor(builder: BuilderImpl) {
-    val fooAsString: String? = builder.fooAsString
-    val foo: InstanceSize?
-        get() = fooAsString?.let { InstanceSize.fromValue(it) }
+    val foo: InstanceSize? = builder.foo
 """
         contents.shouldContain(expectedDecl)
 
@@ -253,7 +251,6 @@ class MyStruct private constructor(builder: BuilderImpl) {
     interface Builder {
         fun build(): MyStruct
         fun foo(foo: InstanceSize): Builder
-        fun foo(foo: String)
     }
 """
         contents.shouldContain(expectedBuilderInterface)
@@ -261,28 +258,20 @@ class MyStruct private constructor(builder: BuilderImpl) {
         val expectedDslBuilderInterface = """
     interface DslBuilder {
         var foo: InstanceSize?
-
-        fun foo(foo: String)
     }
 """
         contents.shouldContain(expectedDslBuilderInterface)
 
         val expectedBuilderImpl = """
     private class BuilderImpl() : Builder, DslBuilder {
-        var fooAsString: String? = null
         override var foo: InstanceSize? = null
-            set(value) {
-                fooAsString = value.toString()
-                field = value
-            }
 
         constructor(x: MyStruct) : this() {
-            this.fooAsString = x.fooAsString
+            this.foo = x.foo
         }
 
         override fun build(): MyStruct = MyStruct(this)
-        override fun foo(foo: InstanceSize): Builder = apply { this.fooAsString = foo.toString() }
-        override fun foo(foo: String) { this.fooAsString = foo }
+        override fun foo(foo: InstanceSize): Builder = apply { this.foo = foo }
     }
 """
         contents.shouldContain(expectedBuilderImpl)

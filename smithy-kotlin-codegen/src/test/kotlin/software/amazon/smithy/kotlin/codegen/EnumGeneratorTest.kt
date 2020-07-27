@@ -55,21 +55,44 @@ class EnumGeneratorTest {
 /**
  * Documentation for this enum
  */
-enum class Baz(val value: String) {
+sealed class Baz {
+
+    abstract val value: String
+
     /**
      * Documentation for bar
      */
-    BAR("BAR"),
-    FOO("FOO"),
-    SDK_UNKNOWN("SDK_UNKNOWN");
+    object Bar : Baz() {
+        override val value: String = "BAR"
+        override fun toString(): String = value
+    }
 
-    override fun toString(): String = value
+    object Foo : Baz() {
+        override val value: String = "FOO"
+        override fun toString(): String = value
+    }
+
+    data class SdkUnknown(override val value: String) : Baz() {
+        override fun toString(): String = value
+    }
 
     companion object {
         /**
-         * Convert a raw value to an enum constant using using either the constant name or raw value
+         * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: String): Baz = values().find { it.name == str || it.value == str } ?: SDK_UNKNOWN
+        fun fromValue(str: String): Baz = when(str) {
+            "BAR" -> Bar
+            "FOO" -> Foo
+            else -> SdkUnknown(str)
+        }
+
+        /**
+         * Get a list of all possible variants
+         */
+        fun values(): List<Baz> = listOf(
+            Bar,
+            Foo
+        )
     }
 }
 """
@@ -109,7 +132,10 @@ enum class Baz(val value: String) {
 /**
  * Documentation for this enum
  */
-enum class Baz(val value: String) {
+sealed class Baz {
+
+    abstract val value: String
+
     /**
      * ${"\"\"\""}
      * T2 instances are Burstable Performance
@@ -117,17 +143,37 @@ enum class Baz(val value: String) {
      * performance with the ability to burst above the
      * baseline.${"\"\"\""}
      */
-    T2_MICRO("t2.micro"),
-    T2_NANO("t2.nano"),
-    SDK_UNKNOWN("SDK_UNKNOWN");
+    object T2Micro : Baz() {
+        override val value: String = "t2.micro"
+        override fun toString(): String = value
+    }
 
-    override fun toString(): String = value
+    object T2Nano : Baz() {
+        override val value: String = "t2.nano"
+        override fun toString(): String = value
+    }
+
+    data class SdkUnknown(override val value: String) : Baz() {
+        override fun toString(): String = value
+    }
 
     companion object {
         /**
-         * Convert a raw value to an enum constant using using either the constant name or raw value
+         * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: String): Baz = values().find { it.name == str || it.value == str } ?: SDK_UNKNOWN
+        fun fromValue(str: String): Baz = when(str) {
+            "t2.micro" -> T2Micro
+            "t2.nano" -> T2Nano
+            else -> SdkUnknown(str)
+        }
+
+        /**
+         * Get a list of all possible variants
+         */
+        fun values(): List<Baz> = listOf(
+            T2Micro,
+            T2Nano
+        )
     }
 }
 """
@@ -172,24 +218,7 @@ enum class Baz(val value: String) {
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
-        val expectedEnumDecl = """
-enum class Baz(val value: String) {
-    _0("0"),
-    FOO("foo"),
-    SDK_UNKNOWN("SDK_UNKNOWN");
-
-    override fun toString(): String = value
-
-    companion object {
-        /**
-         * Convert a raw value to an enum constant using using either the constant name or raw value
-         */
-        fun fromValue(str: String): Baz = values().find { it.name == str || it.value == str } ?: SDK_UNKNOWN
-    }
-}
-"""
-
-        contents.shouldContainOnlyOnce(expectedEnumDecl)
+        contents.shouldContainOnlyOnce("object _0 : Baz()")
     }
 
     @Test
@@ -230,6 +259,6 @@ enum class Baz(val value: String) {
             EnumGenerator(shape, symbol, writer).render()
         }
 
-        ex.message!!.shouldContain("prefixing invalid enum value to form a valid Kotlin identifier causes generated enum names to not be unique")
+        ex.message!!.shouldContain("prefixing invalid enum value to form a valid Kotlin identifier causes generated sealed class names to not be unique")
     }
 }

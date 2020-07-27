@@ -22,7 +22,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.utils.CaseUtils
 
 /**
- * Generates a Kotlin enum from a Smithy enum string
+ * Generates a Kotlin sealed class from a Smithy enum string
  *
  * For example, given the following Smithy model:
  *
@@ -37,16 +37,62 @@ import software.amazon.smithy.utils.CaseUtils
  * We will generate the following Kotlin code:
  *
  * ```
- * enum class SimpleYesNo(val value: String) {
- *     YES("YES"),
- *     NO("NO"),
- *     SDK_UNKNOWN("SDK_UNKNOWN");
+ * sealed class SimpleYesNo {
+ *     abstract val value: String
+ *
+ *     object Yes: SimpleYesNo() {
+ *         override val value: String = "YES"
+ *         override fun toString(): String = value
+ *     }
+ *
+ *     object No: SimpleYesNo() {
+ *         override val value: String = "NO"
+ *         override fun toString(): String = value
+ *     }
+ *
+ *     data class SdkUnknown(override val value: String): SimpleYesNo() {
+ *         override fun toString(): String = value
+ *     }
+ *
+ *     companion object {
+ *
+ *         fun fromValue(str: String): SimpleYesNo = when(str) {
+ *             "YES" -> Yes
+ *             "NO" -> No
+ *             else -> SdkUnknown(str)
+ *         }
+ *
+ *         fun values(): List<SimpleYesNo> = listOf(Yes, No)
+ *     }
  * }
  *
- * enum class TypedYesNo(val value: String) {
- *     YES("Yes"),
- *     NO("No"),
- *     SDK_UNKNOWN("SDK_UNKNOWN");
+ * sealed class TypedYesNo {
+ *     abstract val value: String
+ *
+ *     object Yes: TypedYesNo() {
+ *         override val value: String = "Yes"
+ *         override fun toString(): String = value
+ *     }
+ *
+ *     object No: TypedYesNo() {
+ *         override val value: String = "No"
+ *         override fun toString(): String = value
+ *     }
+ *
+ *     data class SdkUnknown(override val value: String): TypedYesNo() {
+ *         override fun toString(): String = value
+ *     }
+ *
+ *     companion object {
+ *
+ *         fun fromValue(str: String): TypedYesNo = when(str) {
+ *             "Yes" -> Yes
+ *             "No" -> No
+ *             else -> SdkUnknown(str)
+ *         }
+ *
+ *         fun values(): List<TypedYesNo> = listOf(Yes, No)
+ *     }
  * }
  * ```
  */
@@ -66,43 +112,84 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     fun render() {
         writer.renderDocumentation(shape)
         // NOTE: The smithy spec only allows string shapes to apply to a string shape at the moment
-        writer.withBlock("enum class ${symbol.name}(val value: String) {", "}") {
-            enumTrait
+        writer.withBlock("sealed class ${symbol.name} {", "}") {
+            write("\nabstract val value: String\n")
+
+            val sortedDefinitions = enumTrait
                 .values
                 .sortedBy { it.name.orElse(it.value) }
-                .forEach {
-                    generateEnumConstant(it)
+
+                sortedDefinitions.forEach {
+                    generateSealedClassVariant(it)
+                    write("")
                 }
 
-            // generate the unknown which will always be last
-            writer.write("SDK_UNKNOWN(\"SDK_UNKNOWN\");\n")
+            if (generatedNames.contains("SdkUnknown")) throw CodegenException("generating SdkUnknown would cause duplicate variant for enum shape: $shape")
 
-            // override to string to use the enum constant value
-            writer.write("override fun toString(): String = value\n")
+            // generate the unknown which will always be last
+            writer.withBlock("data class SdkUnknown(override val value: String) : ${symbol.name}() {", "}") {
+                renderToStringOverride()
+            }
+
+            write("")
 
             // generate the fromValue() static method
             withBlock("companion object {", "}") {
-                writer.dokka {
-                    write("Convert a raw value to an enum constant using using either the constant name or raw value")
-                }
-                write("fun fromValue(str: String): \$L = values().find { it.name == str || it.value == str } ?: SDK_UNKNOWN", symbol.name)
+                writer.dokka("Convert a raw value to one of the sealed variants or [SdkUnknown]")
+                openBlock("fun fromValue(str: String): \$L = when(str) {", symbol.name)
+                    .call {
+                        sortedDefinitions.forEach { definition ->
+                            val variantName = getVariantName(definition)
+                                write("\"${definition.value}\" -> $variantName")
+                        }
+                    }
+                    .write("else -> SdkUnknown(str)")
+                    .closeBlock("}")
+                    .write("")
+
+                writer.dokka("Get a list of all possible variants")
+                openBlock("fun values(): List<\$L> = listOf(", symbol.name)
+                    .call {
+                        sortedDefinitions.forEachIndexed { idx, definition ->
+                            val variantName = getVariantName(definition)
+                            val suffix = if (idx < sortedDefinitions.size - 1) "," else ""
+                            write("${variantName}$suffix")
+                        }
+                    }
+                    .closeBlock(")")
             }
         }
     }
 
-    fun generateEnumConstant(definition: EnumDefinition) {
+    private fun renderToStringOverride() {
+        // override to string to use the enum constant value
+        writer.write("override fun toString(): String = value")
+    }
+
+    private fun generateSealedClassVariant(definition: EnumDefinition) {
         writer.renderEnumDefinitionDocumentation(definition)
-        val constName = definition.name.orElseGet {
-                val modified = CaseUtils.toSnakeCase(definition.value).replace(".", "_")
-                if (!isValidKotlinIdentifier(modified)) {
-                    "_$modified"
-                } else {
-                    modified
-                }
-        }.toUpperCase()
-        if (!generatedNames.add(constName)) {
-            throw CodegenException("prefixing invalid enum value to form a valid Kotlin identifier causes generated enum names to not be unique")
+        val variantName = getVariantName(definition)
+        if (!generatedNames.add(variantName)) {
+            throw CodegenException("prefixing invalid enum value to form a valid Kotlin identifier causes generated sealed class names to not be unique: $variantName; shape=$shape")
         }
-        writer.write("$constName(\"${definition.value}\"),")
+
+        writer.openBlock("object $variantName : ${symbol.name}() {")
+            .write("override val value: String = \"${definition.value}\"")
+            .call { renderToStringOverride() }
+            .closeBlock("}")
+    }
+
+    private fun getVariantName(definition: EnumDefinition): String {
+        val raw = definition.name.orElseGet {
+            CaseUtils.toSnakeCase(definition.value).replace(".", "_")
+        }
+
+        val identifierName = CaseUtils.toCamelCase(raw, true, '_')
+
+        return if (!isValidKotlinIdentifier(identifierName)) {
+            "_$identifierName"
+        } else {
+            identifierName
+        }
     }
 }
