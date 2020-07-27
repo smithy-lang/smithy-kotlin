@@ -20,6 +20,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.utils.StringUtils
 
@@ -204,6 +205,16 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
                 .options(SymbolReference.ContextOption.DECLARE)
                 .build()
             builder.addReference(ref)
+        }
+
+        val dependency = KotlinDependency.CLIENT_RT_CORE
+        if (shape.hasTrait(ErrorTrait::class.java)) {
+            val exceptionSymbol = Symbol.builder()
+                    .name("ServiceException")
+                    .namespace("${dependency.namespace}", ".")
+                    .addDependency(dependency)
+                    .build()
+            builder.addReference(exceptionSymbol)
         }
 
         return builder.build()

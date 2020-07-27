@@ -14,12 +14,14 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.RetryableTrait
 
 /**
  * Renders Smithy structure shapes
@@ -54,27 +56,30 @@ class StructureGenerator(
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
+        startGenericStructureBlock("class \$class.name:L private constructor(builder: BuilderImpl) {")
+        writer.closeBlock("}").write("")
+
+        writer.removeContext("class.name")
+    }
+
+    private fun startGenericStructureBlock(start: String) {
         val symbol = symbolProvider.toSymbol(shape)
         // push context to be used throughout generation of the class
         writer.putContext("class.name", symbol.name)
 
         writer.renderDocumentation(shape)
         // constructor
-        writer.openBlock("class \$class.name:L private constructor(builder: BuilderImpl) {")
-            .call { renderImmutableProperties() }
-            .write("")
-            .call { renderCompanionObject() }
-            .call { renderToString() }
-            .call { renderHashCode() }
-            .call { renderEquals() }
-            .call { renderCopy() }
-            .call { renderJavaBuilderInterface() }
-            .call { renderDslBuilderInterface() }
-            .call { renderBuilderImpl() }
-            .closeBlock("}")
-            .write("")
-
-        writer.removeContext("class.name")
+        writer.openBlock(start)
+                .call { renderImmutableProperties() }
+                .write("")
+                .call { renderCompanionObject() }
+                .call { renderToString() }
+                .call { renderHashCode() }
+                .call { renderEquals() }
+                .call { renderCopy() }
+                .call { renderJavaBuilderInterface() }
+                .call { renderDslBuilderInterface() }
+                .call { renderBuilderImpl() }
     }
 
     private fun renderImmutableProperties() {
@@ -82,7 +87,17 @@ class StructureGenerator(
         sortedMembers.forEach {
             val (memberName, memberSymbol) = byMemberShape[it]!!
             writer.renderMemberDocumentation(model, it)
-            writer.write("val \$1L: \$2T = builder.\$1L", memberName, memberSymbol)
+            if (shape.hasTrait(ErrorTrait::class.java) && "message" == memberName) {
+                // TODO: Have to handle the case where "cause" is a property in the Smithy model
+                val targetShape = model.getShape(it.target).get()
+                if (!targetShape.isStringShape) {
+                    throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
+                }
+                // Override Throwable's message property
+                writer.write("override val \$1L: \$2L = builder.\$1L!!", memberName, memberSymbol)
+            } else {
+                writer.write("val \$1L: \$2T = builder.\$1L", memberName, memberSymbol)
+            }
         }
     }
 
@@ -193,6 +208,39 @@ class StructureGenerator(
      * Renders a Smithy error type to a Kotlin exception type
      */
     private fun renderError() {
-        // TODO
+        var errorTrait: ErrorTrait = shape.expectTrait(ErrorTrait::class.java)
+
+        var isRetryable = shape.getTrait(RetryableTrait::class.java).isPresent
+
+        startGenericStructureBlock("class \$class.name:L private constructor(builder: BuilderImpl) : ServiceException() {")
+        writer.withBlock("", "}") {
+            write("")
+            if (isRetryable) {
+                call { renderRetryable() }
+            }
+            call { renderErrorType(errorTrait) }
+        }
+        writer.write("")
+        writer.removeContext("class.name")
+    }
+
+    private fun renderRetryable() {
+        writer.write("")
+        writer.write("override val isRetryable = true")
+    }
+
+    private fun renderErrorType(errorTrait: ErrorTrait) {
+        writer.write("")
+        when {
+            errorTrait.isClientError -> {
+                writer.write("override val errorType = ErrorType.Client")
+            }
+            errorTrait.isServerError -> {
+                writer.write("override val errorType = ErrorType.Server")
+            }
+            else -> {
+                throw CodegenException("Errors must be either of client or server type")
+            }
+        }
     }
 }

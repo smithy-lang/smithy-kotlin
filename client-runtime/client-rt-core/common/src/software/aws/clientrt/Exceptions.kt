@@ -26,6 +26,8 @@ open class SdkBaseException : RuntimeException {
     constructor(message: String?, cause: Throwable?) : super(message, cause)
 
     constructor(cause: Throwable?) : super(cause)
+
+    open val isRetryable: Boolean = false
 }
 
 /**
@@ -39,8 +41,6 @@ open class ClientException : SdkBaseException {
     constructor(message: String?, cause: Throwable?) : super(message, cause)
 
     constructor(cause: Throwable?) : super(cause)
-
-    open val isRetryable: Boolean = true
 }
 
 /**
@@ -54,7 +54,7 @@ interface ProtocolResponse
  * type indicates that the caller's request was successfully transmitted to the service and the service sent back an
  * error response.
  */
-open class ServiceException : ClientException {
+open class ServiceException : SdkBaseException {
 
     /**
      * Indicates who (if known) is at fault for this exception.
@@ -81,8 +81,7 @@ open class ServiceException : ClientException {
     /**
      * Indicates who is responsible for this exception (caller, service, or unknown)
      */
-    open val errorType: ErrorType =
-        ErrorType.Unknown
+    open val errorType: ErrorType = ErrorType.Unknown
 
     /**
      * The human-readable error message provided by the service
