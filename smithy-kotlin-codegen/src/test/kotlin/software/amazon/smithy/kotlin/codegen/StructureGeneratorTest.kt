@@ -15,8 +15,10 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContain
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.api.assertThrows
@@ -200,8 +202,8 @@ class MyStruct private constructor(builder: BuilderImpl) {
     /**
      * This *is* documentation about the member.
      */
-    val bar: Integer = builder.bar
-    val baz: Integer? = builder.baz
+    val bar: Int = builder.bar
+    val baz: Int? = builder.baz
     val foo: String? = builder.foo
     val quux: Qux? = builder.quux
 """
@@ -226,11 +228,59 @@ class MyStruct private constructor(builder: BuilderImpl) {
     }
 
     @Test
+    fun `it renders a toString implementation`() {
+        val expected = """
+    override fun toString() = buildString {
+        append("MyStruct(")
+        append("bar=${'$'}bar,")
+        append("baz=${'$'}baz,")
+        append("foo=${'$'}foo,")
+        append("quux=${'$'}quux)")
+    }
+"""
+        commonTestContents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders a hashCode implementation`() {
+        val expected = """
+    override fun hashCode(): Int {
+        var result = bar
+        result = 31 * result + (baz ?: 0)
+        result = 31 * result + (foo?.hashCode() ?: 0)
+        result = 31 * result + (quux?.hashCode() ?: 0)
+        return result
+    }
+"""
+        commonTestContents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders an equals implementation`() {
+        val expected = """
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MyStruct
+
+        if (bar != other.bar) return false
+        if (baz != other.baz) return false
+        if (foo != other.foo) return false
+        if (quux != other.quux) return false
+
+        return true
+    }
+"""
+        commonTestContents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
     fun `it renders a copy implementation`() {
         val expected = """
     fun copy(block: DslBuilder.() -> Unit = {}): MyStruct = BuilderImpl(this).apply(block).build()
 """
-        commonTestContents.shouldContain(expected)
+        commonTestContents.shouldContainOnlyOnce(expected)
     }
 
     @Test
@@ -238,21 +288,21 @@ class MyStruct private constructor(builder: BuilderImpl) {
         val expected = """
     interface Builder {
         fun build(): MyStruct
-        fun bar(bar: Integer): Builder
-        fun baz(baz: Integer): Builder
+        fun bar(bar: Int): Builder
+        fun baz(baz: Int): Builder
         fun foo(foo: String): Builder
         fun quux(quux: Qux): Builder
     }
 """
-        commonTestContents.shouldContain(expected)
+        commonTestContents.shouldContainOnlyOnce(expected)
     }
 
     @Test
     fun `it renders a dsl builder`() {
         val expected = """
     interface DslBuilder {
-        var bar: Integer
-        var baz: Integer?
+        var bar: Int
+        var baz: Int?
         var foo: String?
         var quux: Qux?
 
@@ -261,15 +311,15 @@ class MyStruct private constructor(builder: BuilderImpl) {
         }
     }
 """
-        commonTestContents.shouldContain(expected)
+        commonTestContents.shouldContainOnlyOnce(expected)
     }
 
     @Test
     fun `it renders a builder impl`() {
         val expected = """
     private class BuilderImpl() : Builder, DslBuilder {
-        override var bar: Integer = 0
-        override var baz: Integer? = null
+        override var bar: Int = 0
+        override var baz: Int? = null
         override var foo: String? = null
         override var quux: Qux? = null
 
@@ -281,13 +331,13 @@ class MyStruct private constructor(builder: BuilderImpl) {
         }
 
         override fun build(): MyStruct = MyStruct(this)
-        override fun bar(bar: Integer): Builder = apply { this.bar = bar }
-        override fun baz(baz: Integer): Builder = apply { this.baz = baz }
+        override fun bar(bar: Int): Builder = apply { this.bar = bar }
+        override fun baz(baz: Int): Builder = apply { this.baz = baz }
         override fun foo(foo: String): Builder = apply { this.foo = foo }
         override fun quux(quux: Qux): Builder = apply { this.quux = quux }
     }
 """
-        commonTestContents.shouldContain(expected)
+        commonTestContents.shouldContainOnlyOnce(expected)
     }
 
     @Test
@@ -335,7 +385,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
 class MyStruct private constructor(builder: BuilderImpl) {
     val foo: InstanceSize? = builder.foo
 """
-        contents.shouldContain(expectedDecl)
+        contents.shouldContainOnlyOnce(expectedDecl)
 
         val expectedBuilderInterface = """
     interface Builder {
@@ -343,14 +393,14 @@ class MyStruct private constructor(builder: BuilderImpl) {
         fun foo(foo: InstanceSize): Builder
     }
 """
-        contents.shouldContain(expectedBuilderInterface)
+        contents.shouldContainOnlyOnce(expectedBuilderInterface)
 
         val expectedDslBuilderInterface = """
     interface DslBuilder {
         var foo: InstanceSize?
     }
 """
-        contents.shouldContain(expectedDslBuilderInterface)
+        contents.shouldContainOnlyOnce(expectedDslBuilderInterface)
 
         val expectedBuilderImpl = """
     private class BuilderImpl() : Builder, DslBuilder {
@@ -364,17 +414,17 @@ class MyStruct private constructor(builder: BuilderImpl) {
         override fun foo(foo: InstanceSize): Builder = apply { this.foo = foo }
     }
 """
-        contents.shouldContain(expectedBuilderImpl)
+        contents.shouldContainOnlyOnce(expectedBuilderImpl)
     }
 
     @Test
     fun `it renders class docs`() {
-        commonTestContents.shouldContain("This *is* documentation about the shape.")
+        commonTestContents.shouldContainOnlyOnce("This *is* documentation about the shape.")
     }
 
     @Test
     fun `it renders member docs`() {
-        commonTestContents.shouldContain("This *is* documentation about the member.")
+        commonTestContents.shouldContainOnlyOnce("This *is* documentation about the member.")
     }
 
     @Test
@@ -425,8 +475,38 @@ class MyStruct private constructor(builder: BuilderImpl) {
         generator.render()
 
         val generated = writer.toString()
-        generated.shouldContain("Shape documentation")
-        generated.shouldContain("Member documentation")
+        generated.shouldContainOnlyOnce("Shape documentation")
+        generated.shouldContainOnlyOnce("Member documentation")
+    }
+
+    @Test
+    fun `it handles the sensitive trait in toString`() {
+        val stringShape = StringShape.builder().id("com.test#Baz").addTrait(SensitiveTrait()).build()
+        val member1 = MemberShape.builder().id("com.test#Foo\$bar").target("com.test#Baz").build()
+        val member2 = MemberShape.builder().id("com.test#Foo\$baz").target("com.test#Baz").addTrait(DocumentationTrait("Member documentation")).build()
+        val member3 = MemberShape.builder().id("com.test#Foo\$qux").target("smithy.api#String").build()
+
+        val struct = StructureShape.builder()
+            .id("com.test#Foo")
+            .addMember(member1)
+            .addMember(member2)
+            .addMember(member3)
+            .build()
+
+        val model = Model.assembler()
+            .addShapes(struct, member1, member2, member3, stringShape)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val generator = StructureGenerator(model, provider, writer, struct)
+        generator.render()
+
+        val generated = writer.toString()
+        generated.shouldContainOnlyOnce("bar=*** Sensitive Data Redacted ***")
+        generated.shouldContainOnlyOnce("baz=*** Sensitive Data Redacted ***")
+        generated.shouldContainOnlyOnce("qux=\$qux")
     }
 
     @Test
@@ -508,20 +588,21 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
 
     @Test
     fun `error generator throws if message property is of wrong type`() {
-        val errorMessageMember = MemberShape.builder().id("com.test#InternalServerException\$message").target("smithy.api#Integer").build()
+        val errorMessageMember =
+            MemberShape.builder().id("com.test#InternalServerException\$message").target("smithy.api#Integer").build()
         val serverErrorShape = StructureShape.builder()
-                .id("com.test#InternalServerException")
-                .addMember(errorMessageMember)
-                .addTrait(ErrorTrait("server"))
-                .addTrait(RetryableTrait.builder().throttling(false).build())
-                .addTrait(HttpErrorTrait(500))
-                .addTrait(DocumentationTrait("Internal server error"))
-                .build()
+            .id("com.test#InternalServerException")
+            .addMember(errorMessageMember)
+            .addTrait(ErrorTrait("server"))
+            .addTrait(RetryableTrait.builder().throttling(false).build())
+            .addTrait(HttpErrorTrait(500))
+            .addTrait(DocumentationTrait("Internal server error"))
+            .build()
 
         val model = Model.assembler()
-                .addShapes(serverErrorShape, errorMessageMember)
-                .assemble()
-                .unwrap()
+            .addShapes(serverErrorShape, errorMessageMember)
+            .assemble()
+            .unwrap()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val writer = KotlinWriter("com.test")

@@ -148,7 +148,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun byteShape(shape: ByteShape?): Symbol = numberShape(shape, "Byte")
 
-    override fun integerShape(shape: IntegerShape?): Symbol = numberShape(shape, "Integer")
+    override fun integerShape(shape: IntegerShape?): Symbol = numberShape(shape, "Int")
 
     override fun shortShape(shape: ShortShape?): Symbol = numberShape(shape, "Short")
 

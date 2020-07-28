@@ -19,8 +19,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 
 /**
@@ -114,13 +116,95 @@ class StructureGenerator(
     }
 
     // generate a `toString()` implementation
-    private fun renderToString() {}
+    private fun renderToString() {
+        writer.write("")
+        writer.withBlock("override fun toString() = buildString {", "}") {
+            write("append(\"\$class.name:L(\")")
+
+            if (sortedMembers.isEmpty()) {
+                write("append(\")\")")
+            } else {
+                sortedMembers.forEachIndexed { index, memberShape ->
+                    val memberName = memberShape.memberName
+                    val separator = if (index < sortedMembers.size - 1) "," else ")"
+
+                    val targetShape = model.expectShape(memberShape.target)
+                    if (targetShape.hasTrait(SensitiveTrait::class.java)) {
+                        write("append(\"\$1L=*** Sensitive Data Redacted ***$separator\")", memberName)
+                    } else {
+                        write("append(\"\$1L=$$\$1L$separator\")", memberName)
+                    }
+                }
+            }
+        }
+    }
 
     // generate a `hashCode()` implementation
-    private fun renderHashCode() {}
+    private fun renderHashCode() {
+        writer.write("")
+        writer.withBlock("override fun hashCode(): Int {", "}") {
+            if (sortedMembers.isEmpty()) {
+                write("var result = javaClass.hashCode()")
+            } else {
+                write(
+                    "var result = \$1L\$2L",
+                    sortedMembers[0].memberName,
+                    selectHashFunctionForShape(sortedMembers[0])
+                )
+
+                if (sortedMembers.size > 1) {
+                    for ((index, memberShape) in sortedMembers.withIndex()) {
+                        if (index == 0) continue
+
+                        write(
+                            "result = 31 * result + (\$1L\$2L)",
+                            memberShape.memberName, selectHashFunctionForShape(memberShape)
+                        )
+                    }
+                }
+            }
+            write("return result")
+        }
+    }
+
+    // Return the appropriate hashCode fragment based on ShapeID of member target.
+    private fun selectHashFunctionForShape(member: MemberShape): String {
+        val targetShape = model.expectShape(member.target)
+        // also available already in the byMember map
+        val targetSymbol = symbolProvider.toSymbol(targetShape)
+
+        return when(targetShape.type) {
+            ShapeType.INTEGER, ShapeType.BYTE ->
+                when(targetSymbol.isBoxed()) {
+                    true -> " ?: 0"
+                    else -> ""
+                }
+            else ->
+                when(targetSymbol.isBoxed()) {
+                    true -> "?.hashCode() ?: 0"
+                    else -> ".hashCode()"
+                }
+        }
+    }
 
     // generate a `equals()` implementation
-    private fun renderEquals() {}
+    private fun renderEquals() {
+        writer.write("")
+        writer.withBlock("override fun equals(other: Any?): Boolean {", "}") {
+            write("if (this === other) return true")
+            write("if (javaClass != other?.javaClass) return false")
+            write("")
+            write("other as \$class.name:L")
+            write("")
+
+            for (memberShape in sortedMembers) {
+                write("if (\$1L != other.\$1L) return false", memberShape.memberName)
+            }
+
+            write("")
+            write("return true")
+        }
+    }
 
     // generate a `copy()` implementation
     private fun renderCopy() {
@@ -131,7 +215,7 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-        .write("fun copy(block: DslBuilder.() -> Unit = {}): \$class.name:L = BuilderImpl(this).apply(block).build()")
+            .write("fun copy(block: DslBuilder.() -> Unit = {}): \$class.name:L = BuilderImpl(this).apply(block).build()")
             .write("")
     }
 
@@ -165,9 +249,9 @@ class StructureGenerator(
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     write("")
-                    .openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
-                        .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
-                    .closeBlock("}")
+                        .openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
+                            .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
+                        .closeBlock("}")
                 }
             }
     }

@@ -63,8 +63,8 @@ class UnionGeneratorTest {
  */
 sealed class MyUnion {
     data class MyStruct(val myStruct: MyStruct) : MyUnion()
-    data class Bar(val bar: Integer) : MyUnion()
-    data class Baz(val baz: Integer) : MyUnion()
+    data class Bar(val bar: Int) : MyUnion()
+    data class Baz(val baz: Int) : MyUnion()
     /**
      * Documentation for foo
      */
