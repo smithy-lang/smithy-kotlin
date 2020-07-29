@@ -62,4 +62,21 @@ class TextTest {
             assertEquals(test.expected, actual, "expected ${test.expected}; got: $actual")
         }
     }
+
+    @Test
+    fun `url path values encode correctly`() {
+        val urlPath = "/wikipedia/en/6/61/Purdue_University_\u2013seal.svg"
+        assertEquals("/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg", urlPath.encodeUrlPath())
+        assertEquals("/kotlin/Tue,%2029%20Apr%202014%2018:30:38%20GMT", "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT".encodeUrlPath())
+    }
+
+    @Test
+    fun `utf8 url path values encode correctly`() {
+        val swissAndGerman = "\u0047\u0072\u00fc\u0065\u007a\u0069\u005f\u007a\u00e4\u006d\u00e4"
+        val russian = "\u0412\u0441\u0435\u043c\u005f\u043f\u0440\u0438\u0432\u0435\u0442"
+        val japanese = "\u3053\u3093\u306b\u3061\u306f"
+        assertEquals("%D0%92%D1%81%D0%B5%D0%BC_%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82", russian.encodeUrlPath())
+        assertEquals("Gr%C3%BCezi_z%C3%A4m%C3%A4", swissAndGerman.encodeUrlPath())
+        assertEquals("%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF", japanese.encodeUrlPath())
+    }
 }

@@ -100,6 +100,11 @@ interface JsonStreamWriter {
     fun writeValue(value: Byte)
 
     /**
+     * Appends the contents of [value] *without* any additional formatting or escaping. Use with caution
+     */
+    fun writeRawValue(value: String)
+
+    /**
      * Json content will be constructed in this UTF-8 encoded byte array.
      */
     val bytes: ByteArray?

@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.model.Model
@@ -62,6 +63,11 @@ interface ProtocolGenerator {
         }
 
     /**
+     * Get the application protocol for the generator
+     */
+    val applicationProtocol: ApplicationProtocol
+
+    /**
      * Generate serializers required by the protocol
      */
     fun generateSerializers(ctx: GenerationContext)
@@ -90,7 +96,7 @@ interface ProtocolGenerator {
         val service: ServiceShape,
         val symbolProvider: SymbolProvider,
         val integrations: List<KotlinIntegration>,
-        val protocolName: String,
+        val protocol: ShapeId,
         val delegator: KotlinDelegator
     )
 }

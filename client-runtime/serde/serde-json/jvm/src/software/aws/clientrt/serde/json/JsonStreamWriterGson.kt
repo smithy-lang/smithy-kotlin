@@ -183,6 +183,14 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
             throw JsonGenerationException(e)
         }
     }
+
+    override fun writeRawValue(value: String) {
+        try {
+            jsonStreamWriter.jsonValue(value)
+        } catch (e: IOException) {
+            throw JsonGenerationException(e)
+        }
+    }
 }
 
 /*

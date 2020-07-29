@@ -33,7 +33,8 @@ private fun String.toInsensitive(): CaseInsensitiveString =
 internal class CaseInsensitiveMap<Value>() : MutableMap<String, Value> {
     private val impl: MutableMap<CaseInsensitiveString, Value> = mutableMapOf()
 
-    override val size: Int = impl.size
+    override val size: Int
+        get() = impl.size
 
     override fun containsKey(key: String): Boolean = impl.containsKey(key.toInsensitive())
 

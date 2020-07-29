@@ -15,7 +15,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -34,7 +33,8 @@ class ServiceGeneratorTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val writer = KotlinWriter("com.test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val generator = ServiceGenerator(model, provider, writer, service, "test")
+        val applicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
+        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol)
         generator.render()
 
         commonTestContents = writer.toString()
@@ -77,21 +77,75 @@ class ServiceGeneratorTest {
     }
 
     @Test
+    fun `it renders a companion object`() {
+        val expected = """
+    companion object {
+        fun build(block: Config.() -> Unit = {}): ExampleClient {
+            val config = Config().apply(block)
+            return DefaultExampleClient(config)
+        }
+    }
+"""
+        commonTestContents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders a configuration object`() {
+        // we are using a default HTTP protocol in the test and so we should end up with an engine by default
+        val expected = """
+    class Config {
+        var httpEngine: HttpClientEngine? = null
+    }
+"""
+        commonTestContents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        var openBraces = 0
-        var closedBraces = 0
-        var openParens = 0
-        var closedParens = 0
-        commonTestContents.forEach {
-            when (it) {
-                '{' -> openBraces++
-                '}' -> closedBraces++
-                '(' -> openParens++
-                ')' -> closedParens++
-            }
+        commonTestContents.shouldSyntacticSanityCheck()
+    }
+
+    @Test
+    fun `it allows overriding defined sections`() {
+        val model = Model.assembler()
+            .addImport(javaClass.getResource("service-generator-test-operations.smithy"))
+            .discoverModels()
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
+        val applicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
+        writer.onSection(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) { _ ->
+            writer.openBlock("companion object {")
+                .write("fun foo(): Int = 1")
+                .closeBlock("}")
         }
-        Assertions.assertEquals(openBraces, closedBraces)
-        Assertions.assertEquals(openParens, closedParens)
+
+        writer.onSection(SECTION_SERVICE_INTERFACE_CONFIG) { _ ->
+            writer.openBlock("class Config {")
+                .write("var bar: Int = 2")
+                .closeBlock("}")
+        }
+
+        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol)
+        generator.render()
+        val contents = writer.toString()
+
+        val expectedCompanionOverride = """
+    companion object {
+        fun foo(): Int = 1
+    }
+"""
+        contents.shouldContainOnlyOnce(expectedCompanionOverride)
+
+        val expectedConfigOverride = """
+    class Config {
+        var bar: Int = 2
+    }
+"""
+        contents.shouldContainOnlyOnce(expectedConfigOverride)
     }
 }

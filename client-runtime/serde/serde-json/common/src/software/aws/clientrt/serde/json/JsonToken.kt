@@ -49,9 +49,10 @@ sealed class JsonToken {
     data class String(val value: kotlin.String) : JsonToken()
 
     /**
-     * A JSON number
+     * A JSON number (note the raw string value of the number is returned, you are responsible for converting
+     * to a concrete [Number] type)
      */
-    data class Number(val value: Double) : JsonToken()
+    data class Number(val value: kotlin.String) : JsonToken()
 
     /**
      * A JSON boolean

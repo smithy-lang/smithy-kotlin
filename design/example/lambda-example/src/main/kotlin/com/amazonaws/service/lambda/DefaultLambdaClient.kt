@@ -13,12 +13,14 @@ import software.aws.clientrt.http.feature.DefaultValidateResponse
 import software.aws.clientrt.http.feature.HttpSerde
 import software.aws.clientrt.serde.json.JsonSerdeProvider
 
-class DefaultLambdaClient: LambdaClient {
+class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
     private val client: SdkHttpClient
 
     init {
-        val config = HttpClientEngineConfig()
-        client = sdkHttpClient(KtorEngine(config)) {
+        val engineConfig = HttpClientEngineConfig()
+        val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)
+
+        client = sdkHttpClient(httpEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
             }
@@ -64,7 +66,7 @@ class DefaultLambdaClient: LambdaClient {
 
 
 fun main() = runBlocking{
-    val client = LambdaClient.create()
+    val client = LambdaClient.build()
     val request = InvokeRequest {
         functionName = "myfunction"
         payload = "some payload".toByteArray()

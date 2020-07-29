@@ -22,18 +22,23 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
     // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
     // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
-    override fun deserializeByte(): Byte = deserializeDouble().toByte()
+    override fun deserializeByte(): Byte = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toByte() }
 
-    override fun deserializeInt(): Int = deserializeDouble().toInt()
+    override fun deserializeInt(): Int = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
 
-    override fun deserializeShort(): Short = deserializeDouble().toShort()
+    override fun deserializeShort(): Short = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toShort() }
 
-    override fun deserializeLong(): Long = deserializeDouble().toLong()
+    override fun deserializeLong(): Long = nextNumberValue { it.toLongOrNull() ?: it.toDouble().toLong() }
+
     override fun deserializeFloat(): Float = deserializeDouble().toFloat()
 
-    override fun deserializeDouble(): Double {
+    override fun deserializeDouble(): Double = nextNumberValue { it.toDouble() }
+
+    // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
+    // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
+    private fun <T> nextNumberValue(block: (value: String) -> T): T {
         val token = reader.nextTokenOf<JsonToken.Number>()
-        return token.value
+        return block(token.value)
     }
 
     override fun deserializeString(): String {

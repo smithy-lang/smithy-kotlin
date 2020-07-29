@@ -42,7 +42,7 @@ private class JsonStreamReaderGson(payload: ByteArray, charset: Charset = Charse
             }
             RawJsonToken.Name -> JsonToken.Name(reader.nextName())
             RawJsonToken.String -> JsonToken.String(reader.nextString())
-            RawJsonToken.Number -> JsonToken.Number(reader.nextDouble())
+            RawJsonToken.Number -> JsonToken.Number(reader.nextString())
             RawJsonToken.Bool -> JsonToken.Bool(reader.nextBoolean())
             RawJsonToken.Null -> {
                 reader.nextNull()

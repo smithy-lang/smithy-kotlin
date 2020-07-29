@@ -14,10 +14,8 @@
  */
 package software.aws.clientrt.serde.json
 
-import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 fun JsonStreamReader.allTokens(): List<JsonToken> {
     val tokens = mutableListOf<JsonToken>()
@@ -35,16 +33,7 @@ fun assertTokensAreEqual(expected: List<JsonToken>, actual: List<JsonToken>) {
     assertEquals(expected.size, actual.size, "unbalanced tokens")
     val pairs = expected.zip(actual)
     pairs.forEach { (exp, act) ->
-        when (exp) {
-            is JsonToken.Number -> {
-                assertTrue(act is JsonToken.Number)
-                val eps = 0.0001
-                assertTrue(abs(exp.value - act.value) <= eps, "expected: ${exp.value}; got: ${act.value}")
-            }
-            else -> {
-                assertEquals(exp, act)
-            }
-        }
+        assertEquals(exp, act)
     }
 }
 
@@ -63,7 +52,7 @@ class JsonStreamReaderTest {
         val expected = listOf(
             JsonToken.BeginObject,
             JsonToken.Name("x"),
-            JsonToken.Number(1.0),
+            JsonToken.Number("1"),
             JsonToken.Name("y"),
             JsonToken.String("2"),
             JsonToken.EndObject,
@@ -95,13 +84,13 @@ class JsonStreamReaderTest {
         val expected = listOf(
             JsonToken.BeginObject,
             JsonToken.Name("num"),
-            JsonToken.Number(1.0),
+            JsonToken.Number("1"),
             JsonToken.Name("str"),
             JsonToken.String("string"),
             JsonToken.Name("list"),
             JsonToken.BeginArray,
-            JsonToken.Number(1.0),
-            JsonToken.Number(2.3456),
+            JsonToken.Number("1"),
+            JsonToken.Number("2.3456"),
             JsonToken.String("3"),
             JsonToken.EndArray,
             JsonToken.Name("nested"),

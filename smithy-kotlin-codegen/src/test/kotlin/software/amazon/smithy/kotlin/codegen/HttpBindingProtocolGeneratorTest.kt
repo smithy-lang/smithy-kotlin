@@ -15,7 +15,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
@@ -55,7 +54,7 @@ class HttpBindingProtocolGeneratorTest {
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
         val delegator = KotlinDelegator(settings, model, manifest, provider)
         val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), "mockHttp", delegator)
+        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
         return TestContext(ctx, manifest, generator)
     }
 
@@ -122,8 +121,8 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
 
         builder.headers {
             append("Content-Type", "application/json")
-            if (input.header1 != null) append("X-Header1", input.header1)
-            if (input.header2 != null) append("X-Header2", input.header2)
+            if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
+            if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
 
         val serializer = provider()
@@ -307,8 +306,10 @@ class ListInputSerializer(val input: ListInputRequest) : HttpSerialize {
             if (input.nestedIntList != null) {
                 listField(NESTEDINTLIST_DESCRIPTOR) {
                     for(m0 in input.nestedIntList) {
-                        for(m1 in m0) {
-                            serializeInt(m1)
+                        serializer.serializeList {
+                            for(m1 in m0) {
+                                serializeInt(m1)
+                            }
                         }
                     }
                 }
@@ -564,7 +565,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
             path = "/input/timestamp/$tsLabel"
             parameters {
                 if (input.queryTimestamp != null) append("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
-                if (input.queryTimestampList != null) appendAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
+                if (input.queryTimestampList?.isNotEmpty() == true) appendAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
             }
         }
 
@@ -577,13 +578,13 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         val serializer = provider()
         serializer.serializeStruct {
             input.dateTime?.let { field(DATETIME_DESCRIPTOR, it.format(TimestampFormat.ISO_8601)) }
-            input.epochSeconds?.let { field(EPOCHSECONDS_DESCRIPTOR, it.toEpochDouble()) }
+            input.epochSeconds?.let { rawField(EPOCHSECONDS_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
             input.httpDate?.let { field(HTTPDATE_DESCRIPTOR, it.format(TimestampFormat.RFC_5322)) }
-            input.normal?.let { field(NORMAL_DESCRIPTOR, it.toEpochDouble()) }
+            input.normal?.let { rawField(NORMAL_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
             if (input.timestampList != null) {
                 listField(TIMESTAMPLIST_DESCRIPTOR) {
                     for(m0 in input.timestampList) {
-                        serializeDouble(m0.toEpochDouble())
+                        serializeRaw(m0.format(TimestampFormat.EPOCH_SECONDS))
                     }
                 }
             }
@@ -619,13 +620,13 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         builder.url {
             path = "/input/blob"
             parameters {
-                if (input.queryBlob != null) append("qblob", input.queryBlob.encodeBase64String())
+                if (input.queryBlob?.isNotEmpty() == true) append("qblob", input.queryBlob.encodeBase64String())
             }
         }
 
         builder.headers {
             append("Content-Type", "application/json")
-            if (input.headerMediaType != null) append("X-Blob", input.headerMediaType.encodeBase64())
+            if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
         val serializer = provider()
@@ -641,22 +642,32 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         // implements `SdkSerializable`
         contents.shouldContainOnlyOnce(expectedContents)
     }
-}
 
-fun String.shouldSyntacticSanityCheck() {
-    // sanity check since we are testing fragments
-    var openBraces = 0
-    var closedBraces = 0
-    var openParens = 0
-    var closedParens = 0
-    this.forEach {
-        when (it) {
-            '{' -> openBraces++
-            '}' -> closedBraces++
-            '(' -> openParens++
-            ')' -> closedParens++
+    @Test
+    fun `it handles query string literals`() {
+        val contents = getTransformFileContents("ConstantQueryStringSerializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val label1 = "\${input.hello}" // workaround for raw strings not being able to contain escapes
+        val expectedContents = """
+class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpSerialize {
+    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+        builder.method = HttpMethod.GET
+
+        builder.url {
+            path = "/ConstantQueryString/$label1"
+            parameters {
+                append("foo", "bar")
+                append("hello", "")
+            }
         }
+
+        builder.headers {
+            append("Content-Type", "application/json")
+        }
+
     }
-    Assertions.assertEquals(openBraces, closedBraces, "unmatched open/closed braces:\n$this")
-    Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
 }

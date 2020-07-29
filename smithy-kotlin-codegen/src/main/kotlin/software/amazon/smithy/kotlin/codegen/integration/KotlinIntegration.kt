@@ -16,7 +16,9 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.Shape
 
 /**
  * JVM SPI for customizing Kotlin code generation, registering new protocol
@@ -38,6 +40,12 @@ interface KotlinIntegration {
      */
     val order: Byte
         get() = 0
+
+    /**
+     * Get the list of protocol generators to register
+     */
+    val protocolGenerators: List<ProtocolGenerator>
+        get() = listOf()
 
     /**
      * Preprocess the model before code generation.
@@ -71,8 +79,26 @@ interface KotlinIntegration {
     }
 
     /**
-     * Get the list of protocol generators to register
+     * Called each time a writer is used that defines a shape.
+     *
+     * Any mutations made on the writer (for example, adding
+     * section interceptors) are removed after the callback has completed;
+     * the callback is invoked in between pushing and popping state from
+     * the writer.
+     *
+     * @param settings Settings used to generate.
+     * @param model Model to generate from.
+     * @param symbolProvider Symbol provider used for codegen.
+     * @param writer Writer that will be used.
+     * @param definedShape Shape that is being defined in the writer.
      */
-    val protocolGenerators: List<ProtocolGenerator>
-        get() = listOf()
+    fun onShapeWriterUse(
+        settings: KotlinSettings,
+        model: Model,
+        symbolProvider: SymbolProvider,
+        writer: KotlinWriter,
+        definedShape: Shape
+    ) {
+        // pass
+    }
 }

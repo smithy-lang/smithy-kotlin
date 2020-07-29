@@ -107,6 +107,10 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(descriptor.serialName)
     }
 
+    override fun rawField(descriptor: SdkFieldDescriptor, value: String) {
+        TODO("Not yet implemented")
+    }
+
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
         serializeStruct(descriptor, block)
     }
@@ -147,6 +151,10 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun serializeString(value: String) {
         xmlWriter.text(value)
+    }
+
+    override fun serializeRaw(value: String) {
+        TODO("Not yet implemented")
     }
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(this)
@@ -198,6 +206,10 @@ private class XmlMapSerializer(
 
     override fun entry(key: String, value: Char) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
+    override fun rawEntry(key: String, value: String) {
+        TODO("Not yet implemented")
+    }
+
     override fun serializeBoolean(value: Boolean) = serializePrimitive(value)
 
     override fun serializeByte(value: Byte) = serializePrimitive(value)
@@ -217,6 +229,10 @@ private class XmlMapSerializer(
     override fun serializeString(value: String) = serializePrimitive(value)
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
+
+    override fun serializeRaw(value: String) {
+        TODO("Not yet implemented")
+    }
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
         TODO("Not yet implemented")
@@ -261,6 +277,10 @@ private class XmlListSerializer(
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
+        TODO("Not yet implemented")
+    }
+
+    override fun serializeRaw(value: String) {
         TODO("Not yet implemented")
     }
 

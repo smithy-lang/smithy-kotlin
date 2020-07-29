@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -25,6 +26,16 @@ import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.StreamingTrait
 
 /**
+ * Section name used when rendering the service interface companion object
+ */
+const val SECTION_SERVICE_INTERFACE_COMPANION_OBJ = "service-interface-companion-obj"
+
+/**
+ * Section name used when rendering the service interface configuration object
+ */
+const val SECTION_SERVICE_INTERFACE_CONFIG = "service-interface-config"
+
+/**
  * Renders just the service interfaces. The actual implementation is handled by protocol generators
  */
 class ServiceGenerator(
@@ -32,11 +43,12 @@ class ServiceGenerator(
     private val symbolProvider: SymbolProvider,
     private val writer: KotlinWriter,
     private val service: ServiceShape,
-    private val rootNamespace: String
+    private val rootNamespace: String,
+    private val applicationProtocol: ApplicationProtocol
 ) {
+    private val serviceSymbol = symbolProvider.toSymbol(service)
 
     fun render() {
-        val symbol = symbolProvider.toSymbol(service)
 
         importExternalSymbols()
 
@@ -45,8 +57,20 @@ class ServiceGenerator(
         val operationsIndex = model.getKnowledge(OperationIndex::class.java)
 
         writer.renderDocumentation(service)
-        writer.openBlock("interface ${symbol.name} : SdkClient {")
+        writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
             .call { overrideServiceName() }
+            .call {
+                // allow integrations to add additional fields to companion object or configuration
+                writer.write("")
+                writer.pushState(SECTION_SERVICE_INTERFACE_COMPANION_OBJ)
+                renderCompanionObject()
+                writer.popState()
+
+                writer.write("")
+                writer.pushState(SECTION_SERVICE_INTERFACE_CONFIG)
+                renderConfig()
+                writer.popState()
+            }
             .call {
                 operations.forEach { op ->
                     renderOperation(operationsIndex, op)
@@ -54,6 +78,47 @@ class ServiceGenerator(
             }
             .closeBlock("}")
             .write("")
+    }
+
+    /**
+     * Render the service interface companion object which is the main entry point for most consumers
+     *
+     * e.g.
+     * ```
+     * companion object {
+     *     fun build(block: Configuration.() -> Unit = {}): LambdaClient {
+     *         val config = Configuration().apply(block)
+     *         return DefaultLambdaClient(config)
+     *     }
+     * }
+     * ```
+     */
+    private fun renderCompanionObject() {
+        writer.openBlock("companion object {")
+            .openBlock("fun build(block: Config.() -> Unit = {}): ${serviceSymbol.name} {")
+            .write("val config = Config().apply(block)")
+            .write("return Default${serviceSymbol.name}(config)")
+            .closeBlock("}")
+            .closeBlock("}")
+    }
+
+    /**
+     * Render the service configuration object/DSL builder
+     */
+    private fun renderConfig() {
+        writer.openBlock("class Config {")
+            .call {
+                if (applicationProtocol.isHttpProtocol) {
+                    val engineSymbol = Symbol.builder()
+                        .name("HttpClientEngine")
+                        .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine", ".")
+                        .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+                        .build()
+                    writer.addImport(engineSymbol, "", SymbolReference.ContextOption.DECLARE)
+                    writer.write("var httpEngine: HttpClientEngine? = null")
+                }
+            }
+            .closeBlock("}")
     }
 
     private fun importExternalSymbols() {

@@ -15,8 +15,6 @@
 package software.aws.clientrt.serde
 
 interface Serializer : PrimitiveSerializer {
-    // TODO: time related structs, bigInteger, bigDecimal, set. bigInteger/bigDecimal will have to be JVM specific.
-
     /**
      * Begin a struct (i.e. in JSON this would be a '{') and return a [StructSerializer] that can be used to serialize the struct's fields.
      *
@@ -164,6 +162,12 @@ interface StructSerializer : PrimitiveSerializer {
     fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
 
     /**
+     * Writes the field using the given [descriptor] and then serializes
+     * the raw [value] without any additional escaping or formatting
+     */
+    fun rawField(descriptor: SdkFieldDescriptor, value: String)
+
+    /**
      * Ends the struct that was started (i.e. in JSON this would be a '}').
      */
     fun endStruct()
@@ -276,6 +280,11 @@ interface MapSerializer : PrimitiveSerializer {
     fun entry(key: String, value: SdkSerializable)
 
     /**
+     * Writes the key and then serializes the raw [value] without any additional escaping or formatting
+     */
+    fun rawEntry(key: String, value: String)
+
+    /**
      * Ends the map that was started (i.e. in JSON this would be a '}').
      */
     fun endMap()
@@ -348,6 +357,12 @@ interface PrimitiveSerializer {
      * @param value
      */
     fun serializeString(value: String)
+
+    /**
+     * Serialize the contents of [value] without any additional escaping. The value
+     * should already be formatted appropriately.
+     */
+    fun serializeRaw(value: String)
 
     /**
      * Calls the serialize method on the given object.

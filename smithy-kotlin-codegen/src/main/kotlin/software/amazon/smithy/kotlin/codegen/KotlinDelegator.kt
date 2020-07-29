@@ -20,8 +20,12 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
+
+private const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
+private const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"
 
 /**
  * Manages writers for Kotlin files.
@@ -30,7 +34,8 @@ class KotlinDelegator(
     private val settings: KotlinSettings,
     private val model: Model,
     private val fileManifest: FileManifest,
-    private val symbolProvider: SymbolProvider
+    private val symbolProvider: SymbolProvider,
+    private val integrations: List<KotlinIntegration> = listOf()
 ) {
 
     private val writers: MutableMap<String, KotlinWriter> = mutableMapOf()
@@ -85,6 +90,17 @@ class KotlinDelegator(
         writer.addImportReferences(symbol, SymbolReference.ContextOption.DECLARE)
         writer.dependencies.addAll(symbol.dependencies)
         writer.pushState()
+
+        // shape is stored in the property bag when generated, if it's there pull it back out
+        val shape = symbol.getProperty("shape", Shape::class.java)
+        if (shape.isPresent) {
+            // Allow integrations to do things like add onSection callbacks.
+            // these onSection callbacks are removed when popState is called.
+            for (integration in integrations) {
+                integration.onShapeWriterUse(settings, model, symbolProvider, writer, shape.get())
+            }
+        }
+
         block(writer)
         writer.popState()
     }
@@ -101,9 +117,25 @@ class KotlinDelegator(
         block(writer)
     }
 
-    private fun checkoutWriter(filename: String, namespace: String): KotlinWriter {
+    /**
+     * Gets a previously created test file writer or creates a new one if needed
+     * and adds a new line if the writer already exists.
+     *
+     * @param filename Name of the file to create.
+     * @param block Lambda that accepts and works with the file.
+     */
+    fun useTestFileWriter(filename: String, namespace: String, block: (KotlinWriter) -> Unit) {
+        val writer: KotlinWriter = checkoutWriter(filename, namespace, DEFAULT_TEST_SOURCE_SET_ROOT)
+        block(writer)
+    }
+
+    private fun checkoutWriter(
+        filename: String,
+        namespace: String,
+        sourceSetRoot: String = DEFAULT_SOURCE_SET_ROOT
+    ): KotlinWriter {
         // src/main/kotlin/namespace/filename
-        val root = "./src/main/kotlin/" + namespace.replace(".", "/")
+        val root = sourceSetRoot + namespace.replace(".", "/")
         val formattedFilename = Paths.get(root, filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)
         val writer = writers.getOrPut(formattedFilename) { KotlinWriter(namespace) }

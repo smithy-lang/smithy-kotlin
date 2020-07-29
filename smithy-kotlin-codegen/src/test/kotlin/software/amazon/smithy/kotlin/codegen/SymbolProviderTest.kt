@@ -335,6 +335,23 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `creates documents`() {
+        val document = DocumentShape.builder().id("foo.bar#MyDocument").build()
+        val model = Model.assembler()
+            .addShapes(document)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val documentSymbol = provider.toSymbol(document)
+        assertEquals("Document", documentSymbol.name)
+        assertEquals("null", documentSymbol.defaultValue())
+        assertEquals(true, documentSymbol.isBoxed())
+        assertEquals("${KotlinDependency.CLIENT_RT_CORE.namespace}.smithy", documentSymbol.namespace)
+        assertEquals(1, documentSymbol.dependencies.size)
+    }
+
+    @Test
     fun `structures references inner collection members`() {
         // lists/sets reference the inner member, ensure that struct members
         // also contain a reference to the collection member in addition to the

@@ -16,6 +16,7 @@ package com.amazonaws.service.lambda
 
 import com.amazonaws.service.lambda.model.*
 import software.aws.clientrt.SdkClient
+import software.aws.clientrt.http.engine.HttpClientEngine
 
 
 interface LambdaClient: SdkClient {
@@ -23,7 +24,15 @@ interface LambdaClient: SdkClient {
         get() = "lambda"
 
     companion object {
-        fun create(): LambdaClient = DefaultLambdaClient()
+        fun build(block: Config.() -> Unit = {}): LambdaClient {
+            val config = Config().apply(block)
+            return DefaultLambdaClient(config)
+        }
+    }
+
+    // FIXME - this is temporary and needs designed
+    class Config {
+        var httpEngine: HttpClientEngine? = null
     }
 
     suspend fun invoke(input: InvokeRequest): InvokeResponse

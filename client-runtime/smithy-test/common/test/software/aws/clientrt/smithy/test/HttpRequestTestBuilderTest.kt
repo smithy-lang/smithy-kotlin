@@ -17,7 +17,6 @@ package software.aws.clientrt.smithy.test
 import io.kotest.matchers.string.shouldContain
 import io.ktor.utils.io.core.toByteArray
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFails
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
@@ -62,6 +61,26 @@ class HttpRequestTestBuilderTest {
             }
         }
         ex.message.shouldContain("expected path: `/foo`; got: `/bar`")
+    }
+
+    @Test
+    fun `it encodes uri in mock engine`() {
+        httpRequestTest {
+            expected {
+                method = HttpMethod.POST
+                // expectations come in already encoded
+                uri = "/foo/2019-12-16T23%3A48%3A18Z"
+            }
+            operation { mockEngine ->
+                val builder = HttpRequestBuilder().apply {
+                    method = HttpMethod.POST
+                    // serializers don't need to worry about URL encoding, that is the engines job (or the wrapper
+                    // depending on the engine)
+                    url.path = "/foo/2019-12-16T23:48:18Z"
+                }
+                mockEngine.roundTrip(builder)
+            }
+        }
     }
 
     @Test
@@ -170,7 +189,35 @@ class HttpRequestTestBuilderTest {
                 }
             }
         }
-        ex.message.shouldContain("expected header name value pair not found: `k2:v2`")
+        ex.message.shouldContain("expected header `k2` has no actual values")
+    }
+
+    @Test
+    fun `it asserts lists of headers`() {
+        val ex = assertFails {
+            httpRequestTest {
+                expected {
+                    method = HttpMethod.POST
+                    uri = "/foo"
+                    headers = mapOf(
+                        "k1" to "v1, v2",
+                        "k2" to "v3, v4, v5"
+                    )
+                }
+                operation { mockEngine ->
+                    val builder = HttpRequestBuilder().apply {
+                        method = HttpMethod.POST
+                        url.path = "/foo"
+                        headers {
+                            appendAll("k1", listOf("v1", "v2"))
+                            appendAll("k2", listOf("v3", "v4"))
+                        }
+                    }
+                    mockEngine.roundTrip(builder)
+                }
+            }
+        }
+        ex.message.shouldContain("expected header name value pair not equal: `k2:v3, v4, v5`; found: `k2:v3, v4")
     }
 
     @Test
@@ -270,35 +317,12 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it fails when expected an HttpBody but actual is empty`() {
-        val ex = assertFails {
-            httpRequestTest {
-                expected {
-                    body = "hello testing"
-                    bodyAssert = { expected, actual ->
-                        assertEquals(expected, actual, "expected body not equal")
-                    }
-                }
-                operation { mockEngine ->
-                    // no actual body should not make it to our assertEquals but it should still fail (invalid test setup)
-                    val builder = HttpRequestBuilder().apply {
-                    }
-                    mockEngine.roundTrip(builder)
-                }
-            }
-        }
-        ex.message.shouldContain("HttpRequest body is null when one was expected")
-    }
-
-    @Test
     fun `it calls bodyAssert function`() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
                     body = "hello testing"
-                    bodyAssert = { expected, actual ->
-                        assertEquals(expected, actual, "expected body not equal")
-                    }
+                    bodyAssert = ::assertBytesEqual
                 }
                 operation { mockEngine ->
                     // no actual body should not make it to our assertEquals but it should still fail (invalid test setup)
@@ -309,6 +333,6 @@ class HttpRequestTestBuilderTest {
                 }
             }
         }
-        ex.message.shouldContain("expected body not equal")
+        ex.message.shouldContain("actual body does not match expected")
     }
 }

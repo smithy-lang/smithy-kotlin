@@ -18,11 +18,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
+import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpMethod
+import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.engine.HttpClientEngine
-import software.aws.clientrt.http.readAll
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.util.encodeUrlPath
 import software.aws.clientrt.http.util.urlEncodeComponent
 import software.aws.clientrt.testing.runSuspendTest
 
@@ -61,8 +63,35 @@ fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runSuspendTest {
     lateinit var actual: HttpRequestBuilder
     val mockEngine = object : HttpClientEngine {
         override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
-            // capture the request that was build by the service operation
+            // capture the request that was built by the service operation
+            if (requestBuilder.body.contentLength != null) {
+                // Content-Length header is not expected to be set by serialize implementations. It is expected
+                // to be read from [HttpBody::contentLength] by the underlying engine and set appropriately
+                // add it in here so tests that define it can pass
+                requestBuilder.headers["Content-Length"] = requestBuilder.body.contentLength.toString()
+            }
+
+            // Url::path is the raw path at this point and engines (or their wrappers) are expected to
+            // encode the raw path. Protocol tests specify expectations with the encoded path though
+            // so we need to encode the raw path that was actually built
+            var encodedPath = requestBuilder.url.path.encodeUrlPath()
+
+            // RFC-3986 §3.3 allows sub-delims (defined in section2.2) to be in the path component.
+            // This includes both colon ':' and comma ',' characters.
+            // Smithy protocol tests percent encode these expected values though whereas `encodeUrlPath()`
+            // does not and follows the RFC. Fixing the tests was discussed but would adversely affect
+            // other SDK's and we were asked to work around it.
+            // Replace any left over sub-delims with the percent encoded value so that tests can proceed
+            // https://tools.ietf.org/html/rfc3986#section-3.3
+            val replacements = mapOf(":" to "%3A", "," to "%2C")
+            for ((oldValue, newValue) in replacements) {
+                encodedPath = encodedPath.replace(oldValue, newValue)
+            }
+
+            requestBuilder.url.path = encodedPath
+
             actual = requestBuilder
+
             // this control flow requires the service call (or whatever calls the mock engine) to be the last
             // statement in the operation{} block...
             throw MockEngineException()
@@ -102,7 +131,15 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
     }
 
     expected.headers.forEach { (name, value) ->
-        assertTrue(actual.headers.contains(name, value), "expected header name value pair not found: `$name:$value`")
+        assertTrue(actual.headers.contains(name), "expected header `$name` has no actual values")
+
+        // the value given in `httpRequestTest` trait may be a list of values as a string e.g. `"foo", "bar"`
+        // join the in-memory representation (which is a list of strings associated to the header name) to a string
+        // for comparision
+        val values = actual.headers.getAll(name)?.joinToString(separator = ", ")
+        requireNotNull(values) { "actual values expected to not be null" }
+
+        assertEquals(value, values, "expected header name value pair not equal: `$name:$value`; found: `$name:$values`")
     }
 
     expected.forbiddenHeaders.forEach {
@@ -112,12 +149,12 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
         assertTrue(actual.headers.contains(it), "expected required header not found: `$it`")
     }
 
-    if (expected.body != null) {
+    val expectedBody = expected.body?.let {
         assertNotNull(expected.bodyAssert, "body assertion function is required if an expected body is defined")
-        val actualBody = actual.body.readAll()?.decodeToString()
-        assertNotNull(actualBody, "HttpRequest body is null when one was expected")
-        expected.bodyAssert.invoke(expected.body, actualBody)
+        ByteArrayContent(it.encodeToByteArray())
     }
+
+    expected.bodyAssert?.invoke(expectedBody, actual.body)
 }
 
 data class ExpectedHttpRequest(
@@ -153,7 +190,7 @@ data class ExpectedHttpRequest(
  * The function will be passed the [expected] contents and the [actual] read contents
  * from the built request as a string.
  */
-typealias BodyAssertFn = (expected: String, actual: String) -> Unit
+typealias BodyAssertFn = suspend (expected: HttpBody?, actual: HttpBody?) -> Unit
 
 class ExpectedHttpRequestBuilder {
     var method: HttpMethod = HttpMethod.GET

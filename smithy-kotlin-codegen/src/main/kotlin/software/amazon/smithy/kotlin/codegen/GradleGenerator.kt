@@ -45,10 +45,22 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest, dependenc
 
     writer.withBlock("dependencies {", "}\n") {
         write("implementation(kotlin(\"stdlib\"))")
+        // TODO - order and group dependencies by their type "implementation", "testImplementation", etc
+        // TODO - can we make kotlin dependencies not specify a version e.g. kotlin("kotlin-test")
+        // TODO - Kotlin MPP setup (pass through KotlinSettings) - maybe separate gradle writers
         for (dependency in dependencies) {
             write("${dependency.config}(\"\$L:\$L:\$L\")", dependency.group, dependency.artifact, dependency.version)
         }
     }
+
+    writer.write("")
+        .openBlock("tasks.test {")
+        .write("useJUnitPlatform()")
+        .openBlock("testLogging {")
+        .write("""events("passed", "skipped", "failed")""")
+        .write("showStandardStreams = true")
+        .closeBlock("}")
+        .closeBlock("}")
 
     val contents = writer.toString()
     manifest.writeFile("build.gradle.kts", contents)

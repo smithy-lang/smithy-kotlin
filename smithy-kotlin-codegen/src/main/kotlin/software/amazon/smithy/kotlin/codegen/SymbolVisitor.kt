@@ -144,7 +144,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         depth++
         val symbol: Symbol = shape.accept(this)
         depth--
-        LOGGER.info("creating symbol from $shape: $symbol")
+        LOGGER.fine("creating symbol from $shape: $symbol")
         return escaper.escapeSymbol(shape, symbol)
     }
 
@@ -288,7 +288,11 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol {
-        return createSymbolBuilder(shape, "DocumentTODO", boxed = true).build()
+        val dependency = KotlinDependency.CLIENT_RT_CORE
+        return createSymbolBuilder(shape, "Document", boxed = true)
+            .namespace("${dependency.namespace}.smithy", ".")
+            .addDependency(dependency)
+            .build()
     }
 
     override fun unionShape(shape: UnionShape): Symbol {

@@ -78,7 +78,7 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it renders constructor`() {
-        commonTestContents.shouldContainOnlyOnce("class DefaultExampleClient : ExampleClient {")
+        commonTestContents.shouldContainOnlyOnce("class DefaultExampleClient(config: ExampleClient.Config) : ExampleClient {")
     }
 
     @Test
@@ -86,8 +86,9 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnce("val client: SdkHttpClient")
     val expected = """
     init {
-        val config = HttpClientEngineConfig()
-        client = sdkHttpClient(KtorEngine(config)) {
+        val engineConfig = HttpClientEngineConfig()
+        val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)
+        client = sdkHttpClient(httpEngine) {
             install(MockHttpFeature1){
                 configurationField1 = "testing"
             }

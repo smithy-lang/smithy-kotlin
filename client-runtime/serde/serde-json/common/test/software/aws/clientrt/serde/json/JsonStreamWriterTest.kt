@@ -47,7 +47,9 @@ class JsonStreamWriterTest {
         writer.writeName("id")
         writer.writeValue(912345678901)
         writer.endObject()
-        assertEquals(expectedIdempotent, writer.bytes?.decodeToString())
+        val expectedIdempotent = """{
+    "id": 912345678901
+}"""
         assertEquals(expectedIdempotent, writer.bytes?.decodeToString())
     }
 
@@ -58,15 +60,18 @@ class JsonStreamWriterTest {
         writer.writeName("id")
         writer.writeValue(912345678901)
         writer.endObject()
+        val expectedNoIndent = """{"id":912345678901}"""
         assertEquals(expectedNoIndent, writer.bytes?.decodeToString())
     }
+
+    @Test
+    fun `it allows raw values`() {
+        val writer = jsonStreamWriter()
+        val expected = """{"foo":1234.5678}"""
+        writer.writeRawValue(expected)
+        assertEquals(expected, writer.bytes?.decodeToString())
+    }
 }
-
-val expectedIdempotent = """{
-    "id": 912345678901
-}"""
-
-val expectedNoIndent = """{"id":912345678901}"""
 
 fun writeJsonStream(messages: List<Message>): ByteArray? {
     val writer = jsonStreamWriter(true)

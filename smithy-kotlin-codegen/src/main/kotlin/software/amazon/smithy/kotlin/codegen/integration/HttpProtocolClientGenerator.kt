@@ -94,7 +94,7 @@ class HttpProtocolClientGenerator(
         val operationsIndex = model.getKnowledge(OperationIndex::class.java)
 
         importSymbols()
-        writer.openBlock("class Default${symbol.name} : ${symbol.name} {")
+        writer.openBlock("class Default${symbol.name}(config: ${symbol.name}.Config) : ${symbol.name} {")
             .write("private val client: SdkHttpClient")
             .call { renderInit() }
             .call {
@@ -131,8 +131,9 @@ class HttpProtocolClientGenerator(
     private fun renderInit() {
         writer.openBlock("init {")
             // FIXME - this will eventually come from the client config/builder
-            .write("val config = HttpClientEngineConfig()")
-            .openBlock("client = sdkHttpClient(KtorEngine(config)) {")
+            .write("val engineConfig = HttpClientEngineConfig()")
+            .write("val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)")
+            .openBlock("client = sdkHttpClient(httpEngine) {")
             .call { renderHttpClientConfiguration() }
             .closeBlock("}")
             .closeBlock("}")

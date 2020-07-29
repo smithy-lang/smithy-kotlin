@@ -59,7 +59,7 @@ class KtorUtilsTest {
         builder.url {
             scheme = Protocol.HTTP
             host = "test.aws.com"
-            path = "/kotlin"
+            path = "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT"
             parameters {
                 append("foo", "bar")
                 appendAll("baz", listOf("qux", "waldo"))
@@ -75,6 +75,7 @@ class KtorUtilsTest {
         assertEquals(HttpMethod.Post, actual.method)
         assertEquals(URLProtocol("http", 80), actual.url.protocol)
         assertEquals("test.aws.com", actual.url.host)
+        assertEquals("/kotlin/Tue,%2029%20Apr%202014%2018:30:38%20GMT", actual.url.encodedPath)
         actual.url.parameters.getAll("foo")!!.shouldContain("bar")
         actual.url.parameters.getAll("baz")!!.shouldContainAll("qux", "waldo")
         assertEquals("v1", actual.headers["h1"]!!)

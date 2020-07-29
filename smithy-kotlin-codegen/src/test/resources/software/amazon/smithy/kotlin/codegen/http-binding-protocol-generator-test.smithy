@@ -17,7 +17,8 @@ service Example {
         MapInput,
         EnumInput,
         TimestampInput,
-        BlobInput
+        BlobInput,
+        ConstantQueryString
     ]
 }
 
@@ -288,4 +289,16 @@ structure BlobInputRequest {
     queryBlob: Blob,
 
     payloadBlob: Blob
+}
+
+@readonly
+@http(uri: "/ConstantQueryString/{hello}?foo=bar&hello", method: "GET")
+operation ConstantQueryString {
+    input: ConstantQueryStringInput
+}
+
+structure ConstantQueryStringInput {
+    @httpLabel
+    @required
+    hello: String,
 }

@@ -38,6 +38,8 @@ import software.amazon.smithy.utils.StringUtils
 abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
+    override val applicationProtocol: ApplicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
+
     /**
      * The default serde format for timestamps.
      */
@@ -229,15 +231,20 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     is CollectionShape -> {
                         // nested list
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        renderListSerializer(ctx, iteratorName, nestedTarget, writer, level + 1)
+                        writer.withBlock("serializer.serializeList {", "}") {
+                            renderListSerializer(ctx, iteratorName, nestedTarget, writer, level + 1)
+                        }
                     }
                     is TimestampShape -> {
                         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
                         val tsFormat = bindingIndex.determineTimestampFormat(targetShape, HttpBinding.Location.DOCUMENT, defaultTimestampFormat)
-                        val formatted = formatInstant(iteratorName, tsFormat)
+                        val formatted = formatInstant(iteratorName, tsFormat, forceString = true)
                         // TODO - what if we need an epoch string? This is determined by the protocol in terms of how a document timestamp type is formatted
-                        val serializeFnName = if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) "serializeDouble" else "serializeString"
-                        writer.write("\$L(\$L)", serializeFnName, formatted)
+                        val serializeMethod = when (tsFormat) {
+                            TimestampFormatTrait.Format.EPOCH_SECONDS -> "serializeRaw"
+                            else -> "serialize"
+                        }
+                        writer.write("$serializeMethod(\$L)", formatted)
                         importTimePackage(writer, tsFormat)
                     }
                     is StructureShape, is UnionShape -> {
@@ -274,12 +281,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         writer.withBlock("if (input.$memberName != null) {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
+                var serializeMethod = "entry"
                 val value = when (valueTargetShape) {
                     is TimestampShape -> {
                         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
                         val tsFormat = bindingIndex.determineTimestampFormat(valueTargetShape, HttpBinding.Location.DOCUMENT, defaultTimestampFormat)
-                        // e.g. value.format(TimestampFormat.ISO_8601) OR value.toEpochDouble(), etc
-                        formatInstant("value", tsFormat)
+                        if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
+                            serializeMethod = "rawEntry"
+                        }
+
+                        // e.g. value.format(TimestampFormat.ISO_8601)
+                        formatInstant("value", tsFormat, forceString = true)
                     }
                     is BlobShape -> {
                         // FIXME - base64 encoding is protocol dependent
@@ -300,7 +312,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
                     }
                 }
-                write("input.$memberName.forEach { (key, value) -> entry(key, $value) }")
+                write("input.$memberName.forEach { (key, value) -> $serializeMethod(key, $value) }")
             }
         }
     }
@@ -402,7 +414,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val targetShape = ctx.model.expectShape(binding.member.target)
                     if (targetShape.isTimestampShape) {
                         importTimePackage(writer, TimestampFormatTrait.Format.DATE_TIME)
-                        val tsLabel = formatInstant("input.${binding.member.defaultName()}?", TimestampFormatTrait.Format.DATE_TIME)
+                        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+                        val tsFormat = bindingIndex.determineTimestampFormat(binding.member, HttpBinding.Location.LABEL, defaultTimestampFormat)
+                        val tsLabel = formatInstant("input.${binding.member.defaultName()}?", tsFormat, forceString = true)
                         "\${$tsLabel}"
                     } else {
                         "\${input.${binding.member.defaultName()}}"
@@ -436,7 +450,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     write("path = \"\$L\"", resolvedPath)
 
                     // Query Parameters
-                    renderQueryParameters(ctx, queryBindings, writer)
+                    renderQueryParameters(ctx, httpTrait.uri.queryLiterals, queryBindings, writer)
                 }
             }
             .write("")
@@ -479,10 +493,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .closeBlock("}")
     }
 
-    private fun renderQueryParameters(ctx: ProtocolGenerator.GenerationContext, queryBindings: List<HttpBinding>, writer: KotlinWriter) {
-        if (queryBindings.isEmpty()) return
+    private fun renderQueryParameters(
+        ctx: ProtocolGenerator.GenerationContext,
+        // literals in the URI
+        queryLiterals: Map<String, String>,
+        // shape bindings
+        queryBindings: List<HttpBinding>,
+        writer: KotlinWriter
+    ) {
+
+        if (queryBindings.isEmpty() && queryLiterals.isEmpty()) return
 
         writer.withBlock("parameters {", "}") {
+            queryLiterals.forEach { (key, value) ->
+                writer.write("append(\$S, \$S)", key, value)
+            }
             renderStringValuesMapParameters(ctx, queryBindings, writer)
         }
     }
@@ -498,17 +523,31 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val member = it.member
             when (memberTarget) {
                 is CollectionShape -> {
-                    // default to "toString"
-                    var mapFnContents = "\"\$it\""
                     val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-                    if (collectionMemberTarget.type == ShapeType.TIMESTAMP) {
-                        // special case of timestamp list
-                        val tsFormat = bindingIndex.determineTimestampFormat(member, location, defaultTimestampFormat)
-                        // headers/query params need to be a string
-                        mapFnContents = formatInstant("it", tsFormat, forceString = true)
-                        importTimePackage(writer, tsFormat)
+                    val mapFnContents = when (collectionMemberTarget.type) {
+                        ShapeType.TIMESTAMP -> {
+                            // special case of timestamp list
+                            val tsFormat = bindingIndex.determineTimestampFormat(member, location, defaultTimestampFormat)
+                            importTimePackage(writer, tsFormat)
+                            // headers/query params need to be a string
+                            formatInstant("it", tsFormat, forceString = true)
+                        }
+                        ShapeType.STRING -> {
+                            if (collectionMemberTarget.hasTrait(EnumTrait::class.java)) {
+                                // collections of enums should be mapped to the raw values
+                                "it.value"
+                            } else {
+                                // collections of string doesn't need mapped to anything
+                                ""
+                            }
+                        }
+                        // default to "toString"
+                        else -> "\"\$it\""
                     }
-                    writer.write("if (input.$1L != null) appendAll(\"\$2L\", input.\$1L.map { \$3L })", memberName, paramName, mapFnContents)
+
+                    // appendAll collection parameter 2
+                    val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
+                    writer.write("if (input.\$1L?.isNotEmpty() == true) appendAll(\"\$2L\", \$3L)", memberName, paramName, param2)
                 }
                 is TimestampShape -> {
                     val tsFormat = bindingIndex.determineTimestampFormat(member, location, defaultTimestampFormat)
@@ -519,18 +558,29 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 is BlobShape -> {
                     importBase64Utils(writer)
-                    writer.write("if (input.\$1L != null) append(\"\$2L\", input.\$1L.encodeBase64String())", memberName, paramName)
+                    writer.write("if (input.\$1L?.isNotEmpty() == true) append(\"\$2L\", input.\$1L.encodeBase64String())", memberName, paramName)
                 }
                 is StringShape -> {
+                    // NOTE: query parameters are allowed to be empty, whereas headers should omit empty string
+                    // values from serde
+                    val cond = if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait(EnumTrait::class.java)) {
+                        "input.$memberName != null"
+                    } else {
+                        "input.$memberName?.isNotEmpty() == true"
+                    }
+
                     val suffix = when {
-                        memberTarget.hasTrait(EnumTrait::class.java) -> ".value"
+                        memberTarget.hasTrait(EnumTrait::class.java) -> {
+                            ".value"
+                        }
                         memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
                             importBase64Utils(writer)
                             ".encodeBase64()"
                         }
                         else -> ""
                     }
-                    writer.write("if (input.\$1L != null) append(\"\$2L\", \$3L)", memberName, paramName, "input.${memberName}$suffix")
+
+                    writer.write("if (\$1L) append(\"\$2L\", \$3L)", cond, paramName, "input.${memberName}$suffix")
                 }
                 else -> {
                     // encode to string
@@ -568,14 +618,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         ShapeType.TIMESTAMP -> {
                             val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
                             val tsFormat = bindingIndex.determineTimestampFormat(member, HttpBinding.Location.DOCUMENT, defaultTimestampFormat)
-                            val formatted = formatInstant("it", tsFormat)
-                            writer.write("input.\$L?.let { field(\$L, $formatted) }", member.defaultName(), member.descriptorName())
+                            val formatted = formatInstant("it", tsFormat, forceString = true)
+                            val serializeMethod = when (tsFormat) {
+                                TimestampFormatTrait.Format.EPOCH_SECONDS -> "rawField"
+                                else -> "field"
+                            }
+                            writer.write("input.\$L?.let { $serializeMethod(\$L, $formatted) }", member.defaultName(), member.descriptorName())
                             importTimePackage(writer, tsFormat)
                         }
                         ShapeType.BLOB -> {
                             importBase64Utils(writer)
                             // FIXME - whether Blob's are base64 encoded/decoded is entirely protocol dependent
                             writer.write("input.\$L?.let { field(\$L, it.encodeBase64String()) }", member.defaultName(), member.descriptorName())
+                        }
+                        ShapeType.DOCUMENT -> {
+                            // FIXME - deal with document types
                         }
                         else -> {
                             val encodedValue = if (target.type == ShapeType.STRING && target.hasTrait(EnumTrait::class.java)) {
@@ -648,6 +705,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("val serializer = provider()")
                     .write("\$LSerializer(input.\$L).serialize(serializer)", memberSymbol.name, memberName)
                     .write("builder.body = ByteArrayContent(serializer.toByteArray())")
+            }
+            ShapeType.DOCUMENT -> {
+                // TODO - deal with document members
             }
             // TODO - list/map/primitives bound to httpPayload trait all need serialized to specific document format...
             else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
@@ -779,9 +839,6 @@ private fun importSerdePackage(writer: KotlinWriter) {
 
 private fun importTimePackage(writer: KotlinWriter, tsFmt: TimestampFormatTrait.Format) {
     writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "TimestampFormat", "")
-    if (tsFmt == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-        writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "toEpochDouble", "")
-    }
 }
 
 private fun importBase64Utils(writer: KotlinWriter) {

@@ -101,6 +101,11 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         serializeChar(value)
     }
 
+    override fun rawField(descriptor: SdkFieldDescriptor, value: String) {
+        jsonWriter.writeName(descriptor.serialName)
+        serializeRaw(value)
+    }
+
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
         jsonWriter.writeName(descriptor.serialName)
         serializeStruct(descriptor, block)
@@ -166,6 +171,11 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         serializeChar(value)
     }
 
+    override fun rawEntry(key: String, value: String) {
+        jsonWriter.writeName(key)
+        serializeRaw(value)
+    }
+
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
         jsonWriter.writeName(descriptor.serialName)
         jsonWriter.writeNull()
@@ -209,5 +219,9 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         value.serialize(this)
+    }
+
+    override fun serializeRaw(value: String) {
+        jsonWriter.writeRawValue(value)
     }
 }

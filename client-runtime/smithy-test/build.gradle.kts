@@ -16,6 +16,8 @@ kotlin {
                 implementation(project(":client-runtime:testing"))
 
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
+
+                // kotlinx-serialization::JsonElement allows comparing arbitrary JSON docs for equality
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
             }
         }

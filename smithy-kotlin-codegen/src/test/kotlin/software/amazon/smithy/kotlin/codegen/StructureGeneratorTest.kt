@@ -17,7 +17,6 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -181,20 +180,7 @@ class StructureGeneratorTest {
     @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        var openBraces = 0
-        var closedBraces = 0
-        var openParens = 0
-        var closedParens = 0
-        commonTestContents.forEach {
-            when (it) {
-                '{' -> openBraces++
-                '}' -> closedBraces++
-                '(' -> openParens++
-                ')' -> closedParens++
-            }
-        }
-        assertEquals(openBraces, closedBraces)
-        assertEquals(openParens, closedParens)
+        commonTestContents.shouldSyntacticSanityCheck()
     }
 
     @Test
@@ -549,30 +535,8 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
     @Test
     fun `error generator syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        var openBraces = 0
-        var closedBraces = 0
-        var openParens = 0
-        var closedParens = 0
-        clientErrorTestContents.forEach {
-            when (it) {
-                '{' -> openBraces++
-                '}' -> closedBraces++
-                '(' -> openParens++
-                ')' -> closedParens++
-            }
-        }
-        assertEquals(openBraces, closedBraces)
-        assertEquals(openParens, closedParens)
-        serverErrorTestContents.forEach {
-            when (it) {
-                '{' -> openBraces++
-                '}' -> closedBraces++
-                '(' -> openParens++
-                ')' -> closedParens++
-            }
-        }
-        assertEquals(openBraces, closedBraces)
-        assertEquals(openParens, closedParens)
+        clientErrorTestContents.shouldSyntacticSanityCheck()
+        serverErrorTestContents.shouldSyntacticSanityCheck()
     }
 
     @Test
