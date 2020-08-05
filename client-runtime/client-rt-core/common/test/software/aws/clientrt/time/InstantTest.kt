@@ -116,13 +116,22 @@ class InstantTest {
         }
     }
 
+    private val epochFmtTests = listOf(
+        FmtTest(1604604157, 0, "1604604157"),
+        FmtTest(1604604157, 345, "1604604157.000000345"),
+        FmtTest(1604604157, 34_500, "1604604157.0000345"),
+        FmtTest(1604604157, 345_000_000, "1604604157.345"),
+        FmtTest(1604604157, 345_006_000, "1604604157.345006")
+    )
+
     @Test
     fun `test format as epoch seconds`() {
-        val actual = Instant
-            .fromEpochSeconds(1604604157, 0)
-            .format(TimestampFormat.EPOCH_SECONDS)
-        val expected = "1604604157"
-        assertEquals(expected, actual)
+        for ((idx, test) in epochFmtTests.withIndex()) {
+            val actual = Instant
+                .fromEpochSeconds(test.sec, test.ns)
+                .format(TimestampFormat.EPOCH_SECONDS)
+            assertEquals(test.expected, actual, "test[$idx]: failed to correctly format Instant from")
+        }
     }
 
     @Test

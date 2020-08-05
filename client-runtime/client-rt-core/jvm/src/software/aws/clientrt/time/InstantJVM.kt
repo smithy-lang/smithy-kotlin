@@ -49,7 +49,19 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
     actual fun format(fmt: TimestampFormat): String = when (fmt) {
         TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value)
         TimestampFormat.RFC_5322 -> RFC_5322_FIXED_DATE_TIME.format(ZonedDateTime.ofInstant(value, ZoneOffset.UTC))
-        TimestampFormat.EPOCH_SECONDS -> "$epochSeconds"
+        TimestampFormat.EPOCH_SECONDS -> {
+            val sb = StringBuffer("$epochSeconds")
+            if (nanosecondsOfSecond > 0) {
+                sb.append(".")
+                val ns = "$nanosecondsOfSecond"
+                val leadingZeros = "0".repeat(9 - ns.length)
+                sb.append(leadingZeros)
+                sb.append(ns)
+                sb.trimEnd('0').toString()
+            } else {
+                sb.toString()
+            }
+        }
     }
 
     actual companion object {
