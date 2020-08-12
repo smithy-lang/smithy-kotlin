@@ -48,6 +48,11 @@ expect class Instant : Comparable<Instant> {
          * Create an [Instant] from its parts
          */
         fun fromEpochSeconds(seconds: Long, ns: Int): Instant
+
+        /**
+         * Parse a string formatted as epoch-seconds into an [Instant]
+         */
+        fun fromEpochSeconds(ts: String): Instant
     }
 }
 
