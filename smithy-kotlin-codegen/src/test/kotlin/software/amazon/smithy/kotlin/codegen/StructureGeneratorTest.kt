@@ -300,6 +300,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         var foo: String?
         var quux: Qux?
 
+        fun build(): MyStruct
         fun quux(block: Qux.DslBuilder.() -> Unit) {
             this.quux = Qux.invoke(block)
         }
@@ -339,7 +340,6 @@ class MyStruct private constructor(builder: BuilderImpl) {
 
     @Test
     fun `it handles enum overloads`() {
-        // enums are backed by strings internally to provide forwards compatibility
         val trait = EnumTrait.builder()
             .addEnum(EnumDefinition.builder().value("t2.nano").name("T2_NANO").build())
             .addEnum(EnumDefinition.builder().value("t2.micro").name("T2_MICRO").build())
@@ -395,6 +395,8 @@ class MyStruct private constructor(builder: BuilderImpl) {
         val expectedDslBuilderInterface = """
     interface DslBuilder {
         var foo: InstanceSize?
+
+        fun build(): MyStruct
     }
 """
         contents.shouldContainOnlyOnce(expectedDslBuilderInterface)

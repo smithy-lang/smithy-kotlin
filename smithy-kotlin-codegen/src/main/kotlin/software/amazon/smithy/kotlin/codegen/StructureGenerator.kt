@@ -251,12 +251,13 @@ class StructureGenerator(
                     write("var \$L: \$T", memberName, memberSymbol)
                 }
 
+                write("")
+                write("fun build(): \$class.name:L")
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
-                    write("")
-                        .openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
-                            .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
-                        .closeBlock("}")
+                    openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
+                        .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
+                    .closeBlock("}")
                 }
             }
     }

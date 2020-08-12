@@ -82,6 +82,7 @@ class HttpBindingProtocolGeneratorTest {
     private fun getTransformFileContents(filename: String): String {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)
+        generator.generateDeserializers(ctx)
         ctx.delegator.flushWriters()
         return getTransformFileContents(manifest, filename)
     }
@@ -669,5 +670,140 @@ class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpS
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it creates smoke test response deserializer`() {
+        val contents = getTransformFileContents("SmokeTestDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class SmokeTestDeserializer : HttpDeserialize {
+
+    companion object {
+        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1")
+        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2")
+        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3")
+        private val PAYLOAD4_DESCRIPTOR = SdkFieldDescriptor("payload4")
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(PAYLOAD1_DESCRIPTOR)
+            field(PAYLOAD2_DESCRIPTOR)
+            field(PAYLOAD3_DESCRIPTOR)
+            field(PAYLOAD4_DESCRIPTOR)
+        }
+    }
+
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): SmokeTestResponse {
+        val builder = SmokeTestResponse.dslBuilder()
+
+        builder.intHeader = response.headers["X-Header2"]?.toInt()
+        builder.strHeader = response.headers["X-Header1"]
+        builder.tsListHeader = response.headers.getAll("X-Header3")?.map { Instant.fromRfc5322(it) }
+
+        val payload = response.body.readAll()
+        if (payload != null) {
+            val deserializer = provider(payload)
+            deserializer.deserializeStruct(null) {
+                loop@while(true) {
+                    when(nextField(OBJ_DESCRIPTOR)) {
+                        PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
+                        PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInt()
+                        PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = NestedDeserializer().deserialize(deserializer)
+                        PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = Instant.fromIso8601(deserializeString())
+                        Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        }
+        return builder.build()
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it deserializes explicit string payloads`() {
+        val contents = getTransformFileContents("ExplicitStringDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        val contents = response.body.readAll()?.decodeToString()
+        builder.payload1 = contents
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it deserializes explicit blob payloads`() {
+        val contents = getTransformFileContents("ExplicitBlobDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        builder.payload1 = response.body.readAll()
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it deserializes explicit streaming blob payloads`() {
+        val contents = getTransformFileContents("ExplicitBlobStreamDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        builder.payload1 = response.body.toByteStream()
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it deserializes explicit struct payloads`() {
+        val contents = getTransformFileContents("ExplicitStructDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        val payload = response.body.readAll()
+        if (payload != null) {
+            val deserializer = provider(payload)
+            builder.payload1 = Nested2Deserializer().deserialize(deserializer)
+        }
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it deserializes nested documents with struct members`() {
+        // non operational output (nested member somewhere in the graph) that has another non-operational struct as a member
+        val contents = getTransformFileContents("Nested3Deserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class Nested3Deserializer {
+
+    companion object {
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1")
+        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2")
+        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3")
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(MEMBER1_DESCRIPTOR)
+            field(MEMBER2_DESCRIPTOR)
+            field(MEMBER3_DESCRIPTOR)
+        }
+    }
+
+    fun deserialize(deserializer: Deserializer): Nested3 {
+        val builder = Nested3.dslBuilder()
+        deserializer.deserializeStruct(null) {
+            loop@while(true) {
+                when(nextField(OBJ_DESCRIPTOR)) {
+                    MEMBER1_DESCRIPTOR.index -> builder.member1 = deserializeString()
+                    MEMBER2_DESCRIPTOR.index -> builder.member2 = deserializeString()
+                    MEMBER3_DESCRIPTOR.index -> builder.member3 = Nested4Deserializer().deserialize(deserializer)
+                    Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        return builder.build()
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnce("import test.model.Nested3")
     }
 }

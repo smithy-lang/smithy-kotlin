@@ -61,6 +61,20 @@ structure Nested {
 
 structure SmokeTestResponse {
 
+    @httpHeader("X-Header1")
+    strHeader: String,
+
+    @httpHeader("X-Header2")
+    intHeader: Integer,
+
+    @httpHeader("X-Header3")
+    tsListHeader: TimestampList,
+
+    payload1: String,
+    payload2: Integer,
+    payload3: Nested,
+    @timestampFormat("date-time")
+    payload4: Timestamp
 }
 
 @error("client")
@@ -69,7 +83,8 @@ structure SmokeTestError {}
 
 @http(method: "POST", uri: "/explicit/string")
 operation ExplicitString {
-    input: ExplicitStringRequest
+    input: ExplicitStringRequest,
+    output: ExplicitStringResponse
 }
 
 structure ExplicitStringRequest {
@@ -77,12 +92,23 @@ structure ExplicitStringRequest {
     payload1: String
 }
 
+structure ExplicitStringResponse {
+    @httpPayload
+    payload1: String
+}
+
 @http(method: "POST", uri: "/explicit/blob")
 operation ExplicitBlob {
-    input: ExplicitBlobRequest
+    input: ExplicitBlobRequest,
+    output: ExplicitBlobResponse
 }
 
 structure ExplicitBlobRequest {
+    @httpPayload
+    payload1: Blob
+}
+
+structure ExplicitBlobResponse {
     @httpPayload
     payload1: Blob
 }
@@ -92,7 +118,8 @@ blob BodyStream
 
 @http(method: "POST", uri: "/explicit/blobstream")
 operation ExplicitBlobStream {
-    input: ExplicitBlobStreamRequest
+    input: ExplicitBlobStreamRequest,
+    output: ExplicitBlobStreamResponse
 }
 
 structure ExplicitBlobStreamRequest {
@@ -100,9 +127,15 @@ structure ExplicitBlobStreamRequest {
     payload1: BodyStream
 }
 
+structure ExplicitBlobStreamResponse {
+    @httpPayload
+    payload1: BodyStream
+}
+
 @http(method: "POST", uri: "/explicit/struct")
 operation ExplicitStruct {
-    input: ExplicitStructRequest
+    input: ExplicitStructRequest,
+    output: ExplicitStructResponse
 }
 
 structure Nested4 {
@@ -123,6 +156,11 @@ structure Nested2 {
 }
 
 structure ExplicitStructRequest {
+    @httpPayload
+    payload1: Nested2
+}
+
+structure ExplicitStructResponse {
     @httpPayload
     payload1: Nested2
 }
@@ -151,10 +189,19 @@ list BlobList {
 
 @http(method: "POST", uri: "/input/list")
 operation ListInput {
-    input: ListInputRequest
+    input: ListInputRequest,
+    output: ListOutputResponse
 }
 
 structure ListInputRequest {
+    enumList: EnumList,
+    intList: IntList,
+    structList: StructList,
+    nestedIntList: NestedIntList,
+    blobList: BlobList
+}
+
+structure ListOutputResponse {
     enumList: EnumList,
     intList: IntList,
     structList: StructList,
@@ -187,9 +234,15 @@ map BlobMap {
     value: Blob
 }
 
+map NestedMap {
+    key: String,
+    value: IntMap
+}
+
 @http(method: "POST", uri: "/input/map")
 operation MapInput {
-    input: MapInputRequest
+    input: MapInputRequest,
+    output: MapOutputResponse
 }
 
 structure MapInputRequest {
@@ -197,6 +250,14 @@ structure MapInputRequest {
     structMap: StructMap,
     enumMap: EnumMap,
     blobMap: BlobMap
+}
+
+structure MapOutputResponse {
+    intMap: IntMap,
+    structMap: StructMap,
+    enumMap: EnumMap,
+    blobMap: BlobMap,
+    nestedMap: NestedMap
 }
 
 
