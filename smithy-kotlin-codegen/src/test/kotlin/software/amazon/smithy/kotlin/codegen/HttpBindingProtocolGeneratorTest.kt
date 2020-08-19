@@ -723,6 +723,25 @@ class SmokeTestDeserializer : HttpDeserialize {
     }
 
     @Test
+    fun `it deserializes prefix headers`() {
+        val contents = getTransformFileContents("PrefixHeadersDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        val keysForMember1 = response.headers.names().filter { it.startsWith("X-Foo-") }
+        if (keysForMember1.isNotEmpty()) {
+            val map = mutableMapOf<String, String>()
+            for (hdrKey in keysForMember1) {
+                val el = response.headers[hdrKey] ?: continue
+                val key = hdrKey.removePrefix("X-Foo-")
+                map[key] = el
+            }
+            builder.member1 = map
+        }
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
     fun `it deserializes explicit string payloads`() {
         val contents = getTransformFileContents("ExplicitStringDeserializer.kt")
         contents.shouldSyntacticSanityCheck()

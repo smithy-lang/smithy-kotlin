@@ -101,7 +101,6 @@ class DeserializeStructGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    // FIXME - this isn't quite right...likely need an overload for deserializing from double
                     TimestampFormatTrait.Format.EPOCH_SECONDS -> "Instant.fromEpochSeconds(deserializeString())"
                     TimestampFormatTrait.Format.DATE_TIME -> "Instant.fromIso8601(deserializeString())"
                     TimestampFormatTrait.Format.HTTP_DATE -> "Instant.fromRfc5322(deserializeString())"

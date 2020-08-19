@@ -211,8 +211,9 @@ deserializer.deserializeStruct(null) {
                 deserializer.deserializeMap {
                     val map0 = mutableMapOf<String, ByteArray>()
                     while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                        val k0 = key()
                         val el0 = deserializeString().decodeBase64Bytes()
-                        map0[key()] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -220,8 +221,9 @@ deserializer.deserializeStruct(null) {
                 deserializer.deserializeMap {
                     val map0 = mutableMapOf<String, MyEnum>()
                     while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                        val k0 = key()
                         val el0 = MyEnum.fromValue(deserializeString())
-                        map0[key()] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -229,8 +231,9 @@ deserializer.deserializeStruct(null) {
                 deserializer.deserializeMap {
                     val map0 = mutableMapOf<String, Int>()
                     while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                        val k0 = key()
                         val el0 = deserializeInt()
-                        map0[key()] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -238,16 +241,18 @@ deserializer.deserializeStruct(null) {
                 deserializer.deserializeMap {
                     val map0 = mutableMapOf<String, Map<String, Int>>()
                     while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                        val k0 = key()
                         val el0 =
                         deserializer.deserializeMap {
                             val map1 = mutableMapOf<String, Int>()
                             while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                                val k1 = key()
                                 val el1 = deserializeInt()
-                                map1[key()] = el1
+                                map1[k1] = el1
                             }
                             map1
                         }
-                        map0[key()] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -255,8 +260,9 @@ deserializer.deserializeStruct(null) {
                 deserializer.deserializeMap {
                     val map0 = mutableMapOf<String, ReachableOnlyThroughMap>()
                     while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                        val k0 = key()
                         val el0 = ReachableOnlyThroughMapDeserializer().deserialize(deserializer)
-                        map0[key()] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }

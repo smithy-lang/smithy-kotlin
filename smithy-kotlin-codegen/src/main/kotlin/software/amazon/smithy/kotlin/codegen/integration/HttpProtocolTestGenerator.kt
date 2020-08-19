@@ -29,6 +29,7 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 class HttpProtocolTestGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
+    private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     // list of test ID's to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
 ) {
@@ -79,7 +80,23 @@ class HttpProtocolTestGenerator(
                     if (testCases.isEmpty()) {
                         return@ifPresent
                     }
-                    // TODO - generate response tests
+
+                    val testClassName = "${operation.id.name.capitalize()}ResponseTest"
+                    val testFilename = "$testClassName.kt"
+                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                        LOGGER.fine("Generating response protocol test cases for ${operation.id}")
+
+                        writer.addImport("${ctx.settings.moduleName}.model", "*", "")
+                        responseTestBuilder
+                            .writer(writer)
+                            .model(ctx.model)
+                            .symbolProvider(ctx.symbolProvider)
+                            .operation(operation)
+                            .serviceName(serviceSymbol.name)
+                            .testCases(testCases)
+                            .build()
+                            .renderTestClass(testClassName)
+                    }
                 }
 
             // 3. Generate test cases for each error on each operation.

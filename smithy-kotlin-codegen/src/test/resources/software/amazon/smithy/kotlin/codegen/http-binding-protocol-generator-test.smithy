@@ -18,7 +18,8 @@ service Example {
         EnumInput,
         TimestampInput,
         BlobInput,
-        ConstantQueryString
+        ConstantQueryString,
+        PrefixHeaders
     ]
 }
 
@@ -214,6 +215,11 @@ map IntMap {
     value: Integer
 }
 
+map StringMap {
+    key: String,
+    value: String
+}
+
 // only exists as value of a map through MapInputRequest::structMap
 structure ReachableOnlyThroughMap {
     prop1: Integer
@@ -362,4 +368,16 @@ structure ConstantQueryStringInput {
     @httpLabel
     @required
     hello: String,
+}
+
+@http(method: "POST", uri: "/prefix-headers")
+operation PrefixHeaders{
+    input: PrefixHeadersIO,
+    output: PrefixHeadersIO
+}
+
+// input/output with httpPrefixHeaders
+structure PrefixHeadersIO {
+    @httpPrefixHeaders("X-Foo-")
+    member1: StringMap
 }

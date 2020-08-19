@@ -913,6 +913,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     .sortedBy { it.memberName }
 
                 renderDeserializeHeaders(ctx, headerBindings, writer)
+
+                // prefix headers
+                // spec: "Only a single structure member can be bound to httpPrefixHeaders"
+                responseBindings.values.firstOrNull { it.location == HttpBinding.Location.PREFIX_HEADERS }
+                    ?.let {
+                        renderDeserializePrefixHeaders(ctx, it, writer)
+                    }
             }
             .write("")
             .call {
@@ -1047,6 +1054,48 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 else -> throw CodegenException("unknown deserialization: header binding: $hdrBinding; member: `$memberName`")
             }
         }
+    }
+
+    private fun renderDeserializePrefixHeaders(
+        ctx: ProtocolGenerator.GenerationContext,
+        binding: HttpBinding,
+        writer: KotlinWriter
+    ) {
+        // prefix headers MUST target string or collection-of-string
+        val targetShape = ctx.model.expectShape(binding.member.target) as? MapShape
+            ?: throw CodegenException("prefixHeader bindings can only be attached to Map shapes")
+
+        val targetValueShape = ctx.model.expectShape(targetShape.value.target)
+        val targetValueSymbol = ctx.symbolProvider.toSymbol(targetValueShape)
+        val prefix = binding.locationName
+        val memberName = binding.member.defaultName()
+
+        val keyCollName = "keysFor${memberName.capitalize()}"
+        val filter = if (prefix.isNotEmpty()) ".filter { it.startsWith(\"$prefix\") }" else ""
+
+        writer.write("val $keyCollName = response.headers.names()$filter")
+        writer.openBlock("if ($keyCollName.isNotEmpty()) {")
+            .write("val map = mutableMapOf<String, ${targetValueSymbol.name}>()")
+            .openBlock("for (hdrKey in $keyCollName) {")
+            .call {
+                val getFn = when (targetValueShape) {
+                    is StringShape -> "[hdrKey]"
+                    is ListShape -> ".getAll(hdrKey)"
+                    is SetShape -> ".getAll(hdrKey)?.toSet()"
+                    else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
+                }
+                // get()/getAll() returns String? or List<String>?, this shouldn't ever trigger the continue though...
+                writer.write("val el = response.headers$getFn ?: continue")
+                if (prefix.isNotEmpty()) {
+                    writer.write("val key = hdrKey.removePrefix(\$S)", prefix)
+                    writer.write("map[key] = el")
+                } else {
+                    writer.write("map[hdrKey] = el")
+                }
+            }
+            .closeBlock("}")
+            .write("builder.$memberName = map")
+            .closeBlock("}")
     }
 
     private fun renderExplicitHttpPayloadDeserializer(
