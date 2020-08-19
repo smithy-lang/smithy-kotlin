@@ -198,6 +198,9 @@ class DeserializeStructGenerator(
             .write("val $destMap = mutableMapOf<String, ${targetSymbol.name}>()")
             .openBlock("while(next() != Deserializer.EntryIterator.EXHAUSTED) {")
             .call {
+                val keyName = "k$level"
+                // key() needs to be called first to keep deserialization state in correct order
+                writer.write("val $keyName = key()")
                 when (targetShape) {
                     is CollectionShape -> {
                         writer.write("val $elementName =")
@@ -214,7 +217,7 @@ class DeserializeStructGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("$destMap[key()] = $elementName")
+                writer.write("$destMap[$keyName] = $elementName")
             }
             .closeBlock("}")
             // implicit return of `deserializeMap` lambda is last expression
