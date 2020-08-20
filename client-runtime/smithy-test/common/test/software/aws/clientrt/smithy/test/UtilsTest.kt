@@ -41,18 +41,18 @@ class UtilsTest {
         val ex = assertFails {
             assertBytesEqual(null, testBody)
         }
-        ex.message!!.shouldContain("expected no body")
+        ex.message!!.shouldContain("expected no content")
         assertBytesEqual(null, HttpBody.Empty)
 
         val ex2 = assertFails {
             assertBytesEqual(testBody, HttpBody.Empty)
         }
-        ex2.message!!.shouldContain("actual body was null")
+        ex2.message!!.shouldContain("actual content was null")
 
         val ex3 = assertFails {
             assertBytesEqual(ByteArrayContent("foo".encodeAsByteArray()), testBody)
         }
-        ex3.message.shouldContain("actual body does not match expected")
+        ex3.message.shouldContain("actual bytes read does not match expected")
 
         assertBytesEqual(ByteArrayContent(testBodyContents), testBody)
     }

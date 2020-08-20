@@ -333,6 +333,6 @@ class HttpRequestTestBuilderTest {
                 }
             }
         }
-        ex.message.shouldContain("actual body does not match expected")
+        ex.message.shouldContain("actual bytes read does not match expected")
     }
 }

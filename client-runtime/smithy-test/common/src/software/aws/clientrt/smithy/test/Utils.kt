@@ -45,18 +45,26 @@ suspend fun assertEmptyBody(@Suppress("UNUSED_PARAMETER") expected: HttpBody?, a
 suspend fun assertBytesEqual(expected: HttpBody?, actual: HttpBody?) {
     val actualRead = actual?.readAll()
     val expectedRead = expected?.readAll()
+    assertBytesEqual(expectedRead, actualRead)
+}
 
-    if (expectedRead == null) {
-        assertNull(actualRead, "expected no body; found ${actualRead?.decodeToString()}")
+/**
+ * Assert that [actual] == [expected]
+ */
+@OptIn(ExperimentalStdlibApi::class)
+fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
+
+    if (expected == null) {
+        assertNull(actual, "expected no content; found ${actual?.decodeToString()}")
         return
     }
 
-    if (actualRead == null) {
-        fail("expected an HttpBody; actual body was null")
+    if (actual == null) {
+        fail("expected content; actual content was null")
     }
 
-    assertTrue(expectedRead.contentEquals(actualRead),
-        "actual body does not match expected: \n" +
-                "expected: `${expectedRead.decodeToString()}`\n" +
-                "actual: `${actualRead.decodeToString()}`")
+    assertTrue(expected.contentEquals(actual),
+        "actual bytes read does not match expected: \n" +
+                "expected: `${expected.decodeToString()}`\n" +
+                "actual: `${actual.decodeToString()}`")
 }
