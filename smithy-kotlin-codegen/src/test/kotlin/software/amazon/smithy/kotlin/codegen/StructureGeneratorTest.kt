@@ -24,10 +24,7 @@ import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.ListShape
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -589,5 +586,58 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
             generator.render()
         }
         e.message.shouldContain("Message is a reserved name for exception types and cannot be used for any other property")
+    }
+
+    @Test
+    fun `it handles blob shapes`() {
+        // blobs (with and without streaming) require special attention in equals() and hashCode() implementations
+        val member1 = MemberShape.builder().id("com.test#MyStruct\$foo").target("smithy.api#Blob").build()
+        val member2 = MemberShape.builder().id("com.test#MyStruct\$bar").target("com.test#BlobStream").build()
+
+        val blobStream = BlobShape.builder().id("com.test#BlobStream").addTrait(StreamingTrait()).build()
+
+        val struct = StructureShape.builder()
+            .id("com.test#MyStruct")
+            .addMember(member1)
+            .addMember(member2)
+            .build()
+
+        val model = Model.assembler()
+            .addShapes(struct, member1, member2, blobStream)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val generator = StructureGenerator(model, provider, writer, struct)
+        generator.render()
+        val contents = writer.toString()
+
+        val expectedEqualsContent = """
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as MyStruct
+
+        if (bar != other.bar) return false
+        if (foo != null) {
+            if (other.foo == null) return false
+            if (!foo.contentEquals(other.foo)) return false
+        } else if (other.foo != null) return false
+
+        return true
+    }
+"""
+
+        val expectedHashCodeContent = """
+    override fun hashCode(): Int {
+        var result = bar?.hashCode() ?: 0
+        result = 31 * result + (foo?.contentHashCode() ?: 0)
+        return result
+    }
+"""
+        contents.shouldContainOnlyOnce(expectedEqualsContent)
+        contents.shouldContainOnlyOnce(expectedHashCodeContent)
     }
 }

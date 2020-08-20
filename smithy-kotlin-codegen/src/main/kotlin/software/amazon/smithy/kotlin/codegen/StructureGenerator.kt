@@ -18,12 +18,14 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
+import software.amazon.smithy.model.traits.StreamingTrait
 
 /**
  * Renders Smithy structure shapes
@@ -184,6 +186,14 @@ class StructureGenerator(
                     true -> "?.toInt() ?: 0"
                     else -> ".toInt()"
                 }
+            ShapeType.BLOB ->
+                if (targetShape.hasTrait(StreamingTrait::class.java)) {
+                    // ByteStream
+                    "?.hashCode() ?: 0"
+                } else {
+                    // ByteArray
+                    "?.contentHashCode() ?: 0"
+                }
             else ->
                 when (targetSymbol.isBoxed()) {
                     true -> "?.hashCode() ?: 0"
@@ -203,7 +213,16 @@ class StructureGenerator(
             write("")
 
             for (memberShape in sortedMembers) {
-                write("if (\$1L != other.\$1L) return false", memberShape.defaultName())
+                val target = model.expectShape(memberShape.target)
+                val memberName = memberShape.defaultName()
+                if (target is BlobShape && !target.hasTrait(StreamingTrait::class.java)) {
+                    openBlock("if (\$1L != null) {", memberName)
+                        .write("if (other.\$1L == null) return false", memberName)
+                        .write("if (!\$1L.contentEquals(other.\$1L)) return false", memberName)
+                        .closeBlock("} else if (other.\$1L != null) return false", memberName)
+                } else {
+                    write("if (\$1L != other.\$1L) return false", memberName)
+                }
             }
 
             write("")
