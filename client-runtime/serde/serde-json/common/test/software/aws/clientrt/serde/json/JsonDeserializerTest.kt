@@ -87,6 +87,27 @@ class JsonDeserializerTest {
     }
 
     @Test
+    fun `it handles string`() {
+        // allow deserializeString() to consume tokens other than JsonToken.String as raw string values
+        // this supports custom deserialization (e.g. timestamps) of the raw value
+        val tests = listOf(
+            "\"hello\"",
+            "1",
+            "12.7",
+            "true",
+            "false",
+            "null"
+        )
+
+        for (test in tests) {
+            val payload = test.encodeToByteArray()
+            val deserializer = JsonDeserializer(payload)
+            val actual = deserializer.deserializeString()
+            assertEquals(test.removeSurrounding("\""), actual)
+        }
+    }
+
+    @Test
     fun `it handles lists`() {
         val payload = "[1,2,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
