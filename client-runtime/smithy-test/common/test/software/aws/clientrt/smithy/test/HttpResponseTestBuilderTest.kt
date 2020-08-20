@@ -16,6 +16,7 @@ package software.aws.clientrt.smithy.test
 
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.readAll
 import software.aws.clientrt.http.request.HttpRequestBuilder
@@ -45,6 +46,23 @@ class HttpResponseTestBuilderTest {
                 mockedBody.shouldContain("""
                     "baz": "quux"
                 """.trimIndent())
+            }
+        }
+    }
+
+    @Test
+    @OptIn(ExperimentalStdlibApi::class)
+    fun `it handles header lists`() {
+        httpResponseTest<Foo> {
+            expected {
+                statusCode = HttpStatusCode.OK
+                headers = mapOf("bar" to "1, 2, 3")
+            }
+
+            test { _, mockEngine ->
+                val mockedResp = mockEngine.roundTrip(HttpRequestBuilder())
+                val bars = mockedResp.headers.getAll("bar")!!
+                assertEquals(listOf("1", "2", "3"), bars)
             }
         }
     }
