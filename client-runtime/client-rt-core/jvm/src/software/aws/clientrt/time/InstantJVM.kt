@@ -41,7 +41,8 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
 
     override fun hashCode(): Int = value.hashCode()
 
-    override fun equals(other: Any?): Boolean = value.equals(other)
+    override fun equals(other: Any?): Boolean =
+        (this === other) || (other is Instant && this.value == other.value)
 
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
