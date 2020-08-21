@@ -697,7 +697,7 @@ class SmokeTestDeserializer : HttpDeserialize {
 
         builder.intHeader = response.headers["X-Header2"]?.toInt()
         builder.strHeader = response.headers["X-Header1"]
-        builder.tsListHeader = response.headers.getAll("X-Header3")?.map { Instant.fromRfc5322(it) }
+        builder.tsListHeader = response.headers.getAll("X-Header3")?.flatMap(::splitHttpDateHeaderListValues)?.map { Instant.fromRfc5322(it) }
 
         val payload = response.body.readAll()
         if (payload != null) {

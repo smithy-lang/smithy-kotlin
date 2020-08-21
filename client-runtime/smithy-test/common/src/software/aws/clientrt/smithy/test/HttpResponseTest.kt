@@ -90,8 +90,7 @@ fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runSusp
         override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
             val headers = Headers {
                 testBuilder.expected.headers.forEach { (key, value) ->
-                    val values = value.split(",").map { it.trim() }
-                    appendAll(key, values)
+                    append(key, value)
                 }
             }
 

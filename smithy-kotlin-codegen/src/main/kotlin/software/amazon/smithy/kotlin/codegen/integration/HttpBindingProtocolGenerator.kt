@@ -1012,6 +1012,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // member > boolean, number, string, or timestamp
                     // headers are List<String>, get the internal mapping function contents (if any) to convert
                     // to the target symbol type
+
+                    // we also have to handle multiple comma separated values (e.g. 'X-Foo': "1, 2, 3"`)
+                    var splitFn = "splitHeaderListValues"
                     val conversion = when (val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)) {
                         is BooleanShape -> "it.toBoolean()"
                         is NumberShape -> "it." + stringToNumber(collectionMemberTarget)
@@ -1021,6 +1024,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 hdrBinding.member,
                                 HttpBinding.Location.HEADER,
                                 defaultTimestampFormat)
+                            if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
+                                splitFn = "splitHttpDateHeaderListValues"
+                            }
                             importInstant(writer)
                             parseInstant("it", tsFormat)
                         }
@@ -1049,7 +1055,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                     val mapFn = if (conversion.isNotEmpty()) "?.map { $conversion }" else ""
 
-                    writer.write("builder.\$L = response.headers.getAll(\$S)${mapFn}$toCollectionType", memberName, headerName)
+                    writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn, "")
+                    writer.write("builder.\$L = response.headers.getAll(\$S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)
                 }
                 else -> throw CodegenException("unknown deserialization: header binding: $hdrBinding; member: `$memberName`")
             }
