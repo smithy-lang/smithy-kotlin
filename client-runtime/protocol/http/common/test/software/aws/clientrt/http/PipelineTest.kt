@@ -17,19 +17,19 @@ package software.aws.clientrt.http
 import io.ktor.util.pipeline.PipelineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlinx.coroutines.runBlocking
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.HttpResponsePipeline
 import software.aws.clientrt.http.response.TypeInfo
+import software.aws.clientrt.testing.runSuspendTest
 
 // Coroutine builders like `runBlocking` are only available on a specific platform
 class PipelineTest {
 
     @Test
-    fun `request pipeline runs`() = runBlocking {
+    fun `request pipeline runs`() = runSuspendTest {
         val pipeline = HttpRequestPipeline()
         pipeline.intercept(HttpRequestPipeline.Initialize) { proceedWith((subject as Int) + 1) }
         pipeline.intercept(HttpRequestPipeline.Transform) { proceedWith((subject as Int) + 1) }
@@ -40,7 +40,7 @@ class PipelineTest {
     }
 
     @Test
-    fun `response pipeline runs`() = runBlocking {
+    fun `response pipeline runs`() = runSuspendTest {
         val pipeline = HttpResponsePipeline()
         pipeline.intercept(HttpResponsePipeline.Receive) { proceedWith((subject as Int) + 1) }
         pipeline.intercept(HttpResponsePipeline.Transform) { proceedWith((subject as Int) + 1) }
@@ -56,7 +56,7 @@ class PipelineTest {
     }
 
     @Test
-    fun `free functions can be used`() = runBlocking {
+    fun `free functions can be used`() = runSuspendTest {
         val pipeline = HttpResponsePipeline()
 
         suspend fun freeFunc(ctx: PipelineContext<Any, HttpResponseContext>) {
