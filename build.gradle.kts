@@ -12,6 +12,19 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+
+    val kotlinVersion: String by project
+    dependencies {
+        classpath("com.android.tools.build:gradle:4.0.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
+}
+
 plugins {
     kotlin("jvm") version "1.3.72" apply false
     id("org.jetbrains.dokka") version "0.10.0"
@@ -22,6 +35,7 @@ allprojects {
         mavenLocal()
         mavenCentral()
         jcenter()
+        google()
     }
 }
 

@@ -19,7 +19,7 @@ plugins {
     jacoco
 }
 
-val platforms = listOf("common", "jvm")
+val platforms = listOf("common", "jvm", "android")
 
 // Allow subprojects to use internal API's
 // See: https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
@@ -86,5 +86,25 @@ subprojects {
     apply(from = rootProject.file("gradle/publish.gradle"))
 }
 
+task<org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport>("rootAllTest"){
+    destinationDir = File(project.buildDir, "reports/tests/rootAllTest")
+    val rootAllTest = this
+    subprojects {
+        val proj = this
+        afterEvaluate {
+            if (tasks.findByName("allTests") != null) {
+                val provider = tasks.named("allTests")
+                val allTestsTaskProvider = provider as TaskProvider<org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport>
+                rootAllTest.addChild(allTestsTaskProvider)
+                rootAllTest.dependsOn(allTestsTaskProvider)
+            }
+        }
+    }
 
-// TODO - add a task to aggregate test coverage for all subprojects
+    beforeEvaluate {
+        project.gradle.taskGraph.whenReady {
+            rootAllTest.maybeOverrideReporting(this)
+        }
+    }
+}
+
