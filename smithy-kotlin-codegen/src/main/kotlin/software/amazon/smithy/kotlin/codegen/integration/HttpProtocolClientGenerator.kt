@@ -186,7 +186,19 @@ class HttpProtocolClientGenerator(
                 if (hasOutputStream) {
                     writer.write("return client.execute(\$L, \$L, block)", inputParam, respContext)
                 } else {
-                    writer.write("return client.roundTrip(\$L, \$L)", inputParam, respContext)
+                    if (output.isPresent) {
+                        writer.write("return client.roundTrip(\$L, \$L)", inputParam, respContext)
+                    } else {
+                        val httpResponseSymbol = Symbol.builder()
+                            .name("HttpResponse")
+                            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
+                            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+                            .build()
+                        writer.addImport(httpResponseSymbol, "")
+                        // need to not run the response pipeline because there is no valid transform. Explicitly
+                        // specify the raw (closed) HttpResponse
+                        writer.write("client.roundTrip<HttpResponse>(\$L, \$L)", inputParam, respContext)
+                    }
                 }
             }
             .closeBlock("}")

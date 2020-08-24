@@ -21,7 +21,7 @@ import software.aws.clientrt.http.response.TypeInfo
 import software.aws.clientrt.util.InternalAPI
 
 /**
- * A prepared HTTP request for a client to execute. This does nothing until the [execute] method is called.
+ * A prepared HTTP request for a client to execute. This does nothing until the [execute] or [receive] method is called.
  */
 class PreparedHttpRequest(
     val client: SdkHttpClient,
@@ -31,16 +31,21 @@ class PreparedHttpRequest(
 ) {
 
     /**
-     * Execute this request and return the result of the [SdkHttpClient.responsePipeline]
-     * leaving the underlying HTTP connection (possibly) still open
-     * @throws ResponseTransformFailed
+     * Execute this request and return the [HttpResponse] open. It is up to the caller to cleanup the response.
+     * and release resources.
      */
     @InternalAPI
-    suspend inline fun <reified TResponse> executeUnsafe(): Pair<HttpResponse, TResponse> {
+    suspend fun executeUnsafe(): HttpResponse {
         val subject: Any = input ?: builder.body
         client.requestPipeline.execute(builder, subject)
-        val httpResponse = client.engine.roundTrip(builder)
+        return client.engine.roundTrip(builder)
+    }
 
+    /**
+     * Run the response pipeline and transform the raw HttpResponse to the result of the pipeline execution
+     */
+    @InternalAPI
+    suspend inline fun <reified TResponse> transformResponse(httpResponse: HttpResponse): TResponse {
         val want = TypeInfo(TResponse::class)
         val responseContext = HttpResponseContext(httpResponse, want, userContext = userContext)
 
@@ -50,23 +55,12 @@ class PreparedHttpRequest(
         //
         //     2. Response payload is streaming and the end user or service call is responsible for consuming
         //        the payload and only then resources will be released.
-        //
-        lateinit var response: Any
-        try {
-            response = client.responsePipeline.execute(responseContext, httpResponse.body)
-        } catch (ex: Exception) {
-            // if the response pipeline fails (e.g. during deserialization) then we discard the response
-            // ensuring any underlying resources are released. This ensures partial reads don't leak resources.
-            httpResponse.complete()
-            throw ex
-        }
-
+        val response = client.responsePipeline.execute(responseContext, httpResponse.body)
         if (response !is TResponse) {
             // response pipeline failed to transform the raw HttResponse content into the expected output type
             throw ResponseTransformFailed(httpResponse, response::class, want.classz)
         }
-
-        return Pair(httpResponse, response)
+        return response
     }
 
     /**
@@ -76,10 +70,15 @@ class PreparedHttpRequest(
      */
     suspend inline fun <reified TResponse> receive(): TResponse = when (TResponse::class) {
             PreparedHttpRequest::class -> this as TResponse
+            HttpResponse::class -> {
+                val httpResp = executeUnsafe()
+                httpResp.complete()
+                httpResp as TResponse
+            }
             else -> {
-                val (httpResp, result) = executeUnsafe<TResponse>()
+                val httpResp = executeUnsafe()
                 try {
-                    result
+                    transformResponse<TResponse>(httpResp)
                 } finally {
                     httpResp.complete()
                 }
@@ -90,14 +89,16 @@ class PreparedHttpRequest(
      * Execute the request and run the [block] with the result of the [SdkHttpClient.responsePipeline].
      * Resources will remain open until the block finishes, when the call returns underlying
      * resources will be cleaned up.
+     * @throws ResponseTransformFailed
      */
     suspend inline fun <reified T, R> execute(crossinline block: suspend (response: T) -> R): R {
-        val response = executeUnsafe<T>()
+        val httpResp = executeUnsafe()
         try {
-            return block(response.second)
+            val transformResp = transformResponse<T>(httpResp)
+            return block(transformResp)
         } finally {
             // signal the response can now be discarded
-            response.first.complete()
+            httpResp.complete()
         }
     }
 }

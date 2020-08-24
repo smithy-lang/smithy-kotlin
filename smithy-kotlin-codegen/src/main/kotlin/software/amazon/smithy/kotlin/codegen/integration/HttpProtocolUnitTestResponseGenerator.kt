@@ -104,17 +104,22 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 // invoke the operation
                 val opName = operation.defaultName()
 
-                // streaming requests have a different operation signature that require a block to be passed to
-                // process the response - add an empty block if necessary
-                if (isStreamingRequest) {
-                    writer.openBlock("service.\$L(\$L){ actualResult ->", opName, inputParamName)
-                        .call {
-                            renderAssertions()
-                        }
-                        .closeBlock("}")
+                if (operation.output.isPresent) {
+                    // streaming requests have a different operation signature that require a block to be passed to
+                    // process the response - add an empty block if necessary
+                    if (isStreamingRequest) {
+                        writer.openBlock("service.\$L(\$L){ actualResult ->", opName, inputParamName)
+                            .call {
+                                renderAssertions()
+                            }
+                            .closeBlock("}")
+                    } else {
+                        writer.write("val actualResult = service.\$L(\$L)", opName, inputParamName)
+                        renderAssertions()
+                    }
                 } else {
-                    writer.write("val actualResult = service.\$L(\$L)", opName, inputParamName)
-                    renderAssertions()
+                    // no output...nothing to really assert...
+                    writer.write("service.\$L(\$L)", opName, inputParamName)
                 }
             }
             .closeBlock("}")

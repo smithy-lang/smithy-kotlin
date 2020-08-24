@@ -130,7 +130,7 @@ class HttpProtocolClientGeneratorTest {
 """,
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
-        return client.roundTrip(GetFooNoOutputSerializer(input), null)
+        client.roundTrip<HttpResponse>(GetFooNoOutputSerializer(input), null)
     }
 """,
 """
@@ -154,7 +154,7 @@ class HttpProtocolClientGeneratorTest {
 """,
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
-        return client.roundTrip(GetFooStreamingInputNoOutputSerializer(input), null)
+        client.roundTrip<HttpResponse>(GetFooStreamingInputNoOutputSerializer(input), null)
     }
 """
         )
