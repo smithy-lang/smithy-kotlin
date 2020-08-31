@@ -146,10 +146,8 @@ class ShapeValueGenerator(
                 val memberShape: Shape
                 when (currShape) {
                     is StructureShape -> {
-                        val member = if (currShape.asStructureShape().get().getMember(keyNode.value).isPresent) {
-                            currShape.asStructureShape().get().getMember(keyNode.value).get()
-                        } else {
-                            throw CodegenException(
+                        val member = currShape.getMember(keyNode.value).orElseThrow {
+                            CodegenException(
                                 "unknown member ${currShape.id}.${keyNode.value}"
                             )
                         }
