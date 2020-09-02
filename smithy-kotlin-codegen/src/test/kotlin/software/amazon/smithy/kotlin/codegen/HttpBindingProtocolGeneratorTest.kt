@@ -249,89 +249,6 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
     }
 
     @Test
-    fun `it serializes operation inputs with lists`() {
-        val contents = getTransformFileContents("ListInputSerializer.kt")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents = """
-class ListInputSerializer(val input: ListInputRequest) : HttpSerialize {
-
-    companion object {
-        private val BLOBLIST_DESCRIPTOR = SdkFieldDescriptor("blobList")
-        private val ENUMLIST_DESCRIPTOR = SdkFieldDescriptor("enumList")
-        private val INTLIST_DESCRIPTOR = SdkFieldDescriptor("intList")
-        private val NESTEDINTLIST_DESCRIPTOR = SdkFieldDescriptor("nestedIntList")
-        private val STRUCTLIST_DESCRIPTOR = SdkFieldDescriptor("structList")
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
-            field(BLOBLIST_DESCRIPTOR)
-            field(ENUMLIST_DESCRIPTOR)
-            field(INTLIST_DESCRIPTOR)
-            field(NESTEDINTLIST_DESCRIPTOR)
-            field(STRUCTLIST_DESCRIPTOR)
-        }
-    }
-
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
-        builder.method = HttpMethod.POST
-
-        builder.url {
-            path = "/input/list"
-        }
-
-        builder.headers {
-            append("Content-Type", "application/json")
-        }
-
-        val serializer = provider()
-        serializer.serializeStruct {
-            if (input.blobList != null) {
-                listField(BLOBLIST_DESCRIPTOR) {
-                    for(m0 in input.blobList) {
-                        serializeString(m0.encodeBase64String())
-                    }
-                }
-            }
-            if (input.enumList != null) {
-                listField(ENUMLIST_DESCRIPTOR) {
-                    for(m0 in input.enumList) {
-                        serializeString(m0.value)
-                    }
-                }
-            }
-            if (input.intList != null) {
-                listField(INTLIST_DESCRIPTOR) {
-                    for(m0 in input.intList) {
-                        serializeInt(m0)
-                    }
-                }
-            }
-            if (input.nestedIntList != null) {
-                listField(NESTEDINTLIST_DESCRIPTOR) {
-                    for(m0 in input.nestedIntList) {
-                        serializer.serializeList {
-                            for(m1 in m0) {
-                                serializeInt(m1)
-                            }
-                        }
-                    }
-                }
-            }
-            if (input.structList != null) {
-                listField(STRUCTLIST_DESCRIPTOR) {
-                    for(m0 in input.structList) {
-                        serializeSdkSerializable(NestedSerializer(m0))
-                    }
-                }
-            }
-        }
-
-        builder.body = ByteArrayContent(serializer.toByteArray())
-    }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `it serializes nested documents with aggregate shapes`() {
         // non operational input (nested member somewhere in the graph) that has a list/map shape
         val contents = getTransformFileContents("Nested4Serializer.kt")
@@ -406,96 +323,14 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
     }
 
     @Test
-    fun `it serializes maps with nested struct members`() {
+    fun `it generates serializer for shape reachable only through map`() {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
         // serializer should exist for the map value `ReachableOnlyThroughMap`
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/ReachableOnlyThroughMapSerializer.kt"))
         val contents = getTransformFileContents(manifest, "MapInputSerializer.kt")
-        contents.shouldSyntacticSanityCheck()
-
-        val expectedContents = """
-class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
-
-    companion object {
-        private val BLOBMAP_DESCRIPTOR = SdkFieldDescriptor("blobMap")
-        private val ENUMMAP_DESCRIPTOR = SdkFieldDescriptor("enumMap")
-        private val INTMAP_DESCRIPTOR = SdkFieldDescriptor("intMap")
-        private val STRUCTMAP_DESCRIPTOR = SdkFieldDescriptor("structMap")
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
-            field(BLOBMAP_DESCRIPTOR)
-            field(ENUMMAP_DESCRIPTOR)
-            field(INTMAP_DESCRIPTOR)
-            field(STRUCTMAP_DESCRIPTOR)
-        }
-    }
-
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
-        builder.method = HttpMethod.POST
-
-        builder.url {
-            path = "/input/map"
-        }
-
-        builder.headers {
-            append("Content-Type", "application/json")
-        }
-
-        val serializer = provider()
-        serializer.serializeStruct {
-            if (input.blobMap != null) {
-                mapField(BLOBMAP_DESCRIPTOR) {
-                    input.blobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
-                }
-            }
-            if (input.enumMap != null) {
-                mapField(ENUMMAP_DESCRIPTOR) {
-                    input.enumMap.forEach { (key, value) -> entry(key, value.value) }
-                }
-            }
-            if (input.intMap != null) {
-                mapField(INTMAP_DESCRIPTOR) {
-                    input.intMap.forEach { (key, value) -> entry(key, value) }
-                }
-            }
-            if (input.structMap != null) {
-                mapField(STRUCTMAP_DESCRIPTOR) {
-                    input.structMap.forEach { (key, value) -> entry(key, ReachableOnlyThroughMapSerializer(value)) }
-                }
-            }
-        }
-
-        builder.body = ByteArrayContent(serializer.toByteArray())
-    }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.MapInputRequest")
-    }
-
-    @Test
-    fun `it serializes enums as raw values`() {
-        val contents = getTransformFileContents("NestedEnumSerializer.kt")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents = """
-class NestedEnumSerializer(val input: NestedEnum) : SdkSerializable {
-
-    companion object {
-        private val MYENUM_DESCRIPTOR = SdkFieldDescriptor("myEnum")
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
-            field(MYENUM_DESCRIPTOR)
-        }
-    }
-
-    override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct {
-            input.myEnum?.let { field(MYENUM_DESCRIPTOR, it.value) }
-        }
-    }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test

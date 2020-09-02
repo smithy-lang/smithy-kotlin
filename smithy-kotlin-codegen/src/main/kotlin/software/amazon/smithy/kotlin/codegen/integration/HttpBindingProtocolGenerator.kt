@@ -68,8 +68,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-        // render HttpDeserialize for all operation outputs, render normal serde for all shapes that appear as nested on any operation output
-        // render HttpSerialize for all operation inputs
+        // render HttpDeserialize for all operation outputs
         for (operation in getHttpBindingOperations(ctx)) {
             generateOperationDeserializer(ctx, operation)
         }
@@ -243,141 +242,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
-                    renderSerializeStruct(ctx, shape.members(), writer)
+                    SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                 }
             }
             .closeBlock("}")
-    }
-
-    /**
-     * render serialization for a struct member of type "list"
-     */
-    private fun renderListMemberSerializer(
-        ctx: ProtocolGenerator.GenerationContext,
-        member: MemberShape,
-        writer: KotlinWriter
-    ) {
-        val memberName = member.defaultName()
-        val listTarget = ctx.model.expectShape(member.target) as CollectionShape
-        val target = ctx.model.expectShape(listTarget.member.target)
-        writer.withBlock("if (input.$memberName != null) {", "}") {
-            writer.withBlock("listField(${member.descriptorName()}) {", "}") {
-                renderListSerializer(ctx, "input.$memberName", target, writer)
-            }
-        }
-    }
-
-    // internal details of rendering a list type
-    private fun renderListSerializer(
-        ctx: ProtocolGenerator.GenerationContext,
-        collectionName: String,
-        targetShape: Shape,
-        writer: KotlinWriter,
-        level: Int = 0
-    ) {
-        val iteratorName = "m$level"
-        writer.openBlock("for(\$L in \$L) {", iteratorName, collectionName)
-            .call {
-                when (targetShape) {
-                    is CollectionShape -> {
-                        // nested list
-                        val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        writer.withBlock("serializer.serializeList {", "}") {
-                            renderListSerializer(ctx, iteratorName, nestedTarget, writer, level + 1)
-                        }
-                    }
-                    is TimestampShape -> {
-                        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                        val tsFormat = bindingIndex.determineTimestampFormat(
-                            targetShape,
-                            HttpBinding.Location.DOCUMENT,
-                            defaultTimestampFormat
-                        )
-                        val formatted = formatInstant(iteratorName, tsFormat, forceString = true)
-                        // TODO - what if we need an epoch string? This is determined by the protocol in terms of how a document timestamp type is formatted
-                        val serializeMethod = when (tsFormat) {
-                            TimestampFormatTrait.Format.EPOCH_SECONDS -> "serializeRaw"
-                            else -> "serialize"
-                        }
-                        writer.write("$serializeMethod(\$L)", formatted)
-                        importTimestampFormat(writer)
-                    }
-                    is StructureShape, is UnionShape -> {
-                        val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
-                        val wrappedIterator = "${targetSymbol.name}Serializer($iteratorName)"
-                        writer.write("serializeSdkSerializable(\$L)", wrappedIterator)
-                    }
-                    is BlobShape -> {
-                        // FIXME - whether Blob's are base64 encoded/decoded is entirely protocol dependent
-                        importBase64Utils(writer)
-                        writer.write("serializeString($iteratorName.encodeBase64String())")
-                    }
-                    else -> {
-                        // primitive we can serialize
-                        val iter = if (targetShape.isStringShape && targetShape.hasTrait(EnumTrait::class.java)) {
-                            "$iteratorName.value"
-                        } else {
-                            iteratorName
-                        }
-                        writer.write("\$L(\$L)", targetShape.type.primitiveSerializerFunctionName(), iter)
-                    }
-                }
-            }
-            .closeBlock("}")
-    }
-
-    /**
-     * Render serialization for a struct member of type "map"
-     */
-    private fun renderMapMemberSerializer(
-        ctx: ProtocolGenerator.GenerationContext,
-        member: MemberShape,
-        writer: KotlinWriter
-    ) {
-        val memberName = member.defaultName()
-        val mapShape = ctx.model.expectShape(member.target).asMapShape().get()
-        val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
-
-        writer.withBlock("if (input.$memberName != null) {", "}") {
-            writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                var serializeMethod = "entry"
-                val value = when (valueTargetShape) {
-                    is TimestampShape -> {
-                        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                        val tsFormat = bindingIndex.determineTimestampFormat(
-                            valueTargetShape,
-                            HttpBinding.Location.DOCUMENT,
-                            defaultTimestampFormat
-                        )
-                        if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                            serializeMethod = "rawEntry"
-                        }
-
-                        // e.g. value.format(TimestampFormat.ISO_8601)
-                        formatInstant("value", tsFormat, forceString = true)
-                    }
-                    is BlobShape -> {
-                        // FIXME - base64 encoding is protocol dependent
-                        importBase64Utils(writer)
-                        "value.encodeBase64String()"
-                    }
-                    is StructureShape, is UnionShape -> {
-                        val valueTargetSymbol = ctx.symbolProvider.toSymbol(valueTargetShape)
-                        val memberSerializerName = "${valueTargetSymbol.name}Serializer"
-                        "$memberSerializerName(value)"
-                    }
-                    else -> {
-                        // serialize the value directly
-                        if (valueTargetShape.isStringShape && valueTargetShape.hasTrait(EnumTrait::class.java)) {
-                            "value.value"
-                        } else {
-                            "value"
-                        }
-                    }
-                }
-                write("input.$memberName.forEach { (key, value) -> $serializeMethod(key, $value) }")
-            }
-        }
     }
 
     /**
@@ -674,91 +542,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     /**
-     * Render serialization of all of the member shapes as if they belong to a structure.
-     *
-     * Example output:
-     * ```
-     * serializer.serializeStruct {
-     *     // serialize each member
-     * }
-     * ```
-     */
-    private fun renderSerializeStruct(
-        ctx: ProtocolGenerator.GenerationContext,
-        members: Collection<MemberShape>,
-        writer: KotlinWriter
-    ) {
-        writer.openBlock("serializer.serializeStruct {")
-            .call {
-                for (member in members.sortedBy { it.memberName }) {
-                    val target = ctx.model.expectShape(member.target)
-                    when (target.type) {
-                        ShapeType.LIST, ShapeType.SET -> renderListMemberSerializer(ctx, member, writer)
-                        ShapeType.MAP -> renderMapMemberSerializer(ctx, member, writer)
-                        ShapeType.STRUCTURE, ShapeType.UNION -> {
-                            // nested structures and unions can be serialized directly through their Serializer (via SdkSerializable)
-                            val memberSymbol = ctx.symbolProvider.toSymbol(member)
-                            val memberSerializerName = "${memberSymbol.name}Serializer"
-                            writer.write(
-                                "input.\$L?.let { field(\$L, \$L(it)) }",
-                                member.defaultName(),
-                                member.descriptorName(),
-                                memberSerializerName
-                            )
-                        }
-                        ShapeType.TIMESTAMP -> {
-                            val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                            val tsFormat = bindingIndex.determineTimestampFormat(
-                                member,
-                                HttpBinding.Location.DOCUMENT,
-                                defaultTimestampFormat
-                            )
-                            val formatted = formatInstant("it", tsFormat, forceString = true)
-                            val serializeMethod = when (tsFormat) {
-                                TimestampFormatTrait.Format.EPOCH_SECONDS -> "rawField"
-                                else -> "field"
-                            }
-                            writer.write(
-                                "input.\$L?.let { $serializeMethod(\$L, $formatted) }",
-                                member.defaultName(),
-                                member.descriptorName()
-                            )
-                            importTimestampFormat(writer)
-                        }
-                        ShapeType.BLOB -> {
-                            importBase64Utils(writer)
-                            // FIXME - whether Blob's are base64 encoded/decoded is entirely protocol dependent
-                            writer.write(
-                                "input.\$L?.let { field(\$L, it.encodeBase64String()) }",
-                                member.defaultName(),
-                                member.descriptorName()
-                            )
-                        }
-                        ShapeType.DOCUMENT -> {
-                            // TODO - deal with document members
-                        }
-                        else -> {
-                            val encodedValue =
-                                if (target.type == ShapeType.STRING && target.hasTrait(EnumTrait::class.java)) {
-                                    // enums need to use the raw value
-                                    "it.value"
-                                } else {
-                                    "it"
-                                }
-                            // primitives can be serialized directly
-                            writer.write(
-                                "input.\$L?.let { field(\$L, $encodedValue) }",
-                                member.defaultName(),
-                                member.descriptorName()
-                            )
-                        }
-                    }
-                }
-            }
-            .closeBlock("}")
-    }
-
-    /**
      * Render serialization for member(s) not bound to any other http traits, these members are serialized using
      * the protocol specific document format
      *
@@ -776,7 +559,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent", "")
         writer.write("val serializer = provider()")
             .call {
-                renderSerializeStruct(ctx, members.map { it.member }, writer)
+                val renderForMembers = members.map { it.member }
+                SerializeStructGenerator(ctx, renderForMembers, writer, defaultTimestampFormat).render()
             }
             .write("")
             .write("builder.body = ByteArrayContent(serializer.toByteArray())")
@@ -1212,26 +996,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
  * Get the field descriptor name for a member shape
  */
 fun MemberShape.descriptorName(): String = "${this.defaultName()}_DESCRIPTOR".toUpperCase()
-
-/**
- * Get the name of the `PrimitiveSerializer` function name for the corresponding shape type
- * @throws CodegenException when no known function name for the given type is known to exist
- */
-fun ShapeType.primitiveSerializerFunctionName(): String {
-    val suffix = when (this) {
-        ShapeType.BOOLEAN -> "Boolean"
-        ShapeType.STRING -> "String"
-        ShapeType.BYTE -> "Byte"
-        ShapeType.SHORT -> "Short"
-        ShapeType.INTEGER -> "Int"
-        ShapeType.LONG -> "Long"
-        ShapeType.FLOAT -> "Float"
-        ShapeType.DOUBLE -> "Double"
-        ShapeType.STRUCTURE, ShapeType.UNION -> "SdkSerializable"
-        else -> throw CodegenException("$this has no primitive serialize function on the Serializer interface")
-    }
-    return "serialize$suffix"
-}
 
 /**
  * Get the serializer class name for an operation
