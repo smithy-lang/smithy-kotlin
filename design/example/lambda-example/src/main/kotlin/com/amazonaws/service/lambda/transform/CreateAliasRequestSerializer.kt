@@ -28,10 +28,10 @@ import software.aws.clientrt.serde.*
 class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize {
 
     companion object {
-        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description")
-        private val FUNCTION_VERSION_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion")
-        private val NAME_DESCRIPTOR = SdkFieldDescriptor("Name")
-        private val ROUTING_CONFIG_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig")
+        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description", SerialKind.String)
+        private val FUNCTION_VERSION_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion", SerialKind.String)
+        private val NAME_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
+        private val ROUTING_CONFIG_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig", SerialKind.Struct)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(DESCRIPTION_FIELD_DESCRIPTOR)
@@ -56,7 +56,7 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
 
         // payload
         val serializer = provider()
-        serializer.serializeStruct {
+        serializer.serializeStruct(SdkFieldDescriptor.ANONYMOUS_DESCRIPTOR) {
             input.name?.let { field(NAME_DESCRIPTOR, it) }
             input.functionVersion?.let { field(FUNCTION_VERSION_DESCRIPTOR, it) }
 

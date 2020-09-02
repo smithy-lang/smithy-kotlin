@@ -1,3 +1,10 @@
+pluginManagement {
+    repositories {
+        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        mavenCentral()
+        maven("https://plugins.gradle.org/m2/")
+    }
+}
 rootProject.name = "smithy-kotlin"
 enableFeaturePreview("GRADLE_METADATA")
 
@@ -14,6 +21,8 @@ include(":client-runtime:protocol:http")
 include(":client-runtime:protocol:http:features:http-serde")
 include(":client-runtime:serde")
 include(":client-runtime:serde:serde-json")
+include(":client-runtime:serde:serde-xml")
+include(":client-runtime:serde:serde-test")
 
 include(":client-runtime:protocol:http-client-engines:http-client-engine-ktor")
 

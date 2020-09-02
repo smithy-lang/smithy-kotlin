@@ -17,6 +17,7 @@ package software.aws.clientrt.serde.json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.serde.SdkFieldDescriptor.Companion.ANONYMOUS_DESCRIPTOR
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonSerializerTest {
@@ -33,11 +34,11 @@ class JsonSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b")
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct {
+            serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
                 field(descriptorB, b)
             }
         }
@@ -45,11 +46,11 @@ class JsonSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("value")
+            val descriptorValue = SdkFieldDescriptor("value", SerialKind.Integer)
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct {
+            serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
                 field(descriptorValue, value)
             }
         }
@@ -63,7 +64,7 @@ class JsonSerializerTest {
             B(3)
         )
         val json = JsonSerializer()
-        json.serializeList {
+        json.serializeList(ANONYMOUS_DESCRIPTOR) {
             for (value in obj) {
                 value.serialize(json)
             }
@@ -86,7 +87,7 @@ class JsonSerializerTest {
         )
         )
         val json = JsonSerializer()
-        json.serializeMap {
+        json.serializeMap(ANONYMOUS_DESCRIPTOR) {
             for (obj in objs) {
                 entry(obj.key, obj.value)
             }
@@ -118,22 +119,22 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = SdkFieldDescriptor("unit")
-        val descriptorBoolean = SdkFieldDescriptor("boolean")
-        val descriptorByte = SdkFieldDescriptor("byte")
-        val descriptorShort = SdkFieldDescriptor("short")
-        val descriptorInt = SdkFieldDescriptor("int")
-        val descriptorLong = SdkFieldDescriptor("long")
-        val descriptorFloat = SdkFieldDescriptor("float")
-        val descriptorDouble = SdkFieldDescriptor("double")
-        val descriptorChar = SdkFieldDescriptor("char")
-        val descriptorString = SdkFieldDescriptor("string")
-        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
-        val descriptorListInt = SdkFieldDescriptor("listInt")
+        val descriptorUnit = SdkFieldDescriptor("unit", SerialKind.Unit)
+        val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean)
+        val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte)
+        val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short)
+        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer)
+        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long)
+        val descriptorFloat = SdkFieldDescriptor("float", SerialKind.Float)
+        val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double)
+        val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char)
+        val descriptorString = SdkFieldDescriptor("string", SerialKind.String)
+        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable", SerialKind.Unit)
+        val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List)
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct {
+        serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
             serializeNull(descriptorUnit)
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)

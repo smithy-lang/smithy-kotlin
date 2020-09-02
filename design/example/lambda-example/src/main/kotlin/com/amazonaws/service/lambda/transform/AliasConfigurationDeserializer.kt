@@ -24,12 +24,12 @@ import software.aws.clientrt.serde.*
 
 class AliasConfigurationDeserializer: HttpDeserialize {
     companion object {
-        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn")
-        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description")
-        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion")
-        private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name")
-        private val REVISION_ID_FIELD_DESCRIPTOR = SdkFieldDescriptor("RevisionId")
-        private val ROUTING_CONFIG_FIELD_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig")
+        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn", SerialKind.String)
+        private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description", SerialKind.String)
+        private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion", SerialKind.String)
+        private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
+        private val REVISION_ID_FIELD_DESCRIPTOR = SdkFieldDescriptor("RevisionId", SerialKind.String)
+        private val ROUTING_CONFIG_FIELD_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig", SerialKind.Struct)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(ALIAS_ARN_FIELD_DESCRIPTOR)
@@ -49,16 +49,16 @@ class AliasConfigurationDeserializer: HttpDeserialize {
         // FIXME - expected response is 201, need to plug in error handling middleware as well as check for
         //  the specific code here (or pass it to the pipeline as metadata for a feature to check)
 
-        deserializer.deserializeStruct(null) {
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while(true) {
-                when(nextField(OBJ_DESCRIPTOR)) {
+                when(findNextFieldIndex()) {
                     ALIAS_ARN_FIELD_DESCRIPTOR.index -> builder.aliasArn = deserializeString()
                     DESCRIPTION_FIELD_DESCRIPTOR.index -> builder.description = deserializeString()
                     FUNCTION_VERSION_FIELD_DESCRIPTOR.index -> builder.functionVersion = deserializeString()
                     NAME_FIELD_DESCRIPTOR.index -> builder.name = deserializeString()
                     REVISION_ID_FIELD_DESCRIPTOR.index -> builder.revisionId = deserializeString()
                     ROUTING_CONFIG_FIELD_DESCRIPTOR.index -> builder.routingConfig = AliasRoutingConfigurationDeserializer.deserialize(deserializer)
-                    Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                    null -> break@loop
                     else -> skipValue()
                 }
             }

@@ -125,3 +125,19 @@ fun main() = runBlocking{
 
     println("exiting main")
 }
+
+fun createFakeClient(): S3Client {
+
+    class FakeS3Client : S3Client {
+        override suspend fun putObject(input: PutObjectRequest): PutObjectResponse {
+            TODO("Not yet implemented")
+        }
+
+        override suspend fun <T> getObject(input: GetObjectRequest, block: suspend (GetObjectResponse) -> T): T {
+            TODO("Not yet implemented")
+        }
+
+    }
+
+    return FakeS3Client()
+}

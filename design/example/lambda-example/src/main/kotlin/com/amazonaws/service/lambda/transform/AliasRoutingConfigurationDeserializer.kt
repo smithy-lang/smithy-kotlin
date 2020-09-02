@@ -24,7 +24,7 @@ import software.aws.clientrt.serde.*
 // can but this type itself cannot)
 class AliasRoutingConfigurationDeserializer {
     companion object {
-        private val ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR = SdkFieldDescriptor("AdditionalVersionWeights")
+        private val ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR = SdkFieldDescriptor("AdditionalVersionWeights", SerialKind.Map)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR)
@@ -33,17 +33,17 @@ class AliasRoutingConfigurationDeserializer {
         fun deserialize(deserializer: Deserializer): AliasRoutingConfiguration {
             val builder = AliasRoutingConfiguration.dslBuilder()
 
-            deserializer.deserializeStruct(null) {
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while(true) {
-                    when(nextField(OBJ_DESCRIPTOR)) {
-                        ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR.index -> builder.additionalVersionWeights = deserializer.deserializeMap() {
+                    when(findNextFieldIndex()) {
+                        ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR.index -> builder.additionalVersionWeights = deserializer.deserializeMap(ADDITIONAL_VERSION_WEIGHTS_FIELD_DESCRIPTOR) {
                             val map = mutableMapOf<String, Float>()
-                            while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                            while(hasNextEntry()) {
                                 map[key()] = deserializeFloat()
                             }
                             return@deserializeMap map
                         }
-                        Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                        null -> break@loop
                         else -> skipValue()
                     }
                 }

@@ -41,11 +41,11 @@ package software.aws.clientrt.serde
  *     field(Y_DESCRIPTOR)
  * }
  * loop@ while(true) {
- *     when(struct.nextField(OBJ_DESCRIPTOR)) {
+ *     when(struct.findNextFieldIndexOrNull()) {
  *         X_DESCRIPTOR.index ->  x = struct.deserializeInt()
  *         Y_DESCRIPTOR.index -> y = struct.deserializeInt()
- *         Deserializer.FieldIterator.EXHAUSTED -> break@loop
- *         else -> struct.skipValue()
+ *         null -> break@loop
+ *         else -> struct.skipValue() // Unknown Field
  *     }
  * }
  * requireNotNull(x)
@@ -65,37 +65,36 @@ interface Deserializer : PrimitiveDeserializer {
     /**
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.
+     *
+     * @param descriptor SdkObjectDescriptor the structure descriptor
      */
-    fun deserializeStruct(descriptor: SdkFieldDescriptor?): FieldIterator
+    fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
 
     /**
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
      * the deserialization process of the list to completion.
+     *
+     * @param descriptor SdkFieldDescriptor the structure descriptor
      */
-    fun deserializeList(): ElementIterator
+    fun deserializeList(descriptor: SdkFieldDescriptor): ElementIterator
 
     /**
      * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
      * the deserialization process of the map to completion.
+     *
+     * @param descriptor SdkFieldDescriptor the structure descriptor
      */
-    fun deserializeMap(): EntryIterator
+    fun deserializeMap(descriptor: SdkFieldDescriptor): EntryIterator
 
     /**
      * Iterator over raw elements in a collection
      */
     interface ElementIterator : PrimitiveDeserializer {
         /**
-         * Advance to the next element. Returns [EXHAUSTED] when no more elements are in the list
+         * Advance to the next element. Returns false when no more elements are in the list
          * or the document has been read completely.
          */
-        fun next(): Int
-
-        companion object {
-            /**
-             * The iterator has been exhausted, no more fields will be returned by [next]
-             */
-            const val EXHAUSTED = -1
-        }
+        fun hasNextElement(): Boolean
     }
 
     /**
@@ -103,22 +102,15 @@ interface Deserializer : PrimitiveDeserializer {
      */
     interface EntryIterator : PrimitiveDeserializer {
         /**
-         * Advance to the next element. Returns [EXHAUSTED] when no more elements are in the map
+         * Advance to the next element. Returns false when no more elements are in the map
          * or the document has been read completely.
          */
-        fun next(): Int
+        fun hasNextEntry(): Boolean
 
         /**
          * Read the next key
          */
         fun key(): String
-
-        companion object {
-            /**
-             * The iterator has been exhausted, no more fields will be returned by [next]
-             */
-            const val EXHAUSTED = -1
-        }
     }
 
     /**
@@ -126,9 +118,9 @@ interface Deserializer : PrimitiveDeserializer {
      */
     interface FieldIterator : PrimitiveDeserializer {
         /**
-         * Returns the index of the next field found or one of the defined constants
+         * Returns the index of the next field found, null if fields exhausted, or []UNKNOWN_FIELD].
          */
-        fun nextField(descriptor: SdkObjectDescriptor): Int
+        fun findNextFieldIndex(): Int?
 
         /**
          * Skip the next field value recursively. Meant for discarding unknown fields
@@ -137,33 +129,11 @@ interface Deserializer : PrimitiveDeserializer {
 
         companion object {
             /**
-             * The iterator has been exhausted, no more fields will be returned by [nextField]
-             */
-            const val EXHAUSTED = -1
-
-            /**
              * An unknown field was encountered
              */
-            const val UNKNOWN_FIELD = -2
+            const val UNKNOWN_FIELD = -1
         }
     }
-}
-
-fun Deserializer.deserializeStruct(descriptor: SdkFieldDescriptor?, block: Deserializer.FieldIterator.() -> Unit) {
-    val iter = deserializeStruct(descriptor)
-    iter.apply(block)
-}
-
-fun <T> Deserializer.deserializeList(block: Deserializer.ElementIterator.() -> T): T {
-    val deserializer = deserializeList()
-    val result = block(deserializer)
-    return result
-}
-
-fun <T> Deserializer.deserializeMap(block: Deserializer.EntryIterator.() -> T): T {
-    val deserializer = deserializeMap()
-    val result = block(deserializer)
-    return result
 }
 
 /**
@@ -209,4 +179,19 @@ interface PrimitiveDeserializer {
      * Deserialize and return the next token as a [Boolean]
      */
     fun deserializeBool(): Boolean
+}
+
+fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
+    val deserializer = deserializeStruct(descriptor)
+    block(deserializer)
+}
+
+fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: Deserializer.ElementIterator.() -> T): T {
+    val deserializer = deserializeList(descriptor)
+    return block(deserializer)
+}
+
+fun <T> Deserializer.deserializeMap(descriptor: SdkFieldDescriptor, block: Deserializer.EntryIterator.() -> T): T {
+    val deserializer = deserializeMap(descriptor)
+    return block(deserializer)
 }

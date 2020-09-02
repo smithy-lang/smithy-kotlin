@@ -26,11 +26,12 @@ import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
 import software.aws.clientrt.http.sdkHttpClient
 import software.aws.clientrt.serde.json.JsonSerdeProvider
+import software.aws.clientrt.serde.xml.XmlSerdeProvider
 import software.aws.clientrt.testing.runSuspendTest
 
 class HttpSerdeTest {
     @Test
-    fun `it serializes`() = runSuspendTest {
+    fun `it serializes JSON`() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }
@@ -51,13 +52,59 @@ class HttpSerdeTest {
     }
 
     @Test
-    fun `it deserializes`() = runSuspendTest {
+    fun `it serializes XML`() = runSuspendTest {
+        val mockEngine = object : HttpClientEngine {
+            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
+        }
+        val client = sdkHttpClient(mockEngine) {
+            install(HttpSerde) {
+                serdeProvider = XmlSerdeProvider()
+            }
+        }
+
+        val builder = HttpRequestBuilder()
+        val subject = object : HttpSerialize {
+            override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+                builder.headers.append("called", "true")
+            }
+        }
+        client.requestPipeline.execute(builder, subject)
+        assertEquals("true", builder.headers["called"])
+    }
+
+    @Test
+    fun `it deserializes JSON`() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
+            }
+        }
+
+        val userContext = object : HttpDeserialize {
+            override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any {
+                return 2
+            }
+        }
+
+        val req = HttpRequestBuilder().build()
+        val httpResp = HttpResponse(HttpStatusCode.OK, Headers {}, HttpBody.Empty, req)
+        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), userContext)
+
+        val actual = client.responsePipeline.execute(context, httpResp.body)
+        assertEquals(2, actual)
+    }
+
+    @Test
+    fun `it deserializes XML`() = runSuspendTest {
+        val mockEngine = object : HttpClientEngine {
+            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
+        }
+        val client = sdkHttpClient(mockEngine) {
+            install(HttpSerde) {
+                serdeProvider = XmlSerdeProvider()
             }
         }
 
