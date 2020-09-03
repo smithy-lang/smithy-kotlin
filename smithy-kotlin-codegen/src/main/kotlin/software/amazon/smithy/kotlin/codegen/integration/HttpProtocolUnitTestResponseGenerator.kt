@@ -29,13 +29,15 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: Builder) :
     HttpProtocolUnitTestGenerator<HttpResponseTestCase>(builder) {
 
-    private val responseSymbol: Symbol?
+    protected open val outputShape: Shape?
         get() {
             return operation.output.map {
-                val outputShape = model.expectShape(it)
-                symbolProvider.toSymbol(outputShape)
+                model.expectShape(it)
             }.orElse(null)
         }
+
+    protected val responseSymbol: Symbol?
+        get() = outputShape?.let { symbolProvider.toSymbol(it) }
 
     override fun openTestFunctionBlock(): String {
         val respType = responseSymbol?.name ?: "Unit"
@@ -70,10 +72,9 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                         }
                     }
                     .call {
-                        operation.output.ifPresent {
-                            val outputShape = model.expectShape(operation.output.get())
+                        outputShape?.let {
                             writer.writeInline("\nresponse = ")
-                            ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, outputShape, test.params)
+                            ShapeValueGenerator(model, symbolProvider).writeShapeValueInline(writer, it, test.params)
                         }
                     }
                     .write("")
@@ -81,52 +82,60 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             .closeBlock("}")
     }
 
-    private fun renderTestBlock(test: HttpResponseTestCase) {
+    protected open fun renderTestBlock(test: HttpResponseTestCase) {
         writer.openBlock("test { expectedResult, mockEngine ->")
             .call {
-                var inputParamName = ""
-                var isStreamingRequest = false
                 operation.input.ifPresent {
-                    inputParamName = "input"
                     val inputShape = model.expectShape(it)
                     val inputSymbol = symbolProvider.toSymbol(inputShape)
-
-                    isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
 
                     // invoke the DSL builder for the input type
                     writer.write("val input = ${inputSymbol.name}{}")
                 }
 
-                writer.openBlock("val service = \$L.build(){", serviceName)
+                writer.openBlock("val service = \$L.build{", serviceName)
                     .write("httpEngine = mockEngine")
                     .closeBlock("}")
 
-                // invoke the operation
-                val opName = operation.defaultName()
-
-                if (operation.output.isPresent) {
-                    // streaming requests have a different operation signature that require a block to be passed to
-                    // process the response - add an empty block if necessary
-                    if (isStreamingRequest) {
-                        writer.openBlock("service.\$L(\$L){ actualResult ->", opName, inputParamName)
-                            .call {
-                                renderAssertions()
-                            }
-                            .closeBlock("}")
-                    } else {
-                        writer.write("val actualResult = service.\$L(\$L)", opName, inputParamName)
-                        renderAssertions()
-                    }
-                } else {
-                    // no output...nothing to really assert...
-                    writer.write("service.\$L(\$L)", opName, inputParamName)
-                }
+                renderServiceCall()
             }
             .closeBlock("}")
     }
 
-    private fun renderAssertions() {
-        val outputShape = operation.output.map { model.expectShape(it) }.orElse(null) ?: return
+    /**
+     * invoke the service operation
+     */
+    protected open fun renderServiceCall() {
+        val inputParamName = operation.input.map { "input" }.orElse("")
+        val isStreamingRequest = operation.input.map {
+            val inputShape = model.expectShape(it)
+            inputShape.asStructureShape().get().hasStreamingMember(model)
+        }.orElse(false)
+
+        // invoke the operation
+        val opName = operation.defaultName()
+
+        if (operation.output.isPresent) {
+            // streaming requests have a different operation signature that require a block to be passed to
+            // process the response - add an empty block if necessary
+            if (isStreamingRequest) {
+                writer.openBlock("service.\$L(\$L){ actualResult ->", opName, inputParamName)
+                    .call {
+                        renderAssertions()
+                    }
+                    .closeBlock("}")
+            } else {
+                writer.write("val actualResult = service.\$L(\$L)", opName, inputParamName)
+                renderAssertions()
+            }
+        } else {
+            // no output...nothing to really assert...
+            writer.write("service.\$L(\$L)", opName, inputParamName)
+        }
+    }
+
+    protected fun renderAssertions() {
+        val outputShape = outputShape ?: return
         writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "assertEquals", "")
 
         val members = outputShape.members()
@@ -160,7 +169,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             .closeBlock(")")
     }
 
-    class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {
+    open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpResponseTestCase>() {
         override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> {
             return HttpProtocolUnitTestResponseGenerator(this)
         }

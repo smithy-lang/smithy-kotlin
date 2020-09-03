@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import java.util.*
 import java.util.logging.Logger
+import software.amazon.smithy.kotlin.codegen.defaultName
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.Shape
@@ -30,6 +31,7 @@ class HttpProtocolTestGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val requestTestBuilder: HttpProtocolUnitTestRequestGenerator.Builder,
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
+    private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     // list of test ID's to ignore/skip
     private val testsToIgnore: Set<String> = setOf()
 ) {
@@ -107,7 +109,27 @@ class HttpProtocolTestGenerator(
                         if (testCases.isEmpty()) {
                             return@ifPresent
                         }
-                        // TODO - generate response error tests
+                        // use operation name as filename
+                        val opName = operation.id.name.capitalize()
+                        val testFilename = "${opName}ErrorTest.kt"
+                        // multiple error (tests) may be associated with a single operation,
+                        // use the operation name + error name as the class name
+                        val testClassName = "${opName}${error.defaultName()}Test"
+                        ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                            LOGGER.fine("Generating error protocol test cases for ${operation.id}")
+
+                            writer.addImport("${ctx.settings.moduleName}.model", "*", "")
+                            errorTestBuilder
+                                .error(error)
+                                .writer(writer)
+                                .model(ctx.model)
+                                .symbolProvider(ctx.symbolProvider)
+                                .operation(operation)
+                                .serviceName(serviceSymbol.name)
+                                .testCases(testCases)
+                                .build()
+                                .renderTestClass(testClassName)
+                        }
                     }
             }
         }

@@ -143,7 +143,7 @@ class HttpProtocolClientGenerator(
         features.forEach { feat ->
             feat.addImportsAndDependencies(writer)
             if (feat.needsConfiguration) {
-                writer.openBlock("install(\$L){", feat.name)
+                writer.openBlock("install(\$L) {", feat.name)
                     .call { feat.renderConfigure(writer) }
                     .closeBlock("}")
             } else {
