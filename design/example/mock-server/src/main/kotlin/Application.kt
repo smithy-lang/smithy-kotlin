@@ -68,6 +68,37 @@ fun Application.module() {
             }
         }
 
+        get("/getObject/{Bucket}?tagging") {
+            val myBucketResponseBody = """<?xml version="1.0" encoding="UTF-8"?><Tagging><TagSet><Tag><Key>string</Key><Value>string</Value></Tag></TagSet></Tagging>""".trimIndent()
+            val anotherBucketResponseBody = """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <Tagging>
+                   <TagSet>
+                      <Tag>
+                         <Key>k1</Key>
+                         <Value>v1</Value>
+                      </Tag>
+                      <Tag>
+                         <Key>k2</Key>
+                         <Value>v2</Value>
+                      </Tag>
+                   </TagSet>
+                </Tagging>
+            """.trimIndent().trim()
+
+            when (call.parameters["Bucket"]) {
+                "my-bucket" -> call.respondTextWriter {
+                    write(myBucketResponseBody)
+                    flush()
+                }
+                "another-bucket" -> call.respondTextWriter {
+                    write(anotherBucketResponseBody)
+                    flush()
+                }
+                else -> call.respond(HttpStatusCode.NotFound)
+            }
+        }
+
         // quick hacked together endpoint to respond to CreateAlias requests with very basic request validation
         post("/2015-03-31/functions/{FunctionName}/aliases") {
             // CreateAliasRequest handler

@@ -10,7 +10,7 @@ dependencies {
     implementation(project(":client-runtime:protocol:http-client-engines:http-client-engine-ktor"))
     implementation(project(":client-runtime:serde"))
     // S3 would obviously be XML
-    implementation(project(":client-runtime:serde:serde-json"))
+    implementation(project(":client-runtime:serde:serde-xml"))
 
     // FIXME - this is only necessary for a conversion from ByteStream to HttpBody (which belongs in client runtime)
     implementation(project(":client-runtime:io"))

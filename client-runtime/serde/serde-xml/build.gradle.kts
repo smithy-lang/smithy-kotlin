@@ -2,6 +2,9 @@ description = "XML serialization and deserialization for Smithy services generat
 extra["displayName"] = "Smithy :: Kotlin :: Serde :: XML"
 extra["moduleName"] = "software.aws.clientrt.serde.xml"
 
+val xmlpullVersion: String by project
+val xpp3Version: String by project
+
 kotlin {
     sourceSets {
         commonMain {
@@ -11,9 +14,9 @@ kotlin {
         }
         jvmMain {
             dependencies {
-                implementation("xmlpull:xmlpull:1.1.3.1")
+                implementation("xmlpull:xmlpull:$xmlpullVersion")
                 // https://mvnrepository.com/artifact/org.ogce/xpp3
-                implementation("org.ogce:xpp3:1.1.6")
+                implementation("org.ogce:xpp3:$xpp3Version")
             }
         }
     }

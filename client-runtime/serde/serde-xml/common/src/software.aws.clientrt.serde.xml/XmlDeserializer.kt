@@ -136,9 +136,15 @@ private class CompositeIterator(
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
         if (!consumedWrapper) {
-            val nextToken = reader.peekToken<XmlToken.BeginElement>()
-            require(nextToken.id.name == descriptor.getWrapperName()) { "Expected entry wrapper ${descriptor.serialName} but got ${nextToken.id}" }
-            consumedWrapper = true
+            val nextToken = reader.peek()
+
+            if (nextToken is XmlToken.EndElement) return false // empty list
+            if (nextToken is XmlToken.BeginElement) {
+                require(nextToken.id.name == descriptor.getWrapperName()) { "Expected entry wrapper ${descriptor.serialName} but got ${nextToken.id}" }
+                consumedWrapper = true
+            } else {
+                error("Unexpected next token when parsing list: $nextToken")
+            }
         }
 
         return when (val nextToken = reader.peek()) {
@@ -294,6 +300,8 @@ private class XmlFieldIterator(
                             // All attributes will be consumed first. Since we did not retrieve an attribute we
                             // can consume this node as this will be the TEXT element.
                             reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
+
+                            if (reader.peek() is XmlToken.EndElement) return findNextFieldIndex()
                             check(reader.peek() is XmlToken.Text) { "Expected to read a TEXT token to retrieve value but got ${reader.peek()}" }
                             null
                         }

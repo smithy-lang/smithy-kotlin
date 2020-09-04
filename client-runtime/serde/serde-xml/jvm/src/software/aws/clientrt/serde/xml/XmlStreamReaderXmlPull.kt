@@ -48,7 +48,10 @@ private class XmlStreamReaderXmlPull(
                 XmlPullParser.COMMENT,
                 XmlPullParser.DOCDECL,
                 XmlPullParser.IGNORABLE_WHITESPACE -> nextToken()
-                XmlPullParser.TEXT -> XmlToken.Text(parser.text.blankToNull())
+                XmlPullParser.TEXT -> {
+                    if (parser.text.blankToNull() == null) nextToken()
+                    else XmlToken.Text(parser.text.blankToNull())
+                }
                 else -> throw IllegalStateException("Unhandled tag $nt")
             }
         } catch (e: Exception) {

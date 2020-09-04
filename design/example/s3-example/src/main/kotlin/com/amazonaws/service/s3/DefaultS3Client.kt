@@ -24,7 +24,7 @@ import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.feature.DefaultRequest
 import software.aws.clientrt.http.feature.HttpSerde
-import software.aws.clientrt.serde.json.JsonSerdeProvider
+import software.aws.clientrt.serde.xml.XmlSerdeProvider
 import kotlin.text.decodeToString
 
 
@@ -36,7 +36,7 @@ class DefaultS3Client: S3Client {
         client = sdkHttpClient(KtorEngine(config)) {
             install(HttpSerde) {
                 // obviously S3 is actually XML
-                serdeProvider = JsonSerdeProvider()
+                serdeProvider = XmlSerdeProvider()
             }
 
             install(DefaultRequest) {
@@ -60,6 +60,10 @@ class DefaultS3Client: S3Client {
         //     // to the actual resources, we should get back a handle to the resources
         //     response.body?.cancel()
         // }
+    }
+
+    override suspend fun getBucketTagging(input: GetBucketTaggingRequest): GetBucketTaggingResponse {
+        return client.roundTrip(GetBucketTaggingRequestSerializer(input), GetBucketTaggingResponseDeserializer())
     }
 
     override suspend fun putObject(input: PutObjectRequest): PutObjectResponse {
@@ -123,21 +127,29 @@ fun main() = runBlocking{
         }
     }
 
-    println("exiting main")
-}
+    // example of XML serde
+    val taggingRequest = GetBucketTaggingRequest {
+        bucket = "my-bucket"
+    }
+    val taggingResponse = service.getBucketTagging(taggingRequest)
+    println(taggingResponse)
 
-fun createFakeClient(): S3Client {
-
-    class FakeS3Client : S3Client {
-        override suspend fun putObject(input: PutObjectRequest): PutObjectResponse {
-            TODO("Not yet implemented")
-        }
-
-        override suspend fun <T> getObject(input: GetObjectRequest, block: suspend (GetObjectResponse) -> T): T {
-            TODO("Not yet implemented")
-        }
-
+    val taggingRequest2 = GetBucketTaggingRequest {
+        bucket = "another-bucket"
     }
 
-    return FakeS3Client()
+    val taggingResponse2 = service.getBucketTagging(taggingRequest2)
+    println(taggingResponse2)
+
+    // TODO: Handle error case.  This should return some error that means 404
+    /*
+    val taggingRequest3 = GetBucketTaggingRequest {
+        bucket = "invalid-bucket"
+    }
+
+    val taggingResponse3 = service.getBucketTagging(taggingRequest3)
+    println(taggingResponse3)
+     */
+
+    println("exiting main")
 }

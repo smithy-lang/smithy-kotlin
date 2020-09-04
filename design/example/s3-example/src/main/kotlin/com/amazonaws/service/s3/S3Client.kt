@@ -33,4 +33,6 @@ interface S3Client: SdkClient {
     }
 
     suspend fun <T> getObject(input: GetObjectRequest, block: suspend (GetObjectResponse) -> T): T
+
+    suspend fun getBucketTagging(input: GetBucketTaggingRequest): GetBucketTaggingResponse
 }
