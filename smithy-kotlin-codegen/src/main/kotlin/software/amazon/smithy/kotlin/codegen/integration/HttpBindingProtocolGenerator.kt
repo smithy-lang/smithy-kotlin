@@ -69,9 +69,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         // render HttpDeserialize for all operation outputs
-        for (operation in getHttpBindingOperations(ctx)) {
+        val httpOperations = getHttpBindingOperations(ctx)
+        for (operation in httpOperations) {
             generateOperationDeserializer(ctx, operation)
         }
+
+        // generate HttpDeserialize for exception types
+        val modeledErrors = httpOperations.flatMap { it.errors }.map { ctx.model.expectShape(it) as StructureShape }.toSet()
+        modeledErrors.forEach { generateExceptionDeserializer(ctx, it) }
 
         // generate serde for all shapes that appear as nested on any operation output
         // these types are independent document deserializers, they do not implement `HttpDeserialize`
@@ -151,9 +156,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @return The set of shapes that require a deserializer implementation
      */
     private fun resolveRequiredDeserializers(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        // all top level operation outputs get an HttpDeserialize
-        // any structure or union shape that shows up as a nested member (direct or indirect)
-        // as well as collections of the same requires a deserializer implementation though
+        // All top level operation outputs and errors get an HttpDeserialize implementation.
+        // Any structure or union shape that shows up as a nested member, direct or indirect (of either the operation
+        // or it's errors), as well as collections of the same requires a deserializer implementation though.
+
+        // add shapes reachable from the operational output itself
         val topLevelMembers = getHttpBindingOperations(ctx)
             .filter { it.output.isPresent }
             .flatMap {
@@ -162,7 +169,17 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .map { ctx.model.expectShape(it.target) }
             .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
+            .toMutableSet()
+
+        // add shapes reachable from operational errors
+        val modeledErrors = getHttpBindingOperations(ctx)
+            .flatMap { it.errors }
+            .flatMap { ctx.model.expectShape(it).members() }
+            .map { ctx.model.expectShape(it.target) }
+            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
             .toSet()
+
+        topLevelMembers += modeledErrors
 
         return walkNestedShapesRequiringSerde(ctx, topLevelMembers)
     }
@@ -646,7 +663,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .addReference(ref)
             .build()
 
-        val httpTrait = op.expectTrait(HttpTrait::class.java)
         val responseBindings = bindingIndex.getResponseBindings(op)
         ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
             // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
@@ -669,8 +685,53 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 .write("")
                 .call {
-                    val contentType = bindingIndex.determineResponseContentType(op, defaultContentType).orElse(defaultContentType)
-                    renderHttpDeserialize(ctx, outputSymbol, httpTrait, contentType, responseBindings, writer)
+                    renderHttpDeserialize(ctx, outputSymbol, responseBindings, writer)
+                }
+                .closeBlock("}")
+        }
+    }
+
+    /**
+     * Generate HttpDeserialize for a modeled error (exception)
+     */
+    private fun generateExceptionDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: StructureShape) {
+        val outputSymbol = ctx.symbolProvider.toSymbol(shape)
+
+        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val ref = SymbolReference.builder()
+            .symbol(outputSymbol)
+            .options(SymbolReference.ContextOption.DECLARE)
+            .build()
+
+        val deserializerName = "${outputSymbol.name}Deserializer"
+        val deserializerSymbol = Symbol.builder()
+            .definitionFile("$deserializerName.kt")
+            .name(deserializerName)
+            .namespace("${ctx.settings.moduleName}.transform", ".")
+            .addReference(ref)
+            .build()
+
+        ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
+            importSerdePackage(writer)
+            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*", "")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse", "")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpDeserialize", "")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "DeserializationProvider", "")
+
+            writer.write("")
+                .openBlock("class \$L : HttpDeserialize {", deserializerName)
+                .write("")
+                .call {
+                    val documentMembers = shape.members().filterNot {
+                        it.hasTrait(HttpHeaderTrait::class.java) || it.hasTrait(HttpPrefixHeadersTrait::class.java)
+                    }
+
+                    renderSerdeCompanionObject(documentMembers, writer)
+                }
+                .write("")
+                .call {
+                    val responseBindings = bindingIndex.getResponseBindings(shape)
+                    renderHttpDeserialize(ctx, outputSymbol, responseBindings, writer)
                 }
                 .closeBlock("}")
         }
@@ -679,8 +740,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderHttpDeserialize(
         ctx: ProtocolGenerator.GenerationContext,
         outputSymbol: Symbol,
-        httpTrait: HttpTrait,
-        contentType: String,
         responseBindings: Map<String, HttpBinding>,
         writer: KotlinWriter
     ) {

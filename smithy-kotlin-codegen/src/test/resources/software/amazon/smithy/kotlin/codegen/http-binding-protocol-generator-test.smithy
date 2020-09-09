@@ -79,7 +79,14 @@ structure SmokeTestResponse {
 }
 
 @error("client")
-structure SmokeTestError {}
+structure SmokeTestError {
+    nested: NestedErrorData
+}
+
+
+structure NestedErrorData {
+    field1: Integer
+}
 
 
 @http(method: "POST", uri: "/explicit/string")

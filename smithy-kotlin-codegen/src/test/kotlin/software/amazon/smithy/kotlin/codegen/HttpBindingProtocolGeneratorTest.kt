@@ -660,4 +660,14 @@ class Nested3Deserializer {
         contents.shouldContainOnlyOnce(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.Nested3")
     }
+
+    @Test
+    fun `it creates deserialize transforms for errors`() {
+        // test that a struct member of an input operation shape also gets a serializer
+        val (ctx, manifest, generator) = newTestContext()
+        generator.generateDeserializers(ctx)
+        ctx.delegator.flushWriters()
+        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/SmokeTestErrorDeserializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/NestedErrorDataDeserializer.kt"))
+    }
 }
