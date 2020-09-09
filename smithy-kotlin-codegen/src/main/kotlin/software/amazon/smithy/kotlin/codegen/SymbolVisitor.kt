@@ -20,7 +20,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.utils.StringUtils
 
@@ -198,22 +197,12 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName()
-        // TODO - handle error types
         val namespace = "$rootNamespace.model"
         val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
             .definitionFile("${shape.defaultName()}.kt")
 
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
-
-        if (shape.hasTrait(ErrorTrait::class.java)) {
-            val exceptionSymbol = Symbol.builder()
-                .name("ServiceException")
-                .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
-                .addDependency(KotlinDependency.CLIENT_RT_CORE)
-                .build()
-            builder.addReference(exceptionSymbol)
-        }
 
         return builder.build()
     }

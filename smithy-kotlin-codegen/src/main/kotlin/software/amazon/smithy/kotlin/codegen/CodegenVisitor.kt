@@ -130,7 +130,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     override fun structureShape(shape: StructureShape) {
-        writers.useShapeWriter(shape) { StructureGenerator(model, symbolProvider, it, shape).render() }
+        writers.useShapeWriter(shape) { StructureGenerator(model, symbolProvider, it, shape, protocolGenerator).render() }
     }
 
     override fun stringShape(shape: StringShape) {

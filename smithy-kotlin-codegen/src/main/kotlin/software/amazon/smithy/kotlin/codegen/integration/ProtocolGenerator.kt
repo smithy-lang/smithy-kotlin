@@ -14,9 +14,11 @@
  */
 package software.amazon.smithy.kotlin.codegen.integration
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.KotlinDelegator
+import software.amazon.smithy.kotlin.codegen.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -41,6 +43,12 @@ interface ProtocolGenerator {
             val s1 = name.replace("(\\s|\\.|-)".toRegex(), "_")
             return CaseUtils.toCamelCase(s1, true, '_')
         }
+
+        val DefaultServiceExceptionSymbol: Symbol = Symbol.builder()
+            .name("ServiceException")
+            .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+            .addDependency(KotlinDependency.CLIENT_RT_CORE)
+            .build()
     }
 
     /**
@@ -66,6 +74,13 @@ interface ProtocolGenerator {
      * Get the application protocol for the generator
      */
     val applicationProtocol: ApplicationProtocol
+
+    /**
+     * Get the symbol that should be used as the base class for generated service exceptions.
+     * It defaults to the ServiceException available in smithy-kotlin's client-runtime.
+     */
+    val exceptionBaseClassSymbol: Symbol
+        get() = DefaultServiceExceptionSymbol
 
     /**
      * Generate serializers required by the protocol

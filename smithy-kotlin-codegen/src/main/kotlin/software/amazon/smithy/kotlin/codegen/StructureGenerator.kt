@@ -17,6 +17,7 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -34,7 +35,8 @@ class StructureGenerator(
     val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: KotlinWriter,
-    private val shape: StructureShape
+    private val shape: StructureShape,
+    private val protocolGenerator: ProtocolGenerator? = null
 ) {
 
     fun render() {
@@ -317,11 +319,13 @@ class StructureGenerator(
      * Renders a Smithy error type to a Kotlin exception type
      */
     private fun renderError() {
-        var errorTrait: ErrorTrait = shape.expectTrait(ErrorTrait::class.java)
+        val errorTrait: ErrorTrait = shape.expectTrait(ErrorTrait::class.java)
+        val isRetryable = shape.getTrait(RetryableTrait::class.java).isPresent
 
-        var isRetryable = shape.getTrait(RetryableTrait::class.java).isPresent
+        val exceptionBaseClass = protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
+        writer.addImport(exceptionBaseClass, "")
 
-        startGenericStructureBlock("class \$class.name:L private constructor(builder: BuilderImpl) : ServiceException() {")
+        startGenericStructureBlock("class \$class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
         writer.withBlock("", "}") {
             write("")
             if (isRetryable) {
