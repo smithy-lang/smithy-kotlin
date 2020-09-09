@@ -15,12 +15,18 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.build.FileManifest
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.utils.CodeWriter
 
 /**
  * Create the gradle build file for the generated code
  */
-fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest, dependencies: List<KotlinDependency>) {
+fun writeGradleBuild(
+    settings: KotlinSettings,
+    manifest: FileManifest,
+    dependencies: List<KotlinDependency>,
+    integrations: List<KotlinIntegration> = listOf()
+) {
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
@@ -45,12 +51,27 @@ fun writeGradleBuild(settings: KotlinSettings, manifest: FileManifest, dependenc
 
     writer.withBlock("dependencies {", "}\n") {
         write("implementation(kotlin(\"stdlib\"))")
-        // TODO - order and group dependencies by their type "implementation", "testImplementation", etc
         // TODO - can we make kotlin dependencies not specify a version e.g. kotlin("kotlin-test")
         // TODO - Kotlin MPP setup (pass through KotlinSettings) - maybe separate gradle writers
-        for (dependency in dependencies) {
+        val orderedDependencies = dependencies.sortedWith(compareBy({ it.config }, { it.artifact }))
+        for (dependency in orderedDependencies) {
             write("${dependency.config}(\"\$L:\$L:\$L\")", dependency.group, dependency.artifact, dependency.version)
         }
+    }
+
+    val annotations = integrations.flatMap { it.customBuildSettings?.experimentalAnnotations ?: listOf<String>() }.toSet()
+    if (annotations.isNotEmpty()) {
+        writer.openBlock("val experimentalAnnotations = listOf(")
+            .call {
+                annotations.forEach {
+                    writer.write("\$S", it)
+                }
+            }
+            .closeBlock(")")
+
+        writer.openBlock("kotlin.sourceSets.all {")
+            .write("experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) } ")
+            .closeBlock("}")
     }
 
     writer.write("")

@@ -48,6 +48,12 @@ interface KotlinIntegration {
         get() = listOf()
 
     /**
+     * Get any custom gradle build settings required by the generated code
+     */
+    val customBuildSettings: GradleBuildSettings?
+        get() = null
+
+    /**
      * Preprocess the model before code generation.
      *
      * This can be used to remove unsupported features, remove traits
@@ -101,4 +107,12 @@ interface KotlinIntegration {
     ) {
         // pass
     }
+}
+
+/**
+ * Custom gradle build settings that integrations can define to influence the generated build file(s)
+ */
+class GradleBuildSettings {
+    // any opt-in requirements
+    val experimentalAnnotations = mutableListOf<String>()
 }

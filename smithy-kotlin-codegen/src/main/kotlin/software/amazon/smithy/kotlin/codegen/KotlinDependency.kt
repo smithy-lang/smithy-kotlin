@@ -45,27 +45,30 @@ enum class GradleConfiguration {
     override fun toString(): String = StringUtils.uncapitalize(this.name)
 }
 
-enum class KotlinDependency(
+data class KotlinDependency(
     val config: GradleConfiguration,
     val namespace: String,
     val group: String,
     val artifact: String,
     val version: String
 ) : SymbolDependencyContainer {
-    // AWS managed dependencies
-    CLIENT_RT_CORE(GradleConfiguration.Api, CLIENT_RT_ROOT_NS, CLIENT_RT_GROUP, "client-rt-core", CLIENT_RT_VERSION),
-    CLIENT_RT_HTTP(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http", CLIENT_RT_GROUP, "http", CLIENT_RT_VERSION),
-    CLIENT_RT_SERDE(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.serde", CLIENT_RT_GROUP, "serde", CLIENT_RT_VERSION),
-    CLIENT_RT_SERDE_JSON(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.serde.json", CLIENT_RT_GROUP, "serde-json", CLIENT_RT_VERSION),
-    CLIENT_RT_HTTP_FEAT_SERDE(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http.feature", CLIENT_RT_GROUP, "http-serde", CLIENT_RT_VERSION),
-    CLIENT_RT_HTTP_KTOR_ENGINE(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http.engine.ktor", CLIENT_RT_GROUP, "http-client-engine-ktor", CLIENT_RT_VERSION),
-    CLIENT_RT_UTILS(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.util", CLIENT_RT_GROUP, "utils", CLIENT_RT_VERSION),
-    CLIENT_RT_SMITHY_TEST(GradleConfiguration.TestImplementation, "$CLIENT_RT_ROOT_NS.smithy.test", CLIENT_RT_GROUP, "smithy-test", CLIENT_RT_VERSION),
 
-    // External third-party dependencies
-    KOTLIN_TEST(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", "1.3.72"),
-    KOTLIN_TEST_JUNIT5(GradleConfiguration.TestImplementation, "kotlin.test.junit5", "org.jetbrains.kotlin", "kotlin-test-junit5", "1.3.72"),
-    JUNIT_JUPITER_ENGINE(GradleConfiguration.TestRuntimeOnly, "org.junit.jupiter", "org.junit.jupiter", "junit-jupiter-engine", "5.4.2");
+    companion object {
+        // AWS managed dependencies
+        val CLIENT_RT_CORE = KotlinDependency(GradleConfiguration.Api, CLIENT_RT_ROOT_NS, CLIENT_RT_GROUP, "client-rt-core", CLIENT_RT_VERSION)
+        val CLIENT_RT_HTTP = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http", CLIENT_RT_GROUP, "http", CLIENT_RT_VERSION)
+        val CLIENT_RT_SERDE = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.serde", CLIENT_RT_GROUP, "serde", CLIENT_RT_VERSION)
+        val CLIENT_RT_SERDE_JSON = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.serde.json", CLIENT_RT_GROUP, "serde-json", CLIENT_RT_VERSION)
+        val CLIENT_RT_HTTP_FEAT_SERDE = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http.feature", CLIENT_RT_GROUP, "http-serde", CLIENT_RT_VERSION)
+        val CLIENT_RT_HTTP_KTOR_ENGINE = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http.engine.ktor", CLIENT_RT_GROUP, "http-client-engine-ktor", CLIENT_RT_VERSION)
+        val CLIENT_RT_UTILS = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.util", CLIENT_RT_GROUP, "utils", CLIENT_RT_VERSION)
+        val CLIENT_RT_SMITHY_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "$CLIENT_RT_ROOT_NS.smithy.test", CLIENT_RT_GROUP, "smithy-test", CLIENT_RT_VERSION)
+
+        // External third-party dependencies
+        val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", "1.3.72")
+        val KOTLIN_TEST_JUNIT5 = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test.junit5", "org.jetbrains.kotlin", "kotlin-test-junit5", "1.3.72")
+        val JUNIT_JUPITER_ENGINE = KotlinDependency(GradleConfiguration.TestRuntimeOnly, "org.junit.jupiter", "org.junit.jupiter", "junit-jupiter-engine", "5.4.2")
+    }
 
     override fun getDependencies(): List<SymbolDependency> {
         val dependency = SymbolDependency.builder()

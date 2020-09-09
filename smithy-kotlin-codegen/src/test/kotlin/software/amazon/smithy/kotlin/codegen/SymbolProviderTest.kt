@@ -159,7 +159,7 @@ class SymbolProviderTest {
         assertEquals(true, memberSymbol.isBoxed())
         assertEquals("ByteStream", memberSymbol.name)
         val dependency = memberSymbol.dependencies[0].expectProperty("dependency") as KotlinDependency
-        assertEquals("CLIENT_RT_CORE", dependency.name)
+        assertEquals("client-rt-core", dependency.artifact)
     }
 
     @Test

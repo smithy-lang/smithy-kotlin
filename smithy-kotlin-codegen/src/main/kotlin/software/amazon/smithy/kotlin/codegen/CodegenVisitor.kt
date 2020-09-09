@@ -120,7 +120,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
-        writeGradleBuild(settings, fileManifest, dependencies)
+        writeGradleBuild(settings, fileManifest, dependencies, integrations)
 
         println("flushing writers")
         writers.flushWriters()
