@@ -14,6 +14,7 @@
  */
 package software.aws.clientrt.http.response
 
+import software.aws.clientrt.ProtocolResponse
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
@@ -32,7 +33,7 @@ data class HttpResponse(
     val headers: Headers,
     val body: HttpBody,
     val request: HttpRequest
-) {
+) : ProtocolResponse {
     // TODO - can't implement until we decide on a datetime implementation
     // val responseTime: Date
     //     get() = ...
@@ -50,4 +51,28 @@ data class HttpResponse(
             else -> return
         }
     }
+}
+
+/**
+ * Get an HTTP header value by name. Returns the first header if multiple headers are set
+ */
+fun ProtocolResponse.header(name: String): String? {
+    val httpResp = this as? HttpResponse
+    return httpResp?.headers?.get(name)
+}
+
+/**
+ * Get all HTTP header values associated with the given name.
+ */
+fun ProtocolResponse.getAllHeaders(name: String): List<String>? {
+    val httpResp = this as? HttpResponse
+    return httpResp?.headers?.getAll(name)
+}
+
+/**
+ * Get the HTTP status code of the response
+ */
+fun ProtocolResponse.statusCode(): HttpStatusCode? {
+    val httpResp = this as? HttpResponse
+    return httpResp?.status
 }

@@ -9,7 +9,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":client-runtime:client-rt-core"))
+                api(project(":client-runtime:client-rt-core"))
                 implementation(project(":client-runtime:utils"))
                 implementation(project(":client-runtime:io"))
                 // for Pipeline abstraction which already supports suspend functions
