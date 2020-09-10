@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.ServiceException
 import software.aws.clientrt.http.*
+import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.feature.DefaultRequest
@@ -47,7 +48,10 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
      * @throws ServiceException
      */
     override suspend fun invoke(input: InvokeRequest): InvokeResponse {
-        return client.roundTrip(InvokeRequestSerializer(input), InvokeResponseDeserializer())
+        val execCtx = ExecutionContext.build {
+            deserializer = InvokeResponseDeserializer()
+        }
+        return client.roundTrip(InvokeRequestSerializer(input), execCtx)
     }
 
     /**
@@ -56,7 +60,10 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
      * @throws ServiceException
      */
     override suspend fun createAlias(input: CreateAliasRequest): AliasConfiguration {
-        return client.roundTrip(CreateAliasRequestSerializer(input), AliasConfigurationDeserializer())
+        val execCtx = ExecutionContext.build {
+            deserializer = AliasConfigurationDeserializer()
+        }
+        return client.roundTrip(CreateAliasRequestSerializer(input), execCtx)
     }
 
     override fun close() {

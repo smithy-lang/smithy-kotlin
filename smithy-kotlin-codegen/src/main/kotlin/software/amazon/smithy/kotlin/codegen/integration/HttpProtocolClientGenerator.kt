@@ -164,10 +164,9 @@ class HttpProtocolClientGenerator(
                 val output = outputShape.map { symbolProvider.toSymbol(it).name }
                 val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
                 val inputParam = input.map { "${op.serializerName()}(input)" }.orElse("builder")
-                val respContext = output.map { "${op.deserializerName()}()" }.orElse("null")
+                val httpTrait = op.expectTrait(HttpTrait::class.java)
 
                 if (!inputShape.isPresent) {
-                    val httpTrait = op.expectTrait(HttpTrait::class.java)
                     // no serializer implementation is generated for operations with no input, inline the HTTP
                     // protocol request from the operation itself
                     val requestBuilderSymbol = Symbol.builder()
@@ -183,11 +182,26 @@ class HttpProtocolClientGenerator(
                         .closeBlock("}")
                 }
 
+                val executionCtxSymbol = Symbol.builder()
+                    .name("ExecutionContext")
+                    .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
+                    .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+                    .build()
+                writer.addImport(executionCtxSymbol, "")
+                writer.openBlock("val execCtx = ExecutionContext.build {")
+                    .call {
+                        writer.write("expectedHttpStatus = ${httpTrait.code}")
+                        if (output.isPresent) {
+                            writer.write("deserializer = ${op.deserializerName()}()")
+                        }
+                    }
+                    .closeBlock("}")
+
                 if (hasOutputStream) {
-                    writer.write("return client.execute(\$L, \$L, block)", inputParam, respContext)
+                    writer.write("return client.execute(\$L, execCtx, block)", inputParam)
                 } else {
                     if (output.isPresent) {
-                        writer.write("return client.roundTrip(\$L, \$L)", inputParam, respContext)
+                        writer.write("return client.roundTrip(\$L, execCtx)", inputParam)
                     } else {
                         val httpResponseSymbol = Symbol.builder()
                             .name("HttpResponse")
@@ -197,7 +211,7 @@ class HttpProtocolClientGenerator(
                         writer.addImport(httpResponseSymbol, "")
                         // need to not run the response pipeline because there is no valid transform. Explicitly
                         // specify the raw (closed) HttpResponse
-                        writer.write("client.roundTrip<HttpResponse>(\$L, \$L)", inputParam, respContext)
+                        writer.write("client.roundTrip<HttpResponse>(\$L, execCtx)", inputParam)
                     }
                 }
             }

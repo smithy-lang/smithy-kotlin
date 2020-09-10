@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    application
 }
 
 dependencies {
@@ -26,3 +27,9 @@ dependencies {
 //compileTestKotlin {
 //    kotlinOptions.jvmTarget = "1.8"
 //}
+// FIXME - intellij 2020.2 is not resolving mpp dependencies and the default run configurations are not adding
+// project dependencies to the classpath. As a workaround just use gradle (i.e ./gradlew :example:s3-example:application)
+// Similar to: https://youtrack.jetbrains.com/issue/KT-38651
+application {
+    mainClassName = "com.amazonaws.service.s3.DefaultS3ClientKt"
+}

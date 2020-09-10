@@ -116,7 +116,11 @@ class HttpProtocolClientGeneratorTest {
         val expectedBodies = listOf(
 """
     override suspend fun getFoo(input: GetFooRequest): GetFooResponse {
-        return client.roundTrip(GetFooSerializer(input), GetFooDeserializer())
+        val execCtx = ExecutionContext.build {
+            expectedHttpStatus = 200
+            deserializer = GetFooDeserializer()
+        }
+        return client.roundTrip(GetFooSerializer(input), execCtx)
     }
 """,
 """
@@ -125,22 +129,37 @@ class HttpProtocolClientGeneratorTest {
             method = HttpMethod.GET
             url.path = "/foo-no-input"
         }
-        return client.roundTrip(builder, GetFooNoInputDeserializer())
+        val execCtx = ExecutionContext.build {
+            expectedHttpStatus = 200
+            deserializer = GetFooNoInputDeserializer()
+        }
+        return client.roundTrip(builder, execCtx)
     }
 """,
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
-        client.roundTrip<HttpResponse>(GetFooNoOutputSerializer(input), null)
+        val execCtx = ExecutionContext.build {
+            expectedHttpStatus = 200
+        }
+        client.roundTrip<HttpResponse>(GetFooNoOutputSerializer(input), execCtx)
     }
 """,
 """
     override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
-        return client.roundTrip(GetFooStreamingInputSerializer(input), GetFooStreamingInputDeserializer())
+        val execCtx = ExecutionContext.build {
+            expectedHttpStatus = 200
+            deserializer = GetFooStreamingInputDeserializer()
+        }
+        return client.roundTrip(GetFooStreamingInputSerializer(input), execCtx)
     }
 """,
 """
     override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
-        return client.execute(GetFooStreamingOutputSerializer(input), GetFooStreamingOutputDeserializer(), block)
+        val execCtx = ExecutionContext.build {
+            expectedHttpStatus = 200
+            deserializer = GetFooStreamingOutputDeserializer()
+        }
+        return client.execute(GetFooStreamingOutputSerializer(input), execCtx, block)
     }
 """,
 """
@@ -149,12 +168,19 @@ class HttpProtocolClientGeneratorTest {
             method = HttpMethod.POST
             url.path = "/foo-streaming-output-no-input"
         }
-        return client.execute(builder, GetFooStreamingOutputNoInputDeserializer(), block)
+        val execCtx = ExecutionContext.build {
+            expectedHttpStatus = 200
+            deserializer = GetFooStreamingOutputNoInputDeserializer()
+        }
+        return client.execute(builder, execCtx, block)
     }
 """,
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
-        client.roundTrip<HttpResponse>(GetFooStreamingInputNoOutputSerializer(input), null)
+        val execCtx = ExecutionContext.build {
+            expectedHttpStatus = 200
+        }
+        client.roundTrip<HttpResponse>(GetFooStreamingInputNoOutputSerializer(input), execCtx)
     }
 """
         )

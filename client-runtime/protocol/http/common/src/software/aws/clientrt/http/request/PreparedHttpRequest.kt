@@ -15,6 +15,7 @@
 package software.aws.clientrt.http.request
 import kotlin.reflect.KClass
 import software.aws.clientrt.http.SdkHttpClient
+import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
@@ -27,7 +28,7 @@ class PreparedHttpRequest(
     val client: SdkHttpClient,
     val builder: HttpRequestBuilder,
     val input: Any? = null,
-    val userContext: Any? = null
+    val executionCtx: ExecutionContext? = null
 ) {
 
     /**
@@ -42,23 +43,31 @@ class PreparedHttpRequest(
     }
 
     /**
-     * Run the response pipeline and transform the raw HttpResponse to the result of the pipeline execution
+     * Runs the response pipeline and returns the resulting transformation (without any expectations)
      */
     @InternalAPI
-    suspend inline fun <reified TResponse> transformResponse(httpResponse: HttpResponse): TResponse {
+    suspend inline fun <reified TResponse> getPipelineResponse(httpResponse: HttpResponse): Any {
         val want = TypeInfo(TResponse::class)
-        val responseContext = HttpResponseContext(httpResponse, want, userContext = userContext)
-
+        val responseContext = HttpResponseContext(httpResponse, want, executionCtx = executionCtx)
         // There are two paths for an HTTP response:
         //     1. Response payload is consumed in the pipeline (e.g. through deserialization). Resources
         //        are released immediately (and automatically) by consuming the payload.
         //
         //     2. Response payload is streaming and the end user or service call is responsible for consuming
         //        the payload and only then resources will be released.
-        val response = client.responsePipeline.execute(responseContext, httpResponse.body)
+        return client.responsePipeline.execute(responseContext, httpResponse.body)
+    }
+
+    /**
+     * Run the response pipeline and transform the raw HttpResponse to the result of the pipeline execution
+     * @throws ResponseTransformFailed Thrown when the pipeline result is not equal to the expected result
+     */
+    @InternalAPI
+    suspend inline fun <reified TResponse> transformResponse(httpResponse: HttpResponse): TResponse {
+        val response = getPipelineResponse<TResponse>(httpResponse)
         if (response !is TResponse) {
             // response pipeline failed to transform the raw HttResponse content into the expected output type
-            throw ResponseTransformFailed(httpResponse, response::class, want.classz)
+            throw ResponseTransformFailed(httpResponse, response::class, TResponse::class)
         }
         return response
     }
@@ -72,8 +81,14 @@ class PreparedHttpRequest(
             PreparedHttpRequest::class -> this as TResponse
             HttpResponse::class -> {
                 val httpResp = executeUnsafe()
-                httpResp.complete()
-                httpResp as TResponse
+                try {
+                    // run the pipeline ensuring any middleware has a chance to interact with the response,
+                    // there is no expectation on the result of that execution though
+                    getPipelineResponse<TResponse>(httpResp)
+                    httpResp as TResponse
+                } finally {
+                    httpResp.complete()
+                }
             }
             else -> {
                 val httpResp = executeUnsafe()

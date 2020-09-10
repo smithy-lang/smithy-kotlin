@@ -20,6 +20,7 @@ import kotlinx.coroutines.runBlocking
 import software.aws.clientrt.content.ByteStream
 import software.aws.clientrt.content.toByteArray
 import software.aws.clientrt.http.*
+import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.feature.DefaultRequest
@@ -48,7 +49,10 @@ class DefaultS3Client: S3Client {
     }
 
     override suspend fun <T> getObject(input: GetObjectRequest, block: suspend (GetObjectResponse) -> T): T {
-        return client.execute(GetObjectRequestSerializer(input), GetObjectResponseDeserializer(), block)
+        val execCtx = ExecutionContext.build {
+            deserializer = GetObjectResponseDeserializer()
+        }
+        return client.execute(GetObjectRequestSerializer(input), execCtx, block)
         // val response: PreparedHttpRequest = client.roundTrip(GetObjectRequestSerializer(input), GetObjectResponseDeserializer())
         // return response.execute<GetObjectResponse, T>(block)
 
@@ -67,7 +71,11 @@ class DefaultS3Client: S3Client {
     }
 
     override suspend fun putObject(input: PutObjectRequest): PutObjectResponse {
-        return client.roundTrip(PutObjectRequestSerializer(input), PutObjectResponseDeserializer())
+        val execCtx = ExecutionContext.build {
+            deserializer = PutObjectResponseDeserializer()
+        }
+
+        return client.roundTrip(PutObjectRequestSerializer(input), execCtx)
     }
 
     override fun close() {

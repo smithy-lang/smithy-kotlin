@@ -21,6 +21,7 @@ import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
@@ -83,15 +84,19 @@ class HttpSerdeTest {
             }
         }
 
-        val userContext = object : HttpDeserialize {
+        val userDeserializer = object : HttpDeserialize {
             override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any {
                 return 2
             }
         }
 
+        val exCtx = ExecutionContext.build {
+            deserializer = userDeserializer
+        }
+
         val req = HttpRequestBuilder().build()
         val httpResp = HttpResponse(HttpStatusCode.OK, Headers {}, HttpBody.Empty, req)
-        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), userContext)
+        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), exCtx)
 
         val actual = client.responsePipeline.execute(context, httpResp.body)
         assertEquals(2, actual)

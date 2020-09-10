@@ -18,6 +18,7 @@ import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.request.PreparedHttpRequest
+import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.response.HttpResponsePipeline
 
 /**
@@ -43,12 +44,12 @@ class SdkHttpClient(
 ) {
 
     /**
-     * Request pipeline (middleware stack). Responsible for transforming inputs into an outgoing [HttpRequest]
+     * Request pipeline (middleware stack). Responsible for transforming inputs into an outgoing [software.aws.clientrt.http.request.HttpRequest]
      */
     val requestPipeline = HttpRequestPipeline()
 
     /**
-     * Response pipeline. Responsible for transforming [HttpResponse] to the expected type
+     * Response pipeline. Responsible for transforming [software.aws.clientrt.http.response.HttpResponse] to the expected type
      */
     val responsePipeline = HttpResponsePipeline()
 
@@ -72,15 +73,15 @@ class SdkHttpClient(
  * Make an HTTP request with the given input type. The input type is expected to be transformable by the request
  * pipeline. The output type [TResponse] is expected to be producible by the response pipeline.
  */
-suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(input: Any, responseContext: Any? = null): TResponse =
+suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(input: Any, responseContext: ExecutionContext? = null): TResponse =
     PreparedHttpRequest(this, HttpRequestBuilder(), input, responseContext).receive()
 
 /**
  * Make an HTTP request using the given [HttpRequestBuilder]. The body of the request builder will be used as the
  * subject of the request pipeline.
  */
-suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(builder: HttpRequestBuilder, responseContext: Any? = null): TResponse =
-    PreparedHttpRequest(this, builder, userContext = responseContext).receive()
+suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(builder: HttpRequestBuilder, responseContext: ExecutionContext? = null): TResponse =
+    PreparedHttpRequest(this, builder, executionCtx = responseContext).receive()
 
 /**
  * Make an HTTP request with the given input type and run the [block] with the result of the response pipeline.
@@ -90,7 +91,7 @@ suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(builder: HttpRequ
  */
 suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
     input: Any,
-    responseContext: Any?,
+    responseContext: ExecutionContext?,
     crossinline block: suspend (TResponse) -> R
 ): R =
     PreparedHttpRequest(this, HttpRequestBuilder(), input, responseContext).execute(block)
@@ -103,7 +104,7 @@ suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
  */
 suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
     builder: HttpRequestBuilder,
-    responseContext: Any?,
+    responseContext: ExecutionContext?,
     crossinline block: suspend (TResponse) -> R
 ): R =
-    PreparedHttpRequest(this, builder, userContext = responseContext).execute(block)
+    PreparedHttpRequest(this, builder, executionCtx = responseContext).execute(block)
