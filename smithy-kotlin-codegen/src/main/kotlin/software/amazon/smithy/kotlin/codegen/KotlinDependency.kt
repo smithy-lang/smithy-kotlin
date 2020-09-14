@@ -59,7 +59,6 @@ data class KotlinDependency(
         val CLIENT_RT_HTTP = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http", CLIENT_RT_GROUP, "http", CLIENT_RT_VERSION)
         val CLIENT_RT_SERDE = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.serde", CLIENT_RT_GROUP, "serde", CLIENT_RT_VERSION)
         val CLIENT_RT_SERDE_JSON = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.serde.json", CLIENT_RT_GROUP, "serde-json", CLIENT_RT_VERSION)
-        val CLIENT_RT_HTTP_FEAT_SERDE = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http.feature", CLIENT_RT_GROUP, "http-serde", CLIENT_RT_VERSION)
         val CLIENT_RT_HTTP_KTOR_ENGINE = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.http.engine.ktor", CLIENT_RT_GROUP, "http-client-engine-ktor", CLIENT_RT_VERSION)
         val CLIENT_RT_UTILS = KotlinDependency(GradleConfiguration.Implementation, "$CLIENT_RT_ROOT_NS.util", CLIENT_RT_GROUP, "utils", CLIENT_RT_VERSION)
         val CLIENT_RT_SMITHY_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "$CLIENT_RT_ROOT_NS.smithy.test", CLIENT_RT_GROUP, "smithy-test", CLIENT_RT_VERSION)

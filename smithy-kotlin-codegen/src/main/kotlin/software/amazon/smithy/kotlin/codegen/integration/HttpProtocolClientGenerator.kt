@@ -67,8 +67,8 @@ abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
     override fun addImportsAndDependencies(writer: KotlinWriter) {
         val httpSerdeSymbol = Symbol.builder()
             .name("HttpSerde")
-            .namespace(KotlinDependency.CLIENT_RT_HTTP_FEAT_SERDE.namespace, ".")
-            .addDependency(KotlinDependency.CLIENT_RT_HTTP_FEAT_SERDE)
+            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", ".")
+            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
             .addDependency(KotlinDependency.CLIENT_RT_SERDE)
             .build()
         writer.addImport(httpSerdeSymbol, "")

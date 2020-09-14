@@ -72,7 +72,7 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
 
         // test for feature imports that are added
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP_FEAT_SERDE.namespace}.HttpSerde")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature.HttpSerde")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_SERDE_JSON.namespace}.JsonSerdeProvider")
     }
 
@@ -191,9 +191,9 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it registers feature dependencies`() {
-        // Serde, HttpSerde, Http, KtorEngine, + SerdeJson (via feature)
+        // Serde, Http, KtorEngine, + SerdeJson (via feature)
         val ktDependencies = writer.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
-        assertEquals(5, ktDependencies.size)
+        assertEquals(4, ktDependencies.size)
     }
 
     @Test

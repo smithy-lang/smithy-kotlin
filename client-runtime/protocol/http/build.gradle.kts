@@ -14,12 +14,16 @@ kotlin {
                 implementation(project(":client-runtime:io"))
                 // for Pipeline abstraction which already supports suspend functions
                 api("io.ktor:ktor-utils:$ktorVersion")
+                // HttpSerialize/Deserialize
+                api(project(":client-runtime:serde"))
             }
         }
 
         commonTest {
             dependencies {
                 implementation(project(":client-runtime:testing"))
+                // for testing a concrete provider
+                implementation(project(":client-runtime:serde:serde-json"))
             }
         }
 

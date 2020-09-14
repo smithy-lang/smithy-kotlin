@@ -15,6 +15,7 @@
 package software.aws.clientrt.http.response
 
 import software.aws.clientrt.http.HttpStatusCode
+import software.aws.clientrt.http.feature.HttpDeserialize
 
 /**
  * Features are registered at the [software.aws.clientrt.http.SdkHttpClient] level and are executed
@@ -28,7 +29,7 @@ class ExecutionContext private constructor(builder: ExecutionContextBuilder) {
      * An instance of a deserializer (i.e. HttpDeserialize) used to transform an [HttpResponse] to the expected
      * output type T for a single round trip
      */
-    val deserializer: Any? = builder.deserializer
+    val deserializer: HttpDeserialize? = builder.deserializer
 
     /**
      * The expected HTTP status code of a successful response. Pipeline features can make use of this
@@ -41,7 +42,7 @@ class ExecutionContext private constructor(builder: ExecutionContextBuilder) {
     }
 
     class ExecutionContextBuilder {
-        var deserializer: Any? = null
+        var deserializer: HttpDeserialize? = null
         var expectedHttpStatus: Int? = null
 
         fun build(): ExecutionContext = ExecutionContext(this)

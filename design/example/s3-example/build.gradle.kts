@@ -7,7 +7,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation(project(":client-runtime:client-rt-core"))
     implementation(project(":client-runtime:protocol:http"))
-    implementation(project(":client-runtime:protocol:http:features:http-serde"))
     implementation(project(":client-runtime:protocol:http-client-engines:http-client-engine-ktor"))
     implementation(project(":client-runtime:serde"))
     // S3 would obviously be XML
