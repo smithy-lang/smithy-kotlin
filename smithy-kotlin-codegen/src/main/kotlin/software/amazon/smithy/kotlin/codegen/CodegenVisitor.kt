@@ -79,7 +79,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         settings: KotlinSettings
     ): ProtocolGenerator? {
         val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
-        val serviceIndex = model.getKnowledge(ServiceIndex::class.java)
+        val serviceIndex = ServiceIndex.of(model)
 
         try {
             val protocolTrait = settings.resolveServiceProtocol(serviceIndex, service, generators.keys)

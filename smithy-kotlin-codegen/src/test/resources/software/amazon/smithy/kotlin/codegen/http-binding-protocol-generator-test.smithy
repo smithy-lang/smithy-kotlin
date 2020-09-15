@@ -359,9 +359,6 @@ structure BlobInputRequest {
     @httpHeader("X-Blob")
     headerMediaType: MyMediaHeader,
 
-    @httpQuery("qblob")
-    queryBlob: Blob,
-
     payloadBlob: Blob
 }
 

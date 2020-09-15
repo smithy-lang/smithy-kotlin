@@ -147,30 +147,38 @@ class ShapeValueGenerator(
                 when (currShape) {
                     is StructureShape -> {
                         val member = currShape.getMember(keyNode.value).orElseThrow {
-                            CodegenException(
-                                "unknown member ${currShape.id}.${keyNode.value}"
-                            )
+                            CodegenException("unknown member ${currShape.id}.${keyNode.value}")
                         }
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberName(member)
-                        // NOTE - `write()` appends a newline and keeps indentation,
-                        // `writeInline()` doesn't keep indentation but also doesn't append a newline
-                        // ...except it does insert indentation if it encounters a newline.
-                        // This is our workaround for the moment to keep indentation but not insert
-                        // a newline at the end.
-                        writer.writeInline("\n\$L = ", memberName)
+                        writer.writeInline("\$L = ", memberName)
                         generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        if (i < node.members.size - 1) {
+                            writer.write("")
+                        }
                     }
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
-                        writer.writeInline("\n\$S to ", keyNode.value)
+                        writer.writeInline("\$S to ", keyNode.value)
                         generator.writeShapeValueInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
-                            writer.writeInline(",")
+                            writer.writeInline(",\n")
                         }
                     }
                     is DocumentShape -> {
                         // TODO - deal with document shapes
+                    }
+                    is UnionShape -> {
+                        val member = currShape.getMember(keyNode.value).orElseThrow {
+                            CodegenException("unknown member ${currShape.id}.${keyNode.value}")
+                        }
+                        memberShape = generator.model.expectShape(member.target)
+                        val currSymbol = generator.symbolProvider.toSymbol(currShape)
+                        val memberName = generator.symbolProvider.toMemberName(member)
+                        val variantName = memberName.capitalize()
+                        writer.writeInline("${currSymbol.name}.$variantName(")
+                        generator.writeShapeValueInline(writer, memberShape, valueNode)
+                        writer.write(")")
                     }
                     else -> throw CodegenException("unexpected shape type " + currShape.type)
                 }
@@ -190,10 +198,9 @@ class ShapeValueGenerator(
             val memberShape = generator.model.expectShape((currShape as CollectionShape).member.target)
             var i = 0
             node.elements.forEach { element ->
-                writer.writeInline("\n")
                 generator.writeShapeValueInline(writer, memberShape, element)
                 if (i < node.elements.size - 1) {
-                    writer.writeInline(",")
+                    writer.writeInline(",\n")
                 }
                 i++
             }

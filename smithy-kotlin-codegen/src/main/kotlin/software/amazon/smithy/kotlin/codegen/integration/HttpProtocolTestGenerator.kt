@@ -41,8 +41,8 @@ class HttpProtocolTestGenerator(
      * Generates the API HTTP protocol tests defined in the smithy model.
      */
     fun generateProtocolTests() {
-        val operationIndex: OperationIndex = ctx.model.getKnowledge(OperationIndex::class.java)
-        val topDownIndex: TopDownIndex = ctx.model.getKnowledge(TopDownIndex::class.java)
+        val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
+        val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
         val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
 
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {

@@ -63,7 +63,7 @@ class DeserializeStructGeneratorTest {
         val writer = KotlinWriter("test")
         val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#SmokeTest"))
 
-        val bindingIndex = ctx.generationCtx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val documentMembers = responseBindings.values
             .filter { it.location == HttpBinding.Location.DOCUMENT }
@@ -101,7 +101,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val writer = KotlinWriter("test")
         val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#ListInput"))
 
-        val bindingIndex = ctx.generationCtx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val documentMembers = responseBindings.values
             .filter { it.location == HttpBinding.Location.DOCUMENT }
@@ -188,7 +188,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val writer = KotlinWriter("test")
         val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#MapInput"))
 
-        val bindingIndex = ctx.generationCtx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val documentMembers = responseBindings.values
             .filter { it.location == HttpBinding.Location.DOCUMENT }

@@ -73,7 +73,7 @@ class SerializeStructGeneratorTest {
 
         val members = when (shape) {
             is OperationShape -> {
-                val bindingIndex = ctx.generationCtx.model.getKnowledge(HttpBindingIndex::class.java)
+                val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
                 requestBindings.values
                     .filter { it.location == HttpBinding.Location.DOCUMENT }

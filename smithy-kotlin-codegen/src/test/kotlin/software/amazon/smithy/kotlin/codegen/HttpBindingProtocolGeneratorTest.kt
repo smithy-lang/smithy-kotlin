@@ -455,9 +455,6 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
 
         builder.url {
             path = "/input/blob"
-            parameters {
-                if (input.queryBlob?.isNotEmpty() == true) append("qblob", input.queryBlob.encodeBase64String())
-            }
         }
 
         builder.headers {

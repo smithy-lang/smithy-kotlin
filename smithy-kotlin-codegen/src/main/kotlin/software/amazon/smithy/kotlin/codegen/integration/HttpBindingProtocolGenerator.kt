@@ -107,7 +107,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @return the list of operation shapes
      */
     open fun getHttpBindingOperations(ctx: ProtocolGenerator.GenerationContext): List<OperationShape> {
-        val topDownIndex: TopDownIndex = ctx.model.getKnowledge(TopDownIndex::class.java)
+        val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
 
         return topDownIndex.getContainedOperations(ctx.service)
             .filter { op ->
@@ -259,7 +259,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
-                    SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                    // FIXME - need to handle unions
+                    if (shape.isUnionShape) {
+                        writer.write("TODO(\$S)", "union shape serialization not-implemented")
+                    } else {
+                        SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                    }
                 }
             }
             .closeBlock("}")
@@ -276,7 +281,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val inputShape = ctx.model.expectShape(op.input.get())
         val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
 
-        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.model)
         val ref = SymbolReference.builder()
             .symbol(inputSymbol)
             .options(SymbolReference.ContextOption.DECLARE)
@@ -367,7 +372,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val targetShape = ctx.model.expectShape(binding.member.target)
                     if (targetShape.isTimestampShape) {
                         importTimestampFormat(writer)
-                        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+                        val bindingIndex = HttpBindingIndex.of(ctx.model)
                         val tsFormat = bindingIndex.determineTimestampFormat(
                             binding.member,
                             HttpBinding.Location.LABEL,
@@ -475,7 +480,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         bindings: List<HttpBinding>,
         writer: KotlinWriter
     ) {
-        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.model)
         bindings.forEach {
             var memberName = it.member.defaultName()
             val memberTarget = ctx.model.expectShape(it.member.target)
@@ -651,7 +656,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val outputShape = ctx.model.expectShape(op.output.get())
         val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
 
-        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.model)
         val ref = SymbolReference.builder()
             .symbol(outputSymbol)
             .options(SymbolReference.ContextOption.DECLARE)
@@ -701,7 +706,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun generateExceptionDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: StructureShape) {
         val outputSymbol = ctx.symbolProvider.toSymbol(shape)
 
-        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+        val bindingIndex = HttpBindingIndex.of(ctx.model)
         val ref = SymbolReference.builder()
             .symbol(outputSymbol)
             .options(SymbolReference.ContextOption.DECLARE)
@@ -845,7 +850,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 }
                 is TimestampShape -> {
-                    val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+                    val bindingIndex = HttpBindingIndex.of(ctx.model)
                     val tsFormat = bindingIndex.determineTimestampFormat(
                         hdrBinding.member,
                         HttpBinding.Location.HEADER,
@@ -866,7 +871,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         is BooleanShape -> "it.toBoolean()"
                         is NumberShape -> "it." + stringToNumber(collectionMemberTarget)
                         is TimestampShape -> {
-                            val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
+                            val bindingIndex = HttpBindingIndex.of(ctx.model)
                             val tsFormat = bindingIndex.determineTimestampFormat(
                                 hdrBinding.member,
                                 HttpBinding.Location.HEADER,
@@ -1046,9 +1051,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .call {
                 writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
-                    writer.write("val builder = ${symbol.name}.dslBuilder()")
-                    DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                    writer.write("return builder.build()")
+                    if (shape.isUnionShape) {
+                        writer.write("TODO(\$S)", "union shape deserialization not-implemented")
+                    } else {
+                        writer.write("val builder = ${symbol.name}.dslBuilder()")
+                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        writer.write("return builder.build()")
+                    }
                 }
             }
             .closeBlock("}")

@@ -56,7 +56,6 @@ class ShapeValueGeneratorTest {
         // FIXME - can't seem to get indentation quite right in our node visitor...
         val expected = """
 mapOf<String, Int>(
-
     "k1" to 1,
     "k2" to 2,
     "k3" to 3
@@ -90,7 +89,6 @@ mapOf<String, Int>(
 
         val expected = """
 listOf<String>(
-
     "v1",
     "v2",
     "v3"
@@ -172,12 +170,10 @@ listOf<String>(
 
         val expected = """
 MyStruct {
-
     stringMember = "v1"
     boolMember = true
     intMember = 1
     structMember = Nested {
-
         tsMember = Instant.fromEpochSeconds(11223344, 0)
     }
 
@@ -186,6 +182,73 @@ MyStruct {
     doubleMember = 3.0.toDouble()
     nullMember = null
 }
+""".trimIndent()
+
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders unions`() {
+        val member1 = MemberShape.builder().id("foo.bar#MyUnion\$stringMember").target("smithy.api#String").build()
+        val member2 = MemberShape.builder().id("foo.bar#MyUnion\$boolMember").target("smithy.api#Boolean").build()
+        val member3 = MemberShape.builder().id("foo.bar#MyUnion\$intMember").target("smithy.api#Integer").build()
+
+        val nestedMember1 = MemberShape.builder().id("foo.bar#Nested\$tsMember").target("smithy.api#Timestamp").build()
+        val nested = StructureShape.builder()
+            .id("foo.bar#Nested")
+            .addMember(nestedMember1)
+            .build()
+
+        val member4 = MemberShape.builder().id("foo.bar#MyUnion\$structMember").target("foo.bar#Nested").build()
+
+        val enumTrait = EnumTrait.builder()
+            .addEnum(EnumDefinition.builder().value("fooey").name("FOO").build())
+            .build()
+
+        val enumShape = StringShape.builder()
+            .id("foo.bar#MyEnum")
+            .addTrait(enumTrait)
+            .build()
+        val member5 = MemberShape.builder().id("foo.bar#MyUnion\$enumMember").target("foo.bar#MyEnum").build()
+
+        val member6 = MemberShape.builder().id("foo.bar#MyUnion\$floatMember").target("smithy.api#Float").build()
+        val member7 = MemberShape.builder().id("foo.bar#MyUnion\$doubleMember").target("smithy.api#Double").build()
+
+        val member8 = MemberShape.builder().id("foo.bar#MyUnion\$nullMember").target("smithy.api#String").build()
+
+        val union = UnionShape.builder()
+            .id("foo.bar#MyUnion")
+            .addMember(member1)
+            .addMember(member2)
+            .addMember(member3)
+            .addMember(member4)
+            .addMember(member5)
+            .addMember(member6)
+            .addMember(member7)
+            .addMember(member8)
+            .build()
+        val model = Model.assembler()
+            .addShapes(union, member1, member2, member3)
+            .addShapes(member4, nested, nestedMember1)
+            .addShapes(member5, enumShape)
+            .addShapes(member6, member7, member8)
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+
+        val unionShape = model.expectShape(ShapeId.from("foo.bar#MyUnion"))
+        val writer = KotlinWriter("test")
+
+        val params = Node.objectNodeBuilder()
+            .withMember("stringMember", "v1")
+            .build()
+
+        ShapeValueGenerator(model, provider).writeShapeValueInline(writer, unionShape, params)
+        val contents = writer.toString()
+
+        val expected = """
+MyUnion.StringMember("v1")
 """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)

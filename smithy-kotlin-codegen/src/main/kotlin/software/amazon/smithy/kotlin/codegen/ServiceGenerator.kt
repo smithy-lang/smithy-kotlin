@@ -52,9 +52,9 @@ class ServiceGenerator(
 
         importExternalSymbols()
 
-        val topDownIndex = model.getKnowledge(TopDownIndex::class.java)
+        val topDownIndex = TopDownIndex.of(model)
         val operations = topDownIndex.getContainedOperations(service).sortedBy { it.defaultName() }
-        val operationsIndex = model.getKnowledge(OperationIndex::class.java)
+        val operationsIndex = OperationIndex.of(model)
 
         writer.renderDocumentation(service)
         writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
