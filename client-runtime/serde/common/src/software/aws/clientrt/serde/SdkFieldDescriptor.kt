@@ -40,6 +40,10 @@ sealed class SerialKind {
     object Map : SerialKind()
     object List : SerialKind()
     object Struct : SerialKind()
+    object Timestamp : SerialKind()
+    object Blob : SerialKind()
+    object Document : SerialKind()
+    object BigNumber : SerialKind()
 
     override fun toString(): kotlin.String {
         return this::class.simpleName ?: "SerialKind"

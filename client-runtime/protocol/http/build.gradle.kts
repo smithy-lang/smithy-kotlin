@@ -24,6 +24,7 @@ kotlin {
                 implementation(project(":client-runtime:testing"))
                 // for testing a concrete provider
                 implementation(project(":client-runtime:serde:serde-json"))
+                implementation(project(":client-runtime:serde:serde-xml"))
             }
         }
 

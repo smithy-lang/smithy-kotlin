@@ -100,9 +100,9 @@ class HttpBindingProtocolGeneratorTest {
 class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
 
     companion object {
-        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1")
-        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2")
-        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3")
+        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
+        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2", SerialKind.Integer)
+        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3", SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
@@ -127,7 +127,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
 
         val serializer = provider()
-        serializer.serializeStruct {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
             input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
             input.payload3?.let { field(PAYLOAD3_DESCRIPTOR, NestedSerializer(it)) }
@@ -257,9 +257,9 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
 class Nested4Serializer(val input: Nested4) : SdkSerializable {
 
     companion object {
-        private val INTLIST_DESCRIPTOR = SdkFieldDescriptor("intList")
-        private val INTMAP_DESCRIPTOR = SdkFieldDescriptor("intMap")
-        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1")
+        private val INTLIST_DESCRIPTOR = SdkFieldDescriptor("intList", SerialKind.List)
+        private val INTMAP_DESCRIPTOR = SdkFieldDescriptor("intMap", SerialKind.Map)
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.Integer)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(INTLIST_DESCRIPTOR)
             field(INTMAP_DESCRIPTOR)
@@ -268,7 +268,7 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
             if (input.intList != null) {
                 listField(INTLIST_DESCRIPTOR) {
                     for(m0 in input.intList) {
@@ -299,9 +299,9 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
 class Nested3Serializer(val input: Nested3) : SdkSerializable {
 
     companion object {
-        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1")
-        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2")
-        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3")
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.String)
+        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2", SerialKind.String)
+        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3", SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
@@ -310,7 +310,7 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.member1?.let { field(MEMBER1_DESCRIPTOR, it) }
             input.member2?.let { field(MEMBER2_DESCRIPTOR, it) }
             input.member3?.let { field(MEMBER3_DESCRIPTOR, Nested4Serializer(it)) }
@@ -341,7 +341,7 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
 class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
 
     companion object {
-        private val NESTEDWITHENUM_DESCRIPTOR = SdkFieldDescriptor("nestedWithEnum")
+        private val NESTEDWITHENUM_DESCRIPTOR = SdkFieldDescriptor("nestedWithEnum", SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(NESTEDWITHENUM_DESCRIPTOR)
         }
@@ -360,7 +360,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
 
         val serializer = provider()
-        serializer.serializeStruct {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.nestedWithEnum?.let { field(NESTEDWITHENUM_DESCRIPTOR, NestedEnumSerializer(it)) }
         }
 
@@ -380,11 +380,11 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
 class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize {
 
     companion object {
-        private val DATETIME_DESCRIPTOR = SdkFieldDescriptor("dateTime")
-        private val EPOCHSECONDS_DESCRIPTOR = SdkFieldDescriptor("epochSeconds")
-        private val HTTPDATE_DESCRIPTOR = SdkFieldDescriptor("httpDate")
-        private val NORMAL_DESCRIPTOR = SdkFieldDescriptor("normal")
-        private val TIMESTAMPLIST_DESCRIPTOR = SdkFieldDescriptor("timestampList")
+        private val DATETIME_DESCRIPTOR = SdkFieldDescriptor("dateTime", SerialKind.Timestamp)
+        private val EPOCHSECONDS_DESCRIPTOR = SdkFieldDescriptor("epochSeconds", SerialKind.Timestamp)
+        private val HTTPDATE_DESCRIPTOR = SdkFieldDescriptor("httpDate", SerialKind.Timestamp)
+        private val NORMAL_DESCRIPTOR = SdkFieldDescriptor("normal", SerialKind.Timestamp)
+        private val TIMESTAMPLIST_DESCRIPTOR = SdkFieldDescriptor("timestampList", SerialKind.List)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(DATETIME_DESCRIPTOR)
             field(EPOCHSECONDS_DESCRIPTOR)
@@ -412,7 +412,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
 
         val serializer = provider()
-        serializer.serializeStruct {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.dateTime?.let { field(DATETIME_DESCRIPTOR, it.format(TimestampFormat.ISO_8601)) }
             input.epochSeconds?.let { rawField(EPOCHSECONDS_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
             input.httpDate?.let { field(HTTPDATE_DESCRIPTOR, it.format(TimestampFormat.RFC_5322)) }
@@ -444,7 +444,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
 class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
 
     companion object {
-        private val PAYLOADBLOB_DESCRIPTOR = SdkFieldDescriptor("payloadBlob")
+        private val PAYLOADBLOB_DESCRIPTOR = SdkFieldDescriptor("payloadBlob", SerialKind.Blob)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(PAYLOADBLOB_DESCRIPTOR)
         }
@@ -466,7 +466,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
 
         val serializer = provider()
-        serializer.serializeStruct {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payloadBlob?.let { field(PAYLOADBLOB_DESCRIPTOR, it.encodeBase64String()) }
         }
 
@@ -515,10 +515,10 @@ class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpS
 class SmokeTestDeserializer : HttpDeserialize {
 
     companion object {
-        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1")
-        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2")
-        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3")
-        private val PAYLOAD4_DESCRIPTOR = SdkFieldDescriptor("payload4")
+        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
+        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2", SerialKind.Integer)
+        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3", SerialKind.Struct)
+        private val PAYLOAD4_DESCRIPTOR = SdkFieldDescriptor("payload4", SerialKind.Timestamp)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
@@ -537,14 +537,14 @@ class SmokeTestDeserializer : HttpDeserialize {
         val payload = response.body.readAll()
         if (payload != null) {
             val deserializer = provider(payload)
-            deserializer.deserializeStruct(null) {
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while(true) {
-                    when(nextField(OBJ_DESCRIPTOR)) {
+                    when(findNextFieldIndex()) {
                         PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
                         PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInt()
                         PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = NestedDeserializer().deserialize(deserializer)
                         PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = Instant.fromIso8601(deserializeString())
-                        Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                        null -> break@loop
                         else -> skipValue()
                     }
                 }
@@ -630,9 +630,9 @@ class SmokeTestDeserializer : HttpDeserialize {
 class Nested3Deserializer {
 
     companion object {
-        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1")
-        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2")
-        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3")
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.String)
+        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2", SerialKind.String)
+        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3", SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
@@ -642,13 +642,13 @@ class Nested3Deserializer {
 
     fun deserialize(deserializer: Deserializer): Nested3 {
         val builder = Nested3.dslBuilder()
-        deserializer.deserializeStruct(null) {
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while(true) {
-                when(nextField(OBJ_DESCRIPTOR)) {
+                when(findNextFieldIndex()) {
                     MEMBER1_DESCRIPTOR.index -> builder.member1 = deserializeString()
                     MEMBER2_DESCRIPTOR.index -> builder.member2 = deserializeString()
                     MEMBER3_DESCRIPTOR.index -> builder.member3 = Nested4Deserializer().deserialize(deserializer)
-                    Deserializer.FieldIterator.EXHAUSTED -> break@loop
+                    null -> break@loop
                     else -> skipValue()
                 }
             }

@@ -255,7 +255,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("class \$L(val input: \$L) : SdkSerializable {", serializerSymbol.name, symbol.name)
             .call {
-                renderSerdeCompanionObject(shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
@@ -308,7 +308,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .openBlock("class \$L(val input: \$L) : HttpSerialize {", op.serializerName(), inputSymbol.name)
                 .call {
                     val memberShapes = requestBindings.values.filter { it.location == HttpBinding.Location.DOCUMENT }.map { it.member }
-                    renderSerdeCompanionObject(memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, memberShapes, writer)
                 }
                 .call {
                     val contentType =
@@ -322,15 +322,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Generate the field descriptors
      */
-    private fun renderSerdeCompanionObject(members: List<MemberShape>, writer: KotlinWriter) {
+    private fun renderSerdeCompanionObject(
+        ctx: ProtocolGenerator.GenerationContext,
+        members: List<MemberShape>,
+        writer: KotlinWriter
+    ) {
         if (members.isEmpty()) return
-        // TODO - this is a really simplified version, we may need to allow hooks for protocol generators to control this better
         writer.write("")
             .withBlock("companion object {", "}") {
                 val sortedMembers = members.sortedBy { it.memberName }
                 for (member in sortedMembers) {
                     val serialName = member.getTrait(JsonNameTrait::class.java).map { it.value }.orElse(member.memberName)
-                    write("private val \$L = SdkFieldDescriptor(\"\$L\")", member.descriptorName(), serialName)
+                    val serialKind = ctx.model.expectShape(member.target).serialKind()
+                    write("private val \$L = SdkFieldDescriptor(\$S, $serialKind)", member.descriptorName(), serialName)
                 }
                 writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {", "}") {
                     for (member in sortedMembers) {
@@ -681,7 +685,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val memberShapes = responseBindings.values
                         .filter { it.location == HttpBinding.Location.DOCUMENT }
                         .map { it.member }
-                    renderSerdeCompanionObject(memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, memberShapes, writer)
                 }
                 .write("")
                 .call {
@@ -726,7 +730,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         it.hasTrait(HttpHeaderTrait::class.java) || it.hasTrait(HttpPrefixHeadersTrait::class.java)
                     }
 
-                    renderSerdeCompanionObject(documentMembers, writer)
+                    renderSerdeCompanionObject(ctx, documentMembers, writer)
                 }
                 .write("")
                 .call {
@@ -1038,7 +1042,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("class \$L {", deserializerSymbol.name)
             .call {
-                renderSerdeCompanionObject(shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
             }
             .call {
                 writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
@@ -1120,4 +1124,28 @@ internal fun parseInstant(paramName: String, tsFmt: TimestampFormatTrait.Format)
     TimestampFormatTrait.Format.DATE_TIME -> "Instant.fromIso8601($paramName)"
     TimestampFormatTrait.Format.HTTP_DATE -> "Instant.fromRfc5322($paramName)"
     else -> throw CodegenException("unknown timestamp format: $tsFmt")
+}
+
+/**
+ * Get the serde SerialKind for a shape
+ */
+fun Shape.serialKind(): String = when (this.type) {
+    ShapeType.BOOLEAN -> "SerialKind.Boolean"
+    ShapeType.BYTE -> "SerialKind.Byte"
+    ShapeType.SHORT -> "SerialKind.Short"
+    ShapeType.INTEGER -> "SerialKind.Integer"
+    ShapeType.LONG -> "SerialKind.Long"
+    ShapeType.FLOAT -> "SerialKind.Float"
+    ShapeType.DOUBLE -> "SerialKind.Double"
+    ShapeType.STRING -> "SerialKind.String"
+    ShapeType.BLOB -> "SerialKind.Blob"
+    ShapeType.TIMESTAMP -> "SerialKind.Timestamp"
+    ShapeType.DOCUMENT -> "SerialKind.Document"
+    ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> "SerialKind.BigNumber"
+    ShapeType.LIST -> "SerialKind.List"
+    ShapeType.SET -> "SerialKind.List"
+    ShapeType.MAP -> "SerialKind.Map"
+    ShapeType.STRUCTURE -> "SerialKind.Struct"
+    ShapeType.UNION -> "SerialKind.Struct"
+    else -> throw CodegenException("unknown SerialKind for $this")
 }

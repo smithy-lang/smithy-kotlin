@@ -67,7 +67,10 @@ class DefaultS3Client: S3Client {
     }
 
     override suspend fun getBucketTagging(input: GetBucketTaggingRequest): GetBucketTaggingResponse {
-        return client.roundTrip(GetBucketTaggingRequestSerializer(input), GetBucketTaggingResponseDeserializer())
+        val execCtx = ExecutionContext.build {
+            deserializer = GetBucketTaggingResponseDeserializer()
+        }
+        return client.roundTrip(GetBucketTaggingRequestSerializer(input), execCtx)
     }
 
     override suspend fun putObject(input: PutObjectRequest): PutObjectResponse {

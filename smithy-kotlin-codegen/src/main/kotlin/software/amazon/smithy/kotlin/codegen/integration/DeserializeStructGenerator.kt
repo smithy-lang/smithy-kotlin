@@ -47,9 +47,9 @@ class DeserializeStructGenerator(
 ) {
 
     fun render() {
-        writer.withBlock("deserializer.deserializeStruct(null) {", "}") {
+        writer.withBlock("deserializer.deserializeStruct(OBJ_DESCRIPTOR) {", "}") {
             withBlock("loop@while(true) {", "}") {
-                withBlock("when(nextField(OBJ_DESCRIPTOR)) {", "}") {
+                withBlock("when(findNextFieldIndex()) {", "}") {
                     members.forEach { member ->
                         val target = ctx.model.expectShape(member.target)
                         when (target.type) {
@@ -63,7 +63,7 @@ class DeserializeStructGenerator(
                             }
                         }
                     }
-                    write("Deserializer.FieldIterator.EXHAUSTED -> break@loop")
+                    write("null -> break@loop")
                     write("else -> skipValue()")
                 }
             }
@@ -132,12 +132,15 @@ class DeserializeStructGenerator(
                 val collectionShape = ctx.model.expectShape(member.target) as CollectionShape
                 val collectionIsSet = collectionShape is SetShape
                 val targetShape = ctx.model.expectShape(collectionShape.member.target)
-                renderDeserializeList(targetShape, renderAsSet = collectionIsSet)
+                renderDeserializeList(member, targetShape, renderAsSet = collectionIsSet)
             }
             .dedent()
     }
 
+    // FIXME - we should not have to pass through "member" through all nested levels, it should ideally only be required
+    // in `deserializeListMember` or `deserializeMapMember`
     private fun renderDeserializeList(
+        member: MemberShape,
         targetShape: Shape,
         level: Int = 0,
         renderAsSet: Boolean = false
@@ -147,20 +150,20 @@ class DeserializeStructGenerator(
         val elementName = "el$level"
         val conversion = if (renderAsSet) ".toSet()" else ""
 
-        writer.openBlock("deserializer.deserializeList {")
+        writer.openBlock("deserializer.deserializeList(\$L) {", member.descriptorName())
             .write("val $destList = mutableListOf<${targetSymbol.name}>()")
-            .openBlock("while(next() != Deserializer.ElementIterator.EXHAUSTED) {")
+            .openBlock("while(hasNextElement()) {")
             .call {
                 when (targetShape) {
                     is CollectionShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        renderDeserializeList(nestedTarget, level + 1)
+                        renderDeserializeList(member, nestedTarget, level + 1)
                     }
                     is MapShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
-                        renderDeserializeMap(nestedTarget, 0)
+                        renderDeserializeMap(member, nestedTarget, 0)
                     }
                     else -> {
                         val deserializeForElement = deserializerForShape(targetShape)
@@ -181,12 +184,13 @@ class DeserializeStructGenerator(
             .call {
                 val mapShape = ctx.model.expectShape(member.target) as MapShape
                 val targetShape = ctx.model.expectShape(mapShape.value.target)
-                renderDeserializeMap(targetShape)
+                renderDeserializeMap(member, targetShape)
             }
             .dedent()
     }
 
     private fun renderDeserializeMap(
+        member: MemberShape,
         targetShape: Shape,
         level: Int = 0
     ) {
@@ -194,9 +198,9 @@ class DeserializeStructGenerator(
         val destMap = "map$level"
         val elementName = "el$level"
 
-        writer.openBlock("deserializer.deserializeMap {")
+        writer.openBlock("deserializer.deserializeMap(\$L) {", member.descriptorName())
             .write("val $destMap = mutableMapOf<String, ${targetSymbol.name}>()")
-            .openBlock("while(next() != Deserializer.EntryIterator.EXHAUSTED) {")
+            .openBlock("while(hasNextEntry()) {")
             .call {
                 val keyName = "k$level"
                 // key() needs to be called first to keep deserialization state in correct order
@@ -205,12 +209,13 @@ class DeserializeStructGenerator(
                     is CollectionShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        renderDeserializeList(nestedTarget, level + 1)
+                        // FIXME - what would we pass here. The descriptor describes the map not a list
+                        renderDeserializeList(member, nestedTarget, level + 1)
                     }
                     is MapShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
-                        renderDeserializeMap(nestedTarget, level + 1)
+                        renderDeserializeMap(member, nestedTarget, level + 1)
                     }
                     else -> {
                         val deserializeForElement = deserializerForShape(targetShape)

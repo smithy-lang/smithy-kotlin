@@ -101,7 +101,7 @@ class SerializeStructGeneratorTest {
         val contents = getContentsForShape("com.test#SmokeTest")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-serializer.serializeStruct {
+serializer.serializeStruct(OBJ_DESCRIPTOR) {
     input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
     input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
     input.payload3?.let { field(PAYLOAD3_DESCRIPTOR, NestedSerializer(it)) }
@@ -115,7 +115,7 @@ serializer.serializeStruct {
         val contents = getContentsForShape("com.test#ListInput")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-serializer.serializeStruct {
+serializer.serializeStruct(OBJ_DESCRIPTOR) {
     if (input.blobList != null) {
         listField(BLOBLIST_DESCRIPTOR) {
             for(m0 in input.blobList) {
@@ -140,7 +140,7 @@ serializer.serializeStruct {
     if (input.nestedIntList != null) {
         listField(NESTEDINTLIST_DESCRIPTOR) {
             for(m0 in input.nestedIntList) {
-                serializer.serializeList {
+                serializer.serializeList(NESTEDINTLIST_DESCRIPTOR) {
                     for(m1 in m0) {
                         serializeInt(m1)
                     }
@@ -166,7 +166,7 @@ serializer.serializeStruct {
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
-serializer.serializeStruct {
+serializer.serializeStruct(OBJ_DESCRIPTOR) {
     if (input.blobMap != null) {
         mapField(BLOBMAP_DESCRIPTOR) {
             input.blobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
@@ -197,7 +197,7 @@ serializer.serializeStruct {
         val contents = getContentsForShape("com.test#NestedEnum")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-serializer.serializeStruct {
+serializer.serializeStruct(OBJ_DESCRIPTOR) {
     input.myEnum?.let { field(MYENUM_DESCRIPTOR, it.value) }
 }
 """

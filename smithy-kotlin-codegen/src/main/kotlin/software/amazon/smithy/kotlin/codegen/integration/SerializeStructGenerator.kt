@@ -60,7 +60,7 @@ class SerializeStructGenerator(
 ) {
 
     fun render() {
-        writer.withBlock("serializer.serializeStruct {", "}") {
+        writer.withBlock("serializer.serializeStruct(OBJ_DESCRIPTOR) {", "}") {
             members.sortedBy { it.memberName }.forEach { member ->
                 val target = ctx.model.expectShape(member.target)
                 when (target.type) {
@@ -71,6 +71,7 @@ class SerializeStructGenerator(
                     }
                     else -> {
                         val (serializeFn, encoded) = serializationForShape(member)
+                        // FIXME - this doesn't account for unboxed primitives
                         writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }", member.defaultName(), member.descriptorName())
                     }
                 }
@@ -149,7 +150,7 @@ class SerializeStructGenerator(
         val target = ctx.model.expectShape(listTarget.member.target)
         writer.withBlock("if (input.$memberName != null) {", "}") {
             writer.withBlock("listField(${member.descriptorName()}) {", "}") {
-                renderListSerializer(ctx, "input.$memberName", target, writer)
+                renderListSerializer(ctx, member, "input.$memberName", target, writer)
             }
         }
     }
@@ -157,6 +158,7 @@ class SerializeStructGenerator(
     // internal details of rendering a list type
     private fun renderListSerializer(
         ctx: ProtocolGenerator.GenerationContext,
+        member: MemberShape, // FIXME - we shouldn't need to pass this through
         collectionName: String,
         targetShape: Shape,
         writer: KotlinWriter,
@@ -169,8 +171,8 @@ class SerializeStructGenerator(
                     is CollectionShape -> {
                         // nested list
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        writer.withBlock("serializer.serializeList {", "}") {
-                            renderListSerializer(ctx, iteratorName, nestedTarget, writer, level + 1)
+                        writer.withBlock("serializer.serializeList(${member.descriptorName()}) {", "}") {
+                            renderListSerializer(ctx, member, iteratorName, nestedTarget, writer, level + 1)
                         }
                     }
                     is TimestampShape -> {

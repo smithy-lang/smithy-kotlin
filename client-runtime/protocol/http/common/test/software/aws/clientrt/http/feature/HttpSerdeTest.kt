@@ -90,13 +90,13 @@ class HttpSerdeTest {
             }
         }
 
-        val exCtx = ExecutionContext.build {
+        val execCtx = ExecutionContext.build {
             deserializer = userDeserializer
         }
 
         val req = HttpRequestBuilder().build()
         val httpResp = HttpResponse(HttpStatusCode.OK, Headers {}, HttpBody.Empty, req)
-        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), exCtx)
+        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), execCtx)
 
         val actual = client.responsePipeline.execute(context, httpResp.body)
         assertEquals(2, actual)
@@ -113,7 +113,7 @@ class HttpSerdeTest {
             }
         }
 
-        val userContext = object : HttpDeserialize {
+        val userDeserializer = object : HttpDeserialize {
             override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any {
                 return 2
             }
@@ -121,7 +121,10 @@ class HttpSerdeTest {
 
         val req = HttpRequestBuilder().build()
         val httpResp = HttpResponse(HttpStatusCode.OK, Headers {}, HttpBody.Empty, req)
-        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), userContext)
+        val execCtx = ExecutionContext.build {
+            deserializer = userDeserializer
+        }
+        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), execCtx)
 
         val actual = client.responsePipeline.execute(context, httpResp.body)
         assertEquals(2, actual)

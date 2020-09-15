@@ -79,14 +79,14 @@ class DeserializeStructGeneratorTest {
 
         val contents = writer.toString()
         val expected = """
-deserializer.deserializeStruct(null) {
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
-        when(nextField(OBJ_DESCRIPTOR)) {
+        when(findNextFieldIndex()) {
             PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
             PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInt()
             PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = NestedDeserializer().deserialize(deserializer)
             PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = Instant.fromIso8601(deserializeString())
-            Deserializer.FieldIterator.EXHAUSTED -> break@loop
+            null -> break@loop
             else -> skipValue()
         }
     }
@@ -117,44 +117,44 @@ deserializer.deserializeStruct(null) {
 
         val contents = writer.toString()
         val expected = """
-deserializer.deserializeStruct(null) {
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
-        when(nextField(OBJ_DESCRIPTOR)) {
+        when(findNextFieldIndex()) {
             BLOBLIST_DESCRIPTOR.index -> builder.blobList =
-                deserializer.deserializeList {
+                deserializer.deserializeList(BLOBLIST_DESCRIPTOR) {
                     val list0 = mutableListOf<ByteArray>()
-                    while(next() != Deserializer.ElementIterator.EXHAUSTED) {
+                    while(hasNextElement()) {
                         val el0 = deserializeString().decodeBase64Bytes()
                         list0.add(el0)
                     }
                     list0
                 }
             ENUMLIST_DESCRIPTOR.index -> builder.enumList =
-                deserializer.deserializeList {
+                deserializer.deserializeList(ENUMLIST_DESCRIPTOR) {
                     val list0 = mutableListOf<MyEnum>()
-                    while(next() != Deserializer.ElementIterator.EXHAUSTED) {
+                    while(hasNextElement()) {
                         val el0 = MyEnum.fromValue(deserializeString())
                         list0.add(el0)
                     }
                     list0
                 }
             INTLIST_DESCRIPTOR.index -> builder.intList =
-                deserializer.deserializeList {
+                deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                     val list0 = mutableListOf<Int>()
-                    while(next() != Deserializer.ElementIterator.EXHAUSTED) {
+                    while(hasNextElement()) {
                         val el0 = deserializeInt()
                         list0.add(el0)
                     }
                     list0
                 }
             NESTEDINTLIST_DESCRIPTOR.index -> builder.nestedIntList =
-                deserializer.deserializeList {
+                deserializer.deserializeList(NESTEDINTLIST_DESCRIPTOR) {
                     val list0 = mutableListOf<List<Int>>()
-                    while(next() != Deserializer.ElementIterator.EXHAUSTED) {
+                    while(hasNextElement()) {
                         val el0 =
-                        deserializer.deserializeList {
+                        deserializer.deserializeList(NESTEDINTLIST_DESCRIPTOR) {
                             val list1 = mutableListOf<Int>()
-                            while(next() != Deserializer.ElementIterator.EXHAUSTED) {
+                            while(hasNextElement()) {
                                 val el1 = deserializeInt()
                                 list1.add(el1)
                             }
@@ -165,15 +165,15 @@ deserializer.deserializeStruct(null) {
                     list0
                 }
             STRUCTLIST_DESCRIPTOR.index -> builder.structList =
-                deserializer.deserializeList {
+                deserializer.deserializeList(STRUCTLIST_DESCRIPTOR) {
                     val list0 = mutableListOf<Nested>()
-                    while(next() != Deserializer.ElementIterator.EXHAUSTED) {
+                    while(hasNextElement()) {
                         val el0 = NestedDeserializer().deserialize(deserializer)
                         list0.add(el0)
                     }
                     list0
                 }
-            Deserializer.FieldIterator.EXHAUSTED -> break@loop
+            null -> break@loop
             else -> skipValue()
         }
     }
@@ -204,13 +204,13 @@ deserializer.deserializeStruct(null) {
 
         val contents = writer.toString()
         val expected = """
-deserializer.deserializeStruct(null) {
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
-        when(nextField(OBJ_DESCRIPTOR)) {
+        when(findNextFieldIndex()) {
             BLOBMAP_DESCRIPTOR.index -> builder.blobMap =
-                deserializer.deserializeMap {
+                deserializer.deserializeMap(BLOBMAP_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, ByteArray>()
-                    while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                    while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = deserializeString().decodeBase64Bytes()
                         map0[k0] = el0
@@ -218,9 +218,9 @@ deserializer.deserializeStruct(null) {
                     map0
                 }
             ENUMMAP_DESCRIPTOR.index -> builder.enumMap =
-                deserializer.deserializeMap {
+                deserializer.deserializeMap(ENUMMAP_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, MyEnum>()
-                    while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                    while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = MyEnum.fromValue(deserializeString())
                         map0[k0] = el0
@@ -228,9 +228,9 @@ deserializer.deserializeStruct(null) {
                     map0
                 }
             INTMAP_DESCRIPTOR.index -> builder.intMap =
-                deserializer.deserializeMap {
+                deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, Int>()
-                    while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                    while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = deserializeInt()
                         map0[k0] = el0
@@ -238,14 +238,14 @@ deserializer.deserializeStruct(null) {
                     map0
                 }
             NESTEDMAP_DESCRIPTOR.index -> builder.nestedMap =
-                deserializer.deserializeMap {
+                deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, Map<String, Int>>()
-                    while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                    while(hasNextEntry()) {
                         val k0 = key()
                         val el0 =
-                        deserializer.deserializeMap {
+                        deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
                             val map1 = mutableMapOf<String, Int>()
-                            while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                            while(hasNextEntry()) {
                                 val k1 = key()
                                 val el1 = deserializeInt()
                                 map1[k1] = el1
@@ -257,16 +257,16 @@ deserializer.deserializeStruct(null) {
                     map0
                 }
             STRUCTMAP_DESCRIPTOR.index -> builder.structMap =
-                deserializer.deserializeMap {
+                deserializer.deserializeMap(STRUCTMAP_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, ReachableOnlyThroughMap>()
-                    while(next() != Deserializer.EntryIterator.EXHAUSTED) {
+                    while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = ReachableOnlyThroughMapDeserializer().deserialize(deserializer)
                         map0[k0] = el0
                     }
                     map0
                 }
-            Deserializer.FieldIterator.EXHAUSTED -> break@loop
+            null -> break@loop
             else -> skipValue()
         }
     }
