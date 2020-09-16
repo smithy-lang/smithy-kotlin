@@ -200,7 +200,7 @@ class SemanticParityTest {
                             LIST_DESCRIPTOR.index -> result.intList = deserializer.deserializeList(LIST_DESCRIPTOR) {
                                 val intList = mutableListOf<Int>()
                                 while (this.hasNextElement()) {
-                                    intList.add(this.deserializeInt())
+                                    intList.add(this.deserializeInt()!!)
                                 }
                                 result.intList = intList
                                 return@deserializeList intList
@@ -251,7 +251,7 @@ class SemanticParityTest {
                             MAP_DESCRIPTOR.index -> result.strMap = deserializer.deserializeMap(MAP_DESCRIPTOR) {
                                 val map = mutableMapOf<String, String>()
                                 while (this.hasNextEntry()) {
-                                    map[key()] = deserializeString()
+                                    map[key()] = deserializeString()!!
                                 }
                                 result.strMap = map
                                 return@deserializeMap map

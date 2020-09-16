@@ -16,7 +16,7 @@ package com.amazonaws.service.lambda.model
 
 
 class AliasRoutingConfiguration private constructor(builder: BuilderImpl){
-    val additionalVersionWeights: Map<String, Float>? = builder.additionalVersionWeights
+    val additionalVersionWeights: Map<String, Float?>? = builder.additionalVersionWeights
 
     // TODO - not real implementation, for debug only right now
     override fun toString(): String = buildString {
@@ -37,13 +37,13 @@ class AliasRoutingConfiguration private constructor(builder: BuilderImpl){
 
     interface DslBuilder {
         // Location: Payload; Name: "AdditionalVersionWeights"
-        var additionalVersionWeights: MutableMap<String, Float>?
+        var additionalVersionWeights: MutableMap<String, Float?>?
 
         fun build(): AliasRoutingConfiguration
     }
 
     private class BuilderImpl : Builder, DslBuilder {
-        override var additionalVersionWeights: MutableMap<String, Float>? = null
+        override var additionalVersionWeights: MutableMap<String, Float?>? = null
 
         override fun build(): AliasRoutingConfiguration = AliasRoutingConfiguration(this)
     }
