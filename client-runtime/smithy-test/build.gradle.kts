@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 description = "Test utilities for generated Smithy services"
 extra["displayName"] = "Smithy :: Kotlin :: Test"
 extra["moduleName"] = "software.aws.clientrt.smithy.test"
