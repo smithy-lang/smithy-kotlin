@@ -11,6 +11,12 @@ Smithy code generators for Kotlin.
 
 ## Development
 
+### Modules
+
+* `client-runtime` - library code used by codegen to perform SDK functions
+* `smithy-kotlin-codegen` - a module that generates Kotlin code from Smithy models
+* `smithy-kotlin-codegen-test` - a test module that can be used to generate Kotlin code for model samples
+
 ### Android Integration Tests
 
 The client-runtime is meant to be compatible with and run on Android API 16+ devices.
