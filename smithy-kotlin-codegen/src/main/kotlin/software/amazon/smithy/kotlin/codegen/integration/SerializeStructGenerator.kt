@@ -124,7 +124,7 @@ class SerializeStructGenerator(
             }
             ShapeType.STRING -> when {
                 target.hasTrait(EnumTrait::class.java) -> {
-                    "$identifier.value"
+                    "$identifier?.value"
                 }
                 else -> identifier
             }
@@ -133,8 +133,12 @@ class SerializeStructGenerator(
                 val symbol = ctx.symbolProvider.toSymbol(target)
                 val memberSerializerName = "${symbol.name}Serializer"
                 // invoke the ctor of the serializer to delegate to and pass the value
-                "$memberSerializerName($identifier)"
+                when (serializeLocation) {
+                    SerializeLocation.Field -> "$memberSerializerName($identifier)"
+                    else -> "if ($identifier != null) $memberSerializerName($identifier) else null"
+                }
             }
+            // "if ($identifier != null) $memberSerializerName($identifier) else null"
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
         }
 

@@ -111,54 +111,54 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         serializeMap(descriptor, block)
     }
 
-    override fun entry(key: String, value: Int) {
+    override fun entry(key: String, value: Int?) {
         jsonWriter.writeName(key)
-        serializeInt(value)
+        if (value != null) serializeInt(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: Long) {
+    override fun entry(key: String, value: Long?) {
         jsonWriter.writeName(key)
-        serializeLong(value)
+        if (value != null) serializeLong(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: Float) {
+    override fun entry(key: String, value: Float?) {
         jsonWriter.writeName(key)
-        serializeFloat(value)
+        if (value != null) serializeFloat(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: String) {
+    override fun entry(key: String, value: String?) {
         jsonWriter.writeName(key)
-        serializeString(value)
+        if (value != null) serializeString(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: SdkSerializable) {
+    override fun entry(key: String, value: SdkSerializable?) {
         jsonWriter.writeName(key)
-        value.serialize(this)
+        value?.serialize(this) ?: jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: Double) {
+    override fun entry(key: String, value: Double?) {
         jsonWriter.writeName(key)
-        serializeDouble(value)
+        if (value != null) serializeDouble(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: Boolean) {
+    override fun entry(key: String, value: Boolean?) {
         jsonWriter.writeName(key)
-        serializeBoolean(value)
+        if (value != null) serializeBoolean(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: Byte) {
+    override fun entry(key: String, value: Byte?) {
         jsonWriter.writeName(key)
-        serializeByte(value)
+        if (value != null) serializeByte(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: Short) {
+    override fun entry(key: String, value: Short?) {
         jsonWriter.writeName(key)
-        serializeShort(value)
+        if (value != null) serializeShort(value) else jsonWriter.writeNull()
     }
 
-    override fun entry(key: String, value: Char) {
+    override fun entry(key: String, value: Char?) {
         jsonWriter.writeName(key)
-        serializeChar(value)
+        if (value != null) serializeChar(value) else jsonWriter.writeNull()
     }
 
     override fun rawEntry(key: String, value: String) {

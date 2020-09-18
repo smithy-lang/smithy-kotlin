@@ -430,7 +430,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderStringValuesMapParameters(ctx, headerBindings, writer)
                     prefixHeaderBindings.forEach {
                         writer.withBlock("input.${it.member.defaultName()}?.forEach { (key, value) ->", "}") {
-                            write("append(\"\$L\$\$key\", value)", it.locationName)
+                            //TODO the spec is ambiguous to me, unsure if HTTP headers without values are legal or should be filtered.
+                            write("append(\"\$L\$\$key\", value ?: \"\")", it.locationName)
                         }
                     }
                 }

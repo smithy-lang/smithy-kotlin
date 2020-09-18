@@ -91,7 +91,7 @@ class DeserializeStructGenerator(
             ShapeType.DOUBLE -> "deserializeDouble()"
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
-                "deserializeString().decodeBase64Bytes()"
+                "deserializeString()?.decodeBase64Bytes()"
             }
             ShapeType.TIMESTAMP -> {
                 importInstant(writer)
@@ -101,9 +101,9 @@ class DeserializeStructGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "Instant.fromEpochSeconds(deserializeString())"
-                    TimestampFormatTrait.Format.DATE_TIME -> "Instant.fromIso8601(deserializeString())"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "Instant.fromRfc5322(deserializeString())"
+                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString().let { if (it != null) Instant.fromEpochSeconds(it) else null }"
+                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString().let { if (it != null) Instant.fromIso8601(it) else null }"
+                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString().let { if (it != null) Instant.fromRfc5322(it) else null }"
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
@@ -111,7 +111,7 @@ class DeserializeStructGenerator(
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol, "")
-                    "${enumSymbol.name}.fromValue(deserializeString())"
+                    "deserializeString().let { if (it != null) ${enumSymbol.name}.fromValue(it) else null }"
                 }
                 else -> "deserializeString()"
             }
@@ -170,7 +170,7 @@ class DeserializeStructGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("$destList.add($elementName)")
+                writer.write("if ($elementName != null) $destList.add($elementName)")
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression
@@ -199,7 +199,7 @@ class DeserializeStructGenerator(
         val elementName = "el$level"
 
         writer.openBlock("deserializer.deserializeMap(\$L) {", member.descriptorName())
-            .write("val $destMap = mutableMapOf<String, ${targetSymbol.name}>()")
+            .write("val $destMap = mutableMapOf<String, ${targetSymbol.name}?>()")
             .openBlock("while(hasNextEntry()) {")
             .call {
                 val keyName = "k$level"
@@ -222,7 +222,7 @@ class DeserializeStructGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("$destMap[$keyName] = $elementName")
+                writer.write(" $destMap[$keyName] = $elementName")
             }
             .closeBlock("}")
             // implicit return of `deserializeMap` lambda is last expression

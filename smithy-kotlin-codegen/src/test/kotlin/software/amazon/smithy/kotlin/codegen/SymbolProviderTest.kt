@@ -218,7 +218,7 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val mapSymbol = provider.toSymbol(map)
 
-        assertEquals("Map<String, Record>", mapSymbol.name)
+        assertEquals("Map<String, Record?>", mapSymbol.name)
         assertEquals(true, mapSymbol.isBoxed())
         assertEquals("null", mapSymbol.defaultValue())
 
