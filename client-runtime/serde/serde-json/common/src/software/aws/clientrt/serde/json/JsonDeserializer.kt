@@ -31,13 +31,13 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return block(token.value)
     }
 
-    override fun deserializeString(): String {
+    override fun deserializeString(): String? {
         // allow for tokens to be consumed as string even when the next token isn't a quoted string
         return when (val token = reader.nextToken()) {
             is JsonToken.String -> token.value
             is JsonToken.Number -> token.value
             is JsonToken.Bool -> token.value.toString()
-            is JsonToken.Null -> "null"
+            is JsonToken.Null -> null
             else -> throw DeserializationException("$token cannot be deserialized as type String")
         }
     }
@@ -48,8 +48,14 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        reader.nextTokenOf<JsonToken.BeginObject>()
-        return JsonFieldIterator(reader, descriptor, this)
+        return when (reader.peek()) {
+            RawJsonToken.BeginObject -> {
+                reader.nextTokenOf<JsonToken.BeginObject>()
+                return JsonFieldIterator(reader, descriptor, this)
+            }
+            RawJsonToken.Null -> JsonNullFieldIterator(this)
+            else -> error("Unexpected token type ${reader.peek()}")
+        }
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
@@ -74,6 +80,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
                 reader.nextTokenOf<JsonToken.EndObject>()
                 false
             }
+            RawJsonToken.Null,
             RawJsonToken.EndDocument -> false
             else -> true
         }
@@ -92,6 +99,15 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     }
 }
 
+// Represents the deserialization of a null object.
+private class JsonNullFieldIterator(deserializer: Deserializer) : Deserializer.FieldIterator, Deserializer by deserializer {
+    override fun findNextFieldIndex(): Int? = null
+
+    override fun skipValue() {
+        error("This should not be called during deserialization.")
+    }
+}
+
 private class JsonFieldIterator(
     private val reader: JsonStreamReader,
     private val descriptor: SdkObjectDescriptor,
@@ -106,6 +122,10 @@ private class JsonFieldIterator(
                 null
             }
             RawJsonToken.EndDocument -> null
+            RawJsonToken.Null -> {
+                reader.nextTokenOf<JsonToken.Null>()
+                null
+            }
             else -> {
                 val token = reader.nextTokenOf<JsonToken.Name>()
                 val propertyName = token.value
