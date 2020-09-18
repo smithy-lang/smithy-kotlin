@@ -101,9 +101,9 @@ class DeserializeStructGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString().let { if (it != null) Instant.fromEpochSeconds(it) else null }"
-                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString().let { if (it != null) Instant.fromIso8601(it) else null }"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString().let { if (it != null) Instant.fromRfc5322(it) else null }"
+                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }"
+                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }"
+                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }"
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
@@ -111,7 +111,7 @@ class DeserializeStructGenerator(
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol, "")
-                    "deserializeString().let { if (it != null) ${enumSymbol.name}.fromValue(it) else null }"
+                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }"
                 }
                 else -> "deserializeString()"
             }

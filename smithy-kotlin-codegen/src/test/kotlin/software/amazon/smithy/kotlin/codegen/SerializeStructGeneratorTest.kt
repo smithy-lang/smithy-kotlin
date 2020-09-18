@@ -198,7 +198,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.myEnum?.let { field(MYENUM_DESCRIPTOR, it?.value) }
+    input.myEnum?.let { field(MYENUM_DESCRIPTOR, it.value) }
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)

@@ -124,7 +124,10 @@ class SerializeStructGenerator(
             }
             ShapeType.STRING -> when {
                 target.hasTrait(EnumTrait::class.java) -> {
-                    "$identifier?.value"
+                    when (serializeLocation) {
+                        SerializeLocation.Field -> "$identifier.value"
+                        SerializeLocation.Map -> "$identifier?.value"
+                    }
                 }
                 else -> identifier
             }
