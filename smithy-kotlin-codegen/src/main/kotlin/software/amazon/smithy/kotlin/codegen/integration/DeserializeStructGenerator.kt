@@ -222,7 +222,7 @@ class DeserializeStructGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write(" $destMap[$keyName] = $elementName")
+                writer.write("$destMap[$keyName] = $elementName")
             }
             .closeBlock("}")
             // implicit return of `deserializeMap` lambda is last expression

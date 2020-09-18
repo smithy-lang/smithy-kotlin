@@ -135,10 +135,9 @@ class SerializeStructGenerator(
                 // invoke the ctor of the serializer to delegate to and pass the value
                 when (serializeLocation) {
                     SerializeLocation.Field -> "$memberSerializerName($identifier)"
-                    else -> "if ($identifier != null) $memberSerializerName($identifier) else null"
+                    SerializeLocation.Map -> "if ($identifier != null) $memberSerializerName($identifier) else null"
                 }
             }
-            // "if ($identifier != null) $memberSerializerName($identifier) else null"
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
         }
 
