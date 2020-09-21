@@ -11,6 +11,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import software.aws.clientrt.serde.*
+import kotlin.test.assertNull
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
@@ -85,8 +86,7 @@ class JsonDeserializerTest {
             "1",
             "12.7",
             "true",
-            "false",
-            "null"
+            "false"
         )
 
         for (test in tests) {
@@ -95,6 +95,14 @@ class JsonDeserializerTest {
             val actual = deserializer.deserializeString()
             assertEquals(test.removeSurrounding("\""), actual)
         }
+    }
+
+    @Test
+    fun `it handles null`() {
+            val payload = "null".encodeToByteArray()
+            val deserializer = JsonDeserializer(payload)
+            val actual = deserializer.deserializeString()
+            assertNull(actual)
     }
 
     @Test
