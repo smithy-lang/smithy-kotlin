@@ -429,8 +429,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     write("append(\"Content-Type\", \"\$L\")", contentType)
                     renderStringValuesMapParameters(ctx, headerBindings, writer)
                     prefixHeaderBindings.forEach {
-                        writer.withBlock("input.${it.member.defaultName()}?.forEach { (key, value) ->", "}") {
-                            write("append(\"\$L\$\$key\", value)", it.locationName)
+                        writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
+                            write("append(\"\$L\$\$key\", value!!)", it.locationName)
                         }
                     }
                 }

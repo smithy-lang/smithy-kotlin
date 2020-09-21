@@ -186,7 +186,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Boolean)
+    fun entry(key: String, value: Boolean?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -195,7 +195,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Byte)
+    fun entry(key: String, value: Byte?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -204,7 +204,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Short)
+    fun entry(key: String, value: Short?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -213,7 +213,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Char)
+    fun entry(key: String, value: Char?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -222,7 +222,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Int)
+    fun entry(key: String, value: Int?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -231,7 +231,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Long)
+    fun entry(key: String, value: Long?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -240,7 +240,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Float)
+    fun entry(key: String, value: Float?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -249,7 +249,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Double)
+    fun entry(key: String, value: Double?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -258,7 +258,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: String)
+    fun entry(key: String, value: String?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -267,7 +267,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: SdkSerializable)
+    fun entry(key: String, value: SdkSerializable?)
 
     /**
      * Writes the key and then serializes the raw [value] without any additional escaping or formatting

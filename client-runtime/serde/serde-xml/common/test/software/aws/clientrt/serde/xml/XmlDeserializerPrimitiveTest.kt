@@ -23,7 +23,7 @@ class XmlDeserializerPrimitiveTest {
         val objSerializer = SdkObjectDescriptor.build {
             field(SdkFieldDescriptor("node", SerialKind.Double))
         }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeDouble()
+        val actual = deserializer.deserializeStruct(objSerializer).deserializeDouble()!!
         val expected = 1.2
         assertTrue(abs(actual - expected) <= 0.0001)
     }
@@ -35,7 +35,7 @@ class XmlDeserializerPrimitiveTest {
         val objSerializer = SdkObjectDescriptor.build {
             field(SdkFieldDescriptor("node", SerialKind.Float))
         }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeFloat()
+        val actual = deserializer.deserializeStruct(objSerializer).deserializeFloat()!!
         val expected = 1.2f
         assertTrue(abs(actual - expected) <= 0.0001f)
     }
@@ -95,7 +95,7 @@ class XmlDeserializerPrimitiveTest {
         val objSerializer = SdkObjectDescriptor.build {
             field(SdkFieldDescriptor("node", SerialKind.Boolean))
         }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeBool()
+        val actual = deserializer.deserializeStruct(objSerializer).deserializeBool()!!
         assertTrue(actual)
     }
 

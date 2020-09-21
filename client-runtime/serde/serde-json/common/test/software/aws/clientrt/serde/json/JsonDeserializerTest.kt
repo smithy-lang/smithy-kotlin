@@ -9,6 +9,7 @@ import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import software.aws.clientrt.serde.*
 
@@ -85,8 +86,7 @@ class JsonDeserializerTest {
             "1",
             "12.7",
             "true",
-            "false",
-            "null"
+            "false"
         )
 
         for (test in tests) {
@@ -98,13 +98,21 @@ class JsonDeserializerTest {
     }
 
     @Test
+    fun `it handles null`() {
+            val payload = "null".encodeToByteArray()
+            val deserializer = JsonDeserializer(payload)
+            val actual = deserializer.deserializeString()
+            assertNull(actual)
+    }
+
+    @Test
     fun `it handles lists`() {
         val payload = "[1,2,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
             val list = mutableListOf<Int>()
             while (hasNextElement()) {
-                list.add(deserializeInt())
+                list.add(deserializeInt()!!)
             }
             return@deserializeList list
         }
@@ -124,7 +132,7 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor("", SerialKind.Map)) {
             val map = mutableMapOf<String, Int>()
             while (hasNextEntry()) {
-                map[key()] = deserializeInt()
+                map[key()] = deserializeInt()!!
             }
             return@deserializeMap map
         }
@@ -260,7 +268,7 @@ class BasicStructTest {
                         LIST2_FIELD_DESCRIPTOR.index -> nested2.list2 = deserializer.deserializeList(LIST2_FIELD_DESCRIPTOR) {
                             val list = mutableListOf<String>()
                             while (hasNextElement()) {
-                                list.add(deserializeString())
+                                list.add(deserializeString()!!)
                             }
                             return@deserializeList list
                         }
@@ -394,7 +402,7 @@ class BasicStructTest {
                 KitchenSinkTest.LIST_FIELD_DESCRIPTOR.index -> sink.listField = deserializer.deserializeList(KitchenSinkTest.LIST_FIELD_DESCRIPTOR) {
                     val list = mutableListOf<Int>()
                     while (hasNextElement()) {
-                        list.add(deserializeInt())
+                        list.add(deserializeInt()!!)
                     }
                     return@deserializeList list
                 }
@@ -407,7 +415,7 @@ class BasicStructTest {
                 KitchenSinkTest.MAP_FIELD_DESCRIPTOR.index -> sink.mapField = deserializer.deserializeMap(KitchenSinkTest.MAP_FIELD_DESCRIPTOR) {
                     val map = mutableMapOf<String, String>()
                     while (hasNextEntry()) {
-                        map[key()] = deserializeString()
+                        map[key()] = deserializeString()!!
                     }
                     return@deserializeMap map
                 }

@@ -176,25 +176,25 @@ private class XmlMapSerializer(
         xmlWriter.endTag(mapTrait.entry)
     }
 
-    override fun entry(key: String, value: Int) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Int?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Long) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Long?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Float) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Float?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: String) = generalEntry(key) { xmlWriter.text(value) }
+    override fun entry(key: String, value: String?) = generalEntry(key) { xmlWriter.text(value ?: "") }
 
-    override fun entry(key: String, value: SdkSerializable) = generalEntry(key) { value.serialize(xmlSerializer) }
+    override fun entry(key: String, value: SdkSerializable?) = generalEntry(key) { value?.serialize(xmlSerializer) ?: xmlWriter.text("") }
 
-    override fun entry(key: String, value: Double) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Double?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Boolean) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Boolean?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Byte) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Byte?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Short) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Short?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Char) = generalEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Char?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
     override fun rawEntry(key: String, value: String) {
         TODO("Not yet implemented")

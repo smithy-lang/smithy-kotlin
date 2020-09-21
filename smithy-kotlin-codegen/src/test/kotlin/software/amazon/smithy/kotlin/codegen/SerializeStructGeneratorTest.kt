@@ -174,7 +174,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
     }
     if (input.enumMap != null) {
         mapField(ENUMMAP_DESCRIPTOR) {
-            input.enumMap.forEach { (key, value) -> entry(key, value.value) }
+            input.enumMap.forEach { (key, value) -> entry(key, value?.value) }
         }
     }
     if (input.intMap != null) {
@@ -184,7 +184,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
     }
     if (input.structMap != null) {
         mapField(STRUCTMAP_DESCRIPTOR) {
-            input.structMap.forEach { (key, value) -> entry(key, ReachableOnlyThroughMapSerializer(value)) }
+            input.structMap.forEach { (key, value) -> entry(key, if (value != null) ReachableOnlyThroughMapSerializer(value) else null) }
         }
     }
 }

@@ -204,51 +204,51 @@ private class CompositeIterator(
         return key
     }
 
-    override fun deserializeByte(): Byte {
+    override fun deserializeByte(): Byte? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
 
         return deserializer.deserializeByte()
     }
 
-    override fun deserializeInt(): Int {
+    override fun deserializeInt(): Int? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
 
         return deserializer.deserializeInt()
     }
 
-    override fun deserializeShort(): Short {
+    override fun deserializeShort(): Short? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeShort()
     }
 
-    override fun deserializeLong(): Long {
+    override fun deserializeLong(): Long? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeLong()
     }
 
-    override fun deserializeFloat(): Float {
+    override fun deserializeFloat(): Float? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeFloat()
     }
 
-    override fun deserializeDouble(): Double {
+    override fun deserializeDouble(): Double? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeDouble()
     }
 
-    override fun deserializeString(): String {
+    override fun deserializeString(): String? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeString()
     }
 
-    override fun deserializeBool(): Boolean {
+    override fun deserializeBool(): Boolean? {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeBool()

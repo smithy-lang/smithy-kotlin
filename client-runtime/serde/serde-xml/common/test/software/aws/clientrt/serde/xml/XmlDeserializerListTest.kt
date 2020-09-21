@@ -28,7 +28,7 @@ class XmlDeserializerListTest {
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
             val list = mutableListOf<Int>()
             while (hasNextElement()) {
-                list.add(deserializeInt())
+                list.add(deserializeInt()!!)
             }
             return@deserializeList list
         }
