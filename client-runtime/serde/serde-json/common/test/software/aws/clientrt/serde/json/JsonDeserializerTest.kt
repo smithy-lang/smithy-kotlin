@@ -9,9 +9,9 @@ import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import software.aws.clientrt.serde.*
-import kotlin.test.assertNull
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
