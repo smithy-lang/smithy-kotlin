@@ -230,6 +230,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
+        // FIXME - this doesn't account for unboxed primitives
         return createSymbolBuilder(shape, "Map<String, ${reference.name}?>", boxed = true)
             .addReference(reference)
             .build()
