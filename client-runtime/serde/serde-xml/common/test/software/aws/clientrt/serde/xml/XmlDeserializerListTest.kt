@@ -21,14 +21,14 @@ class XmlDeserializerListTest {
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
             fun deserialize(deserializer: Deserializer, OBJ_DESCRIPTOR: SdkObjectDescriptor, ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor): ListDeserializer {
-                val builder = ListDeserializer.dslBuilder()
+                val builder = dslBuilder()
 
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                    loop@ while (true) {
+                    loop@ while(true) {
                         when (findNextFieldIndex()) {
                             ELEMENT_LIST_FIELD_DESCRIPTOR.index -> builder.list = deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
                                 val list = mutableListOf<Int?>()
-                                while (hasNextElement()) {
+                                while(hasNextElement()) {
                                     list.add(deserializeInt())
                                 }
                                 return@deserializeList list
