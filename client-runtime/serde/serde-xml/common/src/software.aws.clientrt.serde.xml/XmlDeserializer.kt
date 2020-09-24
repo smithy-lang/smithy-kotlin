@@ -270,12 +270,24 @@ private class XmlFieldIterator(
     // Each time the value is read, it is explicitly set to null, and null state is guarded to help ensure that stale
     // values are not acted upon.
     private var attributeParseState: AttributeParseState? = null
+    private var consumedWrapper = false // Signals if outermost tag initially passed to CompositeIterator has been taken
     private val handledFields = mutableListOf<SdkFieldDescriptor>()
 
     // Deserializer.FieldIterator
     override fun findNextFieldIndex(): Int? {
         check(attributeParseState == null) { "Expected nextFieldValueSource to be null but found $attributeParseState" }
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
+
+        /*
+        reader.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { beginToken ->
+            val listInfo = descriptor.expectTrait<XmlList>()
+            if (!consumedWrapper && !listInfo.flattened) {
+                consumedWrapper = true
+                require(beginToken.id.name == listInfo.elementName) { "Expected node ${listInfo.elementName} but got ${beginToken.id}" }
+                reader.peekToken<XmlToken.BeginElement>()
+            }
+        }
+         */
 
         return when (val nextToken = reader.peek()) {
             XmlToken.EndDocument -> null
@@ -342,6 +354,8 @@ private class XmlFieldIterator(
             return nextAttribField
         }
 
+        search the fields looking for a flattened container trait.  if found check the name of the element and match
+        
         // FIXME: The following filter needs to take XML namespace into account when matching.
         // If no attributes are present, take the field matching the serialName
         return descriptor.fields
