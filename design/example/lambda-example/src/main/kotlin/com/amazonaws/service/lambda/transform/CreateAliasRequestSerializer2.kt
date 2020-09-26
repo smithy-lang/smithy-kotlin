@@ -15,6 +15,9 @@
 package com.amazonaws.service.lambda.transform
 
 import com.amazonaws.service.lambda.model.CreateAliasRequest
+import com.amazonaws.service.lambda.model.CreateAliasRequest2
+import com.amazonaws.service.lambda.model.ExpiringAliasType
+import com.amazonaws.service.lambda.model.RemoteAliasType
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.feature.HttpSerialize
@@ -25,13 +28,16 @@ import software.aws.clientrt.http.request.url
 import software.aws.clientrt.serde.*
 
 
-class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize {
+class CreateAliasRequestSerializer2(val input: CreateAliasRequest2): HttpSerialize {
 
     companion object {
         private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description", SerialKind.String)
         private val FUNCTION_VERSION_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion", SerialKind.String)
         private val NAME_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
         private val ROUTING_CONFIG_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig", SerialKind.Struct)
+        private val ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasType", SerialKind.Union)
+        private val ALIAS_TYPE_REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("RemoteAliasType", SerialKind.String)
+        private val ALIAS_TYPE_EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("ExpiringAliasType", SerialKind.Long)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             serialName = "CreateAliasRequest"
@@ -39,6 +45,7 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
             field(FUNCTION_VERSION_DESCRIPTOR)
             field(NAME_DESCRIPTOR)
             field(ROUTING_CONFIG_DESCRIPTOR)
+            field(ALIAS_TYPE_FIELD_DESCRIPTOR)
         }
     }
 
@@ -66,6 +73,12 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
             input.routingConfig?.let { map ->
                 mapField(ROUTING_CONFIG_DESCRIPTOR) {
                     map.entries.forEach{ entry(it.key, it.value) }
+                }
+            }
+            serializer.serializeStruct(ALIAS_TYPE_FIELD_DESCRIPTOR) {
+                when (input.aliasType) {
+                    is RemoteAliasType -> field(ALIAS_TYPE_REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR, input.aliasType.value)
+                    is ExpiringAliasType -> field(ALIAS_TYPE_EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR, input.aliasType.value)
                 }
             }
         }
