@@ -32,7 +32,7 @@ class UnionGenerator(
         shape.allMembers.values.sortedBy { it.memberName }.forEach {
             writer.renderMemberDocumentation(model, it)
             val memberName = symbolProvider.toMemberName(it)
-            writer.write("data class \$L(val \$L: \$L) : \$L()", memberName.capitalize(), memberName, symbolProvider.toSymbol(it).name, symbol.name)
+            writer.write("data class \$L(val value: \$L) : \$L()", memberName.capitalize(), symbolProvider.toSymbol(it).name, symbol.name)
         }
         writer.closeBlock("}").write("")
     }

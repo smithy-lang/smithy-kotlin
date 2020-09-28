@@ -52,13 +52,13 @@ class UnionGeneratorTest {
  * Documentation for MyUnion
  */
 sealed class MyUnion {
-    data class MyStruct(val myStruct: MyStruct) : MyUnion()
-    data class Bar(val bar: Int) : MyUnion()
-    data class Baz(val baz: Int) : MyUnion()
+    data class MyStruct(val value: MyStruct) : MyUnion()
+    data class Bar(val value: Int) : MyUnion()
+    data class Baz(val value: Int) : MyUnion()
     /**
      * Documentation for foo
      */
-    data class Foo(val foo: String) : MyUnion()
+    data class Foo(val value: String) : MyUnion()
 }
 """
 
