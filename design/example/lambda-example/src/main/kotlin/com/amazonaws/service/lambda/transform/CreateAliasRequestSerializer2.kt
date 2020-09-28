@@ -36,8 +36,6 @@ class CreateAliasRequestSerializer2(val input: CreateAliasRequest2): HttpSeriali
         private val NAME_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
         private val ROUTING_CONFIG_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig", SerialKind.Struct)
         private val ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasType", SerialKind.Union)
-        private val ALIAS_TYPE_REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("RemoteAliasType", SerialKind.String)
-        private val ALIAS_TYPE_EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("ExpiringAliasType", SerialKind.Long)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             serialName = "CreateAliasRequest"
@@ -75,12 +73,8 @@ class CreateAliasRequestSerializer2(val input: CreateAliasRequest2): HttpSeriali
                     map.entries.forEach{ entry(it.key, it.value) }
                 }
             }
-            serializer.serializeStruct(ALIAS_TYPE_FIELD_DESCRIPTOR) {
-                when (input.aliasType) {
-                    is RemoteAliasType -> field(ALIAS_TYPE_REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR, input.aliasType.value)
-                    is ExpiringAliasType -> field(ALIAS_TYPE_EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR, input.aliasType.value)
-                }
-            }
+
+            input.aliasType?.let { field(ALIAS_TYPE_FIELD_DESCRIPTOR, AliasTypeSerializer(it)) }
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())

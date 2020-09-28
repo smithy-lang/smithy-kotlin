@@ -62,7 +62,3 @@ class CreateAliasRequest2 private constructor(builder: BuilderImpl){
         override fun build(): CreateAliasRequest2 = CreateAliasRequest2(this)
     }
 }
-
-sealed class AliasType
-class ExpiringAliasType(val value: Long) : AliasType()
-class RemoteAliasType(val value: String) : AliasType()
