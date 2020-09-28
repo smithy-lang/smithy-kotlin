@@ -19,7 +19,8 @@ service Example {
         TimestampInput,
         BlobInput,
         ConstantQueryString,
-        PrefixHeaders
+        PrefixHeaders,
+        UnionInput
     ]
 }
 
@@ -384,4 +385,18 @@ operation PrefixHeaders{
 structure PrefixHeadersIO {
     @httpPrefixHeaders("X-Foo-")
     member1: StringMap
+}
+
+@http(method: "POST", uri: "/input/union")
+operation UnionInput {
+    input: UnionInputRequest
+}
+
+structure UnionInputRequest {
+    payloadUnion: MyUnion
+}
+
+union MyUnion {
+    i32: Integer,
+    stringA: String
 }

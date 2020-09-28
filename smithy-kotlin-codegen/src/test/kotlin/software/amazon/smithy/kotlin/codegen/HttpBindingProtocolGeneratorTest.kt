@@ -323,6 +323,76 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
     }
 
     @Test
+    fun `it serializes documents with union members`() {
+        // non operational input (nested member somewhere in the graph) that has another non-operational struct as a member
+        val contents = getTransformFileContents("UnionInputSerializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class UnionInputSerializer(val input: UnionInputRequest) : HttpSerialize {
+
+    companion object {
+        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(PAYLOADUNION_DESCRIPTOR)
+        }
+    }
+
+    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+        builder.method = HttpMethod.POST
+
+        builder.url {
+            path = "/input/union"
+        }
+
+        builder.headers {
+            append("Content-Type", "application/json")
+        }
+
+        val serializer = provider()
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
+        }
+
+        builder.body = ByteArrayContent(serializer.toByteArray())
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnce("import test.model.UnionInputRequest")
+    }
+
+    @Test
+    fun `it serializes union members`() {
+        // non operational input (nested member somewhere in the graph) that has another non-operational struct as a member
+        val contents = getTransformFileContents("MyUnionSerializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
+
+    companion object {
+        private val I32_DESCRIPTOR = SdkFieldDescriptor("i32", SerialKind.Integer)
+        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor("stringA", SerialKind.String)
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(I32_DESCRIPTOR)
+            field(STRINGA_DESCRIPTOR)
+        }
+    }
+
+    override fun serialize(serializer: Serializer) {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            when (input) {
+                is i32 -> field(I32_DESCRIPTOR, input.value!!)
+                is stringA -> field(STRINGA_DESCRIPTOR, input.value!!)
+            }
+        }
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnce("import test.model.MyUnion")
+    }
+
+    @Test
     fun `it generates serializer for shape reachable only through map`() {
         val (ctx, manifest, generator) = newTestContext()
         generator.generateSerializers(ctx)

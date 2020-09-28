@@ -259,9 +259,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
-                    // FIXME - need to handle unions
                     if (shape.isUnionShape) {
-                        writer.write("TODO(\$S)", "union shape serialization not-implemented")
+                        SerializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     } else {
                         SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     }

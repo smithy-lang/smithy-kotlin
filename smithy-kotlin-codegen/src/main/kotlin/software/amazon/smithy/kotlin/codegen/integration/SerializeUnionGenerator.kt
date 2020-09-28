@@ -24,23 +24,6 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-internal enum class SerializeLocation(val serializerFn: String) {
-    // class/struct field
-    Field("field"),
-
-    // Map value
-    Map("entry")
-}
-
-/**
- * Container for serialization information for a particular shape being serialized to
- * a specific [SerializeLocation]
- *
- * @property fn The name of the serialization function to use
- * @property encodedValue The value to pass to the serialization function
- */
-internal data class SerializeInfo(val fn: String, val encodedValue: String)
-
 /**
  * Generate serialization for members bound to the payload.
  *
@@ -52,7 +35,7 @@ internal data class SerializeInfo(val fn: String, val encodedValue: String)
  * }
  * ```
  */
-class SerializeStructGenerator(
+class SerializeUnionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: KotlinWriter,
@@ -61,18 +44,19 @@ class SerializeStructGenerator(
 
     fun render() {
         writer.withBlock("serializer.serializeStruct(OBJ_DESCRIPTOR) {", "}") {
-            members.sortedBy { it.memberName }.forEach { member ->
-                val target = ctx.model.expectShape(member.target)
-                when (target.type) {
-                    ShapeType.LIST, ShapeType.SET -> renderListMemberSerializer(member)
-                    ShapeType.MAP -> renderMapMemberSerializer(member)
-                    ShapeType.DOCUMENT -> {
-                        // TODO - implement document type support
-                    }
-                    else -> {
-                        val (serializeFn, encoded) = serializationForShape(member)
-                        // FIXME - this doesn't account for unboxed primitives
-                        writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }", member.defaultName(), member.descriptorName())
+            writer.withBlock("when (input) {", "}") {
+                members.sortedBy { it.memberName }.forEach { member ->
+                    val target = ctx.model.expectShape(member.target)
+                    when (target.type) {
+                        ShapeType.LIST, ShapeType.SET -> renderListMemberSerializer(member)
+                        ShapeType.MAP -> renderMapMemberSerializer(member)
+                        ShapeType.DOCUMENT -> {
+                            // TODO - implement document type support
+                        }
+                        else -> {
+                            val serializeFn = SerializeLocation.Field.serializerFn
+                            writer.write("is \$L -> $serializeFn(\$L, input.value!!)", member.defaultName(), member.descriptorName())
+                        }
                     }
                 }
             }
