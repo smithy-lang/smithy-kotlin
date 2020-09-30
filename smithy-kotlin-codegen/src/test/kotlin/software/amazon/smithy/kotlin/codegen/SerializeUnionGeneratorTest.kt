@@ -108,4 +108,57 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
 """
         contents.shouldContainOnlyOnce(expectedContents)
     }
+
+    /*
+    @Test
+    fun `it handles list inputs`() {
+        val contents = getContentsForShape("com.test#UnionAggregateInput")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+serializer.serializeStruct(OBJ_DESCRIPTOR) {
+    if (input.blobList != null) {
+        listField(BLOBLIST_DESCRIPTOR) {
+            for(m0 in input.blobList) {
+                serializeString(m0.encodeBase64String())
+            }
+        }
+    }
+    if (input.enumList != null) {
+        listField(ENUMLIST_DESCRIPTOR) {
+            for(m0 in input.enumList) {
+                serializeString(m0.value)
+            }
+        }
+    }
+    if (input.intList != null) {
+        listField(INTLIST_DESCRIPTOR) {
+            for(m0 in input.intList) {
+                serializeInt(m0)
+            }
+        }
+    }
+    if (input.nestedIntList != null) {
+        listField(NESTEDINTLIST_DESCRIPTOR) {
+            for(m0 in input.nestedIntList) {
+                serializer.serializeList(NESTEDINTLIST_DESCRIPTOR) {
+                    for(m1 in m0) {
+                        serializeInt(m1)
+                    }
+                }
+            }
+        }
+    }
+    if (input.structList != null) {
+        listField(STRUCTLIST_DESCRIPTOR) {
+            for(m0 in input.structList) {
+                serializeSdkSerializable(NestedSerializer(m0))
+            }
+        }
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+     */
 }

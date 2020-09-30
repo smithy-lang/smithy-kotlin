@@ -1035,33 +1035,41 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param writer The codegen writer to render to
      */
     private fun renderDocumentDeserializer(
-        ctx: ProtocolGenerator.GenerationContext,
-        symbol: Symbol,
-        shape: Shape,
-        deserializerSymbol: Symbol,
-        writer: KotlinWriter
+            ctx: ProtocolGenerator.GenerationContext,
+            symbol: Symbol,
+            shape: Shape,
+            deserializerSymbol: Symbol,
+            writer: KotlinWriter
     ) {
         importSerdePackage(writer)
 
         writer.write("")
-            .openBlock("class \$L {", deserializerSymbol.name)
-            .call {
-                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
-            }
-            .call {
-                writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                .openBlock("class \$L {", deserializerSymbol.name)
+                .call {
+                    renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
+                }
+                .call {
+
                     if (shape.isUnionShape) {
-                        writer.write("TODO(\$S)", "union shape deserialization not-implemented")
+                        writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
+                            writer.write("var value: ${symbol.name}? = null")
+                            DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                            writer.write("return value")
+                        }
+                                .closeBlock("}")
                     } else {
-                        writer.write("val builder = ${symbol.name}.dslBuilder()")
-                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                        writer.write("return builder.build()")
+                        writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                            writer.write("val builder = ${symbol.name}.dslBuilder()")
+                            DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                            writer.write("return builder.build()")
+                        }
+                                .closeBlock("}")
                     }
                 }
-            }
-            .closeBlock("}")
     }
+
 }
+
 
 /**
  * Get the field descriptor name for a member shape

@@ -20,7 +20,10 @@ service Example {
         BlobInput,
         ConstantQueryString,
         PrefixHeaders,
-        UnionInput
+        UnionInput,
+        UnionAggregateInput,
+        UnionOutput,
+        UnionAggregateOutput
     ]
 }
 
@@ -389,14 +392,39 @@ structure PrefixHeadersIO {
 
 @http(method: "POST", uri: "/input/union")
 operation UnionInput {
-    input: UnionInputRequest
+    input: UnionRequest    
 }
 
-structure UnionInputRequest {
+@http(method: "GET", uri: "/input/union")
+operation UnionOutput {
+    output: UnionRequest    
+}
+
+structure UnionRequest {
     payloadUnion: MyUnion
 }
 
 union MyUnion {
     i32: Integer,
     stringA: String
+}
+
+@http(method: "POST", uri: "/input/union2")
+operation UnionAggregateInput {
+    input: UnionAggregateRequest
+}
+
+@http(method: "GET", uri: "/input/union2")
+operation UnionAggregateOutput {
+    output: UnionAggregateRequest
+}
+
+structure UnionAggregateRequest {
+    payloadAggregateUnion: MyAggregateUnion
+}
+
+union MyAggregateUnion {
+    i32: Integer,
+    intList: IntList,
+    intMap: IntMap
 }

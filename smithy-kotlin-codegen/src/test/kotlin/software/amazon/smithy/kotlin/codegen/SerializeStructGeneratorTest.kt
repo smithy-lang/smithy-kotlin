@@ -116,9 +116,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
-    input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
-    input.payload3?.let { field(PAYLOAD3_DESCRIPTOR, NestedSerializer(it)) }
+    input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)

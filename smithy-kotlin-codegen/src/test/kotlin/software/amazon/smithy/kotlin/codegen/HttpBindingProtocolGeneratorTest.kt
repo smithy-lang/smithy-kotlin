@@ -328,7 +328,7 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
         val contents = getTransformFileContents("UnionInputSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class UnionInputSerializer(val input: UnionInputRequest) : HttpSerialize {
+class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
 
     companion object {
         private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
@@ -358,11 +358,89 @@ class UnionInputSerializer(val input: UnionInputRequest) : HttpSerialize {
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.UnionInputRequest")
+        contents.shouldContainOnlyOnce("import test.model.UnionRequest")
     }
 
     @Test
-    fun `it serializes union members`() {
+    fun `it deserializes documents with union members`() {
+        // non operational input (nested member somewhere in the graph) that has another non-operational struct as a member
+        val contents = getTransformFileContents("UnionOutputDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class UnionOutputDeserializer : HttpDeserialize {
+
+    companion object {
+        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(PAYLOADUNION_DESCRIPTOR)
+        }
+    }
+
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionRequest {
+        val builder = UnionRequest.dslBuilder()
+
+        val payload = response.body.readAll()
+        if (payload != null) {
+            val deserializer = provider(payload)
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while(true) {
+                    when(findNextFieldIndex()) {
+                        PAYLOADUNION_DESCRIPTOR.index -> builder.payloadUnion = MyUnionDeserializer().deserialize(deserializer)
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        }
+        return builder.build()
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnce("import test.model.UnionRequest")
+    }
+
+    @Test
+    fun `it deserializes documents with aggregate union members`() {
+        // non operational input (nested member somewhere in the graph) that has another non-operational struct as a member
+        val contents = getTransformFileContents("UnionAggregateOutputDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class UnionAggregateOutputDeserializer : HttpDeserialize {
+
+    companion object {
+        private val PAYLOADAGGREGATEUNION_DESCRIPTOR = SdkFieldDescriptor("payloadAggregateUnion", SerialKind.Struct)
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(PAYLOADAGGREGATEUNION_DESCRIPTOR)
+        }
+    }
+
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionAggregateRequest {
+        val builder = UnionAggregateRequest.dslBuilder()
+
+        val payload = response.body.readAll()
+        if (payload != null) {
+            val deserializer = provider(payload)
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while(true) {
+                    when(findNextFieldIndex()) {
+                        PAYLOADAGGREGATEUNION_DESCRIPTOR.index -> builder.payloadAggregateUnion = MyAggregateUnionDeserializer().deserialize(deserializer)
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        }
+        return builder.build()
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnce("import test.model.UnionAggregateRequest")
+    }
+
+    @Test
+    fun `it geneartes union member serializers`() {
         // non operational input (nested member somewhere in the graph) that has another non-operational struct as a member
         val contents = getTransformFileContents("MyUnionSerializer.kt")
         contents.shouldSyntacticSanityCheck()
@@ -385,6 +463,40 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
                 is stringA -> field(STRINGA_DESCRIPTOR, input.value!!)
             }
         }
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnce("import test.model.MyUnion")
+    }
+
+    @Test
+    fun `it generates union member deserializers`() {
+        // non operational input (nested member somewhere in the graph) that has another non-operational struct as a member
+        val contents = getTransformFileContents("MyUnionDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class MyUnionDeserializer {
+
+    companion object {
+        private val I32_DESCRIPTOR = SdkFieldDescriptor("i32", SerialKind.Integer)
+        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor("stringA", SerialKind.String)
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(I32_DESCRIPTOR)
+            field(STRINGA_DESCRIPTOR)
+        }
+    }
+
+    fun deserialize(deserializer: Deserializer): MyUnion? {
+        var value: MyUnion? = null
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            when(findNextFieldIndex()) {
+                I32_DESCRIPTOR.index -> value = deserializeInt()
+                STRINGA_DESCRIPTOR.index -> value = deserializeString()
+                else -> skipValue()
+            }
+        }
+        return value
     }
 }
 """

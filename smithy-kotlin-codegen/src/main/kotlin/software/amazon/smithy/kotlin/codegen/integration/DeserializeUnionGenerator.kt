@@ -39,33 +39,30 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * }
  * ```
  */
-class DeserializeStructGenerator(
-    private val ctx: ProtocolGenerator.GenerationContext,
-    private val members: List<MemberShape>,
-    private val writer: KotlinWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+class DeserializeUnionGenerator(
+        private val ctx: ProtocolGenerator.GenerationContext,
+        private val members: List<MemberShape>,
+        private val writer: KotlinWriter,
+        private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
 
     fun render() {
         writer.withBlock("deserializer.deserializeStruct(OBJ_DESCRIPTOR) {", "}") {
-            withBlock("loop@while(true) {", "}") {
-                withBlock("when(findNextFieldIndex()) {", "}") {
-                    members.forEach { member ->
-                        val target = ctx.model.expectShape(member.target)
-                        when (target.type) {
-                            ShapeType.LIST, ShapeType.SET -> deserializeListMember(member)
-                            ShapeType.MAP -> deserializeMapMember(member)
-                            // TODO - implement document type support
-                            ShapeType.DOCUMENT -> writer.write("\$L.index -> skipValue()", member.descriptorName())
-                            else -> {
-                                val deserialize = deserializerForShape(member)
-                                writer.write("\$L.index -> builder.\$L = $deserialize", member.descriptorName(), member.defaultName())
-                            }
+            withBlock("when(findNextFieldIndex()) {", "}") {
+                members.forEach { member ->
+                    val target = ctx.model.expectShape(member.target)
+                    when (target.type) {
+                        ShapeType.LIST, ShapeType.SET -> deserializeListMember(member)
+                        ShapeType.MAP -> deserializeMapMember(member)
+                        // TODO - implement document type support
+                        ShapeType.DOCUMENT -> writer.write("\$L.index -> skipValue()", member.descriptorName())
+                        else -> {
+                            val deserialize = deserializerForShape(member)
+                            writer.write("\$L.index -> value = $deserialize", member.descriptorName())
                         }
                     }
-                    write("null -> break@loop")
-                    write("else -> skipValue()")
                 }
+                write("else -> skipValue()")
             }
         }
     }
