@@ -82,7 +82,8 @@ class DeserializeUnionGeneratorTest {
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     when(findNextFieldIndex()) {
-        PAYLOADUNION_DESCRIPTOR.index -> value = MyUnionDeserializer().deserialize(deserializer)
+        I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt()!!)
+        STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString()!!)
         else -> skipValue()
     }
 }

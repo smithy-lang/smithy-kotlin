@@ -459,8 +459,8 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
     override fun serialize(serializer: Serializer) {
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             when (input) {
-                is i32 -> field(I32_DESCRIPTOR, input.value!!)
-                is stringA -> field(STRINGA_DESCRIPTOR, input.value!!)
+                is MyUnion.I32 -> field(I32_DESCRIPTOR, input.value)
+                is MyUnion.StringA -> field(STRINGA_DESCRIPTOR, input.value)
             }
         }
     }
@@ -491,8 +491,8 @@ class MyUnionDeserializer {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = deserializeInt()
-                STRINGA_DESCRIPTOR.index -> value = deserializeString()
+                I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt()!!)
+                STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString()!!)
                 else -> skipValue()
             }
         }

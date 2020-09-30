@@ -23,6 +23,7 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.utils.StringUtils
 
 /**
  * Generate serialization for members bound to the payload.
@@ -47,15 +48,21 @@ class SerializeUnionGenerator(
             writer.withBlock("when (input) {", "}") {
                 members.sortedBy { it.memberName }.forEach { member ->
                     val target = ctx.model.expectShape(member.target)
+                    val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
                     when (target.type) {
                         ShapeType.LIST, ShapeType.SET -> renderListMemberSerializer(member)
                         ShapeType.MAP -> renderMapMemberSerializer(member)
                         ShapeType.DOCUMENT -> {
                             // TODO - implement document type support
                         }
+                        ShapeType.BLOB -> {
+                            val (serializeFn, encoded) = serializationForShape(member)
+                            importBase64Utils(writer)
+                            writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
+                        }
                         else -> {
-                            val serializeFn = SerializeLocation.Field.serializerFn
-                            writer.write("is \$L -> $serializeFn(\$L, input.value!!)", member.defaultName(), member.descriptorName())
+                            val (serializeFn, encoded) = serializationForShape(member)
+                            writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
                         }
                     }
                 }
@@ -72,7 +79,7 @@ class SerializeUnionGenerator(
      */
     private fun serializationForShape(
         shape: Shape,
-        identifier: String = "it",
+        identifier: String = "input.value",
         serializeLocation: SerializeLocation = SerializeLocation.Field
     ): SerializeInfo {
         // target shape type to deserialize is either the shape itself or member.target
@@ -135,12 +142,14 @@ class SerializeUnionGenerator(
      * render serialization for a struct member of type "list"
      */
     private fun renderListMemberSerializer(member: MemberShape) {
-        val memberName = member.defaultName()
         val listTarget = ctx.model.expectShape(member.target) as CollectionShape
         val target = ctx.model.expectShape(listTarget.member.target)
-        writer.withBlock("if (input.$memberName != null) {", "}") {
+        val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
+
+        // writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
+        writer.withBlock("is $targetType -> {", "}") {
             writer.withBlock("listField(${member.descriptorName()}) {", "}") {
-                renderListSerializer(ctx, member, "input.$memberName", target, writer)
+                renderListSerializer(ctx, member, "input.value", target, writer)
             }
         }
     }
@@ -207,14 +216,14 @@ class SerializeUnionGenerator(
      * Render serialization for a struct member of type "map"
      */
     private fun renderMapMemberSerializer(member: MemberShape) {
-        val memberName = member.defaultName()
         val mapShape = ctx.model.expectShape(member.target).asMapShape().get()
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
+        val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
 
-        writer.withBlock("if (input.$memberName != null) {", "}") {
+        writer.withBlock("is $targetType -> {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
                 val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
-                write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
+                write("input.value.forEach { (key, value) -> $serializeFn(key, $encoded) }")
             }
         }
     }

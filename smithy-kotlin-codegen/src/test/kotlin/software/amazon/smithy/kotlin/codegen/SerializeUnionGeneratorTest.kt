@@ -102,7 +102,7 @@ class SerializeUnionGeneratorTest {
         val expectedContents = """
 serializer.serializeStruct(OBJ_DESCRIPTOR) {
     when (input) {
-        is payloadUnion -> field(PAYLOADUNION_DESCRIPTOR, input.value!!)
+        is UnionRequest.PayloadUnion -> field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(input.value))
     }
 }
 """

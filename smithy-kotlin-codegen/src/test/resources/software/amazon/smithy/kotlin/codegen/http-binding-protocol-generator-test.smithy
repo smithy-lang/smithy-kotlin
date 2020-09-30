@@ -397,7 +397,7 @@ operation UnionInput {
 
 @http(method: "GET", uri: "/input/union")
 operation UnionOutput {
-    output: UnionRequest    
+    output: UnionRequest
 }
 
 structure UnionRequest {
