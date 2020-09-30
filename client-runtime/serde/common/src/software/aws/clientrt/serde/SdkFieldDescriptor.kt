@@ -30,7 +30,6 @@ sealed class SerialKind {
     object Map : SerialKind()
     object List : SerialKind()
     object Struct : SerialKind()
-    object Union : SerialKind()
     object Timestamp : SerialKind()
     object Blob : SerialKind()
     object Document : SerialKind()

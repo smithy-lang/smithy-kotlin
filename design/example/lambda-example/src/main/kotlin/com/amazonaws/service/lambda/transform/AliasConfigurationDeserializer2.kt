@@ -24,7 +24,7 @@ import software.aws.clientrt.serde.*
 
 class AliasConfigurationDeserializer2: HttpDeserialize {
     companion object {
-        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn", SerialKind.Union)
+        private val ALIAS_ARN_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasArn", SerialKind.Struct)
         private val DESCRIPTION_FIELD_DESCRIPTOR = SdkFieldDescriptor("Description", SerialKind.String)
         private val FUNCTION_VERSION_FIELD_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion", SerialKind.String)
         private val NAME_FIELD_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)

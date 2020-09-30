@@ -14,10 +14,7 @@
  */
 package com.amazonaws.service.lambda.transform
 
-import com.amazonaws.service.lambda.model.CreateAliasRequest
 import com.amazonaws.service.lambda.model.CreateAliasRequest2
-import com.amazonaws.service.lambda.model.ExpiringAliasType
-import com.amazonaws.service.lambda.model.RemoteAliasType
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.feature.HttpSerialize
@@ -25,7 +22,10 @@ import software.aws.clientrt.http.feature.SerializationProvider
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
 import software.aws.clientrt.http.request.url
-import software.aws.clientrt.serde.*
+import software.aws.clientrt.serde.SdkFieldDescriptor
+import software.aws.clientrt.serde.SdkObjectDescriptor
+import software.aws.clientrt.serde.SerialKind
+import software.aws.clientrt.serde.serializeStruct
 
 
 class CreateAliasRequestSerializer2(val input: CreateAliasRequest2): HttpSerialize {
@@ -35,7 +35,7 @@ class CreateAliasRequestSerializer2(val input: CreateAliasRequest2): HttpSeriali
         private val FUNCTION_VERSION_DESCRIPTOR = SdkFieldDescriptor("FunctionVersion", SerialKind.String)
         private val NAME_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
         private val ROUTING_CONFIG_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig", SerialKind.Struct)
-        private val ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasType", SerialKind.Union)
+        private val ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("AliasType", SerialKind.Struct)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             serialName = "CreateAliasRequest"
