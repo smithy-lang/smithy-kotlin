@@ -34,7 +34,6 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
         private val ROUTING_CONFIG_DESCRIPTOR = SdkFieldDescriptor("RoutingConfig", SerialKind.Struct)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
-            serialName = "CreateAliasRequest"
             field(DESCRIPTION_FIELD_DESCRIPTOR)
             field(FUNCTION_VERSION_DESCRIPTOR)
             field(NAME_DESCRIPTOR)

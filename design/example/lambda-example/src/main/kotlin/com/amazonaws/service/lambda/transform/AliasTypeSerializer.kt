@@ -11,6 +11,7 @@ class AliasTypeSerializer(val input: AliasType) : SdkSerializable {
     companion object {
         private val EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("ExpiringAliasType", SerialKind.String)
         private val REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("RemoteAliasType", SerialKind.Long)
+        private val MULTI_ALIAS_TYPE_FIELD_DESCRIPTOR = SdkFieldDescriptor("MultiAliasType", SerialKind.List)
 
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
             serialName = "AliasType"
@@ -24,6 +25,11 @@ class AliasTypeSerializer(val input: AliasType) : SdkSerializable {
             when (input) {
                 is ExpiringAliasType -> field(EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR, input.value!!)
                 is RemoteAliasType -> field(REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR, input.value!!)
+                is MultiAliasType -> serializer.serializeList(MULTI_ALIAS_TYPE_FIELD_DESCRIPTOR) {
+                    for (value in input.value) {
+                        serializeString(value)
+                    }
+                }
             }
         }
     }
