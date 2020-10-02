@@ -426,5 +426,8 @@ structure UnionAggregateRequest {
 union MyAggregateUnion {
     i32: Integer,
     intList: IntList,
-    intMap: IntMap
+    intMap: IntMap,
+    nested3: Nested,
+    @timestampFormat("date-time")
+    timestamp4: Timestamp
 }

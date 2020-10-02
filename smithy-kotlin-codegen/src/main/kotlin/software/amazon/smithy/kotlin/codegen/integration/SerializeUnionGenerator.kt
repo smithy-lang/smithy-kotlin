@@ -51,6 +51,7 @@ class SerializeUnionGenerator(
                     val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
                     when (target.type) {
                         ShapeType.LIST, ShapeType.SET -> renderListMemberSerializer(member)
+                        // ShapeType.UNION -> renderUnionMemberSerializer(member)
                         ShapeType.MAP -> renderMapMemberSerializer(member)
                         ShapeType.DOCUMENT -> {
                             // TODO - implement document type support
@@ -153,6 +154,18 @@ class SerializeUnionGenerator(
             }
         }
     }
+
+
+    /**
+     * render serialization for a struct member of type "list"
+     */
+//    private fun renderUnionMemberSerializer(member: MemberShape) {
+//        val unionTarget = ctx.model.expectShape(member.target) as UnionShape
+//
+//        for (variantMember in unionTarget.allMembers.values) {
+//            println(variantMember.type)
+//        }
+//    }
 
     // internal details of rendering a list type
     private fun renderListSerializer(

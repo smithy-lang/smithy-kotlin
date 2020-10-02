@@ -80,7 +80,7 @@ class UnionGenerator(
                     ".hashCode() ?: 0"
                 } else {
                     // ByteArray
-                    ".contentHashCode() ?: 0"
+                    ".contentHashCode()"
                 }
             else ->
                 when (targetSymbol.isBoxed()) {

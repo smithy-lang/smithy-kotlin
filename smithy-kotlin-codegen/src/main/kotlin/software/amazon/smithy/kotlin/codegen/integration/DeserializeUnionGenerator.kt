@@ -24,19 +24,16 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.utils.StringUtils
 
 /**
- * Generate deserialization for members bound to the payload.
+ * Generate deserialization for unions.
  *
  * e.g.
  * ```
  * deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
- *     loop@while(true) {
- *         when(nextField()) {
- *             FIELD1_DESCRIPTOR.index -> builder.field1 = deserializeString()
- *             FIELD2_DESCRIPTOR.index -> builder.field2 = deserializeInt()
- *             null -> break@loop
- *             else -> skipValue()
- *         }
- *     }
+ *      when(findNextFieldIndex()) {
+ *          I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt()!!)
+ *          STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString()!!)
+ *          else -> skipValue()
+ *      }
  * }
  * ```
  */
@@ -62,13 +59,13 @@ class DeserializeUnionGenerator(
                             for (targetMember in targetShape.members()) {
                                 val deserialize = deserializerForShape(targetMember)
                                 val targetType = "${target.id.name}.${StringUtils.capitalize(targetMember.memberName)}"
-                                writer.write("\$L.index -> value = \$L($deserialize!!)", targetMember.descriptorName(), targetType)
+                                writer.write("\$L.index -> value = \$L($deserialize)", targetMember.descriptorName(), targetType)
                             }
                         }
                         else -> {
                             val deserialize = deserializerForShape(member)
                             val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
-                            writer.write("\$L.index -> value = \$L($deserialize!!)", member.descriptorName(), targetType)
+                            writer.write("\$L.index -> value = \$L($deserialize)", member.descriptorName(), targetType)
                         }
                     }
                 }
@@ -89,16 +86,16 @@ class DeserializeUnionGenerator(
         }
 
         return when (target.type) {
-            ShapeType.BOOLEAN -> "deserializeBool()"
-            ShapeType.BYTE -> "deserializeByte()"
-            ShapeType.SHORT -> "deserializeShort()"
-            ShapeType.INTEGER -> "deserializeInt()"
-            ShapeType.LONG -> "deserializeLong()"
-            ShapeType.FLOAT -> "deserializeFloat()"
-            ShapeType.DOUBLE -> "deserializeDouble()"
+            ShapeType.BOOLEAN -> "deserializeBool()!!"
+            ShapeType.BYTE -> "deserializeByte()!!"
+            ShapeType.SHORT -> "deserializeShort()!!"
+            ShapeType.INTEGER -> "deserializeInt()!!"
+            ShapeType.LONG -> "deserializeLong()!!"
+            ShapeType.FLOAT -> "deserializeFloat()!!"
+            ShapeType.DOUBLE -> "deserializeDouble()!!"
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
-                "deserializeString()?.decodeBase64Bytes()"
+                "deserializeString()?.decodeBase64Bytes()!!"
             }
             ShapeType.TIMESTAMP -> {
                 importInstant(writer)
@@ -108,9 +105,9 @@ class DeserializeUnionGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }"
-                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }"
+                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }!!"
+                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }!!"
+                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }!!"
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
@@ -118,9 +115,9 @@ class DeserializeUnionGenerator(
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol, "")
-                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }"
+                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }!!"
                 }
-                else -> "deserializeString()"
+                else -> "deserializeString()!!"
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 val symbol = ctx.symbolProvider.toSymbol(target)
@@ -178,7 +175,7 @@ class DeserializeUnionGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("if ($elementName != null) $destList.add($elementName)")
+                writer.write("$destList.add($elementName)")
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression

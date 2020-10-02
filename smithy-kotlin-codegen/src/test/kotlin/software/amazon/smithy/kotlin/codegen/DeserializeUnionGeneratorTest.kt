@@ -26,6 +26,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class DeserializeUnionGeneratorTest {
@@ -59,7 +60,7 @@ class DeserializeUnionGeneratorTest {
     }
 
     @Test
-    fun `it handles union deserializer`() {
+    fun `it handles union deserializer with primitive subtypes`() {
         val ctx = newTestContext()
         val writer = KotlinWriter("test")
         val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#UnionOutput"))
@@ -91,4 +92,54 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         contents.shouldContainOnlyOnce(expected)
     }
 
+    @Test
+    fun `it handles union deserializer with aggregate subtypes`() {
+        val ctx = newTestContext()
+        val writer = KotlinWriter("test")
+        val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#UnionAggregateOutput"))
+
+        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
+        val responseBindings = bindingIndex.getResponseBindings(op)
+        val unionMember = ctx.generationCtx.model.expectShape(responseBindings.values.first().member.target) as UnionShape
+        val documentMembers = unionMember.members().toList()
+
+        DeserializeUnionGenerator(
+                ctx.generationCtx,
+                documentMembers,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+        ).render()
+
+        val contents = writer.toString()
+        val expected = """
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+    when(findNextFieldIndex()) {
+        I32_DESCRIPTOR.index -> value = MyAggregateUnion.I32(deserializeInt()!!)
+        INTLIST_DESCRIPTOR.index -> value =
+            deserializer.deserializeList(INTLIST_DESCRIPTOR) {
+                val list0 = mutableListOf<Int>()
+                while(hasNextElement()) {
+                    val el0 = deserializeInt()!!
+                    list0.add(el0)
+                }
+                MyAggregateUnion.IntList(list0)
+            }
+        INTMAP_DESCRIPTOR.index -> value =
+            deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
+                val map0 = mutableMapOf<String, Int?>()
+                while(hasNextEntry()) {
+                    val k0 = key()
+                    val el0 = deserializeInt()!!
+                    map0[k0] = el0
+                }
+                MyAggregateUnion.IntMap(map0)
+            }
+        NESTED3_DESCRIPTOR.index -> value = MyAggregateUnion.Nested3(NestedDeserializer().deserialize(deserializer))
+        TIMESTAMP4_DESCRIPTOR.index -> value = MyAggregateUnion.Timestamp4(deserializeString()?.let { Instant.fromIso8601(it) }!!)
+        else -> skipValue()
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expected)
+    }
 }

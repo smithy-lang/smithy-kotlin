@@ -60,7 +60,7 @@ sealed class MyUnion {
     data class Blz(val value: ByteArray) : MyUnion() {
 
         override fun hashCode(): Int {
-            return value.contentHashCode() ?: 0
+            return value.contentHashCode()
         }
 
         override fun equals(other: Any?): Boolean {
