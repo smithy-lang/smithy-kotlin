@@ -21,12 +21,9 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class SerializeUnionGeneratorTest {
@@ -74,10 +71,8 @@ class SerializeUnionGeneratorTest {
             is OperationShape -> {
                 val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
-                requestBindings.values
-                    .filter { it.location == HttpBinding.Location.DOCUMENT }
-                    .sortedBy { it.memberName }
-                    .map { it.member }
+                val unionShape = ctx.generationCtx.model.expectShape(requestBindings.values.first().member.target)
+                unionShape.members().toList()
             }
             is StructureShape -> {
                 shape.members().toList()
@@ -102,7 +97,8 @@ class SerializeUnionGeneratorTest {
         val expectedContents = """
 serializer.serializeStruct(OBJ_DESCRIPTOR) {
     when (input) {
-        is UnionRequest.PayloadUnion -> field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(input.value))
+        is MyUnion.I32 -> field(I32_DESCRIPTOR, input.value)
+        is MyUnion.StringA -> field(STRINGA_DESCRIPTOR, input.value)
     }
 }
 """
@@ -116,7 +112,21 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
         val expectedContents = """
 serializer.serializeStruct(OBJ_DESCRIPTOR) {
     when (input) {
-        is UnionAggregateRequest.PayloadAggregateUnion -> field(PAYLOADAGGREGATEUNION_DESCRIPTOR, MyAggregateUnionSerializer(input.value))
+        is MyAggregateUnion.I32 -> field(I32_DESCRIPTOR, input.value)
+        is MyAggregateUnion.IntList -> {
+            listField(INTLIST_DESCRIPTOR) {
+                for(m0 in input.value) {
+                    serializeInt(m0)
+                }
+            }
+        }
+        is MyAggregateUnion.IntMap -> {
+            mapField(INTMAP_DESCRIPTOR) {
+                input.value.forEach { (key, value) -> entry(key, value) }
+            }
+        }
+        is MyAggregateUnion.Nested3 -> field(NESTED3_DESCRIPTOR, NestedSerializer(input.value))
+        is MyAggregateUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value.format(TimestampFormat.ISO_8601))
     }
 }
 """

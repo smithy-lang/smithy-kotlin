@@ -57,13 +57,13 @@ class DeserializeUnionGenerator(
                             val targetShape = ctx.model.expectShape(member.target)
                             for (targetMember in targetShape.members()) {
                                 val deserialize = deserializerForShape(targetMember)
-                                val targetType = "${target.id.name}.${StringUtils.capitalize(targetMember.memberName)}"
+                                val targetType = target.unionTypeName(targetMember)
                                 writer.write("\$L.index -> value = \$L($deserialize)", targetMember.descriptorName(), targetType)
                             }
                         }
                         else -> {
                             val deserialize = deserializerForShape(member)
-                            val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
+                            val targetType = member.unionTypeName(member)
                             writer.write("\$L.index -> value = \$L($deserialize)", member.descriptorName(), targetType)
                         }
                     }
@@ -152,7 +152,7 @@ class DeserializeUnionGenerator(
         val destList = "list$level"
         val elementName = "el$level"
         val conversion = if (renderAsSet) ".toSet()" else ""
-        val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
+        val targetType = member.unionTypeName(member)
 
         writer.openBlock("deserializer.deserializeList(\$L) {", member.descriptorName())
             .write("val $destList = mutableListOf<${targetSymbol.name}>()")
@@ -201,7 +201,7 @@ class DeserializeUnionGenerator(
         val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
         val destMap = "map$level"
         val elementName = "el$level"
-        val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
+        val targetType = member.unionTypeName(member)
 
         writer.openBlock("deserializer.deserializeMap(\$L) {", member.descriptorName())
             .write("val $destMap = mutableMapOf<String, ${targetSymbol.name}?>()")
@@ -235,3 +235,8 @@ class DeserializeUnionGenerator(
             .closeBlock("}")
     }
 }
+
+/**
+ * Generate the fully qualified type name of Union variant
+ */
+internal fun Shape.unionTypeName(unionVariant: MemberShape): String = "${this.id.name}.${StringUtils.capitalize(unionVariant.memberName)}"

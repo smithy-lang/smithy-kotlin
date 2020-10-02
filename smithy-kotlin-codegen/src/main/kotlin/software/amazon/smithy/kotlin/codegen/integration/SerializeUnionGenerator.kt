@@ -22,17 +22,18 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.utils.StringUtils
 
 /**
- * Generate serialization for members bound to the payload.
+ * Generate serialization for union members bound to the payload.
  *
  * e.g.
  * ```
- * serializer.serializeStruct(null) {
- *     input.field1?.let { field(FIELD1_DESCRIPTOR, it) }
- *     input.field2?.let { field(FIELD2_DESCRIPTOR, it) }
- * }
+* serializer.serializeStruct(OBJ_DESCRIPTOR) {
+*     when (input) {
+*         is MyUnion.I32 -> field(I32_DESCRIPTOR, input.value)
+*         is MyUnion.StringA -> field(STRINGA_DESCRIPTOR, input.value)
+*     }
+* }
  * ```
  */
 class SerializeUnionGenerator(
@@ -47,10 +48,9 @@ class SerializeUnionGenerator(
             writer.withBlock("when (input) {", "}") {
                 members.sortedBy { it.memberName }.forEach { member ->
                     val target = ctx.model.expectShape(member.target)
-                    val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
+                    val targetType = member.unionTypeName(member)
                     when (target.type) {
                         ShapeType.LIST, ShapeType.SET -> renderListMemberSerializer(member)
-                        // ShapeType.UNION -> renderUnionMemberSerializer(member)
                         ShapeType.MAP -> renderMapMemberSerializer(member)
                         ShapeType.DOCUMENT -> {
                             // TODO - implement document type support
@@ -144,7 +144,7 @@ class SerializeUnionGenerator(
     private fun renderListMemberSerializer(member: MemberShape) {
         val listTarget = ctx.model.expectShape(member.target) as CollectionShape
         val target = ctx.model.expectShape(listTarget.member.target)
-        val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
+        val targetType = member.unionTypeName(member)
 
         // writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
         writer.withBlock("is $targetType -> {", "}") {
@@ -153,17 +153,6 @@ class SerializeUnionGenerator(
             }
         }
     }
-
-    /**
-     * render serialization for a struct member of type "list"
-     */
-//    private fun renderUnionMemberSerializer(member: MemberShape) {
-//        val unionTarget = ctx.model.expectShape(member.target) as UnionShape
-//
-//        for (variantMember in unionTarget.allMembers.values) {
-//            println(variantMember.type)
-//        }
-//    }
 
     // internal details of rendering a list type
     private fun renderListSerializer(
@@ -229,7 +218,7 @@ class SerializeUnionGenerator(
     private fun renderMapMemberSerializer(member: MemberShape) {
         val mapShape = ctx.model.expectShape(member.target).asMapShape().get()
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
-        val targetType = "${member.id.name}.${StringUtils.capitalize(member.memberName)}"
+        val targetType = member.unionTypeName(member)
 
         writer.withBlock("is $targetType -> {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
