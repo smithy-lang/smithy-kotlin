@@ -18,7 +18,6 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.DeserializeStructGenerator
 import software.amazon.smithy.kotlin.codegen.integration.DeserializeUnionGenerator
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.model.Model

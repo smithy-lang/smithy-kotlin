@@ -16,7 +16,6 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.defaultName
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -154,7 +153,6 @@ class SerializeUnionGenerator(
             }
         }
     }
-
 
     /**
      * render serialization for a struct member of type "list"

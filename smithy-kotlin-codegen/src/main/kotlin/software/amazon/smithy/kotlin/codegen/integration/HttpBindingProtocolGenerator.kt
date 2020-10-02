@@ -1035,11 +1035,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param writer The codegen writer to render to
      */
     private fun renderDocumentDeserializer(
-            ctx: ProtocolGenerator.GenerationContext,
-            symbol: Symbol,
-            shape: Shape,
-            deserializerSymbol: Symbol,
-            writer: KotlinWriter
+        ctx: ProtocolGenerator.GenerationContext,
+        symbol: Symbol,
+        shape: Shape,
+        deserializerSymbol: Symbol,
+        writer: KotlinWriter
     ) {
         importSerdePackage(writer)
 
@@ -1067,9 +1067,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 }
     }
-
 }
-
 
 /**
  * Get the field descriptor name for a member shape

@@ -14,14 +14,6 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.BlobShape
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.utils.CodeWriter
-
 /**
  * Test if a string is a valid Kotlin identifier name
  */

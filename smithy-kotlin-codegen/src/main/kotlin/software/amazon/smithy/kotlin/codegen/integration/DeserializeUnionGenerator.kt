@@ -16,7 +16,6 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.defaultName
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
@@ -38,10 +37,10 @@ import software.amazon.smithy.utils.StringUtils
  * ```
  */
 class DeserializeUnionGenerator(
-        private val ctx: ProtocolGenerator.GenerationContext,
-        private val members: List<MemberShape>,
-        private val writer: KotlinWriter,
-        private val defaultTimestampFormat: TimestampFormatTrait.Format
+    private val ctx: ProtocolGenerator.GenerationContext,
+    private val members: List<MemberShape>,
+    private val writer: KotlinWriter,
+    private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
 
     fun render() {

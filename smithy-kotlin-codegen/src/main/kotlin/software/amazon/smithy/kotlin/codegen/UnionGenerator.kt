@@ -14,10 +14,10 @@ import software.amazon.smithy.utils.CodeWriter
  * Renders Smithy union shapes
  */
 class UnionGenerator(
-        val model: Model,
-        private val symbolProvider: SymbolProvider,
-        private val writer: KotlinWriter,
-        private val shape: UnionShape
+    val model: Model,
+    private val symbolProvider: SymbolProvider,
+    private val writer: KotlinWriter,
+    private val shape: UnionShape
 ) {
 
     fun render() {
