@@ -143,8 +143,6 @@ class DeserializeUnionGenerator(
             .dedent()
     }
 
-    // FIXME - we should not have to pass through "member" through all nested levels, it should ideally only be required
-    // in `deserializeListMember` or `deserializeMapMember`
     private fun renderDeserializeList(
         member: MemberShape,
         targetShape: Shape,
