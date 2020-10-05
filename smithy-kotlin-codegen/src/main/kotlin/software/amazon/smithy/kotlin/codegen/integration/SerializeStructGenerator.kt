@@ -240,7 +240,7 @@ class SerializeStructGenerator(
  * Get the name of the `PrimitiveSerializer` function name for the corresponding shape type
  * @throws CodegenException when no known function name for the given type is known to exist
  */
-private fun ShapeType.primitiveSerializerFunctionName(): String {
+internal fun ShapeType.primitiveSerializerFunctionName(): String {
     val suffix = when (this) {
         ShapeType.BOOLEAN -> "Boolean"
         ShapeType.STRING -> "String"

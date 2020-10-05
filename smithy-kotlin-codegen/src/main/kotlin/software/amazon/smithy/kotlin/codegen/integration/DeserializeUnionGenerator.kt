@@ -58,13 +58,13 @@ class DeserializeUnionGenerator(
                             for (targetMember in targetShape.members()) {
                                 val deserialize = deserializerForShape(targetMember)
                                 val targetType = target.unionTypeName(targetMember)
-                                writer.write("\$L.index -> value = \$L($deserialize)", targetMember.descriptorName(), targetType)
+                                writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
                             }
                         }
                         else -> {
                             val deserialize = deserializerForShape(member)
                             val targetType = member.unionTypeName(member)
-                            writer.write("\$L.index -> value = \$L($deserialize)", member.descriptorName(), targetType)
+                            writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", member.descriptorName(), targetType)
                         }
                     }
                 }
@@ -76,6 +76,9 @@ class DeserializeUnionGenerator(
     /**
      * get the deserializer name for the given [Shape], this only handles "primitive" types, collections
      * should be handled separately
+     * 
+     * MyUnion.StringValue(deserializeString())
+     * deserializeString()?.let { MyUnion.StringValue(it) }  
      */
     private fun deserializerForShape(shape: Shape): String {
         // target shape type to deserialize is either the shape itself or member.target
@@ -85,16 +88,16 @@ class DeserializeUnionGenerator(
         }
 
         return when (target.type) {
-            ShapeType.BOOLEAN -> "deserializeBool()!!"
-            ShapeType.BYTE -> "deserializeByte()!!"
-            ShapeType.SHORT -> "deserializeShort()!!"
-            ShapeType.INTEGER -> "deserializeInt()!!"
-            ShapeType.LONG -> "deserializeLong()!!"
-            ShapeType.FLOAT -> "deserializeFloat()!!"
-            ShapeType.DOUBLE -> "deserializeDouble()!!"
+            ShapeType.BOOLEAN -> "deserializeBool()"
+            ShapeType.BYTE -> "deserializeByte()"
+            ShapeType.SHORT -> "deserializeShort()"
+            ShapeType.INTEGER -> "deserializeInt()"
+            ShapeType.LONG -> "deserializeLong()"
+            ShapeType.FLOAT -> "deserializeFloat()"
+            ShapeType.DOUBLE -> "deserializeDouble()"
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
-                "deserializeString()?.decodeBase64Bytes()!!"
+                "deserializeString()?.decodeBase64Bytes()"
             }
             ShapeType.TIMESTAMP -> {
                 importInstant(writer)
@@ -104,9 +107,9 @@ class DeserializeUnionGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }!!"
-                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }!!"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }!!"
+                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }"
+                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }"
+                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }"
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
@@ -114,9 +117,9 @@ class DeserializeUnionGenerator(
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol, "")
-                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }!!"
+                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }"
                 }
-                else -> "deserializeString()!!"
+                else -> "deserializeString()"
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 val symbol = ctx.symbolProvider.toSymbol(target)
@@ -174,7 +177,7 @@ class DeserializeUnionGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("$destList.add($elementName)")
+                writer.write("if ($elementName != null) $destList.add($elementName)")
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression

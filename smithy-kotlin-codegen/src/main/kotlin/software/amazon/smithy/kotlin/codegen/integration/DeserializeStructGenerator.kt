@@ -28,8 +28,8 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * e.g.
  * ```
  * deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
- *     loop@while(true) {
- *         when(nextField()) {
+ *    loop@while(true) {
+ *        when(findNextFieldIndex()) {
  *             FIELD1_DESCRIPTOR.index -> builder.field1 = deserializeString()
  *             FIELD2_DESCRIPTOR.index -> builder.field2 = deserializeInt()
  *             null -> break@loop

@@ -55,11 +55,6 @@ class SerializeUnionGenerator(
                         ShapeType.DOCUMENT -> {
                             // TODO - implement document type support
                         }
-                        ShapeType.BLOB -> {
-                            val (serializeFn, encoded) = serializationForShape(member)
-                            importBase64Utils(writer)
-                            writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
-                        }
                         else -> {
                             val (serializeFn, encoded) = serializationForShape(member)
                             writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
@@ -146,7 +141,6 @@ class SerializeUnionGenerator(
         val target = ctx.model.expectShape(listTarget.member.target)
         val targetType = member.unionTypeName(member)
 
-        // writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
         writer.withBlock("is $targetType -> {", "}") {
             writer.withBlock("listField(${member.descriptorName()}) {", "}") {
                 renderListSerializer(ctx, member, "input.value", target, writer)
@@ -229,22 +223,3 @@ class SerializeUnionGenerator(
     }
 }
 
-/**
- * Get the name of the `PrimitiveSerializer` function name for the corresponding shape type
- * @throws CodegenException when no known function name for the given type is known to exist
- */
-private fun ShapeType.primitiveSerializerFunctionName(): String {
-    val suffix = when (this) {
-        ShapeType.BOOLEAN -> "Boolean"
-        ShapeType.STRING -> "String"
-        ShapeType.BYTE -> "Byte"
-        ShapeType.SHORT -> "Short"
-        ShapeType.INTEGER -> "Int"
-        ShapeType.LONG -> "Long"
-        ShapeType.FLOAT -> "Float"
-        ShapeType.DOUBLE -> "Double"
-        ShapeType.STRUCTURE, ShapeType.UNION -> "SdkSerializable"
-        else -> throw CodegenException("$this has no primitive serialize function on the Serializer interface")
-    }
-    return "serialize$suffix"
-}

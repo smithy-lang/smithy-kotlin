@@ -491,8 +491,8 @@ class MyUnionDeserializer {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt()!!)
-                STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString()!!)
+                I32_DESCRIPTOR.index -> value = deserializeInt()?.let { MyUnion.I32(it) }
+                STRINGA_DESCRIPTOR.index -> value = deserializeString()?.let { MyUnion.StringA(it) }
                 else -> skipValue()
             }
         }

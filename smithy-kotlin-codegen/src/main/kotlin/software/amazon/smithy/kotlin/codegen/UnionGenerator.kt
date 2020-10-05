@@ -34,7 +34,7 @@ class UnionGenerator(
         shape.allMembers.values.sortedBy { it.memberName }.forEach {
             writer.renderMemberDocumentation(model, it)
             val memberName = symbolProvider.toMemberName(it)
-            val targetType = (symbolProvider.toSymbol(it).getProperty("shape").get() as Shape).type
+            val targetType = model.expectShape(it.target).type
             writer.writeInline("data class \$L(val value: \$L) : \$L()", memberName.capitalize(), symbolProvider.toSymbol(it).name, symbol.name)
             when (targetType) {
                 ShapeType.BLOB -> {

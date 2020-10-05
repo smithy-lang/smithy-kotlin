@@ -6,6 +6,14 @@ import software.aws.clientrt.http.feature.SerializationProvider
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.serde.*
 
+/**
+ * This is a hypothetical type that is not modeled in the Lambda service.  Rather,
+ * it's used to demonstrate the Union type in Smithy, for which there is not broad
+ * service support at the time of writing this file.
+ *
+ * If/when there is a Union type modeled in Lambda, this file should be replaced
+ * with the actual type(s).
+ */
 class AliasTypeSerializer(val input: AliasType) : SdkSerializable {
 
     companion object {
@@ -23,9 +31,9 @@ class AliasTypeSerializer(val input: AliasType) : SdkSerializable {
     override fun serialize(serializer: Serializer) {
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             when (input) {
-                is ExpiringAliasType -> field(EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR, input.value!!)
-                is RemoteAliasType -> field(REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR, input.value!!)
-                is MultiAliasType -> serializer.serializeList(MULTI_ALIAS_TYPE_FIELD_DESCRIPTOR) {
+                is AliasType.ExpiringAliasType -> field(EXPIRING_ALIAS_TYPE_FIELD_DESCRIPTOR, input.value!!)
+                is AliasType.RemoteAliasType -> field(REMOTE_ALIAS_TYPE_FIELD_DESCRIPTOR, input.value!!)
+                is AliasType.MultiAliasType -> serializer.serializeList(MULTI_ALIAS_TYPE_FIELD_DESCRIPTOR) {
                     for (value in input.value) {
                         serializeString(value)
                     }
