@@ -76,9 +76,9 @@ class DeserializeUnionGenerator(
     /**
      * get the deserializer name for the given [Shape], this only handles "primitive" types, collections
      * should be handled separately
-     * 
+     *
      * MyUnion.StringValue(deserializeString())
-     * deserializeString()?.let { MyUnion.StringValue(it) }  
+     * deserializeString()?.let { MyUnion.StringValue(it) }
      */
     private fun deserializerForShape(shape: Shape): String {
         // target shape type to deserialize is either the shape itself or member.target
