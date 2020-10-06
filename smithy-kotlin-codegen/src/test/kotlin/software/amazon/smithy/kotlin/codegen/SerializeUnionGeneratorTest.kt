@@ -15,22 +15,18 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import java.lang.RuntimeException
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
+import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-class SerializeStructGeneratorTest {
+class SerializeUnionGeneratorTest {
     val model: Model = Model.assembler()
         .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
         .discoverModels()
@@ -75,10 +71,8 @@ class SerializeStructGeneratorTest {
             is OperationShape -> {
                 val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
-                requestBindings.values
-                    .filter { it.location == HttpBinding.Location.DOCUMENT }
-                    .sortedBy { it.memberName }
-                    .map { it.member }
+                val unionShape = ctx.generationCtx.model.expectShape(requestBindings.values.first().member.target)
+                unionShape.members().toList()
             }
             is StructureShape -> {
                 shape.members().toList()
@@ -86,7 +80,7 @@ class SerializeStructGeneratorTest {
             else -> throw RuntimeException("unknown conversion for $shapeId")
         }
 
-        SerializeStructGenerator(
+        SerializeUnionGenerator(
             ctx.generationCtx,
             members,
             writer,
@@ -97,26 +91,15 @@ class SerializeStructGeneratorTest {
     }
 
     @Test
-    fun `it handles smoke test request serializer`() {
-        val contents = getContentsForShape("com.test#SmokeTest")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
-    input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
-    input.payload3?.let { field(PAYLOAD3_DESCRIPTOR, NestedSerializer(it)) }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
     fun `it handles union request serializer`() {
         val contents = getContentsForShape("com.test#UnionInput")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
+    when (input) {
+        is MyUnion.I32 -> field(I32_DESCRIPTOR, input.value)
+        is MyUnion.StringA -> field(STRINGA_DESCRIPTOR, input.value)
+    }
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
@@ -124,93 +107,27 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
 
     @Test
     fun `it handles list inputs`() {
-        val contents = getContentsForShape("com.test#ListInput")
+        val contents = getContentsForShape("com.test#UnionAggregateInput")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    if (input.blobList != null) {
-        listField(BLOBLIST_DESCRIPTOR) {
-            for(m0 in input.blobList) {
-                serializeString(m0.encodeBase64String())
-            }
-        }
-    }
-    if (input.enumList != null) {
-        listField(ENUMLIST_DESCRIPTOR) {
-            for(m0 in input.enumList) {
-                serializeString(m0.value)
-            }
-        }
-    }
-    if (input.intList != null) {
-        listField(INTLIST_DESCRIPTOR) {
-            for(m0 in input.intList) {
-                serializeInt(m0)
-            }
-        }
-    }
-    if (input.nestedIntList != null) {
-        listField(NESTEDINTLIST_DESCRIPTOR) {
-            for(m0 in input.nestedIntList) {
-                serializer.serializeList(NESTEDINTLIST_DESCRIPTOR) {
-                    for(m1 in m0) {
-                        serializeInt(m1)
-                    }
+    when (input) {
+        is MyAggregateUnion.I32 -> field(I32_DESCRIPTOR, input.value)
+        is MyAggregateUnion.IntList -> {
+            listField(INTLIST_DESCRIPTOR) {
+                for(m0 in input.value) {
+                    serializeInt(m0)
                 }
             }
         }
-    }
-    if (input.structList != null) {
-        listField(STRUCTLIST_DESCRIPTOR) {
-            for(m0 in input.structList) {
-                serializeSdkSerializable(NestedSerializer(m0))
+        is MyAggregateUnion.IntMap -> {
+            mapField(INTMAP_DESCRIPTOR) {
+                input.value.forEach { (key, value) -> entry(key, value) }
             }
         }
+        is MyAggregateUnion.Nested3 -> field(NESTED3_DESCRIPTOR, NestedSerializer(input.value))
+        is MyAggregateUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value.format(TimestampFormat.ISO_8601))
     }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it handles maps`() {
-        val contents = getContentsForShape("com.test#MapInput")
-        contents.shouldSyntacticSanityCheck()
-
-        val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    if (input.blobMap != null) {
-        mapField(BLOBMAP_DESCRIPTOR) {
-            input.blobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
-        }
-    }
-    if (input.enumMap != null) {
-        mapField(ENUMMAP_DESCRIPTOR) {
-            input.enumMap.forEach { (key, value) -> entry(key, value?.value) }
-        }
-    }
-    if (input.intMap != null) {
-        mapField(INTMAP_DESCRIPTOR) {
-            input.intMap.forEach { (key, value) -> entry(key, value) }
-        }
-    }
-    if (input.structMap != null) {
-        mapField(STRUCTMAP_DESCRIPTOR) {
-            input.structMap.forEach { (key, value) -> entry(key, if (value != null) ReachableOnlyThroughMapSerializer(value) else null) }
-        }
-    }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
-    }
-
-    @Test
-    fun `it serializes enums as raw values`() {
-        val contents = getContentsForShape("com.test#NestedEnum")
-        contents.shouldSyntacticSanityCheck()
-        val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.myEnum?.let { field(MYENUM_DESCRIPTOR, it.value) }
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
