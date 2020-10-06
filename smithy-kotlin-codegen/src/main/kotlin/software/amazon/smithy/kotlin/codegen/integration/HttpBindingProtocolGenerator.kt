@@ -259,9 +259,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
-                    // FIXME - need to handle unions
                     if (shape.isUnionShape) {
-                        writer.write("TODO(\$S)", "union shape serialization not-implemented")
+                        SerializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     } else {
                         SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     }
@@ -1045,22 +1044,28 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         importSerdePackage(writer)
 
         writer.write("")
-            .openBlock("class \$L {", deserializerSymbol.name)
-            .call {
-                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
-            }
-            .call {
-                writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                .openBlock("class \$L {", deserializerSymbol.name)
+                .call {
+                    renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
+                }
+                .call {
+
                     if (shape.isUnionShape) {
-                        writer.write("TODO(\$S)", "union shape deserialization not-implemented")
+                        writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
+                            writer.write("var value: ${symbol.name}? = null")
+                            DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                            writer.write("return value")
+                        }
+                                .closeBlock("}")
                     } else {
-                        writer.write("val builder = ${symbol.name}.dslBuilder()")
-                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                        writer.write("return builder.build()")
+                        writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                            writer.write("val builder = ${symbol.name}.dslBuilder()")
+                            DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                            writer.write("return builder.build()")
+                        }
+                                .closeBlock("}")
                     }
                 }
-            }
-            .closeBlock("}")
     }
 }
 

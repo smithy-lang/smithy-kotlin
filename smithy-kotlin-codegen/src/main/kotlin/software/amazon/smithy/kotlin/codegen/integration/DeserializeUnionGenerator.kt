@@ -16,30 +16,27 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.defaultName
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.utils.StringUtils
 
 /**
- * Generate deserialization for members bound to the payload.
+ * Generate deserialization for unions.
  *
  * e.g.
  * ```
  * deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
- *    loop@while(true) {
- *        when(findNextFieldIndex()) {
- *             FIELD1_DESCRIPTOR.index -> builder.field1 = deserializeString()
- *             FIELD2_DESCRIPTOR.index -> builder.field2 = deserializeInt()
- *             null -> break@loop
- *             else -> skipValue()
- *         }
- *     }
+ *      when(findNextFieldIndex()) {
+ *          I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt()!!)
+ *          STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString()!!)
+ *          else -> skipValue()
+ *      }
  * }
  * ```
  */
-class DeserializeStructGenerator(
+class DeserializeUnionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: KotlinWriter,
@@ -48,24 +45,30 @@ class DeserializeStructGenerator(
 
     fun render() {
         writer.withBlock("deserializer.deserializeStruct(OBJ_DESCRIPTOR) {", "}") {
-            withBlock("loop@while(true) {", "}") {
-                withBlock("when(findNextFieldIndex()) {", "}") {
-                    members.forEach { member ->
-                        val target = ctx.model.expectShape(member.target)
-                        when (target.type) {
-                            ShapeType.LIST, ShapeType.SET -> deserializeListMember(member)
-                            ShapeType.MAP -> deserializeMapMember(member)
-                            // TODO - implement document type support
-                            ShapeType.DOCUMENT -> writer.write("\$L.index -> skipValue()", member.descriptorName())
-                            else -> {
-                                val deserialize = deserializerForShape(member)
-                                writer.write("\$L.index -> builder.\$L = $deserialize", member.descriptorName(), member.defaultName())
+            withBlock("when(findNextFieldIndex()) {", "}") {
+                members.forEach { member ->
+                    val target = ctx.model.expectShape(member.target)
+                    when (target.type) {
+                        ShapeType.LIST, ShapeType.SET -> deserializeListMember(member)
+                        ShapeType.MAP -> deserializeMapMember(member)
+                        // TODO - implement document type support
+                        ShapeType.DOCUMENT -> writer.write("\$L.index -> skipValue()", member.descriptorName())
+                        ShapeType.UNION -> {
+                            val targetShape = ctx.model.expectShape(member.target)
+                            for (targetMember in targetShape.members()) {
+                                val deserialize = deserializerForShape(targetMember)
+                                val targetType = target.unionTypeName(targetMember)
+                                writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
                             }
                         }
+                        else -> {
+                            val deserialize = deserializerForShape(member)
+                            val targetType = member.unionTypeName(member)
+                            writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", member.descriptorName(), targetType)
+                        }
                     }
-                    write("null -> break@loop")
-                    write("else -> skipValue()")
                 }
+                write("else -> skipValue()")
             }
         }
     }
@@ -73,6 +76,9 @@ class DeserializeStructGenerator(
     /**
      * get the deserializer name for the given [Shape], this only handles "primitive" types, collections
      * should be handled separately
+     *
+     * MyUnion.StringValue(deserializeString())
+     * deserializeString()?.let { MyUnion.StringValue(it) }
      */
     private fun deserializerForShape(shape: Shape): String {
         // target shape type to deserialize is either the shape itself or member.target
@@ -126,7 +132,7 @@ class DeserializeStructGenerator(
     }
 
     private fun deserializeListMember(member: MemberShape) {
-        writer.write("\$L.index -> builder.\$L = ", member.descriptorName(), member.defaultName())
+        writer.write("\$L.index -> value = ", member.descriptorName())
             .indent()
             .call {
                 val collectionShape = ctx.model.expectShape(member.target) as CollectionShape
@@ -137,8 +143,6 @@ class DeserializeStructGenerator(
             .dedent()
     }
 
-    // FIXME - we should not have to pass through "member" through all nested levels, it should ideally only be required
-    // in `deserializeListMember` or `deserializeMapMember`
     private fun renderDeserializeList(
         member: MemberShape,
         targetShape: Shape,
@@ -149,6 +153,7 @@ class DeserializeStructGenerator(
         val destList = "list$level"
         val elementName = "el$level"
         val conversion = if (renderAsSet) ".toSet()" else ""
+        val targetType = member.unionTypeName(member)
 
         writer.openBlock("deserializer.deserializeList(\$L) {", member.descriptorName())
             .write("val $destList = mutableListOf<${targetSymbol.name}>()")
@@ -174,12 +179,12 @@ class DeserializeStructGenerator(
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression
-            .write("$destList$conversion")
+            .write("$targetType($destList$conversion)")
             .closeBlock("}")
     }
 
     private fun deserializeMapMember(member: MemberShape) {
-        writer.write("\$L.index -> builder.\$L = ", member.descriptorName(), member.defaultName())
+        writer.write("\$L.index -> value = ", member.descriptorName())
             .indent()
             .call {
                 val mapShape = ctx.model.expectShape(member.target) as MapShape
@@ -197,6 +202,7 @@ class DeserializeStructGenerator(
         val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
         val destMap = "map$level"
         val elementName = "el$level"
+        val targetType = member.unionTypeName(member)
 
         writer.openBlock("deserializer.deserializeMap(\$L) {", member.descriptorName())
             .write("val $destMap = mutableMapOf<String, ${targetSymbol.name}?>()")
@@ -226,7 +232,12 @@ class DeserializeStructGenerator(
             }
             .closeBlock("}")
             // implicit return of `deserializeMap` lambda is last expression
-            .write(destMap)
+            .write("$targetType($destMap)")
             .closeBlock("}")
     }
 }
+
+/**
+ * Generate the fully qualified type name of Union variant
+ */
+internal fun Shape.unionTypeName(unionVariant: MemberShape): String = "${this.id.name}.${StringUtils.capitalize(unionVariant.memberName)}"

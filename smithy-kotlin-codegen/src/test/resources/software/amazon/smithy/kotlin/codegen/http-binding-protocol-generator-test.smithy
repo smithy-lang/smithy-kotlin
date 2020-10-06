@@ -19,7 +19,11 @@ service Example {
         TimestampInput,
         BlobInput,
         ConstantQueryString,
-        PrefixHeaders
+        PrefixHeaders,
+        UnionInput,
+        UnionAggregateInput,
+        UnionOutput,
+        UnionAggregateOutput
     ]
 }
 
@@ -384,4 +388,46 @@ operation PrefixHeaders{
 structure PrefixHeadersIO {
     @httpPrefixHeaders("X-Foo-")
     member1: StringMap
+}
+
+@http(method: "POST", uri: "/input/union")
+operation UnionInput {
+    input: UnionRequest    
+}
+
+@http(method: "GET", uri: "/input/union")
+operation UnionOutput {
+    output: UnionRequest
+}
+
+structure UnionRequest {
+    payloadUnion: MyUnion
+}
+
+union MyUnion {
+    i32: Integer,
+    stringA: String
+}
+
+@http(method: "POST", uri: "/input/union2")
+operation UnionAggregateInput {
+    input: UnionAggregateRequest
+}
+
+@http(method: "GET", uri: "/input/union2")
+operation UnionAggregateOutput {
+    output: UnionAggregateRequest
+}
+
+structure UnionAggregateRequest {
+    payloadAggregateUnion: MyAggregateUnion
+}
+
+union MyAggregateUnion {
+    i32: Integer,
+    intList: IntList,
+    intMap: IntMap,
+    nested3: Nested,
+    @timestampFormat("date-time")
+    timestamp4: Timestamp
 }
