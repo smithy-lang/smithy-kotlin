@@ -18,6 +18,7 @@ import com.amazonaws.service.lambda.model.CreateAliasRequest
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.feature.HttpSerialize
+import software.aws.clientrt.http.feature.SerializationContext
 import software.aws.clientrt.http.feature.SerializationProvider
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
@@ -41,7 +42,7 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         // URI
         builder.method = HttpMethod.POST
         builder.url {
@@ -55,7 +56,7 @@ class CreateAliasRequestSerializer(val input: CreateAliasRequest): HttpSerialize
         }
 
         // payload
-        val serializer = provider()
+        val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.name?.let { field(NAME_DESCRIPTOR, it) }
             input.functionVersion?.let { field(FUNCTION_VERSION_DESCRIPTOR, it) }

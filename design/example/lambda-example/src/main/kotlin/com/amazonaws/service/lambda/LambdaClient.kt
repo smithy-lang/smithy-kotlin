@@ -33,6 +33,7 @@ interface LambdaClient: SdkClient {
     // FIXME - this is temporary and needs designed
     class Config {
         var httpEngine: HttpClientEngine? = null
+        var idempotencyTokenProvider: (() -> String)? = null
     }
 
     suspend fun invoke(input: InvokeRequest): InvokeResponse

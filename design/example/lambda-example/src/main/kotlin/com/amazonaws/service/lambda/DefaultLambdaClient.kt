@@ -29,6 +29,7 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
         client = sdkHttpClient(httpEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
+                idempotencyTokenProvider = config.idempotencyTokenProvider ?: { "DEFAULT TOKEN" }
             }
 
             // request defaults

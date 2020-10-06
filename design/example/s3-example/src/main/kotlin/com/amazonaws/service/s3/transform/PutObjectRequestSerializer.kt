@@ -18,6 +18,7 @@ import com.amazonaws.service.s3.model.PutObjectRequest
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.feature.HttpSerialize
+import software.aws.clientrt.http.feature.SerializationContext
 import software.aws.clientrt.http.feature.SerializationProvider
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
@@ -26,7 +27,7 @@ import software.aws.clientrt.http.toHttpBody
 
 
 class PutObjectRequestSerializer(val input: PutObjectRequest): HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         // URI
         builder.method = HttpMethod.PUT
         builder.url {

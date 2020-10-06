@@ -16,6 +16,7 @@ package com.amazonaws.service.s3
 
 import com.amazonaws.service.s3.model.*
 import software.aws.clientrt.SdkClient
+import software.aws.clientrt.http.engine.HttpClientEngine
 
 
 interface S3Client: SdkClient {
@@ -23,7 +24,16 @@ interface S3Client: SdkClient {
         get() = "s3"
 
     companion object {
-        fun create(): S3Client = DefaultS3Client()
+        fun build(block: Config.() -> Unit = {}): S3Client {
+            val config = Config().apply(block)
+            return DefaultS3Client(config)
+        }
+    }
+
+    // FIXME - this is temporary and needs designed
+    class Config {
+        var httpEngine: HttpClientEngine? = null
+        var idempotencyTokenProvider: (() -> String)? = null
     }
 
     suspend fun putObject(input: PutObjectRequest): PutObjectResponse
