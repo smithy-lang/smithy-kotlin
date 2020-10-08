@@ -13,7 +13,8 @@ service Example {
         GetFooStreamingInput,
         GetFooStreamingOutput,
         GetFooStreamingOutputNoInput,
-        GetFooStreamingInputNoOutput
+        GetFooStreamingInputNoOutput,
+        AllocateWidget
     ]
 }
 
@@ -72,4 +73,15 @@ operation GetFooStreamingOutputNoInput {
 @http(method: "POST", uri: "/foo-streaming-input-no-output")
 operation GetFooStreamingInputNoOutput {
     input: GetFooStreamingRequest
+}
+
+// https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#idempotencytoken-trait
+@http(method: "POST", uri: "/input/AllocateWidget")
+operation AllocateWidget {
+    input: AllocateWidgetInput
+}
+
+structure AllocateWidgetInput {
+    @idempotencyToken
+    clientToken: String
 }

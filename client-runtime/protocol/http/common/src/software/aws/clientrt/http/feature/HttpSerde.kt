@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.http.feature
 
+import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestPipeline
@@ -14,7 +15,6 @@ import software.aws.clientrt.serde.SerdeProvider
 import software.aws.clientrt.serde.Serializer
 
 typealias SerializationProvider = () -> Serializer
-typealias IdempotencyTokenProvider = () -> String
 
 data class SerializationContext(
         val serializationProvider: SerializationProvider,

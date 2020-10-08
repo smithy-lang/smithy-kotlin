@@ -306,7 +306,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*", "")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", "*", "")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpSerialize", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "SerializationProvider", "")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "SerializationContext", "")
 
             writer.write("")
                 .openBlock("class \$L(val input: \$L) : HttpSerialize {", op.serializerName(), inputSymbol.name)
@@ -397,7 +397,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         requestBindings: Map<String, HttpBinding>,
         writer: KotlinWriter
     ) {
-        writer.openBlock("override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {")
+        writer.openBlock("override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {")
             .write("builder.method = HttpMethod.\$L", httpTrait.method.toUpperCase())
             .write("")
             .call {
@@ -537,25 +537,30 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 is StringShape -> {
                     // NOTE: query parameters are allowed to be empty, whereas headers should omit empty string
                     // values from serde
-                    val cond =
-                        if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait(EnumTrait::class.java)) {
-                            "input.$memberName != null"
-                        } else {
-                            "input.$memberName?.isNotEmpty() == true"
+                    if (location == HttpBinding.Location.QUERY && member.hasTrait(IdempotencyTokenTrait::class.java)) {
+                        // Call the idempotency token function if no supplied value.
+                        writer.write("append(\"\$L\", (input.$memberName ?: serializationContext.idempotencyTokenProvider.invoke()))", paramName)
+                    } else {
+                        val cond =
+                                if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait(EnumTrait::class.java)) {
+                                    "input.$memberName != null"
+                                } else {
+                                    "input.$memberName?.isNotEmpty() == true"
+                                }
+
+                        val suffix = when {
+                            memberTarget.hasTrait(EnumTrait::class.java) -> {
+                                ".value"
+                            }
+                            memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
+                                importBase64Utils(writer)
+                                ".encodeBase64()"
+                            }
+                            else -> ""
                         }
 
-                    val suffix = when {
-                        memberTarget.hasTrait(EnumTrait::class.java) -> {
-                            ".value"
-                        }
-                        memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
-                            importBase64Utils(writer)
-                            ".encodeBase64()"
-                        }
-                        else -> ""
+                        writer.write("if (\$1L) append(\"\$2L\", \$3L)", cond, paramName, "input.${memberName}$suffix")
                     }
-
-                    writer.write("if (\$1L) append(\"\$2L\", \$3L)", cond, paramName, "input.${memberName}$suffix")
                 }
                 else -> {
                     // encode to string
@@ -582,7 +587,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         if (members.isEmpty()) return
 
         writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent", "")
-        writer.write("val serializer = provider()")
+        writer.write("val serializer = serializationContext.serializationProvider()")
             .call {
                 val renderForMembers = members.map { it.member }
                 SerializeStructGenerator(ctx, renderForMembers, writer, defaultTimestampFormat).render()
@@ -632,7 +637,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 // delegate to the member serializer
                 writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent", "")
                 val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
-                writer.write("val serializer = provider()")
+                writer.write("val serializer = serializationContext.serializationProvider()")
                     .write("\$LSerializer(input.\$L).serialize(serializer)", memberSymbol.name, memberName)
                     .write("builder.body = ByteArrayContent(serializer.toByteArray())")
             }

@@ -12,3 +12,4 @@ interface SdkClient {
 
     fun close() {}
 }
+

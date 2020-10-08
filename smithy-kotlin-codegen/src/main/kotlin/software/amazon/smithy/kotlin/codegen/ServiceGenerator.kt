@@ -23,6 +23,7 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 
 /**
@@ -117,6 +118,16 @@ class ServiceGenerator(
                     writer.addImport(engineSymbol, "", SymbolReference.ContextOption.DECLARE)
                     writer.write("var httpEngine: HttpClientEngine? = null")
                 }
+
+                if (service.hasIdempotentTokenMember(model)) {
+                    val idempotencyTokenProviderSymbol = Symbol.builder()
+                            .name("IdempotencyTokenProvider")
+                            .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+                            .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                            .build()
+                    writer.addImport(idempotencyTokenProviderSymbol, "", SymbolReference.ContextOption.DECLARE)
+                    writer.write("var idempotencyTokenProvider: IdempotencyTokenProvider? = null")
+                }
             }
             .closeBlock("}")
     }
@@ -152,6 +163,19 @@ class ServiceGenerator(
 
 fun StructureShape.hasStreamingMember(model: Model): Boolean =
     this.allMembers.values.any { model.getShape(it.target).get().hasTrait(StreamingTrait::class.java) }
+
+// Returns true if any operation bound to the service contains an input member marked with the IdempotencyTokenTrait
+fun ServiceShape.hasIdempotentTokenMember(model: Model): Boolean {
+    this.operations.forEach {
+        val operation = model.expectShape(it) as OperationShape
+        if (operation.input.isPresent &&
+                model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }) {
+            return true
+        }
+    }
+
+    return false
+}
 
 /**
  * Return the formatted (Kotlin) function signature for the given operation

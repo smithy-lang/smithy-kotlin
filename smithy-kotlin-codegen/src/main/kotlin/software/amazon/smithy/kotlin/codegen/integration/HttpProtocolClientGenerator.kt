@@ -58,10 +58,14 @@ interface HttpFeature {
  * Client Runtime `HttpSerde` feature
  * @property serdeProvider The name of the serde provider (e.g. JsonSerdeProvider)
  */
-abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
+abstract class HttpSerde(private val serdeProvider: String, private val requiresIdempotencyTokenProvider: Boolean) : HttpFeature {
     override val name: String = "HttpSerde"
+
     override fun renderConfigure(writer: KotlinWriter) {
         writer.write("serdeProvider = $serdeProvider()")
+        if (requiresIdempotencyTokenProvider) {
+            writer.write("idempotencyTokenProvider = config.idempotencyTokenProvider ?: defaultIdempotencyTokenProvider")
+        }
     }
 
     override fun addImportsAndDependencies(writer: KotlinWriter) {
@@ -72,6 +76,15 @@ abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
             .addDependency(KotlinDependency.CLIENT_RT_SERDE)
             .build()
         writer.addImport(httpSerdeSymbol, "")
+
+        if (requiresIdempotencyTokenProvider) {
+            val idempotencyTokenProviderSymbol = Symbol.builder()
+                    .name("defaultIdempotencyTokenProvider")
+                    .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+                    .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                    .build()
+            writer.addImport(idempotencyTokenProviderSymbol, "")
+        }
     }
 }
 

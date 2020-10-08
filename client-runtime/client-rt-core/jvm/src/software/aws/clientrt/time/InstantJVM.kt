@@ -86,6 +86,11 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
          * Parse a string formatted as epoch-seconds into an [Instant]
          */
         actual fun fromEpochSeconds(ts: String): Instant = parseEpoch(ts)
+
+        /**
+         * Create an [Instant] from the current system time
+         */
+        actual fun now(): Instant = Instant(jtInstant.now())
     }
 }
 
