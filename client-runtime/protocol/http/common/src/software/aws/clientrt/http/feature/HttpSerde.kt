@@ -17,8 +17,8 @@ import software.aws.clientrt.serde.Serializer
 typealias SerializationProvider = () -> Serializer
 
 data class SerializationContext(
-        val serializationProvider: SerializationProvider,
-        val idempotencyTokenProvider: IdempotencyTokenProvider
+    val serializationProvider: SerializationProvider,
+    val idempotencyTokenProvider: IdempotencyTokenProvider
 )
 
 /**

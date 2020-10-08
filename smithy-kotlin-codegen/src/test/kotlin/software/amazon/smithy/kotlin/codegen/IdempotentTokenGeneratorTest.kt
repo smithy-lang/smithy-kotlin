@@ -15,16 +15,13 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class IdempotentTokenGeneratorTest {
@@ -162,4 +159,3 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }
-

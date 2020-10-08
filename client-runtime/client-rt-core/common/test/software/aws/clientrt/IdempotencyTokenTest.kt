@@ -17,5 +17,4 @@ class IdempotencyTokenTest {
     @Test
     fun `default idempotencyTokenProvider implementation returns non empty token`() =
         assertTrue(defaultIdempotencyTokenProvider.invoke().isNotEmpty())
-
 }

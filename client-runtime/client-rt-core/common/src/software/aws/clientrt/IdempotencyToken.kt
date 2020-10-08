@@ -1,7 +1,7 @@
 package software.aws.clientrt
 
-import software.aws.clientrt.time.Instant
 import kotlin.random.Random
+import software.aws.clientrt.time.Instant
 
 typealias IdempotencyTokenProvider = () -> String
 
