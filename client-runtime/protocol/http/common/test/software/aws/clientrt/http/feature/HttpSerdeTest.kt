@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.http.feature
 
+import software.aws.clientrt.defaultIdempotencyTokenProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import software.aws.clientrt.http.Headers
@@ -29,6 +30,7 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
+                idempotencyTokenProvider = defaultIdempotencyTokenProvider
             }
         }
 
@@ -50,6 +52,7 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = XmlSerdeProvider()
+                idempotencyTokenProvider = defaultIdempotencyTokenProvider
             }
         }
 
@@ -71,6 +74,7 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
+                idempotencyTokenProvider = defaultIdempotencyTokenProvider
             }
         }
 
@@ -100,6 +104,7 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = XmlSerdeProvider()
+                idempotencyTokenProvider = defaultIdempotencyTokenProvider
             }
         }
 
