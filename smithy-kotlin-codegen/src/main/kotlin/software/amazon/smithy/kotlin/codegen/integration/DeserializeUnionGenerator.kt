@@ -116,14 +116,14 @@ class DeserializeUnionGenerator(
             ShapeType.STRING -> when {
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
-                    writer.addImport(enumSymbol, "")
+                    writer.addImport(enumSymbol)
                     "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }"
                 }
                 else -> "deserializeString()"
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 val symbol = ctx.symbolProvider.toSymbol(target)
-                writer.addImport(symbol, "")
+                writer.addImport(symbol)
                 val deserializerName = "${symbol.name}Deserializer"
                 "$deserializerName().deserialize(deserializer)"
             }

@@ -86,7 +86,7 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
 
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
-            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, idempotencyTokenProvider.invoke())
+            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, idempotencyTokenProvider.generateToken())
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
@@ -108,7 +108,7 @@ class AllocateWidgetQuerySerializer(val input: AllocateWidgetInputQuery) : HttpS
         builder.url {
             path = "/input/AllocateWidgetQuery"
             parameters {
-                append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.invoke()))
+                append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.generateToken()))
             }
         }
 
@@ -137,7 +137,7 @@ class AllocateWidgetHeaderSerializer(val input: AllocateWidgetInputHeader) : Htt
 
         builder.headers {
             append("Content-Type", "application/json")
-            append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.invoke()))
+            append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.generateToken()))
         }
 
     }

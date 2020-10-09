@@ -74,7 +74,7 @@ class SerializeStructGenerator(
                         val (serializeFn, encoded) = serializationForShape(member)
                         // FIXME - this doesn't account for unboxed primitives
                         val postfix = if (member.hasTrait(IdempotencyTokenTrait::class.java)) {
-                            " ?: field(${member.descriptorName()}, idempotencyTokenProvider.invoke())"
+                            " ?: field(${member.descriptorName()}, idempotencyTokenProvider.generateToken())"
                         } else {
                             ""
                         }

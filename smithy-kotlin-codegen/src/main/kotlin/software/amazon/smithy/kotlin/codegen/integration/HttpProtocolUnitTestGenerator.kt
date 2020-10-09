@@ -41,7 +41,7 @@ protected constructor(builder: Builder<T>) {
      * Render a test class and unit tests for the specified [testCases]
      */
     fun renderTestClass(testClassName: String) {
-        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "Test", "")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "Test")
         writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
         writer.dependencies.addAll(KotlinDependency.KOTLIN_TEST_JUNIT5.dependencies)
         writer.dependencies.addAll(KotlinDependency.JUNIT_JUPITER_ENGINE.dependencies)

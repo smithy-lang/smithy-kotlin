@@ -42,7 +42,7 @@ class InvokeRequestSerializer(val input: InvokeRequest): HttpSerialize {
             if (input.invocationType != null) append("X-Amz-Invocation-Type", input.invocationType)
             if (input.logType != null) append("X-Amz-Log-Type", input.logType)
             if (input.clientContext != null) append("X-Amz-Client-Context", input.clientContext)
-            append("X-Amz-Client-Token", input.idempotencyToken ?: serializationContext.idempotencyTokenProvider.invoke())
+            append("X-Amz-Client-Token", input.idempotencyToken ?: serializationContext.idempotencyTokenProvider.generateToken())
         }
 
         // payload

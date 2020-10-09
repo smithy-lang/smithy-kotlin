@@ -44,7 +44,7 @@ class HttpProtocolClientGeneratorTest {
                 .namespace(KotlinDependency.CLIENT_RT_SERDE_JSON.namespace, ".")
                 .addDependency(KotlinDependency.CLIENT_RT_SERDE_JSON)
                 .build()
-            writer.addImport(serdeJsonSymbol, "")
+            writer.addImport(serdeJsonSymbol)
         }
     }
 
@@ -94,7 +94,7 @@ class HttpProtocolClientGeneratorTest {
             }
             install(HttpSerde) {
                 serdeProvider = MockSerdeProvider()
-                idempotencyTokenProvider = config.idempotencyTokenProvider ?: defaultIdempotencyTokenProvider
+                idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
             }
         }
     }

@@ -303,10 +303,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
             importSerdePackage(writer)
-            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", "*", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpSerialize", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "SerializationContext", "")
+            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", "*")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpSerialize")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "SerializationContext")
 
             writer.write("")
                 .openBlock("class \$L(val input: \$L) : HttpSerialize {", op.serializerName(), inputSymbol.name)
@@ -539,7 +539,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // values from serde
                     if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && member.hasTrait(IdempotencyTokenTrait::class.java)) {
                         // Call the idempotency token function if no supplied value.
-                        writer.write("append(\"\$L\", (input.$memberName ?: serializationContext.idempotencyTokenProvider.invoke()))", paramName)
+                        writer.write("append(\"\$L\", (input.$memberName ?: serializationContext.idempotencyTokenProvider.generateToken()))", paramName)
                     } else {
                         val cond =
                                 if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait(EnumTrait::class.java)) {
@@ -586,7 +586,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     ) {
         if (members.isEmpty()) return
 
-        writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent", "")
+        writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
         writer.write("val serializer = serializationContext.serializationProvider()")
             .call {
                 val renderForMembers = members.map { it.member }
@@ -620,12 +620,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (isBinaryStream) {
                     writer.write("builder.body = input.\$L.toHttpBody() ?: HttpBody.Empty", memberName)
                 } else {
-                    writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent", "")
+                    writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
                     writer.write("builder.body = ByteArrayContent(input.\$L)", memberName)
                 }
             }
             ShapeType.STRING -> {
-                writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent", "")
+                writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
                 val contents = if (target.hasTrait(EnumTrait::class.java)) {
                     "$memberName.value"
                 } else {
@@ -635,7 +635,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the member serializer
-                writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent", "")
+                writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
                 val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
                 writer.write("val serializer = serializationContext.serializationProvider()")
                     .write("\$LSerializer(input.\$L).serialize(serializer)", memberSymbol.name, memberName)
@@ -682,10 +682,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
             importSerdePackage(writer)
-            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpDeserialize", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "DeserializationProvider", "")
+            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpDeserialize")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "DeserializationProvider")
 
             writer.write("")
                 .openBlock("class \$L : HttpDeserialize {", op.deserializerName())
@@ -726,10 +726,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
             importSerdePackage(writer)
-            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpDeserialize", "")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "DeserializationProvider", "")
+            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "HttpDeserialize")
+            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", "DeserializationProvider")
 
             writer.write("")
                 .openBlock("class \$L : HttpDeserialize {", deserializerName)
@@ -911,7 +911,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                     val mapFn = if (conversion.isNotEmpty()) "?.map { $conversion }" else ""
 
-                    writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn, "")
+                    writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
                     writer.write("builder.\$L = response.headers.getAll(\$S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)
                 }
                 else -> throw CodegenException("unknown deserialization: header binding: $hdrBinding; member: `$memberName`")
@@ -973,7 +973,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ShapeType.STRING -> {
                 writer.write("val contents = response.body.readAll()?.decodeToString()")
                 if (target.hasTrait(EnumTrait::class.java)) {
-                    writer.addImport(targetSymbol, "")
+                    writer.addImport(targetSymbol)
                     writer.write("builder.$memberName = contents?.let { ${targetSymbol.name}.fromValue(it) }")
                 } else {
                     writer.write("builder.$memberName = contents")
@@ -1105,24 +1105,24 @@ fun formatInstant(paramName: String, tsFmt: TimestampFormatTrait.Format, forceSt
 
 // import CLIENT-RT.*
 internal fun importSerdePackage(writer: KotlinWriter) {
-    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*", "")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
     writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
 }
 
 // import CLIENT-RT.time.TimestampFormat
 internal fun importTimestampFormat(writer: KotlinWriter) {
-    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "TimestampFormat", "")
+    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "TimestampFormat")
 }
 
 // import CLIENT-RT.time.Instant
 internal fun importInstant(writer: KotlinWriter) {
-    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "Instant", "")
+    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "Instant")
 }
 
 // import CLIENT-RT-UTILS.*
 internal fun importBase64Utils(writer: KotlinWriter) {
     // these are extensions on string/bytearray. For now import everything so we don't have to distinguish
-    writer.addImport(KotlinDependency.CLIENT_RT_UTILS.namespace, "*", "")
+    writer.addImport(KotlinDependency.CLIENT_RT_UTILS.namespace, "*")
     writer.dependencies.addAll(KotlinDependency.CLIENT_RT_UTILS.dependencies)
 }
 
