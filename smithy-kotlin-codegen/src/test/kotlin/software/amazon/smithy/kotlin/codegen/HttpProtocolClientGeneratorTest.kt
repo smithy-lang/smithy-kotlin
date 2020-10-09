@@ -94,6 +94,7 @@ class HttpProtocolClientGeneratorTest {
             }
             install(HttpSerde) {
                 serdeProvider = MockSerdeProvider()
+                idempotencyTokenProvider = config.idempotencyTokenProvider ?: defaultIdempotencyTokenProvider
             }
         }
     }
@@ -193,7 +194,7 @@ class HttpProtocolClientGeneratorTest {
     fun `it registers feature dependencies`() {
         // Serde, Http, KtorEngine, + SerdeJson (via feature)
         val ktDependencies = writer.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
-        assertEquals(4, ktDependencies.size)
+        assertEquals(5, ktDependencies.size)
     }
 
     @Test

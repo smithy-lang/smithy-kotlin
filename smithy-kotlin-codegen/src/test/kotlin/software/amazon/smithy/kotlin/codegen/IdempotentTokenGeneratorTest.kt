@@ -60,7 +60,7 @@ class IdempotentTokenGeneratorTest {
     }
 
     @Test
-    fun `it serializes operation inputs with idempotency token trait`() {
+    fun `it serializes operation payload inputs with idempotency token trait`() {
         val contents = getTransformFileContents("AllocateWidgetSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
@@ -127,32 +127,19 @@ class AllocateWidgetQuerySerializer(val input: AllocateWidgetInputQuery) : HttpS
         val contents = getTransformFileContents("AllocateWidgetHeaderSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
-
-    companion object {
-        private val CLIENTTOKEN_DESCRIPTOR = SdkFieldDescriptor("clientToken", SerialKind.String)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
-            field(CLIENTTOKEN_DESCRIPTOR)
-        }
-    }
-
+class AllocateWidgetHeaderSerializer(val input: AllocateWidgetInputHeader) : HttpSerialize {
     override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/input/AllocateWidget"
+            path = "/input/AllocateWidgetHeader"
         }
 
         builder.headers {
             append("Content-Type", "application/json")
+            append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.invoke()))
         }
 
-        val serializer = serializationContext.serializationProvider()
-        serializer.serializeStruct(OBJ_DESCRIPTOR) {
-            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, idempotencyTokenProvider.invoke())
-        }
-
-        builder.body = ByteArrayContent(serializer.toByteArray())
     }
 }
 """

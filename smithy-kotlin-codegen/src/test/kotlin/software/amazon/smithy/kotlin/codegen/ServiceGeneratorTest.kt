@@ -95,6 +95,7 @@ class ServiceGeneratorTest {
         val expected = """
     class Config {
         var httpEngine: HttpClientEngine? = null
+        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
     }
 """
         commonTestContents.shouldContainOnlyOnce(expected)

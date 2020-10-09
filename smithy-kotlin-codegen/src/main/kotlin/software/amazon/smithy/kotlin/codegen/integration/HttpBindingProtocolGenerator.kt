@@ -537,7 +537,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 is StringShape -> {
                     // NOTE: query parameters are allowed to be empty, whereas headers should omit empty string
                     // values from serde
-                    if (location == HttpBinding.Location.QUERY && member.hasTrait(IdempotencyTokenTrait::class.java)) {
+                    if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && member.hasTrait(IdempotencyTokenTrait::class.java)) {
                         // Call the idempotency token function if no supplied value.
                         writer.write("append(\"\$L\", (input.$memberName ?: serializationContext.idempotencyTokenProvider.invoke()))", paramName)
                     } else {

@@ -110,7 +110,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -126,7 +126,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
             if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
 
-        val serializer = provider()
+        val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
             input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
@@ -148,7 +148,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -174,7 +174,7 @@ class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -200,7 +200,7 @@ class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -226,7 +226,7 @@ class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpS
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
 class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -238,7 +238,7 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
         }
 
         if (input.payload1 != null) {
-            val serializer = provider()
+            val serializer = serializationContext.serializationProvider()
             Nested2Serializer(input.payload1).serialize(serializer)
             builder.body = ByteArrayContent(serializer.toByteArray())
         }
@@ -337,7 +337,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -348,7 +348,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
             append("Content-Type", "application/json")
         }
 
-        val serializer = provider()
+        val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
         }
@@ -529,7 +529,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -541,7 +541,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
         }
 
-        val serializer = provider()
+        val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.nestedWithEnum?.let { field(NESTEDWITHENUM_DESCRIPTOR, NestedEnumSerializer(it)) }
         }
@@ -576,7 +576,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -593,7 +593,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
             if (input.headerHttpDate != null) append("X-Date", input.headerHttpDate.format(TimestampFormat.RFC_5322))
         }
 
-        val serializer = provider()
+        val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.dateTime?.let { field(DATETIME_DESCRIPTOR, it.format(TimestampFormat.ISO_8601)) }
             input.epochSeconds?.let { rawField(EPOCHSECONDS_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
@@ -632,7 +632,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -644,7 +644,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
             if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
-        val serializer = provider()
+        val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payloadBlob?.let { field(PAYLOADBLOB_DESCRIPTOR, it.encodeBase64String()) }
         }
@@ -665,7 +665,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         val label1 = "\${input.hello}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
 class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.GET
 
         builder.url {

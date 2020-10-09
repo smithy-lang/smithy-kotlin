@@ -24,29 +24,14 @@ import software.aws.clientrt.http.request.*
 
 class InvokeRequestSerializer(val input: InvokeRequest): HttpSerialize {
     override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
-        // Autofill idempotency tokens
-        val finalRequest = if (input.idempotencyToken == null) {
-            InvokeRequest.invoke {
-                this.clientContext = input.clientContext
-                this.functionName = input.functionName
-                this.idempotencyToken = serializationContext.idempotencyTokenProvider.invoke()
-                this.invocationType = input.invocationType
-                this.logType = input.logType
-                this.payload = input.payload
-                this.qualifier = input.qualifier
-            }
-        } else {
-            input
-        }
-
         // URI
         builder.method = HttpMethod.POST
         builder.url {
             // NOTE: Individual serializers do not need to concern themselves with protocol/host
-            path = "/2015-03-31/functions/${finalRequest.functionName}/invocations"
+            path = "/2015-03-31/functions/${input.functionName}/invocations"
 
             // Query Parameters
-            if (finalRequest.qualifier != null) parameters.append("Qualifier", finalRequest.qualifier)
+            if (input.qualifier != null) parameters.append("Qualifier", input.qualifier)
         }
 
         // Headers
@@ -54,14 +39,15 @@ class InvokeRequestSerializer(val input: InvokeRequest): HttpSerialize {
             append("Content-Type", "application/x-amz-json-1.1")
 
             // optional header params
-            if (finalRequest.invocationType != null) append("X-Amz-Invocation-Type", finalRequest.invocationType)
-            if (finalRequest.logType != null) append("X-Amz-Log-Type", finalRequest.logType)
-            if (finalRequest.clientContext != null) append("X-Amz-Client-Context", finalRequest.clientContext)
+            if (input.invocationType != null) append("X-Amz-Invocation-Type", input.invocationType)
+            if (input.logType != null) append("X-Amz-Log-Type", input.logType)
+            if (input.clientContext != null) append("X-Amz-Client-Context", input.clientContext)
+            append("X-Amz-Client-Token", input.idempotencyToken ?: serializationContext.idempotencyTokenProvider.invoke())
         }
 
         // payload
-        if (finalRequest.payload != null) {
-            builder.body = ByteArrayContent(finalRequest.payload)
+        if (input.payload != null) {
+            builder.body = ByteArrayContent(input.payload)
         }
     }
 }
