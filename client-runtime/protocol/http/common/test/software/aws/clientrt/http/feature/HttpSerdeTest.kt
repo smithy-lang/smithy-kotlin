@@ -4,9 +4,9 @@
  */
 package software.aws.clientrt.http.feature
 
-import software.aws.clientrt.defaultIdempotencyTokenProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import software.aws.clientrt.defaultIdempotencyTokenProvider
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
