@@ -36,7 +36,7 @@ class HttpProtocolClientGeneratorTest {
         }
     }
 
-    class MockHttpSerde(requiresIdempotencyTokenProvider: Boolean) : HttpSerde("MockSerdeProvider", requiresIdempotencyTokenProvider) {
+    class MockHttpSerde : HttpSerde("MockSerdeProvider") {
         override fun addImportsAndDependencies(writer: KotlinWriter) {
             super.addImportsAndDependencies(writer)
             val serdeJsonSymbol = Symbol.builder()
@@ -58,7 +58,7 @@ class HttpProtocolClientGeneratorTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
 
-        val features: List<HttpFeature> = listOf(MockHttpFeature1(), MockHttpSerde(service.hasIdempotentTokenMember(model)))
+        val features: List<HttpFeature> = listOf(MockHttpFeature1(), MockHttpSerde())
         val generator = HttpProtocolClientGenerator(model, provider, writer, service, "test", features)
         generator.render()
         commonTestContents = writer.toString()
