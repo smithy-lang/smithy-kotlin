@@ -61,7 +61,7 @@ class HttpProtocolTestGenerator(
                         LOGGER.fine("Generating request protocol test cases for ${operation.id}")
 
                         // import package.models.*
-                        writer.addImport("${ctx.settings.moduleName}.model", "*", "")
+                        writer.addImport("${ctx.settings.moduleName}.model", "*")
 
                         requestTestBuilder
                             .writer(writer)
@@ -88,7 +88,7 @@ class HttpProtocolTestGenerator(
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                         LOGGER.fine("Generating response protocol test cases for ${operation.id}")
 
-                        writer.addImport("${ctx.settings.moduleName}.model", "*", "")
+                        writer.addImport("${ctx.settings.moduleName}.model", "*")
                         responseTestBuilder
                             .writer(writer)
                             .model(ctx.model)
@@ -118,7 +118,7 @@ class HttpProtocolTestGenerator(
                         ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
                             LOGGER.fine("Generating error protocol test cases for ${operation.id}")
 
-                            writer.addImport("${ctx.settings.moduleName}.model", "*", "")
+                            writer.addImport("${ctx.settings.moduleName}.model", "*")
                             errorTestBuilder
                                 .error(error)
                                 .writer(writer)

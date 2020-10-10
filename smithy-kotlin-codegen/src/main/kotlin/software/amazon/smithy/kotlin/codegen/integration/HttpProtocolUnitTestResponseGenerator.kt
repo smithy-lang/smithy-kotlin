@@ -45,8 +45,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     }
 
     override fun renderTestBody(test: HttpResponseTestCase) {
-        writer.addImport(KotlinDependency.CLIENT_RT_SMITHY_TEST.namespace, "*", "")
-        writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "HttpStatusCode", "")
+        writer.addImport(KotlinDependency.CLIENT_RT_SMITHY_TEST.namespace, "*")
+        writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "HttpStatusCode")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SMITHY_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
@@ -136,7 +136,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
 
     protected fun renderAssertions() {
         val outputShape = outputShape ?: return
-        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "assertEquals", "")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "assertEquals")
 
         val members = outputShape.members()
         for (member in members) {

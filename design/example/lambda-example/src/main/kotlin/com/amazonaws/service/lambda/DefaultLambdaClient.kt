@@ -8,6 +8,7 @@ package com.amazonaws.service.lambda
 import com.amazonaws.service.lambda.model.*
 import com.amazonaws.service.lambda.transform.*
 import kotlinx.coroutines.runBlocking
+import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.ServiceException
 import software.aws.clientrt.http.*
@@ -29,6 +30,7 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
         client = sdkHttpClient(httpEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
+                idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
             }
 
             // request defaults

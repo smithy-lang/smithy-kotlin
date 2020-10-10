@@ -22,6 +22,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 internal enum class SerializeLocation(val serializerFn: String) {
@@ -72,7 +73,13 @@ class SerializeStructGenerator(
                     else -> {
                         val (serializeFn, encoded) = serializationForShape(member)
                         // FIXME - this doesn't account for unboxed primitives
-                        writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }", member.defaultName(), member.descriptorName())
+                        val postfix = if (member.hasTrait(IdempotencyTokenTrait::class.java)) {
+                            " ?: field(${member.descriptorName()}, idempotencyTokenProvider.generateToken())"
+                        } else {
+                            ""
+                        }
+
+                        writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", member.defaultName(), member.descriptorName())
                     }
                 }
             }

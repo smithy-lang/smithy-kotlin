@@ -6,6 +6,7 @@ package software.aws.clientrt.http.feature
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
@@ -29,12 +30,13 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
+                idempotencyTokenProvider = IdempotencyTokenProvider.Default
             }
         }
 
         val builder = HttpRequestBuilder()
         val subject = object : HttpSerialize {
-            override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+            override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
                 builder.headers.append("called", "true")
             }
         }
@@ -50,12 +52,13 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = XmlSerdeProvider()
+                idempotencyTokenProvider = IdempotencyTokenProvider.Default
             }
         }
 
         val builder = HttpRequestBuilder()
         val subject = object : HttpSerialize {
-            override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+            override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
                 builder.headers.append("called", "true")
             }
         }
@@ -71,6 +74,7 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
+                idempotencyTokenProvider = IdempotencyTokenProvider.Default
             }
         }
 
@@ -100,6 +104,7 @@ class HttpSerdeTest {
         val client = sdkHttpClient(mockEngine) {
             install(HttpSerde) {
                 serdeProvider = XmlSerdeProvider()
+                idempotencyTokenProvider = IdempotencyTokenProvider.Default
             }
         }
 

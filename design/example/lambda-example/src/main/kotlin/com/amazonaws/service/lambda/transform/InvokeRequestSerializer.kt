@@ -18,11 +18,12 @@ import com.amazonaws.service.lambda.model.InvokeRequest
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.feature.HttpSerialize
+import software.aws.clientrt.http.feature.SerializationContext
 import software.aws.clientrt.http.feature.SerializationProvider
 import software.aws.clientrt.http.request.*
 
 class InvokeRequestSerializer(val input: InvokeRequest): HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider) {
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         // URI
         builder.method = HttpMethod.POST
         builder.url {
@@ -41,6 +42,7 @@ class InvokeRequestSerializer(val input: InvokeRequest): HttpSerialize {
             if (input.invocationType != null) append("X-Amz-Invocation-Type", input.invocationType)
             if (input.logType != null) append("X-Amz-Log-Type", input.logType)
             if (input.clientContext != null) append("X-Amz-Client-Context", input.clientContext)
+            append("X-Amz-Client-Token", input.idempotencyToken ?: serializationContext.idempotencyTokenProvider.generateToken())
         }
 
         // payload
