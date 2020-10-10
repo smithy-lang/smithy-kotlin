@@ -114,7 +114,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait(StreamingTrait::class.java)) {
-                    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.content", "*", "")
+                    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.content", "*")
                     writer.writeInline("StringContent(")
                     suffix = ")"
                 } else {
@@ -209,7 +209,7 @@ class ShapeValueGenerator(
         override fun numberNode(node: NumberNode) {
             when (currShape.type) {
                 ShapeType.TIMESTAMP -> {
-                    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "Instant", "")
+                    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "Instant")
                     writer.writeInline("Instant.fromEpochSeconds(\$L, 0)", node.value)
                 }
 

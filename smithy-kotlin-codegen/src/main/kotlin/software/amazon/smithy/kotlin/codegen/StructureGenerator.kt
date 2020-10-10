@@ -313,7 +313,7 @@ class StructureGenerator(
         val isRetryable = shape.getTrait(RetryableTrait::class.java).isPresent
 
         val exceptionBaseClass = protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
-        writer.addImport(exceptionBaseClass, "")
+        writer.addImport(exceptionBaseClass)
 
         startGenericStructureBlock("class \$class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
         writer.withBlock("", "}") {

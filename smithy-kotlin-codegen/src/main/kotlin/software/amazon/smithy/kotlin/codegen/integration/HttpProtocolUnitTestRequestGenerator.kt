@@ -29,8 +29,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     override fun openTestFunctionBlock(): String = "= httpRequestTest {"
 
     override fun renderTestBody(test: HttpRequestTestCase) {
-        writer.addImport(KotlinDependency.CLIENT_RT_SMITHY_TEST.namespace, "*", "")
-        writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "HttpMethod", "")
+        writer.addImport(KotlinDependency.CLIENT_RT_SMITHY_TEST.namespace, "*")
+        writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "HttpMethod")
+        writer.addImport(KotlinDependency.CLIENT_RT_CORE.namespace, "IdempotencyTokenProvider")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SMITHY_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
@@ -101,6 +102,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 writer.openBlock("val service = \$L.build(){", serviceName)
                     .write("httpEngine = mockEngine")
+                        .openBlock("idempotencyTokenProvider = object : IdempotencyTokenProvider {")
+                        .write("override fun generateToken() = \"00000000-0000-4000-8000-000000000000\"")
+                        .closeBlock("}")
                     .closeBlock("}")
 
                 // last statement should be service invoke

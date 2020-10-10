@@ -28,7 +28,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
     override val outputShape: Shape? = error
 
     override fun renderServiceCall() {
-        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "assertFailsWith", "")
+        writer.addImport(KotlinDependency.KOTLIN_TEST.namespace, "assertFailsWith")
 
         val inputParamName = operation.input.map { "input" }.orElse("")
         val isStreamingRequest = operation.input.map {

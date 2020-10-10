@@ -12,6 +12,7 @@ class InvokeRequest private constructor(builder: BuilderImpl){
     val clientContext: String? = builder.clientContext
     val payload: ByteArray? = builder.payload
     val qualifier: String? = builder.qualifier
+    val idempotencyToken: String? = builder.idempotencyToken
 
     companion object {
         operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
@@ -40,6 +41,9 @@ class InvokeRequest private constructor(builder: BuilderImpl){
 
         // Location: QUERY; Name: "Qualifier"
         var qualifier: String?
+
+        // Location: Header; Name: "idempotencyToken"
+        var idempotencyToken: String?
     }
 
     private class BuilderImpl : Builder, DslBuilder {
@@ -49,6 +53,7 @@ class InvokeRequest private constructor(builder: BuilderImpl){
         override var clientContext: String? = null
         override var payload: ByteArray? = null
         override var qualifier: String? = null
+        override var idempotencyToken: String? = null
         override fun build(): InvokeRequest = InvokeRequest(this)
     }
 }

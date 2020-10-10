@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.http.feature
 
+import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestPipeline
@@ -15,12 +16,17 @@ import software.aws.clientrt.serde.Serializer
 
 typealias SerializationProvider = () -> Serializer
 
+data class SerializationContext(
+    val serializationProvider: SerializationProvider,
+    val idempotencyTokenProvider: IdempotencyTokenProvider
+)
+
 /**
  * Implemented by types that know how to serialize to the HTTP protocol. A [Serializer] instance
  * is provided for serializing payload contents.
  */
 interface HttpSerialize {
-    suspend fun serialize(builder: HttpRequestBuilder, provider: SerializationProvider)
+    suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext)
 }
 
 typealias DeserializationProvider = (payload: ByteArray) -> Deserializer
@@ -36,9 +42,10 @@ interface HttpDeserialize {
 /**
  * HTTP serialization/deserialization feature (handles calling the appropriate serialize/deserialize methods)
  */
-class HttpSerde(private val serde: SerdeProvider) : Feature {
+class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenProvider: IdempotencyTokenProvider) : Feature {
     class Config {
         var serdeProvider: SerdeProvider? = null
+        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
     }
 
     companion object Feature : HttpClientFeatureFactory<Config, HttpSerde> {
@@ -46,7 +53,8 @@ class HttpSerde(private val serde: SerdeProvider) : Feature {
         override fun create(block: Config.() -> Unit): HttpSerde {
             val config = Config().apply(block)
             requireNotNull(config.serdeProvider) { "a serde provider must be set to use the HttpSerde feature" }
-            return HttpSerde(config.serdeProvider!!)
+            requireNotNull(config.idempotencyTokenProvider) { "A idempotency token provider must be supplied to use the HttpSerde feature" }
+            return HttpSerde(config.serdeProvider!!, config.idempotencyTokenProvider!!)
         }
     }
 
@@ -54,7 +62,7 @@ class HttpSerde(private val serde: SerdeProvider) : Feature {
         client.requestPipeline.intercept(HttpRequestPipeline.Transform) { subject ->
             when (subject) {
                 // serialize the input type to the outgoing request builder
-                is HttpSerialize -> subject.serialize(context, serde::serializer)
+                is HttpSerialize -> subject.serialize(context, SerializationContext(serde::serializer, idempotencyTokenProvider))
             }
         }
 

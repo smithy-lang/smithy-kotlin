@@ -134,6 +134,15 @@ class InstantTest {
         assertTrue(kotlin.math.abs(0.012345 - fracSecs) < 0.00001)
     }
 
+    @Test
+    fun `test get current time`() {
+        val currentTime = Instant.now()
+
+        val pastInstant = 1602099269 // 2020-10-07T19:34:29+00:00
+        // Arrow of time ensures this test shall always pass with a valid clock
+        assertTrue(currentTime.epochSeconds > pastInstant)
+    }
+
     // Select tests pulled from edge cases/tickets in the V2 Java SDK.
     // Always good to learn from others...
     class V2JavaSdkTests {

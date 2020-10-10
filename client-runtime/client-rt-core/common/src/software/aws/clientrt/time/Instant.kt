@@ -43,6 +43,11 @@ expect class Instant : Comparable<Instant> {
          * Parse a string formatted as epoch-seconds into an [Instant]
          */
         fun fromEpochSeconds(ts: String): Instant
+
+        /**
+         * Create an [Instant] from the current system time
+         */
+        fun now(): Instant
     }
 }
 

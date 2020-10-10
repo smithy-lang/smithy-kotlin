@@ -60,8 +60,10 @@ interface HttpFeature {
  */
 abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
     override val name: String = "HttpSerde"
+
     override fun renderConfigure(writer: KotlinWriter) {
         writer.write("serdeProvider = $serdeProvider()")
+        writer.write("idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default")
     }
 
     override fun addImportsAndDependencies(writer: KotlinWriter) {
@@ -71,7 +73,14 @@ abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
             .addDependency(KotlinDependency.CLIENT_RT_HTTP)
             .addDependency(KotlinDependency.CLIENT_RT_SERDE)
             .build()
-        writer.addImport(httpSerdeSymbol, "")
+        writer.addImport(httpSerdeSymbol)
+
+        val idempotencyTokenProviderSymbol = Symbol.builder()
+                .name("IdempotencyTokenProvider")
+                .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+                .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                .build()
+        writer.addImport(idempotencyTokenProviderSymbol)
     }
 }
 
@@ -108,13 +117,13 @@ class HttpProtocolClientGenerator(
     }
 
     private fun importSymbols() {
-        writer.addImport("$rootNamespace.model", "*", "")
-        writer.addImport("$rootNamespace.transform", "*", "")
+        writer.addImport("$rootNamespace.model", "*")
+        writer.addImport("$rootNamespace.transform", "*")
 
         // http.*
         val httpRootPkg = KotlinDependency.CLIENT_RT_HTTP.namespace
-        writer.addImport(httpRootPkg, "*", "")
-        writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig", "")
+        writer.addImport(httpRootPkg, "*")
+        writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
 
         // TODO - engine needs configurable (either auto detected or passed in through config).
@@ -125,7 +134,7 @@ class HttpProtocolClientGenerator(
             .addDependency(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE)
             .build()
 
-        writer.addImport(ktorEngineSymbol, "")
+        writer.addImport(ktorEngineSymbol)
     }
 
     private fun renderInit() {
@@ -174,7 +183,7 @@ class HttpProtocolClientGenerator(
                         .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", ".")
                         .addDependency(KotlinDependency.CLIENT_RT_HTTP)
                         .build()
-                    writer.addImport(requestBuilderSymbol, "")
+                    writer.addImport(requestBuilderSymbol)
                     writer.openBlock("val builder = HttpRequestBuilder().apply {")
                         .write("method = HttpMethod.\$L", httpTrait.method.toUpperCase())
                         // NOTE: since there is no input the URI can only be a literal (no labels to fill)
@@ -187,7 +196,7 @@ class HttpProtocolClientGenerator(
                     .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
                     .addDependency(KotlinDependency.CLIENT_RT_HTTP)
                     .build()
-                writer.addImport(executionCtxSymbol, "")
+                writer.addImport(executionCtxSymbol)
                 writer.openBlock("val execCtx = ExecutionContext.build {")
                     .call {
                         writer.write("expectedHttpStatus = ${httpTrait.code}")
@@ -208,7 +217,7 @@ class HttpProtocolClientGenerator(
                             .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
                             .addDependency(KotlinDependency.CLIENT_RT_HTTP)
                             .build()
-                        writer.addImport(httpResponseSymbol, "")
+                        writer.addImport(httpResponseSymbol)
                         // need to not run the response pipeline because there is no valid transform. Explicitly
                         // specify the raw (closed) HttpResponse
                         writer.write("client.roundTrip<HttpResponse>(\$L, execCtx)", inputParam)

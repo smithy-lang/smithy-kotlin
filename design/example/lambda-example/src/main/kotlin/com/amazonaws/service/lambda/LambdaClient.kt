@@ -15,6 +15,7 @@
 package com.amazonaws.service.lambda
 
 import com.amazonaws.service.lambda.model.*
+import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.SdkClient
 import software.aws.clientrt.http.engine.HttpClientEngine
 
@@ -33,6 +34,7 @@ interface LambdaClient: SdkClient {
     // FIXME - this is temporary and needs designed
     class Config {
         var httpEngine: HttpClientEngine? = null
+        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
     }
 
     suspend fun invoke(input: InvokeRequest): InvokeResponse
