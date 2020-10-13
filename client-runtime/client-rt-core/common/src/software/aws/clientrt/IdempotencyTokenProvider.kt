@@ -7,7 +7,7 @@ import kotlin.random.Random
  * Describes a function and default implementation to produce a string used as a token to dedupe
  * requests from the client.
  */
-fun interface IdempotencyTokenProvider {
+interface IdempotencyTokenProvider {
 
     /**
      * Generate a unique, UUID-like string that can be used to track unique client-side requests.
