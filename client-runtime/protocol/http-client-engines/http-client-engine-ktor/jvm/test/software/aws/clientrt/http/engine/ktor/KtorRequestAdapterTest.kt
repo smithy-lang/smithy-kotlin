@@ -6,19 +6,19 @@ package software.aws.clientrt.http.engine.ktor
 
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
-import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.ByteReadChannel
-import java.nio.ByteBuffer
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 import kotlinx.coroutines.*
 import org.junit.Test
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.header
 import software.aws.clientrt.http.request.url
+import java.nio.ByteBuffer
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 
 class KtorRequestAdapterTest {
     @Test

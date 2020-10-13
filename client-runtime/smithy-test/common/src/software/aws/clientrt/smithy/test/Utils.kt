@@ -4,11 +4,11 @@
  */
 package software.aws.clientrt.smithy.test
 
+import software.aws.clientrt.http.HttpBody
+import software.aws.clientrt.http.readAll
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import kotlin.test.fail
-import software.aws.clientrt.http.HttpBody
-import software.aws.clientrt.http.readAll
 
 /**
  * Convenience method for (test) code generation so that it doesn't have to deal
@@ -53,8 +53,10 @@ fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
         fail("expected content; actual content was null")
     }
 
-    assertTrue(expected.contentEquals(actual),
+    assertTrue(
+        expected.contentEquals(actual),
         "actual bytes read does not match expected: \n" +
-                "expected: `${expected.decodeToString()}`\n" +
-                "actual: `${actual.decodeToString()}`")
+            "expected: `${expected.decodeToString()}`\n" +
+            "actual: `${actual.decodeToString()}`"
+    )
 }

@@ -102,9 +102,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
 
                 writer.openBlock("val service = \$L.build(){", serviceName)
                     .write("httpEngine = mockEngine")
-                        .openBlock("idempotencyTokenProvider = object : IdempotencyTokenProvider {")
-                        .write("override fun generateToken() = \"00000000-0000-4000-8000-000000000000\"")
-                        .closeBlock("}")
+                    .openBlock("idempotencyTokenProvider = object : IdempotencyTokenProvider {")
+                    .write("override fun generateToken() = \"00000000-0000-4000-8000-000000000000\"")
+                    .closeBlock("}")
                     .closeBlock("}")
 
                 // last statement should be service invoke

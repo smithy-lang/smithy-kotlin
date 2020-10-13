@@ -20,11 +20,14 @@ class KotlinSettingsTest {
             .assemble()
             .unwrap()
 
-        val settings = KotlinSettings.from(model, Node.objectNodeBuilder()
-            .withMember("module", Node.from("example"))
-            .withMember("moduleVersion", Node.from("1.0.0"))
-            .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
-            .build())
+        val settings = KotlinSettings.from(
+            model,
+            Node.objectNodeBuilder()
+                .withMember("module", Node.from("example"))
+                .withMember("moduleVersion", Node.from("1.0.0"))
+                .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
+                .build()
+        )
 
         assertEquals(ShapeId.from("smithy.example#Example"), settings.service)
         assertEquals("example", settings.moduleName)
@@ -33,16 +36,19 @@ class KotlinSettingsTest {
 
     @Test fun `correctly reads rootProject var from build settings`() {
         val model = Model.assembler()
-                .addImport(KotlinSettingsTest::class.java.getResource("simple-service.smithy"))
-                .discoverModels()
-                .assemble()
-                .unwrap()
+            .addImport(KotlinSettingsTest::class.java.getResource("simple-service.smithy"))
+            .discoverModels()
+            .assemble()
+            .unwrap()
 
-        val settings = KotlinSettings.from(model, Node.objectNodeBuilder()
+        val settings = KotlinSettings.from(
+            model,
+            Node.objectNodeBuilder()
                 .withMember("module", Node.from("example"))
                 .withMember("moduleVersion", Node.from("1.0.0"))
                 .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(true)).build())
-                .build())
+                .build()
+        )
 
         assertTrue(settings.build.rootProject)
     }

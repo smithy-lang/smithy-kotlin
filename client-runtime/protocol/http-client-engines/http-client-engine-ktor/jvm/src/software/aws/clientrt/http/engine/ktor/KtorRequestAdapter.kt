@@ -4,7 +4,6 @@
  */
 package software.aws.clientrt.http.engine.ktor
 
-import io.ktor.client.request.HttpRequestBuilder as KtorRequestBuilder
 import io.ktor.client.utils.EmptyContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.ByteArrayContent
@@ -12,8 +11,6 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.ByteChannel
 import io.ktor.utils.io.ByteReadChannel
 import io.ktor.utils.io.close
-import java.nio.ByteBuffer
-import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -21,6 +18,9 @@ import kotlinx.coroutines.launch
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.io.Source
+import java.nio.ByteBuffer
+import kotlin.coroutines.CoroutineContext
+import io.ktor.client.request.HttpRequestBuilder as KtorRequestBuilder
 
 // streaming buffer size. The SDK stream is copied in chunks of this size to the output Ktor ByteReadChannel.
 // Too small and we risk too many context switches, too large and we waste memory and (if large enough) become

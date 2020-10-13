@@ -5,9 +5,9 @@
 package software.aws.clientrt.serde.json
 
 import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken as RawToken
-import java.nio.charset.Charset
 import software.aws.clientrt.serde.DeserializationException
+import java.nio.charset.Charset
+import com.google.gson.stream.JsonToken as RawToken
 
 private class JsonStreamReaderGson(payload: ByteArray, charset: Charset = Charsets.UTF_8) : JsonStreamReader {
     private val reader = JsonReader(payload.inputStream().reader(charset))

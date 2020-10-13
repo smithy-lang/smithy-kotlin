@@ -15,8 +15,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.*
-import kotlin.coroutines.CoroutineContext
-import kotlin.test.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -24,6 +22,8 @@ import software.aws.clientrt.http.*
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
 import software.aws.clientrt.http.request.url
+import kotlin.coroutines.CoroutineContext
+import kotlin.test.*
 
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall

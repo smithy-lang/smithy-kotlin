@@ -4,8 +4,6 @@
  */
 package software.aws.clientrt.http.feature
 
-import kotlin.test.Test
-import kotlin.test.assertFailsWith
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
@@ -16,6 +14,8 @@ import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
 import software.aws.clientrt.http.sdkHttpClient
 import software.aws.clientrt.testing.runSuspendTest
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 class DefaultValidateResponseTest {
     @Test

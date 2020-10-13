@@ -14,7 +14,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.integration
 
-import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
@@ -27,6 +26,7 @@ import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.utils.StringUtils
+import java.util.logging.Logger
 
 // TODO - figure out how much of this needs to be refactored and moved to specific protocol generators
 // e.g. restJson. Some of the details of how serializers are generated are definitely protocol specific
@@ -115,7 +115,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (!hasHttpTrait) {
                     LOGGER.warning(
                         "Unable to fetch $protocol protocol request bindings for ${op.id} because " +
-                                "it does not have an http binding trait"
+                            "it does not have an http binding trait"
                     )
                 }
                 hasHttpTrait
@@ -542,11 +542,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("append(\"\$L\", (input.$memberName ?: serializationContext.idempotencyTokenProvider.generateToken()))", paramName)
                     } else {
                         val cond =
-                                if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait(EnumTrait::class.java)) {
-                                    "input.$memberName != null"
-                                } else {
-                                    "input.$memberName?.isNotEmpty() == true"
-                                }
+                            if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait(EnumTrait::class.java)) {
+                                "input.$memberName != null"
+                            } else {
+                                "input.$memberName?.isNotEmpty() == true"
+                            }
 
                         val suffix = when {
                             memberTarget.hasTrait(EnumTrait::class.java) -> {
@@ -858,11 +858,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val tsFormat = bindingIndex.determineTimestampFormat(
                         hdrBinding.member,
                         HttpBinding.Location.HEADER,
-                        defaultTimestampFormat)
+                        defaultTimestampFormat
+                    )
                     importInstant(writer)
 
-                    writer.write("builder.\$L = response.headers[\$S]?.let { \$L }",
-                        memberName, headerName, parseInstant("it", tsFormat))
+                    writer.write(
+                        "builder.\$L = response.headers[\$S]?.let { \$L }",
+                        memberName, headerName, parseInstant("it", tsFormat)
+                    )
                 }
                 is CollectionShape -> {
                     // member > boolean, number, string, or timestamp
@@ -879,7 +882,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             val tsFormat = bindingIndex.determineTimestampFormat(
                                 hdrBinding.member,
                                 HttpBinding.Location.HEADER,
-                                defaultTimestampFormat)
+                                defaultTimestampFormat
+                            )
                             if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
                                 splitFn = "splitHttpDateHeaderListValues"
                             }
@@ -1049,28 +1053,28 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         importSerdePackage(writer)
 
         writer.write("")
-                .openBlock("class \$L {", deserializerSymbol.name)
-                .call {
-                    renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
-                }
-                .call {
+            .openBlock("class \$L {", deserializerSymbol.name)
+            .call {
+                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
+            }
+            .call {
 
-                    if (shape.isUnionShape) {
-                        writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
-                            writer.write("var value: ${symbol.name}? = null")
-                            DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                            writer.write("return value")
-                        }
-                                .closeBlock("}")
-                    } else {
-                        writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
-                            writer.write("val builder = ${symbol.name}.dslBuilder()")
-                            DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                            writer.write("return builder.build()")
-                        }
-                                .closeBlock("}")
+                if (shape.isUnionShape) {
+                    writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
+                        writer.write("var value: ${symbol.name}? = null")
+                        DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        writer.write("return value")
                     }
+                        .closeBlock("}")
+                } else {
+                    writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                        writer.write("val builder = ${symbol.name}.dslBuilder()")
+                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        writer.write("return builder.build()")
+                    }
+                        .closeBlock("}")
                 }
+            }
     }
 }
 

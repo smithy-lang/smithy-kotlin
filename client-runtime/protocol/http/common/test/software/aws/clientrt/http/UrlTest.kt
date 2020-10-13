@@ -70,11 +70,14 @@ class UrlTest {
     @Test
     fun `port range`() {
         fun checkPort(n: Int) {
-            assertEquals(n, Url(
-                Protocol.HTTPS,
-                "test.aws.com",
-                port = n
-            ).port)
+            assertEquals(
+                n,
+                Url(
+                    Protocol.HTTPS,
+                    "test.aws.com",
+                    port = n
+                ).port
+            )
         }
 
         checkPort(1)

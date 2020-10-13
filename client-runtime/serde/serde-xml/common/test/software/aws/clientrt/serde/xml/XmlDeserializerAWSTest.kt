@@ -4,10 +4,10 @@
  */
 package software.aws.clientrt.serde.xml
 
+import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import software.aws.clientrt.serde.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerAWSTest {
@@ -81,8 +81,9 @@ class XmlDeserializerAWSTest {
                         when (findNextFieldIndex()) {
                             NAME_DESCRIPTOR.index -> builder.name = deserializeString()
                             CALLER_REFERENCE_DESCRIPTOR.index -> builder.callerReference = deserializeString()
-                            HOSTED_ZONE_DESCRIPTOR.index -> builder.hostedZoneConfig =
-                                HostedZoneConfig.deserialize(deserializer)
+                            HOSTED_ZONE_DESCRIPTOR.index ->
+                                builder.hostedZoneConfig =
+                                    HostedZoneConfig.deserialize(deserializer)
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> skipValue()
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field index in CreateHostedZoneRequest deserializer"))
@@ -130,7 +131,7 @@ class XmlDeserializerAWSTest {
                        <Comment>comment</Comment>
                    </HostedZoneConfig>
                </CreateHostedZoneRequest>
-           """.trimIndent()
+        """.trimIndent()
 
         val unit = XmlDeserializer(testXml.encodeToByteArray())
 

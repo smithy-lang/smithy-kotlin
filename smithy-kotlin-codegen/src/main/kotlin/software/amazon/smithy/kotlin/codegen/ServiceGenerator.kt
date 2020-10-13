@@ -121,10 +121,10 @@ class ServiceGenerator(
 
                 if (service.hasIdempotentTokenMember(model)) {
                     val idempotencyTokenProviderSymbol = Symbol.builder()
-                            .name("IdempotencyTokenProvider")
-                            .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
-                            .addDependency(KotlinDependency.CLIENT_RT_CORE)
-                            .build()
+                        .name("IdempotencyTokenProvider")
+                        .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+                        .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                        .build()
                     writer.addImport(idempotencyTokenProviderSymbol, "", SymbolReference.ContextOption.DECLARE)
                     writer.write("var idempotencyTokenProvider: IdempotencyTokenProvider? = null")
                 }
@@ -166,11 +166,11 @@ fun StructureShape.hasStreamingMember(model: Model): Boolean =
 
 // Returns true if any operation bound to the service contains an input member marked with the IdempotencyTokenTrait
 fun ServiceShape.hasIdempotentTokenMember(model: Model) =
-        this.operations.any { operationShapeId ->
-            val operation = model.expectShape(operationShapeId) as OperationShape
-            operation.input.isPresent &&
-                    model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }
-        }
+    this.operations.any { operationShapeId ->
+        val operation = model.expectShape(operationShapeId) as OperationShape
+        operation.input.isPresent &&
+            model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }
+    }
 
 /**
  * Return the formatted (Kotlin) function signature for the given operation

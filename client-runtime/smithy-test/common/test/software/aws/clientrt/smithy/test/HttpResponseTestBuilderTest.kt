@@ -5,10 +5,10 @@
 package software.aws.clientrt.smithy.test
 
 import io.kotest.matchers.string.shouldContain
-import kotlin.test.Test
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.readAll
 import software.aws.clientrt.http.request.HttpRequestBuilder
+import kotlin.test.Test
 
 class HttpResponseTestBuilderTest {
     private data class Foo(val bar: Int, val baz: String)
@@ -32,9 +32,11 @@ class HttpResponseTestBuilderTest {
                 val mockedResp = mockEngine.roundTrip(HttpRequestBuilder())
                 mockedResp.headers.contains("bar", "1")
                 val mockedBody = mockedResp.body.readAll()?.decodeToString()
-                mockedBody.shouldContain("""
+                mockedBody.shouldContain(
+                    """
                     "baz": "quux"
-                """.trimIndent())
+                    """.trimIndent()
+                )
             }
         }
     }

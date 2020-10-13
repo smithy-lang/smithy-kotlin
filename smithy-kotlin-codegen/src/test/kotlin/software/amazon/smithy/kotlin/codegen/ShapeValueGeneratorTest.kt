@@ -15,7 +15,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import java.util.*
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
@@ -23,6 +22,7 @@ import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
+import java.util.*
 
 class ShapeValueGeneratorTest {
 
@@ -93,7 +93,7 @@ listOf<String>(
     "v2",
     "v3"
 )
-""".trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
     }
@@ -155,9 +155,11 @@ listOf<String>(
             .withMember("stringMember", "v1")
             .withMember("boolMember", true)
             .withMember("intMember", 1)
-            .withMember("structMember", Node.objectNodeBuilder()
-                .withMember("tsMember", 11223344)
-                .build()
+            .withMember(
+                "structMember",
+                Node.objectNodeBuilder()
+                    .withMember("tsMember", 11223344)
+                    .build()
             )
             .withMember("enumMember", "fooey")
             .withMember("floatMember", 2)
@@ -182,7 +184,7 @@ MyStruct {
     doubleMember = 3.0.toDouble()
     nullMember = null
 }
-""".trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
     }
@@ -249,7 +251,7 @@ MyStruct {
 
         val expected = """
 MyUnion.StringMember("v1")
-""".trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
     }

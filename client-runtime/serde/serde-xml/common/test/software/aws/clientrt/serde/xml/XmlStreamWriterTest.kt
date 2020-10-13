@@ -25,9 +25,11 @@ class XmlStreamWriterTest {
             user2
         )
         assertEquals(
-            expected, writeXmlStream(
+            expected,
+            writeXmlStream(
                 listOf(msg1, msg2)
-            )?.decodeToString())
+            )?.decodeToString()
+        )
     }
 
     @Test
@@ -38,12 +40,12 @@ class XmlStreamWriterTest {
     }
 
     private fun generateSimpleDocument() = xmlStreamWriter(true).apply {
-            startDocument(null, null)
-            startTag("id")
-            text(912345678901.toString())
-            endTag("id")
-            endDocument()
-        }
+        startDocument(null, null)
+        startTag("id")
+        text(912345678901.toString())
+        endTag("id")
+        endDocument()
+    }
 
     @Test
     fun `check non human readable`() {
@@ -165,4 +167,5 @@ val expected: String = """
             <followers_count>2</followers_count>
         </user>
     </message>
-</messages>""".trimIndent()
+</messages>
+""".trimIndent()

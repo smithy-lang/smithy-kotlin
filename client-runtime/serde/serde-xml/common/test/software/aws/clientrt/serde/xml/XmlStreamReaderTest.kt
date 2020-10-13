@@ -91,7 +91,8 @@ class XmlStreamReaderTest {
             <falsey>false</falsey>
           </nested>
           <null xsi:nil="true"></null>
-        </root>""".trimIndent().encodeToByteArray()
+        </root>
+        """.trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
         println(actual)
         val expected = listOf(

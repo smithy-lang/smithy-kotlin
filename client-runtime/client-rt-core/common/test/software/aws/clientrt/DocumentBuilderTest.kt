@@ -5,8 +5,8 @@
 
 package software.aws.clientrt
 
-import kotlin.test.*
 import software.aws.clientrt.smithy.*
+import kotlin.test.*
 
 class DocumentBuilderTest {
     @Test

@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import java.util.logging.Logger
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
@@ -12,6 +11,7 @@ import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.utils.StringUtils
+import java.util.logging.Logger
 
 // PropertyBag keys
 
@@ -67,7 +67,8 @@ fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name
  * @param rootNamespace All symbols will be created under this namespace (package) or as a direct child of it.
  * e.g. `com.foo` would create symbols under the `com.foo` package or `com.foo.model` package, etc.
  */
-class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") : SymbolProvider,
+class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") :
+    SymbolProvider,
     ShapeVisitor<Symbol> {
     val LOGGER = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
@@ -279,7 +280,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         val name = shape.defaultName()
         val namespace = "$rootNamespace.model"
         val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
-                .definitionFile("${shape.id.name}.kt")
+            .definitionFile("${shape.id.name}.kt")
 
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
