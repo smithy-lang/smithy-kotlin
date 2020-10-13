@@ -7,7 +7,7 @@ import software.aws.clientrt.time.Instant
  * Describes a function and default implementation to produce a string used as a token to dedupe
  * requests from the client.
  */
-interface IdempotencyTokenProvider {
+fun interface IdempotencyTokenProvider {
 
     /**
      * Generate a unique, UUID-like string that can be used to track unique client-side requests.

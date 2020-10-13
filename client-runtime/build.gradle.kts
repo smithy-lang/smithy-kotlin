@@ -27,6 +27,10 @@ fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
     return files.any{ it.name == platform || (it.name == "common" && platform == "jvm")}
 }
 
+kotlin {
+    jvm() // Create a JVM target with the default name 'jvm'
+}
+
 subprojects {
     // TODO - the group to publish under needs negotiated still
     group = "software.aws.smithy.kotlin"

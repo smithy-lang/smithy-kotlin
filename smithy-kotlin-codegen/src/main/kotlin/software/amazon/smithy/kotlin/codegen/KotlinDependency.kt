@@ -54,8 +54,8 @@ data class KotlinDependency(
         val CLIENT_RT_SMITHY_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "$CLIENT_RT_ROOT_NS.smithy.test", CLIENT_RT_GROUP, "smithy-test", CLIENT_RT_VERSION)
 
         // External third-party dependencies
-        val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", "1.3.72")
-        val KOTLIN_TEST_JUNIT5 = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test.junit5", "org.jetbrains.kotlin", "kotlin-test-junit5", "1.3.72")
+        val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", "1.4.10")
+        val KOTLIN_TEST_JUNIT5 = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test.junit5", "org.jetbrains.kotlin", "kotlin-test-junit5", "1.4.10")
         val JUNIT_JUPITER_ENGINE = KotlinDependency(GradleConfiguration.TestRuntimeOnly, "org.junit.jupiter", "org.junit.jupiter", "junit-jupiter-engine", "5.4.2")
     }
 

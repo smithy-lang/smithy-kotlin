@@ -16,7 +16,7 @@ repositories {
     maven { url = uri("https://kotlin.bintray.com/kotlinx") }
 }
 
-val ktor_version: String = "1.3.2"
+val ktor_version: String = "1.4.0"
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")

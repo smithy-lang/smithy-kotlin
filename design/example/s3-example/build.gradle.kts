@@ -21,7 +21,7 @@ dependencies {
     implementation(project(":client-runtime:io"))
 
     // FIXME - this isn't necessary it's only here for the example main function
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.6")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.9")
 }
 
 //compileKotlin {
