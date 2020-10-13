@@ -30,7 +30,7 @@ fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
 // FIXME - Workaround for unspecified kotlin target error after 1.4 upgrade.
 //  See https://www.pivotaltracker.com/story/show/175292052
 kotlin {
-    jvm()
+    jvm() // Create a JVM target with the default name 'jvm'
 }
 
 subprojects {
