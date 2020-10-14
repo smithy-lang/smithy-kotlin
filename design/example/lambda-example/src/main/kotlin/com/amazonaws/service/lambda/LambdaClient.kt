@@ -15,9 +15,14 @@
 package com.amazonaws.service.lambda
 
 import com.amazonaws.service.lambda.model.*
-import software.aws.clientrt.IdempotencyTokenProvider
+import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.SdkClient
+import software.aws.clientrt.config.ServiceClientIdempotencyTokenConfig
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.ServiceClientHttpConfig
+import software.aws.clientrt.logging.KLogger
+import software.aws.clientrt.logging.KotlinLogging
+import software.aws.clientrt.logging.ServiceClientLoggingConfig
 
 
 interface LambdaClient: SdkClient {
@@ -31,11 +36,11 @@ interface LambdaClient: SdkClient {
         }
     }
 
-    // FIXME - this is temporary and needs designed
-    class Config {
-        var httpEngine: HttpClientEngine? = null
-        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
-    }
+    data class Config(
+        override val httpConfig: HttpClientEngine? = null,
+        override val idempotencyTokenProvider: IdempotencyTokenProvider? = null,
+        override val kotlinLoggingProvider: () -> KLogger? = { null }
+    ) : ServiceClientHttpConfig, ServiceClientIdempotencyTokenConfig, ServiceClientLoggingConfig
 
     suspend fun invoke(input: InvokeRequest): InvokeResponse
     suspend fun invoke(block: InvokeRequest.DslBuilder.() -> Unit): InvokeResponse {

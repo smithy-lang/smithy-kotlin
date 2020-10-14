@@ -15,7 +15,7 @@
 package com.amazonaws.service.s3
 
 import com.amazonaws.service.s3.model.*
-import software.aws.clientrt.IdempotencyTokenProvider
+import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.SdkClient
 import software.aws.clientrt.http.engine.HttpClientEngine
 

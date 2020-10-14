@@ -1,7 +1,11 @@
-package software.aws.clientrt
+package software.aws.clientrt.config
 
 import software.aws.clientrt.time.Instant
 import kotlin.random.Random
+
+interface ServiceClientIdempotencyTokenConfig {
+    val idempotencyTokenProvider: IdempotencyTokenProvider?
+}
 
 /**
  * Describes a function and default implementation to produce a string used as a token to dedupe
