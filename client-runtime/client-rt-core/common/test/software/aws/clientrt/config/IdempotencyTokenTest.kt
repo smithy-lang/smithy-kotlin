@@ -1,4 +1,4 @@
-package software.aws.clientrt
+package software.aws.clientrt.config
 
 import kotlin.test.Test
 import kotlin.test.assertNotEquals
