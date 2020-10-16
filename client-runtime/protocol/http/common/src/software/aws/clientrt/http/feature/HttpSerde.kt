@@ -45,11 +45,11 @@ interface HttpDeserialize {
 /**
  * HTTP serialization/deserialization feature (handles calling the appropriate serialize/deserialize methods)
  */
-class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenProvider: IdempotencyTokenProvider, private val logger: KLogger) : Feature {
+class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenProvider: IdempotencyTokenProvider) : Feature {
+
     class Config {
         var serdeProvider: SerdeProvider? = null
         var idempotencyTokenProvider: IdempotencyTokenProvider? = null
-        var logger: KLogger? = null
     }
 
     companion object Feature : HttpClientFeatureFactory<Config, HttpSerde> {
@@ -58,8 +58,7 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
             val config = Config().apply(block)
             requireNotNull(config.serdeProvider) { "a serde provider must be set to use the HttpSerde feature" }
             requireNotNull(config.idempotencyTokenProvider) { "A idempotency token provider must be supplied to use the HttpSerde feature" }
-            requireNotNull(config.logger) { "A logging provider must be supplied to use the HttpSerde feature" }
-            return HttpSerde(config.serdeProvider!!, config.idempotencyTokenProvider!!, config.logger!!)
+            return HttpSerde(config.serdeProvider!!, config.idempotencyTokenProvider!!)
         }
     }
 
@@ -69,7 +68,6 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
                 // serialize the input type to the outgoing request builder
                 is HttpSerialize -> {
                     subject.serialize(context, SerializationContext(serde::serializer, idempotencyTokenProvider))
-                    logger.debug { "Serialized $subject" }
                 }
             }
         }
