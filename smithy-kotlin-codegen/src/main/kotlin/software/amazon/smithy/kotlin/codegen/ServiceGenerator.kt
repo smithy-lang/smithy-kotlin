@@ -37,6 +37,41 @@ const val SECTION_SERVICE_INTERFACE_COMPANION_OBJ = "service-interface-companion
 const val SECTION_SERVICE_INTERFACE_CONFIG = "service-interface-config"
 
 /**
+ * HttpFeature interface that allows pipeline middleware to be registered and configured with the generator
+ */
+fun interface ServiceConfigFeature {
+    fun render(model: Model, service: ServiceShape, applicationProtocol: ApplicationProtocol, writer: KotlinWriter)
+}
+
+/**
+ * Built-in config features for smithy-kotlin.
+ */
+val defaultServiceConfigFeatures = listOf(
+        ServiceConfigFeature { _, _, applicationProtocol, writer ->
+            if (applicationProtocol.isHttpProtocol) {
+                val engineSymbol = Symbol.builder()
+                        .name("HttpClientEngine")
+                        .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine", ".")
+                        .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+                        .build()
+                writer.addImport(engineSymbol, "", SymbolReference.ContextOption.DECLARE)
+                writer.write("var httpEngine: HttpClientEngine? = null")
+            }
+        },
+        ServiceConfigFeature { model, service, _, writer ->
+            if (service.hasIdempotentTokenMember(model)) {
+                val idempotencyTokenProviderSymbol = Symbol.builder()
+                        .name("IdempotencyTokenProvider")
+                        .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
+                        .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                        .build()
+                writer.addImport(idempotencyTokenProviderSymbol, "", SymbolReference.ContextOption.DECLARE)
+                writer.write("var idempotencyTokenProvider: IdempotencyTokenProvider? = null")
+            }
+        }
+)
+
+/**
  * Renders just the service interfaces. The actual implementation is handled by protocol generators
  */
 class ServiceGenerator(
@@ -45,7 +80,8 @@ class ServiceGenerator(
     private val writer: KotlinWriter,
     private val service: ServiceShape,
     private val rootNamespace: String,
-    private val applicationProtocol: ApplicationProtocol
+    private val applicationProtocol: ApplicationProtocol,
+    private val integrationServiceConfigFeatures: List<ServiceConfigFeature>
 ) {
     private val serviceSymbol = symbolProvider.toSymbol(service)
 
@@ -69,7 +105,12 @@ class ServiceGenerator(
 
                 writer.write("")
                 writer.pushState(SECTION_SERVICE_INTERFACE_CONFIG)
-                renderConfig()
+                writer.openBlock("class Config {")
+                    .call {
+                        val allFeatures = defaultServiceConfigFeatures + integrationServiceConfigFeatures
+                        allFeatures.forEach { feature -> feature.render(model, service, applicationProtocol, writer) }
+                    }
+                    .closeBlock("}")
                 writer.popState()
             }
             .call {
@@ -100,35 +141,6 @@ class ServiceGenerator(
             .write("val config = Config().apply(block)")
             .write("return Default${serviceSymbol.name}(config)")
             .closeBlock("}")
-            .closeBlock("}")
-    }
-
-    /**
-     * Render the service configuration object/DSL builder
-     */
-    private fun renderConfig() {
-        writer.openBlock("class Config {")
-            .call {
-                if (applicationProtocol.isHttpProtocol) {
-                    val engineSymbol = Symbol.builder()
-                        .name("HttpClientEngine")
-                        .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine", ".")
-                        .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                        .build()
-                    writer.addImport(engineSymbol, "", SymbolReference.ContextOption.DECLARE)
-                    writer.write("var httpEngine: HttpClientEngine? = null")
-                }
-
-                if (service.hasIdempotentTokenMember(model)) {
-                    val idempotencyTokenProviderSymbol = Symbol.builder()
-                        .name("IdempotencyTokenProvider")
-                        .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
-                        .addDependency(KotlinDependency.CLIENT_RT_CORE)
-                        .build()
-                    writer.addImport(idempotencyTokenProviderSymbol, "", SymbolReference.ContextOption.DECLARE)
-                    writer.write("var idempotencyTokenProvider: IdempotencyTokenProvider? = null")
-                }
-            }
             .closeBlock("}")
     }
 

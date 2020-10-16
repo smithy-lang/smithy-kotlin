@@ -31,7 +31,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     override fun renderTestBody(test: HttpRequestTestCase) {
         writer.addImport(KotlinDependency.CLIENT_RT_SMITHY_TEST.namespace, "*")
         writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "HttpMethod")
-        writer.addImport(KotlinDependency.CLIENT_RT_CORE.namespace, "IdempotencyTokenProvider")
+        writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", "IdempotencyTokenProvider")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SMITHY_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")

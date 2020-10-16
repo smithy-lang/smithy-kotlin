@@ -77,7 +77,7 @@ abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
 
         val idempotencyTokenProviderSymbol = Symbol.builder()
             .name("IdempotencyTokenProvider")
-            .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+            .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
             .addDependency(KotlinDependency.CLIENT_RT_CORE)
             .build()
         writer.addImport(idempotencyTokenProviderSymbol)
