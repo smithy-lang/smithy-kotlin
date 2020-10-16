@@ -140,7 +140,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         writers.useShapeWriter(shape) {
-            ServiceGenerator(model, symbolProvider, it, shape, settings.moduleName, applicationProtocol).render()
+            val serviceConfigFeatures = integrations.flatMap { feature -> feature.serviceClientConfigFeatures }
+            ServiceGenerator(model, symbolProvider, it, shape, settings.moduleName, applicationProtocol, serviceConfigFeatures).render()
         }
     }
 }
