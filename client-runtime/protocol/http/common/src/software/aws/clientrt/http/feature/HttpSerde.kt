@@ -10,9 +10,6 @@ import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponsePipeline
-import software.aws.clientrt.logging.KLogger
-import software.aws.clientrt.logging.KotlinLogging
-import software.aws.clientrt.logging.ServiceClientLoggingConfig
 import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.SerdeProvider
 import software.aws.clientrt.serde.Serializer

@@ -35,7 +35,7 @@ class DefaultS3Client(config: S3Client.Config): S3Client {
 
     init {
         val engineConfig = HttpClientEngineConfig()
-        val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)
+        val httpEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
         client = sdkHttpClient(httpEngine) {
             install(HttpSerde) {
@@ -95,7 +95,7 @@ class DefaultS3Client(config: S3Client.Config): S3Client {
 @OptIn(ExperimentalStdlibApi::class)
 fun main() = runBlocking{
 
-    val service = S3Client.build()
+    val service = S3Client()
     val putRequest = PutObjectRequest{
         body = ByteStream.fromString("my bucket content") 
         bucket = "my-bucket"

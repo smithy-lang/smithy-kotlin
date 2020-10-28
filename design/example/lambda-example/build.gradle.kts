@@ -18,7 +18,6 @@ dependencies {
 
     // FIXME - this is only necessary for a conversion from ByteStream to HttpBody (which belongs in client runtime)
     implementation(project(":client-runtime:io"))
-
     implementation(project(":client-runtime:logging"))
 
     // FIXME - this isn't necessary it's only here for the example main function

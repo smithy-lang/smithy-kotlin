@@ -1,13 +1,5 @@
 package software.aws.clientrt.logging
 
-public interface ServiceClientLoggingConfig {
-    public val kotlinLoggingProvider: () -> KLogger?
-
-    public companion object {
-        public val Default: () -> KLogger? = { KotlinLogging.logger { } }
-    }
-}
-
 public expect interface KLogger {
 
     /**

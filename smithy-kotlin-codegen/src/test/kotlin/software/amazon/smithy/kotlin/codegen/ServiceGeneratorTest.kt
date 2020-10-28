@@ -34,7 +34,7 @@ class ServiceGeneratorTest {
         val writer = KotlinWriter("com.test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
         val applicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
-        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol)
+        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol, listOf())
         generator.render()
 
         commonTestContents = writer.toString()
@@ -119,19 +119,19 @@ class ServiceGeneratorTest {
         val writer = KotlinWriter("com.test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
         val applicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
-        writer.onSection(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) { _ ->
+        writer.onSection(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) {
             writer.openBlock("companion object {")
                 .write("fun foo(): Int = 1")
                 .closeBlock("}")
         }
 
-        writer.onSection(SECTION_SERVICE_INTERFACE_CONFIG) { _ ->
+        writer.onSection(SECTION_SERVICE_INTERFACE_CONFIG) {
             writer.openBlock("class Config {")
                 .write("var bar: Int = 2")
                 .closeBlock("}")
         }
 
-        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol)
+        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol, listOf())
         generator.render()
         val contents = writer.toString()
 

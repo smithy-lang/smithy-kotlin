@@ -8,9 +8,9 @@ package com.amazonaws.service.lambda
 import com.amazonaws.service.lambda.model.*
 import com.amazonaws.service.lambda.transform.*
 import kotlinx.coroutines.runBlocking
-import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.ServiceException
+import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
@@ -18,9 +18,6 @@ import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.feature.DefaultRequest
 import software.aws.clientrt.http.feature.DefaultValidateResponse
 import software.aws.clientrt.http.feature.HttpSerde
-import software.aws.clientrt.logging.KLogger
-import software.aws.clientrt.logging.KotlinLogging
-import software.aws.clientrt.logging.ServiceClientLoggingConfig
 import software.aws.clientrt.serde.json.JsonSerdeProvider
 
 class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
@@ -28,13 +25,12 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
 
     init {
         val engineConfig = HttpClientEngineConfig()
-        val httpEngine = config.httpConfig ?: KtorEngine(engineConfig)
+        val httpEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
         client = sdkHttpClient(httpEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
                 idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
-                logger = config.kotlinLoggingProvider.invoke() ?: ServiceClientLoggingConfig.Default.invoke()
             }
 
             // request defaults
@@ -84,7 +80,7 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
 
 
 fun main() = runBlocking{
-    val client = LambdaClient.build()
+    val client = LambdaClient()
     val request = InvokeRequest {
         functionName = "myfunction"
         payload = "some payload".toByteArray()
