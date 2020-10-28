@@ -3,7 +3,14 @@ package software.aws.clientrt.config
 import software.aws.clientrt.time.Instant
 import kotlin.random.Random
 
-interface ServiceClientIdempotencyTokenConfig {
+/**
+ * User-accessible configuration for client-side token generation.
+ */
+interface IdempotencyTokenConfig {
+
+    /**
+     * Allows to supply a custom function generate idempotency tokens.
+     */
     val idempotencyTokenProvider: IdempotencyTokenProvider?
 }
 
@@ -29,6 +36,9 @@ fun interface IdempotencyTokenProvider {
     }
 
     companion object {
+        /**
+         * Creates the default token provider.
+         */
         val Default: IdempotencyTokenProvider = DefaultIdempotencyTokenProvider()
     }
 }
