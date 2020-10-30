@@ -87,7 +87,7 @@ class HttpProtocolClientGeneratorTest {
         val expected = """
     init {
         val engineConfig = HttpClientEngineConfig()
-        val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)
+        val httpEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
         client = sdkHttpClient(httpEngine) {
             install(MockHttpFeature1) {
                 configurationField1 = "testing"

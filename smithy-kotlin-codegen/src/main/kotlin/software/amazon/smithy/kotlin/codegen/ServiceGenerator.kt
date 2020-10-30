@@ -72,8 +72,6 @@ class ServiceGenerator(
 
         writer.renderDocumentation(service)
 
-        registerSections()
-
         writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
             .call { overrideServiceName() }
             .call {
@@ -84,37 +82,7 @@ class ServiceGenerator(
                 writer.popState()
 
                 writer.write("")
-                writer.withState(SECTION_SERVICE_INTERFACE_CONFIG) {
-                    writer.write("class Config private constructor(builder: BuilderImpl): \${L@$SECTION_SERVICE_CONFIG_PARENT_TYPE} {", "")
-
-                    writer.withBlock("", "}") {
-                        withState(SECTION_SERVICE_CONFIG_PROPERTIES)
-                        blankLine()
-                        renderConfigCompanionObject()
-                        blankLine()
-                        renderConfigCopyFunction()
-                        blankLine()
-                        withBlock("interface Builder {", "}") {
-                            write("fun build(): Config")
-                            withState(SECTION_SERVICE_CONFIG_BUILDER_BODY)
-                        }
-                        blankLine()
-                        withBlock("interface DslBuilder {", "}") {
-                            write("fun build(): Config")
-                            withState(SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY)
-                        }
-                        blankLine()
-                        withBlock("internal class BuilderImpl() : Builder, DslBuilder {", "}") {
-                            withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES)
-                            blankLine()
-                            withBlock("constructor(config: Config) : this() {", "}") {
-                                withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR)
-                            }
-                            blankLine()
-                            withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY)
-                        }
-                    }
-                }
+                renderServiceConfigType()
             }
             .call {
                 operations.forEach { op ->
@@ -125,25 +93,64 @@ class ServiceGenerator(
             .write("")
     }
 
+    private fun renderServiceConfigType() {
+        registerSections()
+
+        writer.withState(SECTION_SERVICE_INTERFACE_CONFIG) {
+            writer.write("class Config private constructor(builder: BuilderImpl): \${L@$SECTION_SERVICE_CONFIG_PARENT_TYPE} {", "")
+
+            writer.withBlock("", "}") {
+                withState(SECTION_SERVICE_CONFIG_PROPERTIES)
+                blankLine()
+                renderConfigCompanionObject()
+                blankLine()
+                renderConfigCopyFunction()
+                blankLine()
+                withBlock("interface Builder {", "}") {
+                    write("fun build(): Config")
+                    withState(SECTION_SERVICE_CONFIG_BUILDER_BODY)
+                }
+                blankLine()
+                withBlock("interface DslBuilder {", "}") {
+                    write("fun build(): Config")
+                    withState(SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY)
+                }
+                blankLine()
+                withBlock("internal class BuilderImpl() : Builder, DslBuilder {", "}") {
+                    withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES)
+                    blankLine()
+                    withBlock("constructor(config: Config) : this() {", "}") {
+                        withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR)
+                    }
+                    blankLine()
+                    write("override fun build(): Config = Config(this)")
+                    withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY)
+                }
+            }
+        }
+    }
+
     private fun registerSections() {
-        writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
-            if (applicationProtocol.isHttpProtocol) {
+        if (applicationProtocol.isHttpProtocol) {
+            writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
                 text as String
 
                 writer.addImport("HttpClientEngine", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine")
+                writer.addImport("HttpClientEngineConfig", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine")
                 writer.addImport("HttpClientConfig", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.config")
 
                 when {
                     text.isEmpty() -> writer.write("HttpClientConfig")
-                    else -> writer.write("$text, \$L@HttpClientConfig")
+                    else -> writer.write("$text, HttpClientConfig")
                 }
             }
         }
 
-        writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
-            if (service.hasIdempotentTokenMember(model)) {
+        if (service.hasIdempotentTokenMember(model)) {
+            writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
                 text as String
 
+                writer.addImport("IdempotencyTokenConfig", KotlinDependency.CLIENT_RT_CORE, "${KotlinDependency.CLIENT_RT_CORE.namespace}.config")
                 writer.addImport("IdempotencyTokenProvider", KotlinDependency.CLIENT_RT_CORE, "${KotlinDependency.CLIENT_RT_CORE.namespace}.config")
 
                 when {
@@ -188,7 +195,7 @@ class ServiceGenerator(
 
         writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES) {
             if (applicationProtocol.isHttpProtocol) {
-                writer.write("override var httpEngine: HttpClientEngine? = null")
+                writer.write("override var httpClientEngine: HttpClientEngine? = null")
                 writer.write("override var httpClientEngineConfig: HttpClientEngineConfig? = null")
             }
 
@@ -199,7 +206,7 @@ class ServiceGenerator(
 
         writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR) {
             if (applicationProtocol.isHttpProtocol) {
-                writer.write("this.httpEngine = config.httpEngine")
+                writer.write("this.httpClientEngine = config.httpClientEngine")
                 writer.write("this.httpClientEngineConfig = config.httpClientEngineConfig")
             }
 
@@ -210,7 +217,7 @@ class ServiceGenerator(
 
         writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY) {
             if (applicationProtocol.isHttpProtocol) {
-                writer.write("override fun httpEngine(httpEngine: HttpClientEngine): Builder = apply { this.httpEngine = httpEngine }")
+                writer.write("override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }")
                 writer.write("override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }")
             }
 

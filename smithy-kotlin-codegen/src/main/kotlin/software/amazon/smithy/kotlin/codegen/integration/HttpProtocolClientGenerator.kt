@@ -141,7 +141,7 @@ class HttpProtocolClientGenerator(
         writer.openBlock("init {")
             // FIXME - this will eventually come from the client config/builder
             .write("val engineConfig = HttpClientEngineConfig()")
-            .write("val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)")
+            .write("val httpEngine = config.httpClientEngine ?: KtorEngine(engineConfig)")
             .openBlock("client = sdkHttpClient(httpEngine) {")
             .call { renderHttpClientConfiguration() }
             .closeBlock("}")
