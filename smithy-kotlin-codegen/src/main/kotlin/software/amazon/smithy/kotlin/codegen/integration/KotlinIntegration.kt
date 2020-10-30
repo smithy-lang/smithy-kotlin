@@ -17,7 +17,6 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.ServiceConfigFeature
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
 
@@ -108,12 +107,6 @@ interface KotlinIntegration {
     ) {
         // pass
     }
-
-    /**
-     * Get the list of service client features to register
-     */
-    val serviceClientConfigFeatures: List<ServiceConfigFeature>
-        get() = listOf()
 }
 
 /**
