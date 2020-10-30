@@ -34,7 +34,7 @@ class ServiceGeneratorTest {
         val writer = KotlinWriter("com.test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
         val applicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
-        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol, listOf())
+        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol)
         generator.render()
 
         commonTestContents = writer.toString()
@@ -80,8 +80,8 @@ class ServiceGeneratorTest {
     fun `it renders a companion object`() {
         val expected = """
     companion object {
-        fun build(block: Config.() -> Unit = {}): ExampleClient {
-            val config = Config().apply(block)
+        operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ExampleClient {
+            val config = Config.BuilderImpl().apply(block).build()
             return DefaultExampleClient(config)
         }
     }
@@ -90,12 +90,53 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    fun `it renders a configuration object`() {
+    fun `it generates a child configuration type`() {
         // we are using a default HTTP protocol in the test and so we should end up with an engine by default
         val expected = """
-    class Config {
-        var httpEngine: HttpClientEngine? = null
-        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+    class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig {
+
+        override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
+        override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig
+        override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
+
+        companion object {
+            @JvmStatic
+            fun builder(): Builder = BuilderImpl()
+            fun dslBuilder(): DslBuilder = BuilderImpl()
+            operator fun invoke(block: DslBuilder.() -> Unit): Config = BuilderImpl().apply(block).build()
+        }
+
+        fun copy(block: DslBuilder.() -> Unit = {}): Config = BuilderImpl(this).apply(block).build()
+
+        interface Builder {
+            fun build(): Config
+            fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
+            fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder
+            fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder
+        }
+
+        interface DslBuilder {
+            fun build(): Config
+            var httpClientEngine: HttpClientEngine?
+            var httpClientEngineConfig: HttpClientEngineConfig?
+            var idempotencyTokenProvider: IdempotencyTokenProvider?
+        }
+
+        internal class BuilderImpl() : Builder, DslBuilder {
+            override var httpEngine: HttpClientEngine? = null
+            override var httpClientEngineConfig: HttpClientEngineConfig? = null
+            override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+
+            constructor(config: Config) : this() {
+                this.httpEngine = config.httpEngine
+                this.httpClientEngineConfig = config.httpClientEngineConfig
+                this.idempotencyTokenProvider = config.idempotencyTokenProvider
+            }
+
+            override fun httpEngine(httpEngine: HttpClientEngine): Builder = apply { this.httpEngine = httpEngine }
+            override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }
+            override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
+        }
     }
 """
         commonTestContents.shouldContainOnlyOnce(expected)
@@ -131,7 +172,7 @@ class ServiceGeneratorTest {
                 .closeBlock("}")
         }
 
-        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol, listOf())
+        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol)
         generator.render()
         val contents = writer.toString()
 

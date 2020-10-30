@@ -16,7 +16,6 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -36,58 +35,19 @@ const val SECTION_SERVICE_INTERFACE_COMPANION_OBJ = "service-interface-companion
  */
 const val SECTION_SERVICE_INTERFACE_CONFIG = "service-interface-config"
 
-/**
- * HttpFeature interface that allows pipeline middleware to be registered and configured with the generator
- */
-interface ServiceConfigFeature {
-    /**
-     * Supply parameters to be added to the constructor of the generated Config type.
-     */
-    fun supplyConstructorParameters(model: Model, service: ServiceShape, applicationProtocol: ApplicationProtocol, writer: KotlinWriter): List<String> = emptyList()
+const val SECTION_SERVICE_CONFIG_PARENT_TYPE = "serviceConfigParentType"
 
-    /**
-     * Supply types that the Config type implements.
-     */
-    fun supplyInterfaces(model: Model, service: ServiceShape, applicationProtocol: ApplicationProtocol, writer: KotlinWriter): List<String> = emptyList()
-}
+const val SECTION_SERVICE_CONFIG_PROPERTIES = "serviceConfigProperties"
 
-/**
- * Built-in config features for smithy-kotlin.
- */
-private val defaultServiceConfigFeatures = listOf(
-        object : ServiceConfigFeature {
-            override fun supplyConstructorParameters(model: Model, service: ServiceShape, applicationProtocol: ApplicationProtocol, writer: KotlinWriter): List<String> {
-                val params = mutableListOf<String>()
+const val SECTION_SERVICE_CONFIG_BUILDER_BODY = "serviceConfigBuilderBody"
 
-                if (applicationProtocol.isHttpProtocol) {
-                    val engineSymbol = Symbol.builder()
-                            .name("HttpClientEngine")
-                            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine", ".")
-                            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                            .build()
-                    writer.addImport(engineSymbol, "", SymbolReference.ContextOption.DECLARE)
+const val SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY = "serviceConfigDslBuilderBody"
 
-                    params.add("var httpEngine: HttpClientEngine? = null")
-                }
+const val SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES = "serviceConfigBuilderImplProperties"
 
-                if (service.hasIdempotentTokenMember(model)) {
-                    val idempotencyTokenProviderSymbol = Symbol.builder()
-                            .name("IdempotencyTokenProvider")
-                            .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
-                            .addDependency(KotlinDependency.CLIENT_RT_CORE)
-                            .build()
-                    writer.addImport(idempotencyTokenProviderSymbol, "", SymbolReference.ContextOption.DECLARE)
-                    params.add("var idempotencyTokenProvider: IdempotencyTokenProvider? = null")
-                }
+const val SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR = "serviceConfigBuilderImplConstructor"
 
-                return params
-            }
-
-            override fun supplyInterfaces(model: Model, service: ServiceShape, applicationProtocol: ApplicationProtocol, writer: KotlinWriter): List<String> {
-                return emptyList()
-            }
-        }
-)
+const val SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY = "serviceConfigBuilderImplBody"
 
 /**
  * Renders just the service interfaces. The actual implementation is handled by protocol generators
@@ -98,8 +58,7 @@ class ServiceGenerator(
     private val writer: KotlinWriter,
     private val service: ServiceShape,
     private val rootNamespace: String,
-    private val applicationProtocol: ApplicationProtocol,
-    private val integrationServiceConfigFeatures: List<ServiceConfigFeature>
+    private val applicationProtocol: ApplicationProtocol
 ) {
     private val serviceSymbol = symbolProvider.toSymbol(service)
 
@@ -112,6 +71,9 @@ class ServiceGenerator(
         val operationsIndex = OperationIndex.of(model)
 
         writer.renderDocumentation(service)
+
+        registerSections()
+
         writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
             .call { overrideServiceName() }
             .call {
@@ -122,11 +84,37 @@ class ServiceGenerator(
                 writer.popState()
 
                 writer.write("")
-                writer.pushState(SECTION_SERVICE_INTERFACE_CONFIG)
-                val allFeatures = defaultServiceConfigFeatures + integrationServiceConfigFeatures
-                val configTypeIntegrations = generateConfigTypeIntegrations(allFeatures)
-                writer.write("class Config$configTypeIntegrations")
-                writer.popState()
+                writer.withState(SECTION_SERVICE_INTERFACE_CONFIG) {
+                    writer.write("class Config private constructor(builder: BuilderImpl): \${L@$SECTION_SERVICE_CONFIG_PARENT_TYPE} {", "")
+
+                    writer.withBlock("", "}") {
+                        withState(SECTION_SERVICE_CONFIG_PROPERTIES)
+                        blankLine()
+                        renderConfigCompanionObject()
+                        blankLine()
+                        renderConfigCopyFunction()
+                        blankLine()
+                        withBlock("interface Builder {", "}") {
+                            write("fun build(): Config")
+                            withState(SECTION_SERVICE_CONFIG_BUILDER_BODY)
+                        }
+                        blankLine()
+                        withBlock("interface DslBuilder {", "}") {
+                            write("fun build(): Config")
+                            withState(SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY)
+                        }
+                        blankLine()
+                        withBlock("internal class BuilderImpl() : Builder, DslBuilder {", "}") {
+                            withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES)
+                            blankLine()
+                            withBlock("constructor(config: Config) : this() {", "}") {
+                                withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR)
+                            }
+                            blankLine()
+                            withState(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY)
+                        }
+                    }
+                }
             }
             .call {
                 operations.forEach { op ->
@@ -137,17 +125,112 @@ class ServiceGenerator(
             .write("")
     }
 
-    // Generate the override constructor params and interfaces for the service config
-    private fun generateConfigTypeIntegrations(serviceConfigFeatures: List<ServiceConfigFeature>): String {
-        val allParameters = serviceConfigFeatures.map { feature -> feature.supplyConstructorParameters(model, service, applicationProtocol, writer) }.flatten()
-        val allInterfaces = serviceConfigFeatures.map { feature -> feature.supplyInterfaces(model, service, applicationProtocol, writer) }.flatten()
+    private fun registerSections() {
+        writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
+            if (applicationProtocol.isHttpProtocol) {
+                text as String
 
-        if (allInterfaces.isEmpty() && allParameters.isEmpty()) return ""
+                writer.addImport("HttpClientEngine", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine")
+                writer.addImport("HttpClientConfig", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.config")
 
-        val parameters = allParameters.joinToString(separator = ", ", prefix = "(", postfix = ") ")
-        val interfaces = allInterfaces.joinToString(separator = ", ", prefix = ": ", postfix = " ")
+                when {
+                    text.isEmpty() -> writer.write("HttpClientConfig")
+                    else -> writer.write("$text, \$L@HttpClientConfig")
+                }
+            }
+        }
 
-        return parameters + interfaces
+        writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
+            if (service.hasIdempotentTokenMember(model)) {
+                text as String
+
+                writer.addImport("IdempotencyTokenProvider", KotlinDependency.CLIENT_RT_CORE, "${KotlinDependency.CLIENT_RT_CORE.namespace}.config")
+
+                when {
+                    text.isEmpty() -> writer.write("IdempotencyTokenConfig")
+                    else -> writer.write("$text, IdempotencyTokenConfig")
+                }
+            }
+        }
+
+        writer.onSection(SECTION_SERVICE_CONFIG_PROPERTIES) {
+            if (applicationProtocol.isHttpProtocol) {
+                writer.write("override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine")
+                writer.write("override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig")
+            }
+
+            if (service.hasIdempotentTokenMember(model)) {
+                writer.write("override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider")
+            }
+        }
+
+        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_BODY) {
+            if (applicationProtocol.isHttpProtocol) {
+                writer.write("fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder")
+                writer.write("fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder")
+            }
+
+            if (service.hasIdempotentTokenMember(model)) {
+                writer.write("fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder")
+            }
+        }
+
+        writer.onSection(SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY) {
+            if (applicationProtocol.isHttpProtocol) {
+                writer.write("var httpClientEngine: HttpClientEngine?")
+                writer.write("var httpClientEngineConfig: HttpClientEngineConfig?")
+            }
+
+            if (service.hasIdempotentTokenMember(model)) {
+                writer.write("var idempotencyTokenProvider: IdempotencyTokenProvider?")
+            }
+        }
+
+        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES) {
+            if (applicationProtocol.isHttpProtocol) {
+                writer.write("override var httpEngine: HttpClientEngine? = null")
+                writer.write("override var httpClientEngineConfig: HttpClientEngineConfig? = null")
+            }
+
+            if (service.hasIdempotentTokenMember(model)) {
+                writer.write("override var idempotencyTokenProvider: IdempotencyTokenProvider? = null")
+            }
+        }
+
+        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR) {
+            if (applicationProtocol.isHttpProtocol) {
+                writer.write("this.httpEngine = config.httpEngine")
+                writer.write("this.httpClientEngineConfig = config.httpClientEngineConfig")
+            }
+
+            if (service.hasIdempotentTokenMember(model)) {
+                writer.write("this.idempotencyTokenProvider = config.idempotencyTokenProvider")
+            }
+        }
+
+        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY) {
+            if (applicationProtocol.isHttpProtocol) {
+                writer.write("override fun httpEngine(httpEngine: HttpClientEngine): Builder = apply { this.httpEngine = httpEngine }")
+                writer.write("override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }")
+            }
+
+            if (service.hasIdempotentTokenMember(model)) {
+                writer.write("override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }")
+            }
+        }
+    }
+
+    private fun renderConfigCopyFunction() {
+        writer.write("fun copy(block: DslBuilder.() -> Unit = {}): Config = BuilderImpl(this).apply(block).build()")
+    }
+
+    private fun renderConfigCompanionObject() {
+        writer.openBlock("companion object {")
+        writer.write("@JvmStatic")
+        writer.write("fun builder(): Builder = BuilderImpl()")
+        writer.write("fun dslBuilder(): DslBuilder = BuilderImpl()")
+        writer.write("operator fun invoke(block: DslBuilder.() -> Unit): Config = BuilderImpl().apply(block).build()")
+        writer.closeBlock("}")
     }
 
     /**
@@ -165,8 +248,8 @@ class ServiceGenerator(
      */
     private fun renderCompanionObject() {
         writer.openBlock("companion object {")
-            .openBlock("fun build(block: Config.() -> Unit = {}): ${serviceSymbol.name} {")
-            .write("val config = Config().apply(block)")
+            .openBlock("operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ${serviceSymbol.name} {")
+            .write("val config = Config.BuilderImpl().apply(block).build()")
             .write("return Default${serviceSymbol.name}(config)")
             .closeBlock("}")
             .closeBlock("}")
