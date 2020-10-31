@@ -133,34 +133,25 @@ class ServiceGenerator(
     private fun registerSections() {
         if (applicationProtocol.isHttpProtocol) {
             writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
-                text as String
-
                 writer.addImport("HttpClientEngine", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine")
                 writer.addImport("HttpClientEngineConfig", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine")
                 writer.addImport("HttpClientConfig", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.config")
 
-                when {
-                    text.isEmpty() -> writer.write("HttpClientConfig")
-                    else -> writer.write("$text, HttpClientConfig")
-                }
+                writer.appendWithDelimiter(text, "HttpClientConfig")
             }
         }
 
         if (service.hasIdempotentTokenMember(model)) {
             writer.onSection(SECTION_SERVICE_CONFIG_PARENT_TYPE) { text ->
-                text as String
-
                 writer.addImport("IdempotencyTokenConfig", KotlinDependency.CLIENT_RT_CORE, "${KotlinDependency.CLIENT_RT_CORE.namespace}.config")
                 writer.addImport("IdempotencyTokenProvider", KotlinDependency.CLIENT_RT_CORE, "${KotlinDependency.CLIENT_RT_CORE.namespace}.config")
 
-                when {
-                    text.isEmpty() -> writer.write("IdempotencyTokenConfig")
-                    else -> writer.write("$text, IdempotencyTokenConfig")
-                }
+                writer.appendWithDelimiter(text, "IdempotencyTokenConfig")
             }
         }
 
         writer.onSection(SECTION_SERVICE_CONFIG_PROPERTIES) {
+            writer.write(it)
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine")
                 writer.write("override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig")
@@ -172,6 +163,7 @@ class ServiceGenerator(
         }
 
         writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_BODY) {
+            writer.write(it)
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder")
                 writer.write("fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder")
@@ -183,6 +175,7 @@ class ServiceGenerator(
         }
 
         writer.onSection(SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY) {
+            writer.write(it)
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("var httpClientEngine: HttpClientEngine?")
                 writer.write("var httpClientEngineConfig: HttpClientEngineConfig?")
@@ -194,6 +187,7 @@ class ServiceGenerator(
         }
 
         writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES) {
+            writer.write(it)
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("override var httpClientEngine: HttpClientEngine? = null")
                 writer.write("override var httpClientEngineConfig: HttpClientEngineConfig? = null")
@@ -205,6 +199,7 @@ class ServiceGenerator(
         }
 
         writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR) {
+            writer.write(it)
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("this.httpClientEngine = config.httpClientEngine")
                 writer.write("this.httpClientEngineConfig = config.httpClientEngineConfig")
@@ -216,6 +211,7 @@ class ServiceGenerator(
         }
 
         writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY) {
+            writer.write(it)
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }")
                 writer.write("override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }")

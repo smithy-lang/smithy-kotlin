@@ -49,6 +49,31 @@ fun CodeWriter.withState(state: String, block: CodeWriter.() -> Unit = {}): Code
     return this
 }
 
+// Convenience function to create symbol and add it as an import.
+fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDependency.CLIENT_RT_CORE, namespace: String = dependency.namespace) {
+    val importSymbol = Symbol.builder()
+            .name(name)
+            .namespace(namespace, ".")
+            .addDependency(dependency)
+            .build()
+
+    addImport(importSymbol, "", SymbolReference.ContextOption.DECLARE)
+}
+
+// Add one or more blank lines to the writer.
+fun CodeWriter.blankLine(count: Int = 1) {
+    repeat(count) { write("") }
+}
+
+// Used for sections, deals with delimiter occurring within set but not trailing or leading.
+fun CodeWriter.appendWithDelimiter(previousText: Any?, text: String, delimiter: String = ", ") {
+    when {
+        previousText !is String -> error("Unexpected type ${previousText?.javaClass?.canonicalName ?: "[UNKNOWN]"}")
+        previousText.isEmpty() -> write(text)
+        else -> write("$previousText$delimiter$text")
+    }
+}
+
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     init {
         trimBlankLines()
@@ -185,20 +210,4 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
             }
         }
     }
-}
-
-// Convenience function to create symbol and add it as an import.
-internal fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDependency.CLIENT_RT_CORE, namespace: String = dependency.namespace) {
-    val importSymbol = Symbol.builder()
-            .name(name)
-            .namespace(namespace, ".")
-            .addDependency(dependency)
-            .build()
-
-    addImport(importSymbol, "", SymbolReference.ContextOption.DECLARE)
-}
-
-// Add one or more blank lines to the writer.
-internal fun CodeWriter.blankLine(count: Int = 1) {
-    repeat(count) { write("") }
 }
