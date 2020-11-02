@@ -3,8 +3,6 @@ package software.aws.clientrt.logging
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.slf4j.LoggerFactory
-import software.aws.clientrt.logging.KotlinLogging
-import software.aws.clientrt.logging.toKLogger
 
 private val logger = KotlinLogging.logger { }
 private val loggerFromSlf4j = KotlinLogging.logger(LoggerFactory.getLogger("software.aws.clientrt.logging.slf4jLogger"))

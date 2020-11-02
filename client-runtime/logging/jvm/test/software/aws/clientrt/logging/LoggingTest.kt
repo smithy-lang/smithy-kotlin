@@ -11,10 +11,6 @@ import org.junit.Assert
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import software.aws.clientrt.logging.KLoggable
-import software.aws.clientrt.logging.KLogging
-import software.aws.clientrt.logging.KMarkerFactory
-import software.aws.clientrt.logging.NamedKLogging
 import java.io.StringWriter
 
 class ClassWithLogging {

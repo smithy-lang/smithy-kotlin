@@ -2,9 +2,9 @@
 
 package software.aws.clientrt.logging.internal
 
-import software.aws.clientrt.logging.KLogger
 import org.slf4j.Logger
 import org.slf4j.Marker
+import software.aws.clientrt.logging.KLogger
 
 /**
  * A class wrapping a [Logger] instance that is not location aware

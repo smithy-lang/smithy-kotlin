@@ -1,18 +1,19 @@
 package software.aws.clientrt.logging.internal
 
-import software.aws.clientrt.logging.KLogger
-import software.aws.clientrt.logging.KMarkerFactory
 import org.slf4j.Logger
 import org.slf4j.Marker
 import org.slf4j.helpers.MessageFormatter
 import org.slf4j.spi.LocationAwareLogger
+import software.aws.clientrt.logging.KLogger
+import software.aws.clientrt.logging.KMarkerFactory
 
 /**
  * A class wrapping a [LocationAwareLogger] instance preserving
  * location information with the correct fully qualified class name.
  */
-internal class LocationAwareKLogger(override val underlyingLogger: LocationAwareLogger) : KLogger,
-                                                                                          Logger by underlyingLogger {
+internal class LocationAwareKLogger(override val underlyingLogger: LocationAwareLogger) :
+    KLogger,
+    Logger by underlyingLogger {
 
     private val fqcn: String = LocationAwareKLogger::class.java.name
     private val ENTRY = KMarkerFactory.getMarker("ENTRY")
@@ -558,7 +559,7 @@ internal class LocationAwareKLogger(override val underlyingLogger: LocationAware
     override fun entry(vararg argArray: Any?) {
         if (underlyingLogger.isTraceEnabled(ENTRY)) {
             val tp = MessageFormatter.arrayFormat(buildMessagePattern(argArray.size), argArray)
-            underlyingLogger.log(ENTRY, fqcn, LocationAwareLogger.TRACE_INT, tp.message, null, null);
+            underlyingLogger.log(ENTRY, fqcn, LocationAwareLogger.TRACE_INT, tp.message, null, null)
         }
     }
 
@@ -587,9 +588,9 @@ internal class LocationAwareKLogger(override val underlyingLogger: LocationAware
         return (1..len).joinToString(
             separator = ", ",
             prefix = "entry with (",
-            postfix = ")") {
+            postfix = ")"
+        ) {
             "{}"
         }
     }
-
 }

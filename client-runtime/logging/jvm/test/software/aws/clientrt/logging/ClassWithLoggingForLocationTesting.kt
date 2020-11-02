@@ -1,7 +1,5 @@
 package software.aws.clientrt.logging
 
-import software.aws.clientrt.logging.KLogging
-
 class ClassWithLoggingForLocationTesting {
     companion object : KLogging()
 

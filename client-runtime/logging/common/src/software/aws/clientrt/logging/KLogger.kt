@@ -134,5 +134,4 @@ public expect interface KLogger {
      * Add a log message indicating an exception is caught along with the stack trace.
      */
     public fun <T> catching(throwable: T) where T : Throwable
-
 }

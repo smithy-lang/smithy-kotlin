@@ -6,7 +6,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
 import org.slf4j.MDC
-import software.aws.clientrt.logging.withLoggingContext
 
 class KotlinLoggingMDCTest {
     init {

@@ -1,9 +1,7 @@
 package software.aws.clientrt.logging.internal
 
-
 import org.junit.Assert.assertEquals
 import org.junit.Test
-
 
 class KLoggerNameResolverTest {
 
@@ -19,19 +17,19 @@ class KLoggerNameResolverTest {
         assertEquals("software.aws.clientrt.logging.internal.KLoggerNameResolverTest\$testNames$1", KLoggerNameResolver.name(object {}.javaClass))
         assertEquals(
             "software.aws.clientrt.logging.internal.BaseClass\$InnerClass\$Obj",
-                KLoggerNameResolver.name(BaseClass.InnerClass.Obj::class.java)
+            KLoggerNameResolver.name(BaseClass.InnerClass.Obj::class.java)
         )
         assertEquals(
             "software.aws.clientrt.logging.internal.BaseClass\$InnerClass\$Obj",
-                KLoggerNameResolver.name(BaseClass.InnerClass.Obj.javaClass)
+            KLoggerNameResolver.name(BaseClass.InnerClass.Obj.javaClass)
         )
         assertEquals(
             "software.aws.clientrt.logging.internal.BaseClass\$InnerClass",
-                KLoggerNameResolver.name(BaseClass.InnerClass::class.java)
+            KLoggerNameResolver.name(BaseClass.InnerClass::class.java)
         )
         assertEquals(
             "software.aws.clientrt.logging.internal.BaseClass\$InnerClass",
-                KLoggerNameResolver.name(BaseClass.InnerClass::class.java)
+            KLoggerNameResolver.name(BaseClass.InnerClass::class.java)
         )
         assertEquals("software.aws.clientrt.logging.internal.Foo\$Bar", KLoggerNameResolver.name(Foo.Bar::class.java))
         assertEquals("software.aws.clientrt.logging.internal.Foo\$Bar2", KLoggerNameResolver.name(Foo.Bar3.javaClass))
@@ -52,7 +50,6 @@ class ChildClass : BaseClass() {
 
 object Singleton
 interface MyInterface
-
 
 @Suppress("unused")
 class Foo {

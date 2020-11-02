@@ -2,7 +2,6 @@ package software.aws.clientrt.logging.internal
 
 import java.lang.reflect.Modifier
 
-
 /**
  * Resolves name of java classes
  */
@@ -12,7 +11,7 @@ internal object KLoggerNameResolver {
     /**
      * get class name for function by the package of the function
      */
-    inline internal fun name(noinline func: () -> Unit): String {
+    internal inline fun name(noinline func: () -> Unit): String {
         val name = func.javaClass.name
         val slicedName = when {
             name.contains("Kt$") -> name.substringBefore("Kt$")
@@ -25,14 +24,13 @@ internal object KLoggerNameResolver {
     /**
      * get class name for java class (that usually represents kotlin class)
      */
-    inline internal fun <T : Any> name(forClass: Class<T>): String =
+    internal inline fun <T : Any> name(forClass: Class<T>): String =
         unwrapCompanionClass(forClass).name
-
 
     /**
      * unwrap companion class to enclosing class given a Java Class
      */
-    inline private fun <T : Any> unwrapCompanionClass(clazz: Class<T>): Class<*> {
+    private inline fun <T : Any> unwrapCompanionClass(clazz: Class<T>): Class<*> {
         if (clazz.enclosingClass != null) {
             try {
                 val field = clazz.enclosingClass.getField(clazz.simpleName)
@@ -42,7 +40,7 @@ internal object KLoggerNameResolver {
                     return clazz.enclosingClass
                 }
             } catch (e: Exception) {
-                //ok, it is not a companion object
+                // ok, it is not a companion object
             }
         }
         return clazz

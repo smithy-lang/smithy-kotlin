@@ -1,10 +1,10 @@
 package software.aws.clientrt.logging.internal
 
-import software.aws.clientrt.logging.KLoggable
-import software.aws.clientrt.logging.KLogger
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.spi.LocationAwareLogger
+import software.aws.clientrt.logging.KLoggable
+import software.aws.clientrt.logging.KLogger
 
 /**
  * factory methods to obtain a [Logger]
@@ -42,6 +42,4 @@ internal object KLoggerFactory {
             LocationAwareKLogger(jLogger)
         else
             LocationIgnorantKLogger(jLogger)
-
 }
-

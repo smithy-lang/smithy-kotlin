@@ -47,6 +47,3 @@ public interface KLoggable {
      */
     public fun logger(name: String): KLogger = KLoggerFactory.logger(name)
 }
-
-
-
