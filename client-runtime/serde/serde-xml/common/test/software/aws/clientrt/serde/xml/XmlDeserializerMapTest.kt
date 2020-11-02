@@ -5,10 +5,11 @@
 package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.maps.shouldContainExactly
-import kotlin.test.Test
 import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.SerialKind
 import software.aws.clientrt.serde.deserializeMap
+import kotlin.test.Ignore
+import kotlin.test.Test
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerMapTest {

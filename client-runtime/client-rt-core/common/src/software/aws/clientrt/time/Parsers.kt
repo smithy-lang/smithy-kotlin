@@ -174,7 +174,8 @@ private fun dayName(): Parser<String> = alt(
     tag("Thu"),
     tag("Fri"),
     tag("Sat"),
-    tag("Sun"))
+    tag("Sun")
+)
 
 /**
  * Match literal whitespace
@@ -245,9 +246,11 @@ internal fun parseRfc5322(input: String): ParsedDatetime {
     // otherwise consume it and advance
     val (pos0, _) = if (input.isNotBlank() && !isDigit(input[0])) {
         // must be e.g. `Mon, ` with the space not optional when dow is present
-        map(dayName()
-            .then(char(','))
-            .then(::sp)) { null }(input, 0)
+        map(
+            dayName()
+                .then(char(','))
+                .then(::sp)
+        ) { null }(input, 0)
     } else {
         ParseResult(0, null)
     }

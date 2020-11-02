@@ -5,8 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import java.util.*
-import java.util.logging.Logger
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -17,6 +15,8 @@ import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import java.util.*
+import java.util.logging.Logger
 
 /**
  * Orchestrates Kotlin code generation

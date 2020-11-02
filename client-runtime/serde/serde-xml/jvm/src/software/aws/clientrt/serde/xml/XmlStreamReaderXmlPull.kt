@@ -5,10 +5,10 @@
 
 package software.aws.clientrt.serde.xml
 
-import java.io.ByteArrayInputStream
-import java.nio.charset.Charset
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
+import java.io.ByteArrayInputStream
+import java.nio.charset.Charset
 
 private class XmlStreamReaderXmlPull(
     payload: ByteArray,

@@ -4,9 +4,9 @@
  */
 package software.aws.clientrt.http.response
 
-import kotlin.reflect.KClass
 import software.aws.clientrt.http.util.Phase
 import software.aws.clientrt.http.util.Pipeline
+import kotlin.reflect.KClass
 
 /**
  * Container for desired output type info

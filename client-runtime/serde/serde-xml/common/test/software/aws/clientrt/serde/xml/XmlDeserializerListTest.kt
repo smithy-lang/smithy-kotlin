@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import software.aws.clientrt.serde.*
 
+
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerListTest {
 

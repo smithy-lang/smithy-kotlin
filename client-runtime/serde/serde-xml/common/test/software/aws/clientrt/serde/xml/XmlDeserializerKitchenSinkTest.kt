@@ -6,9 +6,9 @@ package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
+import software.aws.clientrt.serde.*
 import kotlin.math.abs
 import kotlin.test.*
-import software.aws.clientrt.serde.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerKitchenSinkTest {
@@ -32,14 +32,15 @@ class XmlDeserializerKitchenSinkTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            LIST2_FIELD_DESCRIPTOR.index -> nested2.list2 =
-                                deserializer.deserializeList(LIST2_FIELD_DESCRIPTOR) {
-                                    val list = mutableListOf<String>()
-                                    while (hasNextElement()) {
-                                        list.add(deserializeString()!!)
+                            LIST2_FIELD_DESCRIPTOR.index ->
+                                nested2.list2 =
+                                    deserializer.deserializeList(LIST2_FIELD_DESCRIPTOR) {
+                                        val list = mutableListOf<String>()
+                                        while (hasNextElement()) {
+                                            list.add(deserializeString()!!)
+                                        }
+                                        return@deserializeList list
                                     }
-                                    return@deserializeList list
-                                }
                             INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = deserializeInt()
                             // deeply nested unknown field
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
@@ -181,7 +182,7 @@ class XmlDeserializerKitchenSinkTest {
                    </entry>
                </map>
            </payload>
-           """.trimIndent().encodeToByteArray()
+        """.trimIndent().encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
         val sink = KitchenSinkTest()
@@ -193,27 +194,29 @@ class XmlDeserializerKitchenSinkTest {
                     KitchenSinkTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = deserializeShort()
                     KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = deserializeBool()
                     KitchenSinkTest.STR_FIELD_DESCRIPTOR.index -> sink.strField = deserializeString()
-                    KitchenSinkTest.LIST_FIELD_DESCRIPTOR.index -> sink.listField =
-                        deserializer.deserializeList(KitchenSinkTest.LIST_FIELD_DESCRIPTOR) {
-                            val list = mutableListOf<Int>()
-                            while (hasNextElement()) {
-                                list.add(deserializeInt()!!)
+                    KitchenSinkTest.LIST_FIELD_DESCRIPTOR.index ->
+                        sink.listField =
+                            deserializer.deserializeList(KitchenSinkTest.LIST_FIELD_DESCRIPTOR) {
+                                val list = mutableListOf<Int>()
+                                while (hasNextElement()) {
+                                    list.add(deserializeInt()!!)
+                                }
+                                return@deserializeList list
                             }
-                            return@deserializeList list
-                        }
                     KitchenSinkTest.DOUBLE_FIELD_DESCRIPTOR.index -> sink.doubleField = deserializeDouble()
                     KitchenSinkTest.NESTED_FIELD_DESCRIPTOR.index -> sink.nestedField = Nested.deserialize(deserializer)
                     KitchenSinkTest.FLOAT_FIELD_DESCRIPTOR.index -> sink.floatField = deserializeFloat()
-                    KitchenSinkTest.MAP_FIELD_DESCRIPTOR.index -> sink.mapField =
-                        deserializer.deserializeMap(KitchenSinkTest.MAP_FIELD_DESCRIPTOR) {
-                            val map = mutableMapOf<String, String>()
-                            while (hasNextEntry()) {
-                                val key = key()
-                                val value = deserializeString()!!
-                                map[key] = value
+                    KitchenSinkTest.MAP_FIELD_DESCRIPTOR.index ->
+                        sink.mapField =
+                            deserializer.deserializeMap(KitchenSinkTest.MAP_FIELD_DESCRIPTOR) {
+                                val map = mutableMapOf<String, String>()
+                                while (hasNextEntry()) {
+                                    val key = key()
+                                    val value = deserializeString()!!
+                                    map[key] = value
+                                }
+                                return@deserializeMap map
                             }
-                            return@deserializeMap map
-                        }
                     null -> break@loop
                     else -> throw XmlGenerationException(IllegalStateException("unexpected field during test"))
                 }

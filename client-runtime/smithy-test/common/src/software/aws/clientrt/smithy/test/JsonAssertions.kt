@@ -4,12 +4,12 @@
  */
 package software.aws.clientrt.smithy.test
 
-import kotlin.test.assertEquals
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.readAll
+import kotlin.test.assertEquals
 
 /**
  * Assert JSON strings for equality ignoring key order

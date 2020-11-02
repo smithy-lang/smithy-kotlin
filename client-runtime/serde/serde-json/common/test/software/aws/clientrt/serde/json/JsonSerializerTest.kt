@@ -4,10 +4,10 @@
  */
 package software.aws.clientrt.serde.json
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.SdkFieldDescriptor.Companion.ANONYMOUS_DESCRIPTOR
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonSerializerTest {
@@ -64,17 +64,20 @@ class JsonSerializerTest {
 
     @Test
     fun `can serialize map`() {
-        val objs = mapOf("A1" to A(
-            B(1)
-        ), "A2" to A(
-            B(
-                2
+        val objs = mapOf(
+            "A1" to A(
+                B(1)
+            ),
+            "A2" to A(
+                B(
+                    2
+                )
+            ),
+            "A3" to A(
+                B(
+                    3
+                )
             )
-        ), "A3" to A(
-            B(
-                3
-            )
-        )
         )
         val json = JsonSerializer()
         json.serializeMap(ANONYMOUS_DESCRIPTOR) {

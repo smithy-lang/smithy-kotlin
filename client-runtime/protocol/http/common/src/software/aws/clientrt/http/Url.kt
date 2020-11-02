@@ -96,7 +96,8 @@ class UrlBuilder {
         if (parameters.isEmpty()) null else parameters.build(),
         fragment,
         userInfo,
-        forceQuery)
+        forceQuery
+    )
 }
 
 fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters.apply(block)

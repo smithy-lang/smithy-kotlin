@@ -29,11 +29,14 @@ class GradleGeneratorTest {
             .assemble()
             .unwrap()
 
-        val settings = KotlinSettings.from(model, Node.objectNodeBuilder()
-            .withMember("module", Node.from("example"))
-            .withMember("moduleVersion", Node.from("1.0.0"))
-            .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
-            .build())
+        val settings = KotlinSettings.from(
+            model,
+            Node.objectNodeBuilder()
+                .withMember("module", Node.from("example"))
+                .withMember("moduleVersion", Node.from("1.0.0"))
+                .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
+                .build()
+        )
 
         val manifest = MockManifest()
         val dependencies = listOf(KotlinDependency.CLIENT_RT_CORE)
@@ -49,16 +52,19 @@ class GradleGeneratorTest {
     @Test
     fun `it writes full project`() {
         val model = Model.assembler()
-                .addImport(KotlinSettingsTest::class.java.getResource("simple-service.smithy"))
-                .discoverModels()
-                .assemble()
-                .unwrap()
+            .addImport(KotlinSettingsTest::class.java.getResource("simple-service.smithy"))
+            .discoverModels()
+            .assemble()
+            .unwrap()
 
-        val settings = KotlinSettings.from(model, Node.objectNodeBuilder()
+        val settings = KotlinSettings.from(
+            model,
+            Node.objectNodeBuilder()
                 .withMember("module", Node.from("example"))
                 .withMember("moduleVersion", Node.from("1.0.0"))
                 .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(true)).build())
-                .build())
+                .build()
+        )
 
         val manifest = MockManifest()
         val dependencies = listOf(KotlinDependency.CLIENT_RT_CORE)

@@ -4,10 +4,6 @@
  */
 package software.aws.clientrt.smithy.test
 
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
@@ -17,6 +13,10 @@ import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.util.encodeUrlPath
 import software.aws.clientrt.http.util.urlEncodeComponent
 import software.aws.clientrt.testing.runSuspendTest
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 // marker exception thrown by roundTripping
 private class MockEngineException : RuntimeException()

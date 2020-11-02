@@ -4,8 +4,6 @@
  */
 package software.aws.clientrt.http.feature
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpBody
@@ -20,6 +18,8 @@ import software.aws.clientrt.http.sdkHttpClient
 import software.aws.clientrt.serde.json.JsonSerdeProvider
 import software.aws.clientrt.serde.xml.XmlSerdeProvider
 import software.aws.clientrt.testing.runSuspendTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class HttpSerdeTest {
     @Test

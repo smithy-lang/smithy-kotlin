@@ -15,7 +15,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import java.lang.RuntimeException
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -29,6 +28,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import java.lang.RuntimeException
 
 class SerializeStructGeneratorTest {
     val model: Model = Model.assembler()
@@ -40,10 +40,13 @@ class SerializeStructGeneratorTest {
     data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
     private fun newTestContext(): TestContext {
-        val settings = KotlinSettings.from(model, Node.objectNodeBuilder()
-            .withMember("module", Node.from("test"))
-            .withMember("moduleVersion", Node.from("1.0.0"))
-            .build())
+        val settings = KotlinSettings.from(
+            model,
+            Node.objectNodeBuilder()
+                .withMember("module", Node.from("test"))
+                .withMember("moduleVersion", Node.from("1.0.0"))
+                .build()
+        )
         val manifest = MockManifest()
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
@@ -56,7 +59,8 @@ class SerializeStructGeneratorTest {
             provider,
             listOf(),
             generator.protocol,
-            delegator)
+            delegator
+        )
         return TestContext(ctx, manifest, generator)
     }
 

@@ -68,11 +68,11 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
 
         client.responsePipeline.intercept(HttpResponsePipeline.Transform) {
             context.executionCtx?.deserializer?.let { deserializer ->
-                    // it's possible that the response doesn't expect a serialized payload and can be completely
-                    // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming
-                    // we can't read the body into memory ourselves
-                    val content = deserializer.deserialize(context.response, serde::deserializer)
-                    proceedWith(content)
+                // it's possible that the response doesn't expect a serialized payload and can be completely
+                // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming
+                // we can't read the body into memory ourselves
+                val content = deserializer.deserialize(context.response, serde::deserializer)
+                proceedWith(content)
             }
         }
     }

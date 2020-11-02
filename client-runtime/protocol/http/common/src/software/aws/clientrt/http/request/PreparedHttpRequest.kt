@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 package software.aws.clientrt.http.request
-import kotlin.reflect.KClass
 import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
 import software.aws.clientrt.util.InternalAPI
+import kotlin.reflect.KClass
 
 /**
  * A prepared HTTP request for a client to execute. This does nothing until the [execute] or [receive] method is called.
@@ -68,27 +68,27 @@ class PreparedHttpRequest(
      * @throws ResponseTransformFailed
      */
     suspend inline fun <reified TResponse> receive(): TResponse = when (TResponse::class) {
-            PreparedHttpRequest::class -> this as TResponse
-            HttpResponse::class -> {
-                val httpResp = executeUnsafe()
-                try {
-                    // run the pipeline ensuring any middleware has a chance to interact with the response,
-                    // there is no expectation on the result of that execution though
-                    getPipelineResponse<TResponse>(httpResp)
-                    httpResp as TResponse
-                } finally {
-                    httpResp.complete()
-                }
-            }
-            else -> {
-                val httpResp = executeUnsafe()
-                try {
-                    transformResponse<TResponse>(httpResp)
-                } finally {
-                    httpResp.complete()
-                }
+        PreparedHttpRequest::class -> this as TResponse
+        HttpResponse::class -> {
+            val httpResp = executeUnsafe()
+            try {
+                // run the pipeline ensuring any middleware has a chance to interact with the response,
+                // there is no expectation on the result of that execution though
+                getPipelineResponse<TResponse>(httpResp)
+                httpResp as TResponse
+            } finally {
+                httpResp.complete()
             }
         }
+        else -> {
+            val httpResp = executeUnsafe()
+            try {
+                transformResponse<TResponse>(httpResp)
+            } finally {
+                httpResp.complete()
+            }
+        }
+    }
 
     /**
      * Execute the request and run the [block] with the result of the [SdkHttpClient.responsePipeline].

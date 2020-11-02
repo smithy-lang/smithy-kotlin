@@ -4,15 +4,15 @@
  */
 package software.aws.clientrt.serde.xml
 
+import software.aws.clientrt.serde.DeserializationException
+import software.aws.clientrt.serde.SdkFieldDescriptor
+import software.aws.clientrt.serde.SdkObjectDescriptor
+import software.aws.clientrt.serde.SerialKind
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
-import software.aws.clientrt.serde.DeserializationException
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkObjectDescriptor
-import software.aws.clientrt.serde.SerialKind
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerPrimitiveTest {

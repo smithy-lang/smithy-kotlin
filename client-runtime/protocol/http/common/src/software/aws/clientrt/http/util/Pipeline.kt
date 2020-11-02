@@ -4,9 +4,9 @@
  */
 package software.aws.clientrt.http.util
 
-import io.ktor.util.pipeline.Pipeline as KtorPipeline
 import io.ktor.util.pipeline.PipelineContext
 import io.ktor.util.pipeline.PipelinePhase
+import io.ktor.util.pipeline.Pipeline as KtorPipeline
 
 typealias PipelineFuncInterceptor<TSubject, TContext> = suspend PipelineContext<TSubject, TContext>.() -> Unit
 typealias Phase = PipelinePhase

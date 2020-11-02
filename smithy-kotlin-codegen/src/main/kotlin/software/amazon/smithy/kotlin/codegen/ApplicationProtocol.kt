@@ -14,8 +14,8 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import java.util.*
 import software.amazon.smithy.codegen.core.Symbol
+import java.util.*
 
 /**
  * Represents the resolves [Symbol]s and references for an
@@ -66,8 +66,10 @@ class ApplicationProtocol(
         } else if (other !is ApplicationProtocol) {
             return false
         }
-        return (requestType == other.requestType &&
-                responseType == other.responseType)
+        return (
+            requestType == other.requestType &&
+                responseType == other.responseType
+            )
     }
 
     override fun hashCode(): Int {

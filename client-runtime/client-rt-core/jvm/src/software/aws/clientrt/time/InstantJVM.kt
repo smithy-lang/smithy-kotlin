@@ -11,7 +11,6 @@ package software.aws.clientrt.time
 //
 // See: https://developer.android.com/studio/write/java8-support-table
 
-import java.time.Instant as jtInstant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
@@ -21,6 +20,7 @@ import java.time.format.DateTimeFormatter.ISO_INSTANT
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
+import java.time.Instant as jtInstant
 
 actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
     actual val epochSeconds: Long
@@ -113,7 +113,8 @@ private fun fromParsedDateTime(parsed: ParsedDatetime): Instant {
         hour,
         min,
         sec,
-        parsed.ns).plusDays(dayOffset.toLong())
+        parsed.ns
+    ).plusDays(dayOffset.toLong())
     val tzOffset = ZoneOffset.ofTotalSeconds(parsed.offsetSec)
     val odt = ldt.atOffset(tzOffset)
     val asInstant = odt.toInstant()

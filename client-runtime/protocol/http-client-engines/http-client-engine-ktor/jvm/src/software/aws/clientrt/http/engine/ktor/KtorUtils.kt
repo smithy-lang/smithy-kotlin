@@ -4,18 +4,18 @@
  */
 package software.aws.clientrt.http.engine.ktor
 
-import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.readBytes
-import java.nio.ByteBuffer
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 import software.aws.clientrt.io.Source
+import java.nio.ByteBuffer
+import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
+import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
 internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {

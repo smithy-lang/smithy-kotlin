@@ -5,11 +5,11 @@
 package software.aws.clientrt.smithy.test
 
 import io.kotest.matchers.string.shouldContain
-import kotlin.test.Test
-import kotlin.test.assertFails
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.testing.runSuspendTest
+import kotlin.test.Test
+import kotlin.test.assertFails
 
 class UtilsTest {
 

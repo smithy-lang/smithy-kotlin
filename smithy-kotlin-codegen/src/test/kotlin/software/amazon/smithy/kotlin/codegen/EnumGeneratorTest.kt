@@ -94,11 +94,15 @@ sealed class Baz {
     fun `it generates named enums`() {
         val trait = EnumTrait.builder()
             .addEnum(EnumDefinition.builder().value("t2.nano").name("T2_NANO").build())
-            .addEnum(EnumDefinition.builder().value("t2.micro").name("T2_MICRO").documentation("\"\"\"\n" +
-                    "T2 instances are Burstable Performance\n" +
-                    "Instances that provide a baseline level of CPU\n" +
-                    "performance with the ability to burst above the\n" +
-                    "baseline.\"\"\"").build())
+            .addEnum(
+                EnumDefinition.builder().value("t2.micro").name("T2_MICRO").documentation(
+                    "\"\"\"\n" +
+                        "T2 instances are Burstable Performance\n" +
+                        "Instances that provide a baseline level of CPU\n" +
+                        "performance with the ability to burst above the\n" +
+                        "baseline.\"\"\""
+                ).build()
+            )
             .build()
 
         val shape = StringShape.builder()

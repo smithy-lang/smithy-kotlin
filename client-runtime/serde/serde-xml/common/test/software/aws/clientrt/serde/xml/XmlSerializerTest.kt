@@ -4,9 +4,9 @@
  */
 package software.aws.clientrt.serde.xml
 
+import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import software.aws.clientrt.serde.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlSerializerTest {
@@ -74,10 +74,12 @@ class XmlSerializerTest {
     // See https://awslabs.github.io/smithy/spec/xml.html#wrapped-map-serialization
     @Test
     fun `can serialize map`() {
-        val foo = Foo(mapOf(
-            "example-key1" to "example1",
-            "example-key2" to "example2"
-        ))
+        val foo = Foo(
+            mapOf(
+                "example-key1" to "example1",
+                "example-key2" to "example2"
+            )
+        )
         val xml = XmlSerializer()
         foo.serialize(xml)
 
@@ -87,11 +89,13 @@ class XmlSerializerTest {
     // See https://awslabs.github.io/smithy/spec/xml.html#flattened-map-serialization
     @Test
     fun `can serialize flattened map`() {
-        val bar = Bar(mapOf(
-            "example-key1" to "example1",
-            "example-key2" to "example2",
-            "example-key3" to "example3"
-        ))
+        val bar = Bar(
+            mapOf(
+                "example-key1" to "example1",
+                "example-key2" to "example2",
+                "example-key3" to "example3"
+            )
+        )
         val xml = XmlSerializer()
         bar.serialize(xml)
 
