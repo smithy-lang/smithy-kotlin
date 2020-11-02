@@ -5,11 +5,11 @@
 package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.collections.shouldContainExactly
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.SerialKind
 import software.aws.clientrt.serde.deserializeList
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerListTest {

@@ -27,7 +27,20 @@ fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
     return files.any{ it.name == platform || (it.name == "common" && platform == "jvm")}
 }
 
+// FIXME - Workaround for unspecified kotlin target error after 1.4 upgrade.
+//  See https://www.pivotaltracker.com/story/show/175292052
+kotlin {
+    jvm()
+}
+
 subprojects {
+    // FIXME - Workaround for unspecified kotlin target error after 1.4 upgrade.
+    //  See https://www.pivotaltracker.com/story/show/175292052
+    val needsConfigure = platforms.any { projectNeedsPlatform(project, it)}
+    println("$project needs configure: $needsConfigure")
+    // don't configure anything
+    if (!needsConfigure) return@subprojects
+
     // TODO - the group to publish under needs negotiated still
     group = "software.aws.smithy.kotlin"
     version = "0.0.1"

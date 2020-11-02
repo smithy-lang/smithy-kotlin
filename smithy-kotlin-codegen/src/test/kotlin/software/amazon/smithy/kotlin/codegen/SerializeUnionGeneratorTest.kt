@@ -36,10 +36,13 @@ class SerializeUnionGeneratorTest {
     data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
     private fun newTestContext(): TestContext {
-        val settings = KotlinSettings.from(model, Node.objectNodeBuilder()
-            .withMember("module", Node.from("test"))
-            .withMember("moduleVersion", Node.from("1.0.0"))
-            .build())
+        val settings = KotlinSettings.from(
+            model,
+            Node.objectNodeBuilder()
+                .withMember("module", Node.from("test"))
+                .withMember("moduleVersion", Node.from("1.0.0"))
+                .build()
+        )
         val manifest = MockManifest()
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
@@ -52,7 +55,8 @@ class SerializeUnionGeneratorTest {
             provider,
             listOf(),
             generator.protocol,
-            delegator)
+            delegator
+        )
         return TestContext(ctx, manifest, generator)
     }
 

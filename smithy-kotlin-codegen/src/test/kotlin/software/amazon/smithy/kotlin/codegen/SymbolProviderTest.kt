@@ -100,9 +100,9 @@ class SymbolProviderTest {
 
     // the Kotlin type names pretty much match 1-1 with the smithy types for numerics (except Int), string, and boolean
     private fun translateTypeName(typeName: String): String = when (typeName) {
-            "Integer" -> "Int"
-            else -> typeName
-        }
+        "Integer" -> "Int"
+        else -> typeName
+    }
 
     @Test
     fun `creates blobs`() {
@@ -282,15 +282,15 @@ class SymbolProviderTest {
         val member3 = MemberShape.builder().id("com.test#MyUnion\$baz").target("smithy.api#Integer").build()
 
         val union = UnionShape.builder()
-                .id("com.test#MyUnion")
-                .addMember(member1)
-                .addMember(member2)
-                .addMember(member3)
-                .build()
+            .id("com.test#MyUnion")
+            .addMember(member1)
+            .addMember(member2)
+            .addMember(member3)
+            .build()
         val model = Model.assembler()
-                .addShapes(union, member1, member2, member3)
-                .assemble()
-                .unwrap()
+            .addShapes(union, member1, member2, member3)
+            .assemble()
+            .unwrap()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val symbol = provider.toSymbol(union)

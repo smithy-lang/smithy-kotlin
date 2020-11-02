@@ -109,10 +109,10 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
                 .values
                 .sortedBy { it.name.orElse(it.value) }
 
-                sortedDefinitions.forEach {
-                    generateSealedClassVariant(it)
-                    write("")
-                }
+            sortedDefinitions.forEach {
+                generateSealedClassVariant(it)
+                write("")
+            }
 
             if (generatedNames.contains("SdkUnknown")) throw CodegenException("generating SdkUnknown would cause duplicate variant for enum shape: $shape")
 
@@ -130,7 +130,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
                     .call {
                         sortedDefinitions.forEach { definition ->
                             val variantName = getVariantName(definition)
-                                write("\"${definition.value}\" -> $variantName")
+                            write("\"${definition.value}\" -> $variantName")
                         }
                     }
                     .write("else -> SdkUnknown(str)")

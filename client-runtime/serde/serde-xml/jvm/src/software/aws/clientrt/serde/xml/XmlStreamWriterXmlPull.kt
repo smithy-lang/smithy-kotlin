@@ -5,9 +5,9 @@
 
 package software.aws.clientrt.serde.xml
 
-import java.io.ByteArrayOutputStream
 import org.xmlpull.v1.XmlPullParserFactory
 import org.xmlpull.v1.XmlSerializer
+import java.io.ByteArrayOutputStream
 
 class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer = xmlSerializerFactory()) :
     XmlStreamWriter {

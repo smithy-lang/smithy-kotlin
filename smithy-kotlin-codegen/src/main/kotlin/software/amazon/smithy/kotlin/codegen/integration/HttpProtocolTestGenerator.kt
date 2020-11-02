@@ -14,8 +14,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.integration
 
-import java.util.*
-import java.util.logging.Logger
 import software.amazon.smithy.kotlin.codegen.defaultName
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -23,6 +21,8 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
+import java.util.*
+import java.util.logging.Logger
 
 /**
  * Generates protocol unit tests for the HTTP protocol from smithy models.

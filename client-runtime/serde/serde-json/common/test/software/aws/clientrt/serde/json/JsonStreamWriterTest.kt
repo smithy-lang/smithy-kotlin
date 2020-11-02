@@ -25,9 +25,11 @@ class JsonStreamWriterTest {
             user2
         )
         assertEquals(
-            expected, writeJsonStream(
+            expected,
+            writeJsonStream(
                 listOf(msg1, msg2)
-            )?.decodeToString())
+            )?.decodeToString()
+        )
     }
 
     @Test

@@ -5,8 +5,6 @@
 package software.aws.clientrt.http
 
 import io.ktor.util.pipeline.PipelineContext
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.response.HttpResponse
@@ -14,6 +12,8 @@ import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.HttpResponsePipeline
 import software.aws.clientrt.http.response.TypeInfo
 import software.aws.clientrt.testing.runSuspendTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // Coroutine builders like `runBlocking` are only available on a specific platform
 class PipelineTest {

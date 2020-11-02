@@ -4,14 +4,14 @@
  */
 package software.aws.clientrt.http.feature
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.sdkHttpClient
 import software.aws.clientrt.testing.runSuspendTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class DefaultRequestTest {
     @Test

@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import java.nio.file.Paths
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
@@ -13,6 +12,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
+import java.nio.file.Paths
 
 private const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
 private const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"

@@ -6,12 +6,12 @@ package software.aws.clientrt.smithy.test
 
 import io.kotest.matchers.string.shouldContain
 import io.ktor.utils.io.core.toByteArray
-import kotlin.test.Test
-import kotlin.test.assertFails
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
+import kotlin.test.Test
+import kotlin.test.assertFails
 
 class HttpRequestTestBuilderTest {
 

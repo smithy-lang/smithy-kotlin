@@ -4,12 +4,12 @@
  */
 package software.aws.clientrt.http
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.header
 import software.aws.clientrt.http.request.headers
 import software.aws.clientrt.http.request.url
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class HttpRequestBuilderTest {
     @Test

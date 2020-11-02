@@ -2,8 +2,6 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-import kotlin.test.Test
-import kotlin.test.assertEquals
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.json.JsonSerializer
@@ -11,6 +9,8 @@ import software.aws.clientrt.serde.xml.XmlDeserializer
 import software.aws.clientrt.serde.xml.XmlList
 import software.aws.clientrt.serde.xml.XmlMap
 import software.aws.clientrt.serde.xml.XmlSerializer
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @ExperimentalStdlibApi
 class SemanticParityTest {
@@ -134,7 +134,8 @@ class SemanticParityTest {
             listOf(/*BasicStructTest(), ListTest(), MapTest(),*/ NestedStructTest())
     }
 
-    data class BasicStructTest(var x: Int? = null, var y: String? = null, var z: Boolean? = null) : SdkSerializable,
+    data class BasicStructTest(var x: Int? = null, var y: String? = null, var z: Boolean? = null) :
+        SdkSerializable,
         CrossProtocolSerdeTest {
 
         companion object {
@@ -286,7 +287,8 @@ class SemanticParityTest {
             MapTest.deserialize(deserializer)
     }
 
-    data class NestedStructTest(var nested: BasicStructTest? = null) : SdkSerializable,
+    data class NestedStructTest(var nested: BasicStructTest? = null) :
+        SdkSerializable,
         CrossProtocolSerdeTest {
 
         companion object {

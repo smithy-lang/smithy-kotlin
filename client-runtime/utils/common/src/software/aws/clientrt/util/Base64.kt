@@ -114,10 +114,12 @@ fun ByteArray.decodeBase64(): ByteArray {
 
     for (i in 0 until blockCnt - 1) {
         // encoded: xxxxxx xxyyyy yyyyzz zzzzzz
-        val block = ((encoded[readIdx++].fromBase64() shl 18) or
+        val block = (
+            (encoded[readIdx++].fromBase64() shl 18) or
                 (encoded[readIdx++].fromBase64() shl 12) or
                 (encoded[readIdx++].fromBase64() shl 6) or
-                (encoded[readIdx++].fromBase64() and 0xff))
+                (encoded[readIdx++].fromBase64() and 0xff)
+            )
 
         // decoded: xxxxxxxx yyyyyyyy zzzzzzzz
         for (j in 2 downTo 0) {
