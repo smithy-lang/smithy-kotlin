@@ -65,7 +65,7 @@ open class ClassHasLogging : KLoggable {
 class ClassInheritLogging : ClassHasLogging()
 
 class ClassWithNamedLogging {
-    companion object : Any(), KLoggable by NamedKLogging("mu.ClassWithNamedLogging")
+    companion object : Any(), KLoggable by NamedKLogging("software.aws.clientrt.logging.ClassWithNamedLogging")
 
     fun test() {
         logger.info { "test ClassWithNamedLogging" }
@@ -146,11 +146,11 @@ class LoggingTest {
         }
         appenderWithWriter.writer.flush()
         val lines = appenderWithWriter.writer.toString().trim().replace("\r", "\n").replace("\n\n", "\n").split("\n")
-        Assert.assertEquals("INFO  mu.ClassWithLogging  - test ClassWithLogging", lines[0].trim())
-        Assert.assertEquals("TRACE mu.ClassWithLogging  - test ClassWithLogging", lines[1].trim())
+        Assert.assertEquals("INFO  software.aws.clientrt.logging.ClassWithLogging  - test ClassWithLogging", lines[0].trim())
+        Assert.assertEquals("TRACE software.aws.clientrt.logging.ClassWithLogging  - test ClassWithLogging", lines[1].trim())
         Assert.assertEquals("java.lang.Throwable: null", lines[2].trim())
-        Assert.assertTrue(lines[3].trim().startsWith("at mu.ClassWithLogging.testThrowable("))
-        Assert.assertEquals("TRACE mu.ClassWithLogging  - test ClassWithLogging", lines[lines.size - 1].trim())
+        Assert.assertTrue(lines[3].trim().startsWith("at software.aws.clientrt.logging.ClassWithLogging.testThrowable("))
+        Assert.assertEquals("TRACE software.aws.clientrt.logging.ClassWithLogging  - test ClassWithLogging", lines[lines.size - 1].trim())
     }
 
     @Test
@@ -161,10 +161,10 @@ class LoggingTest {
         }
         appenderWithWriter.writer.flush()
         val lines = appenderWithWriter.writer.toString().trim().replace("\r", "\n").replace("\n\n", "\n").split("\n")
-        Assert.assertEquals("TRACE mu.ClassWithLogging MARKER - test ClassWithLogging", lines[0].trim())
-        Assert.assertEquals("TRACE mu.ClassWithLogging MARKER - test ClassWithLogging", lines[1].trim())
+        Assert.assertEquals("TRACE software.aws.clientrt.logging.ClassWithLogging MARKER - test ClassWithLogging", lines[0].trim())
+        Assert.assertEquals("TRACE software.aws.clientrt.logging.ClassWithLogging MARKER - test ClassWithLogging", lines[1].trim())
         Assert.assertEquals("java.lang.Throwable: null", lines[2].trim())
-        Assert.assertTrue(lines[3].trim().startsWith("at mu.ClassWithLogging.testMarkerThrowable("))
+        Assert.assertTrue(lines[3].trim().startsWith("at software.aws.clientrt.logging.ClassWithLogging.testMarkerThrowable("))
     }
 
     @Test
@@ -172,7 +172,7 @@ class LoggingTest {
         ClassInheritLogging().test()
         appenderWithWriter.writer.flush()
         Assert.assertEquals(
-            "INFO  mu.ClassInheritLogging  - test ClassHasLogging", appenderWithWriter.writer.toString().trim()
+            "INFO  software.aws.clientrt.logging.ClassInheritLogging  - test ClassHasLogging", appenderWithWriter.writer.toString().trim()
         )
     }
 
@@ -181,7 +181,7 @@ class LoggingTest {
         ChildClassWithLogging().test()
         appenderWithWriter.writer.flush()
         Assert.assertEquals(
-            "INFO  mu.ChildClassWithLogging  - test ChildClassWithLogging", appenderWithWriter.writer.toString().trim()
+            "INFO  software.aws.clientrt.logging.ChildClassWithLogging  - test ChildClassWithLogging", appenderWithWriter.writer.toString().trim()
         )
     }
 
@@ -190,7 +190,7 @@ class LoggingTest {
         ClassWithNamedLogging().test()
         appenderWithWriter.writer.flush()
         Assert.assertEquals(
-            "INFO  mu.ClassWithNamedLogging  - test ClassWithNamedLogging", appenderWithWriter.writer.toString().trim()
+            "INFO  software.aws.clientrt.logging.ClassWithNamedLogging  - test ClassWithNamedLogging", appenderWithWriter.writer.toString().trim()
         )
     }
 
@@ -199,7 +199,7 @@ class LoggingTest {
         ClassHasLogging().test()
         appenderWithWriter.writer.flush()
         Assert.assertEquals(
-            "INFO  mu.ClassHasLogging  - test ClassHasLogging", appenderWithWriter.writer.toString().trim()
+            "INFO  software.aws.clientrt.logging.ClassHasLogging  - test ClassHasLogging", appenderWithWriter.writer.toString().trim()
         )
     }
 
@@ -208,7 +208,7 @@ class LoggingTest {
         CompanionHasLogging().test()
         appenderWithWriter.writer.flush()
         Assert.assertEquals(
-            "INFO  mu.CompanionHasLogging  - test CompanionHasLogging", appenderWithWriter.writer.toString().trim()
+            "INFO  software.aws.clientrt.logging.CompanionHasLogging  - test CompanionHasLogging", appenderWithWriter.writer.toString().trim()
         )
     }
 
@@ -217,7 +217,7 @@ class LoggingTest {
         LambdaRaisesError().test()
         appenderWithWriter.writer.flush()
         Assert.assertEquals(
-            "INFO  mu.LambdaRaisesError  - Log message invocation failed: java.lang.NullPointerException",
+            "INFO  software.aws.clientrt.logging.LambdaRaisesError  - Log message invocation failed: java.lang.NullPointerException",
             appenderWithWriter.writer.toString().trim()
         )
     }
@@ -227,25 +227,25 @@ class LoggingTest {
         ClassWithLogging().testFormatting()
         appenderWithWriter.writer.flush()
         Assert.assertEquals(
-            "INFO  mu.ClassWithLogging  - Message: String with {} curly braces", appenderWithWriter.writer.toString().trim()
+            "INFO  software.aws.clientrt.logging.ClassWithLogging  - Message: String with {} curly braces", appenderWithWriter.writer.toString().trim()
         )
     }
 
     @Test
     fun `check underlyingLogger property`() {
-        Assert.assertEquals("mu.ClassHasLogging", ClassHasLogging().logger.underlyingLogger.name)
+        Assert.assertEquals("software.aws.clientrt.logging.ClassHasLogging", ClassHasLogging().logger.underlyingLogger.name)
     }
 }
 
 class LoggingNameTest {
     @Test
     fun testNames() {
-        assertEquals("mu.ClassWithLogging", ClassWithLogging.logger.name)
-        assertEquals("mu.ClassInheritLogging", ClassInheritLogging().logger.name)
-        assertEquals("mu.ChildClassWithLogging", ChildClassWithLogging.logger.name)
-        assertEquals("mu.ClassWithNamedLogging", ClassWithNamedLogging.logger.name)
-        assertEquals("mu.ClassHasLogging", ClassHasLogging().logger.name)
-        assertEquals("mu.CompanionHasLogging", CompanionHasLogging.logger.name)
+        assertEquals("software.aws.clientrt.logging.ClassWithLogging", ClassWithLogging.logger.name)
+        assertEquals("software.aws.clientrt.logging.ClassInheritLogging", ClassInheritLogging().logger.name)
+        assertEquals("software.aws.clientrt.logging.ChildClassWithLogging", ChildClassWithLogging.logger.name)
+        assertEquals("software.aws.clientrt.logging.ClassWithNamedLogging", ClassWithNamedLogging.logger.name)
+        assertEquals("software.aws.clientrt.logging.ClassHasLogging", ClassHasLogging().logger.name)
+        assertEquals("software.aws.clientrt.logging.CompanionHasLogging", CompanionHasLogging.logger.name)
     }
 }
 
