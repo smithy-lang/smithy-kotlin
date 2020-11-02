@@ -100,8 +100,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         .write("")
                 }
 
-                writer.openBlock("val service = \$L.build(){", serviceName)
-                    .write("httpEngine = mockEngine")
+                writer.openBlock("val service = \$L {", serviceName)
+                    .write("httpClientEngine = mockEngine")
                     .write("idempotencyTokenProvider = IdempotencyTokenProvider { \"00000000-0000-4000-8000-000000000000\" }")
                     .closeBlock("}")
 

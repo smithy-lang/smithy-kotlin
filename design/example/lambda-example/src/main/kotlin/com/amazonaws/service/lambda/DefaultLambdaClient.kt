@@ -25,7 +25,7 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
 
     init {
         val engineConfig = HttpClientEngineConfig()
-        val httpEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
+        val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
         client = sdkHttpClient(httpEngine) {
             install(HttpSerde) {

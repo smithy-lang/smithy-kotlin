@@ -35,7 +35,7 @@ class DefaultS3Client(config: S3Client.Config): S3Client {
 
     init {
         val engineConfig = HttpClientEngineConfig()
-        val httpEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
+        val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
         client = sdkHttpClient(httpEngine) {
             install(HttpSerde) {

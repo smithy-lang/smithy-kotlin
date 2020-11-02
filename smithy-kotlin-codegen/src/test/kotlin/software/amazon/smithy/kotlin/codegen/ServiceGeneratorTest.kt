@@ -101,6 +101,7 @@ class ServiceGeneratorTest {
 
         interface Builder {
             fun build(): Config
+
             fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
             fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder
             fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder
@@ -108,23 +109,27 @@ class ServiceGeneratorTest {
 
         interface DslBuilder {
             fun build(): Config
+
             var httpClientEngine: HttpClientEngine?
             var httpClientEngineConfig: HttpClientEngineConfig?
             var idempotencyTokenProvider: IdempotencyTokenProvider?
         }
 
         internal class BuilderImpl() : Builder, DslBuilder {
+
             override var httpClientEngine: HttpClientEngine? = null
             override var httpClientEngineConfig: HttpClientEngineConfig? = null
             override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
 
             constructor(config: Config) : this() {
+
                 this.httpClientEngine = config.httpClientEngine
                 this.httpClientEngineConfig = config.httpClientEngineConfig
                 this.idempotencyTokenProvider = config.idempotencyTokenProvider
             }
 
             override fun build(): Config = Config(this)
+
             override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }
             override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }
             override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
@@ -194,31 +199,35 @@ class ServiceGeneratorTest {
 
         interface Builder {
             fun build(): Config
+
             fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
             fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder
         }
 
         interface DslBuilder {
             fun build(): Config
+
             var httpClientEngine: HttpClientEngine?
             var httpClientEngineConfig: HttpClientEngineConfig?
         }
 
         internal class BuilderImpl() : Builder, DslBuilder {
+
             override var httpClientEngine: HttpClientEngine? = null
             override var httpClientEngineConfig: HttpClientEngineConfig? = null
 
             constructor(config: Config) : this() {
+
                 this.httpClientEngine = config.httpClientEngine
                 this.httpClientEngineConfig = config.httpClientEngineConfig
             }
 
             override fun build(): Config = Config(this)
+
             override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }
             override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }
         }
     }
-
 """
         generateService("service-generator-test-minimal-operations.smithy") {
             ApplicationProtocol.createDefaultHttpApplicationProtocol()
