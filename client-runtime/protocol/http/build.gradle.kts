@@ -17,7 +17,6 @@ kotlin {
                 api(project(":client-runtime:client-rt-core"))
                 implementation(project(":client-runtime:utils"))
                 implementation(project(":client-runtime:io"))
-                implementation(project(":client-runtime:logging"))
                 // for Pipeline abstraction which already supports suspend functions
                 api("io.ktor:ktor-utils:$ktorVersion")
                 // HttpSerialize/Deserialize
