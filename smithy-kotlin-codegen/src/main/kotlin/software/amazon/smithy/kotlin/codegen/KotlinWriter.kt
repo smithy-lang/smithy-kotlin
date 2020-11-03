@@ -35,17 +35,31 @@ import java.util.function.BiFunction
  * writer.closeBlock("}")
  * ```
  */
-fun CodeWriter.withBlock(textBeforeNewLine: String, textAfterNewLine: String, block: CodeWriter.() -> Unit): CodeWriter {
+fun <T: CodeWriter> T.withBlock(textBeforeNewLine: String, textAfterNewLine: String, block: T.() -> Unit): T {
     openBlock(textBeforeNewLine)
     block(this)
     closeBlock(textAfterNewLine)
     return this
 }
 
-fun CodeWriter.withState(state: String, block: CodeWriter.() -> Unit = {}): CodeWriter {
+/**
+ * Similar to `CodeWriter.withBlock()` but using `pushState()`.
+ */
+fun <T: CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
     pushState(state)
     block(this)
     popState()
+    return this
+}
+
+/**
+ * Handles preserving existing text on section when writing new text.
+ */
+fun <T: CodeWriter> T.appendToSection(sectionName: String, block: T.() -> Unit): T {
+    onSection(sectionName) { previousText ->
+        write(previousText)
+        block(this)
+    }
     return this
 }
 
