@@ -15,7 +15,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import jdk.nashorn.internal.ir.annotations.Ignore
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -173,9 +172,9 @@ class ServiceGeneratorTest {
 """
         generateService("service-generator-test-minimal-operations.smithy") {
             ApplicationProtocol(
-                    "nothttp",
-                    createHttpSymbol("NotHttpRequestBuilder", "request"),
-                    createHttpSymbol("NotHttpResponse", "response")
+                "nothttp",
+                createHttpSymbol("NotHttpRequestBuilder", "request"),
+                createHttpSymbol("NotHttpResponse", "response")
             )
         }.shouldContainOnlyOnce(expected)
     }
@@ -286,10 +285,10 @@ class ServiceGeneratorTest {
     // Produce the generated service code given model inputs.
     private fun generateService(modelResourceName: String, applicationProtocolFactory: () -> ApplicationProtocol): String {
         val model = Model.assembler()
-                .addImport(javaClass.getResource(modelResourceName))
-                .discoverModels()
-                .assemble()
-                .unwrap()
+            .addImport(javaClass.getResource(modelResourceName))
+            .discoverModels()
+            .assemble()
+            .unwrap()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val writer = KotlinWriter("com.test")
@@ -302,9 +301,9 @@ class ServiceGeneratorTest {
 
     private fun createHttpSymbol(symbolName: String, subnamespace: String): Symbol {
         return Symbol.builder()
-                .name(symbolName)
-                .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.$subnamespace", ".")
-                .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                .build()
+            .name(symbolName)
+            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.$subnamespace", ".")
+            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+            .build()
     }
 }
