@@ -97,9 +97,9 @@ class ServiceGenerator(
         registerSections()
 
         writer.withState(SECTION_SERVICE_INTERFACE_CONFIG) {
-            writer.write("class Config private constructor(builder: BuilderImpl): \${L@$SECTION_SERVICE_CONFIG_PARENT_TYPE} {", "")
+            write("class Config private constructor(builder: BuilderImpl): \${L@$SECTION_SERVICE_CONFIG_PARENT_TYPE} {", "")
 
-            writer.withBlock("", "}") {
+            withBlock("", "}") {
                 withState(SECTION_SERVICE_CONFIG_PROPERTIES)
                 blankLine()
                 renderConfigCompanionObject()
@@ -150,8 +150,7 @@ class ServiceGenerator(
             }
         }
 
-        writer.onSection(SECTION_SERVICE_CONFIG_PROPERTIES) {
-            writer.write(it)
+        writer.appendToSection(SECTION_SERVICE_CONFIG_PROPERTIES) {
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine")
                 writer.write("override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig")
@@ -162,8 +161,7 @@ class ServiceGenerator(
             }
         }
 
-        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_BODY) {
-            writer.write(it)
+        writer.appendToSection(SECTION_SERVICE_CONFIG_BUILDER_BODY) {
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder")
                 writer.write("fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder")
@@ -174,8 +172,7 @@ class ServiceGenerator(
             }
         }
 
-        writer.onSection(SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY) {
-            writer.write(it)
+        writer.appendToSection(SECTION_SERVICE_CONFIG_DSL_BUILDER_BODY) {
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("var httpClientEngine: HttpClientEngine?")
                 writer.write("var httpClientEngineConfig: HttpClientEngineConfig?")
@@ -186,8 +183,7 @@ class ServiceGenerator(
             }
         }
 
-        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES) {
-            writer.write(it)
+        writer.appendToSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_PROPERTIES) {
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("override var httpClientEngine: HttpClientEngine? = null")
                 writer.write("override var httpClientEngineConfig: HttpClientEngineConfig? = null")
@@ -198,8 +194,7 @@ class ServiceGenerator(
             }
         }
 
-        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR) {
-            writer.write(it)
+        writer.appendToSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_CONSTRUCTOR) {
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("this.httpClientEngine = config.httpClientEngine")
                 writer.write("this.httpClientEngineConfig = config.httpClientEngineConfig")
@@ -210,8 +205,7 @@ class ServiceGenerator(
             }
         }
 
-        writer.onSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY) {
-            writer.write(it)
+        writer.appendToSection(SECTION_SERVICE_CONFIG_BUILDER_IMPL_BODY) {
             if (applicationProtocol.isHttpProtocol) {
                 writer.write("override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }")
                 writer.write("override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }")
