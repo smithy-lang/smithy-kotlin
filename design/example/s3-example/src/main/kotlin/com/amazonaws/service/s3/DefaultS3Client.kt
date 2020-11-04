@@ -37,7 +37,7 @@ class DefaultS3Client(config: S3Client.Config): S3Client {
         val engineConfig = HttpClientEngineConfig()
         val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
-        client = sdkHttpClient(httpEngine) {
+        client = sdkHttpClient(httpClientEngine) {
             install(HttpSerde) {
                 serdeProvider = XmlSerdeProvider()
                 idempotencyTokenProvider = config.idempotencyTokenProvider  ?: IdempotencyTokenProvider.Default

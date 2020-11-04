@@ -27,7 +27,7 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
         val engineConfig = HttpClientEngineConfig()
         val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
-        client = sdkHttpClient(httpEngine) {
+        client = sdkHttpClient(httpClientEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
                 idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
