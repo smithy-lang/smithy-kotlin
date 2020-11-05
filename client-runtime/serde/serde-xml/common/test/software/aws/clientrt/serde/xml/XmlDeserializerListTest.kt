@@ -9,7 +9,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import software.aws.clientrt.serde.*
 
-
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerListTest {
 
@@ -24,11 +23,11 @@ class XmlDeserializerListTest {
                 val builder = dslBuilder()
 
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                    loop@ while(true) {
+                    loop@ while (true) {
                         when (findNextFieldIndex()) {
                             ELEMENT_LIST_FIELD_DESCRIPTOR.index -> builder.list = deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
                                 val list = mutableListOf<Int?>()
-                                while(hasNextElement()) {
+                                while (hasNextElement()) {
                                     list.add(deserializeInt())
                                 }
                                 return@deserializeList list
