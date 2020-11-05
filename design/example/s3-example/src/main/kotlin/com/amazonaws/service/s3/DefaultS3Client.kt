@@ -17,7 +17,7 @@ package com.amazonaws.service.s3
 import com.amazonaws.service.s3.model.*
 import com.amazonaws.service.s3.transform.*
 import kotlinx.coroutines.runBlocking
-import software.aws.clientrt.IdempotencyTokenProvider
+import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.content.ByteStream
 import software.aws.clientrt.content.toByteArray
 import software.aws.clientrt.http.*
@@ -35,9 +35,9 @@ class DefaultS3Client(config: S3Client.Config): S3Client {
 
     init {
         val engineConfig = HttpClientEngineConfig()
-        val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)
+        val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
-        client = sdkHttpClient(httpEngine) {
+        client = sdkHttpClient(httpClientEngine) {
             install(HttpSerde) {
                 serdeProvider = XmlSerdeProvider()
                 idempotencyTokenProvider = config.idempotencyTokenProvider  ?: IdempotencyTokenProvider.Default
@@ -95,7 +95,7 @@ class DefaultS3Client(config: S3Client.Config): S3Client {
 @OptIn(ExperimentalStdlibApi::class)
 fun main() = runBlocking{
 
-    val service = S3Client.build()
+    val service = S3Client()
     val putRequest = PutObjectRequest{
         body = ByteStream.fromString("my bucket content") 
         bucket = "my-bucket"
