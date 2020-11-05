@@ -8,7 +8,6 @@ import io.kotest.matchers.maps.shouldContainExactly
 import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.SerialKind
 import software.aws.clientrt.serde.deserializeMap
-import kotlin.test.Ignore
 import kotlin.test.Test
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -99,7 +98,7 @@ class XmlDeserializerMapTest {
             SdkFieldDescriptor("Bar", SerialKind.Map, 0, XmlMap("flatMap", "key", "value", true))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
-            val map = mutableMapOf<String, Int>()
+            val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
                 map[key()] = deserializer.deserializeInt()
             }
@@ -118,7 +117,7 @@ class XmlDeserializerMapTest {
             SdkFieldDescriptor("Map", SerialKind.Map, 0, XmlMap())
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
-            val map = mutableMapOf<String, Int>()
+            val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
                 map[key()] = deserializer.deserializeInt()
             }
@@ -129,9 +128,6 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    @Ignore
-    // TODO: This test fails because the primitive deserializer interface must return a value.  In order to allow nulls
-    //       we must revise the interface or come up w/ another strategy.
     fun `it handles maps with entries with empty values`() {
         val payload = """
             <values>
@@ -149,10 +145,10 @@ class XmlDeserializerMapTest {
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {
-            val map = mutableMapOf<String, Int>()
+            val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = deserializeInt()!!
+                val value = deserializeInt()
 
                 map[key] = value
             }
