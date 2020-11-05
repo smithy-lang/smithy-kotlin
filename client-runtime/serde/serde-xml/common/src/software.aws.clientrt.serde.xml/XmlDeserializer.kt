@@ -65,51 +65,53 @@ class XmlDeserializer(
      * Deserialize a byte value defined as the text section of an Xml element.
      *
      */
-    override fun deserializeByte(): Byte =
+    override fun deserializeByte(): Byte? =
         deserializePrimitive { it.toIntOrNull()?.toByte() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeInt(): Int =
+    override fun deserializeInt(): Int? =
         deserializePrimitive { it.toIntOrNull() }
 
     /**
      * Deserialize a short value defined as the text section of an Xml element.
      */
-    override fun deserializeShort(): Short =
+    override fun deserializeShort(): Short? =
         deserializePrimitive { it.toIntOrNull()?.toShort() }
 
     /**
      * Deserialize a long value defined as the text section of an Xml element.
      */
-    override fun deserializeLong(): Long =
+    override fun deserializeLong(): Long? =
         deserializePrimitive { it.toLongOrNull() }
 
     /**
      * Deserialize an float value defined as the text section of an Xml element.
      */
-    override fun deserializeFloat(): Float =
+    override fun deserializeFloat(): Float? =
         deserializePrimitive { it.toFloatOrNull() }
 
     /**
      * Deserialize a double value defined as the text section of an Xml element.
      */
-    override fun deserializeDouble(): Double =
+    override fun deserializeDouble(): Double? =
         deserializePrimitive { it.toDoubleOrNull() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeString(): String = deserializePrimitive { it }
+    override fun deserializeString(): String? = deserializePrimitive { it }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeBool(): Boolean =
+    override fun deserializeBool(): Boolean? =
         deserializePrimitive { it.toBoolean() }
 
-    private fun <T> deserializePrimitive(transform: (String) -> T?): T {
+    private fun <T> deserializePrimitive(transform: (String) -> T?): T? {
+        if (reader.peek() is XmlToken.EndElement) return null
+
         val rt = reader.takeToken<XmlToken.Text>(nodeNameStack)
 
         val rv = rt.value ?: throw DeserializationException("Expected value but text of element was null.")
@@ -135,7 +137,9 @@ private class CompositeIterator(
     override fun hasNextElement(): Boolean {
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
-        if (!consumedWrapper) {
+        val flattenedList = descriptor.findTrait<XmlList>()?.flattened == true
+
+        if (!consumedWrapper && !flattenedList) {
             val nextToken = reader.peek()
 
             if (nextToken is XmlToken.EndElement) return false // empty list
@@ -150,7 +154,9 @@ private class CompositeIterator(
         return when (val nextToken = reader.peek()) {
             XmlToken.EndDocument -> false
             is XmlToken.EndElement ->
-                if (reader.currentDepth() == depth && nextToken.name == beginNode.id) {
+                if (reader.currentDepth() < depth) {
+                    false
+                } else if (reader.currentDepth() == depth && nextToken.name == beginNode.id && !flattenedList) {
                     false
                 } else {
                     reader.takeToken<XmlToken.EndElement>(nodeNameStack) // Consume terminating node of child
@@ -270,12 +276,24 @@ private class XmlFieldIterator(
     // Each time the value is read, it is explicitly set to null, and null state is guarded to help ensure that stale
     // values are not acted upon.
     private var attributeParseState: AttributeParseState? = null
+    private var consumedWrapper = false // Signals if outermost tag initially passed to CompositeIterator has been taken
     private val handledFields = mutableListOf<SdkFieldDescriptor>()
 
     // Deserializer.FieldIterator
     override fun findNextFieldIndex(): Int? {
         check(attributeParseState == null) { "Expected nextFieldValueSource to be null but found $attributeParseState" }
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
+
+        /*
+        reader.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { beginToken ->
+            val listInfo = descriptor.expectTrait<XmlList>()
+            if (!consumedWrapper && !listInfo.flattened) {
+                consumedWrapper = true
+                require(beginToken.id.name == listInfo.elementName) { "Expected node ${listInfo.elementName} but got ${beginToken.id}" }
+                reader.peekToken<XmlToken.BeginElement>()
+            }
+        }
+         */
 
         return when (val nextToken = reader.peek()) {
             XmlToken.EndDocument -> null
@@ -340,6 +358,13 @@ private class XmlFieldIterator(
             handledFields.add(nextAttribField)
 
             return nextAttribField
+        }
+
+        val flattenedListField = fields.find { field -> field.findTrait<XmlList>()?.flattened ?: false }
+        if (flattenedListField != null && flattenedListField.expectTrait<XmlList>().elementName == nextToken.id.name) {
+            handledFields.add(flattenedListField)
+
+            return flattenedListField
         }
 
         // FIXME: The following filter needs to take XML namespace into account when matching.

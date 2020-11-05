@@ -34,7 +34,8 @@ data class XmlMap(
  * @param elementName the name of the XML node which wraps each list entry.
  */
 data class XmlList(
-    val elementName: String = "element"
+    val elementName: String = "element",
+    val flattened: Boolean = false
 ) : FieldTrait
 
 /**
