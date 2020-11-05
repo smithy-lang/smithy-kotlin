@@ -5,14 +5,14 @@
 package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.collections.shouldContainExactly
-import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import software.aws.clientrt.serde.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerListTest {
 
-    class ListDeserializer private constructor(builder: BuilderImpl){
+    class ListDeserializer private constructor(builder: BuilderImpl) {
         val list: List<Int?>? = builder.list
 
         companion object {
@@ -23,11 +23,11 @@ class XmlDeserializerListTest {
                 val builder = ListDeserializer.dslBuilder()
 
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                    loop@ while(true) {
+                    loop@ while (true) {
                         when (findNextFieldIndex()) {
                             ELEMENT_LIST_FIELD_DESCRIPTOR.index -> builder.list = deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
                                 val list = mutableListOf<Int?>()
-                                while(hasNextElement()) {
+                                while (hasNextElement()) {
                                     list.add(deserializeInt())
                                 }
                                 return@deserializeList list

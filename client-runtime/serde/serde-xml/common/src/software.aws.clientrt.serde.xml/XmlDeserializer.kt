@@ -354,7 +354,7 @@ private class XmlFieldIterator(
 
             return flattenedListField
         }
-        
+
         // FIXME: The following filter needs to take XML namespace into account when matching.
         // If no attributes are present, take the field matching the serialName
         return descriptor.fields
