@@ -65,51 +65,53 @@ class XmlDeserializer(
      * Deserialize a byte value defined as the text section of an Xml element.
      *
      */
-    override fun deserializeByte(): Byte =
+    override fun deserializeByte(): Byte? =
         deserializePrimitive { it.toIntOrNull()?.toByte() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeInt(): Int =
+    override fun deserializeInt(): Int? =
         deserializePrimitive { it.toIntOrNull() }
 
     /**
      * Deserialize a short value defined as the text section of an Xml element.
      */
-    override fun deserializeShort(): Short =
+    override fun deserializeShort(): Short? =
         deserializePrimitive { it.toIntOrNull()?.toShort() }
 
     /**
      * Deserialize a long value defined as the text section of an Xml element.
      */
-    override fun deserializeLong(): Long =
+    override fun deserializeLong(): Long? =
         deserializePrimitive { it.toLongOrNull() }
 
     /**
      * Deserialize an float value defined as the text section of an Xml element.
      */
-    override fun deserializeFloat(): Float =
+    override fun deserializeFloat(): Float? =
         deserializePrimitive { it.toFloatOrNull() }
 
     /**
      * Deserialize a double value defined as the text section of an Xml element.
      */
-    override fun deserializeDouble(): Double =
+    override fun deserializeDouble(): Double? =
         deserializePrimitive { it.toDoubleOrNull() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeString(): String = deserializePrimitive { it }
+    override fun deserializeString(): String? = deserializePrimitive { it }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeBool(): Boolean =
+    override fun deserializeBool(): Boolean? =
         deserializePrimitive { it.toBoolean() }
 
-    private fun <T> deserializePrimitive(transform: (String) -> T?): T {
+    private fun <T> deserializePrimitive(transform: (String) -> T?): T? {
+        if (reader.peek() is XmlToken.EndElement) return null
+
         val rt = reader.takeToken<XmlToken.Text>(nodeNameStack)
 
         val rv = rt.value ?: throw DeserializationException("Expected value but text of element was null.")
