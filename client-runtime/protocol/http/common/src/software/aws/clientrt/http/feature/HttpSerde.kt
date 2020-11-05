@@ -63,9 +63,7 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
         client.requestPipeline.intercept(HttpRequestPipeline.Transform) { subject ->
             when (subject) {
                 // serialize the input type to the outgoing request builder
-                is HttpSerialize -> {
-                    subject.serialize(context, SerializationContext(serde::serializer, idempotencyTokenProvider))
-                }
+                is HttpSerialize -> subject.serialize(context, SerializationContext(serde::serializer, idempotencyTokenProvider))
             }
         }
 
