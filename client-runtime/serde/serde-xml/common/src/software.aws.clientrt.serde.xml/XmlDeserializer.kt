@@ -135,7 +135,9 @@ private class CompositeIterator(
     override fun hasNextElement(): Boolean {
         require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
 
-        if (!consumedWrapper) {
+        val flattenedList = descriptor.findTrait<XmlList>()?.flattened == true
+
+        if (!consumedWrapper && !flattenedList) {
             val nextToken = reader.peek()
 
             if (nextToken is XmlToken.EndElement) return false // empty list
@@ -150,7 +152,9 @@ private class CompositeIterator(
         return when (val nextToken = reader.peek()) {
             XmlToken.EndDocument -> false
             is XmlToken.EndElement ->
-                if (reader.currentDepth() == depth && nextToken.name == beginNode.id) {
+                if (reader.currentDepth() < depth) {
+                    false
+                } else if (reader.currentDepth() == depth && nextToken.name == beginNode.id && !flattenedList) {
                     false
                 } else {
                     reader.takeToken<XmlToken.EndElement>(nodeNameStack) // Consume terminating node of child
@@ -354,7 +358,12 @@ private class XmlFieldIterator(
             return nextAttribField
         }
 
-        search the fields looking for a flattened container trait.  if found check the name of the element and match
+        val flattenedListField = fields.find { field -> field.findTrait<XmlList>()?.flattened ?: false }
+        if (flattenedListField != null && flattenedListField.expectTrait<XmlList>().elementName == nextToken.id.name) {
+            handledFields.add(flattenedListField)
+
+            return flattenedListField
+        }
         
         // FIXME: The following filter needs to take XML namespace into account when matching.
         // If no attributes are present, take the field matching the serialName
