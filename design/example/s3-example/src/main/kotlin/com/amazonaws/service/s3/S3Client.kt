@@ -15,9 +15,12 @@
 package com.amazonaws.service.s3
 
 import com.amazonaws.service.s3.model.*
-import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.SdkClient
+import software.aws.clientrt.config.IdempotencyTokenConfig
+import software.aws.clientrt.config.IdempotencyTokenProvider
+import software.aws.clientrt.http.config.HttpClientConfig
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineConfig
 
 
 interface S3Client: SdkClient {
@@ -25,16 +28,60 @@ interface S3Client: SdkClient {
         get() = "s3"
 
     companion object {
-        fun build(block: Config.() -> Unit = {}): S3Client {
-            val config = Config().apply(block)
+        operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): S3Client {
+            val config = Config.BuilderImpl().apply(block).build()
             return DefaultS3Client(config)
         }
     }
 
-    // FIXME - this is temporary and needs designed
-    class Config {
-        var httpEngine: HttpClientEngine? = null
-        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+
+    class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig {
+        override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
+        override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig
+        override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
+
+        companion object {
+            @JvmStatic
+            fun builder(): Builder = BuilderImpl()
+
+            fun dslBuilder(): DslBuilder = BuilderImpl()
+
+            operator fun invoke(block: DslBuilder.() -> Unit): Config = BuilderImpl().apply(block).build()
+        }
+
+        fun copy(block: DslBuilder.() -> Unit = {}): Config = BuilderImpl(this).apply(block).build()
+
+        interface Builder {
+            fun build(): Config
+            fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
+            fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder
+            fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder
+        }
+
+        interface DslBuilder {
+            var httpClientEngine: HttpClientEngine?
+            var httpClientEngineConfig: HttpClientEngineConfig?
+            var idempotencyTokenProvider: IdempotencyTokenProvider?
+
+            fun build(): Config
+        }
+
+        internal class BuilderImpl() : Builder, DslBuilder {
+            override var httpClientEngine: HttpClientEngine? = null
+            override var httpClientEngineConfig: HttpClientEngineConfig? = null
+            override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+
+            constructor(x: Config) : this() {
+                this.httpClientEngine = x.httpClientEngine
+                this.httpClientEngineConfig = x.httpClientEngineConfig
+                this.idempotencyTokenProvider = x.idempotencyTokenProvider
+            }
+
+            override fun build(): Config = Config(this)
+            override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }
+            override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }
+            override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
+        }
     }
 
     suspend fun putObject(input: PutObjectRequest): PutObjectResponse

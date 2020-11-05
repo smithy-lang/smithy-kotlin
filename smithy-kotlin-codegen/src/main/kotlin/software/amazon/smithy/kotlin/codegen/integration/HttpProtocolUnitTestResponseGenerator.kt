@@ -93,8 +93,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     writer.write("val input = ${inputSymbol.name}{}")
                 }
 
-                writer.openBlock("val service = \$L.build{", serviceName)
-                    .write("httpEngine = mockEngine")
+                writer.openBlock("val service = \$L {", serviceName)
+                    .write("httpClientEngine = mockEngine")
                     .closeBlock("}")
 
                 renderServiceCall()

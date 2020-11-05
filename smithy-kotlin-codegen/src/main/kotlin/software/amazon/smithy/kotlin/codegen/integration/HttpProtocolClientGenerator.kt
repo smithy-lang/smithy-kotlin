@@ -77,7 +77,7 @@ abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
 
         val idempotencyTokenProviderSymbol = Symbol.builder()
             .name("IdempotencyTokenProvider")
-            .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
+            .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
             .addDependency(KotlinDependency.CLIENT_RT_CORE)
             .build()
         writer.addImport(idempotencyTokenProviderSymbol)
@@ -141,8 +141,8 @@ class HttpProtocolClientGenerator(
         writer.openBlock("init {")
             // FIXME - this will eventually come from the client config/builder
             .write("val engineConfig = HttpClientEngineConfig()")
-            .write("val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)")
-            .openBlock("client = sdkHttpClient(httpEngine) {")
+            .write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)")
+            .openBlock("client = sdkHttpClient(httpClientEngine) {")
             .call { renderHttpClientConfiguration() }
             .closeBlock("}")
             .closeBlock("}")

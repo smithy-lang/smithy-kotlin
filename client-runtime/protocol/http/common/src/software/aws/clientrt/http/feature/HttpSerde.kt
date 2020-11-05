@@ -4,7 +4,7 @@
  */
 package software.aws.clientrt.http.feature
 
-import software.aws.clientrt.IdempotencyTokenProvider
+import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestPipeline
@@ -43,6 +43,7 @@ interface HttpDeserialize {
  * HTTP serialization/deserialization feature (handles calling the appropriate serialize/deserialize methods)
  */
 class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenProvider: IdempotencyTokenProvider) : Feature {
+
     class Config {
         var serdeProvider: SerdeProvider? = null
         var idempotencyTokenProvider: IdempotencyTokenProvider? = null

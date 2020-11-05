@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
@@ -24,20 +25,9 @@ class ServiceGeneratorTest {
     private val commonTestContents: String
 
     init {
-        val model = Model.assembler()
-            .addImport(javaClass.getResource("service-generator-test-operations.smithy"))
-            .discoverModels()
-            .assemble()
-            .unwrap()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val writer = KotlinWriter("com.test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val applicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
-        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocol)
-        generator.render()
-
-        commonTestContents = writer.toString()
+        commonTestContents = generateService("service-generator-test-operations.smithy") {
+            ApplicationProtocol.createDefaultHttpApplicationProtocol()
+        }
     }
 
     @Test
@@ -80,8 +70,8 @@ class ServiceGeneratorTest {
     fun `it renders a companion object`() {
         val expected = """
     companion object {
-        fun build(block: Config.() -> Unit = {}): ExampleClient {
-            val config = Config().apply(block)
+        operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ExampleClient {
+            val config = Config.BuilderImpl().apply(block).build()
             return DefaultExampleClient(config)
         }
     }
@@ -90,15 +80,157 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    fun `it renders a configuration object`() {
+    fun `it generates a child configuration type with HttpClientConfig and IdempotencyTokenConfig based on model`() {
         // we are using a default HTTP protocol in the test and so we should end up with an engine by default
         val expected = """
-    class Config {
-        var httpEngine: HttpClientEngine? = null
-        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+    class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig {
+
+        override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
+        override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig
+        override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
+
+        companion object {
+            @JvmStatic
+            fun builder(): Builder = BuilderImpl()
+            fun dslBuilder(): DslBuilder = BuilderImpl()
+            operator fun invoke(block: DslBuilder.() -> Unit): Config = BuilderImpl().apply(block).build()
+        }
+
+        fun copy(block: DslBuilder.() -> Unit = {}): Config = BuilderImpl(this).apply(block).build()
+
+        interface Builder {
+            fun build(): Config
+
+            fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
+            fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder
+            fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder
+        }
+
+        interface DslBuilder {
+            fun build(): Config
+
+            var httpClientEngine: HttpClientEngine?
+            var httpClientEngineConfig: HttpClientEngineConfig?
+            var idempotencyTokenProvider: IdempotencyTokenProvider?
+        }
+
+        internal class BuilderImpl() : Builder, DslBuilder {
+
+            override var httpClientEngine: HttpClientEngine? = null
+            override var httpClientEngineConfig: HttpClientEngineConfig? = null
+            override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+
+            constructor(config: Config) : this() {
+
+                this.httpClientEngine = config.httpClientEngine
+                this.httpClientEngineConfig = config.httpClientEngineConfig
+                this.idempotencyTokenProvider = config.idempotencyTokenProvider
+            }
+
+            override fun build(): Config = Config(this)
+
+            override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }
+            override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }
+            override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
+        }
     }
 """
         commonTestContents.shouldContainOnlyOnce(expected)
+    }
+
+    // @Test
+    // It's unclear if we need to write codegen for the situation in which a service client has no configuration.
+    fun `it generates a child configuration type`() {
+        val expected = """
+    class Config private constructor(builder: BuilderImpl) {
+
+        companion object {
+            @JvmStatic
+            fun builder(): Builder = BuilderImpl()
+            fun dslBuilder(): DslBuilder = BuilderImpl()
+            operator fun invoke(block: DslBuilder.() -> Unit): Config = BuilderImpl().apply(block).build()
+        }
+
+        fun copy(block: DslBuilder.() -> Unit = {}): Config = BuilderImpl(this).apply(block).build()
+
+        interface Builder {
+            fun build(): Config
+        }
+
+        interface DslBuilder {
+            fun build(): Config
+        }
+
+        internal class BuilderImpl() : Builder, DslBuilder {
+
+            constructor(config: Config) : this() {
+            }
+
+            override fun build(): Config = Config(this)
+        }
+    }
+"""
+        generateService("service-generator-test-minimal-operations.smithy") {
+            ApplicationProtocol(
+                "nothttp",
+                createHttpSymbol("NotHttpRequestBuilder", "request"),
+                createHttpSymbol("NotHttpResponse", "response")
+            )
+        }.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it generates a child configuration type for Http application protocol`() {
+        val expected = """
+    class Config private constructor(builder: BuilderImpl): HttpClientConfig {
+
+        override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
+        override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig
+
+        companion object {
+            @JvmStatic
+            fun builder(): Builder = BuilderImpl()
+            fun dslBuilder(): DslBuilder = BuilderImpl()
+            operator fun invoke(block: DslBuilder.() -> Unit): Config = BuilderImpl().apply(block).build()
+        }
+
+        fun copy(block: DslBuilder.() -> Unit = {}): Config = BuilderImpl(this).apply(block).build()
+
+        interface Builder {
+            fun build(): Config
+
+            fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
+            fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder
+        }
+
+        interface DslBuilder {
+            fun build(): Config
+
+            var httpClientEngine: HttpClientEngine?
+            var httpClientEngineConfig: HttpClientEngineConfig?
+        }
+
+        internal class BuilderImpl() : Builder, DslBuilder {
+
+            override var httpClientEngine: HttpClientEngine? = null
+            override var httpClientEngineConfig: HttpClientEngineConfig? = null
+
+            constructor(config: Config) : this() {
+
+                this.httpClientEngine = config.httpClientEngine
+                this.httpClientEngineConfig = config.httpClientEngineConfig
+            }
+
+            override fun build(): Config = Config(this)
+
+            override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }
+            override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }
+        }
+    }
+"""
+        generateService("service-generator-test-minimal-operations.smithy") {
+            ApplicationProtocol.createDefaultHttpApplicationProtocol()
+        }.shouldContainOnlyOnce(expected)
     }
 
     @Test
@@ -119,13 +251,13 @@ class ServiceGeneratorTest {
         val writer = KotlinWriter("com.test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
         val applicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()
-        writer.onSection(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) { _ ->
+        writer.onSection(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) {
             writer.openBlock("companion object {")
                 .write("fun foo(): Int = 1")
                 .closeBlock("}")
         }
 
-        writer.onSection(SECTION_SERVICE_INTERFACE_CONFIG) { _ ->
+        writer.onSection(SECTION_SERVICE_INTERFACE_CONFIG) {
             writer.openBlock("class Config {")
                 .write("var bar: Int = 2")
                 .closeBlock("}")
@@ -148,5 +280,30 @@ class ServiceGeneratorTest {
     }
 """
         contents.shouldContainOnlyOnce(expectedConfigOverride)
+    }
+
+    // Produce the generated service code given model inputs.
+    private fun generateService(modelResourceName: String, applicationProtocolFactory: () -> ApplicationProtocol): String {
+        val model = Model.assembler()
+            .addImport(javaClass.getResource(modelResourceName))
+            .discoverModels()
+            .assemble()
+            .unwrap()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
+        val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocolFactory())
+        generator.render()
+
+        return writer.toString()
+    }
+
+    private fun createHttpSymbol(symbolName: String, subnamespace: String): Symbol {
+        return Symbol.builder()
+            .name(symbolName)
+            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.$subnamespace", ".")
+            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+            .build()
     }
 }

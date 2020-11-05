@@ -8,9 +8,9 @@ package com.amazonaws.service.lambda
 import com.amazonaws.service.lambda.model.*
 import com.amazonaws.service.lambda.transform.*
 import kotlinx.coroutines.runBlocking
-import software.aws.clientrt.IdempotencyTokenProvider
 import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.ServiceException
+import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
@@ -25,9 +25,9 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
 
     init {
         val engineConfig = HttpClientEngineConfig()
-        val httpEngine = config.httpEngine ?: KtorEngine(engineConfig)
+        val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
 
-        client = sdkHttpClient(httpEngine) {
+        client = sdkHttpClient(httpClientEngine) {
             install(HttpSerde) {
                 serdeProvider = JsonSerdeProvider()
                 idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
@@ -80,7 +80,7 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
 
 
 fun main() = runBlocking{
-    val client = LambdaClient.build()
+    val client = LambdaClient()
     val request = InvokeRequest {
         functionName = "myfunction"
         payload = "some payload".toByteArray()

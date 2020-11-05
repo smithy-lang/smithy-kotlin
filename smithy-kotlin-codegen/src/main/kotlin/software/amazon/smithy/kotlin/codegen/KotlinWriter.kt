@@ -35,11 +35,57 @@ import java.util.function.BiFunction
  * writer.closeBlock("}")
  * ```
  */
-fun CodeWriter.withBlock(textBeforeNewLine: String, textAfterNewLine: String, block: CodeWriter.() -> Unit): CodeWriter {
+fun <T : CodeWriter> T.withBlock(textBeforeNewLine: String, textAfterNewLine: String, block: T.() -> Unit): T {
     openBlock(textBeforeNewLine)
     block(this)
     closeBlock(textAfterNewLine)
     return this
+}
+
+/**
+ * Similar to `CodeWriter.withBlock()` but using `pushState()`.
+ */
+fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
+    pushState(state)
+    block(this)
+    popState()
+    return this
+}
+
+/**
+ * Handles preserving existing text on section when writing new text.
+ */
+fun <T : CodeWriter> T.appendToSection(sectionName: String, block: T.() -> Unit): T {
+    onSection(sectionName) { previousText ->
+        write(previousText)
+        block(this)
+    }
+    return this
+}
+
+// Convenience function to create symbol and add it as an import.
+fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDependency.CLIENT_RT_CORE, namespace: String = dependency.namespace) {
+    val importSymbol = Symbol.builder()
+        .name(name)
+        .namespace(namespace, ".")
+        .addDependency(dependency)
+        .build()
+
+    addImport(importSymbol, "", SymbolReference.ContextOption.DECLARE)
+}
+
+// Add one or more blank lines to the writer.
+fun CodeWriter.blankLine(count: Int = 1) {
+    repeat(count) { write("") }
+}
+
+// Used for sections, deals with delimiter occurring within set but not trailing or leading.
+fun CodeWriter.appendWithDelimiter(previousText: Any?, text: String, delimiter: String = ", ") {
+    when {
+        previousText !is String -> error("Unexpected type ${previousText?.javaClass?.canonicalName ?: "[UNKNOWN]"}")
+        previousText.isEmpty() -> write(text)
+        else -> write("$previousText$delimiter$text")
+    }
 }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
