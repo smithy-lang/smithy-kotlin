@@ -5,9 +5,9 @@
 package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.collections.shouldContainExactly
+import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import software.aws.clientrt.serde.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerListTest {
