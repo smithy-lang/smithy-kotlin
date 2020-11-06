@@ -89,7 +89,7 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
 
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
-            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, idempotencyTokenProvider.generateToken())
+            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, serializationContext.idempotencyTokenProvider.generateToken())
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
