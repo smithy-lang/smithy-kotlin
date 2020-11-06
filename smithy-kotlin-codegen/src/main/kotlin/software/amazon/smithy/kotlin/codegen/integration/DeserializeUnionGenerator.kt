@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.isPrimitive
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
@@ -56,9 +57,14 @@ class DeserializeUnionGenerator(
                         ShapeType.UNION -> {
                             val targetShape = ctx.model.expectShape(member.target)
                             for (targetMember in targetShape.members()) {
-                                val deserialize = deserializerForShape(targetMember)
-                                val targetType = target.unionTypeName(targetMember)
-                                writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
+                                if (ctx.model.expectShape(targetMember.target.toShapeId()).type.isPrimitive()) {
+                                    val deserialize = deserializerForShape(targetMember)
+                                    val targetType = target.unionTypeName(targetMember)
+                                    writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
+                                } else {
+                                    // TODO - Implement
+                                    write("TODO(\"Need to generate map member serializer for '${targetMember.type}' associated with '${member.id.toString().smithyEscape()}'.\")")
+                                }
                             }
                         }
                         else -> {
@@ -127,7 +133,7 @@ class DeserializeUnionGenerator(
                 val deserializerName = "${symbol.name}Deserializer"
                 "$deserializerName().deserialize(deserializer)"
             }
-            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
+            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target, type: ${target.type}")
         }
     }
 

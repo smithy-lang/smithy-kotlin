@@ -14,6 +14,8 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.model.shapes.ShapeType
+
 /**
  * Test if a string is a valid Kotlin identifier name
  */
@@ -24,3 +26,16 @@ fun isValidKotlinIdentifier(s: String): Boolean {
         else -> false
     }
 }
+
+internal fun ShapeType.isPrimitive(): Boolean =
+    when (this) {
+        ShapeType.LIST,
+        ShapeType.MAP,
+        ShapeType.SET,
+        ShapeType.STRUCTURE,
+        ShapeType.UNION,
+        ShapeType.SERVICE,
+        ShapeType.RESOURCE,
+        ShapeType.OPERATION -> false
+        else -> true
+    }
