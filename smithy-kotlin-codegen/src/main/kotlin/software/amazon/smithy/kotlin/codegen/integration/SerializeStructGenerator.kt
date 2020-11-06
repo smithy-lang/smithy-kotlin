@@ -17,6 +17,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.defaultName
+import software.amazon.smithy.kotlin.codegen.isPrimitive
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -236,8 +237,13 @@ class SerializeStructGenerator(
 
         writer.withBlock("if (input.$memberName != null) {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
-                write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
+                if (valueTargetShape.type.isPrimitive()) {
+                    val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
+                    write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
+                } else {
+                    // TODO - Implement
+                    write("TODO(\"Need to generate map member serializer for '${valueTargetShape.type}' associated with '${member.id.toString().smithyEscape()}'.\")")
+                }
             }
         }
     }
@@ -262,3 +268,5 @@ internal fun ShapeType.primitiveSerializerFunctionName(): String {
     }
     return "serialize$suffix"
 }
+
+internal fun String.smithyEscape() = this.replace('$', '£')
