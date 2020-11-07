@@ -23,7 +23,6 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.HttpTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 
 /**
  * HttpFeature interface that allows pipeline middleware to be registered and configured with the protocol generator
@@ -81,10 +80,10 @@ abstract class HttpSerde(private val serdeProvider: String, private val generate
 
         if (generateIdempotencyTokenConfig) {
             val idempotencyTokenProviderSymbol = Symbol.builder()
-                    .name("IdempotencyTokenProvider")
-                    .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
-                    .addDependency(KotlinDependency.CLIENT_RT_CORE)
-                    .build()
+                .name("IdempotencyTokenProvider")
+                .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
+                .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                .build()
             writer.addImport(idempotencyTokenProviderSymbol)
         }
     }

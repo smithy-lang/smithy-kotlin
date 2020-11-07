@@ -38,7 +38,7 @@ class DeserializeStructGeneratorTest {
 
     private fun newTestContext(testModel: Model = defaultModel): TestContext {
         val settings = KotlinSettings.from(
-                testModel,
+            testModel,
             Node.objectNodeBuilder()
                 .withMember("module", Node.from("test"))
                 .withMember("moduleVersion", Node.from("1.0.0"))
@@ -51,7 +51,7 @@ class DeserializeStructGeneratorTest {
         val generator = MockHttpProtocolGenerator()
         val ctx = ProtocolGenerator.GenerationContext(
             settings,
-                testModel,
+            testModel,
             service,
             provider,
             listOf(),
@@ -102,10 +102,10 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     @Test
     fun `it handles non-boxed primitives`() {
         val model = Model.assembler()
-                .addImport(javaClass.getResource("unboxed-primitives-test.smithy"))
-                .discoverModels()
-                .assemble()
-                .unwrap()
+            .addImport(javaClass.getResource("unboxed-primitives-test.smithy"))
+            .discoverModels()
+            .assemble()
+            .unwrap()
         val ctx = newTestContext(model)
         val writer = KotlinWriter("test")
         val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#UnboxedPrimitivesTest"))
@@ -113,15 +113,15 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val documentMembers = responseBindings.values
-                .filter { it.location == HttpBinding.Location.DOCUMENT }
-                .sortedBy { it.memberName }
-                .map { it.member }
+            .filter { it.location == HttpBinding.Location.DOCUMENT }
+            .sortedBy { it.memberName }
+            .map { it.member }
 
         DeserializeStructGenerator(
-                ctx.generationCtx,
-                documentMembers,
-                writer,
-                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ctx.generationCtx,
+            documentMembers,
+            writer,
+            TimestampFormatTrait.Format.EPOCH_SECONDS
         ).render()
 
         val contents = writer.toString()
