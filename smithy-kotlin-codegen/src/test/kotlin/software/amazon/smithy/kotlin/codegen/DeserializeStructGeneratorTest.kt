@@ -28,7 +28,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class DeserializeStructGeneratorTest {
-    val model: Model = Model.assembler()
+    val defaultModel: Model = Model.assembler()
         .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
         .discoverModels()
         .assemble()
@@ -36,22 +36,22 @@ class DeserializeStructGeneratorTest {
 
     data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
-    private fun newTestContext(): TestContext {
+    private fun newTestContext(testModel: Model = defaultModel): TestContext {
         val settings = KotlinSettings.from(
-            model,
+                testModel,
             Node.objectNodeBuilder()
                 .withMember("module", Node.from("test"))
                 .withMember("moduleVersion", Node.from("1.0.0"))
                 .build()
         )
         val manifest = MockManifest()
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val delegator = KotlinDelegator(settings, model, manifest, provider)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(testModel, "test")
+        val service = testModel.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
+        val delegator = KotlinDelegator(settings, testModel, manifest, provider)
         val generator = MockHttpProtocolGenerator()
         val ctx = ProtocolGenerator.GenerationContext(
             settings,
-            model,
+                testModel,
             service,
             provider,
             listOf(),
@@ -95,6 +95,44 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         }
     }
 }
+"""
+        contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it handles non-boxed primitives`() {
+        val model = Model.assembler()
+                .addImport(javaClass.getResource("unboxed-primitives-test.smithy"))
+                .discoverModels()
+                .assemble()
+                .unwrap()
+        val ctx = newTestContext(model)
+        val writer = KotlinWriter("test")
+        val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#UnboxedPrimitivesTest"))
+
+        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
+        val responseBindings = bindingIndex.getResponseBindings(op)
+        val documentMembers = responseBindings.values
+                .filter { it.location == HttpBinding.Location.DOCUMENT }
+                .sortedBy { it.memberName }
+                .map { it.member }
+
+        DeserializeStructGenerator(
+                ctx.generationCtx,
+                documentMembers,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+        ).render()
+
+        val contents = writer.toString()
+        val expected = """
+            PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeInt() ?: 0
+            PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeBool() ?: false
+            PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = deserializeByte() ?: 0
+            PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeShort() ?: 0
+            PAYLOAD5_DESCRIPTOR.index -> builder.payload5 = deserializeLong() ?: 0L
+            PAYLOAD6_DESCRIPTOR.index -> builder.payload6 = deserializeFloat() ?: 0F
+            PAYLOAD7_DESCRIPTOR.index -> builder.payload7 = deserializeDouble() ?: 0.0
 """
         contents.shouldContainOnlyOnce(expected)
     }
