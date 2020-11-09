@@ -16,7 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.isPrimitive
+import software.amazon.smithy.kotlin.codegen.isContainerType
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
@@ -57,7 +57,7 @@ class DeserializeUnionGenerator(
                         ShapeType.UNION -> {
                             val targetShape = ctx.model.expectShape(member.target)
                             for (targetMember in targetShape.members()) {
-                                if (ctx.model.expectShape(targetMember.target.toShapeId()).type.isPrimitive()) {
+                                if (!ctx.model.expectShape(targetMember.target.toShapeId()).type.isContainerType()) {
                                     val deserialize = deserializerForShape(targetMember)
                                     val targetType = target.unionTypeName(targetMember)
                                     writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)

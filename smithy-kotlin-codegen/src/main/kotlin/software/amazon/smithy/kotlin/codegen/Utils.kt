@@ -27,15 +27,28 @@ fun isValidKotlinIdentifier(s: String): Boolean {
     }
 }
 
-internal fun ShapeType.isPrimitive(): Boolean =
+internal fun ShapeType.isContainerType(): Boolean =
     when (this) {
-        ShapeType.LIST,
-        ShapeType.MAP,
-        ShapeType.SET,
+        ShapeType.BLOB,
+        ShapeType.BOOLEAN,
+        ShapeType.STRING,
+        ShapeType.TIMESTAMP,
+        ShapeType.BYTE,
+        ShapeType.SHORT,
+        ShapeType.INTEGER,
+        ShapeType.LONG,
+        ShapeType.FLOAT,
+        ShapeType.DOCUMENT,
+        ShapeType.DOUBLE,
+        ShapeType.BIG_DECIMAL,
+        ShapeType.BIG_INTEGER,
         ShapeType.STRUCTURE,
-        ShapeType.UNION,
+        ShapeType.UNION,-> false
+        ShapeType.LIST,
+        ShapeType.SET,
+        ShapeType.MAP,
         ShapeType.SERVICE,
         ShapeType.RESOURCE,
-        ShapeType.OPERATION -> false
-        else -> true
+        ShapeType.OPERATION,
+        ShapeType.MEMBER -> true
     }
