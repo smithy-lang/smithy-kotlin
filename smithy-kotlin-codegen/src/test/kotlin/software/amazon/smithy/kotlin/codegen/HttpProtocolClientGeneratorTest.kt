@@ -36,7 +36,7 @@ class HttpProtocolClientGeneratorTest {
         }
     }
 
-    class MockHttpSerde : HttpSerde("MockSerdeProvider") {
+    class MockHttpSerde : HttpSerde("MockSerdeProvider", true) {
         override fun addImportsAndDependencies(writer: KotlinWriter) {
             super.addImportsAndDependencies(writer)
             val serdeJsonSymbol = Symbol.builder()

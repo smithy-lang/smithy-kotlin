@@ -57,13 +57,16 @@ interface HttpFeature {
 /**
  * Client Runtime `HttpSerde` feature
  * @property serdeProvider The name of the serde provider (e.g. JsonSerdeProvider)
+ * @property generateIdempotencyTokenConfig determines if Service's Config type implements [IdempotencyTokenProvider].
  */
-abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
+abstract class HttpSerde(private val serdeProvider: String, private val generateIdempotencyTokenConfig: Boolean) : HttpFeature {
     override val name: String = "HttpSerde"
 
     override fun renderConfigure(writer: KotlinWriter) {
         writer.write("serdeProvider = $serdeProvider()")
-        writer.write("idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default")
+        if (generateIdempotencyTokenConfig) {
+            writer.write("idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default")
+        }
     }
 
     override fun addImportsAndDependencies(writer: KotlinWriter) {
@@ -75,12 +78,14 @@ abstract class HttpSerde(private val serdeProvider: String) : HttpFeature {
             .build()
         writer.addImport(httpSerdeSymbol)
 
-        val idempotencyTokenProviderSymbol = Symbol.builder()
-            .name("IdempotencyTokenProvider")
-            .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
-            .addDependency(KotlinDependency.CLIENT_RT_CORE)
-            .build()
-        writer.addImport(idempotencyTokenProviderSymbol)
+        if (generateIdempotencyTokenConfig) {
+            val idempotencyTokenProviderSymbol = Symbol.builder()
+                .name("IdempotencyTokenProvider")
+                .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
+                .addDependency(KotlinDependency.CLIENT_RT_CORE)
+                .build()
+            writer.addImport(idempotencyTokenProviderSymbol)
+        }
     }
 }
 
