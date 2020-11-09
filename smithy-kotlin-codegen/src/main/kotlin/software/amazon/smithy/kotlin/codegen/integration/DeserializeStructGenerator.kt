@@ -15,9 +15,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.defaultName
-import software.amazon.smithy.kotlin.codegen.withBlock
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -81,14 +79,19 @@ class DeserializeStructGenerator(
             else -> shape
         }
 
+        // The deserializer interface returns nullable values for primitives.
+        // If a value is primitive but unboxed, codegen the loading of the default value
+        // for the case that the deserializer returns null at runtime.
+        val defaultValue = ctx.symbolProvider.toSymbol(target).defaultValue(null)?.let { value -> " ?: $value" } ?: ""
+
         return when (target.type) {
-            ShapeType.BOOLEAN -> "deserializeBool()"
-            ShapeType.BYTE -> "deserializeByte()"
-            ShapeType.SHORT -> "deserializeShort()"
-            ShapeType.INTEGER -> "deserializeInt()"
-            ShapeType.LONG -> "deserializeLong()"
-            ShapeType.FLOAT -> "deserializeFloat()"
-            ShapeType.DOUBLE -> "deserializeDouble()"
+            ShapeType.BOOLEAN -> "deserializeBool()$defaultValue"
+            ShapeType.BYTE -> "deserializeByte()$defaultValue"
+            ShapeType.SHORT -> "deserializeShort()$defaultValue"
+            ShapeType.INTEGER -> "deserializeInt()$defaultValue"
+            ShapeType.LONG -> "deserializeLong()$defaultValue"
+            ShapeType.FLOAT -> "deserializeFloat()$defaultValue"
+            ShapeType.DOUBLE -> "deserializeDouble()$defaultValue"
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
                 "deserializeString()?.decodeBase64Bytes()"

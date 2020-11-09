@@ -35,11 +35,12 @@ fun Symbol.isBoxed(): Boolean {
 
 /**
  * Gets the default value for the symbol if present, else null
+ * @param defaultBoxed the string to pass for boxed values
  */
-fun Symbol.defaultValue(): String? {
+fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
     // boxed types should always be defaulted to null
     if (isBoxed()) {
-        return "null"
+        return defaultBoxed
     }
 
     val default = getProperty(DEFAULT_VALUE_KEY, String::class.java)
