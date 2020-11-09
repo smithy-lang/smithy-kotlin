@@ -43,7 +43,7 @@ internal fun ShapeType.isContainerType(): Boolean =
         ShapeType.BIG_DECIMAL,
         ShapeType.BIG_INTEGER,
         ShapeType.STRUCTURE,
-        ShapeType.UNION,-> false
+        ShapeType.UNION, -> false
         ShapeType.LIST,
         ShapeType.SET,
         ShapeType.MAP,
