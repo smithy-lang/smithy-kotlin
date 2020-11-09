@@ -17,7 +17,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.defaultName
-import software.amazon.smithy.kotlin.codegen.isPrimitive
+import software.amazon.smithy.kotlin.codegen.isContainerType
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -237,7 +237,7 @@ class SerializeStructGenerator(
 
         writer.withBlock("if (input.$memberName != null) {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                if (valueTargetShape.type.isPrimitive()) {
+                if (!valueTargetShape.type.isContainerType()) {
                     val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
                     write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
                 } else {
