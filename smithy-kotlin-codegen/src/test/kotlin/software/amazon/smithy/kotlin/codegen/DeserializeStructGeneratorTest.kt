@@ -130,8 +130,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeBool() ?: false
             PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = deserializeByte() ?: 0
             PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeShort() ?: 0
-            PAYLOAD5_DESCRIPTOR.index -> builder.payload5 = deserializeLong() ?: 0L
-            PAYLOAD6_DESCRIPTOR.index -> builder.payload6 = deserializeFloat() ?: 0F
+            PAYLOAD5_DESCRIPTOR.index -> builder.payload5 = deserializeLong() ?: 0
+            PAYLOAD6_DESCRIPTOR.index -> builder.payload6 = deserializeFloat() ?: 0.0f
             PAYLOAD7_DESCRIPTOR.index -> builder.payload7 = deserializeDouble() ?: 0.0
 """
         contents.shouldContainOnlyOnce(expected)

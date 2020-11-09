@@ -15,10 +15,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.defaultName
-import software.amazon.smithy.kotlin.codegen.isBoxed
-import software.amazon.smithy.kotlin.codegen.withBlock
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -85,7 +82,7 @@ class DeserializeStructGenerator(
         // The deserializer interface returns nullable values for primitives.
         // If a value is primitive but unboxed, codegen the loading of the default value
         // for the case that the deserializer returns null at runtime.
-        val defaultValue = if (!ctx.symbolProvider.toSymbol(target).isBoxed()) " ?: " + defaultBoxedValueOf(target.type) else ""
+        val defaultValue = ctx.symbolProvider.toSymbol(target).defaultValue(null)?.let { value -> " ?: $value" } ?: ""
 
         return when (target.type) {
             ShapeType.BOOLEAN -> "deserializeBool()$defaultValue"
@@ -128,21 +125,6 @@ class DeserializeStructGenerator(
                 "$deserializerName().deserialize(deserializer)"
             }
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
-        }
-    }
-
-    // https://awslabs.github.io/smithy/1.0/spec/core/type-refinement-traits.html
-    // https://awslabs.github.io/smithy/1.0/spec/core/model.html#default-structure-member-values
-    private fun defaultBoxedValueOf(type: ShapeType): String {
-        return when (type) {
-            ShapeType.BOOLEAN -> "false"
-            ShapeType.BYTE,
-            ShapeType.SHORT,
-            ShapeType.INTEGER -> "0"
-            ShapeType.LONG -> "0L"
-            ShapeType.FLOAT -> "0F"
-            ShapeType.DOUBLE -> "0.0"
-            else -> ""
         }
     }
 
