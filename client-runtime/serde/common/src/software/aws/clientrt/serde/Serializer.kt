@@ -270,6 +270,26 @@ interface MapSerializer : PrimitiveSerializer {
     fun entry(key: String, value: SdkSerializable?)
 
     /**
+     * Writes the field name given in the descriptor, and then
+     * serializes the list field using the given block.
+     *
+     * @param key
+     * @param listDescriptor
+     * @param block
+     */
+    fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit)
+
+    /**
+     * Writes the field name given in the descriptor, and then
+     * serializes the map field using the given block.
+     *
+     * @param key
+     * @param mapDescriptor
+     * @param block
+     */
+    fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
+
+    /**
      * Writes the key and then serializes the raw [value] without any additional escaping or formatting
      */
     fun rawEntry(key: String, value: String)

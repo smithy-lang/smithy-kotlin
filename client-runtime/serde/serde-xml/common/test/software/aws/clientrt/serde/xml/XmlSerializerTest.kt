@@ -102,6 +102,86 @@ class XmlSerializerTest {
         assertEquals("""<Bar><flatMap><key>example-key1</key><value>example1</value></flatMap><flatMap><key>example-key2</key><value>example2</value></flatMap><flatMap><key>example-key3</key><value>example3</value></flatMap></Bar>""", xml.toByteArray().decodeToString())
     }
 
+    @Test
+    fun `can serialize map of lists`() {
+        val objs = mapOf(
+            "A1" to listOf("a", "b", "c"),
+            "A2" to listOf("d", "e", "f"),
+            "A3" to listOf("g", "h", "i")
+        )
+        val xml = XmlSerializer()
+        xml.serializeMap(SdkFieldDescriptor("objs", SerialKind.Map, 0, XmlMap())) {
+            for (obj in objs) {
+                listEntry(obj.key, SdkFieldDescriptor("elements", SerialKind.List, 0, XmlList())) {
+                    for (v in obj.value) {
+                        serializeString(v)
+                    }
+                }
+            }
+        }
+        assertEquals("""<objs><entry><key>A1</key><value><elements><element>a</element><element>b</element><element>c</element></elements></value></entry><entry><key>A2</key><value><elements><element>d</element><element>e</element><element>f</element></elements></value></entry><entry><key>A3</key><value><elements><element>g</element><element>h</element><element>i</element></elements></value></entry></objs>""", xml.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun `can serialize list of lists`() {
+        val objs = listOf(
+            listOf("a", "b", "c"),
+            listOf("d", "e", "f"),
+            listOf("g", "h", "i")
+        )
+        val xml = XmlSerializer()
+        xml.serializeList(SdkFieldDescriptor("objs", SerialKind.List, 0, XmlList())) {
+            for (obj in objs) {
+                xml.serializeList(SdkFieldDescriptor("elements", SerialKind.List, 0, XmlList())) {
+                    for (v in obj) {
+                        serializeString(v)
+                    }
+                }
+            }
+        }
+        assertEquals("""<objs><elements><element>a</element><element>b</element><element>c</element></elements><elements><element>d</element><element>e</element><element>f</element></elements><elements><element>g</element><element>h</element><element>i</element></elements></objs>""", xml.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun `can serialize list of maps`() {
+        val objs = listOf(
+            mapOf("a" to "b", "c" to "d"),
+            mapOf("e" to "f", "g" to "h"),
+            mapOf("i" to "j", "k" to "l"),
+        )
+        val xml = XmlSerializer()
+        xml.serializeList(SdkFieldDescriptor("elements", SerialKind.List, 0, XmlList())) {
+            for (obj in objs) {
+                xml.serializeMap(SdkFieldDescriptor("entries", SerialKind.Map, 0, XmlMap())) {
+                    for (v in obj) {
+                        entry(v.key, v.value)
+                    }
+                }
+            }
+        }
+        assertEquals("""<elements><entries><entry><key>a</key><value>b</value></entry><entry><key>c</key><value>d</value></entry></entries><entries><entry><key>e</key><value>f</value></entry><entry><key>g</key><value>h</value></entry></entries><entries><entry><key>i</key><value>j</value></entry><entry><key>k</key><value>l</value></entry></entries></elements>""", xml.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun `can serialize map of maps`() {
+        val objs = mapOf(
+            "A1" to mapOf("a" to "b", "c" to "d"),
+            "A2" to mapOf("e" to "f", "g" to "h"),
+            "A3" to mapOf("i" to "j", "k" to "l"),
+        )
+        val json = XmlSerializer()
+        json.serializeMap(SdkFieldDescriptor("objs", SerialKind.Map, 0, XmlMap())) {
+            for (obj in objs) {
+                mapEntry(obj.key, SdkFieldDescriptor("objvals", SerialKind.Map, 0, XmlMap())) {
+                    for (v in obj.value) {
+                        entry(v.key, v.value)
+                    }
+                }
+            }
+        }
+        assertEquals("""<objs><entry><key>A1</key><value><objvals><entry><key>a</key><value>b</value></entry><entry><key>c</key><value>d</value></entry></objvals></value></entry><entry><key>A2</key><value><objvals><entry><key>e</key><value>f</value></entry><entry><key>g</key><value>h</value></entry></objvals></value></entry><entry><key>A3</key><value><objvals><entry><key>i</key><value>j</value></entry><entry><key>k</key><value>l</value></entry></objvals></value></entry></objs>""", json.toByteArray().decodeToString())
+    }
+
     class Bar(var flatMap: Map<String, String>? = null) : SdkSerializable {
         companion object {
             // Setting the map to be flattened removes two levels of nesting
