@@ -338,7 +338,24 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 for (member in sortedMembers) {
                     val serialName = member.getTrait(JsonNameTrait::class.java).map { it.value }.orElse(member.memberName)
                     val serialKind = ctx.model.expectShape(member.target).serialKind()
+                    val valueType = ctx.model.expectShape(member.target)
                     write("private val \$L = SdkFieldDescriptor(\$S, $serialKind)", member.descriptorName(), serialName)
+
+                    when (valueType) {
+                        is MapShape -> {
+                            val targetValueType = ctx.model.expectShape(valueType.value.target)
+                            if (targetValueType.isListShape) {
+                                val nestedSerialKind = targetValueType.serialKind()
+                                val nestedName = "${member.descriptorName()}_CHILD"
+                                val nestedSerialName = "${serialName}List"
+                                write("private val \$L = SdkFieldDescriptor(\$S, $nestedSerialKind)", nestedName, nestedSerialName)
+                            }
+                        }
+                        is ListShape -> {
+
+                        }
+                        else -> Unit
+                    }
                 }
                 writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {", "}") {
                     for (member in sortedMembers) {

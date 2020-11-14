@@ -17,7 +17,6 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.defaultName
-import software.amazon.smithy.kotlin.codegen.isContainerType
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -237,14 +236,35 @@ class SerializeStructGenerator(
 
         writer.withBlock("if (input.$memberName != null) {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                if (!valueTargetShape.type.isContainerType()) {
+                if (valueTargetShape !is CollectionShape) {
                     val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
                     write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
                 } else {
+                    withBlock("input.$memberName.forEach { (key, value) -> entry(key, object : SdkSerializable {", ") }") {
+                        withBlock("override fun serialize(serializer: Serializer) {", "}") {
+                            renderMapListValueSerializer(ctx, member, valueTargetShape, this)
+                        }
+                    }
+
                     // TODO - Implement
-                    write("TODO(\"Need to generate map member serializer for '${valueTargetShape.type}' associated with '${member.id.toString().smithyEscape()}'.\")")
+                    // write("TODO(\"Need to generate map member serializer for '${valueTargetShape.type}' associated with '${member.id.toString().smithyEscape()}'.\")")
                 }
             }
+        }
+    }
+
+    private fun renderMapListValueSerializer(
+            ctx: ProtocolGenerator.GenerationContext,
+            member: MemberShape, // FIXME - we shouldn't need to pass this through
+            targetShape: CollectionShape,
+            writer: KotlinWriter,
+            level: Int = 0
+    ) {
+        // nested list
+        val iteratorName = "m$level"
+        val nestedTarget = ctx.model.expectShape(targetShape.member.target)
+        writer.withBlock("serializer.serializeList(${member.descriptorName()}_CHILD) {", "}") {
+            renderListSerializer(ctx, member, iteratorName, nestedTarget, writer, level + 1)
         }
     }
 }

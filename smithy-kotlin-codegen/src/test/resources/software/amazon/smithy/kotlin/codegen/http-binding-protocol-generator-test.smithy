@@ -256,6 +256,11 @@ map NestedMap {
     value: IntMap
 }
 
+map MapOfLists {
+    key: String,
+    value: IntList
+}
+
 @http(method: "POST", uri: "/input/map")
 operation MapInput {
     input: MapInputRequest,
@@ -266,7 +271,8 @@ structure MapInputRequest {
     intMap: IntMap,
     structMap: StructMap,
     enumMap: EnumMap,
-    blobMap: BlobMap
+    blobMap: BlobMap,
+    mapOfLists: MapOfLists
 }
 
 structure MapOutputResponse {

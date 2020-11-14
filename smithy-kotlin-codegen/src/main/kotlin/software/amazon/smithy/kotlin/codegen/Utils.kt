@@ -14,8 +14,6 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import software.amazon.smithy.model.shapes.ShapeType
-
 /**
  * Test if a string is a valid Kotlin identifier name
  */
@@ -26,29 +24,3 @@ fun isValidKotlinIdentifier(s: String): Boolean {
         else -> false
     }
 }
-
-internal fun ShapeType.isContainerType(): Boolean =
-    when (this) {
-        ShapeType.BLOB,
-        ShapeType.BOOLEAN,
-        ShapeType.STRING,
-        ShapeType.TIMESTAMP,
-        ShapeType.BYTE,
-        ShapeType.SHORT,
-        ShapeType.INTEGER,
-        ShapeType.LONG,
-        ShapeType.FLOAT,
-        ShapeType.DOCUMENT,
-        ShapeType.DOUBLE,
-        ShapeType.BIG_DECIMAL,
-        ShapeType.BIG_INTEGER,
-        ShapeType.STRUCTURE,
-        ShapeType.UNION, -> false
-        ShapeType.LIST,
-        ShapeType.SET,
-        ShapeType.MAP,
-        ShapeType.SERVICE,
-        ShapeType.RESOURCE,
-        ShapeType.OPERATION,
-        ShapeType.MEMBER -> true
-    }
