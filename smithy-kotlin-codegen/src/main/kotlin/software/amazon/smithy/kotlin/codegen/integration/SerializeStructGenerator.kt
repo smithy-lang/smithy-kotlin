@@ -71,7 +71,7 @@ class SerializeStructGenerator(
                         // TODO - implement document type support
                     }
                     else -> {
-                        val (serializeFn, encoded) = serializationForShape(member)
+                        val (serializeFn, encoded) = serializationForPrimitiveShape(member)
                         // FIXME - this doesn't account for unboxed primitives
                         val postfix = if (member.hasTrait(IdempotencyTokenTrait::class.java)) {
                             " ?: field(${member.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
@@ -93,7 +93,7 @@ class SerializeStructGenerator(
      * @param identifier The name of the identifier to be passed to the serialization function
      * @param serializeLocation The location being serialized to
      */
-    private fun serializationForShape(
+    private fun serializationForPrimitiveShape(
         shape: Shape,
         identifier: String = "it",
         serializeLocation: SerializeLocation = SerializeLocation.Field
@@ -228,6 +228,8 @@ class SerializeStructGenerator(
 
     /**
      * Render serialization for a struct member of type "map"
+     *
+     *
      */
     private fun renderMapMemberSerializer(member: MemberShape) {
         val memberName = member.defaultName()
@@ -236,35 +238,22 @@ class SerializeStructGenerator(
 
         writer.withBlock("if (input.$memberName != null) {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                if (valueTargetShape !is CollectionShape) {
-                    val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
-                    write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
-                } else {
-                    withBlock("input.$memberName.forEach { (key, value) -> entry(key, object : SdkSerializable {", ") }") {
-                        withBlock("override fun serialize(serializer: Serializer) {", "}") {
-                            renderMapListValueSerializer(ctx, member, valueTargetShape, this)
+                when (valueTargetShape) {
+                    !is CollectionShape -> {
+                        val (serializeFn, encoded) = serializationForPrimitiveShape(valueTargetShape, "value", SerializeLocation.Map)
+                        write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
+                    }
+                    is ListShape -> {
+                        val listMemberShape = ctx.model.expectShape(valueTargetShape.member.target)
+                        withBlock("input.$memberName.forEach { (key, value) -> listEntry(key, DESCRIPTOR_TBD) {", "}") {
+                            renderListSerializer(ctx, member, "value", listMemberShape, writer, 0)
                         }
                     }
-
-                    // TODO - Implement
-                    // write("TODO(\"Need to generate map member serializer for '${valueTargetShape.type}' associated with '${member.id.toString().smithyEscape()}'.\")")
+                    else -> {
+                        error("Unhandled codegen case")
+                    }
                 }
             }
-        }
-    }
-
-    private fun renderMapListValueSerializer(
-            ctx: ProtocolGenerator.GenerationContext,
-            member: MemberShape, // FIXME - we shouldn't need to pass this through
-            targetShape: CollectionShape,
-            writer: KotlinWriter,
-            level: Int = 0
-    ) {
-        // nested list
-        val iteratorName = "m$level"
-        val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-        writer.withBlock("serializer.serializeList(${member.descriptorName()}_CHILD) {", "}") {
-            renderListSerializer(ctx, member, iteratorName, nestedTarget, writer, level + 1)
         }
     }
 }
