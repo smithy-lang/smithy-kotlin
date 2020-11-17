@@ -36,7 +36,7 @@ class KotlinWriterTest {
             /**
              * This is \*\/ valid documentation.
              */
-             """.trimIndent()
+        """.trimIndent()
         val writer = KotlinWriter("com.test")
         val docs = "This is */ valid documentation."
         writer.dokka(docs)

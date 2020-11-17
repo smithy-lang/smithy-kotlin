@@ -856,10 +856,10 @@ class Nested3Deserializer {
     @Test
     fun `it creates map of lists serializer`() {
         val mapModel: Model = Model.assembler()
-                .addImport(javaClass.getResource("http-binding-map-model.smithy"))
-                .discoverModels()
-                .assemble()
-                .unwrap()
+            .addImport(javaClass.getResource("http-binding-map-model.smithy"))
+            .discoverModels()
+            .assemble()
+            .unwrap()
 
         val contents = getTransformFileContents("MapInputSerializer.kt", mapModel)
         contents.shouldSyntacticSanityCheck()

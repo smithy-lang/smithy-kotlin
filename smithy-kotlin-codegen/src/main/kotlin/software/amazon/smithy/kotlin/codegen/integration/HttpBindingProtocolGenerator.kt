@@ -370,18 +370,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     // Returns [true] if the shape can contain other shapes.
-    private fun Shape.isContainerShape() = when(this) {
+    private fun Shape.isContainerShape() = when (this) {
         is ListShape,
         is MapShape -> true
         else -> false
     }
 
     // Returns [Shape] of the child member of the passed Shape is a collection type or null if not collection type.
-    private fun Shape.childShape(ctx: ProtocolGenerator.GenerationContext): Shape? = when(this) {
-            is MapShape -> ctx.model.expectShape(this.value.target)
-            is ListShape -> ctx.model.expectShape(this.member.target)
-            else -> null
-        }
+    private fun Shape.childShape(ctx: ProtocolGenerator.GenerationContext): Shape? = when (this) {
+        is MapShape -> ctx.model.expectShape(this.value.target)
+        is ListShape -> ctx.model.expectShape(this.member.target)
+        else -> null
+    }
 
     // replace labels with any path bindings
     private fun resolveUriPath(
