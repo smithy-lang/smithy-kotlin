@@ -161,6 +161,20 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         if (value != null) serializeChar(value) else jsonWriter.writeNull()
     }
 
+    override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
+        jsonWriter.writeName(key)
+        beginList(listDescriptor)
+        block.invoke(this)
+        endList()
+    }
+
+    override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
+        jsonWriter.writeName(key)
+        beginMap(mapDescriptor)
+        block.invoke(this)
+        endMap()
+    }
+
     override fun rawEntry(key: String, value: String) {
         jsonWriter.writeName(key)
         serializeRaw(value)

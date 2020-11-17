@@ -196,6 +196,22 @@ private class XmlMapSerializer(
 
     override fun entry(key: String, value: Char?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
+    override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
+        generalEntry(key) {
+            val ls = xmlSerializer.beginList(listDescriptor)
+            block.invoke(ls)
+            ls.endList()
+        }
+    }
+
+    override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
+        generalEntry(key) {
+            val ls = xmlSerializer.beginMap(mapDescriptor)
+            block.invoke(ls)
+            ls.endMap()
+        }
+    }
+
     override fun rawEntry(key: String, value: String) {
         TODO("Not yet implemented")
     }

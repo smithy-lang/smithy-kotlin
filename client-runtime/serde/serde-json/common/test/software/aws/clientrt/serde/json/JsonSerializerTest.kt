@@ -89,6 +89,86 @@ class JsonSerializerTest {
     }
 
     @Test
+    fun `can serialize map of lists`() {
+        val objs = mapOf(
+            "A1" to listOf("a", "b", "c"),
+            "A2" to listOf("d", "e", "f"),
+            "A3" to listOf("g", "h", "i")
+        )
+        val json = JsonSerializer()
+        json.serializeMap(ANONYMOUS_DESCRIPTOR) {
+            for (obj in objs) {
+                listEntry(obj.key, ANONYMOUS_DESCRIPTOR) {
+                    for (v in obj.value) {
+                        serializeString(v)
+                    }
+                }
+            }
+        }
+        assertEquals("""{"A1":["a","b","c"],"A2":["d","e","f"],"A3":["g","h","i"]}""", json.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun `can serialize list of lists`() {
+        val objs = listOf(
+            listOf("a", "b", "c"),
+            listOf("d", "e", "f"),
+            listOf("g", "h", "i")
+        )
+        val json = JsonSerializer()
+        json.serializeList(ANONYMOUS_DESCRIPTOR) {
+            for (obj in objs) {
+                json.serializeList(ANONYMOUS_DESCRIPTOR) {
+                    for (v in obj) {
+                        serializeString(v)
+                    }
+                }
+            }
+        }
+        assertEquals("""[["a","b","c"],["d","e","f"],["g","h","i"]]""", json.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun `can serialize list of maps`() {
+        val objs = listOf(
+            mapOf("a" to "b", "c" to "d"),
+            mapOf("e" to "f", "g" to "h"),
+            mapOf("i" to "j", "k" to "l"),
+        )
+        val json = JsonSerializer()
+        json.serializeList(ANONYMOUS_DESCRIPTOR) {
+            for (obj in objs) {
+                json.serializeMap(ANONYMOUS_DESCRIPTOR) {
+                    for (v in obj) {
+                        entry(v.key, v.value)
+                    }
+                }
+            }
+        }
+        assertEquals("""[{"a":"b","c":"d"},{"e":"f","g":"h"},{"i":"j","k":"l"}]""", json.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun `can serialize map of maps`() {
+        val objs = mapOf(
+            "A1" to mapOf("a" to "b", "c" to "d"),
+            "A2" to mapOf("e" to "f", "g" to "h"),
+            "A3" to mapOf("i" to "j", "k" to "l"),
+        )
+        val json = JsonSerializer()
+        json.serializeMap(ANONYMOUS_DESCRIPTOR) {
+            for (obj in objs) {
+                mapEntry(obj.key, ANONYMOUS_DESCRIPTOR) {
+                    for (v in obj.value) {
+                        entry(v.key, v.value)
+                    }
+                }
+            }
+        }
+        assertEquals("""{"A1":{"a":"b","c":"d"},"A2":{"e":"f","g":"h"},"A3":{"i":"j","k":"l"}}""", json.toByteArray().decodeToString())
+    }
+
+    @Test
     fun `can serialize all primitives`() {
         val json = JsonSerializer()
         data.serialize(json)
