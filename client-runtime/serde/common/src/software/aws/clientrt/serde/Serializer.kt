@@ -407,16 +407,6 @@ inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor, cros
     list.endList()
 }
 
-fun Serializer.serializeNestedList(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit): SdkSerializable {
-    return object : SdkSerializable {
-        override fun serialize(serializer: Serializer) {
-            val sl = beginList(descriptor)
-            sl.block() //block.invoke(serializer)
-            sl.endList()
-        }
-    }
-}
-
 /**
  * All entries of a map are expected to be serialized in the given block.
  */
