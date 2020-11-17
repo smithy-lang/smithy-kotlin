@@ -198,6 +198,15 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.intMap.forEach { (key, value) -> entry(key, value) }
         }
     }
+    if (input.mapOfLists != null) {
+        mapField(MAPOFLISTS_DESCRIPTOR) {
+            input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
+                for(m1 in value) {
+                    serializeInt(m1)
+                }
+            }}
+        }
+    }
     if (input.structMap != null) {
         mapField(STRUCTMAP_DESCRIPTOR) {
             input.structMap.forEach { (key, value) -> entry(key, if (value != null) ReachableOnlyThroughMapSerializer(value) else null) }

@@ -245,8 +245,9 @@ class SerializeStructGenerator(
                     }
                     is ListShape -> {
                         val listMemberShape = ctx.model.expectShape(valueTargetShape.member.target)
-                        withBlock("input.$memberName.forEach { (key, value) -> listEntry(key, DESCRIPTOR_TBD) {", "}") {
-                            renderListSerializer(ctx, member, "value", listMemberShape, writer, 0)
+                        val childDescriptorName = member.descriptorName("_C0")
+                        withBlock("input.$memberName.forEach { (key, value) -> listEntry(key, $childDescriptorName) {", "}}") {
+                            renderListSerializer(ctx, member, "value ?: emptyList()", listMemberShape, writer, 1)
                         }
                     }
                     else -> {
