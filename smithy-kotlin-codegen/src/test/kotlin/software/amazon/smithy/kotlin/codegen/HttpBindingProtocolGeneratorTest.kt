@@ -863,18 +863,14 @@ class Nested3Deserializer {
 
         val contents = getTransformFileContents("MapInputSerializer.kt", mapModel)
         contents.shouldSyntacticSanityCheck()
-        val label1 = "\${input.label1}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
+class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
 
     companion object {
-        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
-        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2", SerialKind.Integer)
-        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3", SerialKind.Struct)
+        private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor("mapOfLists", SerialKind.Map)
+        private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor("mapOfListsC0", SerialKind.List)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
-            field(PAYLOAD1_DESCRIPTOR)
-            field(PAYLOAD2_DESCRIPTOR)
-            field(PAYLOAD3_DESCRIPTOR)
+            field(MAPOFLISTS_DESCRIPTOR)
         }
     }
 
@@ -882,23 +878,24 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/smoketest/$label1/foo"
-            parameters {
-                if (input.query1 != null) append("Query1", input.query1)
-            }
+            path = "/input/map"
         }
 
         builder.headers {
             append("Content-Type", "application/json")
-            if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
-            if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
 
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
-            input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
-            input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
-            input.payload3?.let { field(PAYLOAD3_DESCRIPTOR, NestedSerializer(it)) }
+            if (input.mapOfLists != null) {
+                mapField(MAPOFLISTS_DESCRIPTOR) {
+                    input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
+                        for(m1 in value) {
+                            serializeInt(m1)
+                        }
+                    }}
+                }
+            }
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
