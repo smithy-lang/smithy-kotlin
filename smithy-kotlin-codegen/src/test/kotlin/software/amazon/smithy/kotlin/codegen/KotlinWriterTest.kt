@@ -10,18 +10,38 @@ import org.junit.jupiter.api.Test
 
 class KotlinWriterTest {
 
-    @Test fun `writes doc strings`() {
+    @Test
+    fun `writes doc strings`() {
         val writer = KotlinWriter("com.test")
         writer.dokka("These are the docs.\nMore.")
         val result = writer.toString()
         Assertions.assertTrue(result.contains("/**\n * These are the docs.\n * More.\n */\n"))
     }
 
-    @Test fun `escapes $ in doc strings`() {
+    @Test
+    fun `escapes $ in doc strings`() {
         val writer = KotlinWriter("com.test")
         val docs = "This is $ valid documentation."
         writer.dokka(docs)
         val result = writer.toString()
         Assertions.assertTrue(result.contains("/**\n * " + docs + "\n */\n"))
+    }
+
+    /**
+     * This is \*\/ valid documentation.
+     */
+    @Test
+    fun `escapes comment tokens in doc strings`() {
+        val expected = """
+            /**
+             * This is \*\/ valid documentation.
+             */
+             """.trimIndent()
+        val writer = KotlinWriter("com.test")
+        val docs = "This is */ valid documentation."
+        writer.dokka(docs)
+        val result = writer.toString()
+
+        Assertions.assertTrue(result.contains(expected))
     }
 }
