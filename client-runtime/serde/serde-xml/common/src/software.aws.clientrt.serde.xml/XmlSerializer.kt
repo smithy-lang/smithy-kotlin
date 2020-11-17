@@ -186,22 +186,6 @@ private class XmlMapSerializer(
 
     override fun entry(key: String, value: SdkSerializable?) = generalEntry(key) { value?.serialize(xmlSerializer) ?: xmlWriter.text("") }
 
-    override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        generalEntry(key) {
-            val ls = xmlSerializer.beginList(listDescriptor)
-            block.invoke(ls)
-            ls.endList()
-        }
-    }
-
-    override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        generalEntry(key) {
-            val ls = xmlSerializer.beginMap(mapDescriptor)
-            block.invoke(ls)
-            ls.endMap()
-        }
-    }
-
     override fun entry(key: String, value: Double?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
     override fun entry(key: String, value: Boolean?) = generalEntry(key) { xmlWriter.text(value.toString()) }
