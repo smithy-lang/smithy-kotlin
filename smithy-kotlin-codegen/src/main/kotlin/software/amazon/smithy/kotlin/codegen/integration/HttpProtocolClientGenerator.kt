@@ -22,11 +22,7 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.HttpTrait
-import software.amazon.smithy.model.traits.Trait
-import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
-import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 
 /**
  * HttpFeature interface that allows pipeline middleware to be registered and configured with the protocol generator

@@ -819,7 +819,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val memberName = binding.member.defaultName()
         val memberTarget = ctx.model.expectShape(binding.member.target)
 
-        check(memberTarget.type == ShapeType.INTEGER) { "Unexpected target type in response code deserialization: ${memberTarget.id} (${memberTarget.type})"}
+        check(memberTarget.type == ShapeType.INTEGER) { "Unexpected target type in response code deserialization: ${memberTarget.id} (${memberTarget.type})" }
 
         writer.write("builder.\$L = response.status.value", memberName)
     }
