@@ -902,8 +902,6 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
     }
 }
 """
-        // NOTE: SmokeTestRequest$payload3 is a struct itself, the Serializer interface handles this if the type
-        // implements `SdkSerializable`
         contents.shouldContainOnlyOnce(expectedContents)
     }
 }
