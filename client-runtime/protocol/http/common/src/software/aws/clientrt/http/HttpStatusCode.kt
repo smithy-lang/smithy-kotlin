@@ -10,6 +10,19 @@ package software.aws.clientrt.http
 data class HttpStatusCode(val value: Int, val description: String) {
     // NOTE: data class over enum here to be forward compatible with potentially unknown status codes
 
+    enum class Category(private val range: IntRange) : Comparable<Category>, ClosedRange<Int> by range {
+        INFORMATION(IntRange(100, 199)),
+        SUCCESS(IntRange(200, 299)),
+        REDIRECT(IntRange(300, 399)),
+        CLIENT_ERROR(IntRange(400, 499)),
+        SERVER_ERROR(IntRange(500, 599));
+
+        companion object {
+            fun fromCode(value: Int): Category =
+                values().find { value in it.range } ?: error("Invalid HTTP code $value")
+        }
+    }
+
     override fun toString(): String = "$value: $description"
     override fun equals(other: Any?): Boolean = other is HttpStatusCode && other.value == value
     override fun hashCode(): Int = value.hashCode()
@@ -98,7 +111,9 @@ data class HttpStatusCode(val value: Int, val description: String) {
 /**
  * Check if the given status code is a success code (HTTP codes 200 to 299 are considered successful)
  */
-fun HttpStatusCode.isSuccess(): Boolean = value in 200..299
+fun HttpStatusCode.isSuccess(): Boolean = value in HttpStatusCode.Category.SUCCESS
+
+fun HttpStatusCode.category(): HttpStatusCode.Category = HttpStatusCode.Category.fromCode(this.value)
 
 private fun statusCodeMap(): Map<Int, HttpStatusCode> = mapOf(
     // 1xx Informational

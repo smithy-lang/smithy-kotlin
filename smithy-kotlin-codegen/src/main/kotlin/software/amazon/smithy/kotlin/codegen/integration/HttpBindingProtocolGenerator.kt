@@ -836,8 +836,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 }
             }
+            .call {
+                responseBindings.values.firstOrNull { it.location == HttpBinding.Location.RESPONSE_CODE }
+                    ?.let {
+                        renderDeserializeResponseCode(ctx, it, writer)
+                    }
+            }
             .write("return builder.build()")
             .closeBlock("}")
+    }
+
+    /**
+     * Render mapping http response code value to response type.
+     */
+    private fun renderDeserializeResponseCode(ctx: ProtocolGenerator.GenerationContext, binding: HttpBinding, writer: KotlinWriter) {
+        val memberName = binding.member.defaultName()
+        val memberTarget = ctx.model.expectShape(binding.member.target)
+
+        check(memberTarget.type == ShapeType.INTEGER) { "Unexpected target type in response code deserialization: ${memberTarget.id} (${memberTarget.type})" }
+
+        writer.write("builder.\$L = response.status.value", memberName)
     }
 
     /**
