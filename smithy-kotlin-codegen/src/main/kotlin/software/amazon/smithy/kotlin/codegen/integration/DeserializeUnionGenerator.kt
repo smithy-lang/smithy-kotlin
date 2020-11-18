@@ -56,13 +56,15 @@ class DeserializeUnionGenerator(
                         ShapeType.UNION -> {
                             val targetShape = ctx.model.expectShape(member.target)
                             for (targetMember in targetShape.members()) {
-                                if (ctx.model.expectShape(targetMember.target.toShapeId()) !is CollectionShape) {
-                                    val deserialize = deserializerForShape(targetMember)
-                                    val targetType = target.unionTypeName(targetMember)
-                                    writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
-                                } else {
-                                    // TODO - Implement
-                                    write("TODO(\"Need to generate map member serializer for '${targetMember.type}' associated with '${member.id.toString().smithyEscape()}'.\")")
+                                val nestedMember = ctx.model.expectShape(targetMember.target.toShapeId())
+                                when (nestedMember) {
+                                    is MapShape -> deserializeMapMember(targetMember)
+                                    is ListShape -> deserializeListMember(targetMember)
+                                    else -> {
+                                        val deserialize = deserializerForShape(targetMember)
+                                        val targetType = target.unionTypeName(targetMember)
+                                        writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
+                                    }
                                 }
                             }
                         }
@@ -160,7 +162,9 @@ class DeserializeUnionGenerator(
         val conversion = if (renderAsSet) ".toSet()" else ""
         val targetType = member.unionTypeName(member)
 
-        writer.openBlock("deserializer.deserializeList(\$L) {", member.descriptorName())
+        val descriptorName = if (level == 0) member.descriptorName() else member.descriptorName("_C${level - 1}")
+
+        writer.openBlock("deserializer.deserializeList(\$L) {", descriptorName)
             .write("val $destList = mutableListOf<${targetSymbol.name}>()")
             .openBlock("while(hasNextElement()) {")
             .call {

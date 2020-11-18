@@ -29,7 +29,7 @@ import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class DeserializeUnionGeneratorTest {
-    val model: Model = Model.assembler()
+    val defaultModel: Model = Model.assembler()
         .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
         .discoverModels()
         .assemble()
@@ -37,9 +37,9 @@ class DeserializeUnionGeneratorTest {
 
     data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
-    private fun newTestContext(): TestContext {
+    private fun newTestContext(model: Model = defaultModel): TestContext {
         val settings = KotlinSettings.from(
-            model,
+                model,
             Node.objectNodeBuilder()
                 .withMember("module", Node.from("test"))
                 .withMember("moduleVersion", Node.from("1.0.0"))
@@ -60,6 +60,86 @@ class DeserializeUnionGeneratorTest {
             delegator
         )
         return TestContext(ctx, manifest, generator)
+    }
+
+    @Test
+    fun `it handles collections of collection types`() {
+        val ctx = newTestContext(Model.assembler()
+                .addImport(javaClass.getResource("http-binding-nested-union-model.smithy"))
+                .discoverModels()
+                .assemble()
+                .unwrap())
+        val writer = KotlinWriter("test")
+        val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#UnionTestOperation"))
+
+        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
+        val responseBindings = bindingIndex.getResponseBindings(op)
+        val documentMembers = responseBindings.values
+                .filter { it.location == HttpBinding.Location.DOCUMENT }
+                .sortedBy { it.memberName }
+                .map { it.member }
+
+        DeserializeUnionGenerator(
+                ctx.generationCtx,
+                documentMembers,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+        ).render()
+
+        val contents = writer.toString()
+        val expected = """
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+    when(findNextFieldIndex()) {
+        I32_DESCRIPTOR.index -> value = deserializeInt()?.let { MyAggregateUnion.I32(it) }
+        INTLIST_DESCRIPTOR.index -> value =
+            deserializer.deserializeList(INTLIST_DESCRIPTOR) {
+                val list0 = mutableListOf<Int>()
+                while(hasNextElement()) {
+                    val el0 = deserializeInt()
+                    if (el0 != null) list0.add(el0)
+                }
+                MyAggregateUnion.IntList(list0)
+            }
+        LISTOFINTLIST_DESCRIPTOR.index -> value =
+            deserializer.deserializeList(LISTOFINTLIST_DESCRIPTOR) {
+                val list0 = mutableListOf<List<Int>>()
+                while(hasNextElement()) {
+                    val el0 =
+                    deserializer.deserializeList(LISTOFINTLIST_C0_DESCRIPTOR) {
+                        val list1 = mutableListOf<Int>()
+                        while(hasNextElement()) {
+                            val el1 = deserializeInt()
+                            if (el1 != null) list1.add(el1)
+                        }
+                        MyAggregateUnion.ListOfIntList(list1)
+                    }
+                    if (el0 != null) list0.add(el0)
+                }
+                MyAggregateUnion.ListOfIntList(list0)
+            }
+        MAPOFLISTS_DESCRIPTOR.index -> value =
+            deserializer.deserializeMap(MAPOFLISTS_DESCRIPTOR) {
+                val map0 = mutableMapOf<String, List<Int>?>()
+                while(hasNextEntry()) {
+                    val k0 = key()
+                    val el0 =
+                    deserializer.deserializeList(MAPOFLISTS_C0_DESCRIPTOR) {
+                        val list1 = mutableListOf<Int>()
+                        while(hasNextElement()) {
+                            val el1 = deserializeInt()
+                            if (el1 != null) list1.add(el1)
+                        }
+                        MyAggregateUnion.MapOfLists(list1)
+                    }
+                    map0[k0] = el0
+                }
+                MyAggregateUnion.MapOfLists(map0)
+            }
+        else -> skipValue()
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expected)
     }
 
     @Test
