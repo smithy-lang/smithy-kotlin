@@ -4,6 +4,9 @@
  */
 package software.aws.clientrt.http.util
 
+import software.aws.clientrt.http.QueryParameters
+import software.aws.clientrt.http.QueryParametersBuilder
+
 /**
  * URL encode a string component according to
  * https://tools.ietf.org/html/rfc3986#section-2
@@ -84,4 +87,23 @@ private fun Byte.percentEncode(): String = buildString(3) {
     append('%')
     append(upperHex[code shr 4])
     append(upperHex[code and 0x0f])
+}
+
+/**
+ * Split a (decoded) query string "foo=baz&bar=quux" into it's component parts
+ */
+public fun String.splitAsQueryParameters(): QueryParameters {
+    val s = this
+    val builder = QueryParametersBuilder()
+    s.split("&")
+        .forEach { pair ->
+            val idx = pair.indexOf("=")
+            if (idx > 0) {
+                val key = pair.substring(0, idx)
+                val value = if (idx > 0 && idx + 1 < pair.length) pair.substring(idx + 1) else ""
+                builder.append(key, value)
+            }
+        }
+
+    return builder.build()
 }
