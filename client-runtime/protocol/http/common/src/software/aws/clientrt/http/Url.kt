@@ -4,6 +4,8 @@
  */
 package software.aws.clientrt.http
 
+import software.aws.clientrt.http.util.encodeUrlPath
+
 /**
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
  *
@@ -30,8 +32,12 @@ data class Url(
         require(port in 1..65536) { "port must be in between 1 and 65536" }
     }
 
+    public companion object {
+        public fun parse(url: String): Url = platformUrlParse(url)
+    }
+
     override fun toString(): String = buildString {
-        // FIXME - the userinfo, path, and fragment are raw at this point and need escaped as well probably
+        // FIXME - the userinfo and fragment are raw at this point and need escaped as well probably
         append(scheme.protocolName)
         append("://")
         userInfo?.let { userinfo ->
@@ -49,9 +55,16 @@ data class Url(
             append(":$port")
         }
 
+        append(encodedPath())
+    }
+
+    /**
+     * Get the full encoded path including query parameters and fragment
+     */
+    public fun encodedPath(): String = buildString {
         if (path.isNotBlank()) {
             append("/")
-            append(path.removePrefix("/"))
+            append(path.removePrefix("/").encodeUrlPath())
         }
 
         if ((parameters != null && !parameters.isEmpty()) || forceQuery) {
@@ -101,3 +114,7 @@ class UrlBuilder {
 }
 
 fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters.apply(block)
+
+// TODO - when we get to other platforms we will likely just roll our own - for now we are going to punt and use JVM
+// capabilities to bootstrap this
+internal expect fun platformUrlParse(url: String): Url
