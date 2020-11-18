@@ -890,7 +890,7 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
             if (input.mapOfLists != null) {
                 mapField(MAPOFLISTS_DESCRIPTOR) {
                     input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
-                        for(m1 in value) {
+                        for(m1 in value ?: emptyList()) {
                             serializeInt(m1)
                         }
                     }}
