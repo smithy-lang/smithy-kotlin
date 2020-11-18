@@ -59,7 +59,7 @@ class DeserializeUnionGenerator(
                                 val nestedMember = ctx.model.expectShape(targetMember.target.toShapeId())
                                 when (nestedMember) {
                                     is MapShape -> deserializeMapMember(targetMember)
-                                    is ListShape -> deserializeListMember(targetMember)
+                                    is CollectionShape -> deserializeListMember(targetMember)
                                     else -> {
                                         val deserialize = deserializerForShape(targetMember)
                                         val targetType = target.unionTypeName(targetMember)
@@ -134,7 +134,7 @@ class DeserializeUnionGenerator(
                 val deserializerName = "${symbol.name}Deserializer"
                 "$deserializerName().deserialize(deserializer)"
             }
-            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target, type: ${target.type}")
+            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target; type: ${target.type}")
         }
     }
 
