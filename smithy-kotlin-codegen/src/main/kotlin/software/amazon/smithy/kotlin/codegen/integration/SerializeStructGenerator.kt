@@ -71,7 +71,7 @@ class SerializeStructGenerator(
                         // TODO - implement document type support
                     }
                     else -> {
-                        val (serializeFn, encoded) = serializationForShape(member)
+                        val (serializeFn, encoded) = serializationForPrimitiveShape(member)
                         // FIXME - this doesn't account for unboxed primitives
                         val postfix = if (member.hasTrait(IdempotencyTokenTrait::class.java)) {
                             " ?: field(${member.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
@@ -93,7 +93,7 @@ class SerializeStructGenerator(
      * @param identifier The name of the identifier to be passed to the serialization function
      * @param serializeLocation The location being serialized to
      */
-    private fun serializationForShape(
+    private fun serializationForPrimitiveShape(
         shape: Shape,
         identifier: String = "it",
         serializeLocation: SerializeLocation = SerializeLocation.Field
@@ -228,6 +228,8 @@ class SerializeStructGenerator(
 
     /**
      * Render serialization for a struct member of type "map"
+     *
+     * @param member: The shape to serialize
      */
     private fun renderMapMemberSerializer(member: MemberShape) {
         val memberName = member.defaultName()
@@ -236,8 +238,20 @@ class SerializeStructGenerator(
 
         writer.withBlock("if (input.$memberName != null) {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
-                write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
+                when (valueTargetShape) {
+                    !is CollectionShape -> {
+                        val (serializeFn, encoded) = serializationForPrimitiveShape(valueTargetShape, "value", SerializeLocation.Map)
+                        write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
+                    }
+                    is ListShape -> {
+                        val listMemberShape = ctx.model.expectShape(valueTargetShape.member.target)
+                        val childDescriptorName = member.descriptorName("_C0")
+                        withBlock("input.$memberName.forEach { (key, value) -> listEntry(key, $childDescriptorName) {", "}}") {
+                            renderListSerializer(ctx, member, "value ?: emptyList()", listMemberShape, writer, 1)
+                        }
+                    }
+                    else -> error("Unexpected target shape type ${valueTargetShape.type}")
+                }
             }
         }
     }
@@ -262,3 +276,5 @@ internal fun ShapeType.primitiveSerializerFunctionName(): String {
     }
     return "serialize$suffix"
 }
+
+internal fun String.smithyEscape() = this.replace('$', '£')

@@ -56,7 +56,7 @@ class SerializeUnionGenerator(
                             // TODO - implement document type support
                         }
                         else -> {
-                            val (serializeFn, encoded) = serializationForShape(member)
+                            val (serializeFn, encoded) = serializationForPrimitiveShape(member)
                             writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
                         }
                     }
@@ -72,7 +72,7 @@ class SerializeUnionGenerator(
      * @param identifier The name of the identifier to be passed to the serialization function
      * @param serializeLocation The location being serialized to
      */
-    private fun serializationForShape(
+    private fun serializationForPrimitiveShape(
         shape: Shape,
         identifier: String = "input.value",
         serializeLocation: SerializeLocation = SerializeLocation.Field
@@ -216,7 +216,7 @@ class SerializeUnionGenerator(
 
         writer.withBlock("is $targetType -> {", "}") {
             writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                val (serializeFn, encoded) = serializationForShape(valueTargetShape, "value", SerializeLocation.Map)
+                val (serializeFn, encoded) = serializationForPrimitiveShape(valueTargetShape, "value", SerializeLocation.Map)
                 write("input.value.forEach { (key, value) -> $serializeFn(key, $encoded) }")
             }
         }
