@@ -208,15 +208,7 @@ class HttpProtocolClientGenerator(
                 writer.addImport(executionCtxSymbol)
                 writer.openBlock("val execCtx = ExecutionContext.build {")
                     .call {
-                        // Here we're checking to see if the client is part of the http protocol response tests, has a specific
-                        // test case, and if so overriding the expected value of the return code to the value defined by
-                        // the trait.  This seems to break the scope of HttpProtocolClientGenerator, but it's unclear
-                        // how best to refactor the Test generators.  It seems like will require a large change for a single test,
-                        // but possibly missing something.
-                        // This code is to facilitate discussion of best approach, not to push.
-                        val code = op.getTrait(HttpResponseTestsTrait::class.java).orElse(null)?.testCases?.firstOrNull { it is HttpResponseTestCase }?.code ?: httpTrait.code
-
-                        writer.write("expectedHttpStatus = $code")
+                        writer.write("expectedHttpStatus = ${httpTrait.code}")
                         if (output.isPresent) {
                             writer.write("deserializer = ${op.deserializerName()}()")
                         }
