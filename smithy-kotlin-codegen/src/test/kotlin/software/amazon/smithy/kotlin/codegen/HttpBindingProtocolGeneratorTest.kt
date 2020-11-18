@@ -36,7 +36,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTest {
-    val model: Model = Model.assembler()
+    val defaultModel: Model = Model.assembler()
         .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
         .discoverModels()
         .assemble()
@@ -44,21 +44,33 @@ class HttpBindingProtocolGeneratorTest {
 
     data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
 
-    private fun newTestContext(): TestContext {
+    private fun newTestContext(testModel: Model = defaultModel): TestContext {
         val settings = KotlinSettings.from(
-            model,
+            testModel,
             Node.objectNodeBuilder()
                 .withMember("module", Node.from("test"))
                 .withMember("moduleVersion", Node.from("1.0.0"))
                 .build()
         )
         val manifest = MockManifest()
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val delegator = KotlinDelegator(settings, model, manifest, provider)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(testModel, "test")
+        val service = testModel.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
+        val delegator = KotlinDelegator(settings, testModel, manifest, provider)
         val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
+        val ctx = ProtocolGenerator.GenerationContext(settings, testModel, service, provider, listOf(), generator.protocol, delegator)
         return TestContext(ctx, manifest, generator)
+    }
+
+    private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
+        val (ctx, manifest, generator) = newTestContext(testModel)
+        generator.generateSerializers(ctx)
+        generator.generateDeserializers(ctx)
+        ctx.delegator.flushWriters()
+        return getTransformFileContents(manifest, filename)
+    }
+
+    private fun getTransformFileContents(manifest: MockManifest, filename: String): String {
+        return manifest.expectFileString("src/main/kotlin/test/transform/$filename")
     }
 
     @Test
@@ -80,18 +92,6 @@ class HttpBindingProtocolGeneratorTest {
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/Nested2Serializer.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/Nested3Serializer.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/Nested4Serializer.kt"))
-    }
-
-    private fun getTransformFileContents(filename: String): String {
-        val (ctx, manifest, generator) = newTestContext()
-        generator.generateSerializers(ctx)
-        generator.generateDeserializers(ctx)
-        ctx.delegator.flushWriters()
-        return getTransformFileContents(manifest, filename)
-    }
-
-    private fun getTransformFileContents(manifest: MockManifest, filename: String): String {
-        return manifest.expectFileString("src/main/kotlin/test/transform/$filename")
     }
 
     @Test
@@ -851,5 +851,57 @@ class Nested3Deserializer {
         ctx.delegator.flushWriters()
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/SmokeTestErrorDeserializer.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/NestedErrorDataDeserializer.kt"))
+    }
+
+    @Test
+    fun `it creates map of lists serializer`() {
+        val mapModel: Model = Model.assembler()
+            .addImport(javaClass.getResource("http-binding-map-model.smithy"))
+            .discoverModels()
+            .assemble()
+            .unwrap()
+
+        val contents = getTransformFileContents("MapInputSerializer.kt", mapModel)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
+
+    companion object {
+        private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor("mapOfLists", SerialKind.Map)
+        private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor("mapOfListsC0", SerialKind.List)
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+            field(MAPOFLISTS_DESCRIPTOR)
+        }
+    }
+
+    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+        builder.method = HttpMethod.POST
+
+        builder.url {
+            path = "/input/map"
+        }
+
+        builder.headers {
+            append("Content-Type", "application/json")
+        }
+
+        val serializer = serializationContext.serializationProvider()
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            if (input.mapOfLists != null) {
+                mapField(MAPOFLISTS_DESCRIPTOR) {
+                    input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
+                        for(m1 in value ?: emptyList()) {
+                            serializeInt(m1)
+                        }
+                    }}
+                }
+            }
+        }
+
+        builder.body = ByteArrayContent(serializer.toByteArray())
+    }
+}
+"""
+        contents.shouldContainOnlyOnce(expectedContents)
     }
 }

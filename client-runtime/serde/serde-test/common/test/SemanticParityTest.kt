@@ -131,7 +131,7 @@ class SemanticParityTest {
 
     companion object {
         fun getTests(): List<CrossProtocolSerdeTest> =
-            listOf(/*BasicStructTest(), ListTest(), MapTest(),*/ NestedStructTest())
+            listOf(BasicStructTest(), ListTest(), MapTest(), NestedStructTest())
     }
 
     data class BasicStructTest(var x: Int? = null, var y: String? = null, var z: Boolean? = null) :

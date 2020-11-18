@@ -12,11 +12,11 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
     // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
     // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
-    override fun deserializeByte(): Byte = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toByte() }
+    override fun deserializeByte(): Byte = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toInt().toByte() }
 
     override fun deserializeInt(): Int = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
 
-    override fun deserializeShort(): Short = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toShort() }
+    override fun deserializeShort(): Short = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toInt().toShort() }
 
     override fun deserializeLong(): Long = nextNumberValue { it.toLongOrNull() ?: it.toDouble().toLong() }
 

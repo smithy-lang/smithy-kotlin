@@ -56,9 +56,16 @@ class DeserializeUnionGenerator(
                         ShapeType.UNION -> {
                             val targetShape = ctx.model.expectShape(member.target)
                             for (targetMember in targetShape.members()) {
-                                val deserialize = deserializerForShape(targetMember)
-                                val targetType = target.unionTypeName(targetMember)
-                                writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
+                                val nestedMember = ctx.model.expectShape(targetMember.target.toShapeId())
+                                when (nestedMember) {
+                                    is MapShape -> deserializeMapMember(targetMember)
+                                    is CollectionShape -> deserializeListMember(targetMember)
+                                    else -> {
+                                        val deserialize = deserializerForShape(targetMember)
+                                        val targetType = target.unionTypeName(targetMember)
+                                        writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
+                                    }
+                                }
                             }
                         }
                         else -> {
@@ -127,7 +134,7 @@ class DeserializeUnionGenerator(
                 val deserializerName = "${symbol.name}Deserializer"
                 "$deserializerName().deserialize(deserializer)"
             }
-            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
+            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target; type: ${target.type}")
         }
     }
 
@@ -155,7 +162,9 @@ class DeserializeUnionGenerator(
         val conversion = if (renderAsSet) ".toSet()" else ""
         val targetType = member.unionTypeName(member)
 
-        writer.openBlock("deserializer.deserializeList(\$L) {", member.descriptorName())
+        val descriptorName = if (level == 0) member.descriptorName() else member.descriptorName("_C${level - 1}")
+
+        writer.openBlock("deserializer.deserializeList(\$L) {", descriptorName)
             .write("val $destList = mutableListOf<${targetSymbol.name}>()")
             .openBlock("while(hasNextElement()) {")
             .call {

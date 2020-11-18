@@ -195,8 +195,11 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     }
 
     private fun sanitizeDocumentation(doc: String): String {
-        // Docs can have valid $ characters that shouldn't run through formatters.
-        return doc.replace("\$", "\$\$")
+        return doc
+            // Docs can have valid $ characters that shouldn't run through formatters.
+            .replace("\$", "\$\$")
+            // API Gateway and maybe others intentionally embed "*/" in comments.
+            .replace("*/", "\\*\\/")
     }
 
     /**
