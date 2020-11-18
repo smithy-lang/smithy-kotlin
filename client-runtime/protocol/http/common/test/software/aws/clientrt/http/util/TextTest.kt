@@ -4,8 +4,10 @@
  */
 package software.aws.clientrt.http.util
 
+import software.aws.clientrt.http.QueryParameters
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 data class EscapeTest(val input: String, val expected: String, val formUrlEncode: Boolean = false)
 
@@ -68,5 +70,23 @@ class TextTest {
         assertEquals("%D0%92%D1%81%D0%B5%D0%BC_%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82", russian.encodeUrlPath())
         assertEquals("Gr%C3%BCezi_z%C3%A4m%C3%A4", swissAndGerman.encodeUrlPath())
         assertEquals("%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF", japanese.encodeUrlPath())
+    }
+
+    @Test
+    fun `split query string into parts`() {
+        val query = "foo=baz&bar=quux&foo=qux&a="
+        val actual = query.splitAsQueryParameters()
+        val expected = QueryParameters {
+            append("foo", "baz")
+            append("foo", "qux")
+            append("bar", "quux")
+            append("a", "")
+        }
+
+        expected.entries().forEach { entry ->
+            entry.value.forEach { value ->
+                assertTrue(actual.contains(entry.key, value), "parsed query does not contain ${entry.key}:$value")
+            }
+        }
     }
 }

@@ -150,4 +150,21 @@ class UrlTest {
         val expected = "http://test.aws.com/kotlin?foo=baz"
         assertEquals(expected, url.toString())
     }
+
+    @Test
+    fun `it parses`() {
+        val urls = listOf(
+            "http://test.aws.com/kotlin?foo=baz",
+            "http://test.aws.com:3000/kotlin",
+            "https://user:password@test.aws.com",
+            "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
+            "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
+            "https://test.com/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg"
+        )
+
+        for (expected in urls) {
+            val actual = Url.parse(expected)
+            assertEquals(expected, actual.toString())
+        }
+    }
 }
