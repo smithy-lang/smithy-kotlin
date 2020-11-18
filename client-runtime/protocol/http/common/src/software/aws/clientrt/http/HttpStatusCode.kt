@@ -10,7 +10,7 @@ package software.aws.clientrt.http
 data class HttpStatusCode(val value: Int, val description: String) {
     // NOTE: data class over enum here to be forward compatible with potentially unknown status codes
 
-    enum class Category(private val range: IntRange) : Comparable<Category> {
+    enum class Category(private val range: IntRange) : Comparable<Category>, ClosedRange<Int> by range {
         INFORMATION(IntRange(100, 199)),
         SUCCESS(IntRange(200, 299)),
         REDIRECT(IntRange(300, 399)),
@@ -111,7 +111,7 @@ data class HttpStatusCode(val value: Int, val description: String) {
 /**
  * Check if the given status code is a success code (HTTP codes 200 to 299 are considered successful)
  */
-fun HttpStatusCode.isSuccess(): Boolean = value in 200..299
+fun HttpStatusCode.isSuccess(): Boolean = value in HttpStatusCode.Category.SUCCESS
 
 fun HttpStatusCode.category(): HttpStatusCode.Category = HttpStatusCode.Category.fromCode(this.value)
 
