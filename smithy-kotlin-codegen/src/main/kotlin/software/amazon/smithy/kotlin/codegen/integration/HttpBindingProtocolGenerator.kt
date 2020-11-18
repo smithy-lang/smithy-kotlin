@@ -338,12 +338,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 for (member in sortedMembers) {
                     val serialName = member.getTrait(JsonNameTrait::class.java).map { it.value }.orElse(member.memberName)
                     val serialKind = ctx.model.expectShape(member.target).serialKind()
-                    val valueType = ctx.model.expectShape(member.target)
+                    val memberTarget = ctx.model.expectShape(member.target)
                     write("private val \$L = SdkFieldDescriptor(\$S, $serialKind)", member.descriptorName(), serialName)
 
-                    val nestedMemberShape = valueType.childShape(ctx)
-                    if (nestedMemberShape?.isContainerShape() == true) {
-                        renderNestedFieldDescriptors(ctx, member, nestedMemberShape, 0, writer)
+                    val nestedMember = memberTarget.childShape(ctx)
+                    if (nestedMember?.isContainerShape() == true) {
+                        renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
                     }
                 }
                 writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {", "}") {
@@ -359,14 +359,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Generate field descriptors for nested serialization types.
      */
     private fun renderNestedFieldDescriptors(ctx: ProtocolGenerator.GenerationContext, rootShape: MemberShape, childShape: Shape, level: Int, writer: KotlinWriter) {
-        val nestedName = rootShape.descriptorName("_C$level")
+        val childName = rootShape.descriptorName("_C$level")
         val serialName = rootShape.getTrait(JsonNameTrait::class.java).map { it.value }.orElse("${rootShape.memberName}C$level")
         val nestedSerialKind = childShape.serialKind()
 
-        writer.write("private val \$L = SdkFieldDescriptor(\$S, $nestedSerialKind)", nestedName, serialName)
+        writer.write("private val \$L = SdkFieldDescriptor(\$S, $nestedSerialKind)", childName, serialName)
 
-        val nestedMemberShape = childShape.childShape(ctx)
-        if (nestedMemberShape?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMemberShape, level + 1, writer)
+        val nestedMember = childShape.childShape(ctx)
+        if (nestedMember?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMember, level + 1, writer)
     }
 
     // Returns [true] if the shape can contain other shapes.
@@ -1115,7 +1115,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 /**
  * Get the field descriptor name for a member shape
  */
-fun MemberShape.descriptorName(childName: String = ""): String = "${this.defaultName()}${childName.toUpperCase()}_DESCRIPTOR".toUpperCase()
+fun MemberShape.descriptorName(childName: String = ""): String = "${this.defaultName()}${childName}_DESCRIPTOR".toUpperCase()
 
 /**
  * Get the serializer class name for an operation

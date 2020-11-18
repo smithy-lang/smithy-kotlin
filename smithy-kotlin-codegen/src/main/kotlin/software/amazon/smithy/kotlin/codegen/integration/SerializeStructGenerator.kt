@@ -229,7 +229,7 @@ class SerializeStructGenerator(
     /**
      * Render serialization for a struct member of type "map"
      *
-     *
+     * @param member: The shape to serialize
      */
     private fun renderMapMemberSerializer(member: MemberShape) {
         val memberName = member.defaultName()
@@ -250,9 +250,7 @@ class SerializeStructGenerator(
                             renderListSerializer(ctx, member, "value ?: emptyList()", listMemberShape, writer, 1)
                         }
                     }
-                    else -> {
-                        error("Unhandled codegen case")
-                    }
+                    else -> error("Unexpected target shape type ${valueTargetShape.type}")
                 }
             }
         }
