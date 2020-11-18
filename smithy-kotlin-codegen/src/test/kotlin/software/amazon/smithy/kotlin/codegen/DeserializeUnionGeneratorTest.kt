@@ -39,7 +39,7 @@ class DeserializeUnionGeneratorTest {
 
     private fun newTestContext(model: Model = defaultModel): TestContext {
         val settings = KotlinSettings.from(
-                model,
+            model,
             Node.objectNodeBuilder()
                 .withMember("module", Node.from("test"))
                 .withMember("moduleVersion", Node.from("1.0.0"))
@@ -64,26 +64,28 @@ class DeserializeUnionGeneratorTest {
 
     @Test
     fun `it handles collections of collection types`() {
-        val ctx = newTestContext(Model.assembler()
+        val ctx = newTestContext(
+            Model.assembler()
                 .addImport(javaClass.getResource("http-binding-nested-union-model.smithy"))
                 .discoverModels()
                 .assemble()
-                .unwrap())
+                .unwrap()
+        )
         val writer = KotlinWriter("test")
         val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#UnionTestOperation"))
 
         val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
         val responseBindings = bindingIndex.getResponseBindings(op)
         val documentMembers = responseBindings.values
-                .filter { it.location == HttpBinding.Location.DOCUMENT }
-                .sortedBy { it.memberName }
-                .map { it.member }
+            .filter { it.location == HttpBinding.Location.DOCUMENT }
+            .sortedBy { it.memberName }
+            .map { it.member }
 
         DeserializeUnionGenerator(
-                ctx.generationCtx,
-                documentMembers,
-                writer,
-                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ctx.generationCtx,
+            documentMembers,
+            writer,
+            TimestampFormatTrait.Format.EPOCH_SECONDS
         ).render()
 
         val contents = writer.toString()
