@@ -12,6 +12,7 @@ import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.HttpResponsePipeline
 import software.aws.clientrt.http.response.TypeInfo
+import software.aws.clientrt.http.util.interceptFn
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
