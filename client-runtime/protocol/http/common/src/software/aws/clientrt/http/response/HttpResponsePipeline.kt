@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.http.response
 
+import software.aws.clientrt.http.ExecutionContext
 import software.aws.clientrt.http.util.Phase
 import software.aws.clientrt.http.util.Pipeline
 import kotlin.reflect.KClass

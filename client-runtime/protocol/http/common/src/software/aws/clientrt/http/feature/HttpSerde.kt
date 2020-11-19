@@ -61,20 +61,18 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
 
     override fun install(client: SdkHttpClient) {
         client.requestPipeline.intercept(HttpRequestPipeline.Transform) { subject ->
-            when (subject) {
-                // serialize the input type to the outgoing request builder
-                is HttpSerialize -> subject.serialize(context, SerializationContext(serde::serializer, idempotencyTokenProvider))
-            }
+            val serializer = context.executionCtx.attributeOrNull(SdkOperation.OperationSerializer) ?: return@intercept
+            serializer.serialize(subject, SerializationContext(serde::serializer, idempotencyTokenProvider))
         }
 
         client.responsePipeline.intercept(HttpResponsePipeline.Transform) {
-            context.executionCtx?.deserializer?.let { deserializer ->
-                // it's possible that the response doesn't expect a serialized payload and can be completely
-                // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming
-                // we can't read the body into memory ourselves
-                val content = deserializer.deserialize(context.response, serde::deserializer)
-                proceedWith(content)
-            }
+            val deserializer = context.executionCtx?.attributeOrNull(SdkOperation.OperationDeserializer) ?: return@intercept
+
+            // it's possible that the response doesn't expect a serialized payload and can be completely
+            // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming
+            // we can't read the body into memory ourselves
+            val content = deserializer.deserialize(context.response, serde::deserializer)
+            proceedWith(content)
         }
     }
 }
