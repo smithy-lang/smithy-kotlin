@@ -12,7 +12,7 @@ import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.ServiceException
 import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
-import software.aws.clientrt.http.response.ExecutionContext
+import software.aws.clientrt.http.ExecutionContext
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.feature.DefaultRequest
@@ -55,10 +55,13 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
      * @throws ServiceException
      */
     override suspend fun invoke(input: InvokeRequest): InvokeResponse {
-        val execCtx = ExecutionContext.build {
+        val execCtx = SdkOperation.build {
+            serializer = InvokeRequestSerializer(input)
             deserializer = InvokeResponseDeserializer()
+            service = serviceName
+            operationName = "Invoke"
         }
-        return client.roundTrip(InvokeRequestSerializer(input), execCtx)
+        return client.roundTrip(execCtx)
     }
 
     /**
@@ -67,10 +70,13 @@ class DefaultLambdaClient(config: LambdaClient.Config): LambdaClient {
      * @throws ServiceException
      */
     override suspend fun createAlias(input: CreateAliasRequest): AliasConfiguration {
-        val execCtx = ExecutionContext.build {
+        val execCtx = SdkOperation.build {
+            serializer = CreateAliasRequestSerializer(input)
             deserializer = AliasConfigurationDeserializer()
+            service = serviceName
+            operationName = "CreateAlias"
         }
-        return client.roundTrip(CreateAliasRequestSerializer(input), execCtx)
+        return client.roundTrip(execCtx)
     }
 
     override fun close() {

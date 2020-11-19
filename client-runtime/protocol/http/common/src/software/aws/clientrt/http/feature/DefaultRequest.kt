@@ -27,16 +27,16 @@ class DefaultRequest(private val builder: HttpRequestBuilder) : Feature {
 
     override fun install(client: SdkHttpClient) {
         client.requestPipeline.intercept(HttpRequestPipeline.Initialize) {
-            context.url.host = builder.url.host
-            context.url.port = builder.url.port
-            context.url.parameters = builder.url.parameters
-            context.url.scheme = builder.url.scheme
-            context.url.forceQuery = builder.url.forceQuery
-            context.url.fragment = builder.url.fragment
-            context.url.userInfo = builder.url.userInfo
-            context.headers.appendAll(defaultHeaders)
-            context.method = builder.method
-            context.body = builder.body
+            subject.url.host = builder.url.host
+            subject.url.port = builder.url.port
+            subject.url.parameters = builder.url.parameters
+            subject.url.scheme = builder.url.scheme
+            subject.url.forceQuery = builder.url.forceQuery
+            subject.url.fragment = builder.url.fragment
+            subject.url.userInfo = builder.url.userInfo
+            subject.headers.appendAll(defaultHeaders)
+            subject.method = builder.method
+            subject.body = builder.body
         }
     }
 }

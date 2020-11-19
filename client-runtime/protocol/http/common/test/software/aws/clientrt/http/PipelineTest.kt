@@ -6,6 +6,7 @@ package software.aws.clientrt.http
 
 import io.ktor.util.pipeline.PipelineContext
 import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequestContext
 import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
@@ -21,12 +22,13 @@ class PipelineTest {
     @Test
     fun `request pipeline runs`() = runSuspendTest {
         val pipeline = HttpRequestPipeline()
-        pipeline.intercept(HttpRequestPipeline.Initialize) { proceedWith((subject as Int) + 1) }
-        pipeline.intercept(HttpRequestPipeline.Transform) { proceedWith((subject as Int) + 1) }
-        pipeline.intercept(HttpRequestPipeline.Finalize) { proceedWith((subject as Int) + 1) }
+        pipeline.intercept(HttpRequestPipeline.Initialize) { subject.headers.append("key", "1") }
+        pipeline.intercept(HttpRequestPipeline.Transform) { subject.headers.append("key", "2") }
+        pipeline.intercept(HttpRequestPipeline.Finalize) { subject.headers.append("key", "3") }
         val builder = HttpRequestBuilder()
-        val result = pipeline.execute(builder, 0)
-        assertEquals(3, result as Int)
+        val ctx = HttpRequestContext(ExecutionContext())
+        val result = pipeline.execute(ctx, builder)
+        assertEquals(3, result.headers.getAll("key")?.size)
     }
 
     @Test
