@@ -53,9 +53,10 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
         override val key: FeatureKey<HttpSerde> = FeatureKey("HttpSerde")
         override fun create(block: Config.() -> Unit): HttpSerde {
             val config = Config().apply(block)
-            requireNotNull(config.serdeProvider) { "a serde provider must be set to use the HttpSerde feature" }
-            requireNotNull(config.idempotencyTokenProvider) { "A idempotency token provider must be supplied to use the HttpSerde feature" }
-            return HttpSerde(config.serdeProvider!!, config.idempotencyTokenProvider!!)
+            return HttpSerde(
+                requireNotNull(config.serdeProvider) { "a serde provider must be set to use the HttpSerde feature" },
+                requireNotNull(config.idempotencyTokenProvider) { "A idempotency token provider must be supplied to use the HttpSerde feature" }
+            )
         }
     }
 
