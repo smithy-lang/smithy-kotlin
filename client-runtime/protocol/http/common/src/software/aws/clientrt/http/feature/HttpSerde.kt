@@ -53,20 +53,21 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
         override val key: FeatureKey<HttpSerde> = FeatureKey("HttpSerde")
         override fun create(block: Config.() -> Unit): HttpSerde {
             val config = Config().apply(block)
-            requireNotNull(config.serdeProvider) { "a serde provider must be set to use the HttpSerde feature" }
-            requireNotNull(config.idempotencyTokenProvider) { "A idempotency token provider must be supplied to use the HttpSerde feature" }
-            return HttpSerde(config.serdeProvider!!, config.idempotencyTokenProvider!!)
+            return HttpSerde(
+                requireNotNull(config.serdeProvider) { "a serde provider must be set to use the HttpSerde feature" },
+                requireNotNull(config.idempotencyTokenProvider) { "A idempotency token provider must be supplied to use the HttpSerde feature" }
+            )
         }
     }
 
     override fun install(client: SdkHttpClient) {
         client.requestPipeline.intercept(HttpRequestPipeline.Transform) { subject ->
-            val serializer = context.executionCtx.getOrNull(SdkOperation.OperationSerializer) ?: return@intercept
+            val serializer = context.executionContext.getOrNull(SdkOperation.OperationSerializer) ?: return@intercept
             serializer.serialize(subject, SerializationContext(serde::serializer, idempotencyTokenProvider))
         }
 
         client.responsePipeline.intercept(HttpResponsePipeline.Transform) {
-            val deserializer = context.executionCtx.getOrNull(SdkOperation.OperationDeserializer) ?: return@intercept
+            val deserializer = context.executionContext.getOrNull(SdkOperation.OperationDeserializer) ?: return@intercept
 
             // it's possible that the response doesn't expect a serialized payload and can be completely
             // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming

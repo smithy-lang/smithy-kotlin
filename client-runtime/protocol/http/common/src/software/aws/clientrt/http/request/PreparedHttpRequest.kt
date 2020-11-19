@@ -38,7 +38,7 @@ class PreparedHttpRequest(
     @InternalAPI
     suspend inline fun <reified TResponse> getPipelineResponse(httpResponse: HttpResponse): Any {
         val want = TypeInfo(TResponse::class)
-        val responseContext = HttpResponseContext(httpResponse, want, executionCtx = executionCtx)
+        val responseContext = HttpResponseContext(httpResponse, want, executionContext = executionCtx)
         // There are two paths for an HTTP response:
         //     1. Response payload is consumed in the pipeline (e.g. through deserialization). Resources
         //        are released immediately (and automatically) by consuming the payload.

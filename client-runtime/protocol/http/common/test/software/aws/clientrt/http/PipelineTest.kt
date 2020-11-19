@@ -48,13 +48,13 @@ class PipelineTest {
     }
 
     @Test
-    fun `free functions can be used`() = runSuspendTest {
+    fun `functions can be used`() = runSuspendTest {
         val pipeline = HttpResponsePipeline()
 
         suspend fun freeFunc(ctx: PipelineContext<Any, HttpResponseContext>) {
             ctx.proceedWith((ctx.subject as Int) + 1)
         }
-        pipeline.interceptFn(HttpResponsePipeline.Receive, ::freeFunc)
+        pipeline.intercept(HttpResponsePipeline.Receive) { freeFunc(this) }
         val response = HttpResponse(
             HttpStatusCode.OK,
             Headers {},
