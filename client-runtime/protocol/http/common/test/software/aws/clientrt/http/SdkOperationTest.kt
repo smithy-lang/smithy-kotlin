@@ -5,6 +5,7 @@
 
 package software.aws.clientrt.http
 
+import software.aws.clientrt.util.get
 import kotlin.test.*
 
 class SdkOperationTest {
@@ -17,9 +18,9 @@ class SdkOperationTest {
             expectedHttpStatus = 418
         }
 
-        assertEquals("test", op.get(SdkOperation.ServiceName))
-        assertEquals("operation", op.get(SdkOperation.OperationName))
-        assertEquals(418, op.get(SdkOperation.ExpectedHttpStatus))
+        assertEquals("test", op[(SdkOperation.ServiceName)])
+        assertEquals("operation", op[SdkOperation.OperationName])
+        assertEquals(418, op[SdkOperation.ExpectedHttpStatus])
         assertNull(op.getOrNull(SdkOperation.OperationSerializer))
     }
 

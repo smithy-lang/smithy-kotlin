@@ -14,7 +14,7 @@ class AttributesTest {
         val intKey = AttributeKey<Int>("int")
         val attributes = Attributes()
 
-        attributes.put(strKey, "foo")
+        attributes[strKey] = "foo"
         assertTrue(attributes.contains(strKey))
         assertEquals("foo", attributes[strKey])
 

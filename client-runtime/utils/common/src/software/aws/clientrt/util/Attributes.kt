@@ -20,11 +20,6 @@ class AttributeKey<T>(val name: String) {
  */
 interface Attributes {
     /**
-     * Gets a value of the attribute for the specified [key] or throws an [IllegalStateException] if key does not exist
-     */
-    operator fun <T : Any> get(key: AttributeKey<T>): T = getOrNull(key) ?: throw IllegalStateException("No instance for $key")
-
-    /**
      * Get a value of the attribute for the specified [key] or null
      */
     fun <T : Any> getOrNull(key: AttributeKey<T>): T?
@@ -37,7 +32,7 @@ interface Attributes {
     /**
      * Creates or changes an attribute with the specified [key] using [value]
      */
-    fun <T : Any> put(key: AttributeKey<T>, value: T)
+    operator fun <T : Any> set(key: AttributeKey<T>, value: T)
 
     /**
      * Removes an attribute with the specified [key]
@@ -45,25 +40,32 @@ interface Attributes {
     fun <T : Any> remove(key: AttributeKey<T>)
 
     /**
-     * Removes an attribute with the specified [key] and returns its current value, throws an exception if an attribute doesn't exist
-     */
-    fun <T : Any> take(key: AttributeKey<T>): T = get(key).also { remove(key) }
-
-    /**
-     * Removes an attribute with the specified [key] and returns its current value, returns `null` if an attribute doesn't exist
-     */
-    fun <T : Any> takeOrNull(key: AttributeKey<T>): T? = getOrNull(key).also { remove(key) }
-
-    /**
      * Gets a value of the attribute for the specified [key], or calls supplied [block] to compute its value
      */
     fun <T : Any> computeIfAbsent(key: AttributeKey<T>, block: () -> T): T
+
+    companion object {
+        /**
+         * Create an attributes instance
+         */
+        operator fun invoke(): Attributes = AttributesImpl()
+    }
 }
 
 /**
- * Create an attributes instance
+ * Gets a value of the attribute for the specified [key] or throws an [IllegalStateException] if key does not exist
  */
-fun Attributes(): Attributes = AttributesImpl()
+operator fun <T : Any> Attributes.get(key: AttributeKey<T>): T = getOrNull(key) ?: throw IllegalStateException("No instance for $key")
+
+/**
+ * Removes an attribute with the specified [key] and returns its current value, throws an exception if an attribute doesn't exist
+ */
+fun <T : Any> Attributes.take(key: AttributeKey<T>): T = get(key).also { remove(key) }
+
+/**
+ * Removes an attribute with the specified [key] and returns its current value, returns `null` if an attribute doesn't exist
+ */
+fun <T : Any> Attributes.takeOrNull(key: AttributeKey<T>): T? = getOrNull(key).also { remove(key) }
 
 private class AttributesImpl : Attributes {
     private val map: MutableMap<AttributeKey<*>, Any> = mutableMapOf()
@@ -73,7 +75,7 @@ private class AttributesImpl : Attributes {
 
     override fun contains(key: AttributeKey<*>): Boolean = map.contains(key)
 
-    override fun <T : Any> put(key: AttributeKey<T>, value: T) {
+    override fun <T : Any> set(key: AttributeKey<T>, value: T) {
         map[key] = value
     }
 
