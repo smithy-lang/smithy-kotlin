@@ -4,17 +4,26 @@
  */
 package software.aws.clientrt.http.request
 
+import software.aws.clientrt.http.ExecutionContext
 import software.aws.clientrt.http.util.Phase
 import software.aws.clientrt.http.util.Pipeline
 
 /**
- * Request pipeline that can be hooked into to transform an input into an [HttpRequestBuilder] instance
- * and modify outgoing request parameters.
+ * A container for the HttpRequestPipeline context parameter
  *
- * The subject always starts as the input to transform to an outgoing [HttpRequest]. It is the expectation
- * that the pipeline is configured in a way to make the desired transformation happen.
+ * @property executionCtx User data passed to the response pipeline that features can choose to take
+ * advantage of.
  */
-class HttpRequestPipeline : Pipeline<Any, HttpRequestBuilder>(Initialize, Transform, Finalize) {
+data class HttpRequestContext(val executionCtx: ExecutionContext)
+
+/**
+ * Request pipeline that can be hooked into to transform an [HttpRequestBuilder] instance
+ * and modify outgoing request parameters. At the end of executing the pipeline the builder should be fully
+ * prepared to be built into an outgoing [HttpRequest].
+ *
+ * It is the expectation that the pipeline is configured in a way to make the desired transformation happen.
+ */
+class HttpRequestPipeline : Pipeline<HttpRequestBuilder, HttpRequestContext>(Initialize, Transform, Finalize) {
     companion object {
         /**
          * Any pre-flight checks. Validate inputs, set defaults, etc.
