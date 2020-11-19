@@ -17,10 +17,10 @@ class SdkOperationTest {
             expectedHttpStatus = 418
         }
 
-        assertEquals("test", op.attribute(SdkOperation.ServiceName))
-        assertEquals("operation", op.attribute(SdkOperation.OperationName))
-        assertEquals(418, op.attribute(SdkOperation.ExpectedHttpStatus))
-        assertNull(op.attributeOrNull(SdkOperation.OperationSerializer))
+        assertEquals("test", op.get(SdkOperation.ServiceName))
+        assertEquals("operation", op.get(SdkOperation.OperationName))
+        assertEquals(418, op.get(SdkOperation.ExpectedHttpStatus))
+        assertNull(op.getOrNull(SdkOperation.OperationSerializer))
     }
 
     @Test
