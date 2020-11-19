@@ -139,7 +139,7 @@ class ExecutionAttribute<T : Any>(
         if (value == null) {
             into.remove(key)
         } else {
-            into.put(key, value)
+            into[key] = value
         }
     }
 }

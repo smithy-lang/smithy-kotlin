@@ -11,10 +11,10 @@ import software.aws.clientrt.http.util.Pipeline
 /**
  * A container for the HttpRequestPipeline context parameter
  *
- * @property executionCtx User data passed to the response pipeline that features can choose to take
+ * @property executionContext User data passed to the response pipeline that features can choose to take
  * advantage of.
  */
-data class HttpRequestContext(val executionCtx: ExecutionContext)
+data class HttpRequestContext(val executionContext: ExecutionContext)
 
 /**
  * Request pipeline that can be hooked into to transform an [HttpRequestBuilder] instance

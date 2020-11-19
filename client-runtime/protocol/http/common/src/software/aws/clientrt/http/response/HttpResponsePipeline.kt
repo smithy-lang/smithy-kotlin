@@ -19,10 +19,10 @@ data class TypeInfo(val classz: KClass<*>)
  *
  * @property response The raw HTTP response container
  * @property want Type information about the desired output type
- * @property executionCtx (Optional) user data passed to the response pipeline that features can choose to take
+ * @property executionContext (Optional) user data passed to the response pipeline that features can choose to take
  * advantage of.
  */
-data class HttpResponseContext(val response: HttpResponse, val want: TypeInfo, val executionCtx: ExecutionContext)
+data class HttpResponseContext(val response: HttpResponse, val want: TypeInfo, val executionContext: ExecutionContext)
 
 /**
  * Response pipeline that can be hooked into to transform an [HttpResponse] into an instance
