@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 package software.aws.clientrt.http.request
+import software.aws.clientrt.http.ExecutionContext
 import software.aws.clientrt.http.SdkHttpClient
-import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
@@ -16,9 +16,8 @@ import kotlin.reflect.KClass
  */
 class PreparedHttpRequest(
     val client: SdkHttpClient,
-    val builder: HttpRequestBuilder,
-    val input: Any? = null,
-    val executionCtx: ExecutionContext? = null
+    val builder: HttpRequestBuilder?,
+    val executionCtx: ExecutionContext
 ) {
 
     /**
@@ -27,9 +26,10 @@ class PreparedHttpRequest(
      */
     @InternalAPI
     suspend fun executeUnsafe(): HttpResponse {
-        val subject: Any = input ?: builder.body
-        client.requestPipeline.execute(builder, subject)
-        return client.engine.roundTrip(builder)
+        val ctx = HttpRequestContext(executionCtx)
+        val requestBuilder = builder ?: HttpRequestBuilder()
+        client.requestPipeline.execute(ctx, requestBuilder)
+        return client.engine.roundTrip(requestBuilder)
     }
 
     /**

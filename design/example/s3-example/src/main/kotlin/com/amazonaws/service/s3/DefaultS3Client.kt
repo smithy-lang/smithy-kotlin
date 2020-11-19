@@ -21,7 +21,6 @@ import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.content.ByteStream
 import software.aws.clientrt.content.toByteArray
 import software.aws.clientrt.http.*
-import software.aws.clientrt.http.response.ExecutionContext
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.engine.ktor.KtorEngine
 import software.aws.clientrt.http.feature.DefaultRequest
@@ -52,36 +51,34 @@ class DefaultS3Client(config: S3Client.Config): S3Client {
     }
 
     override suspend fun <T> getObject(input: GetObjectRequest, block: suspend (GetObjectResponse) -> T): T {
-        val execCtx = ExecutionContext.build {
+        val execCtx = SdkOperation.build {
+            serializer = GetObjectRequestSerializer(input)
             deserializer = GetObjectResponseDeserializer()
+            service = serviceName
+            operationName = "GetObject"
         }
-        return client.execute(GetObjectRequestSerializer(input), execCtx, block)
-        // val response: PreparedHttpRequest = client.roundTrip(GetObjectRequestSerializer(input), GetObjectResponseDeserializer())
-        // return response.execute<GetObjectResponse, T>(block)
-
-        // try {
-        //     return block(response)
-        // } finally {
-        //     // FIXME - so we probably want SdkHttpClient/PreparedHttpRequest to return us both TResponse and a response context that can be used to close the underlying response.
-        //     // we don't want to be figuring out which field of the response object is the one that needs canceled which is just a proxy
-        //     // to the actual resources, we should get back a handle to the resources
-        //     response.body?.cancel()
-        // }
+        return client.execute(execCtx, block)
     }
 
     override suspend fun getBucketTagging(input: GetBucketTaggingRequest): GetBucketTaggingResponse {
-        val execCtx = ExecutionContext.build {
+        val execCtx = SdkOperation.build {
+            serializer = GetBucketTaggingRequestSerializer(input)
             deserializer = GetBucketTaggingResponseDeserializer()
+            service = serviceName
+            operationName = "GetBucketTagging"
         }
-        return client.roundTrip(GetBucketTaggingRequestSerializer(input), execCtx)
+        return client.roundTrip(execCtx)
     }
 
     override suspend fun putObject(input: PutObjectRequest): PutObjectResponse {
-        val execCtx = ExecutionContext.build {
+        val execCtx = SdkOperation.build {
+            serializer = PutObjectRequestSerializer(input)
             deserializer = PutObjectResponseDeserializer()
+            service = serviceName
+            operationName = "PutObject"
         }
 
-        return client.roundTrip(PutObjectRequestSerializer(input), execCtx)
+        return client.roundTrip(execCtx)
     }
 
     override fun close() {

@@ -40,14 +40,15 @@ class PreparedHttpRequestTest {
         )
 
         client.requestPipeline.intercept(HttpRequestPipeline.Initialize) {
-            context.headers.append("x-test", "testing")
+            subject.headers.append("x-test", "testing")
         }
 
         client.responsePipeline.intercept(HttpResponsePipeline.Transform) {
             proceedWith(context.response)
         }
 
-        val preparedReq = PreparedHttpRequest(client, HttpRequestBuilder())
+        val execCtx = ExecutionContext()
+        val preparedReq = PreparedHttpRequest(client, HttpRequestBuilder(), execCtx)
         val actual = preparedReq.receive<HttpResponse>()
 
         actual.request.headers.contains("x-test").shouldBeTrue()
@@ -80,7 +81,8 @@ class PreparedHttpRequestTest {
             proceedWith(2)
         }
 
-        val preparedReq = PreparedHttpRequest(client, HttpRequestBuilder())
+        val execCtx = ExecutionContext()
+        val preparedReq = PreparedHttpRequest(client, HttpRequestBuilder(), execCtx)
         try {
             preparedReq.receive<HttpResponse>()
         } catch (ex: ResponseTransformFailed) {
