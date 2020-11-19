@@ -15,7 +15,8 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":client-runtime:client-rt-core"))
-                implementation(project(":client-runtime:utils"))
+                // exposes Attributes
+                api(project(":client-runtime:utils"))
                 implementation(project(":client-runtime:io"))
                 // for Pipeline abstraction which already supports suspend functions
                 api("io.ktor:ktor-utils:$ktorVersion")
