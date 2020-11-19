@@ -4,15 +4,12 @@
  */
 package software.aws.clientrt.http.feature
 
-import software.aws.clientrt.http.Headers
-import software.aws.clientrt.http.HttpBody
-import software.aws.clientrt.http.HttpStatusCode
+import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.TypeInfo
-import software.aws.clientrt.http.sdkHttpClient
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -35,7 +32,7 @@ class DefaultValidateResponseTest {
             HttpRequestBuilder().build()
         )
 
-        val context = HttpResponseContext(httpResp, TypeInfo(Int::class))
+        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), ExecutionContext())
         assertFailsWith(HttpResponseException::class) {
             client.responsePipeline.execute(context, httpResp.body)
         }
@@ -60,7 +57,7 @@ class DefaultValidateResponseTest {
             HttpRequestBuilder().build()
         )
 
-        val context = HttpResponseContext(httpResp, TypeInfo(Int::class))
+        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), ExecutionContext())
         client.responsePipeline.execute(context, httpResp.body)
 
         return@runSuspendTest
