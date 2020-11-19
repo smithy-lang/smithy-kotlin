@@ -12,7 +12,6 @@ import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext
 import software.aws.clientrt.http.response.HttpResponsePipeline
 import software.aws.clientrt.http.response.TypeInfo
-import software.aws.clientrt.http.util.interceptFn
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -49,13 +48,13 @@ class PipelineTest {
     }
 
     @Test
-    fun `free functions can be used`() = runSuspendTest {
+    fun `functions can be used`() = runSuspendTest {
         val pipeline = HttpResponsePipeline()
 
         suspend fun freeFunc(ctx: PipelineContext<Any, HttpResponseContext>) {
             ctx.proceedWith((ctx.subject as Int) + 1)
         }
-        pipeline.interceptFn(HttpResponsePipeline.Receive, ::freeFunc)
+        pipeline.intercept(HttpResponsePipeline.Receive) { freeFunc(this) }
         val response = HttpResponse(
             HttpStatusCode.OK,
             Headers {},
