@@ -16,13 +16,8 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
@@ -55,10 +50,10 @@ class SerializeUnionGeneratorTest {
 
         return ctx.render(shape, members) { members, writer ->
             SerializeUnionGenerator(
-                    ctx.generationCtx,
-                    members,
-                    writer,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
             ).render()
         }
     }

@@ -16,14 +16,10 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
@@ -48,9 +44,9 @@ class SerializeStructGeneratorTest {
                 val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
                 requestBindings.values
-                        .filter { it.location == HttpBinding.Location.DOCUMENT }
-                        .sortedBy { it.memberName }
-                        .map { it.member }
+                    .filter { it.location == HttpBinding.Location.DOCUMENT }
+                    .sortedBy { it.memberName }
+                    .map { it.member }
             }
             is StructureShape -> {
                 shape.members().toList()
@@ -60,10 +56,10 @@ class SerializeStructGeneratorTest {
 
         return ctx.render(shape, members) { members, writer ->
             SerializeStructGenerator(
-                    ctx.generationCtx,
-                    members,
-                    writer,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
             ).render()
         }
     }

@@ -17,9 +17,6 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.integration.DeserializeStructGenerator
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class DeserializeStructGeneratorTest {
@@ -32,10 +29,10 @@ class DeserializeStructGeneratorTest {
 
         val contents = ctx.render(op) { members, writer ->
             DeserializeStructGenerator(
-                    ctx.generationCtx,
-                    members,
-                    writer,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
             ).render()
         }
         val expected = """
@@ -62,10 +59,10 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 
         val contents = ctx.render(op) { members, writer ->
             DeserializeStructGenerator(
-                    ctx.generationCtx,
-                    members,
-                    writer,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
             ).render()
         }
         val expected = """
@@ -87,10 +84,10 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 
         val contents = ctx.render(op) { members, writer ->
             DeserializeStructGenerator(
-                    ctx.generationCtx,
-                    members,
-                    writer,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
             ).render()
         }
         val expected = """
@@ -166,10 +163,10 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 
         val contents = ctx.render(op) { members, writer ->
             DeserializeStructGenerator(
-                    ctx.generationCtx,
-                    members,
-                    writer,
-                    TimestampFormatTrait.Format.EPOCH_SECONDS
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
             ).render()
         }
         val expected = """
