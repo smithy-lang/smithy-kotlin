@@ -22,7 +22,6 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
 import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.integration.HttpSerde
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 
 class HttpProtocolClientGeneratorTest {
@@ -49,11 +48,7 @@ class HttpProtocolClientGeneratorTest {
     }
 
     init {
-        val model = Model.assembler()
-            .addImport(javaClass.getResource("service-generator-test-operations.smithy"))
-            .discoverModels()
-            .assemble()
-            .unwrap()
+        val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()

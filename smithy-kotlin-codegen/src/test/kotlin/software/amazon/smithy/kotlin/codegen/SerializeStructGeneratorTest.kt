@@ -31,38 +31,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import java.lang.RuntimeException
 
 class SerializeStructGeneratorTest {
-    val model: Model = Model.assembler()
-        .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
-        .discoverModels()
-        .assemble()
-        .unwrap()
-
-    data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
-    private fun newTestContext(): TestContext {
-        val settings = KotlinSettings.from(
-            model,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("test"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .build()
-        )
-        val manifest = MockManifest()
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val delegator = KotlinDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(
-            settings,
-            model,
-            service,
-            provider,
-            listOf(),
-            generator.protocol,
-            delegator
-        )
-        return TestContext(ctx, manifest, generator)
-    }
+    val defaultModel: Model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
 
     /**
      * Get the contents for the given shape ID which should either be
@@ -71,8 +40,7 @@ class SerializeStructGeneratorTest {
      * will be returned
      */
     private fun getContentsForShape(shapeId: String): String {
-        val ctx = newTestContext()
-        val writer = KotlinWriter("test")
+        val ctx = defaultModel.newTestContext()
         val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
 
         val members = when (shape) {
@@ -80,9 +48,9 @@ class SerializeStructGeneratorTest {
                 val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
                 requestBindings.values
-                    .filter { it.location == HttpBinding.Location.DOCUMENT }
-                    .sortedBy { it.memberName }
-                    .map { it.member }
+                        .filter { it.location == HttpBinding.Location.DOCUMENT }
+                        .sortedBy { it.memberName }
+                        .map { it.member }
             }
             is StructureShape -> {
                 shape.members().toList()
@@ -90,14 +58,14 @@ class SerializeStructGeneratorTest {
             else -> throw RuntimeException("unknown conversion for $shapeId")
         }
 
-        SerializeStructGenerator(
-            ctx.generationCtx,
-            members,
-            writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
-        ).render()
-
-        return writer.toString()
+        return ctx.render(shape, members) { members, writer ->
+            SerializeStructGenerator(
+                    ctx.generationCtx,
+                    members,
+                    writer,
+                    TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
     }
 
     @Test
