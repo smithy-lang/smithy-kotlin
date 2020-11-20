@@ -16,50 +16,18 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.ShapeId
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class IdempotentTokenGeneratorTest {
-    val model: Model = Model.assembler()
-        .addImport(javaClass.getResource("idempotent-token-test-model.smithy"))
-        .discoverModels()
-        .assemble()
-        .unwrap()
-
-    data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
-    private fun newTestContext(): TestContext {
-        val settings = KotlinSettings.from(
-            model,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("test"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .build()
-        )
-        val manifest = MockManifest()
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val delegator = KotlinDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, model, service, provider, listOf(), generator.protocol, delegator)
-        return TestContext(ctx, manifest, generator)
-    }
+    private val defaultModel: Model = javaClass.getResource("idempotent-token-test-model.smithy").asSmithy()
 
     private fun getTransformFileContents(filename: String): String {
-        val (ctx, manifest, generator) = newTestContext()
+        val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateSerializers(ctx)
         generator.generateDeserializers(ctx)
         ctx.delegator.flushWriters()
-        return getTransformFileContents(manifest, filename)
-    }
-
-    private fun getTransformFileContents(manifest: MockManifest, filename: String): String {
-        return manifest.expectFileString("src/main/kotlin/test/transform/$filename")
+        return manifest.getTransformFileContents(filename)
     }
 
     @Test

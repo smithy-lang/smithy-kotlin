@@ -16,49 +16,13 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class SerializeUnionGeneratorTest {
-    val model: Model = Model.assembler()
-        .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
-        .discoverModels()
-        .assemble()
-        .unwrap()
-
-    data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
-    private fun newTestContext(): TestContext {
-        val settings = KotlinSettings.from(
-            model,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("test"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .build()
-        )
-        val manifest = MockManifest()
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val delegator = KotlinDelegator(settings, model, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(
-            settings,
-            model,
-            service,
-            provider,
-            listOf(),
-            generator.protocol,
-            delegator
-        )
-        return TestContext(ctx, manifest, generator)
-    }
+    private val defaultModel = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
 
     /**
      * Get the contents for the given shape ID which should either be
@@ -67,11 +31,9 @@ class SerializeUnionGeneratorTest {
      * will be returned
      */
     private fun getContentsForShape(shapeId: String): String {
-        val ctx = newTestContext()
-        val writer = KotlinWriter("test")
-        val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
+        val ctx = defaultModel.newTestContext()
 
-        val members = when (shape) {
+        val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
             is OperationShape -> {
                 val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
@@ -84,14 +46,14 @@ class SerializeUnionGeneratorTest {
             else -> throw RuntimeException("unknown conversion for $shapeId")
         }
 
-        SerializeUnionGenerator(
-            ctx.generationCtx,
-            members,
-            writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
-        ).render()
-
-        return writer.toString()
+        return testRender(testMembers) { members, writer ->
+            SerializeUnionGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
     }
 
     @Test
