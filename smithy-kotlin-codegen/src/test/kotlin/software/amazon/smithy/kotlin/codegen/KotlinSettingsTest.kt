@@ -8,17 +8,12 @@ package software.amazon.smithy.kotlin.codegen
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 
 class KotlinSettingsTest {
     @Test fun `infers default service`() {
-        val model = Model.assembler()
-            .addImport(KotlinSettingsTest::class.java.getResource("simple-service.smithy"))
-            .discoverModels()
-            .assemble()
-            .unwrap()
+        val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
         val settings = KotlinSettings.from(
             model,
@@ -35,11 +30,7 @@ class KotlinSettingsTest {
     }
 
     @Test fun `correctly reads rootProject var from build settings`() {
-        val model = Model.assembler()
-            .addImport(KotlinSettingsTest::class.java.getResource("simple-service.smithy"))
-            .discoverModels()
-            .assemble()
-            .unwrap()
+        val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
         val settings = KotlinSettings.from(
             model,

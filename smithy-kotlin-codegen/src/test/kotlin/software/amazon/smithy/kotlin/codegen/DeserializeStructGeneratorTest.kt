@@ -16,72 +16,25 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.DeserializeStructGenerator
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class DeserializeStructGeneratorTest {
-    val defaultModel: Model = Model.assembler()
-        .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
-        .discoverModels()
-        .assemble()
-        .unwrap()
-
-    data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
-    private fun newTestContext(testModel: Model = defaultModel): TestContext {
-        val settings = KotlinSettings.from(
-            testModel,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("test"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .build()
-        )
-        val manifest = MockManifest()
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(testModel, "test")
-        val service = testModel.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val delegator = KotlinDelegator(settings, testModel, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(
-            settings,
-            testModel,
-            service,
-            provider,
-            listOf(),
-            generator.protocol,
-            delegator
-        )
-        return TestContext(ctx, manifest, generator)
-    }
+    private val defaultModelResource = javaClass.getResource("http-binding-protocol-generator-test.smithy")
 
     @Test
     fun `it handles smoke test deserializer`() {
-        val ctx = newTestContext()
-        val writer = KotlinWriter("test")
-        val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#SmokeTest"))
+        val ctx = defaultModelResource.asSmithy().newTestContext()
+        val op = ctx.expectShape("com.test#SmokeTest")
 
-        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-        val responseBindings = bindingIndex.getResponseBindings(op)
-        val documentMembers = responseBindings.values
-            .filter { it.location == HttpBinding.Location.DOCUMENT }
-            .sortedBy { it.memberName }
-            .map { it.member }
-
-        DeserializeStructGenerator(
-            ctx.generationCtx,
-            documentMembers,
-            writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
-        ).render()
-
-        val contents = writer.toString()
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
@@ -101,30 +54,17 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 
     @Test
     fun `it handles non-boxed primitives`() {
-        val model = Model.assembler()
-            .addImport(javaClass.getResource("unboxed-primitives-test.smithy"))
-            .discoverModels()
-            .assemble()
-            .unwrap()
-        val ctx = newTestContext(model)
-        val writer = KotlinWriter("test")
-        val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#UnboxedPrimitivesTest"))
+        val ctx = javaClass.getResource("unboxed-primitives-test.smithy").asSmithy().newTestContext()
+        val op = ctx.expectShape("com.test#UnboxedPrimitivesTest")
 
-        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-        val responseBindings = bindingIndex.getResponseBindings(op)
-        val documentMembers = responseBindings.values
-            .filter { it.location == HttpBinding.Location.DOCUMENT }
-            .sortedBy { it.memberName }
-            .map { it.member }
-
-        DeserializeStructGenerator(
-            ctx.generationCtx,
-            documentMembers,
-            writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
-        ).render()
-
-        val contents = writer.toString()
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
         val expected = """
             PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeInt() ?: 0
             PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeBool() ?: false
@@ -139,25 +79,17 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 
     @Test
     fun `it handles list outputs`() {
-        val ctx = newTestContext()
-        val writer = KotlinWriter("test")
-        val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#ListInput"))
+        val ctx = defaultModelResource.asSmithy().newTestContext()
+        val op = ctx.expectShape("com.test#ListInput")
 
-        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-        val responseBindings = bindingIndex.getResponseBindings(op)
-        val documentMembers = responseBindings.values
-            .filter { it.location == HttpBinding.Location.DOCUMENT }
-            .sortedBy { it.memberName }
-            .map { it.member }
-
-        DeserializeStructGenerator(
-            ctx.generationCtx,
-            documentMembers,
-            writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
-        ).render()
-
-        val contents = writer.toString()
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
@@ -226,25 +158,17 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 
     @Test
     fun `it handles map outputs`() {
-        val ctx = newTestContext()
-        val writer = KotlinWriter("test")
-        val op = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#MapInput"))
+        val ctx = defaultModelResource.asSmithy().newTestContext()
+        val op = ctx.expectShape("com.test#MapInput")
 
-        val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-        val responseBindings = bindingIndex.getResponseBindings(op)
-        val documentMembers = responseBindings.values
-            .filter { it.location == HttpBinding.Location.DOCUMENT }
-            .sortedBy { it.memberName }
-            .map { it.member }
-
-        DeserializeStructGenerator(
-            ctx.generationCtx,
-            documentMembers,
-            writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
-        ).render()
-
-        val contents = writer.toString()
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {

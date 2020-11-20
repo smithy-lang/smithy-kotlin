@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.SmithyIdlModelSerializer
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
@@ -34,6 +35,10 @@ class EnumGeneratorTest {
             .addShapes(shape)
             .assemble()
             .unwrap()
+
+        val ms: SmithyIdlModelSerializer = SmithyIdlModelSerializer.builder().build()
+        val node = ms.serialize(model)
+        println(node.toString())
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val symbol = provider.toSymbol(shape)

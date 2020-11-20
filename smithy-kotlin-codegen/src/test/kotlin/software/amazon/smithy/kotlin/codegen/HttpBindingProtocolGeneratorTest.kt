@@ -19,10 +19,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
@@ -36,33 +34,10 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTest {
-    val defaultModel: Model = Model.assembler()
-        .addImport(javaClass.getResource("http-binding-protocol-generator-test.smithy"))
-        .discoverModels()
-        .assemble()
-        .unwrap()
-
-    data class TestContext(val generationCtx: ProtocolGenerator.GenerationContext, val manifest: MockManifest, val generator: MockHttpProtocolGenerator)
-
-    private fun newTestContext(testModel: Model = defaultModel): TestContext {
-        val settings = KotlinSettings.from(
-            testModel,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("test"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .build()
-        )
-        val manifest = MockManifest()
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(testModel, "test")
-        val service = testModel.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val delegator = KotlinDelegator(settings, testModel, manifest, provider)
-        val generator = MockHttpProtocolGenerator()
-        val ctx = ProtocolGenerator.GenerationContext(settings, testModel, service, provider, listOf(), generator.protocol, delegator)
-        return TestContext(ctx, manifest, generator)
-    }
+    private val defaultModel = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
 
     private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
-        val (ctx, manifest, generator) = newTestContext(testModel)
+        val (ctx, manifest, generator) = testModel.newTestContext()
         generator.generateSerializers(ctx)
         generator.generateDeserializers(ctx)
         ctx.delegator.flushWriters()
@@ -75,7 +50,7 @@ class HttpBindingProtocolGeneratorTest {
 
     @Test
     fun `it creates serialize transforms in correct package`() {
-        val (ctx, manifest, generator) = newTestContext()
+        val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/SmokeTestSerializer.kt"))
@@ -84,7 +59,7 @@ class HttpBindingProtocolGeneratorTest {
     @Test
     fun `it creates serialize transforms for nested structures`() {
         // test that a struct member of an input operation shape also gets a serializer
-        val (ctx, manifest, generator) = newTestContext()
+        val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/NestedSerializer.kt"))
@@ -509,7 +484,7 @@ class MyUnionDeserializer {
 
     @Test
     fun `it generates serializer for shape reachable only through map`() {
-        val (ctx, manifest, generator) = newTestContext()
+        val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
         // serializer should exist for the map value `ReachableOnlyThroughMap`
@@ -846,7 +821,7 @@ class Nested3Deserializer {
     @Test
     fun `it creates deserialize transforms for errors`() {
         // test that a struct member of an input operation shape also gets a serializer
-        val (ctx, manifest, generator) = newTestContext()
+        val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateDeserializers(ctx)
         ctx.delegator.flushWriters()
         assertTrue(manifest.hasFile("src/main/kotlin/test/transform/SmokeTestErrorDeserializer.kt"))
@@ -855,11 +830,7 @@ class Nested3Deserializer {
 
     @Test
     fun `it creates map of lists serializer`() {
-        val mapModel: Model = Model.assembler()
-            .addImport(javaClass.getResource("http-binding-map-model.smithy"))
-            .discoverModels()
-            .assemble()
-            .unwrap()
+        val mapModel = javaClass.getResource("http-binding-map-model.smithy").asSmithy()
 
         val contents = getTransformFileContents("MapInputSerializer.kt", mapModel)
         contents.shouldSyntacticSanityCheck()

@@ -284,16 +284,13 @@ class ServiceGeneratorTest {
 
     // Produce the generated service code given model inputs.
     private fun generateService(modelResourceName: String, applicationProtocolFactory: () -> ApplicationProtocol): String {
-        val model = Model.assembler()
-            .addImport(javaClass.getResource(modelResourceName))
-            .discoverModels()
-            .assemble()
-            .unwrap()
+        val model = javaClass.getResource(modelResourceName).asSmithy()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
         val writer = KotlinWriter("com.test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
         val generator = ServiceGenerator(model, provider, writer, service, "test", applicationProtocolFactory())
+
         generator.render()
 
         return writer.toString()
