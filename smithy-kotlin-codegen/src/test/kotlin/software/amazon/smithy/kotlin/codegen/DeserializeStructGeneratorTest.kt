@@ -27,7 +27,7 @@ class DeserializeStructGeneratorTest {
         val ctx = defaultModelResource.asSmithy().newTestContext()
         val op = ctx.expectShape("com.test#SmokeTest")
 
-        val contents = ctx.render(op) { members, writer ->
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeStructGenerator(
                 ctx.generationCtx,
                 members,
@@ -57,7 +57,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val ctx = javaClass.getResource("unboxed-primitives-test.smithy").asSmithy().newTestContext()
         val op = ctx.expectShape("com.test#UnboxedPrimitivesTest")
 
-        val contents = ctx.render(op) { members, writer ->
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeStructGenerator(
                 ctx.generationCtx,
                 members,
@@ -82,7 +82,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val ctx = defaultModelResource.asSmithy().newTestContext()
         val op = ctx.expectShape("com.test#ListInput")
 
-        val contents = ctx.render(op) { members, writer ->
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeStructGenerator(
                 ctx.generationCtx,
                 members,
@@ -161,7 +161,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val ctx = defaultModelResource.asSmithy().newTestContext()
         val op = ctx.expectShape("com.test#MapInput")
 
-        val contents = ctx.render(op) { members, writer ->
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeStructGenerator(
                 ctx.generationCtx,
                 members,

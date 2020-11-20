@@ -105,10 +105,9 @@ private fun Model.defaultSettings(): KotlinSettings =
     )
 
 // Execute the codegen and return the generated output
-fun TestContext.render(
-    shape: Shape,
-    members: List<MemberShape> = defaultMembers(shape),
-    renderFn: (List<MemberShape>, KotlinWriter) -> Unit
+fun testRender(
+        members: List<MemberShape>,
+        renderFn: (List<MemberShape>, KotlinWriter) -> Unit
 ): String {
     val writer = KotlinWriter("test")
     renderFn(members, writer)
@@ -116,7 +115,7 @@ fun TestContext.render(
 }
 
 // Retrieves Document members
-private fun TestContext.defaultMembers(shape: Shape): List<MemberShape> {
+fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getResponseBindings(shape)
 

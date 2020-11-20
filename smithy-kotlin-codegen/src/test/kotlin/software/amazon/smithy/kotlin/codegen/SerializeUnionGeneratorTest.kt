@@ -33,9 +33,7 @@ class SerializeUnionGeneratorTest {
     private fun getContentsForShape(shapeId: String): String {
         val ctx = defaultModel.newTestContext()
 
-        val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
-
-        val members = when (shape) {
+        val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
             is OperationShape -> {
                 val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
@@ -48,7 +46,7 @@ class SerializeUnionGeneratorTest {
             else -> throw RuntimeException("unknown conversion for $shapeId")
         }
 
-        return ctx.render(shape, members) { members, writer ->
+        return testRender(testMembers) { members, writer ->
             SerializeUnionGenerator(
                 ctx.generationCtx,
                 members,

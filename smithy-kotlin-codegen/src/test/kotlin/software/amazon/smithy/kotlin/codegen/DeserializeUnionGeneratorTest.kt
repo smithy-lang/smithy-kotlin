@@ -27,7 +27,7 @@ class DeserializeUnionGeneratorTest {
         val ctx = javaClass.getResource("http-binding-nested-union-model.smithy").asSmithy().newTestContext()
         val op = ctx.expectShape("com.test#UnionTestOperation")
 
-        val contents = ctx.render(op) { members, writer ->
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeUnionGenerator(
                 ctx.generationCtx,
                 members,
@@ -96,7 +96,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val ctx = defaultModel.asSmithy().newTestContext()
         val op = ctx.expectShape("com.test#UnionOutput")
 
-        val contents = ctx.render(op) { members, writer ->
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeUnionGenerator(
                 ctx.generationCtx,
                 members,
@@ -121,7 +121,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val ctx = defaultModel.asSmithy().newTestContext()
         val op = ctx.expectShape("com.test#UnionAggregateOutput")
 
-        val contents = ctx.render(op) { members, writer ->
+        val contents = testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeUnionGenerator(
                 ctx.generationCtx,
                 members,
