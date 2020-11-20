@@ -106,8 +106,8 @@ private fun Model.defaultSettings(): KotlinSettings =
 
 // Execute the codegen and return the generated output
 fun testRender(
-        members: List<MemberShape>,
-        renderFn: (List<MemberShape>, KotlinWriter) -> Unit
+    members: List<MemberShape>,
+    renderFn: (List<MemberShape>, KotlinWriter) -> Unit
 ): String {
     val writer = KotlinWriter("test")
     renderFn(members, writer)
