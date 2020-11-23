@@ -63,6 +63,13 @@ operator fun <T : Any> Attributes.get(key: AttributeKey<T>): T = getOrNull(key) 
 fun <T : Any> Attributes.take(key: AttributeKey<T>): T = get(key).also { remove(key) }
 
 /**
+ * Set a value for [key] only if it is not already set
+ */
+fun <T : Any> Attributes.putIfAbsent(key: AttributeKey<T>, value: T) {
+    if (!contains(key)) set(key, value)
+}
+
+/**
  * Removes an attribute with the specified [key] and returns its current value, returns `null` if an attribute doesn't exist
  */
 fun <T : Any> Attributes.takeOrNull(key: AttributeKey<T>): T? = getOrNull(key).also { remove(key) }
