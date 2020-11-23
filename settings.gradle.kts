@@ -48,6 +48,4 @@ if (System.getProperties().containsKey("androidEmulatorTests")) {
 include(":example")
 project(":example").projectDir = file("./design/example")
 include(":example:mock-server")
-include(":example:lambda-example")
-include(":example:s3-example")
 
