@@ -26,4 +26,16 @@ class AttributesTest {
         assertEquals(1, attributes.computeIfAbsent(intKey) { 1 })
         assertTrue(attributes.contains(intKey))
     }
+
+    @Test
+    fun testPutIfAbsent() {
+        val attributes = Attributes()
+        val strKey = AttributeKey<String>("string")
+        attributes[strKey] = "foo"
+        attributes.putIfAbsent(strKey, "bar")
+        assertEquals("foo", attributes[strKey])
+        attributes.remove(strKey)
+        attributes.putIfAbsent(strKey, "bar")
+        assertEquals("bar", attributes[strKey])
+    }
 }

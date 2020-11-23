@@ -12,6 +12,8 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":client-runtime:io"))
+                // Attributes property bag is exposed as client options
+                api(project(":client-runtime:utils"))
             }
         }
     }
