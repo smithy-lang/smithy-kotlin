@@ -11,7 +11,6 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
-
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.header
