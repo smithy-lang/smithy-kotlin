@@ -85,34 +85,9 @@ data class TestContext(
 fun TestContext.expectShape(shapeId: String): Shape =
     this.generationCtx.model.expectShape(ShapeId.from(shapeId))
 
-/**
- * Initiate codegen for the model and produce a [TestContext].
- *
- * @param serviceShapeId the smithy Id for the service to codegen, defaults to "com.test#Example"
- */
-fun Model.newTestContext(
-    serviceShapeId: String = "com.test#Example",
-    settings: KotlinSettings = this.defaultSettings(),
-    generator: ProtocolGenerator = MockHttpProtocolGenerator()
-): TestContext {
-    val manifest = MockManifest()
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, "test")
-    val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
-    val delegator = KotlinDelegator(settings, this, manifest, provider)
 
-    val ctx = ProtocolGenerator.GenerationContext(
-        settings,
-        this,
-        service,
-        provider,
-        listOf(),
-        generator.protocol,
-        delegator
-    )
-    return TestContext(ctx, manifest, generator)
-}
 
-private fun Model.defaultSettings(): KotlinSettings =
+internal fun Model.defaultSettings(): KotlinSettings =
     KotlinSettings.from(
         this,
         Node.objectNodeBuilder()
