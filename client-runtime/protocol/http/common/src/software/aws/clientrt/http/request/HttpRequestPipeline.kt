@@ -4,7 +4,7 @@
  */
 package software.aws.clientrt.http.request
 
-import software.aws.clientrt.http.ExecutionContext
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.util.Phase
 import software.aws.clientrt.http.util.Pipeline
 

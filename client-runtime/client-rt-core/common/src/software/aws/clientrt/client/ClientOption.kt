@@ -17,7 +17,7 @@ public typealias ClientOption<T> = AttributeKey<T>
 /**
  * Builder for configuring service client options manually
  */
-public interface ClientOptionsBuilder {
+public interface ClientOptions {
     /**
      * Check if the specified [option] exists
      */
@@ -35,10 +35,10 @@ public interface ClientOptionsBuilder {
 }
 
 /**
- * Wrapper around [Attributes] that provides a [ClientOptionsBuilder] implementation
+ * Wrapper around [Attributes] that provides a [ClientOptions] implementation
  */
 @InternalAPI
-public class ClientOptionsBuilderImpl(private val attributes: Attributes) : ClientOptionsBuilder {
+public class ClientOptionsImpl(private val attributes: Attributes) : ClientOptions {
     override fun <T : Any> set(option: ClientOption<T>, value: T) {
         attributes[option] = value
     }

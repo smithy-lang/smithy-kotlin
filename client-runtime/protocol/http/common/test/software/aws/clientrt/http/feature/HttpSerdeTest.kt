@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.http.feature
 
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngine
