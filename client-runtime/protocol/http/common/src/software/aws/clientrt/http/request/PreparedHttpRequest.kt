@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 package software.aws.clientrt.http.request
-import software.aws.clientrt.http.ExecutionContext
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.http.response.HttpResponseContext

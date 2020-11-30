@@ -5,6 +5,7 @@
 package software.aws.clientrt.http
 
 import io.ktor.util.pipeline.PipelineContext
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.HttpRequestContext
 import software.aws.clientrt.http.request.HttpRequestPipeline

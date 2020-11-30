@@ -4,7 +4,7 @@
  */
 package software.aws.clientrt.http.feature
 
-import software.aws.clientrt.http.ExecutionContext
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequestBuilder
