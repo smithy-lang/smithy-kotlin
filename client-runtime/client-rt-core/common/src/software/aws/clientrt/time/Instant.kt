@@ -11,6 +11,12 @@ package software.aws.clientrt.time
 // nanoseconds/sec
 internal const val NS_PER_SEC = 1_000_000_000
 
+// ms/sec
+internal const val MILLISEC_PER_SEC = 1_000
+
+// ns/ms
+internal const val NS_PER_MILLISEC = 1_000_000
+
 // represents a moment on the UTC-SLS time scale
 expect class Instant : Comparable<Instant> {
     val epochSeconds: Long
@@ -55,3 +61,9 @@ expect class Instant : Comparable<Instant> {
  * Convert [Instant] to a double representing seconds and milliseconds since the epoch
  */
 fun Instant.toEpochDouble(): Double = epochSeconds.toDouble() + (nanosecondsOfSecond.toDouble() / NS_PER_SEC)
+
+/**
+ * Get the epoch milliseconds representation of the [Instant]
+ */
+val Instant.epochMilliseconds: Long
+    get() = epochSeconds * MILLISEC_PER_SEC + (nanosecondsOfSecond / NS_PER_MILLISEC)
