@@ -28,6 +28,12 @@ interface HttpClientFeatureFactory<TConfig, TFeature : Feature> {
  * An SdkHttpClient feature is an interceptor/middleware component that can self configure itself
  * on an HttpClient. This allows the component to tap into whichever part of the HTTP client it needs to
  * (usually the request or response transform pipelines).
+ *
+ * Features are registered at the [software.aws.clientrt.http.SdkHttpClient] level and are executed
+ * on every request/response. The data flowing through those pipelines changes with every call though.
+ *
+ * [ExecutionContext] is the request and response pipeline per/operation context (metadata) that features can use
+ * to drive behavior that is specific to a particular request or response.
  */
 interface Feature {
     /**
