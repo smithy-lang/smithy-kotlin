@@ -143,6 +143,17 @@ class InstantTest {
         assertTrue(currentTime.epochSeconds > pastInstant)
     }
 
+    @Test
+    fun `test get epoch milliseconds`() {
+        val instant = Instant.fromEpochSeconds(1602878160, 2_000_00)
+        val expected = 1602878160000L
+        assertEquals(expected, instant.epochMilliseconds)
+
+        val instantWithMilli = Instant.fromEpochSeconds(1602878160, 2_000_000)
+        val expected2 = 1602878160002L
+        assertEquals(expected2, instantWithMilli.epochMilliseconds)
+    }
+
     // Select tests pulled from edge cases/tickets in the V2 Java SDK.
     // Always good to learn from others...
     class V2JavaSdkTests {
