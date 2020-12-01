@@ -136,6 +136,7 @@ class HttpProtocolTestGenerator(
     }
 
     private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
+        println("KGWH ${it.id}")
         it.protocol == ctx.protocol && it.id !in testsToIgnore
     }
 }
