@@ -10,6 +10,9 @@ extra["displayName"] = "Smithy :: Kotlin :: Test"
 extra["moduleName"] = "software.amazon.smithy.kotlin.test"
 
 val smithyVersion: String by project
+val kotestVersion: String by project
+val junitVersion: String by project
+val kotlinCompileTestingVersion: String by project
 
 dependencies {
     testImplementation(project(":smithy-kotlin-codegen"))
@@ -21,9 +24,9 @@ dependencies {
     testImplementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     testImplementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
 
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.1")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.5")
-    testImplementation("com.github.tschuchortdev:kotlin-compile-testing:1.3.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("com.github.tschuchortdev:kotlin-compile-testing:$kotlinCompileTestingVersion")
 }
 
 tasks.test {
