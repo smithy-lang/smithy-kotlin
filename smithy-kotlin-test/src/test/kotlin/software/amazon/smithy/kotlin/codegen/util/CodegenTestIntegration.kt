@@ -15,21 +15,13 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * Integration that registers protocol generators this package provides
  */
 class CodegenTestIntegration : KotlinIntegration {
-    /**
-     * Gets the sort order of the customization from -128 to 127, with lowest
-     * executed first.
-     *
-     * @return Returns the sort order, defaults to -10.
-     */
-    override val order: Byte = -10
-
-    override val protocolGenerators: List<ProtocolGenerator> = listOf(TestProtocolGenerator())
+    override val protocolGenerators: List<ProtocolGenerator> = listOf(RestJsonTestProtocolGenerator())
 }
 
 /**
- * A partial ProtocolGenerator to generate minimal sdks for tests.
+ * A partial ProtocolGenerator to generate minimal sdks for tests of restJson models.
  */
-class TestProtocolGenerator(
+class RestJsonTestProtocolGenerator(
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS,
     override val defaultContentType: String = "application/json",
     override val protocol: ShapeId = RestJson1Trait.ID
