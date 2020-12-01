@@ -25,16 +25,6 @@ import software.amazon.smithy.model.node.ObjectNode
 import java.io.File
 import java.net.URL
 
-/**
- * Load and initialize a model from a Java resource URL
- */
-fun URL.asSmithy(): Model =
-    Model.assembler()
-        .addImport(this)
-        .discoverModels()
-        .assemble()
-        .unwrap()
-
 private const val SmithyVersion = "1.0"
 /**
  * Load and initialize a model from a Java resource URL
@@ -52,12 +42,25 @@ private fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
     } else this
 }
 
+/**
+ * Captures the result of a model transformation test
+ */
 data class ModelChangeTestResult(
         val originalModelCompilationResult: KotlinCompilation.Result,
         val updatedModelCompilationResult: KotlinCompilation.Result,
         val compileSuccess: Boolean
 )
 
+/**
+ * Generate an SDK based on [originalModel], compile with [testSource], then do the same with the [updatedModel].  Return the
+ * results of both compilation cycles.
+ *
+ * @param originalModel source model to generate an SDK from and to test against [testSource]
+ * @param updatedModel model updates which to test against [testSource]
+ * @param testSource Kotlin code intended to compile against both [originalModel] and [updatedModel]
+ * @param emitSourcesToTmp a debugging function to emit generated SDKs to a temp directory for analysis.  Actual
+ * target directory is provided in log output.
+ */
 fun testModelChangeAgainstSource(originalModel: Model, updatedModel: Model, testSource: String, emitSourcesToTmp: Boolean = false): ModelChangeTestResult {
     val originalModelCompilationResult = compileSdkAndTest(originalModel, testSource, emitSourcesToTmp)
     val updatedModelCompilationResult = compileSdkAndTest(updatedModel, testSource, emitSourcesToTmp)
@@ -70,6 +73,14 @@ fun testModelChangeAgainstSource(originalModel: Model, updatedModel: Model, test
     )
 }
 
+/**
+ * Generate an SDK based on input model, then compile it and the [testSource] together, and return the result of compilation.
+ *
+ * @param model input model from which the SDK is generated
+ * @param testSource Kotlin source code to be compiled with SDK
+ * @param emitSourcesToTmp a debugging function to emit generated SDK to a temp directory for analysis.  Actual
+ * target directory is provided in log output.
+ */
 fun compileSdkAndTest(model: Model, testSource: String, emitSourcesToTmp: Boolean = false): KotlinCompilation.Result {
     val testSourceFile = SourceFile.kotlin("test.kt", testSource)
     val sdkFileManifest = generateSdk(model)
@@ -91,7 +102,7 @@ fun compileSdkAndTest(model: Model, testSource: String, emitSourcesToTmp: Boolea
     }.compile()
 }
 
-// generateSdk(model2).writeToDirectory("/tmp/kt2")
+// Ex: generateSdk(model2).writeToDirectory("/tmp/mysdk")
 fun MockManifest.writeToDirectory(dir: String) {
     files
             .map { path -> File(dir, path.toString()) to expectFileString(path) }
@@ -104,8 +115,8 @@ fun MockManifest.writeToDirectory(dir: String) {
 // Convert a MockManifest into the Source File list expected by the compiler tool.
 fun MockManifest.toSourceFileList() =
         files
-                .filter { file -> file.toString().endsWith(".kt") }
-                .map { file -> SourceFile.kotlin(file.fileName.toString(), expectFileString(file)) }
+            .filter { file -> file.toString().endsWith(".kt") }
+            .map { file -> SourceFile.kotlin(file.fileName.toString(), expectFileString(file)) }
 
 // Produce the generated service code given model inputs.
 fun generateSdk(
