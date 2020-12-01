@@ -158,17 +158,23 @@ class ApiEvolutionTest {
                 ]
             }
 
-structure PostFooResponse { }
-
-@http(method: "POST", uri: "/foo-no-input")
-operation PostFoo {
-    output: PostFooResponse
-}
+            structure PostFooResponse { }
+            
+            @http(method: "POST", uri: "/foo-no-input")
+            operation PostFoo {
+                output: PostFooResponse
+            }
         """.asSmithy()
 
         val customerCode = """
             import test.ExampleClient
             import kotlinx.coroutines.runBlocking
+            
+            class CustomerClient : ExampleClient {
+                override suspend fun postFoo() {
+                    TODO("Not yet implemented")
+                }
+            }
             
             fun main() {
                 val testClient = ExampleClient { }
@@ -240,6 +246,8 @@ operation PostFoo {
                     println(resp)
                 }
             }
+            
+            
         """.trimIndent()
 
         assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).compileSuccess)
