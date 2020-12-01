@@ -55,23 +55,6 @@ fun URL.asSmithy(): Model =
         .assemble()
         .unwrap()
 
-private const val SmithyVersion = "1.0"
-/**
- * Load and initialize a model from a Java resource URL
- */
-fun String.asSmithy(sourceLocation: String? = null): Model {
-    val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SmithyVersion.doubleQuote()}\n$it" }
-    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
-}
-
-private fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
-private fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
-private fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
-    return if (cond) {
-        f(this)
-    } else this
-}
-
 /**
  * Container for type instances necessary for tests
  */
