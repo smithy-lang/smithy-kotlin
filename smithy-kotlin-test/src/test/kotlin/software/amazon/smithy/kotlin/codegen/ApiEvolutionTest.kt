@@ -1,151 +1,247 @@
 package software.amazon.smithy.kotlin.codegen
 
-import com.tschuchort.compiletesting.KotlinCompilation
-import com.tschuchort.compiletesting.SourceFile
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.HttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.kotlin.codegen.util.asSmithy
+import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
 
 class ApiEvolutionTest {
 
     @Test
-    fun `operation with no input to with input does not break`() {
-        // Create no input model
-        val model1 = """
+    fun `client calling operation with no input to operation with empty input compiles`() {
+        val modelV1 = """
             namespace com.test
 
-            use aws.protocols#awsJson1_1
+            use aws.protocols#restJson1
 
-            @awsJson1_1
+            @restJson1
             service Example {
                 version: "1.0.0",
                 operations: [
-                    GetFooNoInput,
+                    PostFoo,
                 ]
             }
 
-            structure GetFooRequest {}
+            @http(method: "POST", uri: "/foo-no-input")
+            operation PostFoo { }
+        """.asSmithy()
+
+        val modelV2 = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    PostFoo,
+                ]
+            }
+
+            structure PostFooRequest { }
 
             @http(method: "POST", uri: "/foo-no-input")
-            operation GetFooNoInput {
-                input: GetFooRequest
+            operation PostFoo {
+                input: PostFooRequest
             }
         """.asSmithy()
 
-        // Generate output
-        val sdkSources = generateSdk(model1) { ApplicationProtocol.createDefaultHttpApplicationProtocol() }
+        val customerCode = """
+            import test.ExampleClient
+            import kotlinx.coroutines.runBlocking
+            
+            fun main() {
+                val testClient = ExampleClient { }
+                runBlocking {
+                    val resp = testClient.postFoo()
+                    println(resp)
+                }
+            }
+        """.trimIndent()
 
-        // Run test against
+        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).compileSuccess)
+    }
 
-        val result = KotlinCompilation().apply {
-            sources = sdkSources
-            inheritClassPath = true
-            messageOutputStream = System.out
-        }.compile()
+    @Test
+    fun `client calling operation with empty input to operation with input containing members compiles`() {
+        val modelV1 = """
+            namespace com.test
 
-        assertEquals(result.exitCode, KotlinCompilation.ExitCode.OK)
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    PostFoo,
+                ]
+            }
+
+            structure PostFooRequest {}
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation PostFoo {
+                input: PostFooRequest
+            }
+        """.asSmithy()
+
+        val modelV2 = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    PostFoo,
+                ]
+            }
+
+            structure PostFooRequest {
+                payload: String
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation PostFoo {
+                input: PostFooRequest
+            }
+        """.asSmithy()
+
+        val customerCode = """
+            import test.ExampleClient
+            import test.model.PostFooRequest
+            import kotlinx.coroutines.runBlocking
+            
+            fun main() {
+                val testClient = ExampleClient { }
+                runBlocking {
+                    val resp = testClient.postFoo(PostFooRequest {})
+                    println(resp)
+                }
+            }
+        """.trimIndent()
+
+        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode).compileSuccess)
+    }
+
+    @Test
+    fun `client calling operation with no output to operation with empty output compiles`() {
+        val modelV1 = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    PostFoo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation PostFoo { }
+        """.asSmithy()
+
+        val modelV2 = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    PostFoo,
+                ]
+            }
+
+structure PostFooResponse { }
+
+@http(method: "POST", uri: "/foo-no-input")
+operation PostFoo {
+    output: PostFooResponse
+}
+        """.asSmithy()
+
+        val customerCode = """
+            import test.ExampleClient
+            import kotlinx.coroutines.runBlocking
+            
+            fun main() {
+                val testClient = ExampleClient { }
+                runBlocking {
+                    val resp = testClient.postFoo()
+                    println(resp)
+                }
+            }
+        """.trimIndent()
+
+        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).compileSuccess)
+    }
+
+    @Test
+    fun `client calling operation with empty output to operation with output containing members compiles`() {
+        val modelV1 = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    PostFoo,
+                ]
+            }
+
+            structure PostFooResponse { }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation PostFoo {
+                output: PostFooResponse
+            }
+        """.asSmithy()
 
         // Create model w/ input
-        val model2 = """
+        val modelV2 = """
             namespace com.test
 
-            use aws.protocols#awsJson1_1
+            use aws.protocols#restJson1
 
-            @awsJson1_1
+            @restJson1
             service Example {
                 version: "1.0.0",
                 operations: [
-                    GetFooWithInput,
+                    PostFoo,
                 ]
             }
 
-            structure GetFooRequest {
-                body: String
+            structure PostFooResponse { 
+                payload: String
             }
-            
-            structure GetFooResponse {}
 
             @http(method: "POST", uri: "/foo-no-input")
-            operation GetFooWithInput {
-                input: GetFooRequest,
-                output: GetFooResponse
+            operation PostFoo {
+                output: PostFooResponse
             }
         """.asSmithy()
-        // Generate output
 
-        // Run test against
-
-        /*val ms: SmithyIdlModelSerializer = SmithyIdlModelSerializer.builder().build()
-        val node = ms.serialize(model1)
-        println(node.values.first().toString())*/
-    }
-
-    // Produce the generated service code given model inputs.
-    private fun generateSdk(model: Model, applicationProtocolFactory: () -> ApplicationProtocol): List<SourceFile> {
-        val sourceFiles = mutableListOf<SourceFile>()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val serviceWriter = KotlinWriter("test")
-        val defaultClientWriter = KotlinWriter("test")
-        val service = model.expectShape(ShapeId.from("com.test#Example")).asServiceShape().get()
-        val protocolGenerator = TestProtocolGenerator()
-        val manifest = MockManifest()
-        val delegator = KotlinDelegator(model.defaultSettings(), model, manifest, provider, listOf())
-        val ctx = ProtocolGenerator.GenerationContext(
-            model.defaultSettings(),
-            model,
-            service,
-            provider,
-            listOf(),
-            RestJson1Trait.ID,
-            delegator
-        )
-
-        val serviceGenerator = ServiceGenerator(model, provider, serviceWriter, service, "test", applicationProtocolFactory())
-        serviceGenerator.render()
-
-        val defaultClientGenerator = HttpProtocolClientGenerator(model, provider, defaultClientWriter, service, "test", listOf())
-        defaultClientGenerator.render()
-
-        // Models
-        listOf("GetFooRequest")
-            .map { it to model.expectShape(ShapeId.from("com.test#$it")).asStructureShape().get() }
-            .forEach { (structureName, structureShape) ->
-                val structureWriter = KotlinWriter("test.model")
-                val structGenerator = StructureGenerator(model, provider, structureWriter, structureShape, protocolGenerator)
-                structGenerator.render()
-
-                sourceFiles.add(SourceFile.kotlin("$structureName.kt", structureWriter.toString()))
+        val customerCode = """
+            import test.ExampleClient
+            import kotlinx.coroutines.runBlocking
+            
+            fun main() {
+                val testClient = ExampleClient { }
+                runBlocking {
+                    val resp = testClient.postFoo()
+                    println(resp)
+                }
             }
+        """.trimIndent()
 
-        // Serializers
-        protocolGenerator.generateSerializers(ctx)
-        delegator.flushWriters()
-        sourceFiles.add(SourceFile.kotlin("GetFooNoInputSerializer.kt", manifest.expectFileString("/src/main/kotlin/test/transform/GetFooNoInputSerializer.kt")))
-
-        sourceFiles.add(SourceFile.kotlin("ExampleClient.kt", serviceWriter.toString()))
-        sourceFiles.add(SourceFile.kotlin("DefaultExampleClient.kt", defaultClientWriter.toString()))
-
-        return sourceFiles
-    }
-}
-
-class TestProtocolGenerator(
-    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS,
-    override val defaultContentType: String = "application/json",
-    override val protocol: ShapeId = RestJson1Trait.ID
-) : HttpBindingProtocolGenerator() {
-
-    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
-        TODO("Not yet implemented")
+        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).compileSuccess)
     }
 }
