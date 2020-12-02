@@ -24,7 +24,6 @@ kotlin {
             implementation "io.kotest:kotest-assertions-core-jvm:$kotestVersion"
         }
     }
-
 }
 
 jvmTest {
@@ -32,4 +31,6 @@ jvmTest {
         events("passed", "skipped", "failed")
         showStandardStreams = true
     }
+
+    useJUnitPlatform()
 }
