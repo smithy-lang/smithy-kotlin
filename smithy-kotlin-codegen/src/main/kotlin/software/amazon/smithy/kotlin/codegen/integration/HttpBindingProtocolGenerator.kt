@@ -460,12 +460,27 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val prefixHeaderBindings = requestBindings.values
                     .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
-                writer.withBlock("builder.headers {", "}") {
-                    write("append(\"Content-Type\", \"\$L\")", contentType)
-                    renderStringValuesMapParameters(ctx, headerBindings, writer)
-                    prefixHeaderBindings.forEach {
-                        writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
-                            write("append(\"\$L\$\$key\", value!!)", it.locationName)
+                val setContentType = when (httpTrait.method.toUpperCase()) {
+                    // Only add content-type to requests which may contain a body
+                    // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
+                    // FIXME - we can probably be even more precise here and deal with this by checking
+                    // `builder.body.contentLength` and special casing streaming (there shouldn't be any harm
+                    // in setting this header but signing it when it's not expected causes issues. It's more correct
+                    // to just leave it off though than special case the signing middleware)
+                    "POST", "PUT", "PATCH", "DELETE" -> true
+                    else -> false
+                }
+
+                if (setContentType || headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
+                    writer.withBlock("builder.headers {", "}") {
+                        if (setContentType) {
+                            write("append(\"Content-Type\", \"\$L\")", contentType)
+                        }
+                        renderStringValuesMapParameters(ctx, headerBindings, writer)
+                        prefixHeaderBindings.forEach {
+                            writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
+                                write("append(\"\$L\$\$key\", value!!)", it.locationName)
+                            }
                         }
                     }
                 }
