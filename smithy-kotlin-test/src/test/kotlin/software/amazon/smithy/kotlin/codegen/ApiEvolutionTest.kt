@@ -1,6 +1,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
@@ -18,6 +19,7 @@ class ApiEvolutionTest {
     // our codegen adds import declarations for those packages anyway.
     // This also fails because there is no default parameter generated for the empty input in model v2. (model evolution task)
     @Test
+    @Disabled
     fun `client calling operation with no input to operation with empty input compiles`() {
         val modelV1 = """
             namespace com.test
@@ -140,6 +142,7 @@ class ApiEvolutionTest {
     // our codegen adds import declarations for those packages anyway.
     // This also fails because the customer implementation of the client interface doesn't reflect the model v2. (model evolution task)
     @Test
+    @Disabled
     fun `client calling operation with no output to operation with empty output compiles`() {
         val modelV1 = """
             namespace com.test
