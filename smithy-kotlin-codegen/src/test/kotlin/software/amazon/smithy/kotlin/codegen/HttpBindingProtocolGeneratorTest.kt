@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
@@ -654,10 +655,6 @@ class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpS
             }
         }
 
-        builder.headers {
-            append("Content-Type", "application/json")
-        }
-
     }
 }
 """
@@ -874,5 +871,12 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
 }
 """
         contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it leaves off content-type`() {
+        // GET/HEAD/TRACE/OPTIONS/CONNECT shouldn't specify content-type
+        val contents = getTransformFileContents("ConstantQueryStringSerializer.kt")
+        contents.shouldNotContain("Content-Type")
     }
 }
