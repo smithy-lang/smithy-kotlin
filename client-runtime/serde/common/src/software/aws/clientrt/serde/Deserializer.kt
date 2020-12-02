@@ -108,7 +108,7 @@ interface Deserializer : PrimitiveDeserializer {
      */
     interface FieldIterator : PrimitiveDeserializer {
         /**
-         * Returns the index of the next field found, null if fields exhausted, or []UNKNOWN_FIELD].
+         * Returns the index of the next field found, null if fields exhausted, or [UNKNOWN_FIELD].
          */
         fun findNextFieldIndex(): Int?
 

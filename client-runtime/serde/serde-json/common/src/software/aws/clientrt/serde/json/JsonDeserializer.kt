@@ -106,7 +106,7 @@ private class JsonFieldIterator(
 ) : Deserializer.FieldIterator, Deserializer by deserializer {
 
     override fun findNextFieldIndex(): Int? {
-        return when (reader.peek()) {
+        val candidate = when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndObject>()
@@ -124,6 +124,17 @@ private class JsonFieldIterator(
                 field?.index ?: Deserializer.FieldIterator.UNKNOWN_FIELD
             }
         }
+
+        if (candidate != null) {
+            // found a field
+            if (reader.peek() == RawJsonToken.Null) {
+                // skip explicit nulls
+                reader.nextTokenOf<JsonToken.Null>()
+                return findNextFieldIndex()
+            }
+        }
+
+        return candidate
     }
 
     override fun skipValue() {
