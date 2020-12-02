@@ -12,6 +12,9 @@ import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
  *
  * The current scope of these tests is compile-time only, however it should not be difficult to
  * execute any customer code from the generated class files.
+ *
+ * Generated SDKs are emitted via a parameter in tests, the test output emits the directory created to store the SDK sources.
+ * Example: "Wrote generated SDK to /tmp/sdk-codegen-1606867139716"
  */
 class ApiEvolutionTest {
 
