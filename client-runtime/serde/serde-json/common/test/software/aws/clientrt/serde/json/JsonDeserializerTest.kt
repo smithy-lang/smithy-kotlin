@@ -8,10 +8,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import software.aws.clientrt.serde.*
 import kotlin.math.abs
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
@@ -441,5 +438,45 @@ class JsonDeserializerTest {
         assertTrue(abs(sink.floatField!! - 0.2f) <= 0.0001f)
         val expectedMap = mapOf("key1" to "value1", "key2" to "value2")
         sink.mapField!!.shouldContainExactly(expectedMap)
+    }
+
+    @Test
+    fun `it skips explicit nulls`() {
+        val payload = """
+         {
+             "x": 1,
+             "y": null,
+             "z": 2
+         }
+        """.trimIndent().encodeToByteArray()
+
+        val deserializer = JsonDeserializer(payload)
+        var x: Int? = null
+        var y: Int? = null
+        var z: Int? = null
+        val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
+        val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
+        val Z_DESCRIPTOR = SdkFieldDescriptor("z", SerialKind.Integer)
+        val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            field(X_DESCRIPTOR)
+            field(Y_DESCRIPTOR)
+            field(Z_DESCRIPTOR)
+        }
+
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@ while (true) {
+                when (findNextFieldIndex()) {
+                    X_DESCRIPTOR.index -> x = deserializeInt()
+                    Y_DESCRIPTOR.index -> {
+                        fail("field y should not have been enumerated")
+                    }
+                    Z_DESCRIPTOR.index -> z = deserializeInt()
+                    null -> break@loop
+                }
+            }
+        }
+        assertEquals(1, x)
+        assertNull(y)
+        assertEquals(2, z)
     }
 }
