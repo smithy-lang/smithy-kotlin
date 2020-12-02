@@ -18,11 +18,9 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
 import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.integration.HttpSerde
-import software.amazon.smithy.model.shapes.ShapeId
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
@@ -49,13 +47,10 @@ class HttpProtocolClientGeneratorTest {
 
     init {
         val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-
+        val ctx = model.newTestContext("com.test#Example")
         val features: List<HttpFeature> = listOf(MockHttpFeature1(), MockHttpSerde())
-        val generator = HttpProtocolClientGenerator(model, provider, writer, service, "test", features)
-        generator.render()
+        val generator = HttpProtocolClientGenerator(ctx.generationCtx, "test", features)
+        generator.render(writer)
         commonTestContents = writer.toString()
     }
 
@@ -73,7 +68,7 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it renders constructor`() {
-        commonTestContents.shouldContainOnlyOnce("class DefaultExampleClient(config: ExampleClient.Config) : ExampleClient {")
+        commonTestContents.shouldContainOnlyOnce("class DefaultExampleClient(private val config: ExampleClient.Config) : ExampleClient {")
     }
 
     @Test
@@ -112,11 +107,14 @@ class HttpProtocolClientGeneratorTest {
         val expectedBodies = listOf(
 """
     override suspend fun getFoo(input: GetFooRequest): GetFooResponse {
-        val execCtx = ExecutionContext.build {
-            expectedHttpStatus = 200
+        val execCtx = SdkOperation.build {
+            serializer = GetFooSerializer(input)
             deserializer = GetFooDeserializer()
+            expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetFoo"
         }
-        return client.roundTrip(GetFooSerializer(input), execCtx)
+        return client.roundTrip(execCtx, null)
     }
 """,
 """
@@ -125,37 +123,48 @@ class HttpProtocolClientGeneratorTest {
             method = HttpMethod.GET
             url.path = "/foo-no-input"
         }
-        val execCtx = ExecutionContext.build {
-            expectedHttpStatus = 200
+        val execCtx = SdkOperation.build {
             deserializer = GetFooNoInputDeserializer()
+            expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetFooNoInput"
         }
-        return client.roundTrip(builder, execCtx)
+        return client.roundTrip(execCtx, builder)
     }
 """,
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
-        val execCtx = ExecutionContext.build {
+        val execCtx = SdkOperation.build {
+            serializer = GetFooNoOutputSerializer(input)
             expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetFooNoOutput"
         }
-        client.roundTrip<HttpResponse>(GetFooNoOutputSerializer(input), execCtx)
+        client.roundTrip<HttpResponse>(execCtx, null)
     }
 """,
 """
     override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
-        val execCtx = ExecutionContext.build {
-            expectedHttpStatus = 200
+        val execCtx = SdkOperation.build {
+            serializer = GetFooStreamingInputSerializer(input)
             deserializer = GetFooStreamingInputDeserializer()
+            expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetFooStreamingInput"
         }
-        return client.roundTrip(GetFooStreamingInputSerializer(input), execCtx)
+        return client.roundTrip(execCtx, null)
     }
 """,
 """
     override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
-        val execCtx = ExecutionContext.build {
-            expectedHttpStatus = 200
+        val execCtx = SdkOperation.build {
+            serializer = GetFooStreamingOutputSerializer(input)
             deserializer = GetFooStreamingOutputDeserializer()
+            expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetFooStreamingOutput"
         }
-        return client.execute(GetFooStreamingOutputSerializer(input), execCtx, block)
+        return client.execute(execCtx, null, block)
     }
 """,
 """
@@ -164,19 +173,24 @@ class HttpProtocolClientGeneratorTest {
             method = HttpMethod.POST
             url.path = "/foo-streaming-output-no-input"
         }
-        val execCtx = ExecutionContext.build {
-            expectedHttpStatus = 200
+        val execCtx = SdkOperation.build {
             deserializer = GetFooStreamingOutputNoInputDeserializer()
+            expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetFooStreamingOutputNoInput"
         }
-        return client.execute(builder, execCtx, block)
+        return client.execute(execCtx, builder, block)
     }
 """,
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
-        val execCtx = ExecutionContext.build {
+        val execCtx = SdkOperation.build {
+            serializer = GetFooStreamingInputNoOutputSerializer(input)
             expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetFooStreamingInputNoOutput"
         }
-        client.roundTrip<HttpResponse>(GetFooStreamingInputNoOutputSerializer(input), execCtx)
+        client.roundTrip<HttpResponse>(execCtx, null)
     }
 """
         )

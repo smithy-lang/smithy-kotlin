@@ -15,13 +15,10 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.*
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.HttpTrait
 
 /**
@@ -92,36 +89,37 @@ abstract class HttpSerde(private val serdeProvider: String, private val generate
 /**
  * Renders an implementation of a service interface for HTTP protocol
  */
-class HttpProtocolClientGenerator(
-    private val model: Model,
-    private val symbolProvider: SymbolProvider,
-    private val writer: KotlinWriter,
-    private val service: ServiceShape,
-    private val rootNamespace: String,
-    private val features: List<HttpFeature>
+open class HttpProtocolClientGenerator(
+    protected val ctx: ProtocolGenerator.GenerationContext,
+    protected val rootNamespace: String,
+    protected val features: List<HttpFeature>
 ) {
 
-    fun render() {
-        val symbol = symbolProvider.toSymbol(service)
-        val topDownIndex = TopDownIndex.of(model)
-        val operations = topDownIndex.getContainedOperations(service).sortedBy { it.defaultName() }
-        val operationsIndex = OperationIndex.of(model)
+    /**
+     * Render the implementation of the service client interface
+     */
+    open fun render(writer: KotlinWriter) {
+        val symbol = ctx.symbolProvider.toSymbol(ctx.service)
+        val topDownIndex = TopDownIndex.of(ctx.model)
+        val operations = topDownIndex.getContainedOperations(ctx.service).sortedBy { it.defaultName() }
+        val operationsIndex = OperationIndex.of(ctx.model)
 
-        importSymbols()
-        writer.openBlock("class Default${symbol.name}(config: ${symbol.name}.Config) : ${symbol.name} {")
+        importSymbols(writer)
+        writer.openBlock("class Default${symbol.name}(private val config: ${symbol.name}.Config) : ${symbol.name} {")
             .write("private val client: SdkHttpClient")
-            .call { renderInit() }
+            .call { renderInit(writer) }
             .call {
                 operations.forEach { op ->
-                    renderOperationBody(operationsIndex, op)
+                    renderOperationBody(writer, operationsIndex, op)
                 }
             }
-            .call { renderClose() }
+            .call { renderClose(writer) }
+            .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
             .write("")
     }
 
-    private fun importSymbols() {
+    protected open fun importSymbols(writer: KotlinWriter) {
         writer.addImport("$rootNamespace.model", "*")
         writer.addImport("$rootNamespace.transform", "*")
 
@@ -142,18 +140,22 @@ class HttpProtocolClientGenerator(
         writer.addImport(ktorEngineSymbol)
     }
 
-    private fun renderInit() {
+    /**
+     * Render the class initialization block. By default this configures the HTTP client and installs all the
+     * registered features
+     */
+    protected open fun renderInit(writer: KotlinWriter) {
         writer.openBlock("init {")
             // FIXME - this will eventually come from the client config/builder
             .write("val engineConfig = HttpClientEngineConfig()")
             .write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)")
             .openBlock("client = sdkHttpClient(httpClientEngine) {")
-            .call { renderHttpClientConfiguration() }
+            .call { renderHttpClientConfiguration(writer) }
             .closeBlock("}")
             .closeBlock("}")
     }
 
-    private fun renderHttpClientConfiguration() {
+    private fun renderHttpClientConfiguration(writer: KotlinWriter) {
         features.forEach { feat ->
             feat.addImportsAndDependencies(writer)
             if (feat.needsConfiguration) {
@@ -166,73 +168,90 @@ class HttpProtocolClientGenerator(
         }
     }
 
-    private fun renderOperationBody(opIndex: OperationIndex, op: OperationShape) {
+    /**
+     * Render the full operation body (signature, setup, execute)
+     */
+    protected open fun renderOperationBody(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
         writer.write("")
         writer.renderDocumentation(op)
-        val signature = opIndex.operationSignature(model, symbolProvider, op)
+        val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op)
         writer.openBlock("override \$L {", signature)
+            .call { renderOperationSetup(writer, opIndex, op) }
+            .call { renderOperationExecute(writer, opIndex, op) }
+            .closeBlock("}")
+    }
+
+    /**
+     * Renders the operation body up to the point where the call is executed. This function is responsbile for setting
+     * up the execution context used for this operation
+     */
+    protected open fun renderOperationSetup(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
+        val inputShape = opIndex.getInput(op)
+        val outputShape = opIndex.getOutput(op)
+        val httpTrait = op.expectTrait(HttpTrait::class.java)
+
+        if (!inputShape.isPresent) {
+            // no serializer implementation is generated for operations with no input, inline the HTTP
+            // protocol request from the operation itself
+            val requestBuilderSymbol = Symbol.builder()
+                .name("HttpRequestBuilder")
+                .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", ".")
+                .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+                .build()
+            writer.addImport(requestBuilderSymbol)
+            writer.openBlock("val builder = HttpRequestBuilder().apply {")
+                .write("method = HttpMethod.\$L", httpTrait.method.toUpperCase())
+                // NOTE: since there is no input the URI can only be a literal (no labels to fill)
+                .write("url.path = \"\$L\"", httpTrait.uri.toString())
+                .closeBlock("}")
+        }
+
+        // build the execution context
+        writer.openBlock("val execCtx = SdkOperation.build {")
             .call {
-                val inputShape = opIndex.getInput(op)
-                val outputShape = opIndex.getOutput(op)
-                val input = inputShape.map { symbolProvider.toSymbol(it).name }
-                val output = outputShape.map { symbolProvider.toSymbol(it).name }
-                val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
-                val inputParam = input.map { "${op.serializerName()}(input)" }.orElse("builder")
-                val httpTrait = op.expectTrait(HttpTrait::class.java)
-
-                if (!inputShape.isPresent) {
-                    // no serializer implementation is generated for operations with no input, inline the HTTP
-                    // protocol request from the operation itself
-                    val requestBuilderSymbol = Symbol.builder()
-                        .name("HttpRequestBuilder")
-                        .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", ".")
-                        .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                        .build()
-                    writer.addImport(requestBuilderSymbol)
-                    writer.openBlock("val builder = HttpRequestBuilder().apply {")
-                        .write("method = HttpMethod.\$L", httpTrait.method.toUpperCase())
-                        // NOTE: since there is no input the URI can only be a literal (no labels to fill)
-                        .write("url.path = \"\$L\"", httpTrait.uri.toString())
-                        .closeBlock("}")
+                if (inputShape.isPresent) {
+                    writer.write("serializer = ${op.serializerName()}(input)")
                 }
 
-                val executionCtxSymbol = Symbol.builder()
-                    .name("ExecutionContext")
-                    .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
-                    .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                    .build()
-                writer.addImport(executionCtxSymbol)
-                writer.openBlock("val execCtx = ExecutionContext.build {")
-                    .call {
-                        writer.write("expectedHttpStatus = ${httpTrait.code}")
-                        if (output.isPresent) {
-                            writer.write("deserializer = ${op.deserializerName()}()")
-                        }
-                    }
-                    .closeBlock("}")
-
-                if (hasOutputStream) {
-                    writer.write("return client.execute(\$L, execCtx, block)", inputParam)
-                } else {
-                    if (output.isPresent) {
-                        writer.write("return client.roundTrip(\$L, execCtx)", inputParam)
-                    } else {
-                        val httpResponseSymbol = Symbol.builder()
-                            .name("HttpResponse")
-                            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
-                            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                            .build()
-                        writer.addImport(httpResponseSymbol)
-                        // need to not run the response pipeline because there is no valid transform. Explicitly
-                        // specify the raw (closed) HttpResponse
-                        writer.write("client.roundTrip<HttpResponse>(\$L, execCtx)", inputParam)
-                    }
+                if (outputShape.isPresent) {
+                    writer.write("deserializer = ${op.deserializerName()}()")
                 }
+                writer.write("expectedHttpStatus = ${httpTrait.code}")
+                // property from implementing SdkClient
+                writer.write("service = serviceName")
+                writer.write("operationName = \$S", op.id.name)
             }
             .closeBlock("}")
     }
 
-    private fun renderClose() {
+    /**
+     * Render the actual execution of a request using the HTTP client
+     */
+    protected open fun renderOperationExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
+        val inputShape = opIndex.getInput(op)
+        val outputShape = opIndex.getOutput(op)
+        val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
+        val httpRequestBuilder = if (!inputShape.isPresent) "builder" else "null"
+        if (hasOutputStream) {
+            writer.write("return client.execute(execCtx, \$L, block)", httpRequestBuilder)
+        } else {
+            if (outputShape.isPresent) {
+                writer.write("return client.roundTrip(execCtx, \$L)", httpRequestBuilder)
+            } else {
+                val httpResponseSymbol = Symbol.builder()
+                    .name("HttpResponse")
+                    .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
+                    .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+                    .build()
+                writer.addImport(httpResponseSymbol)
+                // need to not run the response pipeline because there is no valid transform. Explicitly
+                // specify the raw (closed) HttpResponse
+                writer.write("client.roundTrip<HttpResponse>(execCtx, \$L)", httpRequestBuilder)
+            }
+        }
+    }
+
+    protected open fun renderClose(writer: KotlinWriter) {
         writer.write("")
             // FIXME - this will eventually need to handle the case where an engine is passed in
             .openBlock("override fun close() {")
@@ -240,4 +259,9 @@ class HttpProtocolClientGenerator(
             .closeBlock("}")
             .write("")
     }
+
+    /**
+     * Render any additional methods to support client operation
+     */
+    protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
 }

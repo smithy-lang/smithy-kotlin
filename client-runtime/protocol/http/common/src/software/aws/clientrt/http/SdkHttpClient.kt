@@ -74,17 +74,6 @@ suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(context: Executio
  */
 suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
     context: ExecutionContext,
-    crossinline block: suspend (TResponse) -> R
-): R = PreparedHttpRequest(this, null, context).execute(block)
-
-/**
- * Make an HTTP request with the given [HttpRequestBuilder] and run the [block] with the result of the response pipeline.
- *
- * The underlying HTTP response will remain available until the block returns making this method suitable for
- * streaming responses.
- */
-suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
-    context: ExecutionContext,
-    builder: HttpRequestBuilder,
+    builder: HttpRequestBuilder? = null,
     crossinline block: suspend (TResponse) -> R
 ): R = PreparedHttpRequest(this, builder, context).execute(block)
