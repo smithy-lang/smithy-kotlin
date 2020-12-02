@@ -55,6 +55,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
 
+    /**
+     * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
+     */
+    open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
+        val rootNamespace = ctx.settings.moduleName
+        val features = getHttpFeatures(ctx)
+        return HttpProtocolClientGenerator(ctx, rootNamespace, features)
+    }
+
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         // render HttpSerialize for all operation inputs
         for (operation in getHttpBindingOperations(ctx)) {
@@ -88,15 +97,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
         val rootNamespace = ctx.settings.moduleName
         ctx.delegator.useFileWriter("Default${symbol.name}.kt", rootNamespace) { writer ->
-            val features = getHttpFeatures(ctx)
-            HttpProtocolClientGenerator(
-                ctx.model,
-                ctx.symbolProvider,
-                writer,
-                ctx.service,
-                rootNamespace,
-                features
-            ).render()
+            val clientGenerator = getHttpProtocolClientGenerator(ctx)
+            clientGenerator.render(writer)
         }
     }
 

@@ -53,8 +53,9 @@ fun writeGradleBuild(
     if (annotations.isNotEmpty()) {
         writer.openBlock("val experimentalAnnotations = listOf(")
             .call {
-                annotations.forEach {
-                    writer.write("\$S", it)
+                annotations.forEachIndexed { idx, it ->
+                    val suffix = if (idx < annotations.size - 1) "," else ""
+                    writer.write("\$S$suffix", it)
                 }
             }
             .closeBlock(")")
