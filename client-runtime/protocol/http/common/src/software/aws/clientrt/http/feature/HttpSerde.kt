@@ -46,7 +46,7 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
 
     class Config {
         var serdeProvider: SerdeProvider? = null
-        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+        var idempotencyTokenProvider: IdempotencyTokenProvider = IdempotencyTokenProvider.Default
     }
 
     companion object Feature : HttpClientFeatureFactory<Config, HttpSerde> {
@@ -55,7 +55,7 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
             val config = Config().apply(block)
             return HttpSerde(
                 requireNotNull(config.serdeProvider) { "a serde provider must be set to use the HttpSerde feature" },
-                requireNotNull(config.idempotencyTokenProvider) { "A idempotency token provider must be supplied to use the HttpSerde feature" }
+                config.idempotencyTokenProvider
             )
         }
     }
