@@ -23,6 +23,7 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 internal enum class SerializeLocation(val serializerFn: String) {
@@ -178,6 +179,7 @@ class SerializeStructGenerator(
         level: Int = 0
     ) {
         val iteratorName = "m$level"
+
         writer.openBlock("for(\$L in \$L) {", iteratorName, collectionName)
             .call {
                 when (targetShape) {
@@ -219,7 +221,13 @@ class SerializeStructGenerator(
                         } else {
                             iteratorName
                         }
-                        writer.write("\$L(\$L)", targetShape.type.primitiveSerializerFunctionName(), iter)
+                        val sparseList = ctx.model.expectShape(member.target).hasTrait(SparseTrait::class.java)
+
+                        if (sparseList) {
+                            writer.write("if (\$L != null) \$L(\$L) else serializeNull(\$L)", iteratorName, targetShape.type.primitiveSerializerFunctionName(), iter, member.descriptorName())
+                        } else {
+                            writer.write("\$L(\$L)", targetShape.type.primitiveSerializerFunctionName(), iter)
+                        }
                     }
                 }
             }
