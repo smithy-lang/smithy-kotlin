@@ -130,10 +130,21 @@ fun testRender(
     return writer.toString()
 }
 
-// Retrieves Document members
+// Retrieves Response Document members
 fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getResponseBindings(shape)
+
+    return responseBindings.values
+        .filter { it.location == HttpBinding.Location.DOCUMENT }
+        .sortedBy { it.memberName }
+        .map { it.member }
+}
+
+// Retrieves Request Document members
+fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
+    val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
+    val responseBindings = bindingIndex.getRequestBindings(shape)
 
     return responseBindings.values
         .filter { it.location == HttpBinding.Location.DOCUMENT }
