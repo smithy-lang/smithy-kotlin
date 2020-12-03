@@ -47,6 +47,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
     override fun renderTestBody(test: HttpResponseTestCase) {
         writer.addImport(KotlinDependency.CLIENT_RT_SMITHY_TEST.namespace, "*")
         writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "HttpStatusCode")
+        writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", "IdempotencyTokenProvider")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SMITHY_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
@@ -94,12 +95,21 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 }
 
                 writer.openBlock("val service = \$L {", serviceName)
-                    .write("httpClientEngine = mockEngine")
+                    .call { renderConfigureServiceClient(test) }
                     .closeBlock("}")
 
                 renderServiceCall()
             }
             .closeBlock("}")
+    }
+
+    /**
+     * Configure the service client before executing the request for the test. By default this function
+     * configures a mock HttpClientEngine and an idempotency token generator appropriate for protocol tests.
+     */
+    open fun renderConfigureServiceClient(test: HttpResponseTestCase) {
+        writer.write("httpClientEngine = mockEngine")
+            .write("idempotencyTokenProvider = IdempotencyTokenProvider { \"00000000-0000-4000-8000-000000000000\" }")
     }
 
     /**
