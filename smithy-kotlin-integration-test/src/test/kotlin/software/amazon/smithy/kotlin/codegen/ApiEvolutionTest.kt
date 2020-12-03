@@ -17,6 +17,8 @@ import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
  * Example: "Wrote generated SDK to /tmp/sdk-codegen-1606867139716"
  */
 class ApiEvolutionTest {
+    // Toggle this flag to emit generated SDKs to /tmp for interactive debugging.
+    private val copyGeneratedSdksToTmp = false
 
     // This currently failed because we do not generate model or transforms for operations without inputs or outputs, yet
     // our codegen adds import declarations for those packages anyway.
@@ -76,7 +78,9 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).compileSuccess)
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+            assertTrue(result.compileSuccess, result.compileOutput)
+        }
     }
 
     @Test
@@ -206,7 +210,7 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).compileSuccess)
+        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).compileSuccess)
     }
 
     @Test
@@ -270,6 +274,6 @@ class ApiEvolutionTest {
             
         """.trimIndent()
 
-        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).compileSuccess)
+        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).compileSuccess)
     }
 }

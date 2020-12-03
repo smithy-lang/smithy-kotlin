@@ -22,7 +22,10 @@ import software.amazon.smithy.kotlin.codegen.CodegenVisitor
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.OutputStream
+import java.io.PrintStream
 import java.net.URL
 
 private const val SmithyVersion = "1.0"
@@ -42,7 +45,8 @@ private fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$
 data class ModelChangeTestResult(
         val originalModelCompilationResult: KotlinCompilation.Result,
         val updatedModelCompilationResult: KotlinCompilation.Result,
-        val compileSuccess: Boolean
+        val compileSuccess: Boolean,
+        val compileOutput: String
 )
 
 /**
@@ -56,14 +60,17 @@ data class ModelChangeTestResult(
  * target directory is provided in log output.
  */
 fun testModelChangeAgainstSource(originalModel: Model, updatedModel: Model, testSource: String, emitSourcesToTmp: Boolean = false): ModelChangeTestResult {
-    val originalModelCompilationResult = compileSdkAndTest(originalModel, testSource, emitSourcesToTmp)
-    val updatedModelCompilationResult = compileSdkAndTest(updatedModel, testSource, emitSourcesToTmp)
+    val compileOutputStream = ByteArrayOutputStream()
+    val originalModelCompilationResult = compileSdkAndTest(originalModel, testSource, compileOutputStream, emitSourcesToTmp)
+    val updatedModelCompilationResult = compileSdkAndTest(updatedModel, testSource, compileOutputStream, emitSourcesToTmp)
+    compileOutputStream.flush()
 
     return ModelChangeTestResult(
             originalModelCompilationResult,
             updatedModelCompilationResult,
             originalModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK &&
-                    updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK
+                    updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK,
+        compileOutputStream.toString()
     )
 }
 
@@ -75,7 +82,7 @@ fun testModelChangeAgainstSource(originalModel: Model, updatedModel: Model, test
  * @param emitSourcesToTmp a debugging function to emit generated SDK to a temp directory for analysis.  Actual
  * target directory is provided in log output.
  */
-fun compileSdkAndTest(model: Model, testSource: String, emitSourcesToTmp: Boolean = false): KotlinCompilation.Result {
+fun compileSdkAndTest(model: Model, testSource: String, outputSink: OutputStream, emitSourcesToTmp: Boolean = false): KotlinCompilation.Result {
     val testSourceFile = SourceFile.kotlin("test.kt", testSource)
     val sdkFileManifest = generateSdk(model)
 
@@ -92,7 +99,7 @@ fun compileSdkAndTest(model: Model, testSource: String, emitSourcesToTmp: Boolea
     return KotlinCompilation().apply {
         sources = sdkSources
         inheritClassPath = true
-        messageOutputStream = System.out
+        messageOutputStream = outputSink
     }.compile()
 }
 
