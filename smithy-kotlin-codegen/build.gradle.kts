@@ -26,7 +26,6 @@ dependencies {
     implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.1")
     testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.5")
-    testImplementation("com.github.tschuchortdev:kotlin-compile-testing:1.3.1")
 }
 
 // unlike the client-runtime, smithy-kotlin codegen package is not expected to run on Android...we can target 1.8
