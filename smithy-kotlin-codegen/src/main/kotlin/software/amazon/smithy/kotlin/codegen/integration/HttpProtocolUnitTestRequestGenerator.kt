@@ -101,8 +101,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 }
 
                 writer.openBlock("val service = \$L {", serviceName)
-                    .write("httpClientEngine = mockEngine")
-                    .write("idempotencyTokenProvider = IdempotencyTokenProvider { \"00000000-0000-4000-8000-000000000000\" }")
+                    .call { renderConfigureServiceClient(test) }
                     .closeBlock("}")
 
                 // last statement should be service invoke
@@ -114,6 +113,15 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer.write("service.\$L(\$L)$block", opName, inputParamName)
             }
             .closeBlock("}")
+    }
+
+    /**
+     * Configure the service client before executing the request for the test. By default this function
+     * configures a mock HttpClientEngine and an idempotency token generator appropriate for protocol tests.
+     */
+    open fun renderConfigureServiceClient(test: HttpRequestTestCase) {
+        writer.write("httpClientEngine = mockEngine")
+            .write("idempotencyTokenProvider = IdempotencyTokenProvider { \"00000000-0000-4000-8000-000000000000\" }")
     }
 
     private fun renderExpectedQueryParams(test: HttpRequestTestCase) {
@@ -157,7 +165,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.write("$name = listOf($joined)")
     }
 
-    class Builder : HttpProtocolUnitTestGenerator.Builder<HttpRequestTestCase>() {
+    open class Builder : HttpProtocolUnitTestGenerator.Builder<HttpRequestTestCase>() {
         override fun build(): HttpProtocolUnitTestGenerator<HttpRequestTestCase> {
             return HttpProtocolUnitTestRequestGenerator(this)
         }

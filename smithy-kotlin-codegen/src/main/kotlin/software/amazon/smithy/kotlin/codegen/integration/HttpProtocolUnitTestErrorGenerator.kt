@@ -59,7 +59,7 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         }
     }
 
-    class Builder : HttpProtocolUnitTestResponseGenerator.Builder() {
+    open class Builder : HttpProtocolUnitTestResponseGenerator.Builder() {
         var error: Shape? = null
 
         /**
