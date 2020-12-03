@@ -181,7 +181,7 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     }
 
     override fun serializeNull(descriptor: SdkFieldDescriptor) {
-        jsonWriter.writeName(descriptor.serialName)
+        // jsonWriter.writeName(descriptor.serialName)
         jsonWriter.writeNull()
     }
 
