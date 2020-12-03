@@ -56,6 +56,22 @@ fun URL.asSmithy(): Model =
         .unwrap()
 
 /**
+ * Load and initialize a model from a String (from smithy-rs)
+ */
+private const val SmithyVersion = "1.0"
+fun String.asSmithyModel(sourceLocation: String? = null): Model {
+    val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SmithyVersion.doubleQuote()}\n$it" }
+    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
+}
+fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
+fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
+fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
+    return if (cond) {
+        f(this)
+    } else this
+}
+
+/**
  * Container for type instances necessary for tests
  */
 data class TestContext(
