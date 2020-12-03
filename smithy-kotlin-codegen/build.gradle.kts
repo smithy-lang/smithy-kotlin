@@ -18,14 +18,19 @@ group = "software.amazon.smithy"
 version = "0.1.0"
 
 val smithyVersion: String by project
+val kotlinVersion: String by project
+val junitVersion: String by project
+val kotestVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     api("software.amazon.smithy:smithy-codegen-core:$smithyVersion")
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.6.1")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:4.0.5")
+    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
 // unlike the client-runtime, smithy-kotlin codegen package is not expected to run on Android...we can target 1.8
