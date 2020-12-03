@@ -29,18 +29,12 @@ private const val SmithyVersion = "1.0"
 /**
  * Load and initialize a model from a Java resource URL
  */
-fun String.asSmithy(sourceLocation: String? = null): Model {
-    val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SmithyVersion.doubleQuote()}\n$it" }
-    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
+fun String.asSmithy(sourceLocation: String = "test.smithy"): Model {
+    val processed = if (!this.startsWith("\$version")) "\$version: ${SmithyVersion.doubleQuote()}\n$this" else this
+    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation, processed).assemble().unwrap()
 }
-
 private fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
 private fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
-private fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
-    return if (cond) {
-        f(this)
-    } else this
-}
 
 /**
  * Captures the result of a model transformation test
@@ -136,7 +130,7 @@ fun generateSdk(
             .build()
 
     // Generate SDK
-    CodegenVisitor(pluginContext).also { it.execute() }
+    CodegenVisitor(pluginContext).execute()
 
     return manifest
 }

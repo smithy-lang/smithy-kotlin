@@ -8,7 +8,7 @@ import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
 
 /**
  * These tests cover Smithy model changes that, by policy, are considered backward compatible against
- * sample code indented to verify that the changes indeed do not break customers.
+ * sample code intended to verify that the changes indeed do not break customers.
  *
  * The current scope of these tests is compile-time only, however it should not be difficult to
  * execute any customer code from the generated class files.
@@ -20,7 +20,8 @@ class ApiEvolutionTest {
 
     // This currently failed because we do not generate model or transforms for operations without inputs or outputs, yet
     // our codegen adds import declarations for those packages anyway.
-    // This also fails because there is no default parameter generated for the empty input in model v2. (model evolution task)
+    // TODO This also fails because there is no default parameter generated for the empty input in model v2.
+    //  https://www.pivotaltracker.com/story/show/174760723 (model evolution task)
     @Test
     @Disabled
     fun `client calling operation with no input to operation with empty input compiles`() {
@@ -143,7 +144,8 @@ class ApiEvolutionTest {
 
     // This currently failed because we do not generate model or transforms for operations without inputs or outputs, yet
     // our codegen adds import declarations for those packages anyway.
-    // This also fails because the customer implementation of the client interface doesn't reflect the model v2. (model evolution task)
+    // TODO - This also fails because the customer implementation of the client interface doesn't reflect the model v2.
+    //  https://www.pivotaltracker.com/story/show/174760723 (model evolution task)
     @Test
     @Disabled
     fun `client calling operation with no output to operation with empty output compiles`() {
