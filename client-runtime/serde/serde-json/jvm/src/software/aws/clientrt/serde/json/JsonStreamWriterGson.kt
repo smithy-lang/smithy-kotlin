@@ -30,7 +30,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
             if (pretty) {
                 jsonWriter.setIndent("    ")
             }
-            jsonWriter.serializeNulls = false
+            // jsonWriter.serializeNulls = false
             jsonStreamWriter = jsonWriter
         } catch (e: IOException) {
             throw JsonGenerationException(e)
