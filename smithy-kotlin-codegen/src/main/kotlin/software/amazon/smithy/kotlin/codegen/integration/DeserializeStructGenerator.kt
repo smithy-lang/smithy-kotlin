@@ -18,6 +18,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
@@ -149,12 +150,14 @@ class DeserializeStructGenerator(
         renderAsSet: Boolean = false
     ) {
         val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
+        val sparseList = ctx.model.expectShape(member.target).hasTrait(SparseTrait::class.java)
+        val nullablePostfix = if (sparseList) "?" else ""
         val destList = "list$level"
         val elementName = "el$level"
         val conversion = if (renderAsSet) ".toSet()" else ""
 
         writer.openBlock("deserializer.deserializeList(\$L) {", member.descriptorName())
-            .write("val $destList = mutableListOf<${targetSymbol.name}>()")
+            .write("val $destList = mutableListOf<${targetSymbol.name}$nullablePostfix>()")
             .openBlock("while(hasNextElement()) {")
             .call {
                 when (targetShape) {
@@ -173,7 +176,12 @@ class DeserializeStructGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("if ($elementName != null) $destList.add($elementName)")
+
+                if (sparseList) {
+                    writer.write("$destList.add($elementName)")
+                } else {
+                    writer.write("if ($elementName != null) $destList.add($elementName)")
+                }
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression
