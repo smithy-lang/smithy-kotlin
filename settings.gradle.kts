@@ -31,6 +31,8 @@ include(":client-runtime:serde:serde-json")
 include(":client-runtime:serde:serde-xml")
 include(":client-runtime:serde:serde-test")
 
+include(":smithy-kotlin-integration-test")
+
 include(":client-runtime:protocol:http-client-engines:http-client-engine-ktor")
 
 // FIXME - intellij DOES NOT like this project included. Everything builds fine but intellij 2020.x
