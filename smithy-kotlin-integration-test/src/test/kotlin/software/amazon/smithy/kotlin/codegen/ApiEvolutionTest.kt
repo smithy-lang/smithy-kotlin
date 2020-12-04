@@ -143,7 +143,9 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode).compileSuccess)
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+            assertTrue(result.compileSuccess, result.compileOutput)
+        }
     }
 
     // This currently failed because we do not generate model or transforms for operations without inputs or outputs, yet
@@ -210,7 +212,9 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).compileSuccess)
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+            assertTrue(result.compileSuccess, result.compileOutput)
+        }
     }
 
     @Test
@@ -274,6 +278,8 @@ class ApiEvolutionTest {
             
         """.trimIndent()
 
-        assertTrue(testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).compileSuccess)
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+            assertTrue(result.compileSuccess, result.compileOutput)
+        }
     }
 }
