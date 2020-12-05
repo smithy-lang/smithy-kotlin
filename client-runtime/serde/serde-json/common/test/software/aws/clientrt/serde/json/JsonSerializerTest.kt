@@ -173,7 +173,7 @@ class JsonSerializerTest {
         val json = JsonSerializer()
         data.serialize(json)
 
-        assertEquals("""{"boolean":true,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
+        assertEquals("""{"boolean":true,"boolean":null,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
     }
 }
 
@@ -192,7 +192,6 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = SdkFieldDescriptor("unit", SerialKind.Unit)
         val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean)
         val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte)
         val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short)
@@ -202,14 +201,13 @@ data class Primitives(
         val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double)
         val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char)
         val descriptorString = SdkFieldDescriptor("string", SerialKind.String)
-        val descriptorUnitNullable = SdkFieldDescriptor("unitNullable", SerialKind.Unit)
         val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List)
     }
 
     override fun serialize(serializer: Serializer) {
         serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
-            serializeNull(descriptorUnit)
             field(descriptorBoolean, boolean)
+            field(descriptorBoolean, null as Boolean?)
             field(descriptorByte, byte)
             field(descriptorShort, short)
             field(descriptorInt, int)
@@ -218,7 +216,6 @@ data class Primitives(
             field(descriptorDouble, double)
             field(descriptorChar, char)
             field(descriptorString, string)
-            serializeNull(descriptorUnitNullable)
             listField(descriptorListInt) {
                 for (value in listInt) {
                     serializeInt(value)

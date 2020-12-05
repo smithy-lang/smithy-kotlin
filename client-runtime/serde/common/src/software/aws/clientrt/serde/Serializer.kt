@@ -41,7 +41,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Boolean)
+    fun field(descriptor: SdkFieldDescriptor, value: Boolean?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -50,7 +50,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Byte)
+    fun field(descriptor: SdkFieldDescriptor, value: Byte?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -59,7 +59,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Short)
+    fun field(descriptor: SdkFieldDescriptor, value: Short?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -68,7 +68,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Char)
+    fun field(descriptor: SdkFieldDescriptor, value: Char?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -77,7 +77,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Int)
+    fun field(descriptor: SdkFieldDescriptor, value: Int?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -86,7 +86,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Long)
+    fun field(descriptor: SdkFieldDescriptor, value: Long?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -95,7 +95,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Float)
+    fun field(descriptor: SdkFieldDescriptor, value: Float?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -104,7 +104,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Double)
+    fun field(descriptor: SdkFieldDescriptor, value: Double?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -113,7 +113,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: String)
+    fun field(descriptor: SdkFieldDescriptor, value: String?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -383,10 +383,8 @@ interface PrimitiveSerializer {
 
     /**
      * Serializes the given value.
-     *
-     * @param descriptor
      */
-    fun serializeNull(descriptor: SdkFieldDescriptor)
+    fun serializeNull()
 }
 
 /**
