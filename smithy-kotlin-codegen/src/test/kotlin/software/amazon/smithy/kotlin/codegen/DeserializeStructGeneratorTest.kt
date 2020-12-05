@@ -175,7 +175,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         when(findNextFieldIndex()) {
             BLOBMAP_DESCRIPTOR.index -> builder.blobMap =
                 deserializer.deserializeMap(BLOBMAP_DESCRIPTOR) {
-                    val map0 = mutableMapOf<String, ByteArray?>()
+                    val map0 = mutableMapOf<String, ByteArray>()
                     while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = deserializeString()?.decodeBase64Bytes()
@@ -185,7 +185,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 }
             ENUMMAP_DESCRIPTOR.index -> builder.enumMap =
                 deserializer.deserializeMap(ENUMMAP_DESCRIPTOR) {
-                    val map0 = mutableMapOf<String, MyEnum?>()
+                    val map0 = mutableMapOf<String, MyEnum>()
                     while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = deserializeString()?.let { MyEnum.fromValue(it) }
@@ -195,7 +195,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 }
             INTMAP_DESCRIPTOR.index -> builder.intMap =
                 deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
-                    val map0 = mutableMapOf<String, Int?>()
+                    val map0 = mutableMapOf<String, Int>()
                     while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = deserializeInt()
@@ -205,12 +205,12 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 }
             NESTEDMAP_DESCRIPTOR.index -> builder.nestedMap =
                 deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
-                    val map0 = mutableMapOf<String, Map<String, Int?>?>()
+                    val map0 = mutableMapOf<String, Map<String, Int>>()
                     while(hasNextEntry()) {
                         val k0 = key()
                         val el0 =
                         deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
-                            val map1 = mutableMapOf<String, Int?>()
+                            val map1 = mutableMapOf<String, Int>()
                             while(hasNextEntry()) {
                                 val k1 = key()
                                 val el1 = deserializeInt()
@@ -224,7 +224,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 }
             STRUCTMAP_DESCRIPTOR.index -> builder.structMap =
                 deserializer.deserializeMap(STRUCTMAP_DESCRIPTOR) {
-                    val map0 = mutableMapOf<String, ReachableOnlyThroughMap?>()
+                    val map0 = mutableMapOf<String, ReachableOnlyThroughMap>()
                     while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = ReachableOnlyThroughMapDeserializer().deserialize(deserializer)
@@ -238,6 +238,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     }
 }
 """
+        // kotlin.test.assertEquals(expected, contents)
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -310,5 +311,218 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         }
 
         kotlin.test.assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `it handles sparse maps`() {
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while(true) {
+                    when(findNextFieldIndex()) {
+                        SPARSEINTMAP_DESCRIPTOR.index -> builder.sparseIntMap =
+                            deserializer.deserializeMap(SPARSEINTMAP_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, Int?>()
+                                while(hasNextEntry()) {
+                                    val k0 = key()
+                                    val el0 = deserializeInt()
+                                    map0[k0] = el0
+                                }
+                                map0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val ctx = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [GetFoo]
+            }
+
+            @http(method: "POST", uri: "/input/list")
+            operation GetFoo {
+                output: GetFooOutput
+            }
+            
+            @sparse
+            map SparseIntMap {
+                key: String,
+                value: Integer
+            }
+            
+            structure GetFooOutput {
+                sparseIntMap: SparseIntMap
+            }
+        """.trimIndent()
+            .asSmithyModel()
+            .newTestContext()
+
+        val op = ctx.expectShape("com.test#GetFoo")
+
+        val actual = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
+
+        // kotlin.test.assertEquals(expected, actual)
+        actual.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it handles maps`() {
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while(true) {
+                    when(findNextFieldIndex()) {
+                        INTMAP_DESCRIPTOR.index -> builder.intMap =
+                            deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while(hasNextEntry()) {
+                                    val k0 = key()
+                                    val el0 = deserializeInt()
+                                    map0[k0] = el0
+                                }
+                                map0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val ctx = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [GetFoo]
+            }
+
+            @http(method: "POST", uri: "/input/list")
+            operation GetFoo {
+                output: GetFooOutput
+            }
+            
+            map IntMap {
+                key: String,
+                value: Integer
+            }
+            
+            structure GetFooOutput {
+                intMap: IntMap
+            }
+        """.trimIndent()
+            .asSmithyModel()
+            .newTestContext()
+
+        val op = ctx.expectShape("com.test#GetFoo")
+
+        val actual = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
+
+        // kotlin.test.assertEquals(expected, actual)
+        actual.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it handles nested maps`() {
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while(true) {
+                    when(findNextFieldIndex()) {
+                        NESTEDMAP_DESCRIPTOR.index -> builder.nestedMap =
+                            deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, Map<String, Int>>()
+                                while(hasNextEntry()) {
+                                    val k0 = key()
+                                    val el0 =
+                                    deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
+                                        val map1 = mutableMapOf<String, Int>()
+                                        while(hasNextEntry()) {
+                                            val k1 = key()
+                                            val el1 = deserializeInt()
+                                            map1[k1] = el1
+                                        }
+                                        map1
+                                    }
+                                    map0[k0] = el0
+                                }
+                                map0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val ctx = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [GetFoo]
+            }
+
+            @http(method: "POST", uri: "/input/list")
+            operation GetFoo {
+                output: GetFooOutput
+            }
+            
+            map NestedMap {
+                key: String,
+                value: IntMap
+            }
+            
+            map IntMap {
+                key: String,
+                value: Integer
+            }
+            
+            structure GetFooOutput {
+                nestedMap: NestedMap
+            }
+        """.trimIndent()
+            .asSmithyModel()
+            .newTestContext()
+
+        val op = ctx.expectShape("com.test#GetFoo")
+
+        val actual = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
+
+        // kotlin.test.assertEquals(expected, actual)
+        actual.shouldContainOnlyOnce(expected)
     }
 }
