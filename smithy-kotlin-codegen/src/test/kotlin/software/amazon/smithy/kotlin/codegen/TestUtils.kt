@@ -25,6 +25,7 @@ import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.shapes.SmithyIdlModelSerializer
 import java.net.URL
 
 fun String.shouldSyntacticSanityCheck() {
@@ -69,6 +70,17 @@ fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
     return if (cond) {
         f(this)
     } else this
+}
+
+/**
+ * Generate Smithy IDL from a model instance.
+ */
+fun Model.toSmithyIDL(): String {
+    val builtInModelIds = setOf("smithy.test.smithy", "aws.auth.smithy", "aws.protocols.smithy", "aws.api.smithy")
+    val ms: SmithyIdlModelSerializer = SmithyIdlModelSerializer.builder().build()
+    val node = ms.serialize(this)
+
+    return node.filterNot { builtInModelIds.contains(it.key.toString()) }.values.first()
 }
 
 /**
