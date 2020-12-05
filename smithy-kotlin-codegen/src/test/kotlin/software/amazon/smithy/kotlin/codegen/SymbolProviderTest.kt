@@ -154,19 +154,23 @@ class SymbolProviderTest {
 
     @Test
     fun `creates lists`() {
-        val struct = StructureShape.builder().id("foo.bar#Record").build()
-        val listMember = MemberShape.builder().id("foo.bar#Records\$member").target(struct).build()
-        val list = ListShape.builder()
-            .id("foo.bar#Records")
-            .member(listMember)
-            .build()
-        val model = Model.assembler()
-            .addShapes(list, listMember, struct)
-            .assemble()
-            .unwrap()
+        val model = """
+            namespace foo.bar
+
+            structure Record {}
+
+            list Records {
+                member: Record,
+            }
+            
+            @sparse
+            list SparseRecords {
+                member: Record,
+            }
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val listSymbol = provider.toSymbol(list)
+        val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
 
         assertEquals("List<Record>", listSymbol.name)
         assertEquals(true, listSymbol.isBoxed())
@@ -174,6 +178,15 @@ class SymbolProviderTest {
 
         // collections should contain a reference to the member type
         assertEquals("Record", listSymbol.references[0].symbol.name)
+
+        val sparseListSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#SparseRecords"))
+
+        assertEquals("List<Record?>", sparseListSymbol.name)
+        assertEquals(true, sparseListSymbol.isBoxed())
+        assertEquals("null", sparseListSymbol.defaultValue())
+
+        // collections should contain a reference to the member type
+        assertEquals("Record?", sparseListSymbol.references[0].symbol.name)
     }
 
     @Test
@@ -202,28 +215,43 @@ class SymbolProviderTest {
 
     @Test
     fun `creates maps`() {
-        val struct = StructureShape.builder().id("foo.bar#Record").build()
-        val keyMember = MemberShape.builder().id("foo.bar#MyMap\$key").target("smithy.api#String").build()
-        val valueMember = MemberShape.builder().id("foo.bar#MyMap\$value").target(struct).build()
-        val map = MapShape.builder()
-            .id("foo.bar#MyMap")
-            .key(keyMember)
-            .value(valueMember)
-            .build()
-        val model = Model.assembler()
-            .addShapes(map, keyMember, valueMember, struct)
-            .assemble()
-            .unwrap()
+        val model = """
+            namespace foo.bar
+
+            structure Record {}
+
+            map MyMap {
+                key: String,
+                value: Record,
+            }
+            
+            @sparse
+            map MySparseMap {
+                key: String,
+                value: Record,
+            }
+        """.asSmithyModel()
+
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val mapSymbol = provider.toSymbol(map)
 
-        assertEquals("Map<String, Record?>", mapSymbol.name)
+        val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("foo.bar#MyMap"))
+
+        assertEquals("Map<String, Record>", mapSymbol.name)
         assertEquals(true, mapSymbol.isBoxed())
         assertEquals("null", mapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
         assertEquals("Record", mapSymbol.references[0].symbol.name)
+
+        val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("foo.bar#MySparseMap"))
+
+        assertEquals("Map<String, Record?>", sparseMapSymbol.name)
+        assertEquals(true, sparseMapSymbol.isBoxed())
+        assertEquals("null", sparseMapSymbol.defaultValue())
+
+        // collections should contain a reference to the member type
+        assertEquals("Record?", sparseMapSymbol.references[0].symbol.name)
     }
 
     @DisplayName("creates bigNumbers")
