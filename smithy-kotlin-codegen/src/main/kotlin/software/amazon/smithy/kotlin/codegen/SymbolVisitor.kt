@@ -9,6 +9,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.utils.StringUtils
 import java.util.logging.Logger
@@ -35,7 +36,7 @@ fun Symbol.isBoxed(): Boolean {
 
 /**
  * Gets the default value for the symbol if present, else null
- * @param defaultBoxed the string to pass for boxed values
+ * @param defaultBoxed the string to pass back for boxed values
  */
 fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
     // boxed types should always be defaulted to null
@@ -71,7 +72,7 @@ fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name
 class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") :
     SymbolProvider,
     ShapeVisitor<Symbol> {
-    val LOGGER = Logger.getLogger(javaClass.name)
+    private val logger = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
 
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
@@ -131,11 +132,16 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .buildEscaper()
     }
 
+    companion object {
+        // Mutable collection type
+        const val MUTABLE_COLLECTION_TYPE: String = "mutableCollectionType"
+    }
+
     override fun toSymbol(shape: Shape): Symbol {
         depth++
         val symbol: Symbol = shape.accept(this)
         depth--
-        LOGGER.fine("creating symbol from $shape: $symbol")
+        logger.fine("creating symbol from $shape: $symbol")
         return escaper.escapeSymbol(shape, symbol)
     }
 
@@ -224,17 +230,44 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun listShape(shape: ListShape): Symbol {
-        val reference = toSymbol(shape.member)
+        val reference = toSymbol(shape.member).let { symbol ->
+            when(shape.hasTrait(SparseTrait::class.java)) {
+                false -> symbol
+                true -> Symbol.builder() // The inner symbol must be modified for sparse trait.
+                    .dependencies(symbol.dependencies)
+                    .references(symbol.references)
+                    .declarationFile(symbol.declarationFile)
+                    .definitionFile(symbol.definitionFile)
+                    .namespace(symbol.namespace, symbol.namespaceDelimiter)
+                    .name("${symbol.name}?")
+                    .build()
+            }
+        }
+
         return createSymbolBuilder(shape, "List<${reference.name}>", boxed = true)
             .addReference(reference)
+            .putProperty(MUTABLE_COLLECTION_TYPE, "mutableListOf<${reference.name}>")
             .build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
-        val reference = toSymbol(shape.value)
-        // FIXME - this doesn't account for unboxed primitives
-        return createSymbolBuilder(shape, "Map<String, ${reference.name}?>", boxed = true)
+        val reference = toSymbol(shape.value).let { symbol ->
+            when(shape.hasTrait(SparseTrait::class.java)) {
+                false -> symbol
+                true -> Symbol.builder() // The inner symbol must be modified for sparse trait.
+                    .dependencies(symbol.dependencies)
+                    .references(symbol.references)
+                    .declarationFile(symbol.declarationFile)
+                    .definitionFile(symbol.definitionFile)
+                    .namespace(symbol.namespace, symbol.namespaceDelimiter)
+                    .name("${symbol.name}?")
+                    .build()
+            }
+        }
+
+        return createSymbolBuilder(shape, "Map<String, ${reference.name}>", boxed = true)
             .addReference(reference)
+            .putProperty(MUTABLE_COLLECTION_TYPE, "mutableMapOf<String, ${reference.name}>")
             .build()
     }
 
