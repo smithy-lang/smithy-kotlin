@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.kotlin.codegen.integration.GradleBuildSettings
 import software.amazon.smithy.kotlin.codegen.integration.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
@@ -16,6 +17,9 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  */
 class CodegenTestIntegration : KotlinIntegration {
     override val protocolGenerators: List<ProtocolGenerator> = listOf(RestJsonTestProtocolGenerator())
+    override val customBuildSettings: GradleBuildSettings? = GradleBuildSettings().apply {
+        experimentalAnnotations.add("software.aws.clientrt.util.InternalAPI")
+    }
 }
 
 /**
