@@ -25,8 +25,6 @@ import software.amazon.smithy.model.node.ObjectNode
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.OutputStream
-import java.io.PrintStream
-import java.net.URL
 
 private const val SmithyVersion = "1.0"
 /**
@@ -97,6 +95,7 @@ fun compileSdkAndTest(model: Model, testSource: String, outputSink: OutputStream
 
     // Run test against
     return KotlinCompilation().apply {
+        kotlincArguments = listOf("-Xopt-in=software.aws.clientrt.util.InternalAPI")
         sources = sdkSources
         inheritClassPath = true
         messageOutputStream = outputSink
