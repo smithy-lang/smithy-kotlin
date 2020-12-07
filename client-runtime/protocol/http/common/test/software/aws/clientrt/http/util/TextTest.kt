@@ -88,5 +88,17 @@ class TextTest {
                 assertTrue(actual.contains(entry.key, value), "parsed query does not contain ${entry.key}:$value")
             }
         }
+
+        val queryNoEquals = "abc=cde&noequalssign"
+        val actualNoEquals = queryNoEquals.splitAsQueryParameters()
+        val expectedNoEquals = QueryParameters {
+            append("abc", "cde")
+            append("noequalssign", "")
+        }
+        expectedNoEquals.entries().forEach { entry ->
+            entry.value.forEach { value ->
+                assertTrue(actualNoEquals.contains(entry.key, value), "parsed query does not contain ${entry.key}:$value")
+            }
+        }
     }
 }
