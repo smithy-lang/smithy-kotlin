@@ -97,12 +97,10 @@ public fun String.splitAsQueryParameters(): QueryParameters {
     val builder = QueryParametersBuilder()
     s.split("&")
         .forEach { pair ->
-            val idx = pair.indexOf("=")
-            if (idx > 0) {
-                val key = pair.substring(0, idx)
-                val value = if (idx > 0 && idx + 1 < pair.length) pair.substring(idx + 1) else ""
-                builder.append(key, value)
-            }
+            val parts = pair.split("=")
+            val key = parts[0]
+            val value = if (parts.size > 1) parts[1] else ""
+            builder.append(key, value)
         }
 
     return builder.build()
