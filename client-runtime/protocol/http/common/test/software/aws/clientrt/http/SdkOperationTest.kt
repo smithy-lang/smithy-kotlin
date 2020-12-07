@@ -13,7 +13,7 @@ class SdkOperationTest {
 
     @Test
     fun testBuilder() {
-        val op = SdkOperation.build {
+        val op = SdkHttpOperation.build {
             service = "test"
             operationName = "operation"
             expectedHttpStatus = 418
@@ -21,14 +21,14 @@ class SdkOperationTest {
 
         assertEquals("test", op[(SdkClientOption.ServiceName)])
         assertEquals("operation", op[SdkClientOption.OperationName])
-        assertEquals(418, op[SdkOperation.ExpectedHttpStatus])
-        assertNull(op.getOrNull(SdkOperation.OperationSerializer))
+        assertEquals(418, op[SdkHttpOperation.ExpectedHttpStatus])
+        assertNull(op.getOrNull(SdkHttpOperation.OperationSerializer))
     }
 
     @Test
     fun testMissingRequiredProperties() {
         val ex = assertFailsWith<IllegalArgumentException> {
-            SdkOperation.build {
+            SdkHttpOperation.build {
                 service = "test"
             }
         }

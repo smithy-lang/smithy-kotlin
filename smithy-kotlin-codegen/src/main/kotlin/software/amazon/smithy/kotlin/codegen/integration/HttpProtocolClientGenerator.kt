@@ -207,7 +207,7 @@ open class HttpProtocolClientGenerator(
         }
 
         // build the execution context
-        writer.openBlock("val execCtx = SdkOperation.build {")
+        writer.openBlock("val execCtx = SdkHttpOperation.build {")
             .call {
                 if (inputShape.isPresent) {
                     writer.write("serializer = ${op.serializerName()}(input)")
