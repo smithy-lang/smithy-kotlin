@@ -17,7 +17,7 @@ import software.aws.clientrt.util.InternalAPI
  * Common configuration for an SDK (HTTP) operation/call
  */
 @InternalAPI
-open class SdkOperation {
+open class SdkHttpOperation {
 
     companion object {
         /**

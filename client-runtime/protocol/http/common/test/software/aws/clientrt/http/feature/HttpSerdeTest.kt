@@ -39,7 +39,7 @@ class HttpSerdeTest {
         }
         val ctx = HttpRequestContext(
             ExecutionContext.build {
-                attributes[SdkOperation.OperationSerializer] = input
+                attributes[SdkHttpOperation.OperationSerializer] = input
             }
         )
         client.requestPipeline.execute(ctx, builder)
@@ -65,7 +65,7 @@ class HttpSerdeTest {
         }
 
         val execCtx = ExecutionContext.build {
-            attributes[SdkOperation.OperationDeserializer] = userDeserializer
+            attributes[SdkHttpOperation.OperationDeserializer] = userDeserializer
         }
 
         val req = HttpRequestBuilder().build()
