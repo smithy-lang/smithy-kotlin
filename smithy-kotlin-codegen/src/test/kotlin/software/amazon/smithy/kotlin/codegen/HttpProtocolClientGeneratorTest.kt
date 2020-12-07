@@ -107,7 +107,7 @@ class HttpProtocolClientGeneratorTest {
         val expectedBodies = listOf(
 """
     override suspend fun getFoo(input: GetFooRequest): GetFooResponse {
-        val execCtx = SdkOperation.build {
+        val execCtx = SdkHttpOperation.build {
             serializer = GetFooSerializer(input)
             deserializer = GetFooDeserializer()
             expectedHttpStatus = 200
@@ -123,7 +123,7 @@ class HttpProtocolClientGeneratorTest {
             method = HttpMethod.GET
             url.path = "/foo-no-input"
         }
-        val execCtx = SdkOperation.build {
+        val execCtx = SdkHttpOperation.build {
             deserializer = GetFooNoInputDeserializer()
             expectedHttpStatus = 200
             service = serviceName
@@ -134,7 +134,7 @@ class HttpProtocolClientGeneratorTest {
 """,
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
-        val execCtx = SdkOperation.build {
+        val execCtx = SdkHttpOperation.build {
             serializer = GetFooNoOutputSerializer(input)
             expectedHttpStatus = 200
             service = serviceName
@@ -145,7 +145,7 @@ class HttpProtocolClientGeneratorTest {
 """,
 """
     override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
-        val execCtx = SdkOperation.build {
+        val execCtx = SdkHttpOperation.build {
             serializer = GetFooStreamingInputSerializer(input)
             deserializer = GetFooStreamingInputDeserializer()
             expectedHttpStatus = 200
@@ -157,7 +157,7 @@ class HttpProtocolClientGeneratorTest {
 """,
 """
     override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
-        val execCtx = SdkOperation.build {
+        val execCtx = SdkHttpOperation.build {
             serializer = GetFooStreamingOutputSerializer(input)
             deserializer = GetFooStreamingOutputDeserializer()
             expectedHttpStatus = 200
@@ -173,7 +173,7 @@ class HttpProtocolClientGeneratorTest {
             method = HttpMethod.POST
             url.path = "/foo-streaming-output-no-input"
         }
-        val execCtx = SdkOperation.build {
+        val execCtx = SdkHttpOperation.build {
             deserializer = GetFooStreamingOutputNoInputDeserializer()
             expectedHttpStatus = 200
             service = serviceName
@@ -184,7 +184,7 @@ class HttpProtocolClientGeneratorTest {
 """,
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
-        val execCtx = SdkOperation.build {
+        val execCtx = SdkHttpOperation.build {
             serializer = GetFooStreamingInputNoOutputSerializer(input)
             expectedHttpStatus = 200
             service = serviceName
