@@ -40,22 +40,22 @@ class ShapeValueGenerator(
     fun writeShapeValueInline(writer: KotlinWriter, shape: Shape, params: Node) {
         val nodeVisitor = ShapeValueNodeVisitor(writer, this, shape)
         when (shape.type) {
-            ShapeType.STRUCTURE -> classDecl(writer, shape.asStructureShape().get()) {
+            ShapeType.STRUCTURE -> classDeclaration(writer, shape.asStructureShape().get()) {
                 params.accept(nodeVisitor)
             }
-            ShapeType.MAP -> mapDecl(writer, shape.asMapShape().get()) {
+            ShapeType.MAP -> mapDeclaration(writer, shape.asMapShape().get()) {
                 params.accept(nodeVisitor)
             }
-            ShapeType.LIST, ShapeType.SET -> collectionDecl(writer, shape as CollectionShape) {
+            ShapeType.LIST, ShapeType.SET -> collectionDeclaration(writer, shape as CollectionShape) {
                 params.accept(nodeVisitor)
             }
-            else -> primitiveDecl(writer, shape) {
+            else -> primitiveDeclaration(writer, shape) {
                 params.accept(nodeVisitor)
             }
         }
     }
 
-    private fun classDecl(writer: KotlinWriter, shape: StructureShape, block: () -> Unit) {
+    private fun classDeclaration(writer: KotlinWriter, shape: StructureShape, block: () -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
         // invoke the generated DSL builder for the class
         writer.writeInline("\$L {\n", symbol.name)
@@ -66,16 +66,13 @@ class ShapeValueGenerator(
             .write("}")
     }
 
-    private fun mapDecl(writer: KotlinWriter, shape: MapShape, block: () -> Unit) {
+    private fun mapDeclaration(writer: KotlinWriter, shape: MapShape, block: () -> Unit) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
-        val targetKeyShape = model.expectShape(shape.key.target)
-        val targetValueShape = model.expectShape(shape.value.target)
-        val keySymbol = symbolProvider.toSymbol(targetKeyShape)
-        val valueSymbol = symbolProvider.toSymbol(targetValueShape)
+        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolVisitor.IMMUTABLE_COLLECTION_FUNCTION)
 
-        writer.writeInline("mapOf<\$L, \$L>(\n", keySymbol.name, valueSymbol.name)
+        writer.writeInline("$collectionGeneratorFunction(\n")
             .indent()
             .call { block() }
             .dedent()
@@ -85,13 +82,13 @@ class ShapeValueGenerator(
         writer.popState()
     }
 
-    private fun collectionDecl(writer: KotlinWriter, shape: CollectionShape, block: () -> Unit) {
+    private fun collectionDeclaration(writer: KotlinWriter, shape: CollectionShape, block: () -> Unit) {
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
-        val mutableCollection = symbolProvider.toSymbol(shape).expectProperty(SymbolVisitor.IMMUTABLE_COLLECTION_FUNCTION)
+        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolVisitor.IMMUTABLE_COLLECTION_FUNCTION)
 
-        writer.writeInline("$mutableCollection(\n")
+        writer.writeInline("$collectionGeneratorFunction(\n")
             .indent()
             .call { block() }
             .dedent()
@@ -101,7 +98,7 @@ class ShapeValueGenerator(
         writer.popState()
     }
 
-    private fun primitiveDecl(writer: KotlinWriter, shape: Shape, block: () -> Unit) {
+    private fun primitiveDeclaration(writer: KotlinWriter, shape: Shape, block: () -> Unit) {
         var suffix = ""
         when (shape.type) {
             ShapeType.STRING -> {
@@ -159,9 +156,14 @@ class ShapeValueGenerator(
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
                         writer.writeInline("\$S to ", keyNode.value)
-                        generator.writeShapeValueInline(writer, memberShape, valueNode)
-                        if (i < node.members.size - 1) {
-                            writer.writeInline(",\n")
+
+                        if (valueNode is NullNode) {
+                            writer.write("null")
+                        } else {
+                            generator.writeShapeValueInline(writer, memberShape, valueNode)
+                            if (i < node.members.size - 1) {
+                                writer.writeInline(",\n")
+                            }
                         }
                     }
                     is DocumentShape -> {

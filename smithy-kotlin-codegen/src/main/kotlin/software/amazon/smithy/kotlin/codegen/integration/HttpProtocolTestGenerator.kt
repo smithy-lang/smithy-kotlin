@@ -25,6 +25,10 @@ import java.util.*
 import java.util.logging.Logger
 
 /**
+ * Specifies tests to add or subtract to the complete set.
+ */
+data class MemberDeltaSpecification(val members: Set<String>, val exclusive: Boolean = true)
+/**
  * Generates protocol unit tests for the HTTP protocol from smithy models.
  */
 class HttpProtocolTestGenerator(
@@ -33,7 +37,7 @@ class HttpProtocolTestGenerator(
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     // list of test ID's to ignore/skip
-    private val testsToIgnore: Set<String> = setOf()
+    private val testDelta: MemberDeltaSpecification = MemberDeltaSpecification(setOf())
 ) {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
@@ -136,7 +140,10 @@ class HttpProtocolTestGenerator(
     }
 
     private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
-        it.protocol == ctx.protocol && it.id !in testsToIgnore
+        when(testDelta.exclusive) {
+            true -> it.protocol == ctx.protocol && it.id !in testDelta.members
+            false -> it.protocol == ctx.protocol && it.id in testDelta.members
+        }
     }
 }
 
