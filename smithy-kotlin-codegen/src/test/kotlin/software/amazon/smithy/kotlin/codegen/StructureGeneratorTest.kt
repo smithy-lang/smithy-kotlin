@@ -630,4 +630,117 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
         contents.shouldContainOnlyOnce(expectedEqualsContent)
         contents.shouldContainOnlyOnce(expectedHashCodeContent)
     }
+
+    @Test
+    fun `it generates collection types for maps with enum values`() {
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [GetFoo]
+            }
+
+            @http(method: "POST", uri: "/input/list")
+            operation GetFoo {
+                input: GetFooInput
+            }
+            
+            @enum([
+                {
+                    value: "rawValue1",
+                    name: "Variant1"
+                },
+                {
+                    value: "rawValue2",
+                    name: "Variant2"
+                }
+            ])
+            string MyEnum
+            
+            map EnumMap {
+                key: String,
+                value: MyEnum
+            }
+            
+            structure GetFooInput {
+                enumMap: EnumMap
+            }
+        """.asSmithyModel()
+        val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val generator = StructureGenerator(model, provider, writer, struct)
+        generator.render()
+        val contents = writer.toString()
+
+        listOf(
+            "val enumMap: Map<String, MyEnum>? = builder.enumMap",
+            "override var enumMap: Map<String, MyEnum>? = null"
+        ).forEach { line ->
+            contents.shouldContainOnlyOnce(line)
+        }
+    }
+
+    @Test
+    fun `it generates collection types for sparse maps with enum values`() {
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [GetFoo]
+            }
+
+            @http(method: "POST", uri: "/input/list")
+            operation GetFoo {
+                input: GetFooInput
+            }
+            
+            @enum([
+                {
+                    value: "rawValue1",
+                    name: "Variant1"
+                },
+                {
+                    value: "rawValue2",
+                    name: "Variant2"
+                }
+            ])
+            string MyEnum
+            
+            @sparse
+            map EnumMap {
+                key: String,
+                value: MyEnum
+            }
+            
+            structure GetFooInput {
+                enumMap: EnumMap
+            }
+        """.asSmithyModel()
+        val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val writer = KotlinWriter("com.test")
+        val generator = StructureGenerator(model, provider, writer, struct)
+        generator.render()
+        val contents = writer.toString()
+
+        println(contents)
+
+        listOf(
+            "val enumMap: Map<String, MyEnum?>? = builder.enumMap",
+            "override var enumMap: Map<String, MyEnum?>? = null"
+        ).forEach { line ->
+            contents.shouldContainOnlyOnce(line)
+        }
+    }
 }

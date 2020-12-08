@@ -68,7 +68,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         MAPOFLISTS_DESCRIPTOR.index -> value =
             deserializer.deserializeMap(MAPOFLISTS_DESCRIPTOR) {
-                val map0 = mutableMapOf<String, List<Int>?>()
+                val map0 = mutableMapOf<String, List<Int>>()
                 while(hasNextEntry()) {
                     val k0 = key()
                     val el0 =
@@ -80,7 +80,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                         }
                         MyAggregateUnion.MapOfLists(list1)
                     }
-                    map0[k0] = el0
+                    if (el0 != null) map0[k0] = el0
                 }
                 MyAggregateUnion.MapOfLists(map0)
             }
@@ -88,6 +88,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     }
 }
 """
+        // kotlin.test.assertEquals(expected, contents)
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -144,11 +145,11 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         INTMAP_DESCRIPTOR.index -> value =
             deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
-                val map0 = mutableMapOf<String, Int?>()
+                val map0 = mutableMapOf<String, Int>()
                 while(hasNextEntry()) {
                     val k0 = key()
                     val el0 = deserializeInt()
-                    map0[k0] = el0
+                    if (el0 != null) map0[k0] = el0
                 }
                 MyAggregateUnion.IntMap(map0)
             }
@@ -158,6 +159,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     }
 }
 """
+        // kotlin.test.assertEquals(expected, contents)
         contents.shouldContainOnlyOnce(expected)
     }
 }

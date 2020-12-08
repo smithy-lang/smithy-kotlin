@@ -224,7 +224,7 @@ class SerializeStructGenerator(
                         val sparseList = ctx.model.expectShape(member.target).hasTrait(SparseTrait::class.java)
 
                         if (sparseList) {
-                            writer.write("if (\$L != null) \$L(\$L) else serializeNull(\$L)", iteratorName, targetShape.type.primitiveSerializerFunctionName(), iter, member.descriptorName())
+                            writer.write("if (\$L != null) \$L(\$L) else serializeNull()", iteratorName, targetShape.type.primitiveSerializerFunctionName(), iter)
                         } else {
                             writer.write("\$L(\$L)", targetShape.type.primitiveSerializerFunctionName(), iter)
                         }

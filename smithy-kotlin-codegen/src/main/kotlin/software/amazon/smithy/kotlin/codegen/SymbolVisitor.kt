@@ -134,7 +134,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     companion object {
         // Mutable collection type
-        const val MUTABLE_COLLECTION_TYPE: String = "mutableCollectionType"
+        const val MUTABLE_COLLECTION_FUNCTION: String = "mutableCollectionType"
+        const val IMMUTABLE_COLLECTION_FUNCTION: String = "immutableCollectionType"
     }
 
     override fun toSymbol(shape: Shape): Symbol {
@@ -246,7 +247,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
         return createSymbolBuilder(shape, "List<${reference.name}>", boxed = true)
             .addReference(reference)
-            .putProperty(MUTABLE_COLLECTION_TYPE, "mutableListOf<${reference.name}>")
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableListOf<${reference.name}>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "listOf<${reference.name}>")
             .build()
     }
 
@@ -267,13 +269,18 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
         return createSymbolBuilder(shape, "Map<String, ${reference.name}>", boxed = true)
             .addReference(reference)
-            .putProperty(MUTABLE_COLLECTION_TYPE, "mutableMapOf<String, ${reference.name}>")
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, ${reference.name}>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, ${reference.name}>")
             .build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", boxed = true).addReference(reference).build()
+        return createSymbolBuilder(shape, "Set<${reference.name}>", boxed = true)
+            .addReference(reference)
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableSetOf<${reference.name}>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "setOf<${reference.name}>")
+            .build()
     }
 
     override fun memberShape(shape: MemberShape): Symbol {

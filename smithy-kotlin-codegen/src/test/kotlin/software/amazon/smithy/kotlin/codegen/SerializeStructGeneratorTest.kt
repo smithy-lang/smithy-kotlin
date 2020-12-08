@@ -205,7 +205,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
     if (input.sparseIntList != null) {
         listField(SPARSEINTLIST_DESCRIPTOR) {
             for(m0 in input.sparseIntList) {
-                if (m0 != null) serializeInt(m0) else serializeNull(SPARSEINTLIST_DESCRIPTOR)
+                if (m0 != null) serializeInt(m0) else serializeNull()
             }
         }
     }

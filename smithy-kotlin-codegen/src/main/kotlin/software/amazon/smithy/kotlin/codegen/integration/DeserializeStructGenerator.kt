@@ -208,7 +208,8 @@ class DeserializeStructGenerator(
     ) {
         val destMap = "map$level"
         val elementName = "el$level"
-        val mutableCollection = ctx.symbolProvider.toSymbol(collectionShape).expectProperty(SymbolVisitor.MUTABLE_COLLECTION_TYPE)
+        val sparseMap = ctx.model.expectShape(memberShape.target).hasTrait(SparseTrait::class.java)
+        val mutableCollection = ctx.symbolProvider.toSymbol(collectionShape).expectProperty(SymbolVisitor.MUTABLE_COLLECTION_FUNCTION)
 
         writer.openBlock("deserializer.deserializeMap(\$L) {", memberShape.descriptorName())
             .write("val $destMap = $mutableCollection()")
@@ -234,7 +235,12 @@ class DeserializeStructGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("$destMap[$keyName] = $elementName")
+
+                if (sparseMap) {
+                    writer.write("$destMap[$keyName] = $elementName")
+                } else {
+                    writer.write("if ($elementName != null) $destMap[$keyName] = $elementName")
+                }
             }
             .closeBlock("}")
             // implicit return of `deserializeMap` lambda is last expression

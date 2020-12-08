@@ -89,10 +89,9 @@ class ShapeValueGenerator(
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
-        val targetMemberShape = model.expectShape(shape.member.target)
-        val memberSymbol = symbolProvider.toSymbol(targetMemberShape)
-        val collectionType = if (shape.isListShape) "listOf" else "setOf"
-        writer.writeInline("$collectionType<\$L>(\n", memberSymbol.name)
+        val mutableCollection = symbolProvider.toSymbol(shape).expectProperty(SymbolVisitor.IMMUTABLE_COLLECTION_FUNCTION)
+
+        writer.writeInline("$mutableCollection(\n")
             .indent()
             .call { block() }
             .dedent()
