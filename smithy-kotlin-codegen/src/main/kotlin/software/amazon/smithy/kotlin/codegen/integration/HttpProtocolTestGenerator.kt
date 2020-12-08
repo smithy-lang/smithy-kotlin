@@ -27,7 +27,7 @@ import java.util.logging.Logger
 /**
  * Specifies tests to add or subtract to the complete set.
  */
-data class MemberDeltaSpecification(val members: Set<String>, val exclusive: Boolean = true)
+data class TestMemberDelta(val members: Set<String>, val exclusive: Boolean = true)
 /**
  * Generates protocol unit tests for the HTTP protocol from smithy models.
  */
@@ -37,7 +37,7 @@ class HttpProtocolTestGenerator(
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     // list of test ID's to ignore/skip
-    private val testDelta: MemberDeltaSpecification = MemberDeltaSpecification(setOf())
+    private val testDelta: TestMemberDelta = TestMemberDelta(setOf())
 ) {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
