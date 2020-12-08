@@ -36,7 +36,7 @@ typealias DeserializationProvider = (payload: ByteArray) -> Deserializer
  * that can be used to create a [Deserializer] instance for handling response payloads.
  */
 interface HttpDeserialize {
-    suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any
+    suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): Any?
 }
 
 /**
@@ -73,7 +73,7 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
                 // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming
                 // we can't read the body into memory ourselves
                 val content = deserializer.deserialize(context.response, serde::deserializer)
-                proceedWith(content)
+                if (content != null) proceedWith(content)
             }
         }
     }
