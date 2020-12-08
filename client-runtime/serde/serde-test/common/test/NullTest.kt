@@ -30,7 +30,8 @@ class NullTest {
                             else -> throw RuntimeException("unexpected field in BasicStructTest deserializer")
                         }
                     }
-                }) result else null
+                }
+                ) result else null
             }
         }
     }
@@ -47,14 +48,15 @@ class NullTest {
             fun deserialize(deserializer: Deserializer): ParentStruct? {
                 val result = ParentStruct()
                 return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                        loop@ while (true) {
-                            when (findNextFieldIndex()) {
-                                X_DESCRIPTOR.index -> result.childStruct = ChildStruct.deserialize(deserializer)
-                                null -> break@loop
-                                else -> throw RuntimeException("unexpected field in BasicStructTest deserializer")
-                            }
+                    loop@ while (true) {
+                        when (findNextFieldIndex()) {
+                            X_DESCRIPTOR.index -> result.childStruct = ChildStruct.deserialize(deserializer)
+                            null -> break@loop
+                            else -> throw RuntimeException("unexpected field in BasicStructTest deserializer")
                         }
-                    }) result else null
+                    }
+                }
+                ) result else null
             }
         }
     }
@@ -74,15 +76,16 @@ class NullTest {
             fun deserialize(deserializer: Deserializer): ChildStruct? {
                 val result = ChildStruct()
                 return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                        loop@ while (true) {
-                            when (findNextFieldIndex()) {
-                                X_DESCRIPTOR.index -> result.x = deserializeInt()
-                                Y_DESCRIPTOR.index -> result.y = deserializeInt()
-                                null -> break@loop
-                                else -> throw RuntimeException("unexpected field in ChildStruct deserializer")
-                            }
+                    loop@ while (true) {
+                        when (findNextFieldIndex()) {
+                            X_DESCRIPTOR.index -> result.x = deserializeInt()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
+                            null -> break@loop
+                            else -> throw RuntimeException("unexpected field in ChildStruct deserializer")
                         }
-                    }) result else null
+                    }
+                }
+                ) result else null
             }
         }
     }

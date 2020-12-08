@@ -232,16 +232,17 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member).let { symbol ->
-            when(shape.hasTrait(SparseTrait::class.java)) {
+            when (shape.hasTrait(SparseTrait::class.java)) {
                 false -> symbol
-                true -> Symbol.builder() // The inner symbol must be modified for sparse trait.
-                    .dependencies(symbol.dependencies)
-                    .references(symbol.references)
-                    .declarationFile(symbol.declarationFile)
-                    .definitionFile(symbol.definitionFile)
-                    .namespace(symbol.namespace, symbol.namespaceDelimiter)
-                    .name("${symbol.name}?")
-                    .build()
+                true ->
+                    Symbol.builder() // The inner symbol must be modified for sparse trait.
+                        .dependencies(symbol.dependencies)
+                        .references(symbol.references)
+                        .declarationFile(symbol.declarationFile)
+                        .definitionFile(symbol.definitionFile)
+                        .namespace(symbol.namespace, symbol.namespaceDelimiter)
+                        .name("${symbol.name}?")
+                        .build()
             }
         }
 
@@ -254,16 +255,17 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value).let { symbol ->
-            when(shape.hasTrait(SparseTrait::class.java)) {
+            when (shape.hasTrait(SparseTrait::class.java)) {
                 false -> symbol
-                true -> Symbol.builder() // The inner symbol must be modified for sparse trait.
-                    .dependencies(symbol.dependencies)
-                    .references(symbol.references)
-                    .declarationFile(symbol.declarationFile)
-                    .definitionFile(symbol.definitionFile)
-                    .namespace(symbol.namespace, symbol.namespaceDelimiter)
-                    .name("${symbol.name}?")
-                    .build()
+                true ->
+                    Symbol.builder() // The inner symbol must be modified for sparse trait.
+                        .dependencies(symbol.dependencies)
+                        .references(symbol.references)
+                        .declarationFile(symbol.declarationFile)
+                        .definitionFile(symbol.definitionFile)
+                        .namespace(symbol.namespace, symbol.namespaceDelimiter)
+                        .name("${symbol.name}?")
+                        .build()
             }
         }
 

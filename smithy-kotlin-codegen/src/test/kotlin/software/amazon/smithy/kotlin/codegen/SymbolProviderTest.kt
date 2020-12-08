@@ -232,7 +232,6 @@ class SymbolProviderTest {
             }
         """.asSmithyModel()
 
-
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
 
         val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("foo.bar#MyMap"))

@@ -140,7 +140,7 @@ class HttpProtocolTestGenerator(
     }
 
     private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
-        when(testDelta.exclusive) {
+        when (testDelta.exclusive) {
             true -> it.protocol == ctx.protocol && it.id !in testDelta.members
             false -> it.protocol == ctx.protocol && it.id in testDelta.members
         }

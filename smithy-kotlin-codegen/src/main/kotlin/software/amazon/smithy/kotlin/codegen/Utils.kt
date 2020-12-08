@@ -34,5 +34,6 @@ fun isValidKotlinIdentifier(s: String): Boolean {
  */
 inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
     this.expectShape(ShapeId.from(shapeId)).also {
-            shape -> require(shape is T) { "Shape $shapeId was expected to be ${T::class.java} but was ${shape::class.java}" }
+        shape ->
+        require(shape is T) { "Shape $shapeId was expected to be ${T::class.java} but was ${shape::class.java}" }
     } as T

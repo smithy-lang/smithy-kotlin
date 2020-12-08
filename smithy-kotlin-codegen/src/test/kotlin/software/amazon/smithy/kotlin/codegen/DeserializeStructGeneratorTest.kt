@@ -523,7 +523,7 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
 
-        //kotlin.test.assertEquals(expected, actual)
+        // kotlin.test.assertEquals(expected, actual)
         actual.shouldContainOnlyOnce(expected)
     }
 }
