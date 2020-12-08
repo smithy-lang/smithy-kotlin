@@ -58,7 +58,7 @@ interface Deserializer : PrimitiveDeserializer {
      *
      * @param descriptor SdkObjectDescriptor the structure descriptor
      */
-    fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
+    fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator?
 
     /**
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
@@ -171,9 +171,14 @@ interface PrimitiveDeserializer {
     fun deserializeBool(): Boolean?
 }
 
-fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
+fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit): Boolean {
     val deserializer = deserializeStruct(descriptor)
-    block(deserializer)
+    return if (deserializer != null) {
+        block(deserializer)
+        true
+    } else {
+        false
+    }
 }
 
 fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: Deserializer.ElementIterator.() -> T): T {
