@@ -8,10 +8,7 @@ import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import software.aws.clientrt.serde.*
 import kotlin.math.abs
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNull
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
@@ -21,6 +18,7 @@ class JsonDeserializerTest {
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeDouble()
         val expected = 1.2
+        assertNotNull(actual)
         assertTrue(abs(actual - expected) <= 0.0001)
     }
 
@@ -30,6 +28,7 @@ class JsonDeserializerTest {
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeFloat()
         val expected = 1.2f
+        assertNotNull(actual)
         assertTrue(abs(actual - expected) <= 0.0001f)
     }
 
@@ -74,6 +73,7 @@ class JsonDeserializerTest {
         val payload = "true".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeBool()
+        assertNotNull(actual)
         assertTrue(actual)
     }
 
@@ -100,9 +100,13 @@ class JsonDeserializerTest {
     @Test
     fun `it handles null`() {
         val payload = "null".encodeToByteArray()
-        val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeString()
-        assertNull(actual)
+        val stringDeserializer = JsonDeserializer(payload)
+        val actualString = stringDeserializer.deserializeString()
+        assertNull(actualString)
+
+        val boolDeserializer = JsonDeserializer(payload)
+        val actualBoolean = boolDeserializer.deserializeBool()
+        assertNull(actualBoolean)
     }
 
     @Test
