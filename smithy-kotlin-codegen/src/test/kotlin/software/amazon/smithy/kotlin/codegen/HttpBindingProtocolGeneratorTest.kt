@@ -354,13 +354,13 @@ class UnionOutputDeserializer : HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionRequest {
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionRequest? {
         val builder = UnionRequest.dslBuilder()
 
         val payload = response.body.readAll()
         if (payload != null) {
             val deserializer = provider(payload)
-            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
                         PAYLOADUNION_DESCRIPTOR.index -> builder.payloadUnion = MyUnionDeserializer().deserialize(deserializer)
@@ -368,7 +368,7 @@ class UnionOutputDeserializer : HttpDeserialize {
                         else -> skipValue()
                     }
                 }
-            }
+            }) builder.build() else null
         }
         return builder.build()
     }
@@ -393,13 +393,13 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionAggregateRequest {
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionAggregateRequest? {
         val builder = UnionAggregateRequest.dslBuilder()
 
         val payload = response.body.readAll()
         if (payload != null) {
             val deserializer = provider(payload)
-            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
                         PAYLOADAGGREGATEUNION_DESCRIPTOR.index -> builder.payloadAggregateUnion = MyAggregateUnionDeserializer().deserialize(deserializer)
@@ -407,7 +407,7 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
                         else -> skipValue()
                     }
                 }
-            }
+            }) builder.build() else null
         }
         return builder.build()
     }
@@ -684,7 +684,7 @@ class SmokeTestDeserializer : HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): SmokeTestResponse {
+    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): SmokeTestResponse? {
         val builder = SmokeTestResponse.dslBuilder()
 
         builder.intHeader = response.headers["X-Header2"]?.toInt()
@@ -694,7 +694,7 @@ class SmokeTestDeserializer : HttpDeserialize {
         val payload = response.body.readAll()
         if (payload != null) {
             val deserializer = provider(payload)
-            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
                         PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
@@ -705,7 +705,7 @@ class SmokeTestDeserializer : HttpDeserialize {
                         else -> skipValue()
                     }
                 }
-            }
+            }) builder.build() else null
         }
         return builder.build()
     }
@@ -797,9 +797,9 @@ class Nested3Deserializer {
         }
     }
 
-    fun deserialize(deserializer: Deserializer): Nested3 {
+    fun deserialize(deserializer: Deserializer): Nested3? {
         val builder = Nested3.dslBuilder()
-        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+        return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while(true) {
                 when(findNextFieldIndex()) {
                     MEMBER1_DESCRIPTOR.index -> builder.member1 = deserializeString()
@@ -809,8 +809,7 @@ class Nested3Deserializer {
                     else -> skipValue()
                 }
             }
-        }
-        return builder.build()
+        }) builder.build() else null
     }
 }
 """
