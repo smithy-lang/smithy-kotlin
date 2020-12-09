@@ -50,13 +50,13 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> throw DeserializationException("$token cannot be deserialized as type Boolean")
         }
 
-    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator? =
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
         when (reader.peek()) {
             RawJsonToken.BeginObject -> {
                 reader.nextTokenOf<JsonToken.BeginObject>()
                 JsonFieldIterator(reader, descriptor, this)
             }
-            RawJsonToken.Null -> null
+            RawJsonToken.Null -> JsonNullFieldIterator(this)
             else -> error("Unexpected token type ${reader.peek()}")
         }
 
@@ -97,6 +97,15 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             RawJsonToken.EndDocument -> false
             else -> true
         }
+}
+
+// Represents the deserialization of a null object.
+private class JsonNullFieldIterator(deserializer: Deserializer) : Deserializer.FieldIterator, Deserializer by deserializer {
+    override fun findNextFieldIndex(): Int? = null
+
+    override fun skipValue() {
+        error("This should not be called during deserialization.")
+    }
 }
 
 private class JsonFieldIterator(

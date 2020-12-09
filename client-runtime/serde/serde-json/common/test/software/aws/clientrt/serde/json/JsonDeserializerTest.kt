@@ -240,7 +240,7 @@ class JsonDeserializerTest {
         val struct = deserializer.deserializeStruct(BasicStructTest.OBJ_DESCRIPTOR)
         var found = false
         loop@ while (true) {
-            when (struct?.findNextFieldIndex()) {
+            when (struct.findNextFieldIndex()) {
                 Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                     found = true
                     struct.skipValue()
@@ -268,7 +268,7 @@ class JsonDeserializerTest {
                 val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested2 = Nested2()
                 loop@ while (true) {
-                    when (struct?.findNextFieldIndex()) {
+                    when (struct.findNextFieldIndex()) {
                         LIST2_FIELD_DESCRIPTOR.index -> nested2.list2 = deserializer.deserializeList(LIST2_FIELD_DESCRIPTOR) {
                             val list = mutableListOf<String>()
                             while (hasNextElement()) {
@@ -304,7 +304,7 @@ class JsonDeserializerTest {
                 val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested = Nested()
                 loop@ while (true) {
-                    when (struct?.findNextFieldIndex()) {
+                    when (struct.findNextFieldIndex()) {
                         NESTED2_FIELD_DESCRIPTOR.index ->
                             nested.nested2 =
                                 Nested2.deserialize(
@@ -398,7 +398,7 @@ class JsonDeserializerTest {
         val struct = deserializer.deserializeStruct(KitchenSinkTest.OBJ_DESCRIPTOR)
         val sink = KitchenSinkTest()
         loop@ while (true) {
-            when (struct?.findNextFieldIndex()) {
+            when (struct.findNextFieldIndex()) {
                 KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = struct.deserializeInt()
                 KitchenSinkTest.LONG_FIELD_DESCRIPTOR.index -> sink.longField = struct.deserializeLong()
                 KitchenSinkTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = struct.deserializeShort()

@@ -370,7 +370,7 @@ private class XmlFieldIterator(
         }
     }
 
-    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator? =
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
         deserializer.deserializeStruct(descriptor)
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator =
