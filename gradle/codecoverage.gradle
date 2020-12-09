@@ -7,13 +7,13 @@ allprojects {
     apply plugin: "jacoco"
 
     jacoco {
-        toolVersion = "0.8.5"
+        toolVersion = "$jacocoVersion"
         reportsDir = file("${buildDir}/jacoco-reports")
     }
 }
 
 subprojects {
-    task testCoverageSubproject(type: JacocoReport) {
+    task testCoverage(type: JacocoReport) {
         group = "Reporting"
         description = "Generate Jacoco coverage reports."
 
@@ -44,20 +44,37 @@ subprojects {
             html.destination file("${buildDir}/jacoco-reports/html")
         }
     }
+
+    // wire up coverage task to depend on the relevant test task.
+    // ...this build file is applied at root build script, test tasks aren't configured until subprojects are (fully) evaluated
+    afterEvaluate {
+        def testTask = null
+        if (tasks.findByName("jvmTest")) {
+            // KMP subproject
+            testTask = tasks.jvmTest
+        }else if(tasks.findByName("test")){
+            // normal JVM project
+            testTask = tasks.test
+        }
+
+        if (testTask != null) {
+            tasks.testCoverage.dependsOn(testTask)
+        }
+    }
 }
 
-task testCoverageMain(type: JacocoReport) {
+task testCoverage(type: JacocoReport) {
     group = "Reporting"
     description = "Generate Jacoco coverage reports."
-    dependsOn subprojects.testCoverageSubproject
-    dependsOn "jacocoMerge"
+    dependsOn subprojects.testCoverage
 
     def classes = files(subprojects.collect {
         files(fileTree(dir: "${it.buildDir}/classes/kotlin/jvm").filter({file -> !file.absolutePath.contains('design/example')}))
         files(fileTree(dir: "${it.buildDir}/classes/kotlin").filter({file -> !file.absolutePath.contains('design/example')}))
     })
 
-    def samples = files(subprojects.testCoverageSubproject.executionData).findAll { it.exists() }
+    def samples = files(subprojects.testCoverage.executionData).findAll { it.exists() }
+
 
     classDirectories.from files(classes)
     executionData.from(samples)
