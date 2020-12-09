@@ -46,7 +46,7 @@ class DeserializeStructGenerator(
 ) {
 
     fun render() {
-        writer.withBlock("return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {", "}) builder.build() else null") {
+        writer.withBlock("deserializer.deserializeStruct(OBJ_DESCRIPTOR) {", "}") {
             withBlock("loop@while(true) {", "}") {
                 withBlock("when(findNextFieldIndex()) {", "}") {
                     members.forEach { member ->

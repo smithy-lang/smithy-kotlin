@@ -36,7 +36,7 @@ class DeserializeStructGeneratorTest {
             ).render()
         }
         val expected = """
-return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
         when(findNextFieldIndex()) {
             PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
@@ -47,7 +47,7 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             else -> skipValue()
         }
     }
-}) builder.build() else null
+}
 """
         contents.shouldContainOnlyOnce(expected)
     }
@@ -91,7 +91,7 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
         val expected = """
-return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
         when(findNextFieldIndex()) {
             BLOBLIST_DESCRIPTOR.index -> builder.blobList =
@@ -151,9 +151,8 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             else -> skipValue()
         }
     }
-}) builder.build() else null
+}
 """
-        // kotlin.test.assertEquals(expected, contents)
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -171,7 +170,7 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
         val expected = """
-return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     loop@while(true) {
         when(findNextFieldIndex()) {
             BLOBMAP_DESCRIPTOR.index -> builder.blobMap =
@@ -237,7 +236,7 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             else -> skipValue()
         }
     }
-}) builder.build() else null
+}
 """
         // kotlin.test.assertEquals(expected, contents)
         contents.shouldContainOnlyOnce(expected)
@@ -252,7 +251,7 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 
 
 
-            return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
                         SPARSEINTLIST_DESCRIPTOR.index -> builder.sparseIntList =
@@ -268,7 +267,7 @@ return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                         else -> skipValue()
                     }
                 }
-            }) builder.build() else null
+            }
         
         """.trimIndent()
 

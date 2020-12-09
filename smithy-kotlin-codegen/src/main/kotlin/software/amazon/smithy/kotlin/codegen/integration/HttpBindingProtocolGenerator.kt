@@ -808,7 +808,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer: KotlinWriter
     ) {
         writer.openBlock(
-            "override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): \$L? {",
+            "override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): \$L {",
             outputSymbol.name
         )
             .write("val builder = ${outputSymbol.name}.dslBuilder()")
@@ -1127,20 +1127,23 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
             }
             .call {
-                when {
-                    shape.isStructureShape -> writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
-                        writer.write("val builder = ${symbol.name}.dslBuilder()")
-                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                    }
-                    shape.isUnionShape -> writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
+
+                if (shape.isUnionShape) {
+                    writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
                         writer.write("var value: ${symbol.name}? = null")
                         DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                         writer.write("return value")
                     }
-                    else -> error("Unexpected shape type ${shape.type}.")
+                        .closeBlock("}")
+                } else {
+                    writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                        writer.write("val builder = ${symbol.name}.dslBuilder()")
+                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        writer.write("return builder.build()")
+                    }
+                        .closeBlock("}")
                 }
             }
-            .closeBlock("}")
     }
 }
 
