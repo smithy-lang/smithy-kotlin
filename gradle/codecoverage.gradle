@@ -18,13 +18,13 @@ subprojects {
         description = "Generate Jacoco coverage reports."
 
         def coverageSourceDirs = [
-                "common/src",
-                "jvm/src",
-                "src/main/kotlin"
+            "common/src",
+            "jvm/src",
+            "src/main/kotlin"
         ]
         // Do not add example projects coverage info
         if (!project.name.contains("example")) {
-            classDirectories.from files(fileTree(dir: "${buildDir}/classes/kotlin/jvm/"), fileTree(dir: "${buildDir}/classes/kotlin/"))
+            classDirectories.from files(fileTree(dir: "${buildDir}/classes/kotlin/jvm/main"), fileTree(dir: "${buildDir}/classes/kotlin/main"))
             sourceDirectories.from files(coverageSourceDirs)
             additionalSourceDirs.from files(coverageSourceDirs)
         }
@@ -69,15 +69,28 @@ task testCoverage(type: JacocoReport) {
     dependsOn subprojects.testCoverage
 
     def classes = files(subprojects.collect {
-        files(fileTree(dir: "${it.buildDir}/classes/kotlin/jvm").filter({file -> !file.absolutePath.contains('design/example')}))
-        files(fileTree(dir: "${it.buildDir}/classes/kotlin").filter({file -> !file.absolutePath.contains('design/example')}))
+        files(
+            fileTree(dir: "${it.buildDir}/classes/kotlin/jvm/main").filter({file -> !file.absolutePath.contains('design/example')}),
+            fileTree(dir: "${it.buildDir}/classes/kotlin/main").filter({file -> !file.absolutePath.contains('design/example')})
+        )
     })
 
     def samples = files(subprojects.testCoverage.executionData).findAll { it.exists() }
 
+    def coverageSourceDirs = [
+        "common/src",
+        "jvm/src",
+        "src/main/kotlin"
+    ]
+
+    def coverageSources = subprojects.findResults {
+        it.files(coverageSourceDirs)
+    }
 
     classDirectories.from files(classes)
     executionData.from(samples)
+    sourceDirectories.from files(coverageSources)
+    additionalSourceDirs.from files(coverageSources)
 
     reports {
         xml.enabled true
