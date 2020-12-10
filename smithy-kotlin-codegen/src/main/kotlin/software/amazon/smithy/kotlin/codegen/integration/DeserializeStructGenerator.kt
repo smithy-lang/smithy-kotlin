@@ -230,17 +230,27 @@ class DeserializeStructGenerator(
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                         renderDeserializeMap(memberShape, targetShape, nestedTarget, level + 1)
                     }
-                    else -> {
+                    is StructureShape -> {
+                        val deserializeForElement = deserializerForShape(targetShape)
+                        when (sparseMap) {
+                            true -> {
+                                writer.openBlock("val $elementName = when (hasValue()) {", "}") {
+                                    writer.write("true -> $deserializeForElement")
+                                    writer.write("false -> deserializer.deserializeNull()")
+                                }
+                            }
+                            false -> {
+                                writer.write("val $elementName = $deserializeForElement")
+                            }
+                        }
+                    }
+                    is SimpleShape -> {
                         val deserializeForElement = deserializerForShape(targetShape)
                         writer.write("val $elementName = $deserializeForElement")
                     }
+                    else -> TODO("Unhandled codegen path for $targetShape")
                 }
-
-                if (sparseMap) {
-                    writer.write("$destMap[$keyName] = $elementName")
-                } else {
-                    writer.write("if ($elementName != null) $destMap[$keyName] = $elementName")
-                }
+                writer.write("$destMap[$keyName] = $elementName")
             }
             .closeBlock("}")
             // implicit return of `deserializeMap` lambda is last expression

@@ -50,6 +50,12 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> throw DeserializationException("$token cannot be deserialized as type Boolean")
         }
 
+    override fun <T> deserializeNull(): T? {
+        val nextToken = reader.nextToken()
+        check(nextToken == JsonToken.Null) { "Expected null token but got $nextToken" }
+        return null
+    }
+
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
         when (reader.peek()) {
             RawJsonToken.BeginObject -> {
@@ -74,6 +80,8 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         val token = reader.nextTokenOf<JsonToken.Name>()
         return token.value
     }
+
+    override fun hasValue(): Boolean = reader.peek() != RawJsonToken.Null
 
     override fun hasNextEntry(): Boolean =
         when (reader.peek()) {

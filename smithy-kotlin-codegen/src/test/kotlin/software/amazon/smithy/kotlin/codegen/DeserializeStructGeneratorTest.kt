@@ -324,8 +324,9 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Int?>()
                                 while(hasNextEntry()) {
                                     val k0 = key()
+                                    val hasValue = hasValue()
                                     val el0 = deserializeInt()
-                                    map0[k0] = el0
+                                    map0[k0] = if (hasValue) el0 else null
                                 }
                                 map0
                             }
@@ -377,6 +378,80 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         }
 
         // kotlin.test.assertEquals(expected, actual)
+        actual.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it handles sparse maps of structs`() {
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while(true) {
+                    when(findNextFieldIndex()) {
+                        SPARSESTRUCTMAP_DESCRIPTOR.index -> builder.sparseStructMap =
+                            deserializer.deserializeMap(SPARSESTRUCTMAP_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, Greeting?>()
+                                while(hasNextEntry()) {
+                                    val k0 = key()
+                                    val el0 = when (hasValue()) {
+                                        true -> GreetingDeserializer().deserialize(deserializer)
+                                        false -> deserializer.deserializeNull()
+                                    }
+                                    map0[k0] = el0
+                                }
+                                map0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val ctx = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [GetFoo]
+            }
+
+            @http(method: "POST", uri: "/input/list")
+            operation GetFoo {
+                output: GetFooOutput
+            }
+            
+            structure Greeting {
+                saying: String
+            }
+            
+            @sparse
+            map SparseStructMap {
+                key: String,
+                value: Greeting
+            }
+            
+            structure GetFooOutput {
+                sparseStructMap: SparseStructMap
+            }
+        """.trimIndent()
+            .asSmithyModel()
+            .newTestContext()
+
+        val op = ctx.expectShape("com.test#GetFoo")
+
+        val actual = testRender(ctx.responseMembers(op)) { members, writer ->
+            DeserializeStructGenerator(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
+
+        kotlin.test.assertEquals(expected, actual)
         actual.shouldContainOnlyOnce(expected)
     }
 
@@ -442,7 +517,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
 
-        // kotlin.test.assertEquals(expected, actual)
+        kotlin.test.assertEquals(expected, actual)
         actual.shouldContainOnlyOnce(expected)
     }
 

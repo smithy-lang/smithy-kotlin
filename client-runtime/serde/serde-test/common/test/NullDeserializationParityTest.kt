@@ -5,7 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class NullTest {
+class NullDeserializationParityTest {
 
     class AnonStruct {
         var x: Int? = null
@@ -19,9 +19,9 @@ class NullTest {
                 field(Y_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): AnonStruct? {
+            fun deserialize(deserializer: Deserializer): AnonStruct {
                 val result = AnonStruct()
-                return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
                             X_DESCRIPTOR.index -> result.x = deserializeInt()
@@ -31,7 +31,7 @@ class NullTest {
                         }
                     }
                 }
-                ) result else null
+                return result
             }
         }
     }
@@ -40,14 +40,14 @@ class NullTest {
         var childStruct: ChildStruct? = null
 
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("ChildStruct", SerialKind.Struct)
+            val X_DESCRIPTOR = SdkFieldDescriptor("ChildStruct", SerialKind.Map)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(X_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): ParentStruct? {
+            fun deserialize(deserializer: Deserializer): ParentStruct {
                 val result = ParentStruct()
-                return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
                             X_DESCRIPTOR.index -> result.childStruct = ChildStruct.deserialize(deserializer)
@@ -56,7 +56,7 @@ class NullTest {
                         }
                     }
                 }
-                ) result else null
+                return result
             }
         }
     }
@@ -73,9 +73,9 @@ class NullTest {
                 field(Y_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): ChildStruct? {
+            fun deserialize(deserializer: Deserializer): ChildStruct {
                 val result = ChildStruct()
-                return if (deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
                             X_DESCRIPTOR.index -> result.x = deserializeInt()
@@ -85,7 +85,7 @@ class NullTest {
                         }
                     }
                 }
-                ) result else null
+                return result
             }
         }
     }

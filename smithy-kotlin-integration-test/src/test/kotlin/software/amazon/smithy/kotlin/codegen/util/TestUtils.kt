@@ -76,12 +76,12 @@ fun testModelChangeAgainstSource(originalModel: Model, updatedModel: Model, test
  * Generate an SDK based on input model, then compile it and the [testSource] together, and return the result of compilation.
  *
  * @param model input model from which the SDK is generated
- * @param testSource Kotlin source code to be compiled with SDK
+ * @param testSource optional Kotlin source code to be compiled with SDK
+ * @param outputSink where to emit compiler messages to, defaults to stdout.
  * @param emitSourcesToTmp a debugging function to emit generated SDK to a temp directory for analysis.  Actual
  * target directory is provided in log output.
  */
-fun compileSdkAndTest(model: Model, testSource: String, outputSink: OutputStream, emitSourcesToTmp: Boolean = false): KotlinCompilation.Result {
-    val testSourceFile = SourceFile.kotlin("test.kt", testSource)
+fun compileSdkAndTest(model: Model, testSource: String? = null, outputSink: OutputStream = System.out, emitSourcesToTmp: Boolean = false): KotlinCompilation.Result {
     val sdkFileManifest = generateSdk(model)
 
     if (emitSourcesToTmp) {
@@ -91,7 +91,12 @@ fun compileSdkAndTest(model: Model, testSource: String, outputSink: OutputStream
         println("Wrote generated SDK to $buildRootDir")
     }
 
-    val sdkSources = sdkFileManifest.toSourceFileList() + testSourceFile
+    val sdkSources = if (testSource != null) {
+        val testSourceFile = SourceFile.kotlin("test.kt", testSource)
+        sdkFileManifest.toSourceFileList() + testSourceFile
+    } else {
+        sdkFileManifest.toSourceFileList()
+    }
 
     // Run test against
     return KotlinCompilation().apply {

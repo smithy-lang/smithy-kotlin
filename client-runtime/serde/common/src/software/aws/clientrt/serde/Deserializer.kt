@@ -101,6 +101,12 @@ interface Deserializer : PrimitiveDeserializer {
          * Read the next key
          */
         fun key(): String
+
+        /**
+         * Returns true if the value for a given key is non-null, false otherwise.
+         * This method can only be called directly after calling [key]
+         */
+        fun hasValue(): Boolean
     }
 
     /**
@@ -169,6 +175,11 @@ interface PrimitiveDeserializer {
      * Deserialize and return the next token as a [Boolean]
      */
     fun deserializeBool(): Boolean?
+
+    /**
+     * Deserialize next token as null.
+     */
+    fun <T> deserializeNull(): T?
 }
 
 fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
