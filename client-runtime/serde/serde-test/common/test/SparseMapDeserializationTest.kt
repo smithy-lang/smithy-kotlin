@@ -1,4 +1,4 @@
-import io.kotest.matchers.maps.shouldContainExactly
+
 import io.kotest.matchers.maps.shouldContainKeys
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
@@ -53,7 +53,6 @@ class SparseMapDeserializationTest {
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
             operator fun invoke(block: DslBuilder.() -> Unit): GetFooOutput = BuilderImpl().apply(block).build()
-
         }
 
         override fun toString() = buildString {
@@ -111,7 +110,6 @@ class SparseMapDeserializationTest {
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
             operator fun invoke(block: DslBuilder.() -> Unit): Greeting = BuilderImpl().apply(block).build()
-
         }
 
         override fun toString() = buildString {
@@ -172,21 +170,22 @@ class SparseMapDeserializationTest {
             val builder = GetFooOutput.dslBuilder()
 
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
-                        SPARSESTRUCTMAP_DESCRIPTOR.index -> builder.sparseStructMap =
-                            deserializer.deserializeMap(SPARSESTRUCTMAP_DESCRIPTOR) {
-                                val map0 = mutableMapOf<String, Greeting?>()
-                                while(hasNextEntry()) {
-                                    val k0 = key()
-                                    val el0 = when (hasValue()) {
-                                        true -> GreetingDeserializer().deserialize(deserializer)
-                                        false -> deserializer.deserializeNull()
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        SPARSESTRUCTMAP_DESCRIPTOR.index ->
+                            builder.sparseStructMap =
+                                deserializer.deserializeMap(SPARSESTRUCTMAP_DESCRIPTOR) {
+                                    val map0 = mutableMapOf<String, Greeting?>()
+                                    while (hasNextEntry()) {
+                                        val k0 = key()
+                                        val el0 = when (hasValue()) {
+                                            true -> GreetingDeserializer().deserialize(deserializer)
+                                            false -> deserializer.deserializeNull()
+                                        }
+                                        map0[k0] = el0
                                     }
-                                    map0[k0] = el0
+                                    map0
                                 }
-                                map0
-                            }
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -209,8 +208,8 @@ class SparseMapDeserializationTest {
         fun deserialize(deserializer: Deserializer): Greeting {
             val builder = Greeting.dslBuilder()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         SAYING_DESCRIPTOR.index -> builder.saying = deserializeString()
                         null -> break@loop
                         else -> skipValue()

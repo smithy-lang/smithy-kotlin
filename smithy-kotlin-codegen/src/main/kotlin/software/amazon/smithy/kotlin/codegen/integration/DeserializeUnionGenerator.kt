@@ -20,7 +20,6 @@ import software.amazon.smithy.kotlin.codegen.SymbolVisitor
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.utils.StringUtils
 

@@ -148,7 +148,7 @@ class XmlDeserializerMapTest {
             val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = when(hasValue()) {
+                val value = when (hasValue()) {
                     true -> deserializeInt()
                     false -> deserializeNull()
                 }
