@@ -178,7 +178,7 @@ class SparseMapDeserializationTest {
                                     val map0 = mutableMapOf<String, Greeting?>()
                                     while (hasNextEntry()) {
                                         val k0 = key()
-                                        val el0 = when (hasValue()) {
+                                        val el0 = when (nextHasValue()) {
                                             true -> GreetingDeserializer().deserialize(deserializer)
                                             false -> deserializer.deserializeNull()
                                         }

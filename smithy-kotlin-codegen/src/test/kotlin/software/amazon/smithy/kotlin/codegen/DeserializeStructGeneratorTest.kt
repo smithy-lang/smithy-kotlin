@@ -257,7 +257,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                             deserializer.deserializeList(SPARSEINTLIST_DESCRIPTOR) {
                                 val list0 = mutableListOf<Int?>()
                                 while(hasNextElement()) {
-                                    val el0 = if (hasValue()) deserializeInt() else deserializeNull()
+                                    val el0 = if (nextHasValue()) deserializeInt() else deserializeNull()
                                     list0.add(el0)
                                 }
                                 list0
@@ -323,7 +323,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Int?>()
                                 while(hasNextEntry()) {
                                     val k0 = key()
-                                    val el0 = if (hasValue()) deserializeInt() else deserializeNull()
+                                    val el0 = if (nextHasValue()) deserializeInt() else deserializeNull()
                                     map0[k0] = el0
                                 }
                                 map0
@@ -389,7 +389,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Greeting?>()
                                 while(hasNextEntry()) {
                                     val k0 = key()
-                                    val el0 = if (hasValue()) GreetingDeserializer().deserialize(deserializer) else deserializeNull()
+                                    val el0 = if (nextHasValue()) GreetingDeserializer().deserialize(deserializer) else deserializeNull()
                                     map0[k0] = el0
                                 }
                                 map0

@@ -24,10 +24,13 @@ import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
 import java.util.*
 import java.util.logging.Logger
 
+enum class TestContainmentMode {
+    RUN_TESTS, EXCLUDE_TESTS
+}
 /**
  * Specifies tests to add or subtract to the complete set.
  */
-data class TestMemberDelta(val members: Set<String>, val exclusive: Boolean = true)
+data class TestMemberDelta(val members: Set<String>, val runMode: TestContainmentMode = TestContainmentMode.EXCLUDE_TESTS)
 /**
  * Generates protocol unit tests for the HTTP protocol from smithy models.
  */
@@ -140,9 +143,9 @@ class HttpProtocolTestGenerator(
     }
 
     private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
-        when (testDelta.exclusive) {
-            true -> it.protocol == ctx.protocol && it.id !in testDelta.members
-            false -> it.protocol == ctx.protocol && it.id in testDelta.members
+        when (testDelta.runMode) {
+            TestContainmentMode.EXCLUDE_TESTS -> it.protocol == ctx.protocol && it.id !in testDelta.members
+            TestContainmentMode.RUN_TESTS -> it.protocol == ctx.protocol && it.id in testDelta.members
         }
     }
 }

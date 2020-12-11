@@ -41,15 +41,13 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> throw DeserializationException("$token cannot be deserialized as type String")
         }
 
-    override fun deserializeBool(): Boolean =
-        when (val token = reader.nextToken()) {
-            is JsonToken.Bool -> token.value
-            else -> throw DeserializationException("$token cannot be deserialized as type Boolean")
-        }
+    override fun deserializeBool(): Boolean {
+        val token = reader.nextTokenOf<JsonToken.Bool>()
+        return token.value
+    }
 
     override fun <T> deserializeNull(): T? {
-        val nextToken = reader.nextToken()
-        check(nextToken == JsonToken.Null) { "Expected null token but got $nextToken" }
+        reader.nextTokenOf<JsonToken.Null>()
         return null
     }
 
@@ -60,7 +58,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
                 JsonFieldIterator(reader, descriptor, this)
             }
             RawJsonToken.Null -> JsonNullFieldIterator(this)
-            else -> error("Unexpected token type ${reader.peek()}")
+            else -> throw DeserializerStateException("Unexpected token type ${reader.peek()}")
         }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
@@ -78,7 +76,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    override fun hasValue(): Boolean = reader.peek() != RawJsonToken.Null
+    override fun nextHasValue(): Boolean = reader.peek() != RawJsonToken.Null
 
     override fun hasNextEntry(): Boolean =
         when (reader.peek()) {
@@ -109,7 +107,7 @@ private class JsonNullFieldIterator(deserializer: Deserializer) : Deserializer.F
     override fun findNextFieldIndex(): Int? = null
 
     override fun skipValue() {
-        error("This should not be called during deserialization.")
+        throw DeserializerStateException("This should not be called during deserialization.")
     }
 }
 

@@ -170,7 +170,7 @@ class DeserializeStructGenerator(
                     else -> {
                         val deserializeForElement = deserializerForShape(targetShape)
                         when (isSparse) {
-                            true -> writer.write("val $elementName = if (hasValue()) $deserializeForElement else deserializeNull()")
+                            true -> writer.write("val $elementName = if (nextHasValue()) $deserializeForElement else deserializeNull()")
                             false -> writer.write("val $elementName = $deserializeForElement")
                         }
                     }
@@ -228,7 +228,7 @@ class DeserializeStructGenerator(
                         val deserializeForElement = deserializerForShape(targetShape)
                         when (isSparse) {
                             true ->
-                                writer.write("val $elementName = if (hasValue()) $deserializeForElement else deserializeNull()")
+                                writer.write("val $elementName = if (nextHasValue()) $deserializeForElement else deserializeNull()")
                             false ->
                                 writer.write("val $elementName = $deserializeForElement")
                         }

@@ -108,6 +108,12 @@ class XmlDeserializer(
         return null
     }
 
+    override fun nextHasValue(): Boolean {
+        val nextToken = reader.peek()
+
+        return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
+    }
+
     private fun <T> deserializePrimitive(transform: (String) -> T?): T {
         val rt = reader.takeToken<XmlToken.Text>(nodeNameStack)
 
@@ -207,12 +213,6 @@ private class CompositeIterator(
         return key
     }
 
-    override fun hasValue(): Boolean {
-        val nextToken = reader.peek()
-
-        return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
-    }
-
     override fun deserializeByte(): Byte {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
@@ -266,6 +266,12 @@ private class CompositeIterator(
     override fun <T> deserializeNull(): T? {
         check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
+    }
+
+    override fun nextHasValue(): Boolean {
+        val nextToken = reader.peek()
+
+        return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
     }
 }
 
@@ -438,6 +444,12 @@ private class XmlFieldIterator(
     override fun <T> deserializeNull(): T? {
         check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
+    }
+
+    override fun nextHasValue(): Boolean {
+        val nextToken = reader.peek()
+
+        return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
     }
 
     // Read a primitive from either TEXT or an attribute based on value of [attributeParseState].

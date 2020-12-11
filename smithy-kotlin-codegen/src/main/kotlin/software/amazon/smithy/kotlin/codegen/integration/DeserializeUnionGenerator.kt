@@ -105,7 +105,7 @@ class DeserializeUnionGenerator(
             ShapeType.DOUBLE -> "deserializeDouble()"
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
-                "deserializeString()?.decodeBase64Bytes()"
+                "deserializeString().decodeBase64Bytes()"
             }
             ShapeType.TIMESTAMP -> {
                 importInstant(writer)

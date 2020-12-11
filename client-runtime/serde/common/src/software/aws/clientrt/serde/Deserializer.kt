@@ -85,11 +85,6 @@ interface Deserializer : PrimitiveDeserializer {
          * or the document has been read completely.
          */
         fun hasNextElement(): Boolean
-
-        /**
-         * Returns true if the value for a given key is non-null, false otherwise.
-         */
-        fun hasValue(): Boolean
     }
 
     /**
@@ -106,12 +101,6 @@ interface Deserializer : PrimitiveDeserializer {
          * Read the next key
          */
         fun key(): String
-
-        /**
-         * Returns true if the value for a given key is non-null, false otherwise.
-         * This method can only be called directly after calling [key]
-         */
-        fun hasValue(): Boolean
     }
 
     /**
@@ -185,6 +174,11 @@ interface PrimitiveDeserializer {
      * Deserialize next token as null.
      */
     fun <T> deserializeNull(): T?
+
+    /**
+     * Returns true if the next token contains a value, or false otherwise.
+     */
+    fun nextHasValue(): Boolean
 }
 
 fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {

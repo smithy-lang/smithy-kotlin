@@ -133,6 +133,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     companion object {
+        // FIXME - Refactor by providing unified way of dealing w/ symbol metadata. https://www.pivotaltracker.com/story/show/176122163
         // Mutable collection type
         const val MUTABLE_COLLECTION_FUNCTION: String = "mutableCollectionType"
         const val IMMUTABLE_COLLECTION_FUNCTION: String = "immutableCollectionType"
