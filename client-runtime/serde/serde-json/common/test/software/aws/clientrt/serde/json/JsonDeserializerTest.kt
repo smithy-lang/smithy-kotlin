@@ -101,11 +101,11 @@ class JsonDeserializerTest {
     fun `it handles null`() {
         val payload = "null".encodeToByteArray()
         val stringDeserializer = JsonDeserializer(payload)
-        val actualString = stringDeserializer.deserializeString()
+        val actualString = stringDeserializer.deserializeNull<String>()
         assertNull(actualString)
 
         val boolDeserializer = JsonDeserializer(payload)
-        val actualBoolean = boolDeserializer.deserializeBool()
+        val actualBoolean = boolDeserializer.deserializeNull<Boolean>()
         assertNull(actualBoolean)
     }
 
@@ -116,7 +116,7 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
             val list = mutableListOf<Int>()
             while (hasNextElement()) {
-                list.add(deserializeInt()!!)
+                list.add(deserializeInt())
             }
             return@deserializeList list
         }
@@ -131,7 +131,8 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
             val list = mutableListOf<Int?>()
             while (hasNextElement()) {
-                list.add(deserializeInt())
+                val element = if (hasValue()) deserializeInt() else deserializeNull()
+                list.add(element)
             }
             return@deserializeList list
         }
@@ -160,7 +161,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it checks null values of maps`() {
+    fun `it checks null values of non-sparse maps`() {
         val payload = """
             {
                 "key1": 1,
@@ -174,9 +175,9 @@ class JsonDeserializerTest {
             while (hasNextEntry()) {
                 val key = key()
                 if (hasValue()) {
-                    map[key] = deserializeInt()!!
+                    map[key] = deserializeInt()
                 } else {
-                    deserializeInt()
+                    deserializeNull()
                 }
             }
             return@deserializeMap map

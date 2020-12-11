@@ -12,41 +12,38 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
     // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
     // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
-    override fun deserializeByte(): Byte? = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toInt().toByte() }
+    override fun deserializeByte(): Byte = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toInt().toByte() }
 
-    override fun deserializeInt(): Int? = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
+    override fun deserializeInt(): Int = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
 
-    override fun deserializeShort(): Short? = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toInt().toShort() }
+    override fun deserializeShort(): Short = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toInt().toShort() }
 
-    override fun deserializeLong(): Long? = nextNumberValue { it.toLongOrNull() ?: it.toDouble().toLong() }
+    override fun deserializeLong(): Long = nextNumberValue { it.toLongOrNull() ?: it.toDouble().toLong() }
 
-    override fun deserializeFloat(): Float? = deserializeDouble()?.toFloat()
+    override fun deserializeFloat(): Float = deserializeDouble().toFloat()
 
-    override fun deserializeDouble(): Double? = nextNumberValue { it.toDouble() }
+    override fun deserializeDouble(): Double = nextNumberValue { it.toDouble() }
 
     // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
     // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
-    private fun <T> nextNumberValue(block: (value: String) -> T): T? =
+    private fun <T> nextNumberValue(block: (value: String) -> T): T =
         when (val token = reader.nextToken()) {
             is JsonToken.Number -> block(token.value)
-            is JsonToken.Null -> null
             else -> throw DeserializationException("$token cannot be deserialized as type Number")
         }
 
-    override fun deserializeString(): String? =
+    override fun deserializeString(): String =
         // allow for tokens to be consumed as string even when the next token isn't a quoted string
         when (val token = reader.nextToken()) {
             is JsonToken.String -> token.value
             is JsonToken.Number -> token.value
             is JsonToken.Bool -> token.value.toString()
-            is JsonToken.Null -> null
             else -> throw DeserializationException("$token cannot be deserialized as type String")
         }
 
-    override fun deserializeBool(): Boolean? =
+    override fun deserializeBool(): Boolean =
         when (val token = reader.nextToken()) {
             is JsonToken.Bool -> token.value
-            is JsonToken.Null -> null
             else -> throw DeserializationException("$token cannot be deserialized as type Boolean")
         }
 

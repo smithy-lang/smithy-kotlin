@@ -42,7 +42,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
             PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInt()
             PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = NestedDeserializer().deserialize(deserializer)
-            PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeString()?.let { Instant.fromIso8601(it) }
+            PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeString().let { Instant.fromIso8601(it) }
             null -> break@loop
             else -> skipValue()
         }
@@ -66,13 +66,13 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
         val expected = """
-            PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeInt() ?: 0
-            PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeBool() ?: false
-            PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = deserializeByte() ?: 0
-            PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeShort() ?: 0
-            PAYLOAD5_DESCRIPTOR.index -> builder.payload5 = deserializeLong() ?: 0
-            PAYLOAD6_DESCRIPTOR.index -> builder.payload6 = deserializeFloat() ?: 0.0f
-            PAYLOAD7_DESCRIPTOR.index -> builder.payload7 = deserializeDouble() ?: 0.0
+            PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeInt()
+            PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeBool()
+            PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = deserializeByte()
+            PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeShort()
+            PAYLOAD5_DESCRIPTOR.index -> builder.payload5 = deserializeLong()
+            PAYLOAD6_DESCRIPTOR.index -> builder.payload6 = deserializeFloat()
+            PAYLOAD7_DESCRIPTOR.index -> builder.payload7 = deserializeDouble()
 """
         contents.shouldContainOnlyOnce(expected)
     }
@@ -98,8 +98,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 deserializer.deserializeList(BLOBLIST_DESCRIPTOR) {
                     val list0 = mutableListOf<ByteArray>()
                     while(hasNextElement()) {
-                        val el0 = deserializeString()?.decodeBase64Bytes()
-                        if (el0 != null) list0.add(el0)
+                        val el0 = deserializeString().decodeBase64Bytes()
+                        list0.add(el0)
                     }
                     list0
                 }
@@ -107,8 +107,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 deserializer.deserializeList(ENUMLIST_DESCRIPTOR) {
                     val list0 = mutableListOf<MyEnum>()
                     while(hasNextElement()) {
-                        val el0 = deserializeString()?.let { MyEnum.fromValue(it) }
-                        if (el0 != null) list0.add(el0)
+                        val el0 = deserializeString().let { MyEnum.fromValue(it) }
+                        list0.add(el0)
                     }
                     list0
                 }
@@ -117,7 +117,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     val list0 = mutableListOf<Int>()
                     while(hasNextElement()) {
                         val el0 = deserializeInt()
-                        if (el0 != null) list0.add(el0)
+                        list0.add(el0)
                     }
                     list0
                 }
@@ -126,15 +126,15 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     val list0 = mutableListOf<List<Int>>()
                     while(hasNextElement()) {
                         val el0 =
-                        deserializer.deserializeList(NESTEDINTLIST_DESCRIPTOR) {
+                        deserializer.deserializeList(NESTEDINTLIST_C0_DESCRIPTOR) {
                             val list1 = mutableListOf<Int>()
                             while(hasNextElement()) {
                                 val el1 = deserializeInt()
-                                if (el1 != null) list1.add(el1)
+                                list1.add(el1)
                             }
                             list1
                         }
-                        if (el0 != null) list0.add(el0)
+                        list0.add(el0)
                     }
                     list0
                 }
@@ -143,7 +143,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     val list0 = mutableListOf<Nested>()
                     while(hasNextElement()) {
                         val el0 = NestedDeserializer().deserialize(deserializer)
-                        if (el0 != null) list0.add(el0)
+                        list0.add(el0)
                     }
                     list0
                 }
@@ -178,8 +178,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, ByteArray>()
                     while(hasNextEntry()) {
                         val k0 = key()
-                        val el0 = deserializeString()?.decodeBase64Bytes()
-                        if (el0 != null) map0[k0] = el0
+                        val el0 = deserializeString().decodeBase64Bytes()
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -188,8 +188,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, MyEnum>()
                     while(hasNextEntry()) {
                         val k0 = key()
-                        val el0 = deserializeString()?.let { MyEnum.fromValue(it) }
-                        if (el0 != null) map0[k0] = el0
+                        val el0 = deserializeString().let { MyEnum.fromValue(it) }
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -199,7 +199,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = deserializeInt()
-                        if (el0 != null) map0[k0] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -214,11 +214,11 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                             while(hasNextEntry()) {
                                 val k1 = key()
                                 val el1 = deserializeInt()
-                                if (el1 != null) map1[k1] = el1
+                                map1[k1] = el1
                             }
                             map1
                         }
-                        if (el0 != null) map0[k0] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -228,7 +228,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     while(hasNextEntry()) {
                         val k0 = key()
                         val el0 = ReachableOnlyThroughMapDeserializer().deserialize(deserializer)
-                        if (el0 != null) map0[k0] = el0
+                        map0[k0] = el0
                     }
                     map0
                 }
@@ -238,7 +238,6 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     }
 }
 """
-        // kotlin.test.assertEquals(expected, contents)
         contents.shouldContainOnlyOnce(expected)
     }
 
@@ -258,7 +257,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                             deserializer.deserializeList(SPARSEINTLIST_DESCRIPTOR) {
                                 val list0 = mutableListOf<Int?>()
                                 while(hasNextElement()) {
-                                    val el0 = deserializeInt()
+                                    val el0 = if (hasValue()) deserializeInt() else deserializeNull()
                                     list0.add(el0)
                                 }
                                 list0
@@ -324,9 +323,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Int?>()
                                 while(hasNextEntry()) {
                                     val k0 = key()
-                                    val hasValue = hasValue()
-                                    val el0 = deserializeInt()
-                                    map0[k0] = if (hasValue) el0 else null
+                                    val el0 = if (hasValue()) deserializeInt() else deserializeNull()
+                                    map0[k0] = el0
                                 }
                                 map0
                             }
@@ -377,7 +375,6 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
 
-        // kotlin.test.assertEquals(expected, actual)
         actual.shouldContainOnlyOnce(expected)
     }
 
@@ -392,10 +389,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Greeting?>()
                                 while(hasNextEntry()) {
                                     val k0 = key()
-                                    val el0 = when (hasValue()) {
-                                        true -> GreetingDeserializer().deserialize(deserializer)
-                                        false -> deserializer.deserializeNull()
-                                    }
+                                    val el0 = if (hasValue()) GreetingDeserializer().deserialize(deserializer) else deserializeNull()
                                     map0[k0] = el0
                                 }
                                 map0
@@ -451,7 +445,6 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
 
-        kotlin.test.assertEquals(expected, actual)
         actual.shouldContainOnlyOnce(expected)
     }
 
@@ -467,7 +460,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                 while(hasNextEntry()) {
                                     val k0 = key()
                                     val el0 = deserializeInt()
-                                    if (el0 != null) map0[k0] = el0
+                                    map0[k0] = el0
                                 }
                                 map0
                             }
@@ -517,7 +510,6 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
 
-        kotlin.test.assertEquals(expected, actual)
         actual.shouldContainOnlyOnce(expected)
     }
 
@@ -538,11 +530,11 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                         while(hasNextEntry()) {
                                             val k1 = key()
                                             val el1 = deserializeInt()
-                                            if (el1 != null) map1[k1] = el1
+                                            map1[k1] = el1
                                         }
                                         map1
                                     }
-                                    if (el0 != null) map0[k0] = el0
+                                    map0[k0] = el0
                                 }
                                 map0
                             }
@@ -597,7 +589,6 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
 
-        // kotlin.test.assertEquals(expected, actual)
         actual.shouldContainOnlyOnce(expected)
     }
 }

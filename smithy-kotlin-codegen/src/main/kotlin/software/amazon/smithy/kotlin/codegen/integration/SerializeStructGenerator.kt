@@ -131,12 +131,7 @@ class SerializeStructGenerator(
                 formatInstant(identifier, tsFormat, forceString = true)
             }
             ShapeType.STRING -> when {
-                target.hasTrait(EnumTrait::class.java) -> {
-                    when (serializeLocation) {
-                        SerializeLocation.Field -> "$identifier.value"
-                        SerializeLocation.Map -> "$identifier?.value"
-                    }
-                }
+                target.hasTrait(EnumTrait::class.java) -> "$identifier.value"
                 else -> identifier
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
@@ -186,7 +181,8 @@ class SerializeStructGenerator(
                     is CollectionShape -> {
                         // nested list
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        writer.withBlock("serializer.serializeList(${member.descriptorName()}) {", "}") {
+                        val childDescriptorName = member.descriptorName("_C$level")
+                        writer.withBlock("serializer.serializeList($childDescriptorName) {", "}") {
                             renderListSerializer(ctx, member, iteratorName, nestedTarget, writer, level + 1)
                         }
                     }
@@ -284,5 +280,3 @@ internal fun ShapeType.primitiveSerializerFunctionName(): String {
     }
     return "serialize$suffix"
 }
-
-internal fun String.smithyEscape() = this.replace('$', '£')

@@ -65,58 +65,50 @@ class XmlDeserializer(
      * Deserialize a byte value defined as the text section of an Xml element.
      *
      */
-    override fun deserializeByte(): Byte? =
-        deserializePrimitive { it.toIntOrNull()?.toByte() }
+    override fun deserializeByte(): Byte = deserializePrimitive { it.toInt().toByte() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeInt(): Int? =
-        deserializePrimitive { it.toIntOrNull() }
+    override fun deserializeInt(): Int = deserializePrimitive { it.toInt() }
 
     /**
      * Deserialize a short value defined as the text section of an Xml element.
      */
-    override fun deserializeShort(): Short? =
-        deserializePrimitive { it.toIntOrNull()?.toShort() }
+    override fun deserializeShort(): Short = deserializePrimitive { it.toInt().toShort() }
 
     /**
      * Deserialize a long value defined as the text section of an Xml element.
      */
-    override fun deserializeLong(): Long? =
-        deserializePrimitive { it.toLongOrNull() }
+    override fun deserializeLong(): Long = deserializePrimitive { it.toLong() }
 
     /**
      * Deserialize an float value defined as the text section of an Xml element.
      */
-    override fun deserializeFloat(): Float? =
-        deserializePrimitive { it.toFloatOrNull() }
+    override fun deserializeFloat(): Float = deserializePrimitive { it.toFloat() }
 
     /**
      * Deserialize a double value defined as the text section of an Xml element.
      */
-    override fun deserializeDouble(): Double? =
-        deserializePrimitive { it.toDoubleOrNull() }
+    override fun deserializeDouble(): Double = deserializePrimitive { it.toDouble() }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeString(): String? = deserializePrimitive { it }
+    override fun deserializeString(): String = deserializePrimitive { it }
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeBool(): Boolean? =
+    override fun deserializeBool(): Boolean =
         deserializePrimitive { it.toBoolean() }
 
     override fun <T> deserializeNull(): T? {
-        deserializePrimitive {}
+        check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
     }
 
-    private fun <T> deserializePrimitive(transform: (String) -> T?): T? {
-        if (reader.peek() is XmlToken.EndElement) return null
-
+    private fun <T> deserializePrimitive(transform: (String) -> T?): T {
         val rt = reader.takeToken<XmlToken.Text>(nodeNameStack)
 
         val rv = rt.value ?: throw DeserializationException("Expected value but text of element was null.")
@@ -221,58 +213,58 @@ private class CompositeIterator(
         return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
     }
 
-    override fun deserializeByte(): Byte? {
+    override fun deserializeByte(): Byte {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
 
         return deserializer.deserializeByte()
     }
 
-    override fun deserializeInt(): Int? {
+    override fun deserializeInt(): Int {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
 
         return deserializer.deserializeInt()
     }
 
-    override fun deserializeShort(): Short? {
+    override fun deserializeShort(): Short {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeShort()
     }
 
-    override fun deserializeLong(): Long? {
+    override fun deserializeLong(): Long {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeLong()
     }
 
-    override fun deserializeFloat(): Float? {
+    override fun deserializeFloat(): Float {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeFloat()
     }
 
-    override fun deserializeDouble(): Double? {
+    override fun deserializeDouble(): Double {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeDouble()
     }
 
-    override fun deserializeString(): String? {
+    override fun deserializeString(): String {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeString()
     }
 
-    override fun deserializeBool(): Boolean? {
+    override fun deserializeBool(): Boolean {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
         return deserializer.deserializeBool()
     }
 
     override fun <T> deserializeNull(): T? {
-        check(reader.nextToken() is XmlToken.EndElement)
+        check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
     }
 }
@@ -444,7 +436,7 @@ private class XmlFieldIterator(
         deserializePrimitive { it.toBoolean() }
 
     override fun <T> deserializeNull(): T? {
-        check(reader.nextToken() is XmlToken.EndElement)
+        check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
     }
 

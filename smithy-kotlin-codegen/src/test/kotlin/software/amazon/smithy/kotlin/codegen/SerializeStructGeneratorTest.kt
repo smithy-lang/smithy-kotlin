@@ -119,7 +119,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
     if (input.nestedIntList != null) {
         listField(NESTEDINTLIST_DESCRIPTOR) {
             for(m0 in input.nestedIntList) {
-                serializer.serializeList(NESTEDINTLIST_DESCRIPTOR) {
+                serializer.serializeList(NESTEDINTLIST_C0_DESCRIPTOR) {
                     for(m1 in m0) {
                         serializeInt(m1)
                     }
@@ -153,7 +153,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
     }
     if (input.enumMap != null) {
         mapField(ENUMMAP_DESCRIPTOR) {
-            input.enumMap.forEach { (key, value) -> entry(key, value?.value) }
+            input.enumMap.forEach { (key, value) -> entry(key, value.value) }
         }
     }
     if (input.intMap != null) {

@@ -128,7 +128,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun `it handles maps with entries with empty values`() {
+    fun `it handles sparse maps`() {
         val payload = """
             <values>
                 <entry>
@@ -148,7 +148,10 @@ class XmlDeserializerMapTest {
             val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = deserializeInt()
+                val value = when(hasValue()) {
+                    true -> deserializeInt()
+                    false -> deserializeNull()
+                }
 
                 map[key] = value
             }

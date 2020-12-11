@@ -80,22 +80,17 @@ class DeserializeStructGenerator(
             else -> shape
         }
 
-        // The deserializer interface returns nullable values for primitives.
-        // If a value is primitive but unboxed, codegen the loading of the default value
-        // for the case that the deserializer returns null at runtime.
-        val defaultValue = ctx.symbolProvider.toSymbol(target).defaultValue(null)?.let { value -> " ?: $value" } ?: ""
-
         return when (target.type) {
-            ShapeType.BOOLEAN -> "deserializeBool()$defaultValue"
-            ShapeType.BYTE -> "deserializeByte()$defaultValue"
-            ShapeType.SHORT -> "deserializeShort()$defaultValue"
-            ShapeType.INTEGER -> "deserializeInt()$defaultValue"
-            ShapeType.LONG -> "deserializeLong()$defaultValue"
-            ShapeType.FLOAT -> "deserializeFloat()$defaultValue"
-            ShapeType.DOUBLE -> "deserializeDouble()$defaultValue"
+            ShapeType.BOOLEAN -> "deserializeBool()"
+            ShapeType.BYTE -> "deserializeByte()"
+            ShapeType.SHORT -> "deserializeShort()"
+            ShapeType.INTEGER -> "deserializeInt()"
+            ShapeType.LONG -> "deserializeLong()"
+            ShapeType.FLOAT -> "deserializeFloat()"
+            ShapeType.DOUBLE -> "deserializeDouble()"
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
-                "deserializeString()?.decodeBase64Bytes()"
+                "deserializeString().decodeBase64Bytes()"
             }
             ShapeType.TIMESTAMP -> {
                 importInstant(writer)
@@ -105,9 +100,9 @@ class DeserializeStructGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }"
-                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }"
+                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString().let { Instant.fromEpochSeconds(it) }"
+                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString().let { Instant.fromIso8601(it) }"
+                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString().let { Instant.fromRfc5322(it) }"
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
@@ -115,7 +110,7 @@ class DeserializeStructGenerator(
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol)
-                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }"
+                    "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
                 }
                 else -> "deserializeString()"
             }
@@ -144,19 +139,20 @@ class DeserializeStructGenerator(
     // FIXME - we should not have to pass through "member" through all nested levels, it should ideally only be required
     // in `deserializeListMember` or `deserializeMapMember`
     private fun renderDeserializeList(
-        member: MemberShape,
+        memberShape: MemberShape,
         targetShape: Shape,
         level: Int = 0,
         renderAsSet: Boolean = false
     ) {
         val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
-        val sparseList = ctx.model.expectShape(member.target).hasTrait(SparseTrait::class.java)
-        val nullablePostfix = if (sparseList) "?" else ""
+        val isSparse = ctx.model.expectShape(memberShape.target).hasTrait(SparseTrait::class.java)
+        val nullablePostfix = if (isSparse) "?" else ""
         val destList = "list$level"
         val elementName = "el$level"
         val conversion = if (renderAsSet) ".toSet()" else ""
 
-        writer.openBlock("deserializer.deserializeList(\$L) {", member.descriptorName())
+        val listDescriptorName = if (level == 0) memberShape.descriptorName() else memberShape.descriptorName("_C${level - 1}")
+        writer.openBlock("deserializer.deserializeList(\$L) {", listDescriptorName)
             .write("val $destList = mutableListOf<${targetSymbol.name}$nullablePostfix>()")
             .openBlock("while(hasNextElement()) {")
             .call {
@@ -164,24 +160,22 @@ class DeserializeStructGenerator(
                     is CollectionShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        renderDeserializeList(member, nestedTarget, level + 1)
+                        renderDeserializeList(memberShape, nestedTarget, level + 1)
                     }
                     is MapShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
-                        renderDeserializeMap(member, targetShape, nestedTarget, 0)
+                        renderDeserializeMap(memberShape, targetShape, nestedTarget, 0)
                     }
                     else -> {
                         val deserializeForElement = deserializerForShape(targetShape)
-                        writer.write("val $elementName = $deserializeForElement")
+                        when (isSparse) {
+                            true -> writer.write("val $elementName = if (hasValue()) $deserializeForElement else deserializeNull()")
+                            false -> writer.write("val $elementName = $deserializeForElement")
+                        }
                     }
                 }
-
-                if (sparseList) {
-                    writer.write("$destList.add($elementName)")
-                } else {
-                    writer.write("if ($elementName != null) $destList.add($elementName)")
-                }
+                writer.write("$destList.add($elementName)")
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression
@@ -208,7 +202,7 @@ class DeserializeStructGenerator(
     ) {
         val destMap = "map$level"
         val elementName = "el$level"
-        val sparseMap = ctx.model.expectShape(memberShape.target).hasTrait(SparseTrait::class.java)
+        val isSparse = ctx.model.expectShape(memberShape.target).hasTrait(SparseTrait::class.java)
         val mutableCollection = ctx.symbolProvider.toSymbol(collectionShape).expectProperty(SymbolVisitor.MUTABLE_COLLECTION_FUNCTION)
 
         writer.openBlock("deserializer.deserializeMap(\$L) {", memberShape.descriptorName())
@@ -230,23 +224,14 @@ class DeserializeStructGenerator(
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                         renderDeserializeMap(memberShape, targetShape, nestedTarget, level + 1)
                     }
-                    is StructureShape -> {
+                    is StructureShape, is SimpleShape -> {
                         val deserializeForElement = deserializerForShape(targetShape)
-                        when (sparseMap) {
-                            true -> {
-                                writer.openBlock("val $elementName = when (hasValue()) {", "}") {
-                                    writer.write("true -> $deserializeForElement")
-                                    writer.write("false -> deserializer.deserializeNull()")
-                                }
-                            }
-                            false -> {
+                        when (isSparse) {
+                            true ->
+                                writer.write("val $elementName = if (hasValue()) $deserializeForElement else deserializeNull()")
+                            false ->
                                 writer.write("val $elementName = $deserializeForElement")
-                            }
                         }
-                    }
-                    is SimpleShape -> {
-                        val deserializeForElement = deserializerForShape(targetShape)
-                        writer.write("val $elementName = $deserializeForElement")
                     }
                     else -> TODO("Unhandled codegen path for $targetShape")
                 }

@@ -39,6 +39,8 @@ import kotlin.test.assertTrue
  *      sparseStructMap: SparseStructMap
  * }
  */
+// TODO - this test can be moved into integration test and the test model can be applied directly
+//        to generated deserializers rather than copied and adapted in-line.
 class SparseMapDeserializationTest {
 
     class GetFooOutput private constructor(builder: BuilderImpl) {

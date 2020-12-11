@@ -65,7 +65,7 @@ class DeserializeUnionGenerator(
                                     else -> {
                                         val deserialize = deserializerForShape(targetMember)
                                         val targetType = target.unionTypeName(targetMember)
-                                        writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
+                                        writer.write("\$L.index -> value = $deserialize.let { \$L(it) }", targetMember.descriptorName(), targetType)
                                     }
                                 }
                             }
@@ -73,7 +73,7 @@ class DeserializeUnionGenerator(
                         else -> {
                             val deserialize = deserializerForShape(member)
                             val targetType = member.unionTypeName(member)
-                            writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", member.descriptorName(), targetType)
+                            writer.write("\$L.index -> value = $deserialize.let { \$L(it) }", member.descriptorName(), targetType)
                         }
                     }
                 }
@@ -116,9 +116,9 @@ class DeserializeUnionGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }"
-                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }"
+                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString().let { Instant.fromEpochSeconds(it) }"
+                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString().let { Instant.fromIso8601(it) }"
+                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString().let { Instant.fromRfc5322(it) }"
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
@@ -126,7 +126,7 @@ class DeserializeUnionGenerator(
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol)
-                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }"
+                    "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
                 }
                 else -> "deserializeString()"
             }
@@ -186,7 +186,7 @@ class DeserializeUnionGenerator(
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("if ($elementName != null) $destList.add($elementName)")
+                writer.write("$destList.add($elementName)")
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression
@@ -213,7 +213,6 @@ class DeserializeUnionGenerator(
     ) {
         val destMap = "map$level"
         val elementName = "el$level"
-        val sparseMap = ctx.model.expectShape(memberShape.target).hasTrait(SparseTrait::class.java)
         val mutableCollection = ctx.symbolProvider.toSymbol(collectionShape).expectProperty(SymbolVisitor.MUTABLE_COLLECTION_FUNCTION)
         val targetType = memberShape.unionTypeName(memberShape)
 
@@ -242,11 +241,7 @@ class DeserializeUnionGenerator(
                     }
                 }
 
-                if (sparseMap) {
-                    writer.write("$destMap[$keyName] = $elementName")
-                } else {
-                    writer.write("if ($elementName != null) $destMap[$keyName] = $elementName")
-                }
+                writer.write("$destMap[$keyName] = $elementName")
             }
             .closeBlock("}")
             // implicit return of `deserializeMap` lambda is last expression
