@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.model.shapes.ServiceShape
 
 private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
     val builder = Symbol.builder()
@@ -251,8 +252,8 @@ class ClientConfigGenerator(
             props.add(SmithyConfigProperty.HttpClientEngineConfig)
             props.add(SmithyConfigProperty.HttpClientEngine)
         }
-
-        if (ctx.service.hasIdempotentTokenMember(ctx.model)) {
+        val service = ctx.shape as? ServiceShape
+        if (service != null && service.hasIdempotentTokenMember(ctx.model)) {
             props.add(SmithyConfigProperty.IdempotencyTokenProvider)
         }
     }

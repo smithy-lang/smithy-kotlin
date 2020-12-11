@@ -34,6 +34,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     private val integrations: List<KotlinIntegration>
     private val protocolGenerator: ProtocolGenerator?
     private val applicationProtocol: ApplicationProtocol
+    private val baseGenerationContext: GenerationContext
 
     init {
         LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
@@ -60,6 +61,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
         applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
+
+        baseGenerationContext = GenerationContext(model, symbolProvider, settings.moduleName, protocolGenerator, integrations)
     }
 
     private fun resolveProtocolGenerator(
@@ -140,7 +143,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         writers.useShapeWriter(shape) {
-            ServiceGenerator(model, symbolProvider, it, shape, settings.moduleName, applicationProtocol).render()
+            val renderingCtx = baseGenerationContext.toRenderingContext(it, shape)
+            ServiceGenerator(renderingCtx).render()
         }
     }
 }
