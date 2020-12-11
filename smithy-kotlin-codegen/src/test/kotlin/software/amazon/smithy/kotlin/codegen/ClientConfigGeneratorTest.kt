@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 
@@ -156,5 +157,38 @@ class Config private constructor(builder: BuilderImpl) {
         override var stringProp: String? = null
 """
         contents.shouldContain(expectedDslProps)
+    }
+
+    @Test
+    fun `it registers integration props`() {
+        val model = javaClass.getResource("idempotent-token-test-model.smithy").asSmithy()
+        val serviceShapeId = "com.test#Example"
+        val serviceShape = model.expectShape(ShapeId.from(serviceShapeId), ServiceShape::class.java)
+
+        val testCtx = model.newTestContext(serviceShapeId)
+        val writer = KotlinWriter("com.test")
+        val customIntegration = object : KotlinIntegration {
+
+            override val additionalServiceConfigProperties: List<ConfigProperty> =
+                listOf(ConfigProperty.Integer("customProp"))
+        }
+
+        val renderingCtx = RenderingContext(
+            model,
+            testCtx.generationCtx.symbolProvider,
+            writer,
+            serviceShape,
+            "com.test",
+            testCtx.generator,
+            listOf(customIntegration)
+        )
+
+        ClientConfigGenerator(renderingCtx, detectDefaultProps = false).render()
+        val contents = writer.toString()
+
+        val expectedProps = """
+    val customProp: Int? = builder.customProp
+"""
+        contents.shouldContain(expectedProps)
     }
 }

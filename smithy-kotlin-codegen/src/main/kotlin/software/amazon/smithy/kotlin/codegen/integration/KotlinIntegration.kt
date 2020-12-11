@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.ConfigProperty
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.model.Model
@@ -52,6 +53,12 @@ interface KotlinIntegration {
      */
     val customBuildSettings: GradleBuildSettings?
         get() = null
+
+    /**
+     * Additional properties to add to the generated service config interface
+     */
+    val additionalServiceConfigProperties: List<ConfigProperty>
+        get() = listOf()
 
     /**
      * Preprocess the model before code generation.

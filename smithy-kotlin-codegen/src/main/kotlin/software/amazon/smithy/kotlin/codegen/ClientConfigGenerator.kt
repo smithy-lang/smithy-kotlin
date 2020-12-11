@@ -234,7 +234,6 @@ class ClientConfigGenerator(
     vararg properties: ConfigProperty
 ) {
 
-    // TODO - allow extending from integrations or overridding by making this a base class
     private val props = mutableListOf<ConfigProperty>()
 
     init {
@@ -242,6 +241,10 @@ class ClientConfigGenerator(
         if (detectDefaultProps) {
             registerDefaultProps()
         }
+
+        // register properties from integrations
+        val integrationProps = ctx.integrations.flatMap { it.additionalServiceConfigProperties }
+        props.addAll(integrationProps)
     }
 
     /**
