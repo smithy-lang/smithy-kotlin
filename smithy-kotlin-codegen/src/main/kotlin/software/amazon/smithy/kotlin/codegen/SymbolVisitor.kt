@@ -165,7 +165,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
         return createSymbolBuilder(shape, typeName)
-            .putProperty(DEFAULT_VALUE_KEY, defaultValue)
+            .defaultValue(defaultValue)
             .build()
     }
 
@@ -193,7 +193,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun booleanShape(shape: BooleanShape?): Symbol =
-        createSymbolBuilder(shape, "Boolean").putProperty(DEFAULT_VALUE_KEY, "false").build()
+        createSymbolBuilder(shape, "Boolean").defaultValue("false").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName()
@@ -333,7 +333,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
         val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
         if (explicitlyBoxed || boxed) {
-            builder.putProperty(BOXED_KEY, true)
+            builder.boxed()
         }
         return builder
     }
@@ -352,4 +352,63 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return createSymbolBuilder(shape, typeName, boxed)
             .namespace(namespace, ".")
     }
+}
+
+/**
+ * Mark a symbol as being boxed (nullable) i.e. `T?`
+ */
+fun Symbol.Builder.boxed(): Symbol.Builder = apply { putProperty(BOXED_KEY, true) }
+
+/**
+ * Set the default value used when formatting the symbol
+ */
+fun Symbol.Builder.defaultValue(value: String): Symbol.Builder = apply { putProperty(DEFAULT_VALUE_KEY, value) }
+
+/**
+ * Convenience function for specifying kotlin namespace
+ */
+fun Symbol.Builder.namespace(name: String): Symbol.Builder = namespace(name, ".")
+
+/**
+ * Convenience function for specifying a symbol is a subnamespace of the [dependency].
+ *
+ * This will implicitly add the dependecy to the builder since it is known that it comes from the
+ * dependency namespace.
+ *
+ * Equivalent to:
+ * ```
+ * builder.addDependency(dependency)
+ * builder.namespace("${dependency.namespace}.subnamespace")
+ * ```
+ */
+fun Symbol.Builder.namespace(dependency: KotlinDependency, subnamespace: String = ""): Symbol.Builder {
+    addDependency(dependency)
+    return if (subnamespace.isEmpty()) {
+        namespace(dependency.namespace)
+    } else {
+        namespace("${dependency.namespace}.${subnamespace.trimStart('.')}")
+    }
+}
+
+/**
+ * Add a reference to a symbol coming from a kotlin dependency
+ */
+fun Symbol.Builder.addReference(dependency: KotlinDependency, name: String, subnamespace: String = ""): Symbol.Builder {
+    val refSymbol = Symbol.builder()
+        .name(name)
+        .namespace(dependency, subnamespace)
+        .build()
+    return addReference(refSymbol)
+}
+
+/**
+ * Add a reference to the given symbol with the context option
+ */
+fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextOption): Symbol.Builder {
+    val ref = SymbolReference.builder()
+        .symbol(symbol)
+        .options(option)
+        .build()
+
+    return addReference(ref)
 }
