@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
-import software.amazon.smithy.kotlin.codegen.util.compileSdkAndTest
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
 
 /**
@@ -282,41 +281,5 @@ class ApiEvolutionTest {
         testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
             assertTrue(result.compileSuccess, result.compileOutput)
         }
-    }
-
-    @Test
-    fun sparse() {
-        val model = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [GetFoo]
-            }
-
-            @http(method: "POST", uri: "/input/list")
-            operation GetFoo {
-                output: GetFooOutput
-            }
-            
-            structure Greeting {
-                saying: String
-            }
-            
-            @sparse
-            map SparseStructMap {
-                key: String,
-                value: Greeting
-            }
-            
-            structure GetFooOutput {
-                sparseStructMap: SparseStructMap
-            }
-        """.asSmithy()
-
-        compileSdkAndTest(model, emitSourcesToTmp = true)
     }
 }
