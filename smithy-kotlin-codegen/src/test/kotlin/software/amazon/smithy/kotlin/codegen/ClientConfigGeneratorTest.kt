@@ -127,10 +127,10 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         )
 
         val customProps = arrayOf(
-            ConfigProperty.Integer("intProp", 1, documentation = "non-null-int"),
-            ConfigProperty.Integer("nullIntProp"),
-            ConfigProperty.String("stringProp"),
-            ConfigProperty.Bool("boolProp"),
+            ClientConfigProperty.Integer("intProp", 1, documentation = "non-null-int"),
+            ClientConfigProperty.Integer("nullIntProp"),
+            ClientConfigProperty.String("stringProp"),
+            ClientConfigProperty.Bool("boolProp"),
         )
 
         ClientConfigGenerator(renderingCtx, detectDefaultProps = false, *customProps).render()
@@ -169,8 +169,8 @@ class Config private constructor(builder: BuilderImpl) {
         val writer = KotlinWriter("com.test")
         val customIntegration = object : KotlinIntegration {
 
-            override val additionalServiceConfigProperties: List<ConfigProperty> =
-                listOf(ConfigProperty.Integer("customProp"))
+            override val additionalServiceConfigProperties: List<ClientConfigProperty> =
+                listOf(ClientConfigProperty.Integer("customProp"))
         }
 
         val renderingCtx = RenderingContext(
