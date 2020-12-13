@@ -181,3 +181,9 @@ fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
         }
     }
 }
+
+fun TestContext.toGenerationContext(): GenerationContext =
+    GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)
+
+fun TestContext.toRenderingContext(writer: KotlinWriter, forShape: Shape): RenderingContext =
+    toGenerationContext().toRenderingContext(writer, forShape)

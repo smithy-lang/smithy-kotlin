@@ -111,7 +111,8 @@ class ServiceGeneratorTest {
                 .closeBlock("}")
         }
 
-        val renderingCtx = RenderingContext(model, provider, writer, service, "test")
+        val settings = KotlinSettings(service.id, "test", "0.0")
+        val renderingCtx = RenderingContext(model, provider, writer, service, settings)
         val generator = ServiceGenerator(renderingCtx)
         generator.render()
         val contents = writer.toString()
@@ -136,9 +137,10 @@ class ServiceGeneratorTest {
         val model = javaClass.getResource(modelResourceName).asSmithy()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter("test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val renderingCtx = RenderingContext(model, provider, writer, service, "test")
+        val settings = KotlinSettings(service.id, "test", "0.0")
+        val renderingCtx = RenderingContext(model, provider, writer, service, settings)
         val generator = ServiceGenerator(renderingCtx)
 
         generator.render()

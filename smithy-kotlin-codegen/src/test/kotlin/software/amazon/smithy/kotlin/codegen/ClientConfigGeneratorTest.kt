@@ -20,15 +20,7 @@ class ClientConfigGeneratorTest {
 
         val testCtx = model.newTestContext(serviceShapeId)
         val writer = KotlinWriter("com.test")
-        val renderingCtx = RenderingContext(
-            model,
-            testCtx.generationCtx.symbolProvider,
-            writer,
-            serviceShape,
-            "com.test",
-            testCtx.generator,
-            listOf()
-        )
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         ClientConfigGenerator(renderingCtx).render()
         val contents = writer.toString()
@@ -116,15 +108,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
         val testCtx = model.newTestContext(serviceShapeId)
         val writer = KotlinWriter("com.test")
-        val renderingCtx = RenderingContext(
-            model,
-            testCtx.generationCtx.symbolProvider,
-            writer,
-            serviceShape,
-            "com.test",
-            testCtx.generator,
-            listOf()
-        )
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(
             ClientConfigProperty.Integer("intProp", 1, documentation = "non-null-int"),
@@ -169,19 +153,12 @@ class Config private constructor(builder: BuilderImpl) {
         val writer = KotlinWriter("com.test")
         val customIntegration = object : KotlinIntegration {
 
-            override val additionalServiceConfigProperties: List<ClientConfigProperty> =
+            override fun additionalServiceConfigProps(ctx: CodegenContext): List<ClientConfigProperty> =
                 listOf(ClientConfigProperty.Integer("customProp"))
         }
 
-        val renderingCtx = RenderingContext(
-            model,
-            testCtx.generationCtx.symbolProvider,
-            writer,
-            serviceShape,
-            "com.test",
-            testCtx.generator,
-            listOf(customIntegration)
-        )
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
+            .copy(integrations = listOf(customIntegration))
 
         ClientConfigGenerator(renderingCtx, detectDefaultProps = false).render()
         val contents = writer.toString()

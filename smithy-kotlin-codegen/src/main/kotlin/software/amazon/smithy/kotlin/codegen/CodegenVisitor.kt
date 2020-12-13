@@ -62,7 +62,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
         applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
 
-        baseGenerationContext = GenerationContext(model, symbolProvider, settings.moduleName, protocolGenerator, integrations)
+        baseGenerationContext = GenerationContext(model, symbolProvider, settings, protocolGenerator, integrations)
     }
 
     private fun resolveProtocolGenerator(

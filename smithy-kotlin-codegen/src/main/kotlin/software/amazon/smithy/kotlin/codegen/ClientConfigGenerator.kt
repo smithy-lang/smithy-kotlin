@@ -30,7 +30,7 @@ class ClientConfigGenerator(
         }
 
         // register properties from integrations
-        val integrationProps = ctx.integrations.flatMap { it.additionalServiceConfigProperties }
+        val integrationProps = ctx.integrations.flatMap { it.additionalServiceConfigProps(ctx) }
         props.addAll(integrationProps)
     }
 
