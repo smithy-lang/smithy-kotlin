@@ -15,8 +15,7 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class SymbolBuilderTest {
@@ -45,7 +44,7 @@ class SymbolBuilderTest {
         assertEquals("Foo.kt", x.declarationFile)
         assertEquals("Foo.kt", x.definitionFile)
         assertEquals("value", x.getProperty("key").get())
-        assertTrue(x.getProperty("key2").isEmpty())
+        assertFalse(x.getProperty("key2").isPresent)
         assertEquals(1, x.references.size)
         assertEquals(1, x.dependencies.size)
     }
