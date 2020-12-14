@@ -232,48 +232,24 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun listShape(shape: ListShape): Symbol {
-        val reference = toSymbol(shape.member).let { symbol ->
-            when (shape.hasTrait(SparseTrait::class.java)) {
-                false -> symbol
-                true ->
-                    Symbol.builder() // The inner symbol must be modified for sparse trait.
-                        .dependencies(symbol.dependencies)
-                        .references(symbol.references)
-                        .declarationFile(symbol.declarationFile)
-                        .definitionFile(symbol.definitionFile)
-                        .namespace(symbol.namespace, symbol.namespaceDelimiter)
-                        .name("${symbol.name}?")
-                        .build()
-            }
-        }
+        val reference = toSymbol(shape.member)
+        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
 
-        return createSymbolBuilder(shape, "List<${reference.name}>", boxed = true)
+        return createSymbolBuilder(shape, "List<${valueType}>", boxed = true)
             .addReference(reference)
-            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableListOf<${reference.name}>")
-            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "listOf<${reference.name}>")
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableListOf<${valueType}>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "listOf<${valueType}>")
             .build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
-        val reference = toSymbol(shape.value).let { symbol ->
-            when (shape.hasTrait(SparseTrait::class.java)) {
-                false -> symbol
-                true ->
-                    Symbol.builder() // The inner symbol must be modified for sparse trait.
-                        .dependencies(symbol.dependencies)
-                        .references(symbol.references)
-                        .declarationFile(symbol.declarationFile)
-                        .definitionFile(symbol.definitionFile)
-                        .namespace(symbol.namespace, symbol.namespaceDelimiter)
-                        .name("${symbol.name}?")
-                        .build()
-            }
-        }
+        val reference = toSymbol(shape.value)
+        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
 
-        return createSymbolBuilder(shape, "Map<String, ${reference.name}>", boxed = true)
+        return createSymbolBuilder(shape, "Map<String, ${valueType}>", boxed = true)
             .addReference(reference)
-            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, ${reference.name}>")
-            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, ${reference.name}>")
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, ${valueType}>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, ${valueType}>")
             .build()
     }
 
