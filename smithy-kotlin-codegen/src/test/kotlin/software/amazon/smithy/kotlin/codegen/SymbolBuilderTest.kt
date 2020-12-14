@@ -45,7 +45,7 @@ class SymbolBuilderTest {
         assertEquals("Foo.kt", x.declarationFile)
         assertEquals("Foo.kt", x.definitionFile)
         assertEquals("value", x.getProperty("key").get())
-        assertTrue(x.getProperty("key2").isEmpty)
+        assertTrue(x.getProperty("key2").isEmpty())
         assertEquals(1, x.references.size)
         assertEquals(1, x.dependencies.size)
     }
