@@ -235,10 +235,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         val reference = toSymbol(shape.member)
         val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
 
-        return createSymbolBuilder(shape, "List<${valueType}>", boxed = true)
+        return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
             .addReference(reference)
-            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableListOf<${valueType}>")
-            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "listOf<${valueType}>")
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
             .build()
     }
 
@@ -246,10 +246,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         val reference = toSymbol(shape.value)
         val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
 
-        return createSymbolBuilder(shape, "Map<String, ${valueType}>", boxed = true)
+        return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
             .addReference(reference)
-            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, ${valueType}>")
-            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, ${valueType}>")
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
             .build()
     }
 
