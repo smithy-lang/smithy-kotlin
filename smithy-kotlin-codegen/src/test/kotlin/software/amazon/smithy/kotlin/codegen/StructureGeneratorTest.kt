@@ -734,8 +734,6 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
         generator.render()
         val contents = writer.toString()
 
-        println(contents)
-
         listOf(
             "val enumMap: Map<String, MyEnum?>? = builder.enumMap",
             "override var enumMap: Map<String, MyEnum?>? = null"

@@ -171,7 +171,8 @@ interface PrimitiveDeserializer {
     fun deserializeBool(): Boolean
 
     /**
-     * Deserialize next token as null.
+     * Deserialize next token as null. Will never return anything
+     * but null.
      */
     fun <T> deserializeNull(): T?
 
