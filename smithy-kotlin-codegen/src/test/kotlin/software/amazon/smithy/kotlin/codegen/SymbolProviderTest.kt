@@ -184,6 +184,9 @@ class SymbolProviderTest {
         assertEquals("List<Record?>", sparseListSymbol.name)
         assertEquals(true, sparseListSymbol.isBoxed())
         assertEquals("null", sparseListSymbol.defaultValue())
+
+        // collections should contain a reference to the member type
+        assertEquals("Record", sparseListSymbol.references[0].symbol.name)
     }
 
     @Test
@@ -245,6 +248,9 @@ class SymbolProviderTest {
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
         assertEquals(true, sparseMapSymbol.isBoxed())
         assertEquals("null", sparseMapSymbol.defaultValue())
+
+        // collections should contain a reference to the member type
+        assertEquals("Record", sparseMapSymbol.references[0].symbol.name)
     }
 
     @DisplayName("creates bigNumbers")
