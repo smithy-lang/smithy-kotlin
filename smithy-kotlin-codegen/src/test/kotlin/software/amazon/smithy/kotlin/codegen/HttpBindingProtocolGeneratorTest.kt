@@ -455,8 +455,6 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
         val contents = getTransformFileContents("MyUnionDeserializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class MyUnionDeserializer {
-
     companion object {
         private val I32_DESCRIPTOR = SdkFieldDescriptor("i32", SerialKind.Integer)
         private val STRINGA_DESCRIPTOR = SdkFieldDescriptor("stringA", SerialKind.String)
@@ -470,14 +468,13 @@ class MyUnionDeserializer {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = deserializeInt()?.let { MyUnion.I32(it) }
-                STRINGA_DESCRIPTOR.index -> value = deserializeString()?.let { MyUnion.StringA(it) }
+                I32_DESCRIPTOR.index -> value = deserializeInt().let { MyUnion.I32(it) }
+                STRINGA_DESCRIPTOR.index -> value = deserializeString().let { MyUnion.StringA(it) }
                 else -> skipValue()
             }
         }
         return value
     }
-}
 """
         contents.shouldContainOnlyOnce(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.MyUnion")
@@ -697,7 +694,7 @@ class SmokeTestDeserializer : HttpDeserialize {
                         PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
                         PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInt()
                         PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = NestedDeserializer().deserialize(deserializer)
-                        PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeString()?.let { Instant.fromIso8601(it) }
+                        PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeString().let { Instant.fromIso8601(it) }
                         null -> break@loop
                         else -> skipValue()
                     }

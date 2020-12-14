@@ -56,7 +56,7 @@ open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var 
      */
     inline fun <reified TExpected : FieldTrait> expectTrait(): TExpected {
         val x = trait.find { it::class == TExpected::class }
-        requireNotNull(x) { "Expected to find trait ${TExpected::class} but was not present." }
+        requireNotNull(x) { "Expected to find trait ${TExpected::class} in $this but was not present." }
 
         return x as TExpected
     }

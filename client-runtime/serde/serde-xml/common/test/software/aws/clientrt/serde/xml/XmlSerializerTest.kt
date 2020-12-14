@@ -252,7 +252,6 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptorUnit = SdkFieldDescriptor("unit", SerialKind.Unit)
         val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean)
         val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte)
         val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short)
@@ -268,7 +267,7 @@ data class Primitives(
 
     override fun serialize(serializer: Serializer) {
         serializer.serializeStruct(SdkFieldDescriptor("struct", SerialKind.Struct)) {
-            serializeNull(descriptorUnit)
+            serializeNull()
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)
             field(descriptorShort, short)

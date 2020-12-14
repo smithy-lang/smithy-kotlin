@@ -9,6 +9,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.utils.StringUtils
 import java.util.logging.Logger
@@ -35,7 +36,7 @@ fun Symbol.isBoxed(): Boolean {
 
 /**
  * Gets the default value for the symbol if present, else null
- * @param defaultBoxed the string to pass for boxed values
+ * @param defaultBoxed the string to pass back for boxed values
  */
 fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
     // boxed types should always be defaulted to null
@@ -71,7 +72,7 @@ fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name
 class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") :
     SymbolProvider,
     ShapeVisitor<Symbol> {
-    val LOGGER = Logger.getLogger(javaClass.name)
+    private val logger = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
 
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
@@ -131,11 +132,18 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .buildEscaper()
     }
 
+    companion object {
+        // FIXME - Refactor by providing unified way of dealing w/ symbol metadata. https://www.pivotaltracker.com/story/show/176122163
+        // Mutable collection type
+        const val MUTABLE_COLLECTION_FUNCTION: String = "mutableCollectionType"
+        const val IMMUTABLE_COLLECTION_FUNCTION: String = "immutableCollectionType"
+    }
+
     override fun toSymbol(shape: Shape): Symbol {
         depth++
         val symbol: Symbol = shape.accept(this)
         depth--
-        LOGGER.fine("creating symbol from $shape: $symbol")
+        logger.fine("creating symbol from $shape: $symbol")
         return escaper.escapeSymbol(shape, symbol)
     }
 
@@ -225,22 +233,33 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "List<${reference.name}>", boxed = true)
+        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
+
+        return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
             .addReference(reference)
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
             .build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        // FIXME - this doesn't account for unboxed primitives
-        return createSymbolBuilder(shape, "Map<String, ${reference.name}?>", boxed = true)
+        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
+
+        return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
             .addReference(reference)
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
             .build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", boxed = true).addReference(reference).build()
+        return createSymbolBuilder(shape, "Set<${reference.name}>", boxed = true)
+            .addReference(reference)
+            .putProperty(MUTABLE_COLLECTION_FUNCTION, "mutableSetOf<${reference.name}>")
+            .putProperty(IMMUTABLE_COLLECTION_FUNCTION, "setOf<${reference.name}>")
+            .build()
     }
 
     override fun memberShape(shape: MemberShape): Symbol {

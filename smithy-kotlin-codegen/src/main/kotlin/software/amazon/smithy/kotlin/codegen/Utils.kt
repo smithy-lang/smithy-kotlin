@@ -14,6 +14,10 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.ShapeId
+
 /**
  * Test if a string is a valid Kotlin identifier name
  */
@@ -24,3 +28,9 @@ fun isValidKotlinIdentifier(s: String): Boolean {
         else -> false
     }
 }
+
+/**
+ * Concise extension function to return a shape of expected type.
+ */
+inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
+    this.expectShape(ShapeId.from(shapeId), T::class.java)

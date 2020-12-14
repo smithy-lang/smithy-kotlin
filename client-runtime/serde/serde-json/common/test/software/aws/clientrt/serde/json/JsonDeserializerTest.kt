@@ -18,6 +18,7 @@ class JsonDeserializerTest {
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeDouble()
         val expected = 1.2
+        assertNotNull(actual)
         assertTrue(abs(actual - expected) <= 0.0001)
     }
 
@@ -27,6 +28,7 @@ class JsonDeserializerTest {
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeFloat()
         val expected = 1.2f
+        assertNotNull(actual)
         assertTrue(abs(actual - expected) <= 0.0001f)
     }
 
@@ -71,6 +73,7 @@ class JsonDeserializerTest {
         val payload = "true".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeBool()
+        assertNotNull(actual)
         assertTrue(actual)
     }
 
@@ -97,9 +100,13 @@ class JsonDeserializerTest {
     @Test
     fun `it handles null`() {
         val payload = "null".encodeToByteArray()
-        val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeString()
-        assertNull(actual)
+        val stringDeserializer = JsonDeserializer(payload)
+        val actualString = stringDeserializer.deserializeNull<String>()
+        assertNull(actualString)
+
+        val boolDeserializer = JsonDeserializer(payload)
+        val actualBoolean = boolDeserializer.deserializeNull<Boolean>()
+        assertNull(actualBoolean)
     }
 
     @Test
@@ -109,11 +116,27 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
             val list = mutableListOf<Int>()
             while (hasNextElement()) {
-                list.add(deserializeInt()!!)
+                list.add(deserializeInt())
             }
             return@deserializeList list
         }
         val expected = listOf(1, 2, 3)
+        actual.shouldContainExactly(expected)
+    }
+
+    @Test
+    fun `it handles sparse lists`() {
+        val payload = "[1,null,3]".encodeToByteArray()
+        val deserializer = JsonDeserializer(payload)
+        val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
+            val list = mutableListOf<Int?>()
+            while (hasNextElement()) {
+                val element = if (nextHasValue()) deserializeInt() else deserializeNull()
+                list.add(element)
+            }
+            return@deserializeList list
+        }
+        val expected = listOf(1, null, 3)
         actual.shouldContainExactly(expected)
     }
 
@@ -134,6 +157,32 @@ class JsonDeserializerTest {
             return@deserializeMap map
         }
         val expected = mapOf("key1" to 1, "key2" to 2)
+        actual.shouldContainExactly(expected)
+    }
+
+    @Test
+    fun `it checks null values of non-sparse maps`() {
+        val payload = """
+            {
+                "key1": 1,
+                "key2": null,
+                "key3": 3
+            }
+        """.trimIndent().encodeToByteArray()
+        val deserializer: Deserializer = JsonDeserializer(payload)
+        val actual = deserializer.deserializeMap(SdkFieldDescriptor("", SerialKind.Map)) {
+            val map = mutableMapOf<String, Int>()
+            while (hasNextEntry()) {
+                val key = key()
+                if (nextHasValue()) {
+                    map[key] = deserializeInt()
+                } else {
+                    deserializeNull()
+                }
+            }
+            return@deserializeMap map
+        }
+        val expected = mapOf("key1" to 1, "key3" to 3)
         actual.shouldContainExactly(expected)
     }
 

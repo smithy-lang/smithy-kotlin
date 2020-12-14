@@ -23,6 +23,7 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 internal enum class SerializeLocation(val serializerFn: String) {
@@ -130,12 +131,7 @@ class SerializeStructGenerator(
                 formatInstant(identifier, tsFormat, forceString = true)
             }
             ShapeType.STRING -> when {
-                target.hasTrait(EnumTrait::class.java) -> {
-                    when (serializeLocation) {
-                        SerializeLocation.Field -> "$identifier.value"
-                        SerializeLocation.Map -> "$identifier?.value"
-                    }
-                }
+                target.hasTrait(EnumTrait::class.java) -> "$identifier.value"
                 else -> identifier
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
@@ -178,13 +174,15 @@ class SerializeStructGenerator(
         level: Int = 0
     ) {
         val iteratorName = "m$level"
+
         writer.openBlock("for(\$L in \$L) {", iteratorName, collectionName)
             .call {
                 when (targetShape) {
                     is CollectionShape -> {
                         // nested list
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        writer.withBlock("serializer.serializeList(${member.descriptorName()}) {", "}") {
+                        val childDescriptorName = member.descriptorName("_C$level")
+                        writer.withBlock("serializer.serializeList($childDescriptorName) {", "}") {
                             renderListSerializer(ctx, member, iteratorName, nestedTarget, writer, level + 1)
                         }
                     }
@@ -219,7 +217,13 @@ class SerializeStructGenerator(
                         } else {
                             iteratorName
                         }
-                        writer.write("\$L(\$L)", targetShape.type.primitiveSerializerFunctionName(), iter)
+                        val sparseList = ctx.model.expectShape(member.target).hasTrait(SparseTrait::class.java)
+
+                        if (sparseList) {
+                            writer.write("if (\$L != null) \$L(\$L) else serializeNull()", iteratorName, targetShape.type.primitiveSerializerFunctionName(), iter)
+                        } else {
+                            writer.write("\$L(\$L)", targetShape.type.primitiveSerializerFunctionName(), iter)
+                        }
                     }
                 }
             }
@@ -276,5 +280,3 @@ internal fun ShapeType.primitiveSerializerFunctionName(): String {
     }
     return "serialize$suffix"
 }
-
-internal fun String.smithyEscape() = this.replace('$', '£')

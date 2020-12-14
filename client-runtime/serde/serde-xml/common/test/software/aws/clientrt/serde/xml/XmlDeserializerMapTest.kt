@@ -128,7 +128,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun `it handles maps with entries with empty values`() {
+    fun `it handles sparse maps`() {
         val payload = """
             <values>
                 <entry>
@@ -148,13 +148,49 @@ class XmlDeserializerMapTest {
             val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = deserializeInt()
+                val value = when (nextHasValue()) {
+                    true -> deserializeInt()
+                    false -> deserializeNull()
+                }
 
                 map[key] = value
             }
             return@deserializeMap map
         }
         val expected = mapOf("key1" to 1, "key2" to null)
+        actual.shouldContainExactly(expected)
+    }
+
+    @Test
+    fun `it handles checking map values for null`() {
+        val payload = """
+            <values>
+                <entry>
+                    <key>key1</key>
+                    <value>1</value>
+                </entry>
+                <entry>
+                    <key>key2</key>
+                    <value></value>
+                </entry>
+            </values>
+        """.encodeToByteArray()
+        val fieldDescriptor = SdkFieldDescriptor("values", SerialKind.Map, 0, XmlMap())
+
+        val deserializer = XmlDeserializer(payload)
+        val actual = deserializer.deserializeMap(fieldDescriptor) {
+            val map = mutableMapOf<String, Int?>()
+            while (hasNextEntry()) {
+                val key = key()
+                if (nextHasValue()) {
+                    val value = deserializeInt()
+
+                    map[key] = value
+                }
+            }
+            return@deserializeMap map
+        }
+        val expected = mapOf("key1" to 1)
         actual.shouldContainExactly(expected)
     }
 }

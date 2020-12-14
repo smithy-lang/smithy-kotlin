@@ -26,37 +26,40 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
     // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
-    private fun <T> nextNumberValue(block: (value: String) -> T): T {
-        val token = reader.nextTokenOf<JsonToken.Number>()
-        return block(token.value)
-    }
+    private fun <T> nextNumberValue(block: (value: String) -> T): T =
+        when (val token = reader.nextToken()) {
+            is JsonToken.Number -> block(token.value)
+            else -> throw DeserializationException("$token cannot be deserialized as type Number")
+        }
 
-    override fun deserializeString(): String? {
+    override fun deserializeString(): String =
         // allow for tokens to be consumed as string even when the next token isn't a quoted string
-        return when (val token = reader.nextToken()) {
+        when (val token = reader.nextToken()) {
             is JsonToken.String -> token.value
             is JsonToken.Number -> token.value
             is JsonToken.Bool -> token.value.toString()
-            is JsonToken.Null -> null
             else -> throw DeserializationException("$token cannot be deserialized as type String")
         }
-    }
 
     override fun deserializeBool(): Boolean {
         val token = reader.nextTokenOf<JsonToken.Bool>()
         return token.value
     }
 
-    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        return when (reader.peek()) {
+    override fun <T> deserializeNull(): T? {
+        reader.nextTokenOf<JsonToken.Null>()
+        return null
+    }
+
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
+        when (reader.peek()) {
             RawJsonToken.BeginObject -> {
                 reader.nextTokenOf<JsonToken.BeginObject>()
-                return JsonFieldIterator(reader, descriptor, this)
+                JsonFieldIterator(reader, descriptor, this)
             }
             RawJsonToken.Null -> JsonNullFieldIterator(this)
-            else -> error("Unexpected token type ${reader.peek()}")
+            else -> throw DeserializerStateException("Unexpected token type ${reader.peek()}")
         }
-    }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         reader.nextTokenOf<JsonToken.BeginArray>()
@@ -73,8 +76,10 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    override fun hasNextEntry(): Boolean {
-        return when (reader.peek()) {
+    override fun nextHasValue(): Boolean = reader.peek() != RawJsonToken.Null
+
+    override fun hasNextEntry(): Boolean =
+        when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndObject>()
@@ -84,10 +89,9 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             RawJsonToken.EndDocument -> false
             else -> true
         }
-    }
 
-    override fun hasNextElement(): Boolean {
-        return when (reader.peek()) {
+    override fun hasNextElement(): Boolean =
+        when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndArray>()
@@ -96,7 +100,6 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             RawJsonToken.EndDocument -> false
             else -> true
         }
-    }
 }
 
 // Represents the deserialization of a null object.
@@ -104,7 +107,7 @@ private class JsonNullFieldIterator(deserializer: Deserializer) : Deserializer.F
     override fun findNextFieldIndex(): Int? = null
 
     override fun skipValue() {
-        error("This should not be called during deserialization.")
+        throw DeserializerStateException("This should not be called during deserialization.")
     }
 }
 

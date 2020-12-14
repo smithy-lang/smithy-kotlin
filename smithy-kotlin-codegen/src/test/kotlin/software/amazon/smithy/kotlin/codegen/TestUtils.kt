@@ -25,6 +25,7 @@ import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.shapes.SmithyIdlModelSerializer
 import java.net.URL
 
 fun String.shouldSyntacticSanityCheck() {
@@ -54,6 +55,33 @@ fun URL.asSmithy(): Model =
         .discoverModels()
         .assemble()
         .unwrap()
+
+/**
+ * Load and initialize a model from a String (from smithy-rs)
+ */
+private const val SmithyVersion = "1.0"
+fun String.asSmithyModel(sourceLocation: String? = null): Model {
+    val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SmithyVersion.doubleQuote()}\n$it" }
+    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
+}
+fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
+fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
+fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
+    return if (cond) {
+        f(this)
+    } else this
+}
+
+/**
+ * Generate Smithy IDL from a model instance.
+ */
+fun Model.toSmithyIDL(): String {
+    val builtInModelIds = setOf("smithy.test.smithy", "aws.auth.smithy", "aws.protocols.smithy", "aws.api.smithy")
+    val ms: SmithyIdlModelSerializer = SmithyIdlModelSerializer.builder().build()
+    val node = ms.serialize(this)
+
+    return node.filterNot { builtInModelIds.contains(it.key.toString()) }.values.first()
+}
 
 /**
  * Container for type instances necessary for tests
@@ -114,10 +142,21 @@ fun testRender(
     return writer.toString()
 }
 
-// Retrieves Document members
+// Retrieves Response Document members
 fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getResponseBindings(shape)
+
+    return responseBindings.values
+        .filter { it.location == HttpBinding.Location.DOCUMENT }
+        .sortedBy { it.memberName }
+        .map { it.member }
+}
+
+// Retrieves Request Document members
+fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
+    val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
+    val responseBindings = bindingIndex.getRequestBindings(shape)
 
     return responseBindings.values
         .filter { it.location == HttpBinding.Location.DOCUMENT }

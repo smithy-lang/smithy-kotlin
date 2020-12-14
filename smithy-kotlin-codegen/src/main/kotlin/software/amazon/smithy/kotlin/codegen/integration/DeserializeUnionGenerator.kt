@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.SymbolVisitor
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
@@ -63,7 +64,7 @@ class DeserializeUnionGenerator(
                                     else -> {
                                         val deserialize = deserializerForShape(targetMember)
                                         val targetType = target.unionTypeName(targetMember)
-                                        writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", targetMember.descriptorName(), targetType)
+                                        writer.write("\$L.index -> value = $deserialize.let { \$L(it) }", targetMember.descriptorName(), targetType)
                                     }
                                 }
                             }
@@ -71,7 +72,7 @@ class DeserializeUnionGenerator(
                         else -> {
                             val deserialize = deserializerForShape(member)
                             val targetType = member.unionTypeName(member)
-                            writer.write("\$L.index -> value = $deserialize?.let { \$L(it) }", member.descriptorName(), targetType)
+                            writer.write("\$L.index -> value = $deserialize.let { \$L(it) }", member.descriptorName(), targetType)
                         }
                     }
                 }
@@ -104,7 +105,7 @@ class DeserializeUnionGenerator(
             ShapeType.DOUBLE -> "deserializeDouble()"
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
-                "deserializeString()?.decodeBase64Bytes()"
+                "deserializeString().decodeBase64Bytes()"
             }
             ShapeType.TIMESTAMP -> {
                 importInstant(writer)
@@ -114,9 +115,9 @@ class DeserializeUnionGenerator(
                     .orElse(defaultTimestampFormat)
 
                 when (tsFormat) {
-                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString()?.let { Instant.fromEpochSeconds(it) }"
-                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString()?.let { Instant.fromIso8601(it) }"
-                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString()?.let { Instant.fromRfc5322(it) }"
+                    TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString().let { Instant.fromEpochSeconds(it) }"
+                    TimestampFormatTrait.Format.DATE_TIME -> "deserializeString().let { Instant.fromIso8601(it) }"
+                    TimestampFormatTrait.Format.HTTP_DATE -> "deserializeString().let { Instant.fromRfc5322(it) }"
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
@@ -124,7 +125,7 @@ class DeserializeUnionGenerator(
                 target.hasTrait(EnumTrait::class.java) -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol)
-                    "deserializeString()?.let { ${enumSymbol.name}.fromValue(it) }"
+                    "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
                 }
                 else -> "deserializeString()"
             }
@@ -177,14 +178,14 @@ class DeserializeUnionGenerator(
                     is MapShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
-                        renderDeserializeMap(member, nestedTarget, 0)
+                        renderDeserializeMap(member, targetShape, nestedTarget, 0)
                     }
                     else -> {
                         val deserializeForElement = deserializerForShape(targetShape)
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
-                writer.write("if ($elementName != null) $destList.add($elementName)")
+                writer.write("$destList.add($elementName)")
             }
             .closeBlock("}")
             // implicit return of `deserializeList` lambda is last expression
@@ -198,23 +199,24 @@ class DeserializeUnionGenerator(
             .call {
                 val mapShape = ctx.model.expectShape(member.target) as MapShape
                 val targetShape = ctx.model.expectShape(mapShape.value.target)
-                renderDeserializeMap(member, targetShape)
+                renderDeserializeMap(member, member, targetShape)
             }
             .dedent()
     }
 
     private fun renderDeserializeMap(
-        member: MemberShape,
+        memberShape: MemberShape,
+        collectionShape: Shape,
         targetShape: Shape,
         level: Int = 0
     ) {
-        val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
         val destMap = "map$level"
         val elementName = "el$level"
-        val targetType = member.unionTypeName(member)
+        val mutableCollection = ctx.symbolProvider.toSymbol(collectionShape).expectProperty(SymbolVisitor.MUTABLE_COLLECTION_FUNCTION)
+        val targetType = memberShape.unionTypeName(memberShape)
 
-        writer.openBlock("deserializer.deserializeMap(\$L) {", member.descriptorName())
-            .write("val $destMap = mutableMapOf<String, ${targetSymbol.name}?>()")
+        writer.openBlock("deserializer.deserializeMap(\$L) {", memberShape.descriptorName())
+            .write("val $destMap = $mutableCollection()")
             .openBlock("while(hasNextEntry()) {")
             .call {
                 val keyName = "k$level"
@@ -225,18 +227,19 @@ class DeserializeUnionGenerator(
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
                         // FIXME - what would we pass here. The descriptor describes the map not a list
-                        renderDeserializeList(member, nestedTarget, level + 1)
+                        renderDeserializeList(memberShape, nestedTarget, level + 1)
                     }
                     is MapShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
-                        renderDeserializeMap(member, nestedTarget, level + 1)
+                        renderDeserializeMap(memberShape, targetShape, nestedTarget, level + 1)
                     }
                     else -> {
                         val deserializeForElement = deserializerForShape(targetShape)
                         writer.write("val $elementName = $deserializeForElement")
                     }
                 }
+
                 writer.write("$destMap[$keyName] = $elementName")
             }
             .closeBlock("}")

@@ -39,13 +39,13 @@ class DeserializeUnionGeneratorTest {
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     when(findNextFieldIndex()) {
-        I32_DESCRIPTOR.index -> value = deserializeInt()?.let { MyAggregateUnion.I32(it) }
+        I32_DESCRIPTOR.index -> value = deserializeInt().let { MyAggregateUnion.I32(it) }
         INTLIST_DESCRIPTOR.index -> value =
             deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                 val list0 = mutableListOf<Int>()
                 while(hasNextElement()) {
                     val el0 = deserializeInt()
-                    if (el0 != null) list0.add(el0)
+                    list0.add(el0)
                 }
                 MyAggregateUnion.IntList(list0)
             }
@@ -58,17 +58,17 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                         val list1 = mutableListOf<Int>()
                         while(hasNextElement()) {
                             val el1 = deserializeInt()
-                            if (el1 != null) list1.add(el1)
+                            list1.add(el1)
                         }
                         MyAggregateUnion.ListOfIntList(list1)
                     }
-                    if (el0 != null) list0.add(el0)
+                    list0.add(el0)
                 }
                 MyAggregateUnion.ListOfIntList(list0)
             }
         MAPOFLISTS_DESCRIPTOR.index -> value =
             deserializer.deserializeMap(MAPOFLISTS_DESCRIPTOR) {
-                val map0 = mutableMapOf<String, List<Int>?>()
+                val map0 = mutableMapOf<String, List<Int>>()
                 while(hasNextEntry()) {
                     val k0 = key()
                     val el0 =
@@ -76,7 +76,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                         val list1 = mutableListOf<Int>()
                         while(hasNextElement()) {
                             val el1 = deserializeInt()
-                            if (el1 != null) list1.add(el1)
+                            list1.add(el1)
                         }
                         MyAggregateUnion.MapOfLists(list1)
                     }
@@ -107,8 +107,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     when(findNextFieldIndex()) {
-        I32_DESCRIPTOR.index -> value = deserializeInt()?.let { MyUnion.I32(it) }
-        STRINGA_DESCRIPTOR.index -> value = deserializeString()?.let { MyUnion.StringA(it) }
+        I32_DESCRIPTOR.index -> value = deserializeInt().let { MyUnion.I32(it) }
+        STRINGA_DESCRIPTOR.index -> value = deserializeString().let { MyUnion.StringA(it) }
         else -> skipValue()
     }
 }
@@ -132,19 +132,19 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     when(findNextFieldIndex()) {
-        I32_DESCRIPTOR.index -> value = deserializeInt()?.let { MyAggregateUnion.I32(it) }
+        I32_DESCRIPTOR.index -> value = deserializeInt().let { MyAggregateUnion.I32(it) }
         INTLIST_DESCRIPTOR.index -> value =
             deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                 val list0 = mutableListOf<Int>()
                 while(hasNextElement()) {
                     val el0 = deserializeInt()
-                    if (el0 != null) list0.add(el0)
+                    list0.add(el0)
                 }
                 MyAggregateUnion.IntList(list0)
             }
         INTMAP_DESCRIPTOR.index -> value =
             deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
-                val map0 = mutableMapOf<String, Int?>()
+                val map0 = mutableMapOf<String, Int>()
                 while(hasNextEntry()) {
                     val k0 = key()
                     val el0 = deserializeInt()
@@ -152,8 +152,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 }
                 MyAggregateUnion.IntMap(map0)
             }
-        NESTED3_DESCRIPTOR.index -> value = NestedDeserializer().deserialize(deserializer)?.let { MyAggregateUnion.Nested3(it) }
-        TIMESTAMP4_DESCRIPTOR.index -> value = deserializeString()?.let { Instant.fromIso8601(it) }?.let { MyAggregateUnion.Timestamp4(it) }
+        NESTED3_DESCRIPTOR.index -> value = NestedDeserializer().deserialize(deserializer).let { MyAggregateUnion.Nested3(it) }
+        TIMESTAMP4_DESCRIPTOR.index -> value = deserializeString().let { Instant.fromIso8601(it) }.let { MyAggregateUnion.Timestamp4(it) }
         else -> skipValue()
     }
 }
