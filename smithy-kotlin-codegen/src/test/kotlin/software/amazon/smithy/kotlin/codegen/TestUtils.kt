@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -166,4 +167,17 @@ fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
 
 fun MockManifest.getTransformFileContents(filename: String): String {
     return expectFileString("src/main/kotlin/test/transform/$filename")
+}
+
+// Will generate an IDE diff in the case of a test assertion failure.
+fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
+    try {
+        this.shouldContainOnlyOnce(expected)
+    } catch (originalException: AssertionError) {
+        try {
+            kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
+        } catch (unusedException: Throwable) {
+            throw originalException
+        }
+    }
 }

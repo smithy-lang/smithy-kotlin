@@ -41,6 +41,7 @@ import kotlin.test.assertTrue
  */
 // TODO - this test can be moved into integration test and the test model can be applied directly
 //        to generated deserializers rather than copied and adapted in-line.
+//        https://www.pivotaltracker.com/story/show/176162626
 class SparseMapDeserializationTest {
 
     class GetFooOutput private constructor(builder: BuilderImpl) {

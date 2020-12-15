@@ -131,7 +131,7 @@ class DeserializeStructGenerator(
                 val collectionShape = ctx.model.expectShape(member.target) as CollectionShape
                 val collectionIsSet = collectionShape is SetShape
                 val targetShape = ctx.model.expectShape(collectionShape.member.target)
-                renderDeserializeList(member, targetShape, renderAsSet = collectionIsSet)
+                renderDeserializeList(member, member, targetShape, renderAsSet = collectionIsSet)
             }
             .dedent()
     }
@@ -140,27 +140,28 @@ class DeserializeStructGenerator(
     // in `deserializeListMember` or `deserializeMapMember`
     private fun renderDeserializeList(
         memberShape: MemberShape,
+        collectionShape: Shape,
         targetShape: Shape,
         level: Int = 0,
         renderAsSet: Boolean = false
     ) {
-        val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
+        val mutableCollectionFunction = ctx.symbolProvider.toSymbol(collectionShape).expectProperty(SymbolVisitor.MUTABLE_COLLECTION_FUNCTION)
+
         val isSparse = ctx.model.expectShape(memberShape.target).hasTrait(SparseTrait::class.java)
-        val nullablePostfix = if (isSparse) "?" else ""
         val destList = "list$level"
         val elementName = "el$level"
         val conversion = if (renderAsSet) ".toSet()" else ""
 
         val listDescriptorName = if (level == 0) memberShape.descriptorName() else memberShape.descriptorName("_C${level - 1}")
         writer.openBlock("deserializer.deserializeList(\$L) {", listDescriptorName)
-            .write("val $destList = mutableListOf<${targetSymbol.name}$nullablePostfix>()")
+            .write("val $destList = $mutableCollectionFunction()")
             .openBlock("while(hasNextElement()) {")
             .call {
                 when (targetShape) {
                     is CollectionShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        renderDeserializeList(memberShape, nestedTarget, level + 1)
+                        renderDeserializeList(memberShape, targetShape, nestedTarget, level + 1)
                     }
                     is MapShape -> {
                         writer.write("val $elementName =")
@@ -171,7 +172,7 @@ class DeserializeStructGenerator(
                         val deserializeForElement = deserializerForShape(targetShape)
                         when (isSparse) {
                             true -> writer.write("val $elementName = if (nextHasValue()) $deserializeForElement else deserializeNull()")
-                            false -> writer.write("val $elementName = $deserializeForElement")
+                            false -> writer.write("val $elementName = if (nextHasValue()) { $deserializeForElement } else { deserializeNull(); continue }")
                         }
                     }
                 }
@@ -217,7 +218,7 @@ class DeserializeStructGenerator(
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
                         // FIXME - what would we pass here. The descriptor describes the map not a list
-                        renderDeserializeList(memberShape, nestedTarget, level + 1)
+                        renderDeserializeList(memberShape, targetShape, nestedTarget, level + 1)
                     }
                     is MapShape -> {
                         writer.write("val $elementName =")
@@ -230,7 +231,7 @@ class DeserializeStructGenerator(
                             true ->
                                 writer.write("val $elementName = if (nextHasValue()) $deserializeForElement else deserializeNull()")
                             false ->
-                                writer.write("val $elementName = $deserializeForElement")
+                                writer.write("val $elementName = if (nextHasValue()) { $deserializeForElement } else { deserializeNull(); continue }")
                         }
                     }
                     else -> TODO("Unhandled codegen path for $targetShape")
