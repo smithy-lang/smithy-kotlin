@@ -169,11 +169,15 @@ fun MockManifest.getTransformFileContents(filename: String): String {
     return expectFileString("src/main/kotlin/test/transform/$filename")
 }
 
+// Will generate an IDE diff in the case of a test assertion failure.
 fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
     try {
         this.shouldContainOnlyOnce(expected)
-    } catch (e: AssertionError) {
-        kotlin.test.assertEquals(expected, this)
-        throw e
+    } catch (originalException: AssertionError) {
+        try {
+            kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
+        } catch(unusedException: Throwable) {
+            throw originalException
+        }
     }
 }
