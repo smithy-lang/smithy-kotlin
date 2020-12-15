@@ -17,6 +17,7 @@ kotlin {
                 implementation(project(":client-runtime:io"))
                 // okhttp works on both JVM and Android
                 implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+                implementation(project(":client-runtime:logging"))
             }
         }
     }
