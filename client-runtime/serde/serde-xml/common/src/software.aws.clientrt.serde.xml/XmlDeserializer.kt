@@ -103,7 +103,7 @@ class XmlDeserializer(
     override fun deserializeBool(): Boolean =
         deserializePrimitive { it.toBoolean() }
 
-    override fun <T> deserializeNull(): T? {
+    override fun deserializeNull(): Nothing? {
         check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
     }
@@ -263,7 +263,7 @@ private class CompositeIterator(
         return deserializer.deserializeBool()
     }
 
-    override fun <T> deserializeNull(): T? {
+    override fun deserializeNull(): Nothing? {
         check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
     }
@@ -441,7 +441,7 @@ private class XmlFieldIterator(
     override fun deserializeBool(): Boolean =
         deserializePrimitive { it.toBoolean() }
 
-    override fun <T> deserializeNull(): T? {
+    override fun deserializeNull(): Nothing? {
         check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
         return null
     }

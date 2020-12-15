@@ -46,7 +46,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    override fun <T> deserializeNull(): T? {
+    override fun deserializeNull(): Nothing? {
         reader.nextTokenOf<JsonToken.Null>()
         return null
     }

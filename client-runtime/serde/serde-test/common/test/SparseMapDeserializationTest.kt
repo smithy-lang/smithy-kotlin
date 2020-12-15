@@ -180,7 +180,7 @@ class SparseMapDeserializationTest {
                                         val k0 = key()
                                         val el0 = when (nextHasValue()) {
                                             true -> GreetingDeserializer().deserialize(deserializer)
-                                            false -> deserializer.deserializeNull()
+                                            false -> { deserializer.deserializeNull(); null }
                                         }
                                         map0[k0] = el0
                                     }
