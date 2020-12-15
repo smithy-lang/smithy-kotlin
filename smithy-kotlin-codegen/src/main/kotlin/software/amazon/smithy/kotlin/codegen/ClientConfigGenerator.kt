@@ -55,9 +55,7 @@ class ClientConfigGenerator(
         addPropertyImports()
 
         props.sortBy { it.propertyName }
-        val baseClasses = props.flatMap {
-            it.baseClasses.map { it.name }
-        }
+        val baseClasses = props.mapNotNull { it.baseClass?.name }
             .toSet()
             .joinToString(", ")
 
@@ -77,7 +75,7 @@ class ClientConfigGenerator(
      */
     private fun addPropertyImports() {
         props.forEach {
-            it.baseClasses.forEach { baseClass ->
+            it.baseClass?.let { baseClass ->
                 ctx.writer.addImport(baseClass)
             }
             ctx.writer.addImport(it.symbol)

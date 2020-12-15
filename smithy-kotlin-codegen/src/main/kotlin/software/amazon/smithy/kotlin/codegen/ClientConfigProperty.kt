@@ -50,13 +50,13 @@ class ClientConfigProperty private constructor(builder: Builder) {
      *
      * NOTE: Adding 1 or more base classes will implicitly render the property with an `override` modifier
      */
-    val baseClasses: List<Symbol> = builder.baseClasses
+    val baseClass: Symbol? = builder.baseClass
 
     /**
      * Flag indicating if this property stems from some base class and needs an override modifier when rendered
      */
     internal val requiresOverride: Boolean
-        get() = baseClasses.isNotEmpty()
+        get() = baseClass != null
 
     companion object {
         operator fun invoke(block: Builder.() -> Unit): ClientConfigProperty =
@@ -68,16 +68,16 @@ class ClientConfigProperty private constructor(builder: Builder) {
          * @param defaultValue The default value the config property should have if not set (if not specified the
          * parameter is assumed nullable)
          * @param documentation Help text to render as documentation for the property
-         * @param baseClasses Additional base classes the config class should inherit from (assumes this property
-         * stems from one or more base classes)
+         * @param baseClass Base class the config class should inherit from (assumes this property
+         * stems from this type)
          */
         fun Int(
             name: String,
             defaultValue: Int? = null,
             documentation: String? = null,
-            vararg baseClasses: Symbol
+            baseClass: Symbol? = null
         ): ClientConfigProperty =
-            builtInProperty(name, builtInSymbol("Int", defaultValue?.toString()), documentation, *baseClasses)
+            builtInProperty(name, builtInSymbol("Int", defaultValue?.toString()), documentation, baseClass)
 
         /**
          * Convenience init for a boolean symbol.
@@ -85,16 +85,16 @@ class ClientConfigProperty private constructor(builder: Builder) {
          * @param defaultValue The default value the config property should have if not set (if not specified the
          * parameter is assumed nullable)
          * @param documentation Help text to render as documentation for the property
-         * @param baseClasses Additional base classes the config class should inherit from (assumes this property
-         * stems from one or more base classes)
+         * @param baseClass Base class the config class should inherit from (assumes this property
+         * stems from this type)
          */
         fun Boolean(
             name: String,
             defaultValue: Boolean? = null,
             documentation: String? = null,
-            vararg baseClasses: Symbol
+            baseClass: Symbol? = null
         ): ClientConfigProperty =
-            builtInProperty(name, builtInSymbol("Boolean", defaultValue?.toString()), documentation, *baseClasses)
+            builtInProperty(name, builtInSymbol("Boolean", defaultValue?.toString()), documentation, baseClass)
 
         /**
          * Convenience init for a string symbol.
@@ -102,16 +102,16 @@ class ClientConfigProperty private constructor(builder: Builder) {
          * @param defaultValue The default value the config property should have if not set (if not specified the
          * parameter is assumed nullable)
          * @param documentation Help text to render as documentation for the property
-         * @param baseClasses Additional base classes the config class should inherit from (assumes this property
-         * stems from one or more base classes)
+         * @param baseClass Base class the config class should inherit from (assumes this property
+         * stems from this type)
          */
         fun String(
             name: String,
             defaultValue: String? = null,
             documentation: String? = null,
-            vararg baseClasses: Symbol
+            baseClass: Symbol? = null
         ): ClientConfigProperty =
-            builtInProperty(name, builtInSymbol("String", defaultValue), documentation, *baseClasses)
+            builtInProperty(name, builtInSymbol("String", defaultValue), documentation, baseClass)
     }
 
     class Builder {
@@ -120,18 +120,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
         var name: String? = null
         var documentation: String? = null
 
-        // additional base classes
-        val baseClasses: MutableList<Symbol> = mutableListOf()
-
-        /**
-         * Add additional base classes to the config
-         */
-        fun addBaseClass(name: String) = addBaseClass(Symbol.builder().name(name).build())
-
-        /**
-         * Add additional base classes to the config
-         */
-        fun addBaseClass(symbol: Symbol) = baseClasses.add(symbol)
+        var baseClass: Symbol? = null
 
         fun build(): ClientConfigProperty = ClientConfigProperty(this)
     }
@@ -149,14 +138,12 @@ private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
     return builder.build()
 }
 
-private fun builtInProperty(name: String, symbol: Symbol, documentation: String?, vararg baseClasses: Symbol): ClientConfigProperty =
+private fun builtInProperty(name: String, symbol: Symbol, documentation: String?, baseClass: Symbol?): ClientConfigProperty =
     ClientConfigProperty {
         this.symbol = symbol
         this.name = name
         this.documentation = documentation
-        baseClasses.forEach {
-            addBaseClass(it)
-        }
+        this.baseClass = baseClass
     }
 
 /**
@@ -178,7 +165,7 @@ object KotlinClientRuntimeConfigProperty {
                 name = "HttpClientEngine"
                 namespace(KotlinDependency.CLIENT_RT_HTTP, "engine")
             }
-            baseClasses += httpClientConfigSymbol
+            baseClass = httpClientConfigSymbol
             documentation = """
             Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)    
             """.trimIndent()
@@ -189,7 +176,7 @@ object KotlinClientRuntimeConfigProperty {
                 name = "HttpClientEngineConfig"
                 namespace(KotlinDependency.CLIENT_RT_HTTP, "engine")
             }
-            baseClasses += httpClientConfigSymbol
+            baseClass = httpClientConfigSymbol
             documentation = """
             Override the default HTTP client engine used for round tripping requests. This allow sharing a common
             HTTP engine between multiple clients, substituting with a different engine, etc.
@@ -203,7 +190,7 @@ object KotlinClientRuntimeConfigProperty {
                 namespace(KotlinDependency.CLIENT_RT_CORE, "config")
             }
 
-            baseClasses += buildSymbol {
+            baseClass = buildSymbol {
                 name = "IdempotencyTokenConfig"
                 namespace(KotlinDependency.CLIENT_RT_CORE, "config")
             }
