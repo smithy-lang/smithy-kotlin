@@ -150,7 +150,7 @@ class XmlDeserializerMapTest {
                 val key = key()
                 val value = when (nextHasValue()) {
                     true -> deserializeInt()
-                    false -> { deserializeNull(); null }
+                    false -> deserializeNull()
                 }
 
                 map[key] = value

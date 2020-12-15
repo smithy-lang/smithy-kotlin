@@ -129,7 +129,7 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
             val list = mutableListOf<Int?>()
             while (hasNextElement()) {
-                val element = if (nextHasValue()) deserializeInt() else { deserializeNull(); null }
+                val element = if (nextHasValue()) deserializeInt() else deserializeNull()
                 list.add(element)
             }
             return@deserializeList list

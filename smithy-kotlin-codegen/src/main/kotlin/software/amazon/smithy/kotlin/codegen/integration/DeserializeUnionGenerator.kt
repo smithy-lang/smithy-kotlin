@@ -227,7 +227,6 @@ class DeserializeUnionGenerator(
                     is CollectionShape -> {
                         writer.write("val $elementName =")
                         val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        // FIXME - what would we pass here. The descriptor describes the map not a list
                         renderDeserializeList(memberShape, targetShape, nestedTarget, level + 1)
                     }
                     is MapShape -> {
