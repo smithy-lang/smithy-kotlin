@@ -71,7 +71,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
          * @param baseClasses Additional base classes the config class should inherit from (assumes this property
          * stems from one or more base classes)
          */
-        fun Integer(
+        fun Int(
             name: String,
             defaultValue: Int? = null,
             documentation: String? = null,
@@ -88,7 +88,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
          * @param baseClasses Additional base classes the config class should inherit from (assumes this property
          * stems from one or more base classes)
          */
-        fun Bool(
+        fun Boolean(
             name: String,
             defaultValue: Boolean? = null,
             documentation: String? = null,
