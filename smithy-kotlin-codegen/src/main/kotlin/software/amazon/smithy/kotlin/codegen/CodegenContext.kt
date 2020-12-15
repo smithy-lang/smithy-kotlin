@@ -38,19 +38,19 @@ data class GenerationContext(
 /**
  * Convert this context into a context for rendering a specific shape
  */
-fun CodegenContext.toRenderingContext(writer: KotlinWriter, forShape: Shape? = null): RenderingContext =
-    RenderingContext(model, symbolProvider, writer, forShape, settings, protocolGenerator, integrations, rootNamespace)
+fun <T : Shape> CodegenContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
+    RenderingContext(writer, forShape, model, symbolProvider, settings, protocolGenerator, integrations, rootNamespace)
 
 /**
  * Context passed to an individual generator for rendering (writing) a shape
  */
-data class RenderingContext(
-    override val model: Model,
-    override val symbolProvider: SymbolProvider,
+data class RenderingContext<T : Shape>(
     // writer to render to
     val writer: KotlinWriter,
     // shape to render for
-    val shape: Shape?,
+    val shape: T?,
+    override val model: Model,
+    override val symbolProvider: SymbolProvider,
     override val settings: KotlinSettings,
     override val protocolGenerator: ProtocolGenerator? = null,
     override val integrations: List<KotlinIntegration> = listOf(),
@@ -58,6 +58,6 @@ data class RenderingContext(
     override val rootNamespace: String = settings.moduleName,
 ) : CodegenContext {
 
-    constructor(otherCtx: CodegenContext, writer: KotlinWriter, shape: Shape?) :
-        this(otherCtx.model, otherCtx.symbolProvider, writer, shape, otherCtx.settings, otherCtx.protocolGenerator, otherCtx.integrations, otherCtx.rootNamespace)
+    constructor(otherCtx: CodegenContext, writer: KotlinWriter, shape: T?) :
+        this(writer, shape, otherCtx.model, otherCtx.symbolProvider, otherCtx.settings, otherCtx.protocolGenerator, otherCtx.integrations, otherCtx.rootNamespace)
 }

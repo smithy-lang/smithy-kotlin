@@ -16,7 +16,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
  * @param properties Additional properties to register on the config interface
  */
 class ClientConfigGenerator(
-    private val ctx: RenderingContext,
+    private val ctx: RenderingContext<ServiceShape>,
     detectDefaultProps: Boolean = true,
     vararg properties: ClientConfigProperty
 ) {
@@ -42,8 +42,7 @@ class ClientConfigGenerator(
             props.add(KotlinClientRuntimeConfigProperty.HttpClientEngineConfig)
             props.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
         }
-        val service = ctx.shape as? ServiceShape
-        if (service != null && service.hasIdempotentTokenMember(ctx.model)) {
+        if (ctx.shape != null && ctx.shape.hasIdempotentTokenMember(ctx.model)) {
             props.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
         }
     }

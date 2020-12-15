@@ -40,12 +40,12 @@ const val SECTION_SERVICE_INTERFACE_CONFIG = "service-interface-config"
 /**
  * Renders just the service client interfaces. The actual implementation is handled by protocol generators
  */
-class ServiceGenerator(private val ctx: RenderingContext) {
+class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     init {
         require(ctx.shape is ServiceShape) { "ServiceShape is required for generating a service interface; was: ${ctx.shape}" }
     }
 
-    private val service: ServiceShape = ctx.shape as ServiceShape
+    private val service: ServiceShape = requireNotNull(ctx.shape) { "ServiceShape is required to render a service client" }
     private val serviceSymbol = ctx.symbolProvider.toSymbol(service)
     private val writer = ctx.writer
 

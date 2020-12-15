@@ -112,7 +112,7 @@ class ServiceGeneratorTest {
         }
 
         val settings = KotlinSettings(service.id, "test", "0.0")
-        val renderingCtx = RenderingContext(model, provider, writer, service, settings)
+        val renderingCtx = RenderingContext(writer, service, model, provider, settings)
         val generator = ServiceGenerator(renderingCtx)
         generator.render()
         val contents = writer.toString()
@@ -140,7 +140,7 @@ class ServiceGeneratorTest {
         val writer = KotlinWriter("test")
         val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
         val settings = KotlinSettings(service.id, "test", "0.0")
-        val renderingCtx = RenderingContext(model, provider, writer, service, settings)
+        val renderingCtx = RenderingContext(writer, service, model, provider, settings)
         val generator = ServiceGenerator(renderingCtx)
 
         generator.render()
