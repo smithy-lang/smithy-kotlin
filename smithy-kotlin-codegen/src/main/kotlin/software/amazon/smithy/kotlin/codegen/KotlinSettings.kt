@@ -31,7 +31,7 @@ class KotlinSettings(
     val moduleName: String,
     val moduleVersion: String,
     val moduleDescription: String = "",
-    val build: BuildSettings
+    val build: BuildSettings = BuildSettings.Default
 ) {
 
     /**
@@ -132,10 +132,14 @@ data class BuildSettings(val rootProject: Boolean = false) {
             return if (node.isPresent) {
                 BuildSettings(node.get().getMember(BuildSettings.ROOT_PROJECT).get().asBooleanNode().get().value)
             } else {
-                Default()
+                Default
             }
         }
-        fun Default(): BuildSettings = BuildSettings(false)
+
+        /**
+         * Default build settings
+         */
+        val Default: BuildSettings = BuildSettings(false)
     }
 }
 
