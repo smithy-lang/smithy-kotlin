@@ -188,7 +188,6 @@ data class Primitives(
     val double: Double,
     val char: Char,
     val string: String,
-    val unitNullable: Unit?,
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
@@ -207,7 +206,7 @@ data class Primitives(
     override fun serialize(serializer: Serializer) {
         serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
             field(descriptorBoolean, boolean)
-            field(descriptorBoolean, null as Boolean?)
+            nullField(descriptorBoolean)
             field(descriptorByte, byte)
             field(descriptorShort, short)
             field(descriptorInt, int)
@@ -227,5 +226,5 @@ data class Primitives(
 
 val data = Primitives(
     Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-    null, listOf(1, 2, 3)
+    listOf(1, 2, 3)
 )
