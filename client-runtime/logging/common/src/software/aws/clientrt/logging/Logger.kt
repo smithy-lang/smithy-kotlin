@@ -24,7 +24,7 @@ public interface Logger {
          * Get the logger for the given [name]
          */
         fun getLogger(name: String): Logger {
-            return KotlinLoggingLogger(name)
+            return KotlinLoggingAdapter(name)
         }
     }
 

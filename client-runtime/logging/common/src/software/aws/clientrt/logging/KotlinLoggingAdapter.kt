@@ -10,7 +10,7 @@ import mu.KLogger
 /**
  * Adapter for kotlin-logging:KLogger
  */
-internal class KotlinLoggingLogger(name: String) : Logger {
+internal class KotlinLoggingAdapter(name: String) : Logger {
     private val log: KLogger = mu.KotlinLogging.logger(name)
 
     override fun trace(msg: () -> Any?) {
