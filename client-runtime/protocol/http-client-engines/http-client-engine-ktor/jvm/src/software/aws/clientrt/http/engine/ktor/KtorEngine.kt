@@ -21,6 +21,7 @@ import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponsePipeline
+import software.aws.clientrt.logging.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
@@ -30,6 +31,7 @@ import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
  */
 class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     val client: HttpClient
+    private val logger = Logger.getLogger<KtorEngine>()
 
     init {
         client = HttpClient(OkHttp) {
@@ -52,17 +54,15 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
             }
         }
 
-        // TODO - convert to trace/debug logging when available
         // wait for the response to be available, the content will be read as a stream
-        println("(${Thread.currentThread().name}) ktor engine: waiting on response to be available")
+        logger.trace("waiting on response to be available")
 
         try {
             val resp = respChannel.receive()
-            println("(${Thread.currentThread().name}) ktor engine: response is available continuing")
+            logger.trace("response is available continuing")
             return resp
         } catch (ex: Exception) {
-            println(ex)
-            throw ex
+            throw logger.throwing(ex)
         }
     }
 
@@ -93,13 +93,13 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
                 sdkBuilder.build()
             )
 
-            println("(${Thread.currentThread().name}) ktor engine: signalling response")
+            logger.trace("signalling response")
             channel.send(resp)
 
-            println("(${Thread.currentThread().name}) ktor engine: waiting on body to be consumed")
+            logger.trace("waiting on body to be consumed")
             // wait for the receiving end to finish with the HTTP body
             waiter.wait()
-            println("(${Thread.currentThread().name}) ktor engine: request done")
+            logger.trace("request done")
         }
     }
 
