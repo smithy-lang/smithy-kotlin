@@ -92,7 +92,8 @@ abstract class HttpSerde(private val serdeProvider: String, private val generate
 open class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val rootNamespace: String,
-    protected val features: List<HttpFeature>
+    protected val features: List<HttpFeature>,
+    protected val httpBindingResolver: HttpBindingResolver
 ) {
 
     /**
@@ -188,7 +189,7 @@ open class HttpProtocolClientGenerator(
     protected open fun renderOperationSetup(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
         val inputShape = opIndex.getInput(op)
         val outputShape = opIndex.getOutput(op)
-        val httpTrait = op.expectTrait(HttpTrait::class.java)
+        val httpTrait = httpBindingResolver.resolveHttpTrait(op)
 
         if (!inputShape.isPresent) {
             // no serializer implementation is generated for operations with no input, inline the HTTP
