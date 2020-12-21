@@ -22,6 +22,7 @@ import software.amazon.smithy.kotlin.codegen.hasIdempotentTokenMember
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 
 /**
@@ -41,9 +42,8 @@ protected constructor(builder: Builder<T>) {
     protected val serviceName: String = builder.serviceName!!
 
     protected val idempotentFieldsInModel: Boolean by lazy {
-        val service = model.expectShape<ServiceShape>(serviceName)
-
-        service.hasIdempotentTokenMember(model)
+        operation.input.isPresent &&
+                model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }
     }
 
     /**
