@@ -553,7 +553,7 @@ abstract class HttpBindingProtocolGenerator: ProtocolGenerator {
                 if (setContentType || headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
                     writer.withBlock("builder.headers {", "}") {
                         if (setContentType) {
-                            write("append(\"Content-Type\", \"\$L\")", contentType)
+                            write("appendMissing(\"Content-Type\", listOf(\"\$L\"))", contentType)
                         }
                         renderStringValuesMapParameters(ctx, headerBindings, writer)
                         prefixHeaderBindings.forEach {
