@@ -143,7 +143,8 @@ fun testRender(
     return writer.toString()
 }
 
-// Retrieves Response Document members
+// Retrieves Response Document members for HttpTrait-enabled protocols
+// FIXME ~ provide similar function for non-HttpTrait models.
 fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getResponseBindings(shape)
@@ -154,7 +155,8 @@ fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
         .map { it.member }
 }
 
-// Retrieves Request Document members
+// Retrieves Request Document members for HttpTrait-enabled protocols
+// FIXME ~ provide similar function for non-HttpTrait models.
 fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getRequestBindings(shape)
