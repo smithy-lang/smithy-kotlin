@@ -18,6 +18,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.defaultName
 import software.amazon.smithy.kotlin.codegen.withBlock
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
@@ -186,7 +187,11 @@ class SerializeStructGenerator(
                             renderListSerializer(ctx, member, iteratorName, nestedTarget, writer, level + 1)
                         }
                     }
+                    is MapShape -> {
+                        // FIXME ~ See https://www.pivotaltracker.com/story/show/176276165
+                    }
                     is TimestampShape -> {
+                        // TODO ~ the following code may not work w/ non-HttpBinding protocols
                         val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
                         val tsFormat = bindingIndex.determineTimestampFormat(
                             targetShape,
