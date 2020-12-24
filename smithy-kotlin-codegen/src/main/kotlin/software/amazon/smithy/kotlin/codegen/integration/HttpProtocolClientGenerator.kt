@@ -19,7 +19,6 @@ import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.traits.HttpTrait
 
 /**
  * HttpFeature interface that allows pipeline middleware to be registered and configured with the protocol generator

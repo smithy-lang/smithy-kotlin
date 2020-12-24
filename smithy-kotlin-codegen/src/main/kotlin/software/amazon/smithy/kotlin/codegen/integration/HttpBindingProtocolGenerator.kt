@@ -19,11 +19,8 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
-import software.amazon.smithy.model.pattern.UriPattern
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.utils.StringUtils
@@ -32,7 +29,7 @@ import java.util.logging.Logger
 /**
  * Abstract implementation useful for all HTTP protocols
  */
-abstract class HttpBindingProtocolGenerator: ProtocolGenerator {
+abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
     override val applicationProtocol: ApplicationProtocol = ApplicationProtocol.createDefaultHttpApplicationProtocol()

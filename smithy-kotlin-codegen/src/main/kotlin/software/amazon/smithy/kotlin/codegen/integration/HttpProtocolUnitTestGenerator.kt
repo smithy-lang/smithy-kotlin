@@ -18,10 +18,8 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.expectShape
-import software.amazon.smithy.kotlin.codegen.hasIdempotentTokenMember
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 
@@ -43,7 +41,7 @@ protected constructor(builder: Builder<T>) {
 
     protected val idempotentFieldsInModel: Boolean by lazy {
         operation.input.isPresent &&
-                model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }
+            model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }
     }
 
     /**
