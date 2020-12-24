@@ -18,7 +18,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.defaultName
 import software.amazon.smithy.kotlin.codegen.withBlock
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*

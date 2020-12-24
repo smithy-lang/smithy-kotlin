@@ -84,7 +84,7 @@ class DefaultHttpBindingResolver(
     private val generationContext: ProtocolGenerator.GenerationContext,
     private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(generationContext.model),
     private val topDownIndex: TopDownIndex = TopDownIndex.of(generationContext.model)
-): HttpBindingResolver {
+) : HttpBindingResolver {
     /**
      * The default content-type when a document is synthesized in the body.
      */

@@ -14,7 +14,6 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.Model
 

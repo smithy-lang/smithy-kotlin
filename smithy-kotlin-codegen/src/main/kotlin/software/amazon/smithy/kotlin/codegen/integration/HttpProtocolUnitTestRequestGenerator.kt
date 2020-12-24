@@ -15,7 +15,6 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.kotlin.codegen.*
-import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 
 /**
