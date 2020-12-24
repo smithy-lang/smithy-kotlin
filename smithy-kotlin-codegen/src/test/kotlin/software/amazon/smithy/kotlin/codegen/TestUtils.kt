@@ -176,11 +176,7 @@ fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
     try {
         this.shouldContainOnlyOnce(expected)
     } catch (originalException: AssertionError) {
-        try {
-            kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
-        } catch (unusedException: Throwable) {
-            throw originalException
-        }
+        kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
 }
 
