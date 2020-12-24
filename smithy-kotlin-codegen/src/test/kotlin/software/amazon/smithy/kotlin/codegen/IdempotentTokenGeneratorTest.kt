@@ -52,7 +52,7 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
         }
 
         val serializer = serializationContext.serializationProvider()
@@ -64,7 +64,7 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -84,13 +84,13 @@ class AllocateWidgetQuerySerializer(val input: AllocateWidgetInputQuery) : HttpS
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
         }
 
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -107,13 +107,13 @@ class AllocateWidgetHeaderSerializer(val input: AllocateWidgetInputHeader) : Htt
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
             append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.generateToken()))
         }
 
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 }
