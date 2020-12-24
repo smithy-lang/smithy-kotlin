@@ -106,6 +106,10 @@ open class StringValuesMapBuilder(val caseInsensitiveName: Boolean = false, size
         list.add(value)
     }
 
+    fun setMissing(name: String, value: String) {
+        if (!this.values.containsKey(name)) set(name, value)
+    }
+
     operator fun get(name: String): String? = getAll(name)?.firstOrNull()
 
     fun append(name: String, value: String) {
