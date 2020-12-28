@@ -43,7 +43,7 @@ class MockHttpResponse : HttpResponse() {
 class KtorUtilsTest {
 
     @Test
-    fun `it converts request builders`() {
+    fun itConvertsRequestBuilders() {
         val builder = HttpRequestBuilder()
         builder.method = software.aws.clientrt.http.HttpMethod.POST
         builder.url {
@@ -73,7 +73,7 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `it converts responses`() {
+    fun itConvertsResponses() {
         val builder = HttpRequestBuilder()
         builder.method = software.aws.clientrt.http.HttpMethod.POST
         builder.url {
@@ -89,7 +89,7 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `ktor headers are wrapped`() {
+    fun ktorHeadersAreWrapped() {
         val respHeaders = Headers.build {
             append("foo", "bar")
             append("baz", "quux")
@@ -107,7 +107,7 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `ktor headers are copied`() {
+    fun ktorHeadersAreCopied() {
         val respHeaders = Headers.build {
             append("foo", "bar")
             append("baz", "quux")
@@ -126,7 +126,7 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `KtorContentStream notifies on readAll`() = runBlocking {
+    fun KtorContentStreamNotifiesOnReadAll() = runBlocking {
         val channel = ByteChannel(true)
         var called = false
         val notify = {
@@ -144,7 +144,7 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `KtorContentStream notifies on readAvailable`() = runBlocking {
+    fun KtorContentStreamNotifiesOnReadAvailable() = runBlocking {
         val channel = ByteChannel(true)
         var called = false
         val notify = {
@@ -166,7 +166,7 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `KtorContentStream notifies on readFully`() = runBlocking {
+    fun KtorContentStreamNotifiesOnReadFully() = runBlocking {
         val channel = ByteChannel(true)
         var called = false
         val notify = {
@@ -186,7 +186,7 @@ class KtorUtilsTest {
     }
 
     @Test
-    fun `KtorContentStream notifies on cancel`() = runBlocking {
+    fun KtorContentStreamNotifiesOnCancel() = runBlocking {
         val channel = ByteChannel(true)
         var called = false
         val notify = {

@@ -16,7 +16,7 @@ import kotlin.test.assertFails
 class HttpRequestTestBuilderTest {
 
     @Test
-    fun `it asserts HttpMethod`() {
+    fun itAssertsHttpMethod() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -34,7 +34,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts uri`() {
+    fun itAssertsUri() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -54,7 +54,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it encodes uri in mock engine`() {
+    fun itEncodesUriInMockEngine() {
         httpRequestTest {
             expected {
                 method = HttpMethod.POST
@@ -74,7 +74,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts query parameters`() {
+    fun itAssertsQueryParameters() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -97,7 +97,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts forbidden query parameters`() {
+    fun itAssertsForbiddenQueryParameters() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -122,7 +122,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts required query parameters`() {
+    fun itAssertsRequiredQueryParameters() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -148,7 +148,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts headers`() {
+    fun itAssertsHeaders() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -183,7 +183,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts lists of headers`() {
+    fun itAssertsListsOfHeaders() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -211,7 +211,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts forbidden headers`() {
+    fun itAssertsForbiddenHeaders() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -249,7 +249,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it asserts required headers`() {
+    fun itAssertsRequiredHeaders() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -288,7 +288,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it fails when body assert function is missing`() {
+    fun itFailsWhenBodyAssertFunctionIsMissing() {
         val ex = assertFails {
             httpRequestTest {
                 expected {
@@ -307,7 +307,7 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun `it calls bodyAssert function`() {
+    fun itCallsBodyAssertFunction() {
         val ex = assertFails {
             httpRequestTest {
                 expected {

@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerPrimitiveTest {
     @Test
-    fun `it handles doubles`() {
+    fun itHandlesDoubles() {
         val payload = "<node>1.2</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -29,7 +29,7 @@ class XmlDeserializerPrimitiveTest {
     }
 
     @Test
-    fun `it handles floats`() {
+    fun itHandlesFloats() {
         val payload = "<node>1.2</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -41,7 +41,7 @@ class XmlDeserializerPrimitiveTest {
     }
 
     @Test
-    fun `it handles int`() {
+    fun itHandlesInt() {
         val payload = "<node>${Int.MAX_VALUE}</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -53,7 +53,7 @@ class XmlDeserializerPrimitiveTest {
     }
 
     @Test
-    fun `it handles byte as number`() {
+    fun itHandlesByteAsNumber() {
         val payload = "<node>1</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -65,7 +65,7 @@ class XmlDeserializerPrimitiveTest {
     }
 
     @Test
-    fun `it handles short`() {
+    fun itHandlesShort() {
         val payload = "<node>${Short.MAX_VALUE}</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -77,7 +77,7 @@ class XmlDeserializerPrimitiveTest {
     }
 
     @Test
-    fun `it handles long`() {
+    fun itHandlesLong() {
         val payload = "<node>${Long.MAX_VALUE}</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -89,7 +89,7 @@ class XmlDeserializerPrimitiveTest {
     }
 
     @Test
-    fun `it handles bool`() {
+    fun itHandlesBool() {
         val payload = "<node>true</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -100,7 +100,7 @@ class XmlDeserializerPrimitiveTest {
     }
 
     @Test
-    fun `it fails invalid type specification for int`() {
+    fun itFailsInvalidTypeSpecificationForInt() {
         val payload = "<node>1.2</node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -113,7 +113,7 @@ class XmlDeserializerPrimitiveTest {
 
     @Test
     // TODO: It's unclear if this test should result in an exception or null value.
-    fun `it fails missing type specification for int`() {
+    fun itFailsMissingTypeSpecificationForInt() {
         val payload = "<node></node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {
@@ -126,7 +126,7 @@ class XmlDeserializerPrimitiveTest {
 
     @Test
     // TODO: It's unclear if this test should result in an exception or null value.
-    fun `it fails whitespace type specification for int`() {
+    fun itFailsWhitespaceTypeSpecificationForInt() {
         val payload = "<node> </node>".encodeToByteArray()
         val deserializer = XmlDeserializer(payload)
         val objSerializer = SdkObjectDescriptor.build {

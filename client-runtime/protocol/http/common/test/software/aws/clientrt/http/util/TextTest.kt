@@ -13,7 +13,7 @@ data class EscapeTest(val input: String, val expected: String, val formUrlEncode
 
 class TextTest {
     @Test
-    fun `url values encode correctly`() {
+    fun urlValuesEncodeCorrectly() {
         val nonEncodedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.~"
         val encodedCharactersInput = "\t\n\r !\"#$%&'()*+,/:;<=>?@[\\]^`{|}"
         val encodedCharactersOutput =
@@ -36,7 +36,7 @@ class TextTest {
     }
 
     @Test
-    fun `form data values encode correctly`() {
+    fun formDataValuesEncodeCorrectly() {
         val nonEncodedCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_."
         val encodedCharactersInput = "\t\n\r !\"#$%&'()+,/:;<=>?@[\\]^`{|}"
         val encodedCharactersOutput =
@@ -56,14 +56,14 @@ class TextTest {
     }
 
     @Test
-    fun `url path values encode correctly`() {
+    fun urlPathValuesEncodeCorrectly() {
         val urlPath = "/wikipedia/en/6/61/Purdue_University_\u2013seal.svg"
         assertEquals("/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg", urlPath.encodeUrlPath())
         assertEquals("/kotlin/Tue,%2029%20Apr%202014%2018:30:38%20GMT", "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT".encodeUrlPath())
     }
 
     @Test
-    fun `utf8 url path values encode correctly`() {
+    fun utf8UrlPathValuesEncodeCorrectly() {
         val swissAndGerman = "\u0047\u0072\u00fc\u0065\u007a\u0069\u005f\u007a\u00e4\u006d\u00e4"
         val russian = "\u0412\u0441\u0435\u043c\u005f\u043f\u0440\u0438\u0432\u0435\u0442"
         val japanese = "\u3053\u3093\u306b\u3061\u306f"
@@ -73,7 +73,7 @@ class TextTest {
     }
 
     @Test
-    fun `split query string into parts`() {
+    fun splitQueryStringIntoParts() {
         val query = "foo=baz&bar=quux&foo=qux&a="
         val actual = query.splitAsQueryParameters()
         val expected = QueryParameters {

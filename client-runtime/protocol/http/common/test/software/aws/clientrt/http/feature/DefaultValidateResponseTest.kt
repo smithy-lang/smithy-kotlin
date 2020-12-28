@@ -17,7 +17,7 @@ import kotlin.test.assertFailsWith
 
 class DefaultValidateResponseTest {
     @Test
-    fun `it throws exception on non-200 response`() = runSuspendTest {
+    fun itThrowsExceptionOnNon200Response() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }
@@ -42,7 +42,7 @@ class DefaultValidateResponseTest {
     }
 
     @Test
-    fun `it passes success responses`() = runSuspendTest {
+    fun itPassesSuccessResponses() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }

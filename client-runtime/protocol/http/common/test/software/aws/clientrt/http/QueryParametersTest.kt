@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class QueryParametersTest {
 
     @Test
-    fun `it builds`() {
+    fun itBuilds() {
         val params = QueryParameters {
             append("foo", "baz")
             appendAll("foo", listOf("bar", "quux"))
@@ -30,7 +30,7 @@ class QueryParametersTest {
     }
 
     @Test
-    fun `it encodes to query string`() {
+    fun itEncodesToQueryString() {
         data class QueryParamTest(val params: QueryParameters, val expected: String)
         val tests: List<QueryParamTest> = listOf(
             QueryParamTest(

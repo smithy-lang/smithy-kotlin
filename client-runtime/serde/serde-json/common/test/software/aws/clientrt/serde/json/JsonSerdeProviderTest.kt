@@ -12,14 +12,14 @@ import kotlin.test.assertNotNull
 class JsonSerdeProviderTest {
 
     @Test
-    fun `it instantiates a serializer`() {
+    fun itInstantiatesASerializer() {
         val unit = JsonSerdeProvider()
 
         assertNotNull(unit.serializer())
     }
 
     @Test
-    fun `it instantiates a deserializer`() {
+    fun itInstantiatesADeserializer() {
         val unit = JsonSerdeProvider()
 
         assertNotNull(unit.deserializer("{}".encodeToByteArray()))

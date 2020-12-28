@@ -37,7 +37,7 @@ class ParseRfc5322Test {
     )
 
     @Test
-    fun `it parses rfc5322 timestamps`() {
+    fun itParsesRfc5322Timestamps() {
         for ((idx, test) in validTests.withIndex()) {
             val actual = parseRfc5322(test.input)
             assertEquals(test.expected, actual, "test[$idx]: failed to correctly parse ${test.input}")
@@ -45,7 +45,7 @@ class ParseRfc5322Test {
     }
 
     @Test
-    fun `it parses all valid day names`() {
+    fun itParsesAllValidDayNames() {
         val validDays = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         for (day in validDays) {
             val input = "$day, 06 Nov 1994 08:49:37 GMT"
@@ -56,7 +56,7 @@ class ParseRfc5322Test {
     }
 
     @Test
-    fun `it parses all valid month names`() {
+    fun itParsesAllValidMonthNames() {
         val validMonths = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
         for ((idx, month) in validMonths.withIndex()) {
             val input = "Mon, 06 $month 1994 08:49:37 GMT"
@@ -90,7 +90,7 @@ class ParseRfc5322Test {
     )
 
     @Test
-    fun `it rejects invalid timestamps`() {
+    fun itRejectsInvalidTimestamps() {
         for ((idx, test) in invalidTimestamps.withIndex()) {
             val ex = assertFailsWith<ParseException>("test[$idx]: expected exception parsing ${test.input}") {
                 parseRfc5322(test.input)

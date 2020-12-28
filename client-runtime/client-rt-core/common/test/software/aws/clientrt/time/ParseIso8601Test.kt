@@ -39,7 +39,7 @@ class ParseIso8601Test {
     )
 
     @Test
-    fun `it parses extended format timestamps`() {
+    fun itParsesExtendedFormatTimestamps() {
         for ((idx, test) in extendedFmtTests.withIndex()) {
             val actual = parseIso8601(test.input)
             assertEquals(test.expected, actual, "test[$idx]: failed to correctly parse ${test.input}")
@@ -60,7 +60,7 @@ class ParseIso8601Test {
     )
 
     @Test
-    fun `it parses basic format timestamps`() {
+    fun itParsesBasicFormatTimestamps() {
         for ((idx, test) in basicFmtTests.withIndex()) {
             val actual = parseIso8601(test.input)
             assertEquals(test.expected, actual, "test[$idx]: failed to correctly parse ${test.input}")
@@ -94,7 +94,7 @@ class ParseIso8601Test {
     )
 
     @Test
-    fun `it rejects invalid extended timestamps`() {
+    fun itRejectsInvalidExtendedTimestamps() {
         for ((idx, test) in invalidTimestamps.withIndex()) {
             val ex = assertFailsWith<ParseException>("test[$idx]: expected exception parsing ${test.input}") {
                 parseIso8601(test.input)

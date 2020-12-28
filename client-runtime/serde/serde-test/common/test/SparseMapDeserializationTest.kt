@@ -222,7 +222,7 @@ class SparseMapDeserializationTest {
     }
 
     @Test
-    fun `it deserializes an empty document into an empty struct`() {
+    fun itDeserializesAnEmptyDocumentIntoAnEmptyStruct() {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<GetFoo />".encodeToByteArray()
 
@@ -235,7 +235,7 @@ class SparseMapDeserializationTest {
     }
 
     @Test
-    fun `it deserializes an empty map into an struct with empty map`() {
+    fun itDeserializesAnEmptyMapIntoAnStructWithEmptyMap() {
         val jsonPayload = """
             {
                 "sparseStructMap": {}
@@ -257,7 +257,7 @@ class SparseMapDeserializationTest {
     }
 
     @Test
-    fun `it deserializes a map with null values into an struct with map containing keys with null values`() {
+    fun itDeserializesAMapWithNullValuesIntoAnStructWithMapContainingKeysWithNullValues() {
         val jsonPayload = """
             {
             	"sparseStructMap": {

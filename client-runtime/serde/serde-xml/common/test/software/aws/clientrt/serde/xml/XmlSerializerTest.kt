@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 class XmlSerializerTest {
 
     @Test
-    fun `can serialize class with class field`() {
+    fun canSerializeClassWithClassField() {
         val a = A(
             B(2)
         )
@@ -56,7 +56,7 @@ class XmlSerializerTest {
     }
 
     @Test
-    fun `can serialize list of classes`() {
+    fun canSerializeListOfClasses() {
         val obj = listOf(
             B(1),
             B(2),
@@ -73,7 +73,7 @@ class XmlSerializerTest {
 
     // See https://awslabs.github.io/smithy/spec/xml.html#wrapped-map-serialization
     @Test
-    fun `can serialize map`() {
+    fun canSerializeMap() {
         val foo = Foo(
             mapOf(
                 "example-key1" to "example1",
@@ -88,7 +88,7 @@ class XmlSerializerTest {
 
     // See https://awslabs.github.io/smithy/spec/xml.html#flattened-map-serialization
     @Test
-    fun `can serialize flattened map`() {
+    fun canSerializeFlattenedMap() {
         val bar = Bar(
             mapOf(
                 "example-key1" to "example1",
@@ -103,7 +103,7 @@ class XmlSerializerTest {
     }
 
     @Test
-    fun `can serialize map of lists`() {
+    fun canSerializeMapOfLists() {
         val objs = mapOf(
             "A1" to listOf("a", "b", "c"),
             "A2" to listOf("d", "e", "f"),
@@ -123,7 +123,7 @@ class XmlSerializerTest {
     }
 
     @Test
-    fun `can serialize list of lists`() {
+    fun canSerializeListOfLists() {
         val objs = listOf(
             listOf("a", "b", "c"),
             listOf("d", "e", "f"),
@@ -143,7 +143,7 @@ class XmlSerializerTest {
     }
 
     @Test
-    fun `can serialize list of maps`() {
+    fun canSerializeListOfMaps() {
         val objs = listOf(
             mapOf("a" to "b", "c" to "d"),
             mapOf("e" to "f", "g" to "h"),
@@ -163,7 +163,7 @@ class XmlSerializerTest {
     }
 
     @Test
-    fun `can serialize map of maps`() {
+    fun canSerializeMapOfMaps() {
         val objs = mapOf(
             "A1" to mapOf("a" to "b", "c" to "d"),
             "A2" to mapOf("e" to "f", "g" to "h"),
@@ -225,7 +225,7 @@ class XmlSerializerTest {
     }
 
     @Test
-    fun `can serialize all primitives`() {
+    fun canSerializeAllPrimitives() {
         val xml = XmlSerializer()
         val data = Primitives(
             true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",

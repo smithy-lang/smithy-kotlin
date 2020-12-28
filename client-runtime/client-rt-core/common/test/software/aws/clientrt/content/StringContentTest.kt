@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class StringContentTest {
     @Test
-    fun `it can be consumed as ByteStream`() {
+    fun itCanBeConsumedAsByteStream() {
         val content = StringContent("testing")
         assertEquals(7, content.contentLength)
         val expected = byteArrayOf(0x74, 0x65, 0x73, 0x74, 0x69, 0x6e, 0x67)
@@ -25,7 +25,7 @@ class StringContentTest {
     }
 
     @Test
-    fun `it handles UTF-8`() {
+    fun itHandlesUTF8() {
         val content = StringContent("你好")
         content.bytes().forEach { print("$it ") }
         assertEquals(6, content.contentLength)

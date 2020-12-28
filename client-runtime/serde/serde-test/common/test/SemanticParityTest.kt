@@ -16,7 +16,7 @@ import kotlin.test.assertEquals
 class SemanticParityTest {
 
     @Test
-    fun `xml deserializes into object form then deserializes to json then serializes to object form then deserializes to original xml`() {
+    fun xmlDeserializesIntoObjectFormThenDeserializesToJsonThenSerializesToObjectFormThenDeserializesToOriginalXml() {
         for (test in getTests()) {
             // xml
             val xmlPayload = test.xmlSerialization
@@ -46,7 +46,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun `json deserializes into object form then deserializes to xml then serializes to object form then deserializes to original json`() {
+    fun jsonDeserializesIntoObjectFormThenDeserializesToXmlThenSerializesToObjectFormThenDeserializesToOriginalJson() {
         for (test in getTests()) {
             // json
             val jsonPayload = test.jsonSerialization
@@ -76,7 +76,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun `object form serializes into equivalent representations in json and xml`() {
+    fun objectFormSerializesIntoEquivalentRepresentationsInJsonAndXml() {
         for (test in getTests()) {
             val bst = test.sdkSerializable
 
@@ -97,7 +97,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun `equivalent json and xml serial forms produce the same object form`() {
+    fun equivalentJsonAndXmlSerialFormsProduceTheSameObjectForm() {
         for (test in getTests()) {
             val jsonDeserializer = JsonDeserializer(test.jsonSerialization.encodeToByteArray())
             val jsonBst = test.deserialize(jsonDeserializer)
@@ -110,7 +110,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun `it deserializes from json and then serializes to xml`() {
+    fun itDeserializesFromJsonAndThenSerializesToXml() {
         for (test in getTests()) {
             val jsonDeserializer = JsonDeserializer(test.jsonSerialization.encodeToByteArray())
             val bst = test.deserialize(jsonDeserializer)

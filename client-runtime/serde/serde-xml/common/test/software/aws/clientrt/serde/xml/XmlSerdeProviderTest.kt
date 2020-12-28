@@ -12,14 +12,14 @@ import kotlin.test.assertNotNull
 class XmlSerdeProviderTest {
 
     @Test
-    fun `it instantiates a serializer`() {
+    fun itInstantiatesASerializer() {
         val unit = XmlSerdeProvider()
 
         assertNotNull(unit.serializer())
     }
 
     @Test
-    fun `it instantiates a deserializer`() {
+    fun itInstantiatesADeserializer() {
         val unit = XmlSerdeProvider()
 
         assertNotNull(unit.deserializer("<a>boo</a>".encodeToByteArray()))
