@@ -18,10 +18,10 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.integration.DefaultHttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
 import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.integration.HttpSerde
+import software.amazon.smithy.kotlin.codegen.integration.HttpTraitResolver
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
@@ -50,7 +50,10 @@ class HttpProtocolClientGeneratorTest {
         val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
         val ctx = model.newTestContext("com.test#Example")
         val features: List<HttpFeature> = listOf(MockHttpFeature1(), MockHttpSerde())
-        val generator = HttpProtocolClientGenerator(ctx.generationCtx, "test", features, DefaultHttpBindingResolver(ctx.generationCtx))
+        val generator = HttpProtocolClientGenerator(
+            ctx.generationCtx, "test", features,
+            HttpTraitResolver(ctx.generationCtx, "application/json")
+        )
         generator.render(writer)
         commonTestContents = writer.toString()
     }

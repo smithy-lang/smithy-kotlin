@@ -6,13 +6,7 @@ package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.kotlin.codegen.integration.*
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.knowledge.TopDownIndex
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.ToShapeId
-import software.amazon.smithy.model.traits.HttpTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
@@ -30,13 +24,10 @@ class CodegenTestIntegration : KotlinIntegration {
  */
 class RestJsonTestProtocolGenerator(
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS,
-    // override val defaultContentType: String = "application/json",
     override val protocol: ShapeId = RestJson1Trait.ID
 ) : HttpBindingProtocolGenerator() {
 
-
-
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = DefaultHttpBindingResolver(ctx)
+    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = HttpTraitResolver(ctx, "application/json")
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         // NOP

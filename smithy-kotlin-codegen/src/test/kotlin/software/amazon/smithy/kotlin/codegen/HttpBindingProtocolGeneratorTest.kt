@@ -27,7 +27,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = DefaultHttpBindingResolver(ctx)
+    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = HttpTraitResolver(ctx, "application/json")
 
     override val protocol: ShapeId = RestJson1Trait.ID
 
