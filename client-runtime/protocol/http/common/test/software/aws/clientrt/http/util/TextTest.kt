@@ -63,6 +63,12 @@ class TextTest {
     }
 
     @Test
+    fun respectsAlreadyEncodedUrls() {
+        val urlPath = "/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg"
+        assertEquals("/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg", urlPath.encodeUrlPath())
+    }
+
+    @Test
     fun utf8UrlPathValuesEncodeCorrectly() {
         val swissAndGerman = "\u0047\u0072\u00fc\u0065\u007a\u0069\u005f\u007a\u00e4\u006d\u00e4"
         val russian = "\u0412\u0441\u0435\u043c\u005f\u043f\u0440\u0438\u0432\u0435\u0442"

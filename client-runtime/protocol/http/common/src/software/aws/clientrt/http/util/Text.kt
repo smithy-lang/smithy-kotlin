@@ -63,7 +63,9 @@ fun String.encodeUrlPath(): String {
     while (i < data.size) {
         // 3.3 pchar: pct-encoded
         if (isPercentEncodedAt(data, i)) {
-            i += 3
+            sb.append(data[i++].toChar())
+            sb.append(data[i++].toChar())
+            sb.append(data[i++].toChar())
             continue
         }
 
