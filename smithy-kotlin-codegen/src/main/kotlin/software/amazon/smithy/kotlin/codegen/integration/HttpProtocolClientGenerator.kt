@@ -188,7 +188,7 @@ open class HttpProtocolClientGenerator(
     protected open fun renderOperationSetup(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
         val inputShape = opIndex.getInput(op)
         val outputShape = opIndex.getOutput(op)
-        val httpTrait = httpBindingResolver.resolveHttpTrait(op)
+        val httpTrait = httpBindingResolver.httpTrait(op)
 
         if (!inputShape.isPresent) {
             // no serializer implementation is generated for operations with no input, inline the HTTP
