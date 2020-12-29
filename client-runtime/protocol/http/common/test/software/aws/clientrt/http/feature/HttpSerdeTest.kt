@@ -20,7 +20,7 @@ import kotlin.test.assertEquals
 
 class HttpSerdeTest {
     @Test
-    fun `it serializes`() = runSuspendTest {
+    fun itSerializes() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }
@@ -47,7 +47,7 @@ class HttpSerdeTest {
     }
 
     @Test
-    fun `it deserializes`() = runSuspendTest {
+    fun itDeserializes() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }

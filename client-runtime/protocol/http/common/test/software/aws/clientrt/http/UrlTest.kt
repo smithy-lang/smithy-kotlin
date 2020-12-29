@@ -10,7 +10,7 @@ import kotlin.test.assertFails
 
 class UrlTest {
     @Test
-    fun `basic to string`() {
+    fun basicToString() {
         val expected = "https://test.aws.com/kotlin"
         val url = Url(
             Protocol.HTTPS,
@@ -21,7 +21,7 @@ class UrlTest {
     }
 
     @Test
-    fun `force retain query`() {
+    fun forceRetainQuery() {
         val expected = "https://test.aws.com/kotlin?"
         val url = UrlBuilder {
             host = "test.aws.com"
@@ -32,7 +32,7 @@ class UrlTest {
     }
 
     @Test
-    fun `with parameters`() {
+    fun withParameters() {
         val expected = "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar"
         val params = QueryParameters {
             append("foo", "bar")
@@ -49,7 +49,7 @@ class UrlTest {
     }
 
     @Test
-    fun `specific port`() {
+    fun specificPort() {
         val expected = "https://test.aws.com:8000"
         val url = Url(
             Protocol.HTTPS,
@@ -68,7 +68,7 @@ class UrlTest {
     }
 
     @Test
-    fun `port range`() {
+    fun portRange() {
         fun checkPort(n: Int) {
             assertEquals(
                 n,
@@ -88,7 +88,7 @@ class UrlTest {
     }
 
     @Test
-    fun `userinfo no password`() {
+    fun userinfoNoPassword() {
         val expected = "https://user@test.aws.com"
         val url = UrlBuilder {
             scheme = Protocol.HTTPS
@@ -99,7 +99,7 @@ class UrlTest {
     }
 
     @Test
-    fun `full userinfo`() {
+    fun fullUserinfo() {
         val expected = "https://user:password@test.aws.com"
         val url = UrlBuilder {
             scheme = Protocol.HTTPS
@@ -110,7 +110,7 @@ class UrlTest {
     }
 
     @Test
-    fun `it builds`() {
+    fun itBuilds() {
         val builder = UrlBuilder()
         builder.scheme = Protocol.HTTP
         builder.host = "test.aws.com"
@@ -126,7 +126,7 @@ class UrlTest {
     }
 
     @Test
-    fun `it builds with non default port`() {
+    fun itBuildsWithNonDefaultPort() {
         val url = UrlBuilder {
             scheme = Protocol.HTTP
             host = "test.aws.com"
@@ -138,7 +138,7 @@ class UrlTest {
     }
 
     @Test
-    fun `it builds with parameters`() {
+    fun itBuildsWithParameters() {
         val url = UrlBuilder {
             scheme = Protocol.HTTP
             host = "test.aws.com"
@@ -152,7 +152,7 @@ class UrlTest {
     }
 
     @Test
-    fun `it parses`() {
+    fun itParses() {
         val urls = listOf(
             "http://test.aws.com/kotlin?foo=baz",
             "http://test.aws.com:3000/kotlin",

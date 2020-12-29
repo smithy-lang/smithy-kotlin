@@ -11,7 +11,7 @@ import kotlin.test.assertFails
 // some basic sanity tests that Jetbrains kotlinx-serialization: JsonElement::equals() method works for our purposes
 class JsonAssertionsTest {
     @Test
-    fun `it ignores key order`() {
+    fun itIgnoresKeyOrder() {
         val expected = """
         {
             "string": "v1",
@@ -53,7 +53,7 @@ class JsonAssertionsTest {
     }
 
     @Test
-    fun `it asserts missing keys`() {
+    fun itAssertsMissingKeys() {
         val expected = """
         {
             "string": "v1",
@@ -78,7 +78,7 @@ class JsonAssertionsTest {
     }
 
     @Test
-    fun `it asserts kitchen sink`() {
+    fun itAssertsKitchenSink() {
         val expected = """
         {
             "string": "v1",

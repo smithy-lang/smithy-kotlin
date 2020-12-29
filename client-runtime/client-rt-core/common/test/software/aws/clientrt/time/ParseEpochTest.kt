@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 
 class ParseEpochTest {
     @Test
-    fun `it parses epoch timestamps`() {
+    fun itParsesEpochTimestamps() {
         val tests = listOf(
             Triple("0", 0L, 0),
             Triple("1200", 1200L, 0),

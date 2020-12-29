@@ -44,7 +44,7 @@ class InstantTest {
     )
 
     @Test
-    fun `test fromIso8601`() {
+    fun testFromIso8601() {
         for ((idx, test) in iso8601Tests.withIndex()) {
             val actual = Instant.fromIso8601(test.input)
             assertEquals(test.expectedSec, actual.epochSeconds, "test[$idx]: failed to correctly parse ${test.input}")
@@ -62,7 +62,7 @@ class InstantTest {
         FmtTest(1604650057, 0, "2020-11-06T08:07:37Z")
     )
     @Test
-    fun `test format as iso8601`() {
+    fun testFormatAsIso8601() {
         for ((idx, test) in iso8601FmtTests.withIndex()) {
             val actual = Instant
                 .fromEpochSeconds(test.sec, test.ns)
@@ -81,7 +81,7 @@ class InstantTest {
         FromTest("Thu, 05 Nov 2020 19:22:37 -1245", 1604650057, 0)
     )
     @Test
-    fun `test fromRfc5322`() {
+    fun testFromRfc5322() {
         for ((idx, test) in rfc5322Tests.withIndex()) {
             val actual = Instant.fromRfc5322(test.input)
             assertEquals(test.expectedSec, actual.epochSeconds, "test[$idx]: failed to correctly parse ${test.input}")
@@ -97,7 +97,7 @@ class InstantTest {
         FmtTest(1604650057, 0, "Fri, 06 Nov 2020 08:07:37 GMT")
     )
     @Test
-    fun `test format as rfc5322`() {
+    fun testFormatAsRfc5322() {
         for ((idx, test) in rfc5322FmtTests.withIndex()) {
             val actual = Instant
                 .fromEpochSeconds(test.sec, test.ns)
@@ -115,7 +115,7 @@ class InstantTest {
     )
 
     @Test
-    fun `test format as epoch seconds`() {
+    fun testFormatAsEpochSeconds() {
         for ((idx, test) in epochFmtTests.withIndex()) {
             val actual = Instant
                 .fromEpochSeconds(test.sec, test.ns)
@@ -125,7 +125,7 @@ class InstantTest {
     }
 
     @Test
-    fun `test toEpochDouble`() {
+    fun testToEpochDouble() {
         val sec = 1604604157L
         val ns = 12_345_000
         val actual = Instant.fromEpochSeconds(sec, ns).toEpochDouble()
@@ -135,7 +135,7 @@ class InstantTest {
     }
 
     @Test
-    fun `test get current time`() {
+    fun testGetCurrentTime() {
         val currentTime = Instant.now()
 
         val pastInstant = 1602099269 // 2020-10-07T19:34:29+00:00
@@ -144,7 +144,7 @@ class InstantTest {
     }
 
     @Test
-    fun `test get epoch milliseconds`() {
+    fun testGetEpochMilliseconds() {
         val instant = Instant.fromEpochSeconds(1602878160, 2_000_00)
         val expected = 1602878160000L
         assertEquals(expected, instant.epochMilliseconds)
@@ -158,7 +158,7 @@ class InstantTest {
     // Always good to learn from others...
     class V2JavaSdkTests {
         @Test
-        fun `v2 java sdk tt0031561767`() {
+        fun v2JavaSdkTt0031561767() {
             val input = "Fri, 16 May 2014 23:56:46 GMT"
             val instant: Instant = Instant.fromRfc5322(input)
             assertEquals(input, instant.format(TimestampFormat.RFC_5322))
@@ -169,7 +169,7 @@ class InstantTest {
          * same before and after marshalling/unmarshalling
          */
         @Test
-        fun `v2 java sdk UnixTimestampRoundtrip`() {
+        fun v2JavaSdkUnixTimestampRoundtrip() {
             // v2 sdk used currentTimeMillis(), instead we just hard code a value here
             // otherwise that would be a JVM specific test since since we do not (yet) have
             // a Kotlin MPP way of getting current timestamp. Also obviously not using epoch mill

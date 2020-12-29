@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
-    fun `it deserializes xml`() {
+    fun itDeserializesXml() {
         val payload = """<root><x>1</x><y>2</y></root>""".trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
@@ -31,7 +31,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun `it deserializes xml with attributes`() {
+    fun itDeserializesXmlWithAttributes() {
         val payload = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>""".trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
@@ -52,13 +52,13 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun `garbage in garbage out`() {
+    fun garbageInGarbageOut() {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
         assertFailsWith(XmlGenerationException::class) { xmlStreamReader(payload).allTokens() }
     }
 
     @Test
-    fun `it handles nil node values`() {
+    fun itHandlesNilNodeValues() {
         val payload = """<null xsi:nil="true"></null>""".encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
         val expected = listOf(
@@ -71,7 +71,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun `kitchen sink`() {
+    fun kitchenSink() {
         val payload = """
         <root>
           <num>1</num>    
@@ -139,7 +139,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun `it skips values recursively`() {
+    fun itSkipsValuesRecursively() {
         val payload = """
             <payload><x>1></x><unknown><a>a</a><b>b</b><c><list><element>d</element><element>e</element><element>f</element></list></c><g><h>h</h><i>i</i></g></unknown><y>2></y></payload>
         """.trimIndent().encodeToByteArray()
@@ -163,7 +163,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun `it skips simple values`() {
+    fun itSkipsSimpleValues() {
         val payload = """<payload><x>1</x><z>unknown</z><y>2</y></payload>""".trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
         // skip x

@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 class PipelineTest {
 
     @Test
-    fun `request pipeline runs`() = runSuspendTest {
+    fun requestPipelineRuns() = runSuspendTest {
         val pipeline = HttpRequestPipeline()
         pipeline.intercept(HttpRequestPipeline.Initialize) { subject.headers.append("key", "1") }
         pipeline.intercept(HttpRequestPipeline.Transform) { subject.headers.append("key", "2") }
@@ -33,7 +33,7 @@ class PipelineTest {
     }
 
     @Test
-    fun `response pipeline runs`() = runSuspendTest {
+    fun responsePipelineRuns() = runSuspendTest {
         val pipeline = HttpResponsePipeline()
         pipeline.intercept(HttpResponsePipeline.Receive) { proceedWith((subject as Int) + 1) }
         pipeline.intercept(HttpResponsePipeline.Transform) { proceedWith((subject as Int) + 1) }
@@ -49,7 +49,7 @@ class PipelineTest {
     }
 
     @Test
-    fun `functions can be used`() = runSuspendTest {
+    fun functionsCanBeUsed() = runSuspendTest {
         val pipeline = HttpResponsePipeline()
 
         suspend fun freeFunc(ctx: PipelineContext<Any, HttpResponseContext>) {

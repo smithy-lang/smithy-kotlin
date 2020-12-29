@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 
 class HttpRequestBuilderTest {
     @Test
-    fun `it builds`() {
+    fun itBuilds() {
         val builder = HttpRequestBuilder()
         builder.headers {
             append("x-foo", "bar")

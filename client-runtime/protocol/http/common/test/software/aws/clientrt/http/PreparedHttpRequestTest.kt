@@ -20,7 +20,7 @@ import kotlin.test.Test
 class PreparedHttpRequestTest {
 
     @Test
-    fun `it runs the pipelines`() = runSuspendTest {
+    fun itRunsThePipelines() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
                 val req = requestBuilder.build()
@@ -56,7 +56,7 @@ class PreparedHttpRequestTest {
     }
 
     @Test
-    fun `it throws transform failed`(): Unit = runSuspendTest {
+    fun itThrowsTransformFailed(): Unit = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
                 val req = requestBuilder.build()

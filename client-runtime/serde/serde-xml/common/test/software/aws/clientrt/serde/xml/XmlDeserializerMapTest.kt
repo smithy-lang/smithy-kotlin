@@ -14,7 +14,7 @@ import kotlin.test.Test
 class XmlDeserializerMapTest {
 
     @Test
-    fun `it handles maps with default node names`() {
+    fun itHandlesMapsWithDefaultNodeNames() {
         val payload = """
             <values>
                 <entry>
@@ -45,7 +45,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun `it handles maps with custom node names`() {
+    fun itHandlesMapsWithCustomNodeNames() {
         val payload = """
             <mymap>
                 <myentry>
@@ -77,7 +77,7 @@ class XmlDeserializerMapTest {
 
     // https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html#flattened-map-serialization
     @Test
-    fun `it handles flat maps`() {
+    fun itHandlesFlatMaps() {
         val payload = """
             <Bar>
                 <flatMap>
@@ -109,7 +109,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun `it handles empty maps`() {
+    fun itHandlesEmptyMaps() {
         val payload = """
             <Map></Map>
         """.encodeToByteArray()
@@ -128,7 +128,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun `it handles sparse maps`() {
+    fun itHandlesSparseMaps() {
         val payload = """
             <values>
                 <entry>
@@ -162,7 +162,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun `it handles checking map values for null`() {
+    fun itHandlesCheckingMapValuesForNull() {
         val payload = """
             <values>
                 <entry>

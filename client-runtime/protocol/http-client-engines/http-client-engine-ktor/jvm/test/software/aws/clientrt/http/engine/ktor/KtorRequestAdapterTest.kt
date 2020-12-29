@@ -22,7 +22,7 @@ import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 
 class KtorRequestAdapterTest {
     @Test
-    fun `it strips Content-Type header`() = runBlocking {
+    fun itStripsContentTypeHeader() = runBlocking {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/json")
@@ -31,7 +31,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun `it converts HttpBody variant Bytes`() = runBlocking {
+    fun itConvertsHttpBodyVariantBytes() = runBlocking {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/json")
@@ -45,7 +45,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun `it converts HttpBody variant Streaming`() = runBlocking {
+    fun itConvertsHttpBodyVariantStreaming() = runBlocking {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -59,7 +59,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun `it transfers a Streaming body`() = runBlocking {
+    fun itTransfersAStreamingBody() = runBlocking {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -78,7 +78,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun `it handles partial Stream reads`() = runBlocking {
+    fun itHandlesPartialStreamReads() = runBlocking {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -97,7 +97,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun `it handles Stream backpressure`() = runBlocking {
+    fun itHandlesStreamBackpressure() = runBlocking {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -137,7 +137,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun `it handles Stream cancellation`() = runBlocking {
+    fun itHandlesStreamCancellation() = runBlocking {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")

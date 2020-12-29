@@ -10,7 +10,7 @@ import kotlin.test.*
 class ParsersTest {
 
     @Test
-    fun `test takeWhileMN`() {
+    fun testTakeWhileMN() {
         assertEquals(ParseResult(5, IntRange(0, 4)), takeWhileMN(5, 5, ::isDigit)("12345abcde", 0))
         assertEquals(ParseResult(2, IntRange(0, 1)), takeWhileMN(1, 2, ::isDigit)("12345abcde", 0))
 
@@ -35,7 +35,7 @@ class ParsersTest {
     }
 
     @Test
-    fun `test takeMNDigits`() {
+    fun testTakeMNDigits() {
         assertEquals(ParseResult(2, 22), takeNDigits(2)("22", 0))
         assertEquals(ParseResult(8, 227), takeMNDigitsInt(2, 3)("abcde22759fge", 5))
         assertEquals(ParseResult(14, 123456789), takeMNDigitsInt(1, 9)("abcde123456789fge", 5))
@@ -50,7 +50,7 @@ class ParsersTest {
     }
 
     @Test
-    fun `test mnDigitsInRange`() {
+    fun testMnDigitsInRange() {
         assertEquals(ParseResult(2, 22), nDigitsInRange(2, IntRange(0, 30))("22", 0))
         // boundary of range
         assertEquals(ParseResult(8, 227), mnDigitsInRange(2, 3, IntRange(227, 227))("abcde22759fge", 5))
@@ -65,7 +65,7 @@ class ParsersTest {
     }
 
     @Test
-    fun `test chars`() {
+    fun testChars() {
         assertEquals('x', char('x')("abcxyz", 3).result)
 
         val ex = assertFailsWith<ParseException> { char('x')("abcxyz", 2) }
@@ -73,7 +73,7 @@ class ParsersTest {
     }
 
     @Test
-    fun `test tag`() {
+    fun testTag() {
         assertEquals(ParseResult(5, "xy"), tag("xy")("abcxyz", 3))
 
         val ex = assertFailsWith<ParseException> { tag("bcxz")("abcxyz", 1) }
@@ -84,7 +84,7 @@ class ParsersTest {
     }
 
     @Test
-    fun `test oneOf`() {
+    fun testOneOf() {
         assertEquals('x', oneOf("yzxa")("abcxyz", 3).result)
 
         var ex = assertFailsWith<ParseException> { oneOf("yzxa")("abcxyz", 2) }
@@ -92,7 +92,7 @@ class ParsersTest {
     }
 
     @Test
-    fun `test fraction`() {
+    fun testFraction() {
         assertEquals(ParseResult(1, 3), fraction(1, 1, 1)("345", 0))
 
         assertEquals(ParseResult(3, 345), fraction(1, 3, 3)("345", 0))
@@ -105,7 +105,7 @@ class ParsersTest {
     }
 
     @Test
-    fun `test takeTill`() {
+    fun testTakeTill() {
         assertEquals(ParseResult(5, IntRange(0, 4)), takeTill(::isDigit)("abcde12345", 0))
         assertEquals(ParseResult(5, IntRange(2, 4)), takeTill(::isDigit)("abcde1", 2))
 
@@ -119,14 +119,14 @@ class ParsersTest {
 
 class CombinatorTest {
     @Test
-    fun `test optional`() {
+    fun testOptional() {
         assertEquals(ParseResult(0, null), optional(char('x'))("abc", 0))
         // should consume a character
         assertEquals(ParseResult(1, 'x'), optional(char('x'))("xyz", 0))
     }
 
     @Test
-    fun `test alt`() {
+    fun testAlt() {
         assertEquals(ParseResult(1, 'y'), alt(char('x'), char('y'))("yup", 0))
 
         val ex = assertFails {
@@ -136,7 +136,7 @@ class CombinatorTest {
     }
 
     @Test
-    fun `test preceded`() {
+    fun testPreceded() {
         assertEquals(ParseResult(2, 'y'), preceded(char('x'), char('y'))("xyz", 0))
 
         // with optional
@@ -145,7 +145,7 @@ class CombinatorTest {
     }
 
     @Test
-    fun `test map`() {
+    fun testMap() {
         val result = map(alt(char('+'), char('-'))) {
             when (it) {
                 '-' -> -1
@@ -156,14 +156,14 @@ class CombinatorTest {
     }
 
     @Test
-    fun `test cond`() {
+    fun testCond() {
         assertEquals(ParseResult(0, null), cond(false, char('x'))("abc", 0))
         // should consume a character
         assertEquals(ParseResult(1, 'x'), cond(true, char('x'))("xyz", 0))
     }
 
     @Test
-    fun `test then`() {
+    fun testThen() {
         assertEquals(ParseResult(2, Pair('x', 'y')), char('x').then(char('y'))("xyz", 0))
     }
 }

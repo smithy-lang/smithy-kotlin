@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class HeadersTest {
 
     @Test
-    fun `it builds`() {
+    fun itBuilds() {
         val actual = Headers {
             append("key1", "v1")
             appendAll("key2", listOf("v2", "v3"))

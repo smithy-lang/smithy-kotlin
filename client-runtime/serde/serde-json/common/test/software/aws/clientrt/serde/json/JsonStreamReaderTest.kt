@@ -30,7 +30,7 @@ fun assertTokensAreEqual(expected: List<JsonToken>, actual: List<JsonToken>) {
 @OptIn(ExperimentalStdlibApi::class)
 class JsonStreamReaderTest {
     @Test
-    fun `it deserializes objects`() {
+    fun itDeserializesObjects() {
         val payload = """
             {
                 "x": 1,
@@ -52,7 +52,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun `kitchen sink`() {
+    fun kitchenSink() {
         val payload = """
         {
             "num": 1,
@@ -107,7 +107,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun `it skips values recursively`() {
+    fun itSkipsValuesRecursively() {
         val payload = """
         {
             "x": 1,
@@ -140,7 +140,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun `it skips simple values`() {
+    fun itSkipsSimpleValues() {
         val payload = """
         {
             "x": 1,

@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 class XmlStreamWriterTest {
 
     @Test
-    fun `check xml serializes correctly with wrapper`() {
+    fun checkXmlSerializesCorrectlyWithWrapper() {
         val msg1 = Message(
             912345678901,
             "How do I stream XML in Java?",
@@ -33,7 +33,7 @@ class XmlStreamWriterTest {
     }
 
     @Test
-    fun `check close is idempotent`() {
+    fun checkCloseIsIdempotent() {
         val writer = generateSimpleDocument()
         assertEquals(expectedIdempotent, writer.bytes.decodeToString())
         assertEquals(expectedIdempotent, writer.bytes.decodeToString())
@@ -48,13 +48,13 @@ class XmlStreamWriterTest {
     }
 
     @Test
-    fun `check non human readable`() {
+    fun checkNonHumanReadable() {
         val writer = generateSimpleDocument()
         assertEquals(expectedNoIndent, writer.bytes.decodeToString())
     }
 
     @Test
-    fun `it writes XML with attributes`() {
+    fun itWritesXMLWithAttributes() {
         val writer = xmlStreamWriter(pretty = false)
 
         writer.startTag("batch")

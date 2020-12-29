@@ -94,7 +94,7 @@ class NullDeserializationParityTest {
      * Empty objects should deserialize into empty instances of their target type.
      */
     @Test
-    fun `it deserializes an empty document into an empty anonymous struct`() {
+    fun itDeserializesAnEmptyDocumentIntoAnEmptyAnonymousStruct() {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<AnonStruct />".encodeToByteArray()
 
@@ -112,7 +112,7 @@ class NullDeserializationParityTest {
      * deserialize those children as null references.
      */
     @Test
-    fun `it deserializes a reference to a null object`() {
+    fun itDeserializesAReferenceToANullObject() {
         val jsonPayload = """
             { "ChildStruct" : null }
         """.trimIndent().encodeToByteArray()
@@ -133,7 +133,7 @@ class NullDeserializationParityTest {
      * those deserialized children exist but are empty.
      */
     @Test
-    fun `it deserializes a reference to an empty object`() {
+    fun itDeserializesAReferenceToAnEmptyObject() {
         val jsonPayload = """
             { "ChildStruct" : {}} }
         """.trimIndent().encodeToByteArray()
