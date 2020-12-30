@@ -15,10 +15,8 @@ internal actual fun platformUrlParse(url: String): Url {
         scheme = Protocol.parse(uri.protocol.removeSuffix(":"))
         host = uri.hostname
         port = uri.port.toIntOrNull()?.takeIf { it > 0 }
-        println("PATH: ${uri.pathname}")
         val trimmedPath = uri.pathname.removePrefix("/")
         if (trimmedPath.isNotBlank()) {
-            println("Trimmed: $trimmedPath")
             path = trimmedPath.encodeUrlPath()
         }
         if (uri.username.isNotBlank()) {
