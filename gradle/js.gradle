@@ -1,0 +1,19 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
+kotlin {
+    targets {
+        fromPreset(presets.js, 'js')
+    }
+    js {
+        nodejs()
+    }
+
+    sourceSets {
+        jsTest.dependencies {
+            api "org.jetbrains.kotlin:kotlin-test-js:$kotlinVersion"
+        }
+    }
+}

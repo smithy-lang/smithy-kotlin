@@ -41,19 +41,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
     actual fun format(fmt: TimestampFormat): String = when (fmt) {
         TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value)
         TimestampFormat.RFC_5322 -> RFC_5322_FIXED_DATE_TIME.format(ZonedDateTime.ofInstant(value, ZoneOffset.UTC))
-        TimestampFormat.EPOCH_SECONDS -> {
-            val sb = StringBuffer("$epochSeconds")
-            if (nanosecondsOfSecond > 0) {
-                sb.append(".")
-                val ns = "$nanosecondsOfSecond"
-                val leadingZeros = "0".repeat(9 - ns.length)
-                sb.append(leadingZeros)
-                sb.append(ns)
-                sb.trimEnd('0').toString()
-            } else {
-                sb.toString()
-            }
-        }
+        TimestampFormat.EPOCH_SECONDS -> toEpochSecondsString()
     }
 
     actual companion object {
@@ -95,16 +83,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
 }
 
 private fun fromParsedDateTime(parsed: ParsedDatetime): Instant {
-    val (dayOffset, hour, min, sec) = if (parsed.hour == 24 && parsed.min == 0 && parsed.sec == 0) {
-        // midnight
-        listOf(1, 0, 0, 0)
-    } else if (parsed.hour == 23 && parsed.min == 59 && parsed.sec == 60) {
-        // parsed a leap second - drop (LocalDateTime does not support leap seconds)
-        // technically leap seconds are only scheduled for June 30 or Dec 31...
-        listOf(0, 23, 59, 59)
-    } else {
-        listOf(0, parsed.hour, parsed.min, parsed.sec)
-    }
+    val (dayOffset, hour, min, sec) = parsed.unpackDayOffset()
 
     val ldt = LocalDateTime.of(
         parsed.year,
@@ -134,43 +113,16 @@ private fun fromParsedDateTime(parsed: ParsedDatetime): Instant {
  * See also: https: *tools.ietf.org/html/rfc7231.html#section-7.1.1.1
  */
 fun buildRfc5322Formatter(): DateTimeFormatter {
-    // manually code maps to ensure correct data always used
-    // (locale data can be changed by application code)
-    val dow: Map<Long, String> = mapOf(
-        1L to "Mon",
-        2L to "Tue",
-        3L to "Wed",
-        4L to "Thu",
-        5L to "Fri",
-        6L to "Sat",
-        7L to "Sun"
-    )
-
-    val moy: Map<Long, String> = mapOf(
-        1L to "Jan",
-        2L to "Feb",
-        3L to "Mar",
-        4L to "Apr",
-        5L to "May",
-        6L to "Jun",
-        7L to "Jul",
-        8L to "Aug",
-        9L to "Sep",
-        10L to "Oct",
-        11L to "Nov",
-        12L to "Dec"
-    )
-
     val formatter = DateTimeFormatterBuilder()
         .parseCaseInsensitive()
         .parseLenient()
         .optionalStart()
-        .appendText(ChronoField.DAY_OF_WEEK, dow)
+        .appendText(ChronoField.DAY_OF_WEEK, DAY_OF_WEEK)
         .appendLiteral(", ")
         .optionalEnd()
         .appendValue(ChronoField.DAY_OF_MONTH, 2, 2, SignStyle.NOT_NEGATIVE)
         .appendLiteral(' ')
-        .appendText(ChronoField.MONTH_OF_YEAR, moy)
+        .appendText(ChronoField.MONTH_OF_YEAR, MON_OF_YEAR)
         .appendLiteral(' ')
         .appendValue(ChronoField.YEAR, 4)
         .appendLiteral(' ')

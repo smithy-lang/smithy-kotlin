@@ -167,6 +167,20 @@ internal fun parseEpoch(input: String): Instant {
     }
 }
 
+/**
+ * Unpack the day offset taking into account leap-seconds that date/time libraries typically do not support
+ */
+internal fun ParsedDatetime.unpackDayOffset(): List<Int> = if (hour == 24 && min == 0 && sec == 0) {
+    // midnight
+    listOf(1, 0, 0, 0)
+} else if (hour == 23 && min == 59 && sec == 60) {
+    // parsed a leap second - drop (LocalDateTime does not support leap seconds)
+    // technically leap seconds are only scheduled for June 30 or Dec 31...
+    listOf(0, 23, 59, 59)
+} else {
+    listOf(0, hour, min, sec)
+}
+
 private fun dayName(): Parser<String> = alt(
     tag("Mon"),
     tag("Tue"),

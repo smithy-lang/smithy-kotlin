@@ -106,6 +106,22 @@ class InstantTest {
         }
     }
 
+    private val roundTripTests = listOf<Pair<TimestampFormat, (String) -> Instant>>(
+        TimestampFormat.ISO_8601 to { Instant.fromIso8601(it) },
+        TimestampFormat.RFC_5322 to { Instant.fromRfc5322(it) },
+        TimestampFormat.EPOCH_SECONDS to { Instant.Companion.fromEpochSeconds(it) }
+    )
+    @Test
+    fun testRoundTripping() {
+        val now = Instant.now()
+        roundTripTests.forEach { (format, parseFn) ->
+            val formatted = now.format(format)
+            val parsed = parseFn(formatted)
+            val parsedReFormatted = parsed.format(format) // can't just compare because some formats (e.g. RFC 5322 lose precision)
+            assertEquals(formatted, parsedReFormatted, "test[$format]: failed to round-trip")
+        }
+    }
+
     private val epochFmtTests = listOf(
         FmtTest(1604604157, 0, "1604604157"),
         FmtTest(1604604157, 345, "1604604157.000000345"),

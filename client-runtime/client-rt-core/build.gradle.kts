@@ -16,6 +16,11 @@ kotlin {
                 api(project(":client-runtime:utils"))
             }
         }
+        jsMain {
+            dependencies {
+                implementation(npm("@js-joda/core", "3.2.0"))
+            }
+        }
     }
 }
 
