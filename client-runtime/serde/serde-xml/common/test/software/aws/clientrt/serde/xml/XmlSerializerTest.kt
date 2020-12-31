@@ -228,12 +228,11 @@ class XmlSerializerTest {
     fun canSerializeAllPrimitives() {
         val xml = XmlSerializer()
         val data = Primitives(
-            true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
+            true, 10, 20, 30, 40, 50.5f, 60.5, 'A', "Str0",
             listOf(1, 2, 3)
         )
         data.serialize(xml)
-
-        assertEquals("""<struct><boolean>true</boolean><byte>10</byte><short>20</short><int>30</int><long>40</long><float>50.0</float><double>60.0</double><char>A</char><string>Str0</string><listInt><number>1</number><number>2</number><number>3</number></listInt></struct>""", xml.toByteArray().decodeToString())
+        assertEquals("""<struct><boolean>true</boolean><byte>10</byte><short>20</short><int>30</int><long>40</long><float>50.5</float><double>60.5</double><char>A</char><string>Str0</string><listInt><number>1</number><number>2</number><number>3</number></listInt></struct>""", xml.toByteArray().decodeToString())
     }
 }
 

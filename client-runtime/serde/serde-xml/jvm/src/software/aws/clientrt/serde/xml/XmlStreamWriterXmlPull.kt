@@ -35,6 +35,10 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
         }
     }
 
+    override fun setPrefix(prefix: String, namespace: String) {
+        serializer.setPrefix(prefix, namespace)
+    }
+
     override fun startDocument(encoding: String?, standalone: Boolean?) {
         serializer.startDocument(encoding, standalone)
     }

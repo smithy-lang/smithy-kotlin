@@ -72,6 +72,57 @@ class XmlStreamWriterTest {
 
         assertEquals(expected, writer.toString())
     }
+
+    @Test
+    fun itCanHandleEscapingCharacters() {
+        val writer = xmlStreamWriter(pretty = false)
+        writer.startTag("hello")
+        writer.attribute("key", """<'"&>""")
+        writer.text("""<'"&>""")
+        writer.endTag("hello")
+
+        val actual = writer.toString()
+
+        val bestPractise = """<hello key="&lt;&apos;&quot;&amp;&gt;">&lt;&apos;&quot;&amp;&gt;</hello>"""
+        try {
+            assertEquals(bestPractise, actual)
+        } catch (e: AssertionError) {
+            val minimumEscapingToSpec = """<hello key="&lt;'&quot;&amp;>">&lt;'"&amp;></hello>"""
+            assertEquals(minimumEscapingToSpec, actual)
+        }
+    }
+
+    @Test
+    fun canHandleExplicitNamespacesWithSetPrefixes() {
+        val writer = xmlStreamWriter(pretty = false)
+        writer.setPrefix("", "http://default.com")
+        writer.setPrefix("ex", "http://example.com")
+        writer.startTag("hello", "http://example.com")
+        writer.attribute("name", "Julia", "http://example.com")
+        writer.setPrefix("ex2", "http://second.com") //nested namespace
+        writer.startTag("world", "http://example.com")
+        writer.attribute("nested", "value", "http://second.com")
+        writer.endTag("world", "http://example.com")
+        writer.endTag("hello", "http://example.com")
+        writer.endDocument()
+
+        val expected = """<ex:hello ex:name="Julia" xmlns="http://default.com" xmlns:ex="http://example.com"><ex:world ex2:nested="value" xmlns:ex2="http://second.com" /></ex:hello>"""
+        assertEquals(expected, writer.toString())
+    }
+
+    @Test
+    fun canHandleImplicitNamespacesWithGeneratedPrefixes() {
+        val writer = xmlStreamWriter(pretty = false)
+        writer.startTag("hello", "http://example.com")
+        writer.attribute("name", "Julia", "http://example.com")
+        writer.startTag("world", "")
+        writer.endTag("world", "")
+        writer.endTag("hello", "http://example.com")
+        writer.endDocument()
+
+        val expected = """<n1:hello n1:name="Julia" xmlns:n1="http://example.com"><world /></n1:hello>"""
+        assertEquals(expected, writer.toString())
+    }
 }
 
 const val expectedIdempotent = """<?xml version="1.0"?><id>912345678901</id>"""
@@ -97,9 +148,7 @@ fun writeMessagesArray(writer: XmlStreamWriter, messages: List<Message>): ByteAr
 fun writeMessage(writer: XmlStreamWriter, message: Message) {
     writer.apply {
         startTag("message")
-        startTag("id")
-        text(message.id)
-        endTag("id")
+        attribute("id", message.id.toString())
         startTag("text")
         text(message.text)
         endTag("text")
@@ -146,8 +195,7 @@ data class User(val name: String, val followersCount: Int)
 
 val expected: String = """
 <messages>
-    <message>
-        <id>912345678901</id>
+    <message id="912345678901">
         <text>How do I stream XML in Java?</text>
         <geo />
         <user>
@@ -155,8 +203,7 @@ val expected: String = """
             <followers_count>41</followers_count>
         </user>
     </message>
-    <message>
-        <id>912345678902</id>
+    <message id="912345678902">
         <text>@xml_newb just use XmlWriter!</text>
         <geo>
             <position>50.454722</position>

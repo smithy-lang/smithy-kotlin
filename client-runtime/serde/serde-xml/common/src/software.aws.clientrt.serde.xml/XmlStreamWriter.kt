@@ -11,27 +11,31 @@ package software.aws.clientrt.serde.xml
 interface XmlStreamWriter {
 
     /**
-     * Write xml declaration with encoding (if encoding not null)
-     * and standalone flag (if standalone not null)
-     * This method can only be called just after setOutput.
+     * Write xml declaration with encoding (if [encoding] not null)
+     * and standalone flag (if [standalone] not null)
      */
     fun startDocument(encoding: String? = null, standalone: Boolean? = null)
 
     /**
      * Finish writing. All unclosed start tags will be closed and output
      * will be flushed. After calling this method no more output can be
-     * serialized until next call to setOutput()
+     * serialized.
      */
     fun endDocument()
 
     /**
-     * Writes a start tag with the given namespace and name.
+     * Binds the given [prefix] to the given [namespace]
+     */
+    fun setPrefix(prefix: String, namespace: String)
+
+    /**
+     * Writes a start tag with the given [namespace] and [name].
      * If there is no prefix defined for the given namespace,
      * a prefix will be defined automatically.
-     * The explicit prefixes for namespaces can be established by calling setPrefix()
+     * The explicit prefixes for namespaces can be established by calling [setPrefix]
      * immediately before this method.
-     * If namespace is null no namespace prefix is printed but just name.
-     * If namespace is empty string then serializer will make sure that
+     * If [namespace] is null no namespace prefix is printed but just [name].
+     * If [namespace] is empty string then serializer will make sure that
      * default empty namespace is declared (in XML 1.0 xmlns='')
      * or throw IllegalStateException if default namespace is already bound
      * to non-empty string.
