@@ -190,6 +190,10 @@ list NestedIntList {
     member: IntList
 }
 
+list NestedMapList {
+    member: IntMap
+}
+
 // A list of enums
 list EnumList {
     member: MyEnum
@@ -210,6 +214,7 @@ structure ListInputRequest {
     intList: IntList,
     structList: StructList,
     nestedIntList: NestedIntList,
+    nestedMapList: NestedMapList,
     blobList: BlobList
 }
 
@@ -272,7 +277,8 @@ structure MapInputRequest {
     structMap: StructMap,
     enumMap: EnumMap,
     blobMap: BlobMap,
-    mapOfLists: MapOfLists
+    mapOfLists: MapOfLists,
+    nestedMap: NestedMap
 }
 
 structure MapOutputResponse {

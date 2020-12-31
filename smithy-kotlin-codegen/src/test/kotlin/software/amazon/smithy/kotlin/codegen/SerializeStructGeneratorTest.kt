@@ -127,6 +127,17 @@ class SerializeStructGeneratorTest {
                         }
                     }
                 }
+                if (input.nestedMapList != null) {
+                    listField(NESTEDMAPLIST_DESCRIPTOR) {
+                        for(m0 in input.nestedMapList) {
+                            if (m0 != null) {
+                                mapField(NESTEDMAPLIST_C0_DESCRIPTOR) {
+                                    m0.forEach { (key, value) -> entry(key, value) }
+                                }
+                            }
+                        }
+                    }
+                }
                 if (input.structList != null) {
                     listField(STRUCTLIST_DESCRIPTOR) {
                         for(m0 in input.structList) {

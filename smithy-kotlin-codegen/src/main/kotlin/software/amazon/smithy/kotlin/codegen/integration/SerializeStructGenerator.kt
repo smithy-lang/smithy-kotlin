@@ -187,7 +187,8 @@ class SerializeStructGenerator(
                         }
                     }
                     is MapShape -> {
-                        // FIXME ~ See https://www.pivotaltracker.com/story/show/176276165
+                        val childDescriptorName = member.descriptorName("_C$level")
+                        renderMapMemberSerializer(member, iteratorName, childDescriptorName, targetShape)
                     }
                     is TimestampShape -> {
                         // TODO ~ the following code may not work w/ non-HttpBinding protocols
@@ -239,27 +240,27 @@ class SerializeStructGenerator(
      *
      * @param member: The shape to serialize
      */
-    private fun renderMapMemberSerializer(member: MemberShape) {
-        val memberName = member.defaultName()
-        val mapShape = ctx.model.expectShape(member.target).asMapShape().get()
+    private fun renderMapMemberSerializer(
+        member: MemberShape,
+        memberName: String = "input.${member.defaultName()}",
+        fieldDescriptorName: String = member.descriptorName(),
+        mapShape: MapShape = ctx.model.expectShape(member.target).asMapShape().get()
+    ) {
         val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
 
-        writer.withBlock("if (input.$memberName != null) {", "}") {
-            writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
+        writer.withBlock("if ($memberName != null) {", "}") {
+            writer.withBlock("mapField($fieldDescriptorName) {", "}") {
                 when (valueTargetShape) {
                     is ListShape -> {
                         val listMemberShape = ctx.model.expectShape(valueTargetShape.member.target)
                         val childDescriptorName = member.descriptorName("_C0")
-                        withBlock("input.$memberName.forEach { (key, value) -> listEntry(key, $childDescriptorName) {", "}}") {
+                        withBlock("$memberName.forEach { (key, value) -> listEntry(key, $childDescriptorName) {", "}}") {
                             renderListSerializer(ctx, member, "value ?: emptyList()", listMemberShape, writer, 1)
                         }
                     }
-                    is MapShape -> {
-                        // TODO ~ implement this, see https://www.pivotaltracker.com/story/show/176276165
-                    }
                     !is CollectionShape -> {
                         val (serializeFn, encoded) = serializationForPrimitiveShape(valueTargetShape, "value", SerializeLocation.Map)
-                        write("input.$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
+                        write("$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")
                     }
                     else -> error("Unexpected target shape type ${valueTargetShape.type}")
                 }
