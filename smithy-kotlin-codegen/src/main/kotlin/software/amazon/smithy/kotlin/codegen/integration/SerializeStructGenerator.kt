@@ -258,6 +258,13 @@ class SerializeStructGenerator(
                             renderListSerializer(ctx, member, "value ?: emptyList()", listMemberShape, writer, 1)
                         }
                     }
+                    is MapShape -> {
+                        val mapMemberShape = ctx.model.expectShape(valueTargetShape.key.toShapeId()).asMemberShape().get()
+                        val childDescriptorName = member.descriptorName("_C0")
+                        withBlock("$memberName.forEach { (key, value) -> mapEntry(key, $childDescriptorName) {", "}}") {
+                            renderMapMemberSerializer(mapMemberShape, memberName = "key", mapShape = ctx.model.expectShape(mapMemberShape.container).asMapShape().get())
+                        }
+                    }
                     !is CollectionShape -> {
                         val (serializeFn, encoded) = serializationForPrimitiveShape(valueTargetShape, "value", SerializeLocation.Map)
                         write("$memberName.forEach { (key, value) -> $serializeFn(key, $encoded) }")

@@ -181,6 +181,17 @@ class SerializeStructGeneratorTest {
                         }}
                     }
                 }
+                if (input.nestedMap != null) {
+                    mapField(NESTEDMAP_DESCRIPTOR) {
+                        input.nestedMap.forEach { (key, value) -> mapEntry(key, NESTEDMAP_C0_DESCRIPTOR) {
+                            if (key != null) {
+                                mapField(KEY_DESCRIPTOR) {
+                                    key.forEach { (key, value) -> entry(key, value) }
+                                }
+                            }
+                        }}
+                    }
+                }
                 if (input.structMap != null) {
                     mapField(STRUCTMAP_DESCRIPTOR) {
                         input.structMap.forEach { (key, value) -> entry(key, if (value != null) ReachableOnlyThroughMapSerializer(value) else null) }
