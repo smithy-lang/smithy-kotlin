@@ -29,8 +29,7 @@ class ImportDeclarations {
 private data class ImportStatement(val packageName: String, val symbolName: String, val alias: String) {
     val statement: String
         get() {
-            assert (alias != "") { "Did not expect alias to be empty string." }
-            return if (alias != symbolName) {
+            return if (alias != "" && alias != symbolName) {
                 "import $packageName.$symbolName as $alias"
             } else {
                 "import $packageName.$symbolName"
