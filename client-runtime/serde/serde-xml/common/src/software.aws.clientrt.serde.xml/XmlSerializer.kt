@@ -43,62 +43,68 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Int?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Int) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeInt(value) else serializeNull()
+        serializeInt(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Long?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Long) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeLong(value) else serializeNull()
+        serializeLong(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Float?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Float) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeFloat(value) else serializeNull()
+        serializeFloat(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: String?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: String) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeString(value) else serializeNull()
+        serializeString(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Double?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Double) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeDouble(value) else serializeNull()
+        serializeDouble(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Boolean?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeBoolean(value) else serializeNull()
+        serializeBoolean(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Byte?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeByte(value) else serializeNull()
+        serializeByte(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Short?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Short) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeShort(value) else serializeNull()
+        serializeShort(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Char?) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Char) {
         xmlWriter.startTag(descriptor.serialName)
-        if (value != null) serializeChar(value) else serializeNull()
+        serializeChar(value)
         xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun rawField(descriptor: SdkFieldDescriptor, value: String) {
         TODO("Not yet implemented")
+    }
+
+    override fun nullField(descriptor: SdkFieldDescriptor) {
+        xmlWriter.startTag(descriptor.serialName)
+        serializeNull()
+        xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
@@ -244,7 +250,7 @@ private class XmlMapSerializer(
         TODO("Not yet implemented")
     }
 
-    private fun serializePrimitive(value: Any?) {
+    private fun serializePrimitive(value: Any) {
         val nodeName = descriptor.expectTrait<XmlMap>().valueName
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value?.toString() ?: "") // NOTE: this may not be the correct serialization format for `null`
@@ -290,7 +296,7 @@ private class XmlListSerializer(
         TODO("Not yet implemented")
     }
 
-    private fun serializePrimitive(value: Any?) {
+    private fun serializePrimitive(value: Any) {
         val nodeName = descriptor.expectTrait<XmlList>().elementName
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value?.toString() ?: "") // NOTE: this may not be the correct serialization format for `null`
