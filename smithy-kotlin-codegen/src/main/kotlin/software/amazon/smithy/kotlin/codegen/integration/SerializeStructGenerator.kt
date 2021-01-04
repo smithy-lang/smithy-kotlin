@@ -260,9 +260,10 @@ class SerializeStructGenerator(
                     }
                     is MapShape -> {
                         val mapMemberShape = ctx.model.expectShape(valueTargetShape.key.toShapeId()).asMemberShape().get()
+                        val mapShape = ctx.model.expectShape(mapMemberShape.container).asMapShape().get()
                         val childDescriptorName = member.descriptorName("_C0")
                         withBlock("$memberName.forEach { (key, value) -> mapEntry(key, $childDescriptorName) {", "}}") {
-                            renderMapMemberSerializer(mapMemberShape, memberName = "key", mapShape = ctx.model.expectShape(mapMemberShape.container).asMapShape().get())
+                            renderMapMemberSerializer(mapMemberShape, memberName = "key", mapShape = mapShape)
                         }
                     }
                     !is CollectionShape -> {
