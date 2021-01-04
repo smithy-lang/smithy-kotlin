@@ -93,7 +93,7 @@ private class XmlStreamReaderXmlPull(
         require(startDepth == parser.depth) { "Expected to maintain parser depth after skip, but started at $startDepth and now at ${parser.depth}" }
     }
 
-    tailrec fun traverseNode(st: XmlToken, startDepth: Int) {
+    private tailrec fun traverseNode(st: XmlToken, startDepth: Int) {
         if (st == XmlToken.EndDocument) return
         if (st is XmlToken.EndElement && parser.depth == startDepth) return
         val next = nextToken()

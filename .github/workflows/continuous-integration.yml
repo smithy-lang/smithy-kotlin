@@ -33,6 +33,6 @@ jobs:
       - name: Unit Tests
 #        run: ./gradlew test rootAllTest
         # temporarily we want to skip the node tests on modules that haven't had their actual js implementations done
-        run: ./gradlew test rootAllTest  -x :client-runtime:smithy-test:jsNodeTest -x :client-runtime:serde:serde-json:jsNodeTest -x :client-runtime:serde:serde-test:jsNodeTest -x :client-runtime:serde:serde-xml:jsNodeTest
+        run: ./gradlew test rootAllTest  -x :client-runtime:smithy-test:jsNodeTest -x :client-runtime:serde:serde-json:jsNodeTest -x :client-runtime:serde:serde-test:jsNodeTest
       - name: Lint
         run: ./gradlew ktlint

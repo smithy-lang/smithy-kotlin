@@ -4,19 +4,21 @@
  */
 package software.aws.clientrt.serde.xml
 
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.ints.shouldBeExactly
+import io.kotest.matchers.string.shouldMatch
+import kotlin.test.Ignore
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
     fun itDeserializesXml() {
-        val payload = """<root><x>1</x><y>2</y></root>""".trimIndent().encodeToByteArray()
-        val actual = xmlStreamReader(payload).allTokens()
+        // language=XML
+        val actual = """<root><x>1</x><y>2</y></root>""".allTokens()
 
-        val expected = listOf(
+        actual.shouldContainExactly(
             XmlToken.BeginElement("root"),
             XmlToken.BeginElement("x"),
             XmlToken.Text("1"),
@@ -27,15 +29,27 @@ class XmlStreamReaderTest {
             XmlToken.EndElement("root"),
             XmlToken.EndDocument
         )
-        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itHandlesPreamble() {
+        // language=XML
+        val actual = """<?xml version="1.0" encoding="UTF-8" ?><root hello="world"/>""".allTokens()
+
+        actual.shouldContainExactly(
+            XmlToken.BeginElement("root", mapOf(XmlToken.QualifiedName("hello") to "world")),
+            XmlToken.EndElement("root"),
+            XmlToken.EndDocument
+        )
     }
 
     @Test
     fun itDeserializesXmlWithAttributes() {
-        val payload = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>""".trimIndent().encodeToByteArray()
-        val actual = xmlStreamReader(payload).allTokens()
+        // language=XML
+        val actual =
+            """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199"/></batch>""".allTokens()
 
-        val expected = listOf(
+        actual.shouldContainExactly(
             XmlToken.BeginElement("batch"),
             XmlToken.BeginElement("add", mapOf(XmlToken.QualifiedName("id") to "tt0484562")),
             XmlToken.BeginElement("field", mapOf(XmlToken.QualifiedName("name") to "title")),
@@ -47,32 +61,29 @@ class XmlStreamReaderTest {
             XmlToken.EndElement("batch"),
             XmlToken.EndDocument
         )
-
-        assertEquals(expected, actual)
     }
 
     @Test
     fun garbageInGarbageOut() {
-        val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
-        assertFailsWith(XmlGenerationException::class) { xmlStreamReader(payload).allTokens() }
+        val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko."""
+        assertFailsWith(XmlGenerationException::class) { payload.allTokens() }
     }
 
     @Test
     fun itHandlesNilNodeValues() {
-        val payload = """<null xsi:nil="true"></null>""".encodeToByteArray()
-        val actual = xmlStreamReader(payload).allTokens()
-        val expected = listOf(
+        // language=XML
+        val actual = """<null xsi:nil="true"></null>""".allTokens()
+        actual.shouldContainExactly(
             XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("xsi:nil") to "true")),
             XmlToken.EndElement("null"),
             XmlToken.EndDocument
         )
-
-        assertEquals(expected, actual)
     }
 
     @Test
     fun kitchenSink() {
-        val payload = """
+        // language=XML
+        val actual = """
         <root>
           <num>1</num>    
           <str>string</str>
@@ -92,10 +103,9 @@ class XmlStreamReaderTest {
           </nested>
           <null xsi:nil="true"></null>
         </root>
-        """.trimIndent().encodeToByteArray()
-        val actual = xmlStreamReader(payload).allTokens()
+        """.allTokens()
         println(actual)
-        val expected = listOf(
+        actual.shouldContainExactly(
             XmlToken.BeginElement("root"),
             XmlToken.BeginElement("num"),
             XmlToken.Text("1"),
@@ -134,16 +144,32 @@ class XmlStreamReaderTest {
             XmlToken.EndElement("root"),
             XmlToken.EndDocument
         )
-
-        assertEquals(expected, actual)
     }
 
     @Test
     fun itSkipsValuesRecursively() {
-        val payload = """
-            <payload><x>1></x><unknown><a>a</a><b>b</b><c><list><element>d</element><element>e</element><element>f</element></list></c><g><h>h</h><i>i</i></g></unknown><y>2></y></payload>
-        """.trimIndent().encodeToByteArray()
-        val reader = xmlStreamReader(payload)
+        // language=XML
+        val reader = """
+        <payload>
+            <x>1></x>
+            <unknown>
+                <a>a</a>
+                <b>b</b>
+                <c>
+                    <list>
+                        <element>d</element>
+                        <element>e</element>
+                        <element>f</element>
+                    </list>
+                </c>
+                <g>
+                    <h>h</h>
+                    <i>i</i>
+                </g>
+            </unknown>
+            <y>2></y>
+        </payload>
+        """.createReader()
         // skip x
         reader.apply {
             nextToken() // begin obj
@@ -152,20 +178,20 @@ class XmlStreamReaderTest {
             nextToken() // end x
         }
 
-        val nt = reader.peek()
-        assertTrue(nt is XmlToken.BeginElement)
+        reader.peek().shouldBeInstanceOf<XmlToken.BeginElement> {
+            it.id.name shouldMatch "unknown"
+        }
 
-        assertEquals("unknown", nt.id.name)
         reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.id.name)
+        y.id.name shouldMatch "y"
     }
 
     @Test
     fun itSkipsSimpleValues() {
-        val payload = """<payload><x>1</x><z>unknown</z><y>2</y></payload>""".trimIndent().encodeToByteArray()
-        val reader = xmlStreamReader(payload)
+        // language=XML
+        val reader = """<payload><x>1</x><z>unknown</z><y>2</y></payload>""".createReader()
         // skip x
         reader.apply {
             nextToken() // begin obj
@@ -173,18 +199,96 @@ class XmlStreamReaderTest {
         }
         reader.skipNext()
 
-        assertTrue(reader.peek() is XmlToken.BeginElement)
+        reader.peek().shouldBeInstanceOf<XmlToken.BeginElement>()
+        reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement> {
+            it.id.name shouldMatch "z"
+        }
 
-        val zElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("z", zElement.id.name)
         reader.skipNext()
 
-        val yElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", yElement.id.name)
+        reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement> {
+            it.id.name shouldMatch "y"
+        }
+    }
+
+    @Test
+    fun depthIsHandledCorrectly() {
+        // language=XML
+        val reader = """<root><x>1</x></root>""".createReader()
+        reader.currentDepth() shouldBeExactly 0
+        reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement>() // begin root
+        reader.currentDepth() shouldBeExactly 1
+        reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement>() // begin x
+        reader.currentDepth() shouldBeExactly 2
+        reader.nextToken().shouldBeInstanceOf<XmlToken.Text>() // text 1
+        reader.currentDepth() shouldBeExactly 2
+        reader.nextToken().shouldBeInstanceOf<XmlToken.EndElement>() // end x
+        reader.currentDepth() shouldBeExactly 2
+        reader.nextToken().shouldBeInstanceOf<XmlToken.EndElement>() // end root
+        reader.currentDepth() shouldBeExactly 1
+        reader.nextToken().shouldBeInstanceOf<XmlToken.EndDocument>() // end document
+        reader.currentDepth() shouldBeExactly 0
+    }
+
+    @Test
+    @Ignore // It feels weird that peek mutates the externally visible state of the reader (e.g. it modifies depth) - this may bite us later but for now it works
+    fun peekDoesNotAffectDepth() {
+        // language=XML
+        val reader = """<root><x>1</x></root>""".createReader()
+
+        reader.peek().shouldBeInstanceOf<XmlToken.BeginElement>()
+        reader.currentDepth() shouldBeExactly 0
+    }
+
+    @Test
+    fun peekDoesNotAffectSkip() {
+        // language=XML
+        val reader = """<root><x>1</x><y>2</y></root>""".createReader()
+
+        reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement>()
+        reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement>()
+
+        reader.peek().shouldBeInstanceOf<XmlToken.Text>()
+
+        reader.skipNext()
+        reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement> {
+            it.id.name shouldMatch "y"
+        }
+    }
+
+    @Test
+    fun canHandleComments() {
+        // language=XML
+        val actual = """<root><x>1</x><!-- comment --><y><!-- comment -->2<!-- comment -->4</y></root>""".allTokens()
+
+        actual.shouldContainExactly(
+            XmlToken.BeginElement("root"),
+            XmlToken.BeginElement("x"),
+            XmlToken.Text("1"),
+            XmlToken.EndElement("x"),
+            XmlToken.BeginElement("y"),
+            XmlToken.Text("2"),
+            XmlToken.Text("4"),
+            XmlToken.EndElement("y"),
+            XmlToken.EndElement("root"),
+            XmlToken.EndDocument
+        )
     }
 }
 
-fun XmlStreamReader.allTokens(): List<XmlToken> {
+private fun String.createReader(): XmlStreamReader {
+    val payload = this.trimIndent().encodeToByteArray()
+    return xmlStreamReader(payload)
+}
+
+private inline fun <reified T: XmlToken> XmlToken.shouldBeInstanceOf(block: (T) -> Unit = { }) {
+    if (this !is T) {
+        throw AssertionError("Expected class ${T::class.simpleName} got $this")
+    }
+    block(this)
+}
+
+private fun String.allTokens(): List<XmlToken> = with(createReader()) {
     val tokens = mutableListOf<XmlToken>()
     while (true) {
         val token = nextToken()

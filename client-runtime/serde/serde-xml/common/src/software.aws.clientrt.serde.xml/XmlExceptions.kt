@@ -8,4 +8,6 @@ package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.SerializationException
 
-class XmlGenerationException(t: Throwable) : SerializationException(t)
+class XmlGenerationException(message: String? = null, t: Throwable? = null) : SerializationException(message, t) {
+    constructor(t: Throwable): this(null, t)
+}
