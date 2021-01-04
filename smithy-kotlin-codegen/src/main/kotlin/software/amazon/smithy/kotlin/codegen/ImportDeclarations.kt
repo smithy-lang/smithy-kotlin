@@ -9,9 +9,8 @@ package software.amazon.smithy.kotlin.codegen
  */
 class ImportDeclarations {
 
-    fun addImport(packageName: String, symbolName: String, alias: String = "") {
+    fun addImport(packageName: String, symbolName: String, alias: String = symbolName) =
         imports.add(ImportStatement(packageName, symbolName, alias))
-    }
 
     override fun toString(): String {
         if (imports.isEmpty()) {
@@ -30,7 +29,8 @@ class ImportDeclarations {
 private data class ImportStatement(val packageName: String, val symbolName: String, val alias: String) {
     val statement: String
         get() {
-            return if (alias != "" && alias != symbolName) {
+            assert (alias != "") { "Did not expect alias to be empty string." }
+            return if (alias != symbolName) {
                 "import $packageName.$symbolName as $alias"
             } else {
                 "import $packageName.$symbolName"
