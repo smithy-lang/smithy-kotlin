@@ -27,7 +27,8 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
-    override val defaultContentType: String = "application/json"
+    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = HttpTraitResolver(ctx, "application/json")
+
     override val protocol: ShapeId = RestJson1Trait.ID
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
@@ -100,7 +101,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
             if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
             if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
@@ -118,7 +119,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
 """
         // NOTE: SmokeTestRequest$payload3 is a struct itself, the Serializer interface handles this if the type
         // implements `SdkSerializable`
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -135,7 +136,7 @@ class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize
         }
 
         builder.headers {
-            append("Content-Type", "text/plain")
+            setMissing("Content-Type", "text/plain")
         }
 
         if (input.payload1 != null) {
@@ -144,7 +145,7 @@ class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -161,7 +162,7 @@ class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
         }
 
         builder.headers {
-            append("Content-Type", "application/octet-stream")
+            setMissing("Content-Type", "application/octet-stream")
         }
 
         if (input.payload1 != null) {
@@ -170,7 +171,7 @@ class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -187,7 +188,7 @@ class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpS
         }
 
         builder.headers {
-            append("Content-Type", "application/octet-stream")
+            setMissing("Content-Type", "application/octet-stream")
         }
 
         if (input.payload1 != null) {
@@ -196,7 +197,7 @@ class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpS
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -213,7 +214,7 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
         }
 
         if (input.payload1 != null) {
@@ -224,7 +225,7 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -324,7 +325,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
         }
 
         val serializer = serializationContext.serializationProvider()
@@ -336,7 +337,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.UnionRequest")
     }
 
@@ -513,7 +514,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
         }
 
@@ -526,7 +527,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -564,7 +565,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
             if (input.headerEpoch != null) append("X-Epoch", input.headerEpoch.format(TimestampFormat.EPOCH_SECONDS))
             if (input.headerHttpDate != null) append("X-Date", input.headerHttpDate.format(TimestampFormat.RFC_5322))
         }
@@ -588,7 +589,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import software.aws.clientrt.time.TimestampFormat")
     }
 
@@ -616,7 +617,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
             if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
@@ -631,7 +632,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
 """
         // NOTE: SmokeTestRequest$payload3 is a struct itself, the Serializer interface handles this if the type
         // implements `SdkSerializable`
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -847,7 +848,7 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
         }
 
         builder.headers {
-            append("Content-Type", "application/json")
+            setMissing("Content-Type", "application/json")
         }
 
         val serializer = serializationContext.serializationProvider()
@@ -867,7 +868,7 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test

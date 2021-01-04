@@ -60,17 +60,9 @@ fun URL.asSmithy(): Model =
 /**
  * Load and initialize a model from a String (from smithy-rs)
  */
-private const val SmithyVersion = "1.0"
 fun String.asSmithyModel(sourceLocation: String? = null): Model {
-    val processed = letIf(!this.startsWith("\$version")) { "\$version: ${SmithyVersion.doubleQuote()}\n$it" }
+    val processed = if (this.startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
     return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
-}
-fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
-fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
-fun <T> T.letIf(cond: Boolean, f: (T) -> T): T {
-    return if (cond) {
-        f(this)
-    } else this
 }
 
 /**
@@ -143,7 +135,7 @@ fun testRender(
     return writer.toString()
 }
 
-// Retrieves Response Document members
+// Retrieves Response Document members for HttpTrait-enabled protocols
 fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getResponseBindings(shape)
@@ -154,7 +146,7 @@ fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
         .map { it.member }
 }
 
-// Retrieves Request Document members
+// Retrieves Request Document members for HttpTrait-enabled protocols
 fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getRequestBindings(shape)
@@ -174,11 +166,7 @@ fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
     try {
         this.shouldContainOnlyOnce(expected)
     } catch (originalException: AssertionError) {
-        try {
-            kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
-        } catch (unusedException: Throwable) {
-            throw originalException
-        }
+        kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
 }
 

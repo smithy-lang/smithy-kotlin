@@ -27,7 +27,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 import java.lang.RuntimeException
 
 class SerializeStructGeneratorTest {
-    val defaultModel: Model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+    private val defaultModel: Model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
 
     /**
      * Get the contents for the given shape ID which should either be
@@ -68,13 +68,13 @@ class SerializeStructGeneratorTest {
         val contents = getContentsForShape("com.test#SmokeTest")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
-    input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
-    input.payload3?.let { field(PAYLOAD3_DESCRIPTOR, NestedSerializer(it)) }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
+                input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
+                input.payload3?.let { field(PAYLOAD3_DESCRIPTOR, NestedSerializer(it)) }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -82,11 +82,11 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
         val contents = getContentsForShape("com.test#UnionInput")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -94,49 +94,49 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
         val contents = getContentsForShape("com.test#ListInput")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    if (input.blobList != null) {
-        listField(BLOBLIST_DESCRIPTOR) {
-            for(m0 in input.blobList) {
-                serializeString(m0.encodeBase64String())
-            }
-        }
-    }
-    if (input.enumList != null) {
-        listField(ENUMLIST_DESCRIPTOR) {
-            for(m0 in input.enumList) {
-                serializeString(m0.value)
-            }
-        }
-    }
-    if (input.intList != null) {
-        listField(INTLIST_DESCRIPTOR) {
-            for(m0 in input.intList) {
-                serializeInt(m0)
-            }
-        }
-    }
-    if (input.nestedIntList != null) {
-        listField(NESTEDINTLIST_DESCRIPTOR) {
-            for(m0 in input.nestedIntList) {
-                serializer.serializeList(NESTEDINTLIST_C0_DESCRIPTOR) {
-                    for(m1 in m0) {
-                        serializeInt(m1)
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.blobList != null) {
+                    listField(BLOBLIST_DESCRIPTOR) {
+                        for(m0 in input.blobList) {
+                            serializeString(m0.encodeBase64String())
+                        }
+                    }
+                }
+                if (input.enumList != null) {
+                    listField(ENUMLIST_DESCRIPTOR) {
+                        for(m0 in input.enumList) {
+                            serializeString(m0.value)
+                        }
+                    }
+                }
+                if (input.intList != null) {
+                    listField(INTLIST_DESCRIPTOR) {
+                        for(m0 in input.intList) {
+                            serializeInt(m0)
+                        }
+                    }
+                }
+                if (input.nestedIntList != null) {
+                    listField(NESTEDINTLIST_DESCRIPTOR) {
+                        for(m0 in input.nestedIntList) {
+                            serializer.serializeList(NESTEDINTLIST_C0_DESCRIPTOR) {
+                                for(m1 in m0) {
+                                    serializeInt(m1)
+                                }
+                            }
+                        }
+                    }
+                }
+                if (input.structList != null) {
+                    listField(STRUCTLIST_DESCRIPTOR) {
+                        for(m0 in input.structList) {
+                            serializeSdkSerializable(NestedSerializer(m0))
+                        }
                     }
                 }
             }
-        }
-    }
-    if (input.structList != null) {
-        listField(STRUCTLIST_DESCRIPTOR) {
-            for(m0 in input.structList) {
-                serializeSdkSerializable(NestedSerializer(m0))
-            }
-        }
-    }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -145,39 +145,39 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
         contents.shouldSyntacticSanityCheck()
 
         val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    if (input.blobMap != null) {
-        mapField(BLOBMAP_DESCRIPTOR) {
-            input.blobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
-        }
-    }
-    if (input.enumMap != null) {
-        mapField(ENUMMAP_DESCRIPTOR) {
-            input.enumMap.forEach { (key, value) -> entry(key, value.value) }
-        }
-    }
-    if (input.intMap != null) {
-        mapField(INTMAP_DESCRIPTOR) {
-            input.intMap.forEach { (key, value) -> entry(key, value) }
-        }
-    }
-    if (input.mapOfLists != null) {
-        mapField(MAPOFLISTS_DESCRIPTOR) {
-            input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
-                for(m1 in value ?: emptyList()) {
-                    serializeInt(m1)
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.blobMap != null) {
+                    mapField(BLOBMAP_DESCRIPTOR) {
+                        input.blobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
+                    }
                 }
-            }}
-        }
-    }
-    if (input.structMap != null) {
-        mapField(STRUCTMAP_DESCRIPTOR) {
-            input.structMap.forEach { (key, value) -> entry(key, if (value != null) ReachableOnlyThroughMapSerializer(value) else null) }
-        }
-    }
-}
-"""
-        contents.shouldContainOnlyOnce(expectedContents)
+                if (input.enumMap != null) {
+                    mapField(ENUMMAP_DESCRIPTOR) {
+                        input.enumMap.forEach { (key, value) -> entry(key, value.value) }
+                    }
+                }
+                if (input.intMap != null) {
+                    mapField(INTMAP_DESCRIPTOR) {
+                        input.intMap.forEach { (key, value) -> entry(key, value) }
+                    }
+                }
+                if (input.mapOfLists != null) {
+                    mapField(MAPOFLISTS_DESCRIPTOR) {
+                        input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
+                            for(m1 in value ?: emptyList()) {
+                                serializeInt(m1)
+                            }
+                        }}
+                    }
+                }
+                if (input.structMap != null) {
+                    mapField(STRUCTMAP_DESCRIPTOR) {
+                        input.structMap.forEach { (key, value) -> entry(key, if (value != null) ReachableOnlyThroughMapSerializer(value) else null) }
+                    }
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -185,31 +185,27 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
         val contents = getContentsForShape("com.test#NestedEnum")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    input.myEnum?.let { field(MYENUM_DESCRIPTOR, it.value) }
-}
-"""
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.myEnum?.let { field(MYENUM_DESCRIPTOR, it.value) }
+            }
+        """.trimIndent()
         contents.shouldContainOnlyOnce(expectedContents)
     }
 
     @Test
     fun `it serializes sparse lists`() {
-        val expected = """// Code generated by smithy-kotlin-codegen. DO NOT EDIT!
-
-package test
-
-
-
-serializer.serializeStruct(OBJ_DESCRIPTOR) {
-    if (input.sparseIntList != null) {
-        listField(SPARSEINTLIST_DESCRIPTOR) {
-            for(m0 in input.sparseIntList) {
-                if (m0 != null) serializeInt(m0) else serializeNull()
+        val expectedContents = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.sparseIntList != null) {
+                    listField(SPARSEINTLIST_DESCRIPTOR) {
+                        for(m0 in input.sparseIntList) {
+                            if (m0 != null) serializeInt(m0) else serializeNull()
+                        }
+                    }
+                }
             }
-        }
-    }
-}
-"""
+        """.trimIndent()
+
         val ctx = """
             namespace com.test
 
@@ -240,7 +236,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
 
         val op = ctx.expectShape("com.test#GetFoo")
 
-        val actual = testRender(ctx.requestMembers(op)) { members, writer ->
+        val contents = testRender(ctx.requestMembers(op)) { members, writer ->
             SerializeStructGenerator(
                 ctx.generationCtx,
                 members,
@@ -249,6 +245,6 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
             ).render()
         }
 
-        kotlin.test.assertEquals(expected, actual)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 }
