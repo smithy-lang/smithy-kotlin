@@ -11,7 +11,7 @@ import kotlin.test.assertFails
 
 class Base64Test {
     @Test
-    fun `it round trips`() {
+    fun itRoundTrips() {
         val tests = listOf(
             "ABC" to "QUJD",
             "Kotlin is awesome" to "S290bGluIGlzIGF3ZXNvbWU=",
@@ -32,20 +32,20 @@ class Base64Test {
     }
 
     @Test
-    fun `empty String test`() {
+    fun emptyStringTest() {
         assertEquals("", "".encodeBase64())
         assertEquals("", "".decodeBase64())
     }
 
     @Test
-    fun `empty ByteArray test`() {
+    fun emptyByteArrayTest() {
         val buf = ByteArray(0)
         assertEquals(0, buf.encodeBase64().size)
         assertEquals(0, buf.decodeBase64().size)
     }
 
     @Test
-    fun `it handles padding`() {
+    fun itHandlesPadding() {
         val cases = mapOf(
             "This" to "VGhpcw==",
             "Thi" to "VGhp",
@@ -61,14 +61,14 @@ class Base64Test {
     }
 
     @Test
-    fun `zeroes`() {
+    fun zeroes() {
         val input = ByteArray(6) { 0 }
         val actual = input.encodeBase64String()
         assertEquals("AAAAAAAA", actual)
     }
 
     @Test
-    fun `decode invalid base64 string`() {
+    fun decodeInvalidBase64String() {
         val ex = assertFails {
             // - is not in the base64 alphabet
             "Zm9v-y==".decodeBase64()
@@ -77,7 +77,7 @@ class Base64Test {
     }
 
     @Test
-    fun `decode non multiple of 4`() {
+    fun decodeNonMultipleOf4() {
         val ex = assertFails {
             "Zm9vY=".decodeBase64()
         }
@@ -85,7 +85,7 @@ class Base64Test {
     }
 
     @Test
-    fun `decode invalid padding`() {
+    fun decodeInvalidPadding() {
         val ex = assertFails {
             "Zm9vY===".decodeBase64()
         }
@@ -94,7 +94,7 @@ class Base64Test {
     }
 
     @Test
-    fun `encode longer text`() {
+    fun encodeLongerText() {
         val decoded = "Alas, eleventy-one years is far too short a time to live among such excellent and admirable hobbits. I don't know half of you half as well as I should like, and I like less than half of you half as well as you deserve."
         val encoded = "QWxhcywgZWxldmVudHktb25lIHllYXJzIGlzIGZhciB0b28gc2hvcnQgYSB0aW1lIHRvIGxpdmUgYW1vbmcgc3VjaCBleGNlbGxlbnQgYW5kIGFkbWlyYWJsZSBob2JiaXRzLiBJIGRvbid0IGtub3cgaGFsZiBvZiB5b3UgaGFsZiBhcyB3ZWxsIGFzIEkgc2hvdWxkIGxpa2UsIGFuZCBJIGxpa2UgbGVzcyB0aGFuIGhhbGYgb2YgeW91IGhhbGYgYXMgd2VsbCBhcyB5b3UgZGVzZXJ2ZS4="
         assertEquals(encoded, decoded.encodeBase64())
@@ -102,7 +102,7 @@ class Base64Test {
     }
 
     @Test
-    fun `it handles utf8`() {
+    fun itHandlesUtf8() {
         val decoded = "ユニコードとはか？"
         val encoded = "44Om44OL44Kz44O844OJ44Go44Gv44GL77yf"
         assertEquals(encoded, decoded.encodeBase64())
@@ -110,7 +110,7 @@ class Base64Test {
     }
 
     @Test
-    fun `it handles control chars`() {
+    fun itHandlesControlChars() {
         val decoded = "hello\tworld\n"
         val encoded = "aGVsbG8Jd29ybGQK"
         assertEquals(encoded, decoded.encodeBase64())

@@ -13,7 +13,7 @@ import kotlin.test.*
 @OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
     @Test
-    fun `it handles doubles`() {
+    fun itHandlesDoubles() {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeDouble()
@@ -23,7 +23,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles floats`() {
+    fun itHandlesFloats() {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeFloat()
@@ -33,7 +33,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles int`() {
+    fun itHandlesInt() {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeInt()
@@ -42,7 +42,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles byte as number`() {
+    fun itHandlesByteAsNumber() {
         val payload = "1".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeByte()
@@ -51,7 +51,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles short`() {
+    fun itHandlesShort() {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeShort()
@@ -60,7 +60,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles long`() {
+    fun itHandlesLong() {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeLong()
@@ -69,7 +69,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles bool`() {
+    fun itHandlesBool() {
         val payload = "true".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeBool()
@@ -78,7 +78,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles string`() {
+    fun itHandlesString() {
         // allow deserializeString() to consume tokens other than JsonToken.String as raw string values
         // this supports custom deserialization (e.g. timestamps) of the raw value
         val tests = listOf(
@@ -98,7 +98,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles null`() {
+    fun itHandlesNull() {
         val payload = "null".encodeToByteArray()
         val stringDeserializer = JsonDeserializer(payload)
         stringDeserializer.deserializeNull()
@@ -108,7 +108,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles lists`() {
+    fun itHandlesLists() {
         val payload = "[1,2,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
@@ -123,7 +123,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles sparse lists`() {
+    fun itHandlesSparseLists() {
         val payload = "[1,null,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
@@ -139,7 +139,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles maps`() {
+    fun itHandlesMaps() {
         val payload = """
             {
                 "key1": 1,
@@ -159,7 +159,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it checks null values of non-sparse maps`() {
+    fun itChecksNullValuesOfNonSparseMaps() {
         val payload = """
             {
                 "key1": 1,
@@ -213,7 +213,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles basic structs`() {
+    fun itHandlesBasicStructs() {
         val payload = """
         {
             "x": 1,
@@ -238,7 +238,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles list of objects`() {
+    fun itHandlesListOfObjects() {
         val payload = """
         [
             {
@@ -267,7 +267,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it enumerates unknown struct fields`() {
+    fun itEnumeratesUnknownStructFields() {
         val payload = """
         {
             "x": 1,
@@ -400,7 +400,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it handles kitchen sink`() {
+    fun itHandlesKitchenSink() {
         val payload = """
         {
             "int": 1,
@@ -488,7 +488,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun `it skips explicit nulls`() {
+    fun itSkipsExplicitNulls() {
         val payload = """
          {
              "x": 1,

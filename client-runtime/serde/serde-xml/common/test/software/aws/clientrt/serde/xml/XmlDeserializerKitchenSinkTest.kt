@@ -132,7 +132,7 @@ class XmlDeserializerKitchenSinkTest {
     }
 
     @Test
-    fun `it handles kitchen sink`() {
+    fun itHandlesKitchenSink() {
         val payload = """
            <?xml version="1.0" encoding="UTF-8" ?>
            <payload>

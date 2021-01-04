@@ -8,26 +8,26 @@ import kotlin.test.*
 
 class HttpStatusCodeTest {
     @Test
-    fun `is success`() {
+    fun isSuccess() {
         assertTrue(HttpStatusCode.OK.isSuccess())
         assertTrue(HttpStatusCode(299, "").isSuccess())
         assertFalse(HttpStatusCode(300, "").isSuccess())
     }
 
     @Test
-    fun `from value`() {
+    fun fromValue() {
         assertEquals(HttpStatusCode.OK, HttpStatusCode.fromValue(200))
         assertEquals(HttpStatusCode(3001, "").value, HttpStatusCode.fromValue(3001).value)
     }
 
     @Test
-    fun `it can match categories`() {
+    fun itCanMatchCategories() {
         assertEquals(HttpStatusCode.OK.category(), HttpStatusCode.Accepted.category())
         assertNotEquals(HttpStatusCode.NotFound.category(), HttpStatusCode.BadGateway.category())
     }
 
     @Test
-    fun `it fails with invalid http codes`() {
+    fun itFailsWithInvalidHttpCodes() {
         assertFailsWith<IllegalStateException>("Invalid HTTP code 999") {
             HttpStatusCode.Category.fromCode(999)
         }

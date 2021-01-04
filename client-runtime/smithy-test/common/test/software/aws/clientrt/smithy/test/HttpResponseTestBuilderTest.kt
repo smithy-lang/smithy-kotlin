@@ -15,7 +15,7 @@ class HttpResponseTestBuilderTest {
 
     @Test
     @OptIn(ExperimentalStdlibApi::class)
-    fun `it builds responses`() {
+    fun itBuildsResponses() {
         httpResponseTest<Foo> {
             expected {
                 statusCode = HttpStatusCode.OK

@@ -17,7 +17,7 @@ class UtilsTest {
     private val testBody = ByteArrayContent(testBodyContents)
 
     @Test
-    fun `it compares empty bodies`() = runSuspendTest {
+    fun itComparesEmptyBodies() = runSuspendTest {
         val ex = assertFails {
             assertEmptyBody(null, testBody)
         }
@@ -27,7 +27,7 @@ class UtilsTest {
     }
 
     @Test
-    fun `it compares bytes`() = runSuspendTest {
+    fun itComparesBytes() = runSuspendTest {
         val ex = assertFails {
             assertBytesEqual(null, testBody)
         }

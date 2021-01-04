@@ -10,7 +10,7 @@ import kotlin.test.*
 
 class DocumentBuilderTest {
     @Test
-    fun `builds an object`() {
+    fun buildsAnObject() {
         val doc = document {
             "foo" to 1
             "baz" to documentArray {

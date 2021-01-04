@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 
 class ByteArrayContentTest {
     @Test
-    fun `it can be consumed as ByteStream`() {
+    fun itCanBeConsumedAsByteStream() {
         val actual = byteArrayOf(0x01, 0x02, 0x03)
         val content = ByteArrayContent(actual)
         assertEquals(3, content.contentLength)

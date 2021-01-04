@@ -11,7 +11,7 @@ import kotlin.test.assertFails
 
 class HeaderListsTest {
     @Test
-    fun `it splits on comma`() {
+    fun itSplitsOnComma() {
         assertEquals(listOf("1"), splitHeaderListValues("1"))
         assertEquals(listOf("1", "2", "3"), splitHeaderListValues("1,2,3"))
         assertEquals(listOf("1", "2", "3"), splitHeaderListValues("1,  2,  3"))
@@ -19,7 +19,7 @@ class HeaderListsTest {
     }
 
     @Test
-    fun `it splits httpDate lists`() {
+    fun itSplitsHttpDateLists() {
         // input to expected
         val tests = listOf(
             // no split

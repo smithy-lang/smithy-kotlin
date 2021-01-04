@@ -35,7 +35,7 @@ class TestFeature(val name: String) : Feature {
 
 class HttpClientConfigTest {
     @Test
-    fun `it configures features on install`() {
+    fun itConfiguresFeaturesOnInstall() {
         val config = HttpClientConfig()
         var called = false
         config.install(TestFeature) {
@@ -46,7 +46,7 @@ class HttpClientConfigTest {
     }
 
     @Test
-    fun `it allows features to install on client`() {
+    fun itAllowsFeaturesToInstallOnClient() {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
                 TODO("test engine")

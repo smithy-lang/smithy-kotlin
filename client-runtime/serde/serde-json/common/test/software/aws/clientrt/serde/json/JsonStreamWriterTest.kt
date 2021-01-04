@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 class JsonStreamWriterTest {
 
     @Test
-    fun `check json serializes correctly with wrapper`() {
+    fun checkJsonSerializesCorrectlyWithWrapper() {
         val msg1 = Message(
             912345678901,
             "How do I stream JSON in Java?",
@@ -33,7 +33,7 @@ class JsonStreamWriterTest {
     }
 
     @Test
-    fun `check close is idempotent`() {
+    fun checkCloseIsIdempotent() {
         val writer = jsonStreamWriter(true)
         writer.beginObject()
         writer.writeName("id")
@@ -46,7 +46,7 @@ class JsonStreamWriterTest {
     }
 
     @Test
-    fun `check non human readable`() {
+    fun checkNonHumanReadable() {
         val writer = jsonStreamWriter()
         writer.beginObject()
         writer.writeName("id")
@@ -57,7 +57,7 @@ class JsonStreamWriterTest {
     }
 
     @Test
-    fun `it allows raw values`() {
+    fun itAllowsRawValues() {
         val writer = jsonStreamWriter()
         val expected = """{"foo":1234.5678}"""
         writer.writeRawValue(expected)

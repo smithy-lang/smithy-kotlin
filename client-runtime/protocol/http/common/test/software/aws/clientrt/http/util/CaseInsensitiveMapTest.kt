@@ -9,7 +9,7 @@ import kotlin.test.assertEquals
 
 class CaseInsensitiveMapTest {
     @Test
-    fun `map operations ignore case`() {
+    fun mapOperationsIgnoreCase() {
         val map = CaseInsensitiveMap<String>()
 
         map["conTent-Type"] = "json"

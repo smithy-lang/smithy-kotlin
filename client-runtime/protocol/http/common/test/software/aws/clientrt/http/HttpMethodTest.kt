@@ -10,13 +10,13 @@ import kotlin.test.assertFails
 
 class HttpMethodTest {
     @Test
-    fun `string representation`() {
+    fun stringRepresentation() {
         assertEquals("GET", HttpMethod.GET.name)
         assertEquals("POST", HttpMethod.POST.toString())
     }
 
     @Test
-    fun `it parses`() {
+    fun itParses() {
         assertEquals(
             HttpMethod.GET,
             HttpMethod.parse("get")

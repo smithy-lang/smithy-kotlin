@@ -13,7 +13,7 @@ import kotlin.test.assertTrue
 class XmlDeserializerStructTest {
 
     @Test
-    fun `it handles basic structs with attribs`() {
+    fun itHandlesBasicStructsWithAttribs() {
         val payload = """
             <payload>
                 <x value="1" />
@@ -29,7 +29,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun `it handles basic structs with attribs and text`() {
+    fun itHandlesBasicStructsWithAttribsAndText() {
         val payload = """
             <payload>
                 <x value="1">x1</x>
@@ -91,7 +91,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun `it handles basic structs`() {
+    fun itHandlesBasicStructs() {
         val payload = """
             <payload>
                 <x>1</x>
@@ -107,7 +107,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun `it handles basic structs with null values`() {
+    fun itHandlesBasicStructsWithNullValues() {
         val payload1 = """
             <payload>
                 <x>1</x>
@@ -136,7 +136,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun `it enumerates unknown struct fields`() {
+    fun itEnumeratesUnknownStructFields() {
         val payload = """
                <payload>
                    <x>1</x>

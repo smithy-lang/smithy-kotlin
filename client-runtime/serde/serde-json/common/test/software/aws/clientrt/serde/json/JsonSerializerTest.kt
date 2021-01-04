@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 class JsonSerializerTest {
 
     @Test
-    fun `can serialize class with class field`() {
+    fun canSerializeClassWithClassField() {
         val a = A(
             B(2)
         )
@@ -47,7 +47,7 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `can serialize list of classes`() {
+    fun canSerializeListOfClasses() {
         val obj = listOf(
             B(1),
             B(2),
@@ -63,7 +63,7 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `can serialize map`() {
+    fun canSerializeMap() {
         val objs = mapOf(
             "A1" to A(
                 B(1)
@@ -89,7 +89,7 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `can serialize map of lists`() {
+    fun canSerializeMapOfLists() {
         val objs = mapOf(
             "A1" to listOf("a", "b", "c"),
             "A2" to listOf("d", "e", "f"),
@@ -109,7 +109,7 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `can serialize list of lists`() {
+    fun canSerializeListOfLists() {
         val objs = listOf(
             listOf("a", "b", "c"),
             listOf("d", "e", "f"),
@@ -129,7 +129,7 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `can serialize list of maps`() {
+    fun canSerializeListOfMaps() {
         val objs = listOf(
             mapOf("a" to "b", "c" to "d"),
             mapOf("e" to "f", "g" to "h"),
@@ -149,7 +149,7 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `can serialize map of maps`() {
+    fun canSerializeMapOfMaps() {
         val objs = mapOf(
             "A1" to mapOf("a" to "b", "c" to "d"),
             "A2" to mapOf("e" to "f", "g" to "h"),
@@ -169,7 +169,7 @@ class JsonSerializerTest {
     }
 
     @Test
-    fun `can serialize all primitives`() {
+    fun canSerializeAllPrimitives() {
         val json = JsonSerializer()
         data.serialize(json)
 
@@ -188,7 +188,6 @@ data class Primitives(
     val double: Double,
     val char: Char,
     val string: String,
-    val unitNullable: Unit?,
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
@@ -207,7 +206,7 @@ data class Primitives(
     override fun serialize(serializer: Serializer) {
         serializer.serializeStruct(ANONYMOUS_DESCRIPTOR) {
             field(descriptorBoolean, boolean)
-            field(descriptorBoolean, null as Boolean?)
+            nullField(descriptorBoolean)
             field(descriptorByte, byte)
             field(descriptorShort, short)
             field(descriptorInt, int)
@@ -227,5 +226,5 @@ data class Primitives(
 
 val data = Primitives(
     Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-    null, listOf(1, 2, 3)
+    listOf(1, 2, 3)
 )

@@ -117,7 +117,7 @@ class XmlDeserializerAWSTest {
     }
 
     @Test
-    fun `it handles Route 53 XML`() {
+    fun itHandlesRoute53XML() {
         val testXml = """
                <?xml version="1.0" encoding="UTF-8"?><!--
                  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.

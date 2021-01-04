@@ -61,7 +61,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun `it handles lists`() {
+    fun itHandlesLists() {
         val payload = """
             <object>
                 <list>
@@ -85,7 +85,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun `it handles flat lists`() {
+    fun itHandlesFlatLists() {
         val payload = """
             <object>
                 <element>1</element>
@@ -106,7 +106,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun `it handles list of objects`() {
+    fun itHandlesListOfObjects() {
         val payload = """
                <list>
                    <payload>
@@ -139,7 +139,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun `it handles list of objects with structs with empty values`() {
+    fun itHandlesListOfObjectsWithStructsWithEmptyValues() {
         val payload = """
                <list>
                    <payload>
@@ -172,7 +172,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun `it handles list of objects with empty values`() {
+    fun itHandlesListOfObjectsWithEmptyValues() {
         val payload = """
                <list>
                    <payload>
@@ -203,7 +203,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun `it handles empty lists`() {
+    fun itHandlesEmptyLists() {
         val payload = """
                <list></list>
            """.encodeToByteArray()

@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 
 class DefaultRequestTest {
     @Test
-    fun `it sets defaults`() = runSuspendTest {
+    fun itSetsDefaults() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }
@@ -38,7 +38,7 @@ class DefaultRequestTest {
     }
 
     @Test
-    fun `it does not override`() = runSuspendTest {
+    fun itDoesNotOverride() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
             override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
         }

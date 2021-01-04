@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 class IdempotencyTokenTest {
 
     @Test
-    fun `default idempotencyTokenProvider implementation returns a different token with each call`() {
+    fun defaultIdempotencyTokenProviderImplementationReturnsADifferentTokenWithEachCall() {
         val token1 = IdempotencyTokenProvider.Default.generateToken()
         val token2 = IdempotencyTokenProvider.Default.generateToken()
 
@@ -15,6 +15,6 @@ class IdempotencyTokenTest {
     }
 
     @Test
-    fun `default idempotencyTokenProvider implementation returns non empty token`() =
+    fun defaultIdempotencyTokenProviderImplementationReturnsNonEmptyToken() =
         assertTrue(IdempotencyTokenProvider.Default.generateToken().isNotEmpty())
 }
