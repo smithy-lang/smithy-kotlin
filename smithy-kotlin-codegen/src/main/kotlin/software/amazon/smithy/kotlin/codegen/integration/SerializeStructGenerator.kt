@@ -53,7 +53,10 @@ class SerializeStructGenerator(
      * Iterate over all supplied [MemberShape]s to generate serializers.
      */
     fun render() {
-        writer.withBlock("serializer.serializeStruct(OBJ_DESCRIPTOR) {", "}") {
+        // inline an empty object descriptor when the struct has no members
+        // otherwise use the one generated as part of the companion object
+        val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
+        writer.withBlock("serializer.serializeStruct($objDescriptor) {", "}") {
             members.sortedBy { it.memberName }.forEach { memberShape ->
                 renderMemberShape(memberShape)
             }
