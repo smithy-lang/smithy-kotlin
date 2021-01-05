@@ -1,3 +1,4 @@
+// ktlint-disable filename
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
@@ -41,5 +42,4 @@ actual interface Source {
      * Close channel with optional cause cancellation
      */
     actual fun cancel(cause: Throwable?): Boolean
-
 }

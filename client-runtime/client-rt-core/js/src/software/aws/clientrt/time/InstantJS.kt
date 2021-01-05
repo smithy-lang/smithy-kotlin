@@ -7,7 +7,6 @@ package software.aws.clientrt.time
 import software.aws.clientrt.time.externals.*
 import software.aws.clientrt.time.externals.Instant as jsInstant
 
-
 actual class Instant(internal val value: jsInstant) : Comparable<Instant> {
     actual val epochSeconds: Long = value.epochSecond().toLong()
 
@@ -50,7 +49,6 @@ actual class Instant(internal val value: jsInstant) : Comparable<Instant> {
          * Create an [Instant] from the current system time
          */
         actual fun now(): Instant = Instant(jsInstant.now())
-
     }
 }
 

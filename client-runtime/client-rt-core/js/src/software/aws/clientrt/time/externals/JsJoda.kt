@@ -5,9 +5,10 @@
 
 @file:JsModule("@js-joda/core")
 @file:JsNonModule
+
 package software.aws.clientrt.time.externals
 
-open external class Instant: TemporalAccessor {
+open external class Instant : TemporalAccessor {
     open fun compareTo(otherInstant: Instant): Number
     open fun epochSecond(): Number
     open fun nano(): Number
@@ -23,7 +24,15 @@ open external class LocalDateTime {
     open fun plusDays(days: Number): LocalDateTime
 
     companion object {
-        fun of(year: Number, month: Number, dayOfMonth: Number, hour: Number, minute: Number, second: Number, nanoSecond: Number): LocalDateTime
+        fun of(
+            year: Number,
+            month: Number,
+            dayOfMonth: Number,
+            hour: Number,
+            minute: Number,
+            second: Number,
+            nanoSecond: Number
+        ): LocalDateTime
     }
 }
 
@@ -41,12 +50,13 @@ open external class TemporalAccessor
 
 open external class DateTimeFormatter {
     open fun format(temporal: TemporalAccessor): String
+
     companion object {
         var ISO_INSTANT: DateTimeFormatter
     }
 }
 
-open external class ZonedDateTime: TemporalAccessor {
+open external class ZonedDateTime : TemporalAccessor {
     open fun dayOfMonth(): Number
     open fun dayOfWeek(): DayOfWeek
     open fun hour(): Number
