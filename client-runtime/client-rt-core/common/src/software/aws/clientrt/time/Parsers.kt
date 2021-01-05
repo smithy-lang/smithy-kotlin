@@ -215,7 +215,7 @@ private fun tzOffsetSecRfc5322(): Parser<Int> = { str, pos ->
 }
 
 // parse RFC-5322 timestamp
-// HH:MM[:SS] GMT
+// HH:MM[:SS][.(s*)] GMT
 private fun rfc5322Time(): Parser<ParsedTime> = { str, pos ->
     val (pos0, hour) = timeHour()(str, pos)
     val (pos1, min) = preceded(char(':'), timeMin())(str, pos0)
@@ -225,8 +225,10 @@ private fun rfc5322Time(): Parser<ParsedTime> = { str, pos ->
     } else {
         ParseResult(pos1, 0)
     }
-    val (pos3, offsetSec) = preceded(::sp, tzOffsetSecRfc5322())(str, pos2)
-    ParseResult(pos3, ParsedTime(hour, min, sec, 0, offsetSec))
+
+    val (pos3, ns) = optionalOr(preceded(oneOf("."), timeNanos()), 0)(str, pos2)
+    val (pos4, offsetSec) = preceded(::sp, tzOffsetSecRfc5322())(str, pos3)
+    ParseResult(pos4, ParsedTime(hour, min, sec, ns, offsetSec))
 }
 
 /**
@@ -262,5 +264,5 @@ internal fun parseRfc5322(input: String): ParsedDatetime {
     val (_, ts) = preceded(::sp, rfc5322Time())(input, pos3)
 
     // Sun, 06 Nov 1994 08:49:37 GMT
-    return ParsedDatetime(year, month, day, ts.hour, ts.min, ts.sec, 0, ts.offsetSec)
+    return ParsedDatetime(year, month, day, ts.hour, ts.min, ts.sec, ts.ns, ts.offsetSec)
 }

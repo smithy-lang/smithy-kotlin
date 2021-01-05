@@ -33,7 +33,9 @@ class ParseRfc5322Test {
         // obsolete zone names
         ParseTest("Sun, 06 Nov 1994 08:49:37 UTC", 1994, 11, 6, 8, 49, 37, 0, 0),
         ParseTest("Sun, 06 Nov 1994 08:49:37 UT", 1994, 11, 6, 8, 49, 37, 0, 0),
-        ParseTest("Sun, 06 Nov 1994 08:49:37 Z", 1994, 11, 6, 8, 49, 37, 0, 0)
+        ParseTest("Sun, 06 Nov 1994 08:49:37 Z", 1994, 11, 6, 8, 49, 37, 0, 0),
+        // fractional seconds (required by awsJson1.1 apparently). See: https://github.com/awslabs/smithy/blob/master/smithy-aws-protocol-tests/model/awsJson1_1/kitchen-sink.smithy#L682
+        ParseTest("Sun, 06 Nov 1994 08:49:37.001 GMT", 1994, 11, 6, 8, 49, 37, 1_000_000, 0)
     )
 
     @Test
