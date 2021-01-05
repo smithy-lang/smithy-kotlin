@@ -46,7 +46,10 @@ class DeserializeStructGenerator(
 ) {
 
     fun render() {
-        writer.withBlock("deserializer.deserializeStruct(OBJ_DESCRIPTOR) {", "}") {
+        // inline an empty object descriptor when the struct has no members
+        // otherwise use the one generated as part of the companion object
+        val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
+        writer.withBlock("deserializer.deserializeStruct($objDescriptor) {", "}") {
             withBlock("loop@while(true) {", "}") {
                 withBlock("when(findNextFieldIndex()) {", "}") {
                     members.forEach { member ->
