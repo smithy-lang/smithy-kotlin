@@ -68,7 +68,8 @@ class XmlStreamWriterTest {
         writer.endTag("batch")
 
         // adapted from https://docs.aws.amazon.com/cloudsearch/latest/developerguide/documents-batch-xml.html
-        val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>"""
+        val expected =
+            """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>"""
 
         assertEquals(expected, writer.toString())
     }
@@ -99,14 +100,15 @@ class XmlStreamWriterTest {
         writer.setPrefix("ex", "http://example.com")
         writer.startTag("hello", "http://example.com")
         writer.attribute("name", "Julia", "http://example.com")
-        writer.setPrefix("ex2", "http://second.com") //nested namespace
+        writer.setPrefix("ex2", "http://second.com") // nested namespace
         writer.startTag("world", "http://example.com")
         writer.attribute("nested", "value", "http://second.com")
         writer.endTag("world", "http://example.com")
         writer.endTag("hello", "http://example.com")
         writer.endDocument()
 
-        val expected = """<ex:hello ex:name="Julia" xmlns="http://default.com" xmlns:ex="http://example.com"><ex:world ex2:nested="value" xmlns:ex2="http://second.com" /></ex:hello>"""
+        val expected =
+            """<ex:hello ex:name="Julia" xmlns="http://default.com" xmlns:ex="http://example.com"><ex:world ex2:nested="value" xmlns:ex2="http://second.com" /></ex:hello>"""
         assertEquals(expected, writer.toString())
     }
 

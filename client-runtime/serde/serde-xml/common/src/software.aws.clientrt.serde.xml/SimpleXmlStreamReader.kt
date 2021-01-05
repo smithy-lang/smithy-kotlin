@@ -24,7 +24,7 @@ class SimpleXmlStreamReader(payload: ByteArray) : XmlStreamReader {
             this.payload.indexOfRequired('>', startIndex = start)
             position = start
             // Ignore pre-amble and comments
-            when(this.payload[start + 1]) {
+            when (this.payload[start + 1]) {
                 '!', '?' -> position = this.payload.indexOfRequired('>', startIndex = position)
                 else -> break@loop
             }
@@ -43,13 +43,14 @@ class SimpleXmlStreamReader(payload: ByteArray) : XmlStreamReader {
         return when (payload[position]) {
             '/' -> handleSelfClosedElement()
             '<' -> handleOpenElementTag()
-            else -> if (isTextNode()) {
-                textNode()
-            } else {
-                // move to next open tag and recurse
-                position = payload.indexOfRequired('<', startIndex = position)
-                nextToken()
-            }
+            else ->
+                if (isTextNode()) {
+                    textNode()
+                } else {
+                    // move to next open tag and recurse
+                    position = payload.indexOfRequired('<', startIndex = position)
+                    nextToken()
+                }
         }
     }
 

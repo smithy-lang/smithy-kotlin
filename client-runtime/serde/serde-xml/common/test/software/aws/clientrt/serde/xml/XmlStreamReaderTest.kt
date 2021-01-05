@@ -281,7 +281,7 @@ private fun String.createReader(): XmlStreamReader {
     return xmlStreamReader(payload)
 }
 
-private inline fun <reified T: XmlToken> XmlToken.shouldBeInstanceOf(block: (T) -> Unit = { }) {
+private inline fun <reified T : XmlToken> XmlToken.shouldBeInstanceOf(block: (T) -> Unit = { }) {
     if (this !is T) {
         throw AssertionError("Expected class ${T::class.simpleName} got $this")
     }

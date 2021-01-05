@@ -72,7 +72,6 @@ internal class SimpleXmlStreamWriter(private val pretty: Boolean) : XmlStreamWri
             if (value != null) {
                 builder.append("=\"").appendEscaped(value).append("\"")
             }
-
         } ?: throw IllegalStateException("Cannot add attribute outside of an element")
     }
 
@@ -140,7 +139,6 @@ internal class SimpleXmlStreamWriter(private val pretty: Boolean) : XmlStreamWri
     override val bytes: ByteArray
         get() = toString().encodeToByteArray()
 
-
     private companion object {
         val XML_ESCAPED_CHARS = mapOf(
             '&' to "&amp;",
@@ -156,5 +154,4 @@ internal class SimpleXmlStreamWriter(private val pretty: Boolean) : XmlStreamWri
             }
         }
     }
-
 }
