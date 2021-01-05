@@ -9,13 +9,15 @@ plugins {
     jacoco
 }
 
-val platforms = listOf("common", "jvm", "android")
+val platforms = listOf("common", "jvm", "android", "js")
+// We always create a target for the "corePlatforms"
+val corePlatforms = setOf("jvm", "js")
 
 // Allow subprojects to use internal API's
 // See: https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
 val experimentalAnnotations = listOf("kotlin.RequiresOptIn", "software.aws.clientrt.util.InternalAPI")
 
-fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
+fun projectNeedsPlatform(project: Project, platform: String): Boolean {
     val files = project.projectDir.listFiles()
     val hasPosix = files.any { it.name == "posix" }
     val hasDarwin = files.any { it.name == "darwin" }
@@ -24,19 +26,22 @@ fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
     if (hasDarwin && platform == "posix") return false
     if (!hasPosix && !hasDarwin && platform == "darwin") return false
     // add implicit JVM target if it has a common module
-    return files.any{ it.name == platform || (it.name == "common" && platform == "jvm")}
+    return files.any{ it.name == platform || (it.name == "common" && platform in corePlatforms)}
 }
 
 // FIXME - Workaround for unspecified kotlin target error after 1.4 upgrade.
 //  See https://www.pivotaltracker.com/story/show/175292052
 kotlin {
     jvm()
+    js {
+        nodejs()
+    }
 }
 
 subprojects {
     // FIXME - Workaround for unspecified kotlin target error after 1.4 upgrade.
     //  See https://www.pivotaltracker.com/story/show/175292052
-    val needsConfigure = platforms.any { projectNeedsPlatform(project, it)}
+    val needsConfigure = platforms.any { projectNeedsPlatform(project, it) }
     println("$project needs configure: $needsConfigure")
     // don't configure anything
     if (!needsConfigure) return@subprojects
@@ -85,11 +90,11 @@ subprojects {
         outputDirectory = "$buildDir/kdoc"
     }
 
-    // TODO - define either a whitelist or blacklist of subprojects that should/should not be published
+    // TODO - define either an allow list or deny list of subprojects that should/should not be published
     apply(from = rootProject.file("gradle/publish.gradle"))
 }
 
-task<org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport>("rootAllTest"){
+task<org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport>("rootAllTest") {
     destinationDir = File(project.buildDir, "reports/tests/rootAllTest")
     val rootAllTest = this
     subprojects {

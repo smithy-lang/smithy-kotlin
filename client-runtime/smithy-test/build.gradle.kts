@@ -33,5 +33,12 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
             }
         }
+
+        jsMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$kotlinxSerializationVersion")
+                implementation("org.jetbrains.kotlin:kotlin-test-js:$kotlinVersion")
+            }
+        }
     }
 }

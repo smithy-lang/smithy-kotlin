@@ -7,19 +7,21 @@ package software.aws.clientrt.logging
 
 import software.aws.clientrt.util.InternalAPI
 
+@InternalAPI
+@PublishedApi
+/**
+ * Get the logger for the class [T]
+ */
+internal expect inline fun <reified T> platformGetLogger(): Logger
+
 /**
  * Internal logging facade
  */
 @InternalAPI
 public interface Logger {
     companion object {
-        /**
-         * Get the logger for the class [T]
-         */
-        inline fun <reified T> getLogger(): Logger {
-            return getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })
-        }
 
+        inline fun <reified T> getLogger(): Logger = platformGetLogger<T>()
         /**
          * Get the logger for the given [name]
          */
