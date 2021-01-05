@@ -87,9 +87,7 @@ class SimpleXmlStreamReader(payload: ByteArray) : XmlStreamReader {
         }
     }
 
-    override fun peek(): XmlToken = peekedToken ?: nextToken().also {
-        peekedToken = it
-    }
+    override fun peek(): XmlToken = peekedToken ?: nextToken().also { peekedToken = it }
 
     override fun currentDepth(): Int = depth
 
@@ -112,16 +110,50 @@ class SimpleXmlStreamReader(payload: ByteArray) : XmlStreamReader {
         .drop(1) // don't need the
         .filter { it.isNotBlank() }
         .map {
-            val components = it.split('=')
-            val attrName = components.first()
-            XmlToken.QualifiedName(attrName) to components[1].trim('"')
+            val (attrName, attrValue) = it.split('=')
+            XmlToken.QualifiedName(attrName) to attributeValue(attrValue)
         }.toMap()
 
+    private fun attributeValue(value: String): String {
+        val buffer = StringBuilder()
+        var i = 0
+        while (i < value.length) {
+            when (val ch = value[i]) {
+                '"' -> i++
+                '&' -> i += parseEscaped(value, i, buffer)
+                else -> {
+                    buffer.append(ch)
+                    i++
+                }
+            }
+        }
+        return buffer.toString()
+    }
+
     private fun textNode(): XmlToken.Text {
-        val end = payload.indexOfRequired('<', startIndex = position)
-        val contents = payload.substring(position, end)
-        position = end
-        return XmlToken.Text(contents)
+        val buffer = StringBuilder()
+        val startingPosition = position
+        while (position < payload.length) {
+            when (val ch = payload[position]) {
+                '<' -> return XmlToken.Text(buffer.toString())
+                '&' -> position += parseEscaped(payload, position, buffer)
+                else -> {
+                    buffer.append(ch)
+                    position++
+                }
+            }
+        }
+        throw XmlGenerationException("XML document is invalid (element data at $startingPosition invalid)")
+    }
+
+    private fun parseEscaped(source: String, startIndex: Int, buffer: Appendable): Int {
+        val end = source.indexOfRequired(';', startIndex = startIndex)
+        val escapeSequence = source.substring(startIndex, end + 1)
+
+        val ch = XML_ESCAPED_CHARS.entries.find { it.value == escapeSequence }?.key
+            ?: throw XmlGenerationException("XML document is invalid (unknown escape code $escapeSequence)")
+        buffer.append(ch)
+        return escapeSequence.length
     }
 
     private fun endElement(): XmlToken.EndElement {

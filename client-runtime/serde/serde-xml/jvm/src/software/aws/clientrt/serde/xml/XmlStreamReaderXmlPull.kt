@@ -47,6 +47,7 @@ private class XmlStreamReaderXmlPull(
                 XmlPullParser.CDSECT,
                 XmlPullParser.COMMENT,
                 XmlPullParser.DOCDECL,
+                XmlPullParser.ENTITY_REF,
                 XmlPullParser.IGNORABLE_WHITESPACE -> nextToken()
                 XmlPullParser.TEXT -> {
                     if (parser.text.blankToNull() == null) nextToken()

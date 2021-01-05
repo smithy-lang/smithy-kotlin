@@ -274,6 +274,22 @@ class XmlStreamReaderTest {
             XmlToken.EndDocument
         )
     }
+
+    @Test
+    @Ignore // Fails on JVM cos current implementation doesn't handle escaped characters in element data
+    fun canHandleEscapedCharacters() {
+        // language=XML
+        val actual = """<root><x attr="&lt;&apos;&quot;&amp;&gt;">&lt;&apos;&quot;&amp;&gt;</x></root>""".allTokens()
+
+        actual.shouldContainExactly(
+            XmlToken.BeginElement("root"),
+            XmlToken.BeginElement("x", mapOf(XmlToken.QualifiedName("attr") to "<'\"&>")),
+            XmlToken.Text("<'\"&>"),
+            XmlToken.EndElement("x"),
+            XmlToken.EndElement("root"),
+            XmlToken.EndDocument
+        )
+    }
 }
 
 private fun String.createReader(): XmlStreamReader {

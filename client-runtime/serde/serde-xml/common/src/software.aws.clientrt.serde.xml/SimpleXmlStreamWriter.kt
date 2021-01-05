@@ -140,14 +140,6 @@ internal class SimpleXmlStreamWriter(private val pretty: Boolean) : XmlStreamWri
         get() = toString().encodeToByteArray()
 
     private companion object {
-        val XML_ESCAPED_CHARS = mapOf(
-            '&' to "&amp;",
-            '<' to "&lt;",
-            '>' to "&gt;",
-            '"' to "&quot;",
-            '\'' to "&apos;"
-        )
-
         private fun Appendable.appendEscaped(text: String): Appendable = apply {
             text.forEach { ch ->
                 XML_ESCAPED_CHARS[ch]?.let { escape -> append(escape) } ?: append(ch)
@@ -155,3 +147,11 @@ internal class SimpleXmlStreamWriter(private val pretty: Boolean) : XmlStreamWri
         }
     }
 }
+
+internal val XML_ESCAPED_CHARS = mapOf(
+    '&' to "&amp;",
+    '<' to "&lt;",
+    '>' to "&gt;",
+    '"' to "&quot;",
+    '\'' to "&apos;"
+)
