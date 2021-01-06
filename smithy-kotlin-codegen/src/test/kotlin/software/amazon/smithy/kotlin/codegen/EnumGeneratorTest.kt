@@ -10,9 +10,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.SmithyIdlModelSerializer
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 
@@ -20,27 +19,25 @@ class EnumGeneratorTest {
 
     @Test
     fun `it generates unnamed enums`() {
-        val trait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("FOO").build())
-            .addEnum(EnumDefinition.builder().value("BAR").documentation("Documentation for bar").build())
-            .build()
-
-        val shape = StringShape.builder()
-            .id("com.test#Baz")
-            .addTrait(trait)
-            .addTrait(DocumentationTrait("Documentation for this enum"))
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(shape)
-            .assemble()
-            .unwrap()
-
-        val ms: SmithyIdlModelSerializer = SmithyIdlModelSerializer.builder().build()
-        val node = ms.serialize(model)
-        println(node.toString())
+        val model = """
+            namespace com.test
+            
+            @enum([
+                {
+                    value: "FOO"
+                },
+                {
+                    value: "BAR",
+                    documentation: "Documentation for bar"
+                }
+            ])
+            @documentation("Documentation for this enum")
+            string Baz
+            
+        """.asSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val shape = model.expectShape(ShapeId.from("com.test#Baz")).asStringShape().get()
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
         EnumGenerator(shape, symbol, writer).render()
@@ -52,30 +49,30 @@ class EnumGeneratorTest {
  */
 sealed class Baz {
 
-    abstract val value: String
+    abstract val value: kotlin.String
 
     /**
      * Documentation for bar
      */
     object Bar : Baz() {
-        override val value: String = "BAR"
-        override fun toString(): String = value
+        override val value: kotlin.String = "BAR"
+        override fun toString(): kotlin.String = value
     }
 
     object Foo : Baz() {
-        override val value: String = "FOO"
-        override fun toString(): String = value
+        override val value: kotlin.String = "FOO"
+        override fun toString(): kotlin.String = value
     }
 
-    data class SdkUnknown(override val value: String) : Baz() {
-        override fun toString(): String = value
+    data class SdkUnknown(override val value: kotlin.String) : Baz() {
+        override fun toString(): kotlin.String = value
     }
 
     companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: String): Baz = when(str) {
+        fun fromValue(str: kotlin.String): Baz = when(str) {
             "BAR" -> Bar
             "FOO" -> Foo
             else -> SdkUnknown(str)
@@ -97,31 +94,32 @@ sealed class Baz {
 
     @Test
     fun `it generates named enums`() {
-        val trait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("t2.nano").name("T2_NANO").build())
-            .addEnum(
-                EnumDefinition.builder().value("t2.micro").name("T2_MICRO").documentation(
-                    "\"\"\"\n" +
-                        "T2 instances are Burstable Performance\n" +
-                        "Instances that provide a baseline level of CPU\n" +
-                        "performance with the ability to burst above the\n" +
-                        "baseline.\"\"\""
-                ).build()
-            )
-            .build()
+        val t2MicroDoc = "T2 instances are Burstable Performance\n" +
+            "Instances that provide a baseline level of CPU\n" +
+            "performance with the ability to burst above the\n" +
+            "baseline."
 
-        val shape = StringShape.builder()
-            .id("com.test#Baz")
-            .addTrait(trait)
-            .addTrait(DocumentationTrait("Documentation for this enum"))
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(shape)
-            .assemble()
-            .unwrap()
+        val model = """
+            namespace com.test
+            
+            @enum([
+                {
+                    value: "t2.nano",
+                    name: "T2_NANO"
+                },
+                {
+                    value: "t2.micro",
+                    name: "T2_MICRO",
+                    documentation: "$t2MicroDoc"
+                }
+            ])
+            @documentation("Documentation for this enum")
+            string Baz
+            
+        """.asSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val shape = model.expectShape(ShapeId.from("com.test#Baz")).asStringShape().get()
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
         EnumGenerator(shape, symbol, writer).render()
@@ -133,34 +131,33 @@ sealed class Baz {
  */
 sealed class Baz {
 
-    abstract val value: String
+    abstract val value: kotlin.String
 
     /**
-     * ${"\"\"\""}
      * T2 instances are Burstable Performance
      * Instances that provide a baseline level of CPU
      * performance with the ability to burst above the
-     * baseline.${"\"\"\""}
+     * baseline.
      */
     object T2Micro : Baz() {
-        override val value: String = "t2.micro"
-        override fun toString(): String = value
+        override val value: kotlin.String = "t2.micro"
+        override fun toString(): kotlin.String = value
     }
 
     object T2Nano : Baz() {
-        override val value: String = "t2.nano"
-        override fun toString(): String = value
+        override val value: kotlin.String = "t2.nano"
+        override fun toString(): kotlin.String = value
     }
 
-    data class SdkUnknown(override val value: String) : Baz() {
-        override fun toString(): String = value
+    data class SdkUnknown(override val value: kotlin.String) : Baz() {
+        override fun toString(): kotlin.String = value
     }
 
     companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: String): Baz = when(str) {
+        fun fromValue(str: kotlin.String): Baz = when(str) {
             "t2.micro" -> T2Micro
             "t2.nano" -> T2Nano
             else -> SdkUnknown(str)
