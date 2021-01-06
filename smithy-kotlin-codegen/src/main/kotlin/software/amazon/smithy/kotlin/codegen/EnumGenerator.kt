@@ -28,25 +28,25 @@ import software.amazon.smithy.utils.CaseUtils
  *
  * ```
  * sealed class SimpleYesNo {
- *     abstract val value: String
+ *     abstract val value: kotlin.String
  *
  *     object Yes: SimpleYesNo() {
- *         override val value: String = "YES"
- *         override fun toString(): String = value
+ *         override val value: kotlin.String = "YES"
+ *         override fun toString(): kotlin.String = value
  *     }
  *
  *     object No: SimpleYesNo() {
- *         override val value: String = "NO"
- *         override fun toString(): String = value
+ *         override val value: kotlin.String = "NO"
+ *         override fun toString(): kotlin.String = value
  *     }
  *
- *     data class SdkUnknown(override val value: String): SimpleYesNo() {
- *         override fun toString(): String = value
+ *     data class SdkUnknown(override val value: kotlin.String): SimpleYesNo() {
+ *         override fun toString(): kotlin.String = value
  *     }
  *
  *     companion object {
  *
- *         fun fromValue(str: String): SimpleYesNo = when(str) {
+ *         fun fromValue(str: kotlin.String): SimpleYesNo = when(str) {
  *             "YES" -> Yes
  *             "NO" -> No
  *             else -> SdkUnknown(str)
@@ -57,25 +57,25 @@ import software.amazon.smithy.utils.CaseUtils
  * }
  *
  * sealed class TypedYesNo {
- *     abstract val value: String
+ *     abstract val value: kotlin.String
  *
  *     object Yes: TypedYesNo() {
- *         override val value: String = "Yes"
- *         override fun toString(): String = value
+ *         override val value: kotlin.String = "Yes"
+ *         override fun toString(): kotlin.String = value
  *     }
  *
  *     object No: TypedYesNo() {
- *         override val value: String = "No"
- *         override fun toString(): String = value
+ *         override val value: kotlin.String = "No"
+ *         override fun toString(): kotlin.String = value
  *     }
  *
- *     data class SdkUnknown(override val value: String): TypedYesNo() {
- *         override fun toString(): String = value
+ *     data class SdkUnknown(override val value: kotlin.String): TypedYesNo() {
+ *         override fun toString(): kotlin.String = value
  *     }
  *
  *     companion object {
  *
- *         fun fromValue(str: String): TypedYesNo = when(str) {
+ *         fun fromValue(str: kotlin.String): TypedYesNo = when(str) {
  *             "Yes" -> Yes
  *             "No" -> No
  *             else -> SdkUnknown(str)
@@ -103,7 +103,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
         writer.renderDocumentation(shape)
         // NOTE: The smithy spec only allows string shapes to apply to a string shape at the moment
         writer.withBlock("sealed class ${symbol.name} {", "}") {
-            write("\nabstract val value: String\n")
+            write("\nabstract val value: kotlin.String\n")
 
             val sortedDefinitions = enumTrait
                 .values
@@ -117,7 +117,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
             if (generatedNames.contains("SdkUnknown")) throw CodegenException("generating SdkUnknown would cause duplicate variant for enum shape: $shape")
 
             // generate the unknown which will always be last
-            writer.withBlock("data class SdkUnknown(override val value: String) : ${symbol.name}() {", "}") {
+            writer.withBlock("data class SdkUnknown(override val value: kotlin.String) : ${symbol.name}() {", "}") {
                 renderToStringOverride()
             }
 
@@ -126,7 +126,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
             // generate the fromValue() static method
             withBlock("companion object {", "}") {
                 writer.dokka("Convert a raw value to one of the sealed variants or [SdkUnknown]")
-                openBlock("fun fromValue(str: String): \$L = when(str) {", symbol.name)
+                openBlock("fun fromValue(str: kotlin.String): \$L = when(str) {", symbol.name)
                     .call {
                         sortedDefinitions.forEach { definition ->
                             val variantName = getVariantName(definition)
@@ -153,7 +153,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
 
     private fun renderToStringOverride() {
         // override to string to use the enum constant value
-        writer.write("override fun toString(): String = value")
+        writer.write("override fun toString(): kotlin.String = value")
     }
 
     private fun generateSealedClassVariant(definition: EnumDefinition) {
@@ -164,7 +164,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
         }
 
         writer.openBlock("object $variantName : ${symbol.name}() {")
-            .write("override val value: String = \"${definition.value}\"")
+            .write("override val value: kotlin.String = \"${definition.value}\"")
             .call { renderToStringOverride() }
             .closeBlock("}")
     }
