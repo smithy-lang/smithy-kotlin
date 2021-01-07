@@ -16,5 +16,10 @@ kotlin {
                 api(project(":client-runtime:serde:serde-xml"))
             }
         }
+        commonTest {
+            dependencies {
+                implementation(project(":client-runtime:testing"))
+            }
+        }
     }
 }

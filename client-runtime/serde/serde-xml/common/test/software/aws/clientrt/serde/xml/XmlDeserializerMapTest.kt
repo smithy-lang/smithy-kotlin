@@ -8,13 +8,14 @@ import io.kotest.matchers.maps.shouldContainExactly
 import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.SerialKind
 import software.aws.clientrt.serde.deserializeMap
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerMapTest {
 
     @Test
-    fun itHandlesMapsWithDefaultNodeNames() {
+    fun itHandlesMapsWithDefaultNodeNames() = runSuspendTest {
         val payload = """
             <values>
                 <entry>
@@ -45,7 +46,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesMapsWithCustomNodeNames() {
+    fun itHandlesMapsWithCustomNodeNames() = runSuspendTest {
         val payload = """
             <mymap>
                 <myentry>
@@ -77,7 +78,7 @@ class XmlDeserializerMapTest {
 
     // https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html#flattened-map-serialization
     @Test
-    fun itHandlesFlatMaps() {
+    fun itHandlesFlatMaps() = runSuspendTest {
         val payload = """
             <Bar>
                 <flatMap>
@@ -109,7 +110,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesEmptyMaps() {
+    fun itHandlesEmptyMaps() = runSuspendTest {
         val payload = """
             <Map></Map>
         """.encodeToByteArray()
@@ -128,7 +129,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesSparseMaps() {
+    fun itHandlesSparseMaps() = runSuspendTest {
         val payload = """
             <values>
                 <entry>
@@ -162,7 +163,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesCheckingMapValuesForNull() {
+    fun itHandlesCheckingMapValuesForNull() = runSuspendTest {
         val payload = """
             <values>
                 <entry>

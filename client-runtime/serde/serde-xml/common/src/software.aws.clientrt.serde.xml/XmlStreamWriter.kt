@@ -98,4 +98,4 @@ fun XmlStreamWriter.text(text: Float) {
 /*
 * Creates a [XmlStreamWriter] instance to write XML
 */
-internal expect fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter
+internal fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter = DefaultXmlStreamWriter(pretty)

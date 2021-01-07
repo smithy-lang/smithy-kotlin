@@ -5,6 +5,7 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -13,7 +14,7 @@ import kotlin.test.assertTrue
 class XmlDeserializerStructTest {
 
     @Test
-    fun itHandlesBasicStructsWithAttribs() {
+    fun itHandlesBasicStructsWithAttribs() = runSuspendTest {
         val payload = """
             <payload>
                 <x value="1" />
@@ -29,7 +30,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesBasicStructsWithAttribsAndText() {
+    fun itHandlesBasicStructsWithAttribsAndText() = runSuspendTest {
         val payload = """
             <payload>
                 <x value="1">x1</x>
@@ -67,7 +68,7 @@ class XmlDeserializerStructTest {
                 field(Z_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): BasicAttribTextStructTest {
+            suspend fun deserialize(deserializer: Deserializer): BasicAttribTextStructTest {
                 val result = BasicAttribTextStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -91,7 +92,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesBasicStructs() {
+    fun itHandlesBasicStructs() = runSuspendTest {
         val payload = """
             <payload>
                 <x>1</x>
@@ -107,7 +108,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesBasicStructsWithNullValues() {
+    fun itHandlesBasicStructsWithNullValues() = runSuspendTest {
         val payload1 = """
             <payload>
                 <x>1</x>
@@ -136,7 +137,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itEnumeratesUnknownStructFields() {
+    fun itEnumeratesUnknownStructFields() = runSuspendTest {
         val payload = """
                <payload>
                    <x>1</x>

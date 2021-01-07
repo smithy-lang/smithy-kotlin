@@ -7,7 +7,7 @@ package software.aws.clientrt.serde.xml
 /**
  * A zero dependency Kotlin common compatible XML serializer
  */
-internal class SimpleXmlStreamWriter(private val pretty: Boolean) : XmlStreamWriter {
+internal class DefaultXmlStreamWriter(private val pretty: Boolean) : XmlStreamWriter {
 
     private data class Element(
         val name: String,

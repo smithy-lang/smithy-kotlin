@@ -7,14 +7,14 @@ package software.aws.clientrt.serde.xml
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.ints.shouldBeExactly
 import io.kotest.matchers.string.shouldMatch
-import kotlin.test.Ignore
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
-    fun itDeserializesXml() {
+    fun itDeserializesXml() = runSuspendTest {
         // language=XML
         val actual = """<root><x>1</x><y>2</y></root>""".allTokens()
 
@@ -32,7 +32,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesPreamble() {
+    fun itHandlesPreamble() = runSuspendTest {
         // language=XML
         val actual = """<?xml version="1.0" encoding="UTF-8" ?><root hello="world"/>""".allTokens()
 
@@ -44,7 +44,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesXmlWithAttributes() {
+    fun itDeserializesXmlWithAttributes() = runSuspendTest {
         // language=XML
         val actual =
             """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199"/></batch>""".allTokens()
@@ -64,27 +64,27 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun garbageInGarbageOut() {
+    fun garbageInGarbageOut() = runSuspendTest {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko."""
         assertFailsWith(XmlGenerationException::class) { payload.allTokens() }
     }
 
     @Test
-    fun itHandlesNilNodeValues() {
+    fun itHandlesNilNodeValues() = runSuspendTest {
         // language=XML
-        val actual = """<null xsi:nil="true"></null>""".allTokens()
+        val actual = """<null xsi:nil="true" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"></null>""".allTokens()
         actual.shouldContainExactly(
-            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("xsi:nil") to "true")),
+            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("nil", "http://www.w3.org/2001/XMLSchema-instance") to "true")),
             XmlToken.EndElement("null"),
             XmlToken.EndDocument
         )
     }
 
     @Test
-    fun kitchenSink() {
+    fun kitchenSink() = runSuspendTest {
         // language=XML
         val actual = """
-        <root>
+        <root xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <num>1</num>    
           <str>string</str>
           <list>
@@ -139,7 +139,7 @@ class XmlStreamReaderTest {
             XmlToken.Text("false"),
             XmlToken.EndElement("falsey"),
             XmlToken.EndElement("nested"),
-            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("xsi:nil") to "true")),
+            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("nil", "http://www.w3.org/2001/XMLSchema-instance") to "true")),
             XmlToken.EndElement("null"),
             XmlToken.EndElement("root"),
             XmlToken.EndDocument
@@ -147,7 +147,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itSkipsValuesRecursively() {
+    fun itSkipsValuesRecursively() = runSuspendTest {
         // language=XML
         val reader = """
         <payload>
@@ -189,17 +189,16 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itSkipsSimpleValues() {
+    fun itSkipsSimpleValues() = runSuspendTest {
         // language=XML
         val reader = """<payload><x>1</x><z>unknown</z><y>2</y></payload>""".createReader()
         // skip x
         reader.apply {
             nextToken() // begin obj
-            nextToken() // x
+            peek() // x
         }
         reader.skipNext()
 
-        reader.peek().shouldBeInstanceOf<XmlToken.BeginElement>()
         reader.nextToken().shouldBeInstanceOf<XmlToken.BeginElement> {
             it.id.name shouldMatch "z"
         }
@@ -212,7 +211,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun depthIsHandledCorrectly() {
+    fun depthIsHandledCorrectly() = runSuspendTest {
         // language=XML
         val reader = """<root><x>1</x></root>""".createReader()
         reader.currentDepth() shouldBeExactly 0
@@ -231,17 +230,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    @Ignore // It feels weird that peek mutates the externally visible state of the reader (e.g. it modifies depth) - this may bite us later but for now it works
-    fun peekDoesNotAffectDepth() {
-        // language=XML
-        val reader = """<root><x>1</x></root>""".createReader()
-
-        reader.peek().shouldBeInstanceOf<XmlToken.BeginElement>()
-        reader.currentDepth() shouldBeExactly 0
-    }
-
-    @Test
-    fun peekDoesNotAffectSkip() {
+    fun peekDoesNotAffectSkip() = runSuspendTest {
         // language=XML
         val reader = """<root><x>1</x><y>2</y></root>""".createReader()
 
@@ -257,7 +246,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun canHandleComments() {
+    fun canHandleComments() = runSuspendTest {
         // language=XML
         val actual = """<root><x>1</x><!-- comment --><y><!-- comment -->2<!-- comment -->4</y></root>""".allTokens()
 
@@ -276,8 +265,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    @Ignore // Fails on JVM cos current implementation doesn't handle escaped characters in element data
-    fun canHandleEscapedCharacters() {
+    fun canHandleEscapedCharacters() = runSuspendTest {
         // language=XML
         val actual = """<root><x attr="&lt;&apos;&quot;&amp;&gt;">&lt;&apos;&quot;&amp;&gt;</x></root>""".allTokens()
 
@@ -304,7 +292,7 @@ private inline fun <reified T : XmlToken> XmlToken.shouldBeInstanceOf(block: (T)
     block(this)
 }
 
-private fun String.allTokens(): List<XmlToken> = with(createReader()) {
+private suspend fun String.allTokens(): List<XmlToken> = with(createReader()) {
     val tokens = mutableListOf<XmlToken>()
     while (true) {
         val token = nextToken()

@@ -5,7 +5,7 @@
 
 kotlin {
     targets {
-        fromPreset(presets.js, 'js')
+        fromPreset(presets.jsIr, 'js')
     }
     js {
         nodejs()
@@ -14,6 +14,7 @@ kotlin {
     sourceSets {
         jsTest.dependencies {
             implementation "org.jetbrains.kotlin:kotlin-test-js:$kotlinVersion"
+            implementation "io.kotest:kotest-assertions-core-js:$kotestVersion"
         }
     }
 }
