@@ -153,7 +153,8 @@ class SerializeStructGenerator(
             ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
             ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampEntry(elementShape, nestingLevel, parentMemberName)
-            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as ListShape, nestingLevel, parentMemberName)
+            ShapeType.SET,
+            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
             ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape as StructureShape, nestingLevel, parentMemberName, isSparse)
@@ -181,7 +182,8 @@ class SerializeStructGenerator(
             ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampElement(elementShape, nestingLevel, parentMemberName)
-            ShapeType.LIST -> renderListElement(rootMemberShape, elementShape as ListShape, nestingLevel, parentMemberName)
+            ShapeType.LIST,
+            ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
             ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape as StructureShape, nestingLevel, parentMemberName)
@@ -299,7 +301,7 @@ class SerializeStructGenerator(
      */
     private fun renderListEntry(
         rootMemberShape: MemberShape,
-        elementShape: ListShape,
+        elementShape: CollectionShape,
         nestingLevel: Int,
         parentMemberName: String
     ) {
@@ -324,7 +326,7 @@ class SerializeStructGenerator(
      *   }
      * }
      */
-    private fun renderListElement(rootMemberShape: MemberShape, elementShape: ListShape, nestingLevel: Int, parentListMemberName: String) {
+    private fun renderListElement(rootMemberShape: MemberShape, elementShape: CollectionShape, nestingLevel: Int, parentListMemberName: String) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
@@ -583,7 +585,7 @@ private fun Shape.targetOrSelf(model: Model) = when (this) {
 /**
  * @return true if shape is a String with enum trait, false otherwise.
  */
-private fun Shape.isEnum() = this.isStringShape && this.hasTrait(EnumTrait::class.java)
+private fun Shape.isEnum() = isStringShape && hasTrait(EnumTrait::class.java)
 
 /**
  * Generate key and value names for iteration based on nesting level
@@ -624,3 +626,13 @@ internal fun ShapeType.primitiveSerializerFunctionName(): String {
  * @property encodedValue The value to pass to the serialization function
  */
 internal data class SerializeInfo(val fn: String, val encodedValue: String)
+
+/**
+ * Generate an identifier for a given nesting level
+ */
+fun Int.nestedIdentifier(): String = "c$this"
+
+/**
+ * Generate an identifier for a given nesting level
+ */
+fun Int.nestedDescriptorName(): String = "_c$this"

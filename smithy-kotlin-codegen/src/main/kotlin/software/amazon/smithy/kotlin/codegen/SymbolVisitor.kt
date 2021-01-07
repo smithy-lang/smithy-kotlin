@@ -64,16 +64,6 @@ fun MemberShape.defaultName(): String = StringUtils.uncapitalize(this.memberName
 fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name)
 
 /**
- * Generate an identifier for a given nesting level
- */
-fun Int.nestedIdentifier(): String = "c$this"
-
-/**
- * Generate an identifier for a given nesting level
- */
-fun Int.nestedDescriptorName(): String = "_c$this"
-
-/**
  * Convert shapes to Kotlin types
  * @param model The smithy model to generate for
  * @param rootNamespace All symbols will be created under this namespace (package) or as a direct child of it.
