@@ -86,6 +86,35 @@ class SerializeStructGeneratorTest2 {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
+    @Test
+    fun `it serializes a structure with a list of timestamp values`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                payload: TimestampList
+            }
+            
+            list TimestampList {
+                member: Timestamp
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (c0 in input.payload) {
+                            serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
     // TODO ~ Support Document Type
 
     @Test
@@ -425,7 +454,7 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> if (value != null) entry(key, FooStructSerializer(value)) else entry(key, null as String) }
+                        input.payload.forEach { (key, value) -> if (value != null) entry(key, FooStructSerializer(value)) else entry(key, null as String?) }
                     }
                 }
             }
@@ -692,6 +721,63 @@ class SerializeStructGeneratorTest2 {
     }
 
     @Test
+    fun `it serializes a structure containing a map of value type blob`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                fooBlobMap: BlobMap
+            }
+            
+            map BlobMap {
+                key: String,
+                value: Blob
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.fooBlobMap != null) {
+                    mapField(FOOBLOBMAP_DESCRIPTOR) {
+                        input.fooBlobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a list of value type blob`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                fooBlobList: BlobList
+            }
+            
+            list BlobList {                
+                member: Blob
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.fooBlobList != null) {
+                    listField(FOOBLOBLIST_DESCRIPTOR) {
+                        for (c0 in input.fooBlobList) {
+                            serializeString(c0.encodeBase64String())
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a timestamp`() {
         val model = (modelPrefix + """            
             structure FooRequest { 
@@ -702,6 +788,34 @@ class SerializeStructGeneratorTest2 {
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 input.fooTime?.let { rawField(FOOTIME_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a map of value type timestamp`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                fooTimestampMap: TimestampMap
+            }
+            
+            map TimestampMap {
+                key: String,
+                value: Timestamp
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.fooTimestampMap != null) {
+                    mapField(FOOTIMESTAMPMAP_DESCRIPTOR) {
+                        input.fooTimestampMap.forEach { (key, value) -> rawEntry(key, it.format(TimestampFormat.EPOCH_SECONDS)) }
+                    }
+                }
             }
         """.trimIndent()
 

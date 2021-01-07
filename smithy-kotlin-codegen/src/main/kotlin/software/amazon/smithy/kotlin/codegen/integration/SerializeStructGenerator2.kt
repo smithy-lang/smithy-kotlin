@@ -71,7 +71,7 @@ class SerializeStructGenerator2(
             ShapeType.SET -> renderListMemberSerializer(memberShape, targetShape as CollectionShape)
             ShapeType.MAP -> renderMapMemberSerializer(memberShape, targetShape as MapShape)
             ShapeType.STRUCTURE,
-            ShapeType.UNION -> renderStructureShapeSerializer(memberShape)
+            ShapeType.UNION -> renderPrimitiveShapeSerializer2(memberShape, ::serializerForStructureShape)
             ShapeType.DOCUMENT -> renderDocumentShapeSerializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
@@ -84,7 +84,7 @@ class SerializeStructGenerator2(
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
-            ShapeType.BIG_INTEGER -> renderPrimitiveShapeSerializer(memberShape)
+            ShapeType.BIG_INTEGER -> renderPrimitiveShapeSerializer2(memberShape, ::serializerForPrimitiveShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }
@@ -151,9 +151,9 @@ class SerializeStructGenerator2(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
-            ShapeType.BLOB -> renderBlobEntry(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampEntry(elementShape, nestingLevel, parentMemberName)
-            ShapeType.LIST -> renderListEntry(rootMemberShape, mapShape, elementShape as ListShape, nestingLevel, parentMemberName)
+            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as ListShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
             ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape as StructureShape, nestingLevel, parentMemberName, isSparse)
@@ -179,7 +179,7 @@ class SerializeStructGenerator2(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
-            ShapeType.BLOB -> renderBlobElement(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampElement(elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST -> renderListElement(rootMemberShape, elementShape as ListShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
@@ -209,6 +209,13 @@ class SerializeStructGenerator2(
         }
     }
 
+    /**
+     * Renders a nested structure contained in a map.  Example:
+     *
+     * ```
+     * input.payload.forEach { (key, value) -> entry(key, FooStructureSerializer(value)) }
+     * ```
+     */
     private fun renderNestedStructureEntry(
         structureShape: StructureShape,
         nestingLevel: Int,
@@ -216,8 +223,7 @@ class SerializeStructGenerator2(
         isSparse: Boolean
     ) {
         val serializerTypeName = "${structureShape.defaultName()}Serializer"
-        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
-        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+        val (keyName, valueName) = keyValueNames(nestingLevel)
         val containerName = if (nestingLevel == 0) "input." else ""
 
         when (isSparse) {
@@ -227,6 +233,18 @@ class SerializeStructGenerator2(
     }
 
 
+    /**
+     * Renders the serialization of a list element of type map.
+     *
+     * Example:
+     * ```
+     * for (c0 in input.payload) {
+     *      serializer.serializeMap(PAYLOAD_C0_DESCRIPTOR) {
+     *          ...
+     *      }
+     * }
+     * ```
+     */
     private fun renderMapElement(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
@@ -265,36 +283,31 @@ class SerializeStructGenerator2(
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
-        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
-        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+        val (keyName, valueName) = keyValueNames(nestingLevel)
 
         writer.withBlock("$containerName${parentMemberName}.forEach { ($keyName, $valueName) -> mapEntry($keyName, $descriptorName) {", "}}") {
             delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, valueName)
         }
-
-        /*
-        writer.withBlock("$containerName${parentMemberName}.forEach { ($keyName, $valueName) -> mapEntry($keyName, $descriptorName) {", "}}") {
-            writer.withBlock("if ($keyName != null) {", "}") {
-                writer.withBlock("mapField(SOME_DESCRIPTOR) {", "}") {
-                    delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, valueName)
-                }
-            }
-        }
-         */
     }
 
+    /**
+     * Renders a map value of type list.  Example:
+     *
+     * ```
+     * input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
+     *  ...
+     * }}
+     * ```
+     */
     private fun renderListEntry(
         rootMemberShape: MemberShape,
-        mapShape: MapShape,
         elementShape: ListShape,
         nestingLevel: Int,
         parentMemberName: String
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
-        val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
-        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
-        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+        val (keyName, valueName) = keyValueNames(nestingLevel)
 
         writer.withBlock("$containerName${parentMemberName}.forEach { ($keyName, $valueName) -> listEntry($keyName, $descriptorName) {", "}}") {
             delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, valueName)
@@ -325,23 +338,42 @@ class SerializeStructGenerator2(
         }
     }
 
+    /**
+     * Renders the serialization of a primitive value contained by a map.  Example:
+     *
+     * ```
+     * c0.forEach { (key1, value1) -> entry(key1, value1) }
+     * ```
+     */
     private fun renderPrimitiveEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         val containerName = if (nestingLevel == 0) "input." else ""
-        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
         val enumPostfix = if (elementShape.isEnum()) ".value" else ""
-        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+        val (keyName, valueName) = keyValueNames(nestingLevel)
 
         writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName$enumPostfix) }")
     }
 
-    private fun renderBlobEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+    /**
+     * Renders the serialization of a blob value contained by a map.  Example:
+     *
+     * ```
+     * input.fooBlobMap.forEach { (key, value) -> entry(key, value.encodeBase64String()) }
+     * ```
+     */
+    private fun renderBlobEntry(nestingLevel: Int, listMemberName: String) {
         val containerName = if (nestingLevel == 0) "input." else ""
-        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
-        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+        val (keyName, valueName) = keyValueNames(nestingLevel)
 
         writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.encodeBase64String()) }")
     }
 
+    /**
+     * Renders the serialization of a timestamp value contained by a map.  Example:
+     *
+     * ```
+     * input.fooTimestampMap.forEach { (key, value) -> rawEntry(key, it.format(TimestampFormat.EPOCH_SECONDS)) }
+     * ```
+     */
     private fun renderTimestampEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         importTimestampFormat(writer)
         val tsFormat = elementShape
@@ -349,17 +381,13 @@ class SerializeStructGenerator2(
             .map { it.format }
             .orElse(defaultTimestampFormat)
 
-        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
-        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
-        val serializerFn = if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-            "rawEntry"
-        } else {
-            "entry"
+        val (keyName, valueName) = keyValueNames(nestingLevel)
+        val serializerFn = when (tsFormat) {
+            TimestampFormatTrait.Format.EPOCH_SECONDS -> "rawEntry"
+            else -> "entry"
         }
 
         val encoding = formatInstant("it", tsFormat, forceString = true)
-
-        val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> $serializerFn($keyName, $encoding) }")
@@ -398,7 +426,15 @@ class SerializeStructGenerator2(
         }
     }
 
-    private fun renderBlobElement(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+    /**
+     * Render a blob element of a list.  Example:
+     *
+     * ```
+     * for (c0 in input.fooBlobList) {
+     *      serializeString(c0.encodeBase64String())
+     * }
+     */
+    private fun renderBlobElement(nestingLevel: Int, listMemberName: String) {
         importBase64Utils(writer)
         val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
@@ -408,6 +444,14 @@ class SerializeStructGenerator2(
         }
     }
 
+    /**
+     * Render a timestamp value of a list.  Example:
+     *
+     * ```
+     * for (c0 in input.payload) {
+     *      serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
+     * }
+     */
     private fun renderTimestampElement(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         importTimestampFormat(writer)
         val tsFormat = elementShape
@@ -433,20 +477,28 @@ class SerializeStructGenerator2(
         // TODO("Not yet implemented")
     }
 
-    private fun renderStructureShapeSerializer(memberShape: MemberShape) {
-        val (serializeFn, encoded) = serializerForStructureShape(memberShape, "it", SerializeLocation.Field)
-        val postfix = idempotencyTokenPostfix(memberShape)
-        writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
-    }
-
-    private fun renderPrimitiveShapeSerializer(memberShape: MemberShape) {
-        val (serializeFn, encoded) = serializerForPrimitiveShape(memberShape, "it", SerializeLocation.Field)
+    /**
+     * Render code to serialize a primitive or structure shape. Example:
+     *
+     * ```
+     * input.payload?.let { field(PAYLOAD_DESCRIPTOR, it) }
+     * ```
+     *
+     * @param memberShape [MemberShape] referencing the primitive type
+     */
+    private fun renderPrimitiveShapeSerializer2(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
+        val (serializeFn, encoded) = serializerNameFn(memberShape)
         // FIXME - this doesn't account for unboxed primitives
         val postfix = idempotencyTokenPostfix(memberShape)
 
         writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
     }
 
+    /**
+     * Return string to postfix to serializer for idempotency generation
+     * @param memberShape shape which would have the IdempotencyTokenTrait
+     * @return string intended for codegen output
+     */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
         if (memberShape.hasTrait(IdempotencyTokenTrait::class.java)) {
             " ?: field(${memberShape.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
@@ -456,12 +508,10 @@ class SerializeStructGenerator2(
 
     /**
      * Return the serializer function for a Structure or Union
+     * @param shape [Shape] to generate serializer
+     * @return SerializeInfo of field name and encoding
      */
-    private fun serializerForStructureShape(
-        shape: Shape,
-        identifier: String = "it",
-        serializeLocation: SerializeLocation
-    ): SerializeInfo {
+    private fun serializerForStructureShape(shape: Shape): SerializeInfo {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
         // the Smithy type hierarchy is private such that tighter type handling at the function level isn't possible
@@ -471,32 +521,21 @@ class SerializeStructGenerator2(
         val memberSerializerName = "${symbol.name}Serializer"
 
         // invoke the ctor of the serializer to delegate to and pass the value
-        val encoded = when (serializeLocation) {
-            SerializeLocation.Field -> "$memberSerializerName($identifier)"
-            SerializeLocation.Map -> "if ($identifier != null) $memberSerializerName($identifier) else null"
-        }
+        val encoded = "$memberSerializerName(it)"
 
-        return SerializeInfo(serializeLocation.serializerFn, encoded)
+        return SerializeInfo("field", encoded)
     }
 
     /**
      * get the serialization function and encoded value for the given [Shape], this only handles "primitive" types,
      * collections should be handled separately
      * @param shape The shape to be serialized
-     * @param identifier The name of the identifier to be passed to the serialization function
-     * @param serializeLocation The location being serialized to
      */
-    private fun serializerForPrimitiveShape(
-        shape: Shape,
-        identifier: String = "it",
-        serializeLocation: SerializeLocation
-    ): SerializeInfo {
+    private fun serializerForPrimitiveShape(shape: Shape): SerializeInfo {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
-
-        // our current generation of serializer interfaces unfortunately uses different names depending on whether
-        // you are serializing struct fields, list elements, map entries, etc.
-        var serializerFn = serializeLocation.serializerFn
+        val defaultIdentifier = "it"
+        var serializerFn = "field"
 
         val encoded = when (target.type) {
             ShapeType.BOOLEAN,
@@ -505,10 +544,10 @@ class SerializeStructGenerator2(
             ShapeType.INTEGER,
             ShapeType.LONG,
             ShapeType.FLOAT,
-            ShapeType.DOUBLE -> identifier
+            ShapeType.DOUBLE -> defaultIdentifier
             ShapeType.BLOB -> {
                 importBase64Utils(writer)
-                "$identifier.encodeBase64String()"
+                "$defaultIdentifier.encodeBase64String()"
             }
             ShapeType.TIMESTAMP -> {
                 importTimestampFormat(writer)
@@ -521,11 +560,11 @@ class SerializeStructGenerator2(
                     serializerFn = "raw${serializerFn.capitalize()}"
                 }
 
-                formatInstant(identifier, tsFormat, forceString = true)
+                formatInstant(defaultIdentifier, tsFormat, forceString = true)
             }
             ShapeType.STRING -> when {
-                target.hasTrait(EnumTrait::class.java) -> "$identifier.value"
-                else -> identifier
+                target.hasTrait(EnumTrait::class.java) -> "$defaultIdentifier.value"
+                else -> defaultIdentifier
             }
             else -> throw CodegenException("unknown serializer for member: $shape; target: $target")
         }
@@ -534,9 +573,28 @@ class SerializeStructGenerator2(
     }
 }
 
+/**
+ * If is member shape returns target, otherwise returns self.
+ * @param model for loading the target shape
+ */
 private fun Shape.targetOrSelf(model: Model) = when (this) {
         is MemberShape -> model.expectShape(this.target)
         else -> this
     }
 
+/**
+ * @return true if shape is a String with enum trait, false otherwise.
+ */
 private fun Shape.isEnum() = this.isStringShape && this.hasTrait(EnumTrait::class.java)
+
+/**
+ * Generate key and value names for iteration based on nesting level
+ * @param nestingLevel current level of nesting
+ * @return key and value as a pair of strings
+ */
+private fun keyValueNames(nestingLevel: Int): Pair<String, String> {
+    val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
+    val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+
+    return keyName to valueName
+}

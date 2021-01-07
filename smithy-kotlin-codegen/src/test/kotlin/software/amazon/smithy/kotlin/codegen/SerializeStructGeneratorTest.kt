@@ -260,7 +260,7 @@ class SerializeStructGeneratorTest {
         val op = ctx.expectShape("com.test#GetFoo")
 
         val contents = testRender(ctx.requestMembers(op)) { members, writer ->
-            SerializeStructGenerator(
+            SerializeStructGenerator2(
                 ctx.generationCtx,
                 members,
                 writer,
