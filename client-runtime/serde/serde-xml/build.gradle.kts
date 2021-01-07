@@ -15,10 +15,5 @@ kotlin {
                 implementation(project(":client-runtime:io"))
             }
         }
-        commonTest {
-            dependencies {
-                implementation(project(":client-runtime:testing"))
-            }
-        }
     }
 }

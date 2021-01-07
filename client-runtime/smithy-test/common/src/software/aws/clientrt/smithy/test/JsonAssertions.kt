@@ -4,9 +4,7 @@
  */
 package software.aws.clientrt.smithy.test
 
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonConfiguration
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.readAll
 import kotlin.test.assertEquals
@@ -14,11 +12,9 @@ import kotlin.test.assertEquals
 /**
  * Assert JSON strings for equality ignoring key order
  */
-@OptIn(UnstableDefault::class)
 fun assertJsonStringsEqual(expected: String, actual: String) {
-    val config = JsonConfiguration()
-    val expectedElement = Json(config).parseJson(expected)
-    val actualElement = Json(config).parseJson(actual)
+    val expectedElement = Json {}.parseToJsonElement(expected)
+    val actualElement = Json {}.parseToJsonElement(actual)
 
     assertEquals(expectedElement, actualElement, "expected JSON:\n\n$expected\n\nactual:\n\n$actual\n")
 }

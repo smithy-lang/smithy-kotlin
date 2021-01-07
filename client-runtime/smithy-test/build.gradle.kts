@@ -8,7 +8,11 @@ extra["displayName"] = "Smithy :: Kotlin :: Test"
 extra["moduleName"] = "software.aws.clientrt.smithy.test"
 
 val kotlinVersion: String by project
-val kotlinxSerializationVersion: String = "0.20.0"
+val kotlinxSerializationVersion: String = "1.0.1"
+
+repositories {
+    jcenter()
+}
 
 kotlin {
     sourceSets {
@@ -23,20 +27,18 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
 
                 // kotlinx-serialization::JsonElement allows comparing arbitrary JSON docs for equality
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
             }
         }
 
         jvmMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
             }
         }
 
         jsMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-js:$kotlinxSerializationVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test-js:$kotlinVersion")
             }
         }
