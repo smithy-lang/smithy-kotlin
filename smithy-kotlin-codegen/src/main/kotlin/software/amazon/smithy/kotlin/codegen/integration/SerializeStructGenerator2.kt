@@ -20,6 +20,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
@@ -137,6 +138,7 @@ class SerializeStructGenerator2(
      */
     private fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
+        val isSparse = mapShape.hasTrait(SparseTrait::class.java)
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -154,7 +156,7 @@ class SerializeStructGenerator2(
             ShapeType.LIST -> renderListEntry(rootMemberShape, mapShape, elementShape as ListShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape as StructureShape, nestingLevel, parentMemberName)
+            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape as StructureShape, nestingLevel, parentMemberName, isSparse)
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -164,6 +166,7 @@ class SerializeStructGenerator2(
      */
     private fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
+        val isSparse = listShape.hasTrait(SparseTrait::class.java)
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -175,7 +178,7 @@ class SerializeStructGenerator2(
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
-            ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.BLOB -> renderBlobElement(elementShape, nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampElement(elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST -> renderListElement(rootMemberShape, elementShape as ListShape, nestingLevel, parentMemberName)
@@ -206,13 +209,21 @@ class SerializeStructGenerator2(
         }
     }
 
-    private fun renderNestedStructureEntry(structureShape: StructureShape, nestingLevel: Int, parentMemberName: String) {
+    private fun renderNestedStructureEntry(
+        structureShape: StructureShape,
+        nestingLevel: Int,
+        parentMemberName: String,
+        isSparse: Boolean
+    ) {
         val serializerTypeName = "${structureShape.defaultName()}Serializer"
         val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
         val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
         val containerName = if (nestingLevel == 0) "input." else ""
 
-        writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $serializerTypeName($valueName)) }")
+        when (isSparse) {
+            true -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> if ($valueName != null) entry($keyName, $serializerTypeName($valueName)) else entry($keyName, null as String?) }")
+            false -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $serializerTypeName($valueName)) }")
+        }
     }
 
 
@@ -317,9 +328,10 @@ class SerializeStructGenerator2(
     private fun renderPrimitiveEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         val containerName = if (nestingLevel == 0) "input." else ""
         val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
+        val enumPostfix = if (elementShape.isEnum()) ".value" else ""
         val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
 
-        writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName) }")
+        writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName$enumPostfix) }")
     }
 
     private fun renderBlobEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
@@ -359,17 +371,30 @@ class SerializeStructGenerator2(
      * Example:
      * ```
      * for (m0 in input.payload) {
-     *  serializeInt(m0)
+     *    serializeInt(m0)
      * }
      * ```
      */
-    private fun renderPrimitiveElement(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+    private fun renderPrimitiveElement(
+        elementShape: Shape,
+        nestingLevel: Int,
+        listMemberName: String,
+        isSparse: Boolean
+    ) {
         val serializerFnName = elementShape.type.primitiveSerializerFunctionName()
-        val elementName = nestingLevel.nestedIdentifier()
+        val iteratorName = nestingLevel.nestedIdentifier()
+        val elementName = when(elementShape.isEnum()) {
+            true -> "${nestingLevel.nestedIdentifier()}.value"
+            false -> nestingLevel.nestedIdentifier()
+        }
+
         val containerName = if (nestingLevel == 0) "input." else ""
 
-        writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.write("$serializerFnName($elementName)")
+        writer.withBlock("for ($iteratorName in $containerName$listMemberName) {", "}") {
+            when (isSparse) {
+                true -> writer.write("if ($elementName != null) $serializerFnName($elementName) else serializeNull()")
+                false -> writer.write("$serializerFnName($elementName)")
+            }
         }
     }
 
@@ -405,7 +430,7 @@ class SerializeStructGenerator2(
     }
 
     private fun renderDocumentShapeSerializer(memberShape: MemberShape) {
-        TODO("Not yet implemented")
+        // TODO("Not yet implemented")
     }
 
     private fun renderStructureShapeSerializer(memberShape: MemberShape) {
@@ -513,3 +538,5 @@ private fun Shape.targetOrSelf(model: Model) = when (this) {
         is MemberShape -> model.expectShape(this.target)
         else -> this
     }
+
+private fun Shape.isEnum() = this.isStringShape && this.hasTrait(EnumTrait::class.java)

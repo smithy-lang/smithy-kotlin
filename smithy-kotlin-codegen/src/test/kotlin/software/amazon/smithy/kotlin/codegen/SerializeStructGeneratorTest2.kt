@@ -14,11 +14,9 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
 import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator2
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -27,7 +25,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import java.lang.RuntimeException
 
 class SerializeStructGeneratorTest2 {
     private val modelPrefix = """
@@ -157,6 +154,36 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (c0 in input.payload) {
                             serializeInt(c0)
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse list of a primitive type`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                payload: SparseIntList
+            }
+            
+            @sparse
+            list SparseIntList {
+                member: Integer
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (c0 in input.payload) {
+                            if (c0 != null) serializeInt(c0) else serializeNull()
                         }
                     }
                 }
@@ -348,6 +375,68 @@ class SerializeStructGeneratorTest2 {
     }
 
     @Test
+    fun `it serializes a structure containing a sparse map of a primitive value`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                payload: StringMap
+            }
+            
+            @sparse
+            map StringMap {
+                key: String,
+                value: String
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) -> entry(key, value) }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse map of a nested structure`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                payload: StringMap
+            }
+            
+            @sparse
+            map StringMap {
+                key: String,
+                value: FooStruct
+            }
+            
+            structure FooStruct {
+                fooValue: Integer
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) -> if (value != null) entry(key, FooStructSerializer(value)) else entry(key, null as String) }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a map of a list of primitive values`() {
         val model = (modelPrefix + """            
             structure FooRequest { 
@@ -493,7 +582,133 @@ class SerializeStructGeneratorTest2 {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    // TODO ~ map of lists, list of maps, etc.
+    @Test
+    fun `it serializes a structure containing an enum string`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                firstEnum: SimpleYesNo,
+                secondEnum: TypedYesNo
+            }
+            
+            @enum([{value: "YES"}, {value: "NO"}])
+            string SimpleYesNo
+
+            @enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
+            string TypedYesNo
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.firstEnum?.let { field(FIRSTENUM_DESCRIPTOR, it.value) }
+                input.secondEnum?.let { field(SECONDENUM_DESCRIPTOR, it.value) }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a list of enum strings`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                payload: EnumList               
+            }
+            
+            list EnumList {
+                member: SimpleYesNo
+            }
+            
+            @enum([{value: "YES"}, {value: "NO"}])
+            string SimpleYesNo
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (c0 in input.payload) {
+                            serializeString(c0.value)
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a map of enum string values`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                payload: EnumMap               
+            }
+            
+            map EnumMap {
+                key: String,
+                value: SimpleYesNo
+            }
+            
+            @enum([{value: "YES"}, {value: "NO"}])
+            string SimpleYesNo
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) -> entry(key, value.value) }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a blob`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                fooBlob: Blob
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.fooBlob?.let { field(FOOBLOB_DESCRIPTOR, it.encodeBase64String()) }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a timestamp`() {
+        val model = (modelPrefix + """            
+            structure FooRequest { 
+                fooTime: Timestamp
+            }
+        """).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.fooTime?.let { rawField(FOOTIME_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
 
     private fun getContentsForShape(model: Model, shapeId: String): String {
         val ctx = model.newTestContext()
