@@ -9,8 +9,11 @@ package software.amazon.smithy.kotlin.codegen
  */
 class ImportDeclarations {
 
-    fun addImport(packageName: String, symbolName: String, alias: String = symbolName) =
-        imports.add(ImportStatement(packageName, symbolName, alias))
+    fun addImport(packageName: String, symbolName: String, alias: String = "") {
+        val canonicalAlias = if (alias == symbolName) "" else alias
+        imports.add(ImportStatement(packageName, symbolName, canonicalAlias))
+    }
+
 
     override fun toString(): String {
         if (imports.isEmpty()) {
