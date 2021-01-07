@@ -17,6 +17,7 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
+import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator2
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex

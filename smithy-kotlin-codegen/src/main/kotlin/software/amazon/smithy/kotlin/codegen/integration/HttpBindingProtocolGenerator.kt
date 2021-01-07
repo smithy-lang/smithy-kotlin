@@ -237,7 +237,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     if (shape.isUnionShape) {
                         SerializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     } else {
-                        SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeStructGenerator2(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     }
                 }
             }
@@ -613,7 +613,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("val serializer = serializationContext.serializationProvider()")
             .call {
                 val renderForMembers = members.map { it.member }
-                SerializeStructGenerator(ctx, renderForMembers, writer, defaultTimestampFormat).render()
+                SerializeStructGenerator2(ctx, renderForMembers, writer, defaultTimestampFormat).render()
             }
             .write("")
             .write("builder.body = ByteArrayContent(serializer.toByteArray())")
