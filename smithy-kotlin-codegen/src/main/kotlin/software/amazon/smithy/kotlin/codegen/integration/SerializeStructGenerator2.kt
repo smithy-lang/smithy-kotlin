@@ -139,10 +139,8 @@ class SerializeStructGenerator2(
         val elementShape = ctx.model.expectShape(mapShape.value.target)
 
         when (elementShape.type) {
-            ShapeType.BLOB,
             ShapeType.BOOLEAN,
             ShapeType.STRING,
-            ShapeType.TIMESTAMP,
             ShapeType.BYTE,
             ShapeType.SHORT,
             ShapeType.INTEGER,
@@ -151,6 +149,8 @@ class SerializeStructGenerator2(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BLOB -> renderBlobEntry(elementShape, nestingLevel, parentMemberName)
+            ShapeType.TIMESTAMP -> renderTimestampEntry(elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST -> renderListEntry(rootMemberShape, mapShape, elementShape as ListShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
@@ -166,10 +166,8 @@ class SerializeStructGenerator2(
         val elementShape = ctx.model.expectShape(listShape.member.target)
 
         when (elementShape.type) {
-            ShapeType.BLOB,
             ShapeType.BOOLEAN,
             ShapeType.STRING,
-            ShapeType.TIMESTAMP,
             ShapeType.BYTE,
             ShapeType.SHORT,
             ShapeType.INTEGER,
@@ -178,6 +176,8 @@ class SerializeStructGenerator2(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BLOB -> renderBlobElement(elementShape, nestingLevel, parentMemberName)
+            ShapeType.TIMESTAMP -> renderTimestampElement(elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST -> renderListElement(rootMemberShape, elementShape as ListShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
@@ -315,13 +315,42 @@ class SerializeStructGenerator2(
     }
 
     private fun renderPrimitiveEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
-        val serializerFnName = elementShape.type.primitiveSerializerFunctionName()
-        val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
         val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
         val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
 
         writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName) }")
+    }
+
+    private fun renderBlobEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+        val containerName = if (nestingLevel == 0) "input." else ""
+        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
+        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+
+        writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.encodeBase64String()) }")
+    }
+
+    private fun renderTimestampEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+        importTimestampFormat(writer)
+        val tsFormat = elementShape
+            .getTrait(TimestampFormatTrait::class.java)
+            .map { it.format }
+            .orElse(defaultTimestampFormat)
+
+        val keyName = if (nestingLevel == 0) "key" else "key$nestingLevel"
+        val valueName = if (nestingLevel == 0) "value" else "value$nestingLevel"
+        val serializerFn = if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
+            "rawEntry"
+        } else {
+            "entry"
+        }
+
+        val encoding = formatInstant("it", tsFormat, forceString = true)
+
+        val elementName = nestingLevel.nestedIdentifier()
+        val containerName = if (nestingLevel == 0) "input." else ""
+
+        writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> $serializerFn($keyName, $encoding) }")
     }
 
     /**
@@ -341,6 +370,37 @@ class SerializeStructGenerator2(
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
             writer.write("$serializerFnName($elementName)")
+        }
+    }
+
+    private fun renderBlobElement(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+        importBase64Utils(writer)
+        val elementName = nestingLevel.nestedIdentifier()
+        val containerName = if (nestingLevel == 0) "input." else ""
+
+        writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
+            writer.write("serializeString($elementName.encodeBase64String())")
+        }
+    }
+
+    private fun renderTimestampElement(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
+        importTimestampFormat(writer)
+        val tsFormat = elementShape
+            .getTrait(TimestampFormatTrait::class.java)
+            .map { it.format }
+            .orElse(defaultTimestampFormat)
+
+        val serializerFn = when (tsFormat) {
+            TimestampFormatTrait.Format.EPOCH_SECONDS -> "serializeRaw"
+            else -> "serialize"
+        }
+
+        val elementName = nestingLevel.nestedIdentifier()
+        val containerName = if (nestingLevel == 0) "input." else ""
+        val encoding = formatInstant(elementName, tsFormat, forceString = true)
+
+        writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
+            writer.write("$serializerFn($encoding)")
         }
     }
 
