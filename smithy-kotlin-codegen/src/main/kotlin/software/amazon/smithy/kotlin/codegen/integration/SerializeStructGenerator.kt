@@ -71,7 +71,7 @@ class SerializeStructGenerator(
             ShapeType.SET -> renderListMemberSerializer(memberShape, targetShape as CollectionShape)
             ShapeType.MAP -> renderMapMemberSerializer(memberShape, targetShape as MapShape)
             ShapeType.STRUCTURE,
-            ShapeType.UNION -> renderPrimitiveShapeSerializer2(memberShape, ::serializerForStructureShape)
+            ShapeType.UNION -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
             ShapeType.DOCUMENT -> renderDocumentShapeSerializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
@@ -84,7 +84,7 @@ class SerializeStructGenerator(
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
-            ShapeType.BIG_INTEGER -> renderPrimitiveShapeSerializer2(memberShape, ::serializerForPrimitiveShape)
+            ShapeType.BIG_INTEGER -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }
@@ -484,7 +484,7 @@ class SerializeStructGenerator(
      *
      * @param memberShape [MemberShape] referencing the primitive type
      */
-    private fun renderPrimitiveShapeSerializer2(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
+    private fun renderPrimitiveShapeSerializer(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
         val (serializeFn, encoded) = serializerNameFn(memberShape)
         // FIXME - this doesn't account for unboxed primitives
         val postfix = idempotencyTokenPostfix(memberShape)
