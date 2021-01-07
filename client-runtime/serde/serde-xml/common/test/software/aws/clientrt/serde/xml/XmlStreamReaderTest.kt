@@ -81,6 +81,69 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun itHandlesDefaultNamespace() = runSuspendTest {
+        // language=XML
+        val actual = """<root xmlns="http://blah"><child/></root>""".allTokens()
+        actual.shouldContainExactly(
+            XmlToken.BeginElement(XmlToken.QualifiedName("root", "http://blah")),
+            XmlToken.BeginElement(XmlToken.QualifiedName("child", "http://blah")),
+            XmlToken.EndElement(XmlToken.QualifiedName("child", "http://blah")),
+            XmlToken.EndElement(XmlToken.QualifiedName("root", "http://blah")),
+            XmlToken.EndDocument
+        )
+    }
+
+    @Test
+    fun itHandlesBasicNamespacePrefixes() = runSuspendTest {
+        // language=XML
+        val actual = """<root xmlns="http://default" xmlns:pf="http://prefix" pf:attr="some attribute"/>""".allTokens()
+        actual.shouldContainExactly(
+            XmlToken.BeginElement(
+                XmlToken.QualifiedName("root", "http://default"),
+                attributes = mapOf(XmlToken.QualifiedName("attr", "http://prefix") to "some attribute")
+            ),
+            XmlToken.EndElement(XmlToken.QualifiedName("root", "http://default")),
+            XmlToken.EndDocument
+        )
+    }
+
+    @Test
+    fun itHandlesNamespaceScopes() = runSuspendTest {
+        // language=XML
+        val actual = """
+            <root xmlns="http://default" xmlns:pf="http://prefix" pf:attr="some attribute">
+                <child xmlns:ch="http://child1" ch:child1="whatever">
+                    <ch:subchild pf:attr="value"/> 
+                </child>
+                <child xmlns:ch="http://child2" ch:child2="whatever"/>
+            </root>
+            """.allTokens()
+        actual.shouldContainExactly(
+            XmlToken.BeginElement(
+                XmlToken.QualifiedName("root", "http://default"),
+                attributes = mapOf(XmlToken.QualifiedName("attr", "http://prefix") to "some attribute")
+            ),
+            XmlToken.BeginElement(
+                XmlToken.QualifiedName("child", "http://default"),
+                attributes = mapOf(XmlToken.QualifiedName("child1", "http://child1") to "whatever")
+            ),
+            XmlToken.BeginElement(
+                XmlToken.QualifiedName("subchild", "http://child1"),
+                attributes = mapOf(XmlToken.QualifiedName("attr", "http://prefix") to "value")
+            ),
+            XmlToken.EndElement(XmlToken.QualifiedName("subchild", "http://child1")),
+            XmlToken.EndElement(XmlToken.QualifiedName("child", "http://default")),
+            XmlToken.BeginElement(
+                XmlToken.QualifiedName("child", "http://default"),
+                attributes = mapOf(XmlToken.QualifiedName("child2", "http://child2") to "whatever")
+            ),
+            XmlToken.EndElement(XmlToken.QualifiedName("child", "http://default")),
+            XmlToken.EndElement(XmlToken.QualifiedName("root", "http://default")),
+            XmlToken.EndDocument
+        )
+    }
+
+    @Test
     fun kitchenSink() = runSuspendTest {
         // language=XML
         val actual = """

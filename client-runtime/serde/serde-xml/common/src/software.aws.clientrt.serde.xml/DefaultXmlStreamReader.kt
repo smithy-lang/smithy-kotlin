@@ -170,7 +170,7 @@ internal class DefaultXmlStreamReader(private val data: CharStream) : XmlStreamR
     private fun PrefixedName.toQualified(namespaces: Map<String, String>): XmlToken.QualifiedName {
         val namespace = namespacePrefix?.let {
             namespaces[it] ?: throw XmlGenerationException("Unknown namespace prefix $it")
-        }
+        } ?: namespaces[""] // Default namespace
         return XmlToken.QualifiedName(name, namespace)
     }
 
