@@ -17,7 +17,6 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
-import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator2
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -25,7 +24,6 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import java.lang.RuntimeException
 
 class SerializeStructGeneratorTest {
     private val defaultModel: Model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
@@ -98,31 +96,31 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.blobList != null) {
                     listField(BLOBLIST_DESCRIPTOR) {
-                        for(m0 in input.blobList) {
-                            serializeString(m0.encodeBase64String())
+                        for (c0 in input.blobList) {
+                            serializeString(c0.encodeBase64String())
                         }
                     }
                 }
                 if (input.enumList != null) {
                     listField(ENUMLIST_DESCRIPTOR) {
-                        for(m0 in input.enumList) {
-                            serializeString(m0.value)
+                        for (c0 in input.enumList) {
+                            serializeString(c0.value)
                         }
                     }
                 }
                 if (input.intList != null) {
                     listField(INTLIST_DESCRIPTOR) {
-                        for(m0 in input.intList) {
-                            serializeInt(m0)
+                        for (c0 in input.intList) {
+                            serializeInt(c0)
                         }
                     }
                 }
                 if (input.nestedIntList != null) {
                     listField(NESTEDINTLIST_DESCRIPTOR) {
-                        for(m0 in input.nestedIntList) {
+                        for (c0 in input.nestedIntList) {
                             serializer.serializeList(NESTEDINTLIST_C0_DESCRIPTOR) {
-                                for(m1 in m0) {
-                                    serializeInt(m1)
+                                for (c1 in c0) {
+                                    serializeInt(c1)
                                 }
                             }
                         }
@@ -130,19 +128,17 @@ class SerializeStructGeneratorTest {
                 }
                 if (input.nestedMapList != null) {
                     listField(NESTEDMAPLIST_DESCRIPTOR) {
-                        for(m0 in input.nestedMapList) {
-                            if (m0 != null) {
-                                mapField(NESTEDMAPLIST_C0_DESCRIPTOR) {
-                                    m0.forEach { (key, value) -> entry(key, value) }
-                                }
+                        for (c0 in input.nestedMapList) {
+                            serializer.serializeMap(NESTEDMAPLIST_C0_DESCRIPTOR) {
+                                c0.forEach { (key1, value1) -> entry(key1, value1) }
                             }
                         }
                     }
                 }
                 if (input.structList != null) {
                     listField(STRUCTLIST_DESCRIPTOR) {
-                        for(m0 in input.structList) {
-                            serializeSdkSerializable(NestedSerializer(m0))
+                        for (c0 in input.structList) {
+                            serializeSdkSerializable(NestedSerializer(c0))
                         }
                     }
                 }
@@ -176,8 +172,8 @@ class SerializeStructGeneratorTest {
                 if (input.mapOfLists != null) {
                     mapField(MAPOFLISTS_DESCRIPTOR) {
                         input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
-                            for(m1 in value ?: emptyList()) {
-                                serializeInt(m1)
+                            for (c1 in value) {
+                                serializeInt(c1)
                             }
                         }}
                     }
@@ -185,17 +181,13 @@ class SerializeStructGeneratorTest {
                 if (input.nestedMap != null) {
                     mapField(NESTEDMAP_DESCRIPTOR) {
                         input.nestedMap.forEach { (key, value) -> mapEntry(key, NESTEDMAP_C0_DESCRIPTOR) {
-                            if (key != null) {
-                                mapField(KEY_DESCRIPTOR) {
-                                    key.forEach { (key, value) -> entry(key, value) }
-                                }
-                            }
+                            value.forEach { (key1, value1) -> entry(key1, value1) }
                         }}
                     }
                 }
                 if (input.structMap != null) {
                     mapField(STRUCTMAP_DESCRIPTOR) {
-                        input.structMap.forEach { (key, value) -> entry(key, if (value != null) ReachableOnlyThroughMapSerializer(value) else null) }
+                        input.structMap.forEach { (key, value) -> entry(key, ReachableOnlyThroughMapSerializer(value)) }
                     }
                 }
             }
@@ -221,8 +213,8 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.sparseIntList != null) {
                     listField(SPARSEINTLIST_DESCRIPTOR) {
-                        for(m0 in input.sparseIntList) {
-                            if (m0 != null) serializeInt(m0) else serializeNull()
+                        for (c0 in input.sparseIntList) {
+                            if (c0 != null) serializeInt(c0) else serializeNull()
                         }
                     }
                 }
@@ -260,7 +252,7 @@ class SerializeStructGeneratorTest {
         val op = ctx.expectShape("com.test#GetFoo")
 
         val contents = testRender(ctx.requestMembers(op)) { members, writer ->
-            SerializeStructGenerator2(
+            SerializeStructGenerator(
                 ctx.generationCtx,
                 members,
                 writer,

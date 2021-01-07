@@ -221,4 +221,12 @@ class SerializeUnionGenerator(
             }
         }
     }
+
+    private enum class SerializeLocation(val serializerFn: String) {
+        // class/struct field
+        Field("field"),
+
+        // Map value
+        Map("entry")
+    }
 }

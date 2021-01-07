@@ -12,12 +12,15 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator2
+import software.amazon.smithy.kotlin.codegen.asSmithyModel
+import software.amazon.smithy.kotlin.codegen.newTestContext
+import software.amazon.smithy.kotlin.codegen.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.testRender
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -843,7 +846,7 @@ class SerializeStructGeneratorTest2 {
         }
 
         return testRender(testMembers) { members, writer ->
-            SerializeStructGenerator2(
+            SerializeStructGenerator(
                 ctx.generationCtx,
                 members,
                 writer,
