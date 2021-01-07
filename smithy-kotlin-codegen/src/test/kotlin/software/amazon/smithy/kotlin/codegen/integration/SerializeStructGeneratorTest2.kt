@@ -53,11 +53,13 @@ class SerializeStructGeneratorTest2 {
     @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
     // TODO ~ Support BigInteger and BigDecimal Types
     fun `it serializes a structure with a simple fields`(memberType: String) {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: $memberType
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -72,11 +74,13 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure with a timestamp field`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: Timestamp
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -91,7 +95,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure with a list of timestamp values`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: TimestampList
             }
@@ -99,7 +104,8 @@ class SerializeStructGeneratorTest2 {
             list TimestampList {
                 member: Timestamp
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -122,7 +128,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure with containing a structure`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: NestedStructure
             }
@@ -130,7 +137,8 @@ class SerializeStructGeneratorTest2 {
             structure NestedStructure {
                 nestedPayload: String
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -145,7 +153,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a union of primitives`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: UnionStructure
             }
@@ -155,7 +164,8 @@ class SerializeStructGeneratorTest2 {
                     stringValue: String,
                     booleanValue: Boolean
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -170,7 +180,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a list of a primitive type`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: IntList
             }
@@ -178,7 +189,8 @@ class SerializeStructGeneratorTest2 {
             list IntList {
                 member: Integer
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -199,7 +211,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a sparse list of a primitive type`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: SparseIntList
             }
@@ -208,7 +221,8 @@ class SerializeStructGeneratorTest2 {
             list SparseIntList {
                 member: Integer
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -229,7 +243,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a list of a nested list of a primitive type`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringList
             }
@@ -241,7 +256,8 @@ class SerializeStructGeneratorTest2 {
             list StringList2 {
                 member: String
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -266,7 +282,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a list of a nested structure containing a primitive type`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringList
             }
@@ -278,7 +295,8 @@ class SerializeStructGeneratorTest2 {
             structure NestedStructure {
                 member: String
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -299,7 +317,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a list of a nested list of a nested list of a primitive type`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: BooleanList
             }
@@ -315,7 +334,8 @@ class SerializeStructGeneratorTest2 {
             list BooleanList3 {
                 member: Boolean
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -344,7 +364,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a list of a map of primitive values`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: ListOfBooleanMap
             }
@@ -357,7 +378,8 @@ class SerializeStructGeneratorTest2 {
                 key: String,
                 value: Boolean
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -380,7 +402,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of a primitive value`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringMap
             }
@@ -389,7 +412,8 @@ class SerializeStructGeneratorTest2 {
                 key: String,
                 value: String
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -408,7 +432,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a sparse map of a primitive value`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringMap
             }
@@ -418,7 +443,8 @@ class SerializeStructGeneratorTest2 {
                 key: String,
                 value: String
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -437,7 +463,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a sparse map of a nested structure`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringMap
             }
@@ -451,7 +478,8 @@ class SerializeStructGeneratorTest2 {
             structure FooStruct {
                 fooValue: Integer
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -470,7 +498,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of a list of primitive values`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringMap
             }
@@ -483,7 +512,8 @@ class SerializeStructGeneratorTest2 {
             list StringList {
                 member: String
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -506,7 +536,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of a list of a map of primitive values`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: ListOfMapMap
             }
@@ -524,7 +555,8 @@ class SerializeStructGeneratorTest2 {
                 key: String,
                 value: Boolean
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -549,7 +581,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of a value structure containing a primitive type`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringMap
             }
@@ -562,7 +595,8 @@ class SerializeStructGeneratorTest2 {
             structure FooStructure {
                 nestedPayload: String
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -581,7 +615,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of a map of a primitive value`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringMap
             }
@@ -595,7 +630,8 @@ class SerializeStructGeneratorTest2 {
                 key: String,
                 value: Integer
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -616,7 +652,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing an enum string`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 firstEnum: SimpleYesNo,
                 secondEnum: TypedYesNo
@@ -627,7 +664,8 @@ class SerializeStructGeneratorTest2 {
 
             @enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
             string TypedYesNo
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -643,7 +681,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a list of enum strings`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: EnumList               
             }
@@ -654,7 +693,8 @@ class SerializeStructGeneratorTest2 {
             
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -675,7 +715,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of enum string values`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 payload: EnumMap               
             }
@@ -687,7 +728,8 @@ class SerializeStructGeneratorTest2 {
             
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -706,11 +748,13 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a blob`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 fooBlob: Blob
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -725,7 +769,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of value type blob`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 fooBlobMap: BlobMap
             }
@@ -734,7 +779,8 @@ class SerializeStructGeneratorTest2 {
                 key: String,
                 value: Blob
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -753,7 +799,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a list of value type blob`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 fooBlobList: BlobList
             }
@@ -761,7 +808,8 @@ class SerializeStructGeneratorTest2 {
             list BlobList {                
                 member: Blob
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -782,11 +830,13 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a timestamp`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 fooTime: Timestamp
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -801,7 +851,8 @@ class SerializeStructGeneratorTest2 {
 
     @Test
     fun `it serializes a structure containing a map of value type timestamp`() {
-        val model = (modelPrefix + """            
+        val model = (
+            modelPrefix + """            
             structure FooRequest { 
                 fooTimestampMap: TimestampMap
             }
@@ -810,7 +861,8 @@ class SerializeStructGeneratorTest2 {
                 key: String,
                 value: Timestamp
             }
-        """).asSmithyModel()
+        """
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {

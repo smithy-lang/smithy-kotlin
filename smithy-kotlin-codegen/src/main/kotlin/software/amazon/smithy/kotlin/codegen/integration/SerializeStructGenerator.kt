@@ -232,7 +232,6 @@ class SerializeStructGenerator(
         }
     }
 
-
     /**
      * Renders the serialization of a list element of type map.
      *
@@ -254,7 +253,6 @@ class SerializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
-
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
             writer.withBlock("serializer.serializeMap($descriptorName) {", "}") {
@@ -285,7 +283,7 @@ class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
 
-        writer.withBlock("$containerName${parentMemberName}.forEach { ($keyName, $valueName) -> mapEntry($keyName, $descriptorName) {", "}}") {
+        writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> mapEntry($keyName, $descriptorName) {", "}}") {
             delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, valueName)
         }
     }
@@ -309,7 +307,7 @@ class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
 
-        writer.withBlock("$containerName${parentMemberName}.forEach { ($keyName, $valueName) -> listEntry($keyName, $descriptorName) {", "}}") {
+        writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> listEntry($keyName, $descriptorName) {", "}}") {
             delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, valueName)
         }
     }
@@ -350,7 +348,7 @@ class SerializeStructGenerator(
         val enumPostfix = if (elementShape.isEnum()) ".value" else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
 
-        writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName$enumPostfix) }")
+        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName$enumPostfix) }")
     }
 
     /**
@@ -364,7 +362,7 @@ class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
 
-        writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.encodeBase64String()) }")
+        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName.encodeBase64String()) }")
     }
 
     /**
@@ -390,7 +388,7 @@ class SerializeStructGenerator(
         val encoding = formatInstant("it", tsFormat, forceString = true)
         val containerName = if (nestingLevel == 0) "input." else ""
 
-        writer.write("$containerName${listMemberName}.forEach { ($keyName, $valueName) -> $serializerFn($keyName, $encoding) }")
+        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> $serializerFn($keyName, $encoding) }")
     }
 
     /**
@@ -411,7 +409,7 @@ class SerializeStructGenerator(
     ) {
         val serializerFnName = elementShape.type.primitiveSerializerFunctionName()
         val iteratorName = nestingLevel.nestedIdentifier()
-        val elementName = when(elementShape.isEnum()) {
+        val elementName = when (elementShape.isEnum()) {
             true -> "${nestingLevel.nestedIdentifier()}.value"
             false -> nestingLevel.nestedIdentifier()
         }
@@ -515,7 +513,7 @@ class SerializeStructGenerator(
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
         // the Smithy type hierarchy is private such that tighter type handling at the function level isn't possible
-        require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $shape; target: $target"}
+        require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $shape; target: $target" }
 
         val symbol = ctx.symbolProvider.toSymbol(target)
         val memberSerializerName = "${symbol.name}Serializer"
@@ -578,9 +576,9 @@ class SerializeStructGenerator(
  * @param model for loading the target shape
  */
 private fun Shape.targetOrSelf(model: Model) = when (this) {
-        is MemberShape -> model.expectShape(this.target)
-        else -> this
-    }
+    is MemberShape -> model.expectShape(this.target)
+    else -> this
+}
 
 /**
  * @return true if shape is a String with enum trait, false otherwise.
