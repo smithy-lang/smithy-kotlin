@@ -12,27 +12,27 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
     // as numbers and user understands any truncation issues. `deserializeByte` is more common in binary
     // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
-    override fun deserializeByte(): Byte = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toInt().toByte() }
+    override suspend fun deserializeByte(): Byte = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toInt().toByte() }
 
-    override fun deserializeInt(): Int = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
+    override suspend fun deserializeInt(): Int = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
 
-    override fun deserializeShort(): Short = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toInt().toShort() }
+    override suspend fun deserializeShort(): Short = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toInt().toShort() }
 
-    override fun deserializeLong(): Long = nextNumberValue { it.toLongOrNull() ?: it.toDouble().toLong() }
+    override suspend fun deserializeLong(): Long = nextNumberValue { it.toLongOrNull() ?: it.toDouble().toLong() }
 
-    override fun deserializeFloat(): Float = deserializeDouble().toFloat()
+    override suspend fun deserializeFloat(): Float = deserializeDouble().toFloat()
 
-    override fun deserializeDouble(): Double = nextNumberValue { it.toDouble() }
+    override suspend fun deserializeDouble(): Double = nextNumberValue { it.toDouble() }
 
     // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
     // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
-    private fun <T> nextNumberValue(block: (value: String) -> T): T =
+    private suspend fun <T> nextNumberValue(block: (value: String) -> T): T =
         when (val token = reader.nextToken()) {
             is JsonToken.Number -> block(token.value)
             else -> throw DeserializationException("$token cannot be deserialized as type Number")
         }
 
-    override fun deserializeString(): String =
+    override suspend fun deserializeString(): String =
         // allow for tokens to be consumed as string even when the next token isn't a quoted string
         when (val token = reader.nextToken()) {
             is JsonToken.String -> token.value
@@ -41,17 +41,17 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> throw DeserializationException("$token cannot be deserialized as type String")
         }
 
-    override fun deserializeBool(): Boolean {
+    override suspend fun deserializeBool(): Boolean {
         val token = reader.nextTokenOf<JsonToken.Bool>()
         return token.value
     }
 
-    override fun deserializeNull(): Nothing? {
+    override suspend fun deserializeNull(): Nothing? {
         reader.nextTokenOf<JsonToken.Null>()
         return null
     }
 
-    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
+    override suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
         when (reader.peek()) {
             RawJsonToken.BeginObject -> {
                 reader.nextTokenOf<JsonToken.BeginObject>()
@@ -61,24 +61,24 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> throw DeserializerStateException("Unexpected token type ${reader.peek()}")
         }
 
-    override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
+    override suspend fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         reader.nextTokenOf<JsonToken.BeginArray>()
         return this
     }
 
-    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
+    override suspend fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
         reader.nextTokenOf<JsonToken.BeginObject>()
         return this
     }
 
-    override fun key(): String {
+    override suspend fun key(): String {
         val token = reader.nextTokenOf<JsonToken.Name>()
         return token.value
     }
 
-    override fun nextHasValue(): Boolean = reader.peek() != RawJsonToken.Null
+    override suspend fun nextHasValue(): Boolean = reader.peek() != RawJsonToken.Null
 
-    override fun hasNextEntry(): Boolean =
+    override suspend fun hasNextEntry(): Boolean =
         when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
@@ -90,7 +90,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> true
         }
 
-    override fun hasNextElement(): Boolean =
+    override suspend fun hasNextElement(): Boolean =
         when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
@@ -104,9 +104,9 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
 // Represents the deserialization of a null object.
 private class JsonNullFieldIterator(deserializer: Deserializer) : Deserializer.FieldIterator, Deserializer by deserializer {
-    override fun findNextFieldIndex(): Int? = null
+    override suspend fun findNextFieldIndex(): Int? = null
 
-    override fun skipValue() {
+    override suspend fun skipValue() {
         throw DeserializerStateException("This should not be called during deserialization.")
     }
 }
@@ -117,7 +117,7 @@ private class JsonFieldIterator(
     deserializer: Deserializer
 ) : Deserializer.FieldIterator, Deserializer by deserializer {
 
-    override fun findNextFieldIndex(): Int? {
+    override suspend fun findNextFieldIndex(): Int? {
         val candidate = when (reader.peek()) {
             RawJsonToken.EndObject -> {
                 // consume the token
@@ -149,14 +149,14 @@ private class JsonFieldIterator(
         return candidate
     }
 
-    override fun skipValue() {
+    override suspend fun skipValue() {
         // stream reader skips the *next* token
         reader.skipNext()
     }
 }
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
-private inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
+private suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
     val token = this.nextToken()
     requireToken<TExpected>(token)
     return token as TExpected

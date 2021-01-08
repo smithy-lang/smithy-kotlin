@@ -4,10 +4,11 @@
  */
 package software.aws.clientrt.serde.json
 
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-fun JsonStreamReader.allTokens(): List<JsonToken> {
+suspend fun JsonStreamReader.allTokens(): List<JsonToken> {
     val tokens = mutableListOf<JsonToken>()
     while (true) {
         val token = nextToken()
@@ -30,7 +31,7 @@ fun assertTokensAreEqual(expected: List<JsonToken>, actual: List<JsonToken>) {
 @OptIn(ExperimentalStdlibApi::class)
 class JsonStreamReaderTest {
     @Test
-    fun itDeserializesObjects() {
+    fun itDeserializesObjects() = runSuspendTest {
         val payload = """
             {
                 "x": 1,
@@ -52,7 +53,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun kitchenSink() {
+    fun kitchenSink() = runSuspendTest {
         val payload = """
         {
             "num": 1,
@@ -107,7 +108,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itSkipsValuesRecursively() {
+    fun itSkipsValuesRecursively() = runSuspendTest {
         val payload = """
         {
             "x": 1,
@@ -140,7 +141,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itSkipsSimpleValues() {
+    fun itSkipsSimpleValues() = runSuspendTest {
         val payload = """
         {
             "x": 1,

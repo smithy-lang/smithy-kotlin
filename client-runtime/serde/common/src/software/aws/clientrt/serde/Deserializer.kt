@@ -58,7 +58,7 @@ interface Deserializer : PrimitiveDeserializer {
      *
      * @param descriptor SdkObjectDescriptor the structure descriptor
      */
-    fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
+    suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
 
     /**
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
@@ -66,7 +66,7 @@ interface Deserializer : PrimitiveDeserializer {
      *
      * @param descriptor SdkFieldDescriptor the structure descriptor
      */
-    fun deserializeList(descriptor: SdkFieldDescriptor): ElementIterator
+    suspend fun deserializeList(descriptor: SdkFieldDescriptor): ElementIterator
 
     /**
      * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
@@ -74,7 +74,7 @@ interface Deserializer : PrimitiveDeserializer {
      *
      * @param descriptor SdkFieldDescriptor the structure descriptor
      */
-    fun deserializeMap(descriptor: SdkFieldDescriptor): EntryIterator
+    suspend fun deserializeMap(descriptor: SdkFieldDescriptor): EntryIterator
 
     /**
      * Iterator over raw elements in a collection
@@ -84,7 +84,7 @@ interface Deserializer : PrimitiveDeserializer {
          * Advance to the next element. Returns false when no more elements are in the list
          * or the document has been read completely.
          */
-        fun hasNextElement(): Boolean
+        suspend fun hasNextElement(): Boolean
     }
 
     /**
@@ -95,12 +95,12 @@ interface Deserializer : PrimitiveDeserializer {
          * Advance to the next element. Returns false when no more elements are in the map
          * or the document has been read completely.
          */
-        fun hasNextEntry(): Boolean
+        suspend fun hasNextEntry(): Boolean
 
         /**
          * Read the next key
          */
-        fun key(): String
+        suspend fun key(): String
     }
 
     /**
@@ -110,12 +110,12 @@ interface Deserializer : PrimitiveDeserializer {
         /**
          * Returns the index of the next field found, null if fields exhausted, or [UNKNOWN_FIELD].
          */
-        fun findNextFieldIndex(): Int?
+        suspend fun findNextFieldIndex(): Int?
 
         /**
          * Skip the next field value recursively. Meant for discarding unknown fields
          */
-        fun skipValue()
+        suspend fun skipValue()
 
         companion object {
             /**
@@ -133,65 +133,65 @@ interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [Byte]
      */
-    fun deserializeByte(): Byte
+    suspend fun deserializeByte(): Byte
 
     /**
      * Deserialize and return the next token as an [Int]
      */
-    fun deserializeInt(): Int
+    suspend fun deserializeInt(): Int
 
     /**
      * Deserialize and return the next token as a [Short]
      */
-    fun deserializeShort(): Short
+    suspend fun deserializeShort(): Short
 
     /**
      * Deserialize and return the next token as a [Long]
      */
-    fun deserializeLong(): Long
+    suspend fun deserializeLong(): Long
 
     /**
      * Deserialize and return the next token as a [Float]
      */
-    fun deserializeFloat(): Float
+    suspend fun deserializeFloat(): Float
 
     /**
      * Deserialize and return the next token as a [Double]
      */
-    fun deserializeDouble(): Double
+    suspend fun deserializeDouble(): Double
 
     /**
      * Deserialize and return the next token as a [String]
      */
-    fun deserializeString(): String
+    suspend fun deserializeString(): String
 
     /**
      * Deserialize and return the next token as a [Boolean]
      */
-    fun deserializeBool(): Boolean
+    suspend fun deserializeBool(): Boolean
 
     /**
      * Consume the next token if represents a null value. Always returns null.
      */
-    fun deserializeNull(): Nothing?
+    suspend fun deserializeNull(): Nothing?
 
     /**
      * Returns true if the next token contains a value, or false otherwise.
      */
-    fun nextHasValue(): Boolean
+    suspend fun nextHasValue(): Boolean
 }
 
-fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
+suspend fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: suspend Deserializer.FieldIterator.() -> Unit) {
     val deserializer = deserializeStruct(descriptor)
     block(deserializer)
 }
 
-fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: Deserializer.ElementIterator.() -> T): T {
+suspend fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: suspend Deserializer.ElementIterator.() -> T): T {
     val deserializer = deserializeList(descriptor)
     return block(deserializer)
 }
 
-fun <T> Deserializer.deserializeMap(descriptor: SdkFieldDescriptor, block: Deserializer.EntryIterator.() -> T): T {
+suspend fun <T> Deserializer.deserializeMap(descriptor: SdkFieldDescriptor, block: suspend Deserializer.EntryIterator.() -> T): T {
     val deserializer = deserializeMap(descriptor)
     return block(deserializer)
 }

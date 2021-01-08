@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.serde.xml
 
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -12,7 +13,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
-    fun itDeserializesXml() {
+    fun itDeserializesXml() = runSuspendTest {
         val payload = """<root><x>1</x><y>2</y></root>""".trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
@@ -31,7 +32,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesXmlWithAttributes() {
+    fun itDeserializesXmlWithAttributes() = runSuspendTest {
         val payload = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>""".trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
@@ -52,13 +53,13 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun garbageInGarbageOut() {
+    fun garbageInGarbageOut() = runSuspendTest {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
         assertFailsWith(XmlGenerationException::class) { xmlStreamReader(payload).allTokens() }
     }
 
     @Test
-    fun itHandlesNilNodeValues() {
+    fun itHandlesNilNodeValues() = runSuspendTest {
         val payload = """<null xsi:nil="true"></null>""".encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
         val expected = listOf(
@@ -71,7 +72,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun kitchenSink() {
+    fun kitchenSink() = runSuspendTest {
         val payload = """
         <root>
           <num>1</num>    
@@ -139,7 +140,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itSkipsValuesRecursively() {
+    fun itSkipsValuesRecursively() = runSuspendTest {
         val payload = """
             <payload><x>1></x><unknown><a>a</a><b>b</b><c><list><element>d</element><element>e</element><element>f</element></list></c><g><h>h</h><i>i</i></g></unknown><y>2></y></payload>
         """.trimIndent().encodeToByteArray()
@@ -163,7 +164,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itSkipsSimpleValues() {
+    fun itSkipsSimpleValues() = runSuspendTest {
         val payload = """<payload><x>1</x><z>unknown</z><y>2</y></payload>""".trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
         // skip x
@@ -184,7 +185,7 @@ class XmlStreamReaderTest {
     }
 }
 
-fun XmlStreamReader.allTokens(): List<XmlToken> {
+suspend fun XmlStreamReader.allTokens(): List<XmlToken> {
     val tokens = mutableListOf<XmlToken>()
     while (true) {
         val token = nextToken()
