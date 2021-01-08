@@ -52,17 +52,6 @@ fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
     return this
 }
 
-/**
- * Handles preserving existing text on section when writing new text.
- */
-fun <T : CodeWriter> T.appendToSection(sectionName: String, block: T.() -> Unit): T {
-    onSection(sectionName) { previousText ->
-        write(previousText)
-        block(this)
-    }
-    return this
-}
-
 // Convenience function to create symbol and add it as an import.
 fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDependency.CLIENT_RT_CORE, namespace: String = dependency.namespace) {
     val importSymbol = Symbol.builder()
@@ -71,21 +60,7 @@ fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDe
         .addDependency(dependency)
         .build()
 
-    addImport(importSymbol, "", SymbolReference.ContextOption.DECLARE)
-}
-
-// Add one or more blank lines to the writer.
-fun CodeWriter.blankLine(count: Int = 1) {
-    repeat(count) { write("") }
-}
-
-// Used for sections, deals with delimiter occurring within set but not trailing or leading.
-fun CodeWriter.appendWithDelimiter(previousText: Any?, text: String, delimiter: String = ", ") {
-    when {
-        previousText !is String -> error("Unexpected type ${previousText?.javaClass?.canonicalName ?: "[UNKNOWN]"}")
-        previousText.isEmpty() -> write(text)
-        else -> write("$previousText$delimiter$text")
-    }
+    addImport(importSymbol)
 }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
@@ -102,12 +77,12 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
     private val imports = ImportDeclarations()
 
-    fun addImport(symbol: Symbol, alias: String = "", vararg options: SymbolReference.Option) {
+    fun addImport(symbol: Symbol, alias: String = symbol.name) {
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
 
         // only add imports for symbols in a different namespace
-        if (!symbol.namespace.isEmpty() && symbol.namespace != fullPackageName) {
+        if (symbol.namespace.isNotEmpty() && symbol.namespace != fullPackageName) {
             imports.addImport(symbol.namespace, symbol.name, alias)
         }
     }
@@ -116,7 +91,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         symbol.references.forEach { reference ->
             for (option in options) {
                 if (reference.hasOption(option)) {
-                    addImport(reference.symbol, reference.alias, *options)
+                    addImport(reference.symbol, reference.alias)
                     break
                 }
             }
@@ -126,7 +101,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     /**
      * Directly add an import
      */
-    fun addImport(packageName: String, symbolName: String, alias: String = "") = imports.addImport(packageName, symbolName, alias)
+    fun addImport(packageName: String, symbolName: String, alias: String = symbolName) = imports.addImport(packageName, symbolName, alias)
 
     override fun toString(): String {
         val contents = super.toString()

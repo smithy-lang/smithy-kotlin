@@ -251,8 +251,8 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             if (input.intList != null) {
                 listField(INTLIST_DESCRIPTOR) {
-                    for(m0 in input.intList) {
-                        serializeInt(m0)
+                    for (c0 in input.intList) {
+                        serializeInt(c0)
                     }
                 }
             }
@@ -266,7 +266,7 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.Nested4")
     }
 
@@ -578,8 +578,8 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
             input.normal?.let { rawField(NORMAL_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
             if (input.timestampList != null) {
                 listField(TIMESTAMPLIST_DESCRIPTOR) {
-                    for(m0 in input.timestampList) {
-                        serializeRaw(m0.format(TimestampFormat.EPOCH_SECONDS))
+                    for (c0 in input.timestampList) {
+                        serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
                     }
                 }
             }
@@ -856,8 +856,8 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
             if (input.mapOfLists != null) {
                 mapField(MAPOFLISTS_DESCRIPTOR) {
                     input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
-                        for(m1 in value ?: emptyList()) {
-                            serializeInt(m1)
+                        for (c1 in value) {
+                            serializeInt(c1)
                         }
                     }}
                 }

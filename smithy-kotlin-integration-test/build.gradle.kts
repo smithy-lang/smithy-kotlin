@@ -11,6 +11,7 @@ extra["moduleName"] = "software.amazon.smithy.kotlin.integration.test"
 
 val smithyVersion: String by project
 val kotestVersion: String by project
+val kotlinVersion: String by project
 val junitVersion: String by project
 val kotlinCompileTestingVersion: String by project
 
@@ -20,6 +21,7 @@ dependencies {
     testImplementation(project(":client-runtime:client-rt-core"))
     testImplementation(project(":client-runtime:protocol:http"))
     testImplementation(project(":client-runtime:protocol:http-client-engines:http-client-engine-ktor"))
+    testImplementation(project(":client-runtime:serde:serde-json"))
 
     testImplementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     testImplementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
@@ -27,6 +29,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     testImplementation("com.github.tschuchortdev:kotlin-compile-testing:$kotlinCompileTestingVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
 tasks.test {
