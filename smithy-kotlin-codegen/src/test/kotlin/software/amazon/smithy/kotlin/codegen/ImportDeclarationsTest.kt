@@ -26,7 +26,7 @@ class ImportDeclarationsTest {
         val decls = ImportDeclarations()
 
         decls.addImport("com.test", "Foo")
-        decls.addImport("com.test", "Foo")
+        decls.addImport("com.test", "Foo", "Foo")
 
         val statements = decls.toString()
         val expected = "import com.test.Foo"

@@ -878,7 +878,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     when {
                         memberTarget.hasTrait(EnumTrait::class.java) -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
-                            writer.addImport(enumSymbol, "", SymbolReference.ContextOption.DECLARE)
+                            writer.addImport(enumSymbol)
                             writer.write(
                                 "builder.\$L = response.headers[\$S]?.let { \$L.fromValue(it) }",
                                 memberName,
@@ -934,7 +934,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             when {
                                 collectionMemberTarget.hasTrait(EnumTrait::class.java) -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
-                                    writer.addImport(enumSymbol, "", SymbolReference.ContextOption.DECLARE)
+                                    writer.addImport(enumSymbol)
                                     "${enumSymbol.name}.fromValue(it)"
                                 }
                                 collectionMemberTarget.hasTrait(MediaTypeTrait::class.java) -> {
