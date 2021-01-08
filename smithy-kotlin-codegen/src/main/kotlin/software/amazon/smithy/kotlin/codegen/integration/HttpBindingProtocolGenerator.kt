@@ -1100,14 +1100,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .call {
 
                 if (shape.isUnionShape) {
-                    writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
+                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
                         writer.write("var value: ${symbol.name}? = null")
                         DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                         writer.write("return value")
                     }
                         .closeBlock("}")
                 } else {
-                    writer.withBlock("fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
                         writer.write("val builder = ${symbol.name}.dslBuilder()")
                         DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                         writer.write("return builder.build()")

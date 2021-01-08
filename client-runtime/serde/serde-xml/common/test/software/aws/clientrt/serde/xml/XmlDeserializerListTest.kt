@@ -6,6 +6,7 @@ package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.collections.shouldContainExactly
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -19,7 +20,7 @@ class XmlDeserializerListTest {
             operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
-            fun deserialize(deserializer: Deserializer, OBJ_DESCRIPTOR: SdkObjectDescriptor, ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor): ListDeserializer {
+            suspend fun deserialize(deserializer: Deserializer, OBJ_DESCRIPTOR: SdkObjectDescriptor, ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor): ListDeserializer {
                 val builder = dslBuilder()
 
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -61,7 +62,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesLists() {
+    fun itHandlesLists() = runSuspendTest {
         val payload = """
             <object>
                 <list>
@@ -85,7 +86,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesFlatLists() {
+    fun itHandlesFlatLists() = runSuspendTest {
         val payload = """
             <object>
                 <element>1</element>
@@ -106,7 +107,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListOfObjects() {
+    fun itHandlesListOfObjects() = runSuspendTest {
         val payload = """
                <list>
                    <payload>
@@ -139,7 +140,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListOfObjectsWithStructsWithEmptyValues() {
+    fun itHandlesListOfObjectsWithStructsWithEmptyValues() = runSuspendTest {
         val payload = """
                <list>
                    <payload>
@@ -172,7 +173,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListOfObjectsWithEmptyValues() {
+    fun itHandlesListOfObjectsWithEmptyValues() = runSuspendTest {
         val payload = """
                <list>
                    <payload>
@@ -203,7 +204,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesEmptyLists() {
+    fun itHandlesEmptyLists() = runSuspendTest {
         val payload = """
                <list></list>
            """.encodeToByteArray()

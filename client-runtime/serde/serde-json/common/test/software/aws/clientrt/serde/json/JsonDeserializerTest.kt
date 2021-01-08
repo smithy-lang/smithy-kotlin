@@ -7,13 +7,14 @@ package software.aws.clientrt.serde.json
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.math.abs
 import kotlin.test.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonDeserializerTest {
     @Test
-    fun itHandlesDoubles() {
+    fun itHandlesDoubles() = runSuspendTest {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeDouble()
@@ -23,7 +24,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesFloats() {
+    fun itHandlesFloats() = runSuspendTest {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeFloat()
@@ -33,7 +34,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesInt() {
+    fun itHandlesInt() = runSuspendTest {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeInt()
@@ -42,7 +43,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesByteAsNumber() {
+    fun itHandlesByteAsNumber() = runSuspendTest {
         val payload = "1".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeByte()
@@ -51,7 +52,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesShort() {
+    fun itHandlesShort() = runSuspendTest {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeShort()
@@ -60,7 +61,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesLong() {
+    fun itHandlesLong() = runSuspendTest {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeLong()
@@ -69,7 +70,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesBool() {
+    fun itHandlesBool() = runSuspendTest {
         val payload = "true".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeBool()
@@ -78,7 +79,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesString() {
+    fun itHandlesString() = runSuspendTest {
         // allow deserializeString() to consume tokens other than JsonToken.String as raw string values
         // this supports custom deserialization (e.g. timestamps) of the raw value
         val tests = listOf(
@@ -98,7 +99,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesNull() {
+    fun itHandlesNull() = runSuspendTest {
         val payload = "null".encodeToByteArray()
         val stringDeserializer = JsonDeserializer(payload)
         stringDeserializer.deserializeNull()
@@ -108,7 +109,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesLists() {
+    fun itHandlesLists() = runSuspendTest {
         val payload = "[1,2,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
@@ -123,7 +124,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesSparseLists() {
+    fun itHandlesSparseLists() = runSuspendTest {
         val payload = "[1,null,3]".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
@@ -139,7 +140,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesMaps() {
+    fun itHandlesMaps() = runSuspendTest {
         val payload = """
             {
                 "key1": 1,
@@ -159,7 +160,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itChecksNullValuesOfNonSparseMaps() {
+    fun itChecksNullValuesOfNonSparseMaps() = runSuspendTest {
         val payload = """
             {
                 "key1": 1,
@@ -195,7 +196,7 @@ class JsonDeserializerTest {
                 field(Y_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): BasicStructTest {
+            suspend fun deserialize(deserializer: Deserializer): BasicStructTest {
                 val result = BasicStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -213,7 +214,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesBasicStructs() {
+    fun itHandlesBasicStructs() = runSuspendTest {
         val payload = """
         {
             "x": 1,
@@ -238,7 +239,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesListOfObjects() {
+    fun itHandlesListOfObjects() = runSuspendTest {
         val payload = """
         [
             {
@@ -267,7 +268,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itEnumeratesUnknownStructFields() {
+    fun itEnumeratesUnknownStructFields() = runSuspendTest {
         val payload = """
         {
             "x": 1,
@@ -304,7 +305,7 @@ class JsonDeserializerTest {
                 field(INT2_FIELD_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): Nested2 {
+            suspend fun deserialize(deserializer: Deserializer): Nested2 {
                 val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested2 = Nested2()
                 loop@ while (true) {
@@ -340,7 +341,7 @@ class JsonDeserializerTest {
                 field(BOOL2_FIELD_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): Nested {
+            suspend fun deserialize(deserializer: Deserializer): Nested {
                 val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested = Nested()
                 loop@ while (true) {
@@ -400,7 +401,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itHandlesKitchenSink() {
+    fun itHandlesKitchenSink() = runSuspendTest {
         val payload = """
         {
             "int": 1,
@@ -488,7 +489,7 @@ class JsonDeserializerTest {
     }
 
     @Test
-    fun itSkipsExplicitNulls() {
+    fun itSkipsExplicitNulls() = runSuspendTest {
         val payload = """
          {
              "x": 1,
