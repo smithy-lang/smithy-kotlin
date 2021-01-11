@@ -6,8 +6,8 @@ plugins {
     kotlin("jvm")
 }
 
-extra["displayName"] = "Smithy :: Kotlin :: Integration :: Test"
-extra["moduleName"] = "software.amazon.smithy.kotlin.integration.test"
+extra["displayName"] = "Smithy :: Kotlin :: Compile :: Test"
+extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 
 val smithyVersion: String by project
 val kotestVersion: String by project
