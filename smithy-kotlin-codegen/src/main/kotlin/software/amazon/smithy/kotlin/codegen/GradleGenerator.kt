@@ -25,7 +25,7 @@ fun writeGradleBuild(
 
     writer.withBlock("plugins {", "}\n") {
         if (settings.build.rootProject) {
-            write("kotlin(\"jvm\") version \"1.4.10\"")
+            write("kotlin(\"jvm\") version \$S", KOTLIN_VERSION)
         } else {
             write("kotlin(\"jvm\")")
         }
