@@ -32,7 +32,7 @@ include(":client-runtime:serde:serde-json")
 include(":client-runtime:serde:serde-xml")
 include(":client-runtime:serde:serde-test")
 
-include(":smithy-kotlin-integration-test")
+include(":compile-tests")
 
 include(":client-runtime:protocol:http-client-engines:http-client-engine-ktor")
 
