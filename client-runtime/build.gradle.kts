@@ -80,11 +80,6 @@ subprojects {
         }
     }
 
-    tasks.dokka {
-        outputFormat = "html"
-        outputDirectory = "$buildDir/kdoc"
-    }
-
     // TODO - define either a whitelist or blacklist of subprojects that should/should not be published
     apply(from = rootProject.file("gradle/publish.gradle"))
 }
