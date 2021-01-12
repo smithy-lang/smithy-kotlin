@@ -5,23 +5,49 @@
 package software.aws.clientrt.serde
 
 /**
- * A streaming view of a block of data that returns characters one at a time
+ * A stream of data that returns characters one [Char] at a time
  */
 interface CharStream {
+    /**
+     * Return the next [Char] in the stream, *without* 'consuming' it (i.e. [peek] should not alter
+     * the read position of the underlying stream)  suspending if necessary until one is available.
+     *
+     * @return the next [Char] or null if the stream is completed
+     */
     suspend fun peek(): Char?
+
+    /**
+     * Return and 'consume' the next [Char] in the stream, suspending if necessary until one is available.
+     *
+     * @return the next [Char] or null if the stream is completed
+     */
     suspend fun next(): Char?
 
     companion object {
-        fun fromByteArray(bytes: ByteArray) = object : CharStream {
-            private var position = 0
-            override suspend fun peek(): Char? = bytes.getOrNull(position)?.toChar()
-
-            override suspend fun next(): Char? = bytes.getOrNull(position++)?.toChar()
-        }
+        operator fun invoke(bytes: ByteArray): CharStream = ByteArrayBackedCharStream(bytes)
     }
 }
 
+internal class ByteArrayBackedCharStream(private val bytes: ByteArray) : CharStream {
+    private var position = 0
+    override suspend fun peek(): Char? = bytes.getOrNull(position)?.toChar()
+    override suspend fun next(): Char? = bytes.getOrNull(position++)?.toChar()
+}
+
+/**
+ * Consume and return the next [Char] in the underlying [CharStream] throwing an exception if null
+ *
+ * @see [CharStream.next]
+ */
 suspend fun CharStream.nextOrThrow(): Char = next() ?: throw IllegalStateException("Unexpected end of stream")
+
+/**
+ * Peek and return the next [Char] in the underlying [CharStream] throwing an exception if null.
+ *
+ * The returned [Char] is *not* consumed from the underlying [CharStream]
+ *
+ * @see [CharStream.peek]
+ */
 suspend fun CharStream.peekOrThrow(): Char = peek() ?: throw IllegalStateException("Unexpected end of stream")
 
 /**
@@ -50,12 +76,8 @@ suspend fun CharStream.consume(expected: Char, optional: Boolean = false) {
  *
  * The first character that matches the [exitPredicate] is left on the stream (ie. not consumed).
  */
-suspend fun CharStream.readUntil(exitPredicate: (Char) -> Boolean): String {
-    val buffer = StringBuilder()
-    while (true) {
-        if (exitPredicate(peekOrThrow())) {
-            return buffer.toString()
-        }
-        buffer.append(nextOrThrow())
+suspend fun CharStream.readUntil(exitPredicate: (Char) -> Boolean): String = buildString {
+    while (!exitPredicate(peekOrThrow())) {
+        append(nextOrThrow())
     }
 }

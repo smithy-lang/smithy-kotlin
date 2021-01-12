@@ -8,7 +8,7 @@ extra["displayName"] = "Smithy :: Kotlin :: Serde"
 extra["moduleName"] = "software.aws.clientrt.serde"
 
 
-subprojects {
+allprojects {
     kotlin {
         sourceSets {
             commonTest {
