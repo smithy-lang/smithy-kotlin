@@ -34,6 +34,7 @@ class CharStreamTest {
         sut.consume('h')
 
         assertFailsWith<IllegalStateException> { sut.consume('h') }
+        assertEquals("ello", sut.readAll())
     }
 
     @Test
@@ -43,6 +44,17 @@ class CharStreamTest {
         sut.consume("he")
 
         assertFailsWith<IllegalStateException> { sut.consume("he") }
+        assertEquals("llo", sut.readAll())
+    }
+
+    @Test
+    fun canReadUntilAPredicateIsHit() = runSuspendTest {
+        val sut = CharStream("hello world".encodeToByteArray())
+
+        val read = sut.readUntil { it.isWhitespace() }
+
+        assertEquals("hello", read)
+        assertEquals(" world", sut.readAll())
     }
 
     private suspend fun CharStream.readAll(): String = buildString {
