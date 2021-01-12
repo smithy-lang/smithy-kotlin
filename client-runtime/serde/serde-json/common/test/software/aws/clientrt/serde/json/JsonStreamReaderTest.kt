@@ -9,6 +9,7 @@ import software.aws.clientrt.serde.CharStream
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonStreamReaderTest {
@@ -179,6 +180,15 @@ class JsonStreamReaderTest {
     }
 
     @Test
+    fun garbageInAndGarbageOut() = runSuspendTest {
+        val notJson = "I'm no valid JSON"
+
+        assertFailsWith(JsonGenerationException::class) {
+            println(JsonStreamReader(notJson.toCharStream()).nextToken())
+        }
+    }
+
+    @Test
     fun kitchenSink() = runSuspendTest {
         val actual = """
         {
@@ -233,7 +243,7 @@ class JsonStreamReaderTest {
 }
 
 private suspend fun String.allTokens(): List<JsonToken> {
-    val reader = DefaultJsonStreamReader(this.toCharStream())
+    val reader = JsonStreamReader(this.toCharStream())
     val tokens = mutableListOf<JsonToken>()
     while (true) {
         val token = reader.nextToken()

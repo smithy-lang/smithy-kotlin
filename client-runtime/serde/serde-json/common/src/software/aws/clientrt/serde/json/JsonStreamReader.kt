@@ -26,7 +26,8 @@ interface JsonStreamReader {
     suspend fun peek(): RawJsonToken
 
     companion object {
-        internal operator fun invoke(payload: ByteArray): JsonStreamReader = DefaultJsonStreamReader(CharStream.fromByteArray(payload))
+        internal operator fun invoke(payload: ByteArray): JsonStreamReader = JsonStreamReader(CharStream(payload))
+        internal operator fun invoke(payload: CharStream): JsonStreamReader = DefaultJsonStreamReader(payload)
     }
 }
 
@@ -38,18 +39,26 @@ internal class DefaultJsonStreamReader(private val data: CharStream) : JsonStrea
         val raw = peek()
         peeked = null
 
-        return when (raw) {
-            RawJsonToken.BeginArray -> openStructure('[', RawJsonToken.BeginArray, JsonToken.BeginArray)
-            RawJsonToken.EndArray -> closeStructure(']', RawJsonToken.BeginArray, JsonToken.EndArray).moveToNextElement()
-            RawJsonToken.BeginObject -> openStructure('{', RawJsonToken.BeginObject, JsonToken.BeginObject)
-            RawJsonToken.EndObject -> closeStructure('}', RawJsonToken.BeginObject, JsonToken.EndObject).moveToNextElement()
-            RawJsonToken.Name -> readName()
-            RawJsonToken.EndDocument -> JsonToken.EndDocument
-            else -> readScalarValue(raw).moveToNextElement()
+        return try {
+            when (raw) {
+                RawJsonToken.BeginArray -> openStructure('[', RawJsonToken.BeginArray, JsonToken.BeginArray)
+                RawJsonToken.EndArray -> closeStructure(']', RawJsonToken.BeginArray, JsonToken.EndArray).moveToNextElement()
+                RawJsonToken.BeginObject -> openStructure('{', RawJsonToken.BeginObject, JsonToken.BeginObject)
+                RawJsonToken.EndObject -> closeStructure('}', RawJsonToken.BeginObject, JsonToken.EndObject).moveToNextElement()
+                RawJsonToken.Name -> readName()
+                RawJsonToken.EndDocument -> JsonToken.EndDocument
+                else -> readScalarValue(raw).moveToNextElement()
+            }
+        } catch (e: Exception) {
+            throw e.takeIf { it is JsonGenerationException } ?: JsonGenerationException(e)
         }
     }
 
-    override suspend fun peek(): RawJsonToken = peeked ?: doPeek()
+    override suspend fun peek(): RawJsonToken = peeked ?: try {
+        doPeek()
+    } catch (e: Exception) {
+        throw e.takeIf { it is JsonGenerationException } ?: JsonGenerationException(e)
+    }
 
     override suspend fun skipNext() {
         val startDepth = stack.size
@@ -71,7 +80,8 @@ internal class DefaultJsonStreamReader(private val data: CharStream) : JsonStrea
             't' -> RawJsonToken.Bool
             'f' -> RawJsonToken.Bool
             'n' -> RawJsonToken.Null
-            else -> RawJsonToken.Number
+            '-', in DIGITS -> RawJsonToken.Number
+            else -> throw IllegalStateException("Expected token $next")
         }.also {
             peeked = it
         }
@@ -128,7 +138,7 @@ internal class DefaultJsonStreamReader(private val data: CharStream) : JsonStrea
     }
 
     private suspend fun readDigits(appendable: Appendable) {
-        while(data.peek() in DIGITS) {
+        while (data.peek() in DIGITS) {
             appendable.append(data.nextOrThrow())
         }
     }
