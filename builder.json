@@ -1,0 +1,32 @@
+{
+    "name": "smithy-kotlin",
+    "packages": [],
+    "build_steps": [
+        "./gradlew assemble" 
+    ],
+    "test_steps": [
+        "./gradlew test allTests"
+    ],
+    "imports": [
+        "JDK8"
+    ],
+    "build_dir": "target/build",
+    "build_env": {
+        "JAVA_HOME": "{java_home}"
+    },
+    "test_env": {
+        "JAVA_HOME": "{java_home}"
+    },
+    "hosts": {
+        "ubuntu": {
+            "packages": [
+                "openjdk-8-jdk-headless"
+            ]
+        },
+        "debian": {
+            "packages": [
+                "openjdk-8-jdk-headless"
+            ]
+        }
+    }
+}
