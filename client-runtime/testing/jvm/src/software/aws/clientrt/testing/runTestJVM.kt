@@ -8,5 +8,4 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
 import kotlin.coroutines.CoroutineContext
 
-actual fun <T> runSuspendTest(context: CoroutineContext, block: suspend CoroutineScope.() -> T): T =
-    runBlocking { block(this) }
+actual fun runSuspendTest(context: CoroutineContext, block: suspend CoroutineScope.() -> Unit) = runBlocking { block(this) }
