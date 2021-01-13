@@ -67,6 +67,8 @@ fun String.asSmithyModel(sourceLocation: String? = null): Model {
 
 /**
  * Generate Smithy IDL from a model instance.
+ *
+ * NOTE: this is used for debugging / unit test generation, please don't remove.
  */
 fun Model.toSmithyIDL(): String {
     val builtInModelIds = setOf("smithy.test.smithy", "aws.auth.smithy", "aws.protocols.smithy", "aws.api.smithy")
@@ -100,7 +102,8 @@ fun Model.newTestContext(
     generator: ProtocolGenerator = MockHttpProtocolGenerator()
 ): TestContext {
     val manifest = MockManifest()
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, "test")
+    val serviceShapeName = serviceShapeId.split("#")[1]
+    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, "test", serviceShapeName)
     val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
     val delegator = KotlinDelegator(settings, this, manifest, provider)
 
@@ -116,12 +119,22 @@ fun Model.newTestContext(
     return TestContext(ctx, manifest, generator)
 }
 
-private fun Model.defaultSettings(): KotlinSettings =
+/**
+ * Generate a KotlinSettings instance from a model.
+ * @param moduleName name of module or "test" if unspecified
+ * @param moduleVersion version of module or "1.0.0" if unspecified
+ */
+internal fun Model.defaultSettings(
+    serviceName: String = "test#service",
+    moduleName: String = "test",
+    moduleVersion: String = "1.0.0"
+): KotlinSettings =
     KotlinSettings.from(
         this,
         Node.objectNodeBuilder()
-            .withMember("module", Node.from("test"))
-            .withMember("moduleVersion", Node.from("1.0.0"))
+            .withMember("service", Node.from(serviceName))
+            .withMember("module", Node.from(moduleName))
+            .withMember("moduleVersion", Node.from(moduleVersion))
             .build()
     )
 

@@ -68,8 +68,9 @@ fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name
  * @param model The smithy model to generate for
  * @param rootNamespace All symbols will be created under this namespace (package) or as a direct child of it.
  * e.g. `com.foo` would create symbols under the `com.foo` package or `com.foo.model` package, etc.
+ * @param sdkId name to use to represent client type.  e.g. an sdkId of "foo" would produce a client type "FooClient".
  */
-class SymbolVisitor(private val model: Model, private val rootNamespace: String = "") :
+class SymbolVisitor(private val model: Model, private val rootNamespace: String = "", private val sdkId: String) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
     private val logger = Logger.getLogger(javaClass.name)
@@ -313,11 +314,12 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun operationShape(shape: OperationShape?): Symbol {
-        return createSymbolBuilder(shape, "OperationTODO").build()
+        // The Kotlin SDK does not produce code explicitly based on Operations
+        error { "Unexpected codegen code path" }
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
-        val serviceName = shape.defaultName()
+        val serviceName = sdkId.clientName()
         return createSymbolBuilder(shape, "${serviceName}Client")
             .namespace(rootNamespace, ".")
             .definitionFile("${serviceName}Client.kt").build()
@@ -353,6 +355,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .namespace(namespace, ".")
     }
 }
+
+// See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
+fun String.clientName(): String =
+    split(" ").map { it.toLowerCase().capitalize() }.joinToString(separator = "") { it }
 
 /**
  * Mark a symbol as being boxed (nullable) i.e. `T?`

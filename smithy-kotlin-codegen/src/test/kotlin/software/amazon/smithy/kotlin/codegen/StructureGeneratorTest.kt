@@ -134,7 +134,7 @@ class StructureGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
@@ -146,7 +146,7 @@ class StructureGeneratorTest {
             .assemble()
             .unwrap()
 
-        val errorProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(errorModel, "error.test")
+        val errorProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(errorModel, "error.test", "Test")
         val errorWriter = KotlinWriter("com.error.test")
         val clientErrorGenerator = StructureGenerator(errorModel, errorProvider, errorWriter, clientErrorShape)
         clientErrorGenerator.render()
@@ -359,7 +359,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         StructureGenerator(model, provider, writer, struct).render()
 
@@ -455,7 +455,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
@@ -484,7 +484,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
@@ -568,7 +568,7 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = StructureGenerator(model, provider, writer, serverErrorShape)
 
@@ -597,7 +597,7 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
@@ -672,7 +672,7 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
         """.asSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
@@ -728,7 +728,7 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
         """.asSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()

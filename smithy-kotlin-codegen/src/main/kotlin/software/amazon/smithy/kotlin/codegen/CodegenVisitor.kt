@@ -52,7 +52,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         service = settings.getService(model)
         symbolProvider = integrations.fold(
-            KotlinCodegenPlugin.createSymbolProvider(model, settings.moduleName)
+            KotlinCodegenPlugin.createSymbolProvider(model, settings.moduleName, settings.sdkId)
         ) { provider, integration ->
             integration.decorateSymbolProvider(settings, model, provider)
         }
