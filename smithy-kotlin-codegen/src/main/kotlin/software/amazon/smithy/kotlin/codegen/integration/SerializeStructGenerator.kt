@@ -160,7 +160,7 @@ class SerializeStructGenerator(
             ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape as StructureShape, nestingLevel, parentMemberName, isSparse)
+            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -189,7 +189,7 @@ class SerializeStructGenerator(
             ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape as StructureShape, nestingLevel, parentMemberName)
+            ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -203,7 +203,7 @@ class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderNestedStructureElement(structureShape: StructureShape, nestingLevel: Int, parentMemberName: String) {
+    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
         val serializerTypeName = "${structureShape.defaultName()}Serializer"
         val elementName = nestingLevel.nestedIdentifier()
@@ -222,7 +222,7 @@ class SerializeStructGenerator(
      * ```
      */
     private fun renderNestedStructureEntry(
-        structureShape: StructureShape,
+        structureShape: Shape,
         nestingLevel: Int,
         parentMemberName: String,
         isSparse: Boolean

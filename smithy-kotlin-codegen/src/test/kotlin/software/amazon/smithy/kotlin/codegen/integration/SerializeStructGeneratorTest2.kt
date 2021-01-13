@@ -210,6 +210,43 @@ class SerializeStructGeneratorTest2 {
     }
 
     @Test
+    fun `it serializes a structure containing a list of a union of primitive type`() {
+        val model = (
+                modelPrefix + """            
+            structure FooRequest { 
+                payload: UnionList
+            }
+            
+            list UnionList {
+                member: FooUnion
+            }
+            
+            union FooUnion {
+                strval: String,
+                intval: Integer,
+                boolval: Boolean
+            }
+        """
+                ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (c0 in input.payload) {
+                            serializeSdkSerializable(FooUnionSerializer(c0))
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a sparse list of a primitive type`() {
         val model = (
             modelPrefix + """            
@@ -634,6 +671,42 @@ class SerializeStructGeneratorTest2 {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) -> entry(key, value) }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a map of a union of primitive values`() {
+        val model = (
+                modelPrefix + """            
+            structure FooRequest { 
+                payload: StringMap
+            }
+            
+            map StringMap {
+                key: String,
+                value: FooUnion
+            }
+            
+            union FooUnion {
+                strval: String,
+                intval: Integer,
+                boolval: Boolean
+            }
+        """
+                ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) -> entry(key, FooUnionSerializer(value)) }
                     }
                 }
             }

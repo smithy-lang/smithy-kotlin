@@ -25,6 +25,9 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
+/**
+ * TODO this class should be deleted, replaced by software.amazon.smithy.kotlin.codegen.integration.SerializeStructGeneratorTest2
+ */
 class SerializeStructGeneratorTest {
     private val defaultModel: Model = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
 
