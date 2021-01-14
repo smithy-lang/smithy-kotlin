@@ -36,7 +36,7 @@ class EnumGeneratorTest {
             
         """.asSmithyModel()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val shape = model.expectShape(ShapeId.from("com.test#Baz")).asStringShape().get()
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
@@ -118,7 +118,7 @@ sealed class Baz {
             
         """.asSmithyModel()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val shape = model.expectShape(ShapeId.from("com.test#Baz")).asStringShape().get()
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
@@ -208,7 +208,7 @@ sealed class Baz {
             .assemble()
             .unwrap()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
         EnumGenerator(shape, symbol, writer).render()
@@ -248,7 +248,7 @@ sealed class Baz {
             .assemble()
             .unwrap()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
         val ex = assertThrows<CodegenException> {

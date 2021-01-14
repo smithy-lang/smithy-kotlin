@@ -17,11 +17,14 @@ import java.util.Optional
 import java.util.logging.Logger
 import kotlin.streams.toList
 
+// shapeId of service from which to generate an SDK
 private const val SERVICE = "service"
 private const val MODULE_NAME = "module"
 private const val MODULE_DESCRIPTION = "moduleDescription"
 private const val MODULE_VERSION = "moduleVersion"
 private const val BUILD_SETTINGS = "build"
+// Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
+private const val SDK_ID = "sdkId"
 
 /**
  * Settings used by [KotlinCodegenPlugin]
@@ -31,9 +34,9 @@ class KotlinSettings(
     val moduleName: String,
     val moduleVersion: String,
     val moduleDescription: String = "",
+    val sdkId: String,
     val build: BuildSettings = BuildSettings.Default
 ) {
-
     /**
      * Get the corresponding [ServiceShape] from a model.
      * @return Returns the found `Service`
@@ -59,17 +62,19 @@ class KotlinSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): KotlinSettings {
-            config.warnIfAdditionalProperties(arrayListOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, BUILD_SETTINGS))
+            config.warnIfAdditionalProperties(listOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, BUILD_SETTINGS, SDK_ID))
 
-            val service = config.getStringMember(SERVICE)
+            val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
                 .orElseGet { inferService(model) }
 
             val moduleName = config.expectStringMember(MODULE_NAME).value
+            // Load the sdk id from configurations that define it, fall back to service name for those that don't.
+            val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
             val version = config.expectStringMember(MODULE_VERSION).value
             val desc = config.getStringMemberOrDefault(MODULE_DESCRIPTION, "$moduleName client")
             val build = config.getObjectMember(BUILD_SETTINGS)
-            return KotlinSettings(service, moduleName, version, desc, BuildSettings.fromNode(build))
+            return KotlinSettings(serviceId, moduleName, version, desc, sdkId, BuildSettings.fromNode(build))
         }
 
         // infer the service to generate from a model
@@ -130,7 +135,7 @@ data class BuildSettings(val rootProject: Boolean = false) {
         private const val ROOT_PROJECT = "rootProject"
         fun fromNode(node: Optional<ObjectNode>): BuildSettings {
             return if (node.isPresent) {
-                BuildSettings(node.get().getMember(BuildSettings.ROOT_PROJECT).get().asBooleanNode().get().value)
+                BuildSettings(node.get().getMember(ROOT_PROJECT).get().asBooleanNode().get().value)
             } else {
                 Default
             }

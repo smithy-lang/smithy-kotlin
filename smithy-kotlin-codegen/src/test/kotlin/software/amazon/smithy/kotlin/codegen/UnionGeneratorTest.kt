@@ -41,7 +41,7 @@ class UnionGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val generator = UnionGenerator(model, provider, writer, union)
         generator.render()

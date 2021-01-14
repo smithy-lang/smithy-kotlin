@@ -40,7 +40,7 @@ class ShapeValueGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyMap")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
         val writer = KotlinWriter("test")
 
@@ -77,7 +77,7 @@ mapOf<String, Int>(
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyList")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
         val writer = KotlinWriter("test")
 
@@ -146,7 +146,7 @@ listOf<String>(
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
 
         val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
         val writer = KotlinWriter("test")
@@ -237,7 +237,7 @@ MyStruct {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyUnion")
 
         val unionShape = model.expectShape(ShapeId.from("foo.bar#MyUnion"))
         val writer = KotlinWriter("test")
