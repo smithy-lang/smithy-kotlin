@@ -16,12 +16,36 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
 import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator
+import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator2
+import software.amazon.smithy.kotlin.codegen.integration.stripCodegenPrefix
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class SerializeUnionGeneratorTest {
+    private val modelPrefix = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                input: FooRequest
+            }        
+    """.trimIndent()
+
     private val defaultModel = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
 
     /**
@@ -47,13 +71,77 @@ class SerializeUnionGeneratorTest {
         }
 
         return testRender(testMembers) { members, writer ->
-            SerializeUnionGenerator(
+            SerializeUnionGenerator2(
                 ctx.generationCtx,
                 members,
                 writer,
                 TimestampFormatTrait.Format.EPOCH_SECONDS
             ).render()
         }
+    }
+
+    private fun getContentsForShape(model: Model, shapeId: String): String {
+        val ctx = model.newTestContext()
+
+        val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
+            is OperationShape -> {
+                val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
+                val requestBindings = bindingIndex.getRequestBindings(shape)
+                requestBindings.values
+                    .filter { it.location == HttpBinding.Location.DOCUMENT }
+                    .sortedBy { it.memberName }
+                    .map { it.member }
+            }
+            is StructureShape -> {
+                shape.members().toList()
+            }
+            else -> throw RuntimeException("unknown conversion for $shapeId")
+        }
+
+        return testRender(testMembers) { members, writer ->
+            SerializeUnionGenerator2(
+                ctx.generationCtx,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
+    }
+
+    @Test
+    fun `it serializes a structure containing a list of a primitive type`() {
+        val model = (
+                modelPrefix + """            
+            structure FooRequest { 
+                payload: FooUnion
+            }
+            
+            union FooUnion {
+                intListVal: IntList,
+                strVal: String
+            }
+            
+            list IntList {
+                member: Integer
+            }
+        """
+                ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (c0 in input.payload) {
+                            serializeInt(c0)
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -68,7 +156,7 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -96,6 +184,6 @@ serializer.serializeStruct(OBJ_DESCRIPTOR) {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 }
