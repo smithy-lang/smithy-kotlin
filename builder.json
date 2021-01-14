@@ -16,6 +16,9 @@
     "env": {
         "JAVA_HOME": "{java_home}"
     },
+    "downstream": [
+        { "name": "aws-sdk-kotlin" }    
+    ],
     "hosts": {
         "ubuntu": {
             "packages": [
