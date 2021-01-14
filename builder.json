@@ -1,7 +1,9 @@
 {
     "name": "smithy-kotlin",
+    "needs_compiler": false,
     "packages": [],
     "build_steps": [
+        "pwd",
         "./gradlew assemble" 
     ],
     "test_steps": [
@@ -11,10 +13,7 @@
         "JDK8"
     ],
     "build_dir": "target/build",
-    "build_env": {
-        "JAVA_HOME": "{java_home}"
-    },
-    "test_env": {
+    "env": {
         "JAVA_HOME": "{java_home}"
     },
     "hosts": {
