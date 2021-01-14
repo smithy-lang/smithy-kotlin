@@ -1185,7 +1185,7 @@ class SerializeStructGeneratorTest2 {
         }
 
         return testRender(testMembers) { members, writer ->
-            SerializeStructGenerator2(
+            SerializeStructGenerator(
                 ctx.generationCtx,
                 members,
                 writer,

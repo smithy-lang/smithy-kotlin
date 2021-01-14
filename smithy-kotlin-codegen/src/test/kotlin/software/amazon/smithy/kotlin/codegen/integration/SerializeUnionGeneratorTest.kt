@@ -21,7 +21,7 @@ import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-class SerializeUnionGeneratorTest2 {
+class SerializeUnionGeneratorTest {
     private val modelPrefix = """
             namespace com.test
 
@@ -58,7 +58,7 @@ class SerializeUnionGeneratorTest2 {
         }
 
         return testRender(testMembers) { members, writer ->
-            SerializeUnionGenerator3(
+            SerializeUnionGenerator(
                 ctx.generationCtx,
                 members,
                 writer,

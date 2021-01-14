@@ -235,9 +235,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
                    if (shape.isUnionShape) {
-                        SerializeUnionGenerator3(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     } else {
-                        SerializeStructGenerator2(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                     }
                 }
             }
