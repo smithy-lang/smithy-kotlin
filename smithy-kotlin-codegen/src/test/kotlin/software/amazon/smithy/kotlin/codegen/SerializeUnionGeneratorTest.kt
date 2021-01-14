@@ -16,10 +16,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.integration.SerializeStructGenerator
-import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator
-import software.amazon.smithy.kotlin.codegen.integration.SerializeUnionGenerator2
-import software.amazon.smithy.kotlin.codegen.integration.stripCodegenPrefix
+import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -71,7 +68,7 @@ class SerializeUnionGeneratorTest {
         }
 
         return testRender(testMembers) { members, writer ->
-            SerializeUnionGenerator2(
+            SerializeUnionGenerator3(
                 ctx.generationCtx,
                 members,
                 writer,
@@ -99,7 +96,7 @@ class SerializeUnionGeneratorTest {
         }
 
         return testRender(testMembers) { members, writer ->
-            SerializeUnionGenerator2(
+            SerializeUnionGenerator3(
                 ctx.generationCtx,
                 members,
                 writer,
@@ -139,7 +136,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }

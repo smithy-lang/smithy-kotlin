@@ -22,6 +22,7 @@ import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.utils.StringUtils
 
 /**
  * Generate serialization for members bound to the payload.
@@ -42,17 +43,33 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * }
  * ```
  */
-class SerializeStructGenerator(
+open class SerializeStructGenerator2(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: KotlinWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
 
+
+    open fun overrideParentName(defaultName: String) = defaultName
+    /**
+     * Returns the name to put in codegen to refer to the parent collection type.
+     */
+    /*open fun parentName(nestingLevel: Int): String {
+        val (_, valueName) = keyValueNames(nestingLevel)
+
+        return valueName
+    }*/
+
+    /**
+     * Returns the name passed to the constructor of a nested serializer.
+     */
+    open fun overrideValueToSerializeName(defaultName: String): String = defaultName
+
     /**
      * Iterate over all supplied [MemberShape]s to generate serializers.
      */
-    fun render() {
+    open fun render() {
         // inline an empty object descriptor when the struct has no members
         // otherwise use the one generated as part of the companion object
         val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
@@ -66,7 +83,7 @@ class SerializeStructGenerator(
     /**
      * Call appropriate serialization function based on target type of member shape.
      */
-    private fun renderMemberShape(memberShape: MemberShape) {
+    protected fun renderMemberShape(memberShape: MemberShape) {
         val targetShape = ctx.model.expectShape(memberShape.target)
 
         when (targetShape.type) {
@@ -102,7 +119,7 @@ class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderMapMemberSerializer(memberShape: MemberShape, targetShape: MapShape) {
+    open fun renderMapMemberSerializer(memberShape: MemberShape, targetShape: MapShape) {
         val memberName = memberShape.defaultName()
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
@@ -124,7 +141,7 @@ class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
+    open fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
         val memberName = memberShape.defaultName()
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
@@ -139,7 +156,7 @@ class SerializeStructGenerator(
     /**
      * Delegates to other functions based on the type of value target of map.
      */
-    private fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
+    protected fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
         val isSparse = mapShape.hasTrait(SparseTrait::class.java)
 
@@ -168,7 +185,7 @@ class SerializeStructGenerator(
     /**
      * Delegates to other functions based on the type of element.
      */
-    private fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
+    protected fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
         val isSparse = listShape.hasTrait(SparseTrait::class.java)
 
@@ -203,14 +220,15 @@ class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
+    protected fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
         val serializerTypeName = "${structureShape.defaultName()}Serializer"
         val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
+        val valueToSerializeName = overrideValueToSerializeName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            writer.write("$serializerFnName($serializerTypeName($elementName))")
+            writer.write("$serializerFnName($serializerTypeName($valueToSerializeName))")
         }
     }
 
@@ -221,7 +239,7 @@ class SerializeStructGenerator(
      * input.payload.forEach { (key, value) -> entry(key, FooStructureSerializer(value)) }
      * ```
      */
-    private fun renderNestedStructureEntry(
+    protected fun renderNestedStructureEntry(
         structureShape: Shape,
         nestingLevel: Int,
         parentMemberName: String,
@@ -249,7 +267,7 @@ class SerializeStructGenerator(
      * }
      * ```
      */
-    private fun renderMapElement(
+    open fun renderMapElement(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
@@ -258,10 +276,11 @@ class SerializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.nestedIdentifier()
         val containerName = if (nestingLevel == 0) "input." else ""
+        val parentName = overrideParentName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
             writer.withBlock("serializer.serializeMap($descriptorName) {", "}") {
-                delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, elementName)
+                delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
             }
         }
     }
@@ -287,9 +306,10 @@ class SerializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
+        val parentName = overrideParentName(valueName)
 
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> mapEntry($keyName, $descriptorName) {", "}}") {
-            delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, valueName)
+            delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
         }
     }
 
@@ -311,9 +331,10 @@ class SerializeStructGenerator(
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
+        val parentName = overrideParentName(valueName)
 
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> listEntry($keyName, $descriptorName) {", "}}") {
-            delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, valueName)
+            delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, parentName)
         }
     }
 
@@ -489,7 +510,7 @@ class SerializeStructGenerator(
      *
      * @param memberShape [MemberShape] referencing the primitive type
      */
-    private fun renderPrimitiveShapeSerializer(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
+    open fun renderPrimitiveShapeSerializer(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
         val (serializeFn, encoded) = serializerNameFn(memberShape)
         // FIXME - this doesn't account for unboxed primitives
         val postfix = idempotencyTokenPostfix(memberShape)
@@ -522,9 +543,9 @@ class SerializeStructGenerator(
 
         val symbol = ctx.symbolProvider.toSymbol(target)
         val memberSerializerName = "${symbol.name}Serializer"
-
+        val valueToSerializeName = overrideValueToSerializeName("it")
         // invoke the ctor of the serializer to delegate to and pass the value
-        val encoded = "$memberSerializerName(it)"
+        val encoded = "$memberSerializerName($valueToSerializeName)"
 
         return SerializeInfo("field", encoded)
     }
@@ -537,7 +558,7 @@ class SerializeStructGenerator(
     private fun serializerForPrimitiveShape(shape: Shape): SerializeInfo {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
-        val defaultIdentifier = "it"
+        val defaultIdentifier = overrideValueToSerializeName("it")
         var serializerFn = "field"
 
         val encoded = when (target.type) {
@@ -576,6 +597,69 @@ class SerializeStructGenerator(
     }
 }
 
+class SerializeUnionGenerator3(
+    ctx: ProtocolGenerator.GenerationContext,
+    private val members: List<MemberShape>,
+    private val writer: KotlinWriter,
+    defaultTimestampFormat: TimestampFormatTrait.Format
+): SerializeStructGenerator2(ctx, members, writer, defaultTimestampFormat) {
+
+    // Unions do not directly nest, so parent is static.
+    override fun overrideParentName(defaultName: String): String = "value"
+
+    // Return the union instance
+    override fun overrideValueToSerializeName(defaultName: String): String = "input.value"
+
+    override fun render() {
+        val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
+        writer.withBlock("serializer.serializeStruct($objDescriptor) {", "}") {
+            writer.withBlock("when (input) {", "}") {
+                members.sortedBy { it.memberName }.forEach { memberShape ->
+                    renderMemberShape(memberShape)
+                }
+            }
+        }
+    }
+
+    override fun renderMapMemberSerializer(memberShape: MemberShape, targetShape: MapShape) {
+        val unionMemberName = memberShape.unionTypeName()
+        val descriptorName = memberShape.descriptorName()
+        val nestingLevel = 0
+
+        writer.withBlock("is $unionMemberName -> {", "}") {
+            writer.withBlock("mapField($descriptorName) {", "}") {
+                delegateMapSerialization(memberShape, targetShape, nestingLevel, "value")
+            }
+        }
+    }
+
+    override fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
+        val unionMemberName = memberShape.unionTypeName()
+        val descriptorName = memberShape.descriptorName()
+        val nestingLevel = 0
+
+        writer.withBlock("is $unionMemberName -> {", "}") {
+            writer.withBlock("listField($descriptorName) {", "}") {
+                delegateListSerialization(memberShape, targetShape, nestingLevel, "value")
+            }
+        }
+    }
+
+    override fun renderPrimitiveShapeSerializer(
+        memberShape: MemberShape,
+        serializerNameFn: (MemberShape) -> SerializeInfo
+    ) {
+        val (serializeFn, encoded) = serializerNameFn(memberShape)
+        // FIXME - this doesn't account for unboxed primitives
+        val unionTypeName = memberShape.unionTypeName()
+        val descriptorName = memberShape.descriptorName()
+
+        writer.write("is $unionTypeName -> $serializeFn($descriptorName, $encoded)")
+    }
+
+    private fun MemberShape.unionTypeName(): String = "${id.name}.${StringUtils.capitalize(memberName)}"
+}
+
 /**
  * If is member shape returns target, otherwise returns self.
  * @param model for loading the target shape
@@ -601,3 +685,41 @@ private fun keyValueNames(nestingLevel: Int): Pair<String, String> {
 
     return keyName to valueName
 }
+
+/**
+ * Get the name of the `PrimitiveSerializer` function name for the corresponding shape type
+ * @throws CodegenException when no known function name for the given type is known to exist
+ */
+internal fun ShapeType.primitiveSerializerFunctionName(): String {
+    val suffix = when (this) {
+        ShapeType.BOOLEAN -> "Boolean"
+        ShapeType.STRING -> "String"
+        ShapeType.BYTE -> "Byte"
+        ShapeType.SHORT -> "Short"
+        ShapeType.INTEGER -> "Int"
+        ShapeType.LONG -> "Long"
+        ShapeType.FLOAT -> "Float"
+        ShapeType.DOUBLE -> "Double"
+        ShapeType.STRUCTURE, ShapeType.UNION -> "SdkSerializable"
+        else -> throw CodegenException("$this has no primitive serialize function on the Serializer interface")
+    }
+    return "serialize$suffix"
+}
+
+/**
+ * Container for serialization information for a particular shape being serialized to
+ *
+ * @property fn The name of the serialization function to use
+ * @property encodedValue The value to pass to the serialization function
+ */
+data class SerializeInfo(val fn: String, val encodedValue: String)
+
+/**
+ * Generate an identifier for a given nesting level
+ */
+fun Int.nestedIdentifier(): String = "c$this"
+
+/**
+ * Generate an identifier for a given nesting level
+ */
+fun Int.nestedDescriptorName(): String = "_c$this"
