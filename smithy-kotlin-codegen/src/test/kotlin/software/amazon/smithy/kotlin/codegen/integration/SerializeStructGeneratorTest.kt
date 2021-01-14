@@ -212,7 +212,7 @@ class SerializeStructGeneratorTest2 {
     @Test
     fun `it serializes a structure containing a list of a union of primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooRequest { 
                 payload: UnionList
             }
@@ -227,7 +227,7 @@ class SerializeStructGeneratorTest2 {
                 boolval: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -684,7 +684,7 @@ class SerializeStructGeneratorTest2 {
     @Test
     fun `it serializes a structure containing a map of a union of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooRequest { 
                 payload: StringMap
             }
@@ -700,7 +700,7 @@ class SerializeStructGeneratorTest2 {
                 boolval: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {

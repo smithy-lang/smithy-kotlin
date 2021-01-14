@@ -29,7 +29,7 @@ class SerializeUnionGenerator(
     private val members: List<MemberShape>,
     private val writer: KotlinWriter,
     defaultTimestampFormat: TimestampFormatTrait.Format
-): SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
+) : SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
 
     // Unions do not directly nest, so parent is static.
     override fun parentName(defaultName: String): String = "value"

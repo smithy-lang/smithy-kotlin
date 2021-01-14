@@ -70,7 +70,7 @@ class SerializeUnionGeneratorTest {
     @Test
     fun `it serializes a structure containing a union of primitive types`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooRequest { 
                 payload: FooUnion
             }
@@ -82,7 +82,7 @@ class SerializeUnionGeneratorTest {
                 timestamp4: Timestamp
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -102,7 +102,7 @@ class SerializeUnionGeneratorTest {
     @Test
     fun `it serializes a structure containing a union of collection types`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
                     structure FooRequest { 
                         payload: FooUnion
                     }
@@ -132,7 +132,7 @@ class SerializeUnionGeneratorTest {
                         value: StringMap
                     }
                 """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -179,7 +179,7 @@ class SerializeUnionGeneratorTest {
     @Test
     fun `it serializes a structure containing a union of nested types`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
                     structure FooRequest {
                         payloadAggregateUnion: MyAggregateUnion
                     }
@@ -193,7 +193,7 @@ class SerializeUnionGeneratorTest {
                         member2: String
                     }
                 """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
