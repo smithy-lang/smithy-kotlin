@@ -1,232 +1,132 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0.
  */
 package software.amazon.smithy.kotlin.codegen.integration
 
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.withBlock
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.shapes.CollectionShape
+import software.amazon.smithy.model.shapes.MapShape
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.utils.StringUtils
 
 /**
- * Generate serialization for union members bound to the payload.
+ * Generate serialization for members of unions to the payload.
  *
- * e.g.
+ * Refer to [SerializeStructGenerator] for more details.
+ *
+ * Example output this class generates:
  * ```
-* serializer.serializeStruct(OBJ_DESCRIPTOR) {
-*     when (input) {
-*         is MyUnion.I32 -> field(I32_DESCRIPTOR, input.value)
-*         is MyUnion.StringA -> field(STRINGA_DESCRIPTOR, input.value)
-*     }
-* }
+ * serializer.serializeStruct(OBJ_DESCRIPTOR) {
+ *     when (input) {
+ *         is FooUnion.IntVal -> field(INTVAL_DESCRIPTOR, input.value)
+ *         is FooUnion.StrVal -> field(STRVAL_DESCRIPTOR, input.value)
+ *         is FooUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value.format(TimestampFormat.ISO_8601))```
+ *     }
+ * }
  * ```
  */
 class SerializeUnionGenerator(
-    private val ctx: ProtocolGenerator.GenerationContext,
+    ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: KotlinWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
-) {
+    defaultTimestampFormat: TimestampFormatTrait.Format
+) : SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
 
-    fun render() {
-        writer.withBlock("serializer.serializeStruct(OBJ_DESCRIPTOR) {", "}") {
+    // Unions do not directly nest, so parent is static.
+    override fun parentName(defaultName: String): String = "value"
+
+    // Return the union instance
+    override fun valueToSerializeName(defaultName: String): String = "input.value"
+
+    /**
+     * Iterate over all supplied [MemberShape]s to generate serializers. Example:
+     *
+     * ```
+     * serializer.serializeStruct(OBJ_DESCRIPTOR) {
+     *    when (input) {
+     *      ...
+     *    }
+     *  }
+     * ```
+     */
+    override fun render() {
+        val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
+        writer.withBlock("serializer.serializeStruct($objDescriptor) {", "}") {
             writer.withBlock("when (input) {", "}") {
-                members.sortedBy { it.memberName }.forEach { member ->
-                    val target = ctx.model.expectShape(member.target)
-                    val targetType = member.unionTypeName(member)
-                    when (target.type) {
-                        ShapeType.LIST, ShapeType.SET -> renderListMemberSerializer(member)
-                        ShapeType.MAP -> renderMapMemberSerializer(member)
-                        ShapeType.DOCUMENT -> {
-                            // TODO - implement document type support
-                        }
-                        else -> {
-                            val (serializeFn, encoded) = serializationForPrimitiveShape(member)
-                            writer.write("is \$L -> $serializeFn(\$L, $encoded)", targetType, member.descriptorName())
-                        }
-                    }
+                members.sortedBy { it.memberName }.forEach { memberShape ->
+                    renderMemberShape(memberShape)
                 }
             }
         }
     }
 
     /**
-     * get the serialization function and encoded value for the given [Shape], this only handles "primitive" types,
-     * collections should be handled separately
-     * @param shape The shape to be serialized
-     * @param identifier The name of the identifier to be passed to the serialization function
-     * @param serializeLocation The location being serialized to
+     * Produces serialization for a map member.  Example:
+     * ```
+     * is FooUnion.StrMapVal -> {
+     *      mapField(STRMAPVAL_DESCRIPTOR) {
+     *          ...
+     *      }
+     * }
+     * ```
      */
-    private fun serializationForPrimitiveShape(
-        shape: Shape,
-        identifier: String = "input.value",
-        serializeLocation: SerializeLocation = SerializeLocation.Field
-    ): SerializeInfo {
-        // target shape type to deserialize is either the shape itself or member.target
-        val target = when (shape) {
-            is MemberShape -> ctx.model.expectShape(shape.target)
-            else -> shape
+    override fun renderMapMemberSerializer(memberShape: MemberShape, targetShape: MapShape) {
+        val unionMemberName = memberShape.unionTypeName()
+        val descriptorName = memberShape.descriptorName()
+        val nestingLevel = 0
+
+        writer.withBlock("is $unionMemberName -> {", "}") {
+            writer.withBlock("mapField($descriptorName) {", "}") {
+                delegateMapSerialization(memberShape, targetShape, nestingLevel, "value")
+            }
         }
-
-        // our current generation of serializer interfaces unfortunately uses different names depending on whether
-        // you are serializing struct fields, list elements, map entries, etc.
-        var serializerFn = serializeLocation.serializerFn
-
-        val encoded = when (target.type) {
-            ShapeType.BOOLEAN, ShapeType.BYTE,
-            ShapeType.SHORT, ShapeType.INTEGER, ShapeType.LONG,
-            ShapeType.FLOAT, ShapeType.DOUBLE -> identifier
-            ShapeType.BLOB -> {
-                importBase64Utils(writer)
-                "$identifier.encodeBase64String()"
-            }
-            ShapeType.TIMESTAMP -> {
-                importTimestampFormat(writer)
-                val tsFormat = shape
-                    .getTrait(TimestampFormatTrait::class.java)
-                    .map { it.format }
-                    .orElse(defaultTimestampFormat)
-
-                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                    serializerFn = "raw${serializerFn.capitalize()}"
-                }
-
-                formatInstant(identifier, tsFormat, forceString = true)
-            }
-            ShapeType.STRING -> when {
-                target.hasTrait(EnumTrait::class.java) -> {
-                    when (serializeLocation) {
-                        SerializeLocation.Field -> "$identifier.value"
-                        SerializeLocation.Map -> "$identifier?.value"
-                    }
-                }
-                else -> identifier
-            }
-            ShapeType.STRUCTURE, ShapeType.UNION -> {
-                // nested structures and unions can be serialized directly through their Serializer (via SdkSerializable)
-                val symbol = ctx.symbolProvider.toSymbol(target)
-                val memberSerializerName = "${symbol.name}Serializer"
-                // invoke the ctor of the serializer to delegate to and pass the value
-                when (serializeLocation) {
-                    SerializeLocation.Field -> "$memberSerializerName($identifier)"
-                    SerializeLocation.Map -> "if ($identifier != null) $memberSerializerName($identifier) else null"
-                }
-            }
-            else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
-        }
-
-        return SerializeInfo(serializerFn, encoded)
     }
 
     /**
-     * render serialization for a struct member of type "list"
+     * Produces serialization for a list member.  Example:
+     * ```
+     * is FooUnion.IntListVal -> {
+     *      listField(INTLISTVAL_DESCRIPTOR) {
+     *          ...
+     *      }
+     * }
+     * ```
      */
-    private fun renderListMemberSerializer(member: MemberShape) {
-        val listTarget = ctx.model.expectShape(member.target) as CollectionShape
-        val target = ctx.model.expectShape(listTarget.member.target)
-        val targetType = member.unionTypeName(member)
+    override fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
+        val unionMemberName = memberShape.unionTypeName()
+        val descriptorName = memberShape.descriptorName()
+        val nestingLevel = 0
 
-        writer.withBlock("is $targetType -> {", "}") {
-            writer.withBlock("listField(${member.descriptorName()}) {", "}") {
-                renderListSerializer(ctx, member, "input.value", target, writer)
+        writer.withBlock("is $unionMemberName -> {", "}") {
+            writer.withBlock("listField($descriptorName) {", "}") {
+                delegateListSerialization(memberShape, targetShape, nestingLevel, "value")
             }
         }
     }
 
-    // internal details of rendering a list type
-    private fun renderListSerializer(
-        ctx: ProtocolGenerator.GenerationContext,
-        member: MemberShape, // FIXME - we shouldn't need to pass this through
-        collectionName: String,
-        targetShape: Shape,
-        writer: KotlinWriter,
-        level: Int = 0
+    /**
+     * Render code to serialize a primitive or structure shape. Example:
+     *
+     * ```
+     * is FooUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value.format(TimestampFormat.ISO_8601))
+     * ```
+     *
+     * @param memberShape [MemberShape] referencing the primitive type
+     */
+    override fun renderPrimitiveShapeSerializer(
+        memberShape: MemberShape,
+        serializerNameFn: (MemberShape) -> SerializeInfo
     ) {
-        val iteratorName = "m$level"
-        writer.openBlock("for(\$L in \$L) {", iteratorName, collectionName)
-            .call {
-                when (targetShape) {
-                    is CollectionShape -> {
-                        // nested list
-                        val nestedTarget = ctx.model.expectShape(targetShape.member.target)
-                        writer.withBlock("serializer.serializeList(${member.descriptorName()}) {", "}") {
-                            renderListSerializer(ctx, member, iteratorName, nestedTarget, writer, level + 1)
-                        }
-                    }
-                    is TimestampShape -> {
-                        val bindingIndex = ctx.model.getKnowledge(HttpBindingIndex::class.java)
-                        val tsFormat = bindingIndex.determineTimestampFormat(
-                            targetShape,
-                            HttpBinding.Location.DOCUMENT,
-                            defaultTimestampFormat
-                        )
-                        val formatted = formatInstant(iteratorName, tsFormat, forceString = true)
-                        val serializeMethod = when (tsFormat) {
-                            TimestampFormatTrait.Format.EPOCH_SECONDS -> "serializeRaw"
-                            else -> "serialize"
-                        }
-                        writer.write("$serializeMethod(\$L)", formatted)
-                        importTimestampFormat(writer)
-                    }
-                    is StructureShape, is UnionShape -> {
-                        val targetSymbol = ctx.symbolProvider.toSymbol(targetShape)
-                        val wrappedIterator = "${targetSymbol.name}Serializer($iteratorName)"
-                        writer.write("serializeSdkSerializable(\$L)", wrappedIterator)
-                    }
-                    is BlobShape -> {
-                        importBase64Utils(writer)
-                        writer.write("serializeString($iteratorName.encodeBase64String())")
-                    }
-                    else -> {
-                        // primitive we can serialize
-                        val iter = if (targetShape.isStringShape && targetShape.hasTrait(EnumTrait::class.java)) {
-                            "$iteratorName.value"
-                        } else {
-                            iteratorName
-                        }
-                        writer.write("\$L(\$L)", targetShape.type.primitiveSerializerFunctionName(), iter)
-                    }
-                }
-            }
-            .closeBlock("}")
+        val (serializeFn, encoded) = serializerNameFn(memberShape)
+        // FIXME - this doesn't account for unboxed primitives
+        val unionTypeName = memberShape.unionTypeName()
+        val descriptorName = memberShape.descriptorName()
+
+        writer.write("is $unionTypeName -> $serializeFn($descriptorName, $encoded)")
     }
 
-    /**
-     * Render serialization for a struct member of type "map"
-     */
-    private fun renderMapMemberSerializer(member: MemberShape) {
-        val mapShape = ctx.model.expectShape(member.target).asMapShape().get()
-        val valueTargetShape = ctx.model.expectShape(mapShape.value.target)
-        val targetType = member.unionTypeName(member)
-
-        writer.withBlock("is $targetType -> {", "}") {
-            writer.withBlock("mapField(${member.descriptorName()}) {", "}") {
-                val (serializeFn, encoded) = serializationForPrimitiveShape(valueTargetShape, "value", SerializeLocation.Map)
-                write("input.value.forEach { (key, value) -> $serializeFn(key, $encoded) }")
-            }
-        }
-    }
-
-    private enum class SerializeLocation(val serializerFn: String) {
-        // class/struct field
-        Field("field"),
-
-        // Map value
-        Map("entry")
-    }
+    private fun MemberShape.unionTypeName(): String = "${id.name}.${StringUtils.capitalize(memberName)}"
 }
