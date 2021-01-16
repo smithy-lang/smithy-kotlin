@@ -228,7 +228,9 @@ class DeserializeStructGenerator(
                         val nestedTarget = ctx.model.expectShape(targetShape.value.target)
                         renderDeserializeMap(memberShape, targetShape, nestedTarget, level + 1)
                     }
-                    is StructureShape, is SimpleShape -> {
+                    is StructureShape,
+                    is SimpleShape,
+                    is UnionShape -> {
                         val deserializeForElement = deserializerForShape(targetShape)
                         when (isSparse) {
                             true ->

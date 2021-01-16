@@ -560,9 +560,14 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 output: GetFooOutput
             }
             
-            map NestedMap {
+            map NestedIntMap {
                 key: String,
                 value: IntMap
+            }
+
+            map NestedUnionMap {
+                key: String,
+                value: PrimitiveUnion
             }
             
             map IntMap {
@@ -570,8 +575,14 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 value: Integer
             }
             
+            union PrimitiveUnion {
+                strVal: String,
+                intVal: Integer
+            }
+            
             structure GetFooOutput {
-                nestedMap: NestedMap
+                nestedIntMap: NestedIntMap,
+                nestedUnionMap: NestedUnionMap
             }
         """.trimIndent()
             .asSmithyModel()
