@@ -25,8 +25,8 @@ class NullDeserializationParityTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            X_DESCRIPTOR.index -> result.x = deserializeInt()
-                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
+                            X_DESCRIPTOR.index -> result.x = deserializeInteger()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInteger()
                             null -> break@loop
                             else -> throw RuntimeException("unexpected field in BasicStructTest deserializer")
                         }
@@ -79,8 +79,8 @@ class NullDeserializationParityTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            X_DESCRIPTOR.index -> result.x = deserializeInt()
-                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
+                            X_DESCRIPTOR.index -> result.x = deserializeInteger()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInteger()
                             null -> break@loop
                             else -> throw RuntimeException("unexpected field in ChildStruct deserializer")
                         }

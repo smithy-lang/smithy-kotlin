@@ -73,10 +73,10 @@ class XmlDeserializerStructTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            X_ATTRIB_DESCRIPTOR.index -> result.xa = deserializeInt()
+                            X_ATTRIB_DESCRIPTOR.index -> result.xa = deserializeInteger()
                             X_VALUE_DESCRIPTOR.index -> result.xt = deserializeString()
-                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
-                            Z_DESCRIPTOR.index -> result.z = deserializeBool()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInteger()
+                            Z_DESCRIPTOR.index -> result.z = deserializeBoolean()
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 result.unknownFieldCount++

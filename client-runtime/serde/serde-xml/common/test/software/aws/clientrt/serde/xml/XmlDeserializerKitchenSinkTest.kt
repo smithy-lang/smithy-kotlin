@@ -42,7 +42,7 @@ class XmlDeserializerKitchenSinkTest {
                                         }
                                         return@deserializeList list
                                     }
-                            INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = deserializeInt()
+                            INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = deserializeInteger()
                             // deeply nested unknown field
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 skipValue()
@@ -79,7 +79,7 @@ class XmlDeserializerKitchenSinkTest {
                             NESTED2_FIELD_DESCRIPTOR.index -> {
                                 nested.nested2 = Nested2.deserialize(deserializer)
                             }
-                            BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializeBool()
+                            BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializeBoolean()
                             null -> break@loop
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field during test"))
                         }
@@ -190,17 +190,17 @@ class XmlDeserializerKitchenSinkTest {
         deserializer.deserializeStruct(KitchenSinkTest.OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = deserializeInt()
+                    KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = deserializeInteger()
                     KitchenSinkTest.LONG_FIELD_DESCRIPTOR.index -> sink.longField = deserializeLong()
                     KitchenSinkTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = deserializeShort()
-                    KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = deserializeBool()
+                    KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = deserializeBoolean()
                     KitchenSinkTest.STR_FIELD_DESCRIPTOR.index -> sink.strField = deserializeString()
                     KitchenSinkTest.LIST_FIELD_DESCRIPTOR.index ->
                         sink.listField =
                             deserializer.deserializeList(KitchenSinkTest.LIST_FIELD_DESCRIPTOR) {
                                 val list = mutableListOf<Int>()
                                 while (hasNextElement()) {
-                                    list.add(deserializeInt()!!)
+                                    list.add(deserializeInteger()!!)
                                 }
                                 return@deserializeList list
                             }

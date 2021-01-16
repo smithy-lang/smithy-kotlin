@@ -30,7 +30,7 @@ import software.amazon.smithy.utils.StringUtils
  * ```
  * deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
  *      when(findNextFieldIndex()) {
- *          I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt()!!)
+ *          I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInteger()!!)
  *          STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString()!!)
  *          else -> skipValue()
  *      }
@@ -96,10 +96,10 @@ class DeserializeUnionGenerator(
         }
 
         return when (target.type) {
-            ShapeType.BOOLEAN -> "deserializeBool()"
+            ShapeType.BOOLEAN -> "deserializeBoolean()"
             ShapeType.BYTE -> "deserializeByte()"
             ShapeType.SHORT -> "deserializeShort()"
-            ShapeType.INTEGER -> "deserializeInt()"
+            ShapeType.INTEGER -> "deserializeInteger()"
             ShapeType.LONG -> "deserializeLong()"
             ShapeType.FLOAT -> "deserializeFloat()"
             ShapeType.DOUBLE -> "deserializeDouble()"

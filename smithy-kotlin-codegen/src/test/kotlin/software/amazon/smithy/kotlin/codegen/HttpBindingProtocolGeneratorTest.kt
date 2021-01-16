@@ -469,7 +469,7 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = deserializeInt().let { MyUnion.I32(it) }
+                I32_DESCRIPTOR.index -> value = deserializeInteger().let { MyUnion.I32(it) }
                 STRINGA_DESCRIPTOR.index -> value = deserializeString().let { MyUnion.StringA(it) }
                 else -> skipValue()
             }
@@ -693,7 +693,7 @@ class SmokeTestDeserializer : HttpDeserialize {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
                         PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
-                        PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInt()
+                        PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInteger()
                         PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = NestedDeserializer().deserialize(deserializer)
                         PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeString().let { Instant.fromIso8601(it) }
                         null -> break@loop

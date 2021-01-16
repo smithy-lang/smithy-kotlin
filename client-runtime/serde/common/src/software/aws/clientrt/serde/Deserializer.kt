@@ -32,8 +32,8 @@ package software.aws.clientrt.serde
  * }
  * loop@ while(true) {
  *     when(struct.findNextFieldIndexOrNull()) {
- *         X_DESCRIPTOR.index ->  x = struct.deserializeInt()
- *         Y_DESCRIPTOR.index -> y = struct.deserializeInt()
+ *         X_DESCRIPTOR.index ->  x = struct.deserializeInteger()
+ *         Y_DESCRIPTOR.index -> y = struct.deserializeInteger()
  *         null -> break@loop
  *         else -> struct.skipValue() // Unknown Field
  *     }
@@ -138,7 +138,7 @@ interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as an [Int]
      */
-    suspend fun deserializeInt(): Int
+    suspend fun deserializeInteger(): Int
 
     /**
      * Deserialize and return the next token as a [Short]
@@ -168,7 +168,7 @@ interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [Boolean]
      */
-    suspend fun deserializeBool(): Boolean
+    suspend fun deserializeBoolean(): Boolean
 
     /**
      * Consume the next token if represents a null value. Always returns null.
