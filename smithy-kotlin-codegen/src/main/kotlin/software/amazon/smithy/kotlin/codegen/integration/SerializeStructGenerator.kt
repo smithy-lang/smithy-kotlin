@@ -590,15 +590,6 @@ open class SerializeStructGenerator(
     }
 
     /**
-     * If is member shape returns target, otherwise returns self.
-     * @param model for loading the target shape
-     */
-    private fun Shape.targetOrSelf(model: Model) = when (this) {
-        is MemberShape -> model.expectShape(this.target)
-        else -> this
-    }
-
-    /**
      * @return true if shape is a String with enum trait, false otherwise.
      */
     private fun Shape.isEnum() = isStringShape && hasTrait(EnumTrait::class.java)

@@ -124,7 +124,7 @@ class SerializeStructGeneratorTest2 {
     // TODO ~ Support Document Type
 
     @Test
-    fun `it serializes a structure with containing a structure`() {
+    fun `it serializes a structure with a nested structure`() {
         val model = (
             modelPrefix + """            
             structure FooRequest { 

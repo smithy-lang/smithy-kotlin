@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 
@@ -34,3 +35,12 @@ fun isValidKotlinIdentifier(s: String): Boolean {
  */
 inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
     this.expectShape(ShapeId.from(shapeId), T::class.java)
+
+/**
+ * If is member shape returns target, otherwise returns self.
+ * @param model for loading the target shape
+ */
+internal fun Shape.targetOrSelf(model: Model) = when (this) {
+    is MemberShape -> model.expectShape(this.target)
+    else -> this
+}

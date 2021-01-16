@@ -518,13 +518,13 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
-                        NESTEDMAP_DESCRIPTOR.index -> builder.nestedMap =
-                            deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
+                        NESTEDINTMAP_DESCRIPTOR.index -> builder.nestedIntMap =
+                            deserializer.deserializeMap(NESTEDINTMAP_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Map<String, Int>>()
                                 while(hasNextEntry()) {
                                     val k0 = key()
                                     val el0 =
-                                    deserializer.deserializeMap(NESTEDMAP_DESCRIPTOR) {
+                                    deserializer.deserializeMap(NESTEDINTMAP_DESCRIPTOR) {
                                         val map1 = mutableMapOf<String, Int>()
                                         while(hasNextEntry()) {
                                             val k1 = key()
@@ -533,6 +533,16 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                                         }
                                         map1
                                     }
+                                    map0[k0] = el0
+                                }
+                                map0
+                            }
+                        NESTEDUNIONMAP_DESCRIPTOR.index -> builder.nestedUnionMap =
+                            deserializer.deserializeMap(NESTEDUNIONMAP_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, PrimitiveUnion>()
+                                while(hasNextEntry()) {
+                                    val k0 = key()
+                                    val el0 = if (nextHasValue()) { PrimitiveUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                     map0[k0] = el0
                                 }
                                 map0
