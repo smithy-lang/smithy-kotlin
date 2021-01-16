@@ -155,7 +155,7 @@ class SemanticParityTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            X_DESCRIPTOR.index -> result.x = deserializeInt()
+                            X_DESCRIPTOR.index -> result.x = deserializeInteger()
                             Y_DESCRIPTOR.index -> result.y = deserializeString()
                             Z_DESCRIPTOR.index -> result.z = deserializeBoolean()
                             null -> break@loop
@@ -202,7 +202,7 @@ class SemanticParityTest {
                             LIST_DESCRIPTOR.index -> result.intList = deserializer.deserializeList(LIST_DESCRIPTOR) {
                                 val intList = mutableListOf<Int>()
                                 while (this.hasNextElement()) {
-                                    intList.add(this.deserializeInt()!!)
+                                    intList.add(this.deserializeInteger()!!)
                                 }
                                 result.intList = intList
                                 return@deserializeList intList

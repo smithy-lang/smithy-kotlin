@@ -128,7 +128,7 @@ class SerdeTest {
         val sink = AllTypesTest()
         loop@ while (true) {
             when (struct.findNextFieldIndex()) {
-                AllTypesTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = struct.deserializeInt()
+                AllTypesTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = struct.deserializeInteger()
                 AllTypesTest.LONG_FIELD_DESCRIPTOR.index -> sink.longField = struct.deserializeLong()
                 AllTypesTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = struct.deserializeShort()
                 AllTypesTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = struct.deserializeBoolean()
@@ -136,7 +136,7 @@ class SerdeTest {
                 AllTypesTest.LIST_FIELD_DESCRIPTOR.index -> sink.listField = deserializer.deserializeList(AllTypesTest.LIST_FIELD_DESCRIPTOR) {
                     val list = mutableListOf<Int>()
                     while (hasNextElement()) {
-                        list.add(deserializeInt())
+                        list.add(deserializeInteger())
                     }
                     return@deserializeList list
                 }

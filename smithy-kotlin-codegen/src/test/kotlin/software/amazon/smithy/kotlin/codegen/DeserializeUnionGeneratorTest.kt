@@ -39,12 +39,12 @@ class DeserializeUnionGeneratorTest {
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     when(findNextFieldIndex()) {
-        I32_DESCRIPTOR.index -> value = deserializeInt().let { MyAggregateUnion.I32(it) }
+        I32_DESCRIPTOR.index -> value = deserializeInteger().let { MyAggregateUnion.I32(it) }
         INTLIST_DESCRIPTOR.index -> value =
             deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                 val list0 = mutableListOf<Int>()
                 while(hasNextElement()) {
-                    val el0 = deserializeInt()
+                    val el0 = deserializeInteger()
                     list0.add(el0)
                 }
                 MyAggregateUnion.IntList(list0)
@@ -57,7 +57,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     deserializer.deserializeList(LISTOFINTLIST_C0_DESCRIPTOR) {
                         val list1 = mutableListOf<Int>()
                         while(hasNextElement()) {
-                            val el1 = deserializeInt()
+                            val el1 = deserializeInteger()
                             list1.add(el1)
                         }
                         MyAggregateUnion.ListOfIntList(list1)
@@ -75,7 +75,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     deserializer.deserializeList(MAPOFLISTS_C0_DESCRIPTOR) {
                         val list1 = mutableListOf<Int>()
                         while(hasNextElement()) {
-                            val el1 = deserializeInt()
+                            val el1 = deserializeInteger()
                             list1.add(el1)
                         }
                         MyAggregateUnion.MapOfLists(list1)
@@ -107,7 +107,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     when(findNextFieldIndex()) {
-        I32_DESCRIPTOR.index -> value = deserializeInt().let { MyUnion.I32(it) }
+        I32_DESCRIPTOR.index -> value = deserializeInteger().let { MyUnion.I32(it) }
         STRINGA_DESCRIPTOR.index -> value = deserializeString().let { MyUnion.StringA(it) }
         else -> skipValue()
     }
@@ -132,12 +132,12 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
     when(findNextFieldIndex()) {
-        I32_DESCRIPTOR.index -> value = deserializeInt().let { MyAggregateUnion.I32(it) }
+        I32_DESCRIPTOR.index -> value = deserializeInteger().let { MyAggregateUnion.I32(it) }
         INTLIST_DESCRIPTOR.index -> value =
             deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                 val list0 = mutableListOf<Int>()
                 while(hasNextElement()) {
-                    val el0 = deserializeInt()
+                    val el0 = deserializeInteger()
                     list0.add(el0)
                 }
                 MyAggregateUnion.IntList(list0)
@@ -147,7 +147,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 val map0 = mutableMapOf<String, Int>()
                 while(hasNextEntry()) {
                     val k0 = key()
-                    val el0 = deserializeInt()
+                    val el0 = deserializeInteger()
                     map0[k0] = el0
                 }
                 MyAggregateUnion.IntMap(map0)

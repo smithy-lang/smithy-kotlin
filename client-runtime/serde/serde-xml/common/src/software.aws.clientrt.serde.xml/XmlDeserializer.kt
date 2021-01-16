@@ -70,7 +70,7 @@ class XmlDeserializer(
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override suspend fun deserializeInt(): Int = deserializePrimitive { it.toInt() }
+    override suspend fun deserializeInteger(): Int = deserializePrimitive { it.toInt() }
 
     /**
      * Deserialize a short value defined as the text section of an Xml element.
@@ -220,11 +220,11 @@ private class CompositeIterator(
         return deserializer.deserializeByte()
     }
 
-    override suspend fun deserializeInt(): Int {
+    override suspend fun deserializeInteger(): Int {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
 
-        return deserializer.deserializeInt()
+        return deserializer.deserializeInteger()
     }
 
     override suspend fun deserializeShort(): Short {
@@ -403,7 +403,7 @@ private class XmlFieldIterator(
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override suspend fun deserializeInt(): Int =
+    override suspend fun deserializeInteger(): Int =
         deserializePrimitive { it.toIntOrNull() }
 
     /**
