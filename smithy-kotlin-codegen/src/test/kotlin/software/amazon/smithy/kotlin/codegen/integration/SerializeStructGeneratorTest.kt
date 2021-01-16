@@ -17,10 +17,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import software.amazon.smithy.kotlin.codegen.asSmithyModel
-import software.amazon.smithy.kotlin.codegen.newTestContext
-import software.amazon.smithy.kotlin.codegen.shouldContainOnlyOnceWithDiff
-import software.amazon.smithy.kotlin.codegen.testRender
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -1169,22 +1166,8 @@ class SerializeStructGeneratorTest2 {
     private fun getContentsForShape(model: Model, shapeId: String): String {
         val ctx = model.newTestContext()
 
-        val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
-            is OperationShape -> {
-                val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-                val requestBindings = bindingIndex.getRequestBindings(shape)
-                requestBindings.values
-                    .filter { it.location == HttpBinding.Location.DOCUMENT }
-                    .sortedBy { it.memberName }
-                    .map { it.member }
-            }
-            is StructureShape -> {
-                shape.members().toList()
-            }
-            else -> throw RuntimeException("unknown conversion for $shapeId")
-        }
-
-        return testRender(testMembers) { members, writer ->
+        val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
+        return testRender(ctx.requestMembers(op)) { members, writer ->
             SerializeStructGenerator(
                 ctx.generationCtx,
                 members,
