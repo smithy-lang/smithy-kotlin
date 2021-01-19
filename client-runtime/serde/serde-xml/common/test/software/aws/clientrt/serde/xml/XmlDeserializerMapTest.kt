@@ -35,7 +35,7 @@ class XmlDeserializerMapTest {
             val map = mutableMapOf<String, Int>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = deserializeInteger()!!
+                val value = deserializeInt()!!
 
                 map[key] = value
             }
@@ -66,7 +66,7 @@ class XmlDeserializerMapTest {
             val map = mutableMapOf<String, Int>()
             while (hasNextEntry()) {
                 val key = key()
-                val value = deserializeInteger()!!
+                val value = deserializeInt()!!
 
                 map[key] = value
             }
@@ -101,7 +101,7 @@ class XmlDeserializerMapTest {
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
             val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
-                map[key()] = deserializer.deserializeInteger()
+                map[key()] = deserializer.deserializeInt()
             }
             return@deserializeMap map
         }
@@ -120,7 +120,7 @@ class XmlDeserializerMapTest {
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
             val map = mutableMapOf<String, Int?>()
             while (hasNextEntry()) {
-                map[key()] = deserializer.deserializeInteger()
+                map[key()] = deserializer.deserializeInt()
             }
             return@deserializeMap map
         }
@@ -150,7 +150,7 @@ class XmlDeserializerMapTest {
             while (hasNextEntry()) {
                 val key = key()
                 val value = when (nextHasValue()) {
-                    true -> deserializeInteger()
+                    true -> deserializeInt()
                     false -> deserializeNull()
                 }
 
@@ -184,7 +184,7 @@ class XmlDeserializerMapTest {
             while (hasNextEntry()) {
                 val key = key()
                 if (nextHasValue()) {
-                    val value = deserializeInteger()
+                    val value = deserializeInt()
 
                     map[key] = value
                 }

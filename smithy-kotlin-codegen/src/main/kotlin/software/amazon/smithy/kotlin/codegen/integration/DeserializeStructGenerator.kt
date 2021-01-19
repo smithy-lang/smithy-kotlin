@@ -30,7 +30,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  *    loop@while(true) {
  *        when(findNextFieldIndex()) {
  *             FIELD1_DESCRIPTOR.index -> builder.field1 = deserializeString()
- *             FIELD2_DESCRIPTOR.index -> builder.field2 = deserializeInteger()
+ *             FIELD2_DESCRIPTOR.index -> builder.field2 = deserializeInt()
  *             null -> break@loop
  *             else -> skipValue()
  *         }
@@ -87,7 +87,7 @@ class DeserializeStructGenerator(
             ShapeType.BOOLEAN -> "deserializeBoolean()"
             ShapeType.BYTE -> "deserializeByte()"
             ShapeType.SHORT -> "deserializeShort()"
-            ShapeType.INTEGER -> "deserializeInteger()"
+            ShapeType.INTEGER -> "deserializeInt()"
             ShapeType.LONG -> "deserializeLong()"
             ShapeType.FLOAT -> "deserializeFloat()"
             ShapeType.DOUBLE -> "deserializeDouble()"

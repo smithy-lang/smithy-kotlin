@@ -29,7 +29,7 @@ class XmlDeserializerListTest {
                             ELEMENT_LIST_FIELD_DESCRIPTOR.index -> builder.list = deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
                                 val list = mutableListOf<Int?>()
                                 while (hasNextElement()) {
-                                    list.add(deserializeInteger())
+                                    list.add(deserializeInt())
                                 }
                                 return@deserializeList list
                             }

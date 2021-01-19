@@ -37,7 +37,7 @@ class JsonDeserializerTest {
     fun itHandlesInt() = runSuspendTest {
         val payload = "1.2".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeInteger()
+        val actual = deserializer.deserializeInt()
         val expected = 1
         assertEquals(expected, actual)
     }
@@ -115,7 +115,7 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
             val list = mutableListOf<Int>()
             while (hasNextElement()) {
-                list.add(deserializeInteger())
+                list.add(deserializeInt())
             }
             return@deserializeList list
         }
@@ -130,7 +130,7 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeList(SdkFieldDescriptor("", SerialKind.List)) {
             val list = mutableListOf<Int?>()
             while (hasNextElement()) {
-                val element = if (nextHasValue()) deserializeInteger() else deserializeNull()
+                val element = if (nextHasValue()) deserializeInt() else deserializeNull()
                 list.add(element)
             }
             return@deserializeList list
@@ -151,7 +151,7 @@ class JsonDeserializerTest {
         val actual = deserializer.deserializeMap(SdkFieldDescriptor("", SerialKind.Map)) {
             val map = mutableMapOf<String, Int>()
             while (hasNextEntry()) {
-                map[key()] = deserializeInteger()
+                map[key()] = deserializeInt()
             }
             return@deserializeMap map
         }
@@ -174,7 +174,7 @@ class JsonDeserializerTest {
             while (hasNextEntry()) {
                 val key = key()
                 if (nextHasValue()) {
-                    map[key] = deserializeInteger()
+                    map[key] = deserializeInt()
                 } else {
                     deserializeNull()
                 }
@@ -201,8 +201,8 @@ class JsonDeserializerTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            X_DESCRIPTOR.index -> result.x = deserializeInteger()
-                            Y_DESCRIPTOR.index -> result.y = deserializeInteger()
+                            X_DESCRIPTOR.index -> result.x = deserializeInt()
+                            Y_DESCRIPTOR.index -> result.y = deserializeInt()
                             null -> break@loop
                             else -> throw RuntimeException("unexpected field in BasicStructTest deserializer")
                         }
@@ -228,8 +228,8 @@ class JsonDeserializerTest {
         deserializer.deserializeStruct(BasicStructTest.OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    BasicStructTest.X_DESCRIPTOR.index -> x = deserializeInteger()
-                    BasicStructTest.Y_DESCRIPTOR.index -> y = deserializeInteger()
+                    BasicStructTest.X_DESCRIPTOR.index -> x = deserializeInt()
+                    BasicStructTest.Y_DESCRIPTOR.index -> y = deserializeInt()
                     null -> break@loop
                 }
             }
@@ -317,7 +317,7 @@ class JsonDeserializerTest {
                             }
                             return@deserializeList list
                         }
-                        INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = struct.deserializeInteger()
+                        INT2_FIELD_DESCRIPTOR.index -> nested2.int2 = struct.deserializeInt()
                         // deeply nested unknown field
                         Deserializer.FieldIterator.UNKNOWN_FIELD -> struct.skipValue()
                         null -> break@loop
@@ -440,7 +440,7 @@ class JsonDeserializerTest {
         val sink = KitchenSinkTest()
         loop@ while (true) {
             when (struct.findNextFieldIndex()) {
-                KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = struct.deserializeInteger()
+                KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = struct.deserializeInt()
                 KitchenSinkTest.LONG_FIELD_DESCRIPTOR.index -> sink.longField = struct.deserializeLong()
                 KitchenSinkTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = struct.deserializeShort()
                 KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = struct.deserializeBoolean()
@@ -448,7 +448,7 @@ class JsonDeserializerTest {
                 KitchenSinkTest.LIST_FIELD_DESCRIPTOR.index -> sink.listField = deserializer.deserializeList(KitchenSinkTest.LIST_FIELD_DESCRIPTOR) {
                     val list = mutableListOf<Int>()
                     while (hasNextElement()) {
-                        list.add(deserializeInteger())
+                        list.add(deserializeInt())
                     }
                     return@deserializeList list
                 }
@@ -514,11 +514,11 @@ class JsonDeserializerTest {
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    X_DESCRIPTOR.index -> x = deserializeInteger()
+                    X_DESCRIPTOR.index -> x = deserializeInt()
                     Y_DESCRIPTOR.index -> {
                         fail("field y should not have been enumerated")
                     }
-                    Z_DESCRIPTOR.index -> z = deserializeInteger()
+                    Z_DESCRIPTOR.index -> z = deserializeInt()
                     null -> break@loop
                 }
             }
