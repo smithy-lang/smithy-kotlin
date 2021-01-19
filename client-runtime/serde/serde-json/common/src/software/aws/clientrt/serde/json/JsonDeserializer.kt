@@ -14,7 +14,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
     // formats (e.g. protobufs) where the binary encoding stores metadata in a single byte (e.g. flags or headers)
     override suspend fun deserializeByte(): Byte = nextNumberValue { it.toByteOrNull() ?: it.toDouble().toInt().toByte() }
 
-    override suspend fun deserializeInteger(): Int = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
+    override suspend fun deserializeInt(): Int = nextNumberValue { it.toIntOrNull() ?: it.toDouble().toInt() }
 
     override suspend fun deserializeShort(): Short = nextNumberValue { it.toShortOrNull() ?: it.toDouble().toInt().toShort() }
 

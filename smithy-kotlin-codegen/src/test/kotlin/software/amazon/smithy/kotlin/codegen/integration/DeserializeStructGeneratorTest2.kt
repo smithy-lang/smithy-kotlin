@@ -220,7 +220,7 @@ class DeserializeStructGeneratorTest2 {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val list0 = mutableListOf<Int>()
                                 while(hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeInteger() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                     list0.add(el0)
                                 }
                                 list0
@@ -305,7 +305,7 @@ class DeserializeStructGeneratorTest2 {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val list0 = mutableListOf<Int?>()
                                 while(hasNextElement()) {
-                                    val el0 = if (nextHasValue()) deserializeInteger() else deserializeNull()
+                                    val el0 = if (nextHasValue()) deserializeInt() else deserializeNull()
                                     list0.add(el0)
                                 }
                                 list0
@@ -501,7 +501,7 @@ class DeserializeStructGeneratorTest2 {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val list0 = mutableSetOf<Int>()
                                 while(hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { deserializeInteger() } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                     list0.add(el0)
                                 }
                                 list0.toSet()
@@ -687,7 +687,7 @@ class DeserializeStructGeneratorTest2 {
                                     deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                         val list1 = mutableSetOf<Int>()
                                         while(hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeInteger() } else { deserializeNull(); continue }
+                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                             list1.add(el1)
                                         }
                                         list1
@@ -740,7 +740,7 @@ class DeserializeStructGeneratorTest2 {
                                     deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                         val list1 = mutableSetOf<Int>()
                                         while(hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeInteger() } else { deserializeNull(); continue }
+                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                             list1.add(el1)
                                         }
                                         list1
@@ -1189,7 +1189,7 @@ class DeserializeStructGeneratorTest2 {
                                         val map1 = mutableMapOf<String, Int>()
                                         while(hasNextEntry()) {
                                             val k1 = key()
-                                            val el1 = if (nextHasValue()) { deserializeInteger() } else { deserializeNull(); continue }
+                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                             map1[k1] = el1
                                         }
                                         map1

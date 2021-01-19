@@ -313,7 +313,7 @@ class DeserializeStructGenerator2(
     /**
      * Example:
      * ```
-     * val el0 = if (nextHasValue()) { deserializeInteger() } else { deserializeNull(); continue }
+     * val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
      * list0.add(el0)
      * ```
      */
@@ -336,7 +336,7 @@ class DeserializeStructGenerator2(
             ShapeType.BOOLEAN -> "deserializeBoolean()"
             ShapeType.BYTE -> "deserializeByte()"
             ShapeType.SHORT -> "deserializeShort()"
-            ShapeType.INTEGER -> "deserializeInteger()"
+            ShapeType.INTEGER -> "deserializeInt()"
             ShapeType.LONG -> "deserializeLong()"
             ShapeType.FLOAT -> "deserializeFloat()"
             ShapeType.DOUBLE -> "deserializeDouble()"
