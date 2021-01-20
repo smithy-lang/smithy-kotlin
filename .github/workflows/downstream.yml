@@ -27,11 +27,6 @@ jobs:
         CI_USER: ${{ secrets.CI_USER}}
         CI_ACCESS_TOKEN: ${{ secrets.CI_ACCESS_TOKEN }}
       run: |
-        echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF"
-        echo "GITHUB_BASE_REF: $GITHUB_BASE_REF"
-        echo "GITHUB_EVENT_NAME: $GITHUB_EVENT_NAME"
-        echo "GITHUB_EVENT_PATH: $GITHUB_EVENT_PATH"
-        cat $GITHUB_EVENT_PATH
-        # python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
-        # chmod a+x builder
-        # GIT_ASKPASS="$(pwd)/scripts/git-ci-askpass.sh" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
+        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
+        chmod a+x builder
+        GIT_ASKPASS="$(pwd)/scripts/git-ci-askpass.sh" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
