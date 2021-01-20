@@ -216,7 +216,7 @@ open class SerializeStructGenerator(
     private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
         val serializerTypeName = "${structureShape.defaultName()}Serializer"
-        val elementName = nestingLevel.nestedIdentifier()
+        val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.COLLECTION)
         val containerName = if (nestingLevel == 0) "input." else ""
         val valueToSerializeName = valueToSerializeName(elementName)
 
@@ -267,7 +267,7 @@ open class SerializeStructGenerator(
         parentMemberName: String
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
-        val elementName = nestingLevel.nestedIdentifier()
+        val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.COLLECTION)
         val containerName = if (nestingLevel == 0) "input." else ""
         val parentName = parentName(elementName)
 
@@ -345,12 +345,12 @@ open class SerializeStructGenerator(
      */
     private fun renderListElement(rootMemberShape: MemberShape, elementShape: CollectionShape, nestingLevel: Int, parentListMemberName: String) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
-        val elementName = nestingLevel.nestedIdentifier()
+        val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.COLLECTION)
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$parentListMemberName) {", "}") {
             writer.withBlock("serializer.serializeList($descriptorName) {", "}") {
-                delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, nestingLevel.nestedIdentifier())
+                delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, nestingLevel.nestedIdentifier(NestedIdentifierType.COLLECTION))
             }
         }
     }
@@ -427,10 +427,10 @@ open class SerializeStructGenerator(
         isSparse: Boolean
     ) {
         val serializerFnName = elementShape.type.primitiveSerializerFunctionName()
-        val iteratorName = nestingLevel.nestedIdentifier()
+        val iteratorName = nestingLevel.nestedIdentifier(NestedIdentifierType.COLLECTION)
         val elementName = when (elementShape.isEnum()) {
-            true -> "${nestingLevel.nestedIdentifier()}.value"
-            false -> nestingLevel.nestedIdentifier()
+            true -> "$iteratorName.value"
+            false -> iteratorName
         }
 
         val containerName = if (nestingLevel == 0) "input." else ""
@@ -453,7 +453,7 @@ open class SerializeStructGenerator(
      */
     private fun renderBlobElement(nestingLevel: Int, listMemberName: String) {
         importBase64Utils(writer)
-        val elementName = nestingLevel.nestedIdentifier()
+        val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.COLLECTION)
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
@@ -481,7 +481,7 @@ open class SerializeStructGenerator(
             else -> "serialize"
         }
 
-        val elementName = nestingLevel.nestedIdentifier()
+        val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.COLLECTION)
         val containerName = if (nestingLevel == 0) "input." else ""
         val encoding = formatInstant(elementName, tsFormat, forceString = true)
 
@@ -625,14 +625,4 @@ open class SerializeStructGenerator(
         }
         return "serialize$suffix"
     }
-
-    /**
-     * Generate an identifier for a given nesting level
-     */
-    private fun Int.nestedIdentifier(): String = "c$this"
-
-    /**
-     * Generate an identifier for a given nesting level
-     */
-    private fun Int.nestedDescriptorName(): String = "_c$this"
 }

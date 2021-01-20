@@ -44,3 +44,20 @@ internal fun Shape.targetOrSelf(model: Model) = when (this) {
     is MemberShape -> model.expectShape(this.target)
     else -> this
 }
+
+/**
+ * Specifies the type of value the identifier represents
+ */
+enum class NestedIdentifierType(val prefix: String) {
+    KEY("k"), VALUE("v"), ELEMENT("el"), COLLECTION("c"), MUTABLE_COLLECTION("m");
+}
+/**
+ * Generate an identifier for a given nesting level
+ * @param type intended type of value
+ */
+fun Int.nestedIdentifier(type: NestedIdentifierType): String = "${type.prefix}$this"
+
+/**
+ * Generate an identifier for a given nesting level
+ */
+fun Int.nestedDescriptorName(): String = "_c$this"
