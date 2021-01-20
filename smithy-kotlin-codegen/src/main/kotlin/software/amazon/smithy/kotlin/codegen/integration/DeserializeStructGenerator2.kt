@@ -153,13 +153,13 @@ class DeserializeStructGenerator2(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, isSparse, parentMemberName)
-            ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
-            ShapeType.TIMESTAMP -> renderTimestampEntry(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BLOB -> renderBlobEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.TIMESTAMP -> renderTimestampEntry(elementShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.SET,
-            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
-            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
+            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
+            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, isSparse, parentMemberName)
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -167,36 +167,109 @@ class DeserializeStructGenerator2(
     private fun renderNestedStructureEntry(
         elementShape: Shape,
         nestingLevel: Int,
-        parentMemberName: String,
-        sparse: Boolean
+        isSparse: Boolean,
+        parentMemberName: String
     ) {
-        TODO("Not yet implemented")
+        val deserializerFn = deserializerForPrimitiveShape(elementShape)
+        val keyName = nestingLevel.nestedIdentifier(NestedIdentifierType.KEY)
+        val valueName = nestingLevel.nestedIdentifier(NestedIdentifierType.VALUE)
+        val denseEntryPostfix = when (isSparse) {
+            true -> ""
+            false -> "; continue"
+        }
+
+        writer.write("val $keyName = key()")
+        writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$denseEntryPostfix }")
+        writer.write("$parentMemberName[$keyName] = $valueName")
     }
 
     private fun renderMapEntry(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
+        isSparse: Boolean,
         parentMemberName: String
     ) {
-        TODO("Not yet implemented")
+        val keyName = nestingLevel.nestedIdentifier(NestedIdentifierType.KEY)
+        val valueName = nestingLevel.nestedIdentifier(NestedIdentifierType.VALUE)
+        val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
+        val targetCollectionMemberType = when (isSparse) {
+            true -> "${mapShape.collectionElementType(ctx).name}?"
+            false -> mapShape.collectionElementType(ctx).name
+        }
+        val nextNestingLevel = nestingLevel + 1
+        val memberName = nextNestingLevel.nestedIdentifier(NestedIdentifierType.MUTABLE_COLLECTION)
+
+        writer.write("val $keyName = key()")
+        writer.withBlock("val $valueName = deserializer.deserializeMap($descriptorName) {", "}") {
+            write("val $memberName = mutableMapOf<String, $targetCollectionMemberType>()")
+            withBlock("while(hasNextEntry()) {", "}") {
+                delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, memberName)
+            }
+            write("$memberName")
+        }
+        writer.write("$parentMemberName[$keyName] = $valueName")
     }
 
     private fun renderListEntry(
         rootMemberShape: MemberShape,
         collectionShape: CollectionShape,
         nestingLevel: Int,
+        isSparse: Boolean,
         parentMemberName: String
     ) {
-        TODO("Not yet implemented")
+        val keyName = nestingLevel.nestedIdentifier(NestedIdentifierType.KEY)
+        val valueName = nestingLevel.nestedIdentifier(NestedIdentifierType.VALUE)
+        val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
+        val targetCollectionType = when (collectionShape) {
+            is ListShape -> "List"
+            is SetShape -> "Set"
+            else -> error("Unexpected type $collectionShape")
+        }
+        val targetCollectionMemberType = when (isSparse) {
+            true -> "${collectionShape.collectionElementType(ctx).name}?"
+            false -> collectionShape.collectionElementType(ctx).name
+        }
+        val nextNestingLevel = nestingLevel + 1
+        val memberName = nextNestingLevel.nestedIdentifier(NestedIdentifierType.MUTABLE_COLLECTION)
+
+        writer.write("val $keyName = key()")
+        writer.withBlock("val $valueName = deserializer.deserializeList($descriptorName) {", "}") {
+            write("val $memberName = mutable${targetCollectionType}Of<$targetCollectionMemberType>()")
+            withBlock("while(hasNextElement()) {", "}") {
+                delegateListDeserialization(rootMemberShape, collectionShape, nextNestingLevel, memberName)
+            }
+            write("$memberName")
+        }
+        writer.write("$parentMemberName[$keyName] = $valueName")
     }
 
-    private fun renderTimestampEntry(elementShape: Shape, nestingLevel: Int, parentMemberName: String) {
-        TODO("Not yet implemented")
+    private fun renderTimestampEntry(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
+        val deserializerFn = deserializerForPrimitiveShape(elementShape)
+        val keyName = nestingLevel.nestedIdentifier(NestedIdentifierType.KEY)
+        val valueName = nestingLevel.nestedIdentifier(NestedIdentifierType.VALUE)
+        val denseEntryPostfix = when (isSparse) {
+            true -> ""
+            false -> "; continue"
+        }
+
+        writer.write("val $keyName = key()")
+        writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$denseEntryPostfix }")
+        writer.write("$parentMemberName[$keyName] = $valueName")
     }
 
-    private fun renderBlobEntry(nestingLevel: Int, parentMemberName: String) {
-        TODO("Not yet implemented")
+    private fun renderBlobEntry(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
+        val deserializerFn = deserializerForPrimitiveShape(elementShape)
+        val keyName = nestingLevel.nestedIdentifier(NestedIdentifierType.KEY)
+        val valueName = nestingLevel.nestedIdentifier(NestedIdentifierType.VALUE)
+        val denseEntryPostfix = when (isSparse) {
+            true -> ""
+            false -> "; continue"
+        }
+
+        writer.write("val $keyName = key()")
+        writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$denseEntryPostfix }")
+        writer.write("$parentMemberName[$keyName] = $valueName")
     }
 
     /**
@@ -218,7 +291,7 @@ class DeserializeStructGenerator2(
 
         writer.write("val $keyName = key()")
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$denseEntryPostfix }")
-        writer.write("map0[$keyName] = $valueName")
+        writer.write("$parentMemberName[$keyName] = $valueName")
     }
 
     /**
@@ -228,8 +301,7 @@ class DeserializeStructGenerator2(
      *  deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
      *      val collection0 = mutableListOf<Instant>()
      *      while(hasNextElement()) {
-     *          val el0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); continue }
-     *          collection0.add(el0)
+     *          ...
      *      }
      *      collection0
      *  }
@@ -281,12 +353,12 @@ class DeserializeStructGenerator2(
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
-            ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
+            ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.BLOB -> renderBlobElement(elementShape, nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampElement(elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST,
-            ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
-            ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
+            ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.UNION,
             ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
             else -> error("Unhandled type ${elementShape.type}")
@@ -305,35 +377,58 @@ class DeserializeStructGenerator2(
         val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.ELEMENT)
 
         writer.write("val $elementName = if (nextHasValue()) { $deserializer } else { deserializeNull(); continue }")
-        writer.write("collection0.add($elementName)")
+        writer.write("$parentMemberName.add($elementName)")
     }
 
     private fun renderMapElement(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
-        parentMemberName: String
+        isSparse: Boolean,
+        parentMapMemberName: String
     ) {
-        //TODO("Not yet implemented")
+        val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
+        val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.ELEMENT)
+        val nextNestingLevel = nestingLevel + 1
+        val mapName = nextNestingLevel.nestedIdentifier(NestedIdentifierType.MUTABLE_COLLECTION)
+        val targetCollectionMemberType = when (isSparse) {
+            true -> "${mapShape.collectionElementType(ctx).name}?"
+            false -> mapShape.collectionElementType(ctx).name
+        }
+
+        writer.withBlock("val $elementName = deserializer.deserializeMap($descriptorName) {", "}") {
+            write("val $mapName = mutableMapOf<String, $targetCollectionMemberType>()")
+            withBlock("while(hasNextEntry()) {", "}") {
+                delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, mapName)
+            }
+            write(mapName)
+        }
+        writer.write("$parentMapMemberName.add($elementName)")
     }
 
-    private fun renderListElement(rootMemberShape: MemberShape, elementShape: CollectionShape, nestingLevel: Int, parentListMemberName: String) {
+    private fun renderListElement(rootMemberShape: MemberShape, elementShape: CollectionShape, nestingLevel: Int, isSparse: Boolean, parentListMemberName: String) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.ELEMENT)
         val nextNestingLevel = nestingLevel + 1
         val listName = nextNestingLevel.nestedIdentifier(NestedIdentifierType.MUTABLE_COLLECTION)
-        val targetCollectionMemberType = when (elementShape.hasTrait(SparseTrait::class.java)) {
+        val targetCollectionType = when (elementShape) {
+            is ListShape -> "List"
+            is SetShape -> "Set"
+            else -> error("Unexpected type $elementShape")
+        }
+        val targetCollectionMemberType = when (isSparse) {
             true -> "${elementShape.collectionElementType(ctx).name}?"
             false -> elementShape.collectionElementType(ctx).name
         }
 
         writer.withBlock("val $elementName = deserializer.deserializeList($descriptorName) {", "}") {
-            write("val $listName = mutableListOf<$targetCollectionMemberType>()")
+            write("val $listName = mutable${targetCollectionType}Of<$targetCollectionMemberType>()")
             withBlock("while(hasNextElement()) {", "}") {
                 delegateListDeserialization(rootMemberShape, elementShape, nextNestingLevel, listName)
             }
             write(listName)
         }
+        writer.write("$parentListMemberName.add($elementName)")
     }
 
     /**
@@ -372,7 +467,7 @@ class DeserializeStructGenerator2(
      * collection0.add(el0)
      * ```
      */
-    private fun renderPrimitiveElement(elementShape: Shape, nestingLevel: Int, listMemberName: String, isSparse: Boolean) {
+    private fun renderPrimitiveElement(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, listMemberName: String) {
         val deserializerFn = deserializerForPrimitiveShape(elementShape)
         val elementName = nestingLevel.nestedIdentifier(NestedIdentifierType.ELEMENT)
         val denseEntryPostfix = when (isSparse) {
@@ -385,7 +480,9 @@ class DeserializeStructGenerator2(
     }
 
     private fun deserializerForStructureShape(shape: Shape): SerializeStructGenerator.SerializeInfo {
-        TODO("nOT")
+        println("boo")
+
+        TODO()
     }
 
     private fun deserializerForPrimitiveShape(shape: Shape): String {
