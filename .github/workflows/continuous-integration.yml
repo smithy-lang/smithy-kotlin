@@ -39,7 +39,7 @@ jobs:
   #       ./gradlew ktlint
 
   downstream:
-    needs: linux-compat
+    # needs: linux-compat
     runs-on: ubuntu-latest
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
