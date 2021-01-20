@@ -157,7 +157,7 @@ class SemanticParityTest {
                         when (findNextFieldIndex()) {
                             X_DESCRIPTOR.index -> result.x = deserializeInt()
                             Y_DESCRIPTOR.index -> result.y = deserializeString()
-                            Z_DESCRIPTOR.index -> result.z = deserializeBool()
+                            Z_DESCRIPTOR.index -> result.z = deserializeBoolean()
                             null -> break@loop
                             else -> throw RuntimeException("unexpected field in BasicStructTest deserializer")
                         }

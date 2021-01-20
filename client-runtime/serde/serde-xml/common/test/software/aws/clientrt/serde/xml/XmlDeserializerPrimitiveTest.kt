@@ -96,7 +96,7 @@ class XmlDeserializerPrimitiveTest {
         val objSerializer = SdkObjectDescriptor.build {
             field(SdkFieldDescriptor("node", SerialKind.Boolean))
         }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeBool()!!
+        val actual = deserializer.deserializeStruct(objSerializer).deserializeBoolean()!!
         assertTrue(actual)
     }
 

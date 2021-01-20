@@ -79,7 +79,7 @@ class XmlDeserializerKitchenSinkTest {
                             NESTED2_FIELD_DESCRIPTOR.index -> {
                                 nested.nested2 = Nested2.deserialize(deserializer)
                             }
-                            BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializeBool()
+                            BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializeBoolean()
                             null -> break@loop
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field during test"))
                         }
@@ -193,7 +193,7 @@ class XmlDeserializerKitchenSinkTest {
                     KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = deserializeInt()
                     KitchenSinkTest.LONG_FIELD_DESCRIPTOR.index -> sink.longField = deserializeLong()
                     KitchenSinkTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = deserializeShort()
-                    KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = deserializeBool()
+                    KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = deserializeBoolean()
                     KitchenSinkTest.STR_FIELD_DESCRIPTOR.index -> sink.strField = deserializeString()
                     KitchenSinkTest.LIST_FIELD_DESCRIPTOR.index ->
                         sink.listField =

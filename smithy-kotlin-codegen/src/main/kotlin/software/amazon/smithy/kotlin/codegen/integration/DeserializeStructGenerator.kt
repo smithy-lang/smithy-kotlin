@@ -84,7 +84,7 @@ class DeserializeStructGenerator(
         }
 
         return when (target.type) {
-            ShapeType.BOOLEAN -> "deserializeBool()"
+            ShapeType.BOOLEAN -> "deserializeBoolean()"
             ShapeType.BYTE -> "deserializeByte()"
             ShapeType.SHORT -> "deserializeShort()"
             ShapeType.INTEGER -> "deserializeInt()"

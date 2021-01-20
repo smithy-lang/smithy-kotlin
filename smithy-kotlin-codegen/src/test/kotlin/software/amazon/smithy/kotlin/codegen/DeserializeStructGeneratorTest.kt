@@ -66,7 +66,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         }
         val expected = """
             PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeInt()
-            PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeBool()
+            PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeBoolean()
             PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = deserializeByte()
             PAYLOAD4_DESCRIPTOR.index -> builder.payload4 = deserializeShort()
             PAYLOAD5_DESCRIPTOR.index -> builder.payload5 = deserializeLong()

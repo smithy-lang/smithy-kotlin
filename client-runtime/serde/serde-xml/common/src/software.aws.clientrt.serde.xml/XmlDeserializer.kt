@@ -100,7 +100,7 @@ class XmlDeserializer(
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override suspend fun deserializeBool(): Boolean =
+    override suspend fun deserializeBoolean(): Boolean =
         deserializePrimitive { it.toBoolean() }
 
     override suspend fun deserializeNull(): Nothing? {
@@ -257,10 +257,10 @@ private class CompositeIterator(
         return deserializer.deserializeString()
     }
 
-    override suspend fun deserializeBool(): Boolean {
+    override suspend fun deserializeBoolean(): Boolean {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
-        return deserializer.deserializeBool()
+        return deserializer.deserializeBoolean()
     }
 
     override suspend fun deserializeNull(): Nothing? {
@@ -438,7 +438,7 @@ private class XmlFieldIterator(
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override suspend fun deserializeBool(): Boolean =
+    override suspend fun deserializeBoolean(): Boolean =
         deserializePrimitive { it.toBoolean() }
 
     override suspend fun deserializeNull(): Nothing? {

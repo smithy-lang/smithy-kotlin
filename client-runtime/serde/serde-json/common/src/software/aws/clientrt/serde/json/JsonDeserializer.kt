@@ -41,7 +41,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
             else -> throw DeserializationException("$token cannot be deserialized as type String")
         }
 
-    override suspend fun deserializeBool(): Boolean {
+    override suspend fun deserializeBoolean(): Boolean {
         val token = reader.nextTokenOf<JsonToken.Bool>()
         return token.value
     }

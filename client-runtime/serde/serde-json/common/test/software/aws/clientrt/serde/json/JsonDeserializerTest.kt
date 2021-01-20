@@ -73,7 +73,7 @@ class JsonDeserializerTest {
     fun itHandlesBool() = runSuspendTest {
         val payload = "true".encodeToByteArray()
         val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeBool()
+        val actual = deserializer.deserializeBoolean()
         assertNotNull(actual)
         assertTrue(actual)
     }
@@ -351,7 +351,7 @@ class JsonDeserializerTest {
                                 Nested2.deserialize(
                                     deserializer
                                 )
-                        BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializer.deserializeBool()
+                        BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializer.deserializeBoolean()
                         null -> break@loop
                         else -> throw RuntimeException("unexpected field during test")
                     }
@@ -443,7 +443,7 @@ class JsonDeserializerTest {
                 KitchenSinkTest.INT_FIELD_DESCRIPTOR.index -> sink.intField = struct.deserializeInt()
                 KitchenSinkTest.LONG_FIELD_DESCRIPTOR.index -> sink.longField = struct.deserializeLong()
                 KitchenSinkTest.SHORT_FIELD_DESCRIPTOR.index -> sink.shortField = struct.deserializeShort()
-                KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = struct.deserializeBool()
+                KitchenSinkTest.BOOL_FIELD_DESCRIPTOR.index -> sink.boolField = struct.deserializeBoolean()
                 KitchenSinkTest.STR_FIELD_DESCRIPTOR.index -> sink.strField = struct.deserializeString()
                 KitchenSinkTest.LIST_FIELD_DESCRIPTOR.index -> sink.listField = deserializer.deserializeList(KitchenSinkTest.LIST_FIELD_DESCRIPTOR) {
                     val list = mutableListOf<Int>()

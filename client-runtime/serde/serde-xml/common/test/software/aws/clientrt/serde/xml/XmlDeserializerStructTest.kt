@@ -76,7 +76,7 @@ class XmlDeserializerStructTest {
                             X_ATTRIB_DESCRIPTOR.index -> result.xa = deserializeInt()
                             X_VALUE_DESCRIPTOR.index -> result.xt = deserializeString()
                             Y_DESCRIPTOR.index -> result.y = deserializeInt()
-                            Z_DESCRIPTOR.index -> result.z = deserializeBool()
+                            Z_DESCRIPTOR.index -> result.z = deserializeBoolean()
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                                 result.unknownFieldCount++

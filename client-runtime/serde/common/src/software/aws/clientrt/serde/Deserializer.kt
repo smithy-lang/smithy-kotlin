@@ -168,7 +168,7 @@ interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [Boolean]
      */
-    suspend fun deserializeBool(): Boolean
+    suspend fun deserializeBoolean(): Boolean
 
     /**
      * Consume the next token if represents a null value. Always returns null.
