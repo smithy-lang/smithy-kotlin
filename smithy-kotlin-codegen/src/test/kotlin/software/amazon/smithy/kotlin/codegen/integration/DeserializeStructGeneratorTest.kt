@@ -39,12 +39,12 @@ class DeserializeStructGeneratorTest {
     // TODO ~ Support BigInteger and BigDecimal Types
     fun `it deserializes a structure with a simple fields`(memberType: String) {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: $memberType
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val kotlinTypeFromSmithyType = when (memberType) {
             "Integer" -> "Int"
@@ -71,12 +71,12 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure with a timestamp field`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: Timestamp
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -98,7 +98,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure with a list of timestamp values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: TimestampList
             }
@@ -107,7 +107,7 @@ class DeserializeStructGeneratorTest {
                 member: Timestamp
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -137,7 +137,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure with a nested structure`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: NestedStructure
             }
@@ -146,7 +146,7 @@ class DeserializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -168,7 +168,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a union of primitives`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: UnionStructure
             }
@@ -179,7 +179,7 @@ class DeserializeStructGeneratorTest {
                     booleanValue: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -201,7 +201,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of a primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: IntList
             }
@@ -210,7 +210,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -240,7 +240,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: IntMap
             }
@@ -250,7 +250,7 @@ class DeserializeStructGeneratorTest {
                 value: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -281,7 +281,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of a union of primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: UnionList
             }
@@ -296,7 +296,7 @@ class DeserializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -326,7 +326,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a sparse list of a primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: SparseIntList
             }
@@ -336,7 +336,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -366,7 +366,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of a nested list of a primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringList
             }
@@ -379,7 +379,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -416,7 +416,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of a nested structure containing a primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringList
             }
@@ -429,7 +429,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -459,7 +459,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of a nested list of a nested list of a primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: BooleanList
             }
@@ -476,7 +476,7 @@ class DeserializeStructGeneratorTest {
                 member: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -520,7 +520,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a set of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: IntegerSet
             }
@@ -529,7 +529,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }            
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -559,7 +559,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a set of a map primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: IntegerSet
             }
@@ -573,7 +573,7 @@ class DeserializeStructGeneratorTest {
                 value: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -611,7 +611,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a set of a list of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: IntegerSet
             }
@@ -624,7 +624,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -661,7 +661,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a nested structure of a set of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: FooStruct
             }
@@ -674,7 +674,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -696,7 +696,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of a set of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: ListOfSet
             }
@@ -709,7 +709,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -746,7 +746,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a set of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: MapOfSet
             }
@@ -760,7 +760,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -798,7 +798,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of a map of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: ListOfBooleanMap
             }
@@ -812,7 +812,7 @@ class DeserializeStructGeneratorTest {
                 value: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -850,7 +850,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a primitive value`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringMap
             }
@@ -860,7 +860,7 @@ class DeserializeStructGeneratorTest {
                 value: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -891,7 +891,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a union of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringMap
             }
@@ -907,7 +907,7 @@ class DeserializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -938,7 +938,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a sparse map of a primitive value`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringMap
             }
@@ -949,7 +949,7 @@ class DeserializeStructGeneratorTest {
                 value: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -980,7 +980,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a sparse map of a nested structure`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringMap
             }
@@ -995,7 +995,7 @@ class DeserializeStructGeneratorTest {
                 fooValue: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1026,7 +1026,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a list of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringMap
             }
@@ -1040,7 +1040,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1078,7 +1078,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a list of a map of primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: ListOfMapMap
             }
@@ -1097,7 +1097,7 @@ class DeserializeStructGeneratorTest {
                 value: Boolean
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1143,7 +1143,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a value structure containing a primitive type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringMap
             }
@@ -1157,7 +1157,7 @@ class DeserializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1188,7 +1188,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of a map of a primitive value`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: StringMap
             }
@@ -1203,7 +1203,7 @@ class DeserializeStructGeneratorTest {
                 value: Integer
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1242,7 +1242,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing an enum string`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 firstEnum: SimpleYesNo,
                 secondEnum: TypedYesNo
@@ -1254,7 +1254,7 @@ class DeserializeStructGeneratorTest {
             @enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
             string TypedYesNo
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1277,7 +1277,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of enum strings`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: EnumList               
             }
@@ -1289,7 +1289,7 @@ class DeserializeStructGeneratorTest {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1319,7 +1319,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of enum string values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: EnumMap               
             }
@@ -1332,7 +1332,7 @@ class DeserializeStructGeneratorTest {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1363,12 +1363,12 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a blob`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooBlob: Blob
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1387,12 +1387,11 @@ class DeserializeStructGeneratorTest {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-
     @Test
     // TODO ~ this codegen path is not exercised by protocol tests
     fun `it deserializes a structure containing a structure`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooStructVal: FooStruct
             }
@@ -1401,7 +1400,7 @@ class DeserializeStructGeneratorTest {
                 strVal: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1423,7 +1422,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of value type blob`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooBlobMap: BlobMap
             }
@@ -1433,7 +1432,7 @@ class DeserializeStructGeneratorTest {
                 value: Blob
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1464,7 +1463,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a list of value type blob`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooBlobList: BlobList
             }
@@ -1473,7 +1472,7 @@ class DeserializeStructGeneratorTest {
                 member: Blob
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1503,12 +1502,12 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a timestamp`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooTime: Timestamp
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1530,7 +1529,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a map of value type timestamp`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooTimestampMap: TimestampMap
             }
@@ -1540,7 +1539,7 @@ class DeserializeStructGeneratorTest {
                 value: Timestamp
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

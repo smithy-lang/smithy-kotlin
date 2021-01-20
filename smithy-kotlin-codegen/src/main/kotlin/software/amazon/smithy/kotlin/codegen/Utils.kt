@@ -49,11 +49,11 @@ internal fun Shape.targetOrSelf(model: Model) = when (this) {
  * Specifies the type of value the identifier represents
  */
 internal enum class NestedIdentifierType(val prefix: String) {
-    KEY("k"),                   // Generated variable names for map keys
-    VALUE("v"),                 // Generated variable names for map values
-    ELEMENT("el"),              // Generated variable name for list elements
-    COLLECTION("col"),          // Generated variable name for collection types (list, set)
-    MAP("map");                 // Generated variable name for map type
+    KEY("k"), // Generated variable names for map keys
+    VALUE("v"), // Generated variable names for map values
+    ELEMENT("el"), // Generated variable name for list elements
+    COLLECTION("col"), // Generated variable name for collection types (list, set)
+    MAP("map"); // Generated variable name for map type
 }
 /**
  * Generate an identifier for a given nesting level

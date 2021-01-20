@@ -43,7 +43,7 @@ class DeserializeUnionGeneratorTest {
     @Test
     fun `it deserializes a structure with primitive values`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 fooUnion: PrimitiveUnion
             }
@@ -53,7 +53,7 @@ class DeserializeUnionGeneratorTest {
                 stringA: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -73,7 +73,7 @@ class DeserializeUnionGeneratorTest {
     @Test
     fun `it deserializes a structure with collection types`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payloadAggregateUnion: MyAggregateUnion
             }
@@ -101,7 +101,7 @@ class DeserializeUnionGeneratorTest {
             }
                 
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

@@ -19,11 +19,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class SerializeStructGeneratorTest2 {

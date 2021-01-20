@@ -45,7 +45,6 @@ open class DeserializeStructGenerator(
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
 
-
     /**
      * Enables overriding the codegen output of the final value resulting
      * from the deserialization of a non-primitive type.
@@ -111,7 +110,6 @@ open class DeserializeStructGenerator(
 
     // TODO ~ Not yet implemented
     protected fun renderDocumentShapeDeserializer(memberShape: MemberShape) {
-
     }
 
     /**
@@ -146,15 +144,15 @@ open class DeserializeStructGenerator(
         val collectionReturnExpression = collectionReturnExpression(memberShape, mutableCollectionName)
 
         writer.write("$descriptorName.index -> $valueCollector = ")
-                .indent()
-                .withBlock("deserializer.deserializeMap($descriptorName) {", "}") {
-                    write("val $mutableCollectionName = $mutableCollectionType()")
-                    withBlock("while (hasNextEntry()) {", "}") {
-                        delegateMapDeserialization(memberShape, targetShape, nestingLevel, mutableCollectionName)
-                    }
-                    write(collectionReturnExpression)
+            .indent()
+            .withBlock("deserializer.deserializeMap($descriptorName) {", "}") {
+                write("val $mutableCollectionName = $mutableCollectionType()")
+                withBlock("while (hasNextEntry()) {", "}") {
+                    delegateMapDeserialization(memberShape, targetShape, nestingLevel, mutableCollectionName)
                 }
-                .dedent()
+                write(collectionReturnExpression)
+            }
+            .dedent()
     }
 
     /**
