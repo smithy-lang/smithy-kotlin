@@ -251,8 +251,8 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             if (input.intList != null) {
                 listField(INTLIST_DESCRIPTOR) {
-                    for (c0 in input.intList) {
-                        serializeInt(c0)
+                    for (col0 in input.intList) {
+                        serializeInt(col0)
                     }
                 }
             }
@@ -363,8 +363,8 @@ class UnionOutputDeserializer : HttpDeserialize {
         if (payload != null) {
             val deserializer = provider(payload)
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOADUNION_DESCRIPTOR.index -> builder.payloadUnion = MyUnionDeserializer().deserialize(deserializer)
                         null -> break@loop
                         else -> skipValue()
@@ -376,7 +376,7 @@ class UnionOutputDeserializer : HttpDeserialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.UnionRequest")
     }
 
@@ -402,8 +402,8 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
         if (payload != null) {
             val deserializer = provider(payload)
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOADAGGREGATEUNION_DESCRIPTOR.index -> builder.payloadAggregateUnion = MyAggregateUnionDeserializer().deserialize(deserializer)
                         null -> break@loop
                         else -> skipValue()
@@ -415,7 +415,7 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.UnionAggregateRequest")
     }
 
@@ -477,7 +477,7 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
         return value
     }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.MyUnion")
     }
 
@@ -578,8 +578,8 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
             input.normal?.let { rawField(NORMAL_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
             if (input.timestampList != null) {
                 listField(TIMESTAMPLIST_DESCRIPTOR) {
-                    for (c0 in input.timestampList) {
-                        serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
+                    for (col0 in input.timestampList) {
+                        serializeRaw(col0.format(TimestampFormat.EPOCH_SECONDS))
                     }
                 }
             }
@@ -690,8 +690,8 @@ class SmokeTestDeserializer : HttpDeserialize {
         if (payload != null) {
             val deserializer = provider(payload)
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD1_DESCRIPTOR.index -> builder.payload1 = deserializeString()
                         PAYLOAD2_DESCRIPTOR.index -> builder.payload2 = deserializeInt()
                         PAYLOAD3_DESCRIPTOR.index -> builder.payload3 = NestedDeserializer().deserialize(deserializer)
@@ -706,7 +706,7 @@ class SmokeTestDeserializer : HttpDeserialize {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -795,8 +795,8 @@ class Nested3Deserializer {
     suspend fun deserialize(deserializer: Deserializer): Nested3 {
         val builder = Nested3.dslBuilder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-            loop@while(true) {
-                when(findNextFieldIndex()) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
                     MEMBER1_DESCRIPTOR.index -> builder.member1 = deserializeString()
                     MEMBER2_DESCRIPTOR.index -> builder.member2 = deserializeString()
                     MEMBER3_DESCRIPTOR.index -> builder.member3 = Nested4Deserializer().deserialize(deserializer)
@@ -809,7 +809,7 @@ class Nested3Deserializer {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.Nested3")
     }
 
@@ -856,8 +856,8 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
             if (input.mapOfLists != null) {
                 mapField(MAPOFLISTS_DESCRIPTOR) {
                     input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
-                        for (c1 in value) {
-                            serializeInt(c1)
+                        for (col1 in value) {
+                            serializeInt(col1)
                         }
                     }}
                 }

@@ -108,8 +108,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
+                        for (col0 in input.payload) {
+                            serializeRaw(col0.format(TimestampFormat.EPOCH_SECONDS))
                         }
                     }
                 }
@@ -193,8 +193,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeInt(c0)
+                        for (col0 in input.payload) {
+                            serializeInt(col0)
                         }
                     }
                 }
@@ -230,8 +230,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeSdkSerializable(FooUnionSerializer(c0))
+                        for (col0 in input.payload) {
+                            serializeSdkSerializable(FooUnionSerializer(col0))
                         }
                     }
                 }
@@ -262,8 +262,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            if (c0 != null) serializeInt(c0) else serializeNull()
+                        for (col0 in input.payload) {
+                            if (col0 != null) serializeInt(col0) else serializeNull()
                         }
                     }
                 }
@@ -297,10 +297,10 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (col0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
-                                    serializeString(c1)
+                                for (col1 in col0) {
+                                    serializeString(col1)
                                 }
                             }
                         }
@@ -336,8 +336,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeSdkSerializable(NestedStructureSerializer(c0))
+                        for (col0 in input.payload) {
+                            serializeSdkSerializable(NestedStructureSerializer(col0))
                         }
                     }
                 }
@@ -375,12 +375,12 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (col0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
+                                for (col1 in col0) {
                                     serializer.serializeList(PAYLOAD_C1_DESCRIPTOR) {
-                                        for (c2 in c1) {
-                                            serializeBoolean(c2)
+                                        for (col2 in col1) {
+                                            serializeBoolean(col2)
                                         }
                                     }
                                 }
@@ -414,8 +414,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeInt(c0)
+                        for (col0 in input.payload) {
+                            serializeInt(col0)
                         }
                     }
                 }
@@ -450,9 +450,9 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (col0 in input.payload) {
                             serializer.serializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                c0.forEach { (key1, value1) -> entry(key1, value1) }
+                                col0.forEach { (key1, value1) -> entry(key1, value1) }
                             }
                         }
                     }
@@ -487,10 +487,10 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (col0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
-                                    serializeString(c1)
+                                for (col1 in col0) {
+                                    serializeString(col1)
                                 }
                             }
                         }
@@ -555,10 +555,10 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (col0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
-                                    serializeInt(c1)
+                                for (col1 in col0) {
+                                    serializeInt(col1)
                                 }
                             }
                         }
@@ -596,8 +596,8 @@ class SerializeStructGeneratorTest2 {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (c1 in value) {
-                                serializeInt(c1)
+                            for (col1 in value) {
+                                serializeInt(col1)
                             }
                         }}
                     }
@@ -633,9 +633,9 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (col0 in input.payload) {
                             serializer.serializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                c0.forEach { (key1, value1) -> entry(key1, value1) }
+                                col0.forEach { (key1, value1) -> entry(key1, value1) }
                             }
                         }
                     }
@@ -804,8 +804,8 @@ class SerializeStructGeneratorTest2 {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (c1 in value) {
-                                serializeString(c1)
+                            for (col1 in value) {
+                                serializeString(col1)
                             }
                         }}
                     }
@@ -847,9 +847,9 @@ class SerializeStructGeneratorTest2 {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (c1 in value) {
+                            for (col1 in value) {
                                 serializer.serializeMap(PAYLOAD_C1_DESCRIPTOR) {
-                                    c1.forEach { (key2, value2) -> entry(key2, value2) }
+                                    col1.forEach { (key2, value2) -> entry(key2, value2) }
                                 }
                             }
                         }}
@@ -984,8 +984,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeString(c0.value)
+                        for (col0 in input.payload) {
+                            serializeString(col0.value)
                         }
                     }
                 }
@@ -1099,8 +1099,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.fooBlobList != null) {
                     listField(FOOBLOBLIST_DESCRIPTOR) {
-                        for (c0 in input.fooBlobList) {
-                            serializeString(c0.encodeBase64String())
+                        for (col0 in input.fooBlobList) {
+                            serializeString(col0.encodeBase64String())
                         }
                     }
                 }

@@ -15,13 +15,11 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-class DeserializeUnionGeneratorTest2 {
+class DeserializeUnionGeneratorTest {
 
     private val modelPrefix = """
             namespace com.test
@@ -110,17 +108,17 @@ class DeserializeUnionGeneratorTest2 {
                 when(findNextFieldIndex()) {
                     INTLIST_DESCRIPTOR.index -> value =
                         deserializer.deserializeList(INTLIST_DESCRIPTOR) {
-                            val collection0 = mutableListOf<Int>()
-                            while(hasNextElement()) {
+                            val col0 = mutableListOf<Int>()
+                            while (hasNextElement()) {
                                 val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                collection0.add(el0)
+                                col0.add(el0)
                             }
-                            MyAggregateUnion.IntList(collection0)
+                            MyAggregateUnion.IntList(col0)
                         }
                     INTMAP_DESCRIPTOR.index -> value =
                         deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
                             val map0 = mutableMapOf<String, Int>()
-                            while(hasNextEntry()) {
+                            while (hasNextEntry()) {
                                 val k0 = key()
                                 val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                 map0[k0] = v0
@@ -188,41 +186,41 @@ class DeserializeUnionGeneratorTest2 {
                     I32_DESCRIPTOR.index -> value = deserializeInt().let { MyAggregateUnion.I32(it) }
                     INTLIST_DESCRIPTOR.index -> value =
                         deserializer.deserializeList(INTLIST_DESCRIPTOR) {
-                            val collection0 = mutableListOf<Int>()
-                            while(hasNextElement()) {
+                            val col0 = mutableListOf<Int>()
+                            while (hasNextElement()) {
                                 val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                collection0.add(el0)
+                                col0.add(el0)
                             }
-                            MyAggregateUnion.IntList(collection0)
+                            MyAggregateUnion.IntList(col0)
                         }
                     LISTOFINTLIST_DESCRIPTOR.index -> value =
                         deserializer.deserializeList(LISTOFINTLIST_DESCRIPTOR) {
-                            val collection0 = mutableListOf<List<Int>>()
-                            while(hasNextElement()) {
+                            val col0 = mutableListOf<List<Int>>()
+                            while (hasNextElement()) {
                                 val el0 = deserializer.deserializeList(LISTOFINTLIST_C0_DESCRIPTOR) {
-                                    val m1 = mutableListOf<Int>()
-                                    while(hasNextElement()) {
+                                    val col1 = mutableListOf<Int>()
+                                    while (hasNextElement()) {
                                         val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                        m1.add(el1)
+                                        col1.add(el1)
                                     }
-                                    MyAggregateUnion.ListOfIntList(m1)
+                                    MyAggregateUnion.ListOfIntList(col1)
                                 }
-                                collection0.add(el0)
+                                col0.add(el0)
                             }
-                            MyAggregateUnion.ListOfIntList(collection0)
+                            MyAggregateUnion.ListOfIntList(col0)
                         }
                     MAPOFLISTS_DESCRIPTOR.index -> value =
                         deserializer.deserializeMap(MAPOFLISTS_DESCRIPTOR) {
                             val map0 = mutableMapOf<String, List<Int>>()
-                            while(hasNextEntry()) {
+                            while (hasNextEntry()) {
                                 val k0 = key()
                                 val v0 = deserializer.deserializeList(MAPOFLISTS_C0_DESCRIPTOR) {
-                                    val m1 = mutableListOf<Int>()
-                                    while(hasNextElement()) {
+                                    val col1 = mutableListOf<Int>()
+                                    while (hasNextElement()) {
                                         val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                        m1.add(el1)
+                                        col1.add(el1)
                                     }
-                                    MyAggregateUnion.MapOfLists(m1)
+                                    MyAggregateUnion.MapOfLists(col1)
                                 }
                                 map0[k0] = v0
                             }
@@ -243,7 +241,7 @@ class DeserializeUnionGeneratorTest2 {
         val op = ctx.expectShape(shapeId)
 
         return testRender(ctx.responseMembers(op)) { members, writer ->
-            DeserializeUnionGenerator2(
+            DeserializeUnionGenerator(
                 ctx.generationCtx,
                 members,
                 writer,

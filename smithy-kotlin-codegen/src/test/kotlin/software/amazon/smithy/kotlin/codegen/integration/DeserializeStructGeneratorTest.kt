@@ -12,14 +12,9 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-class DeserializeStructGeneratorTest2 {
+class DeserializeStructGeneratorTest {
     private val modelPrefix = """
             namespace com.test
 
@@ -51,15 +46,15 @@ class DeserializeStructGeneratorTest2 {
         """
                 ).asSmithyModel()
 
-        val kotlinTypeFromSmithyType = when(memberType) {
+        val kotlinTypeFromSmithyType = when (memberType) {
             "Integer" -> "Int"
             else -> memberType
         }
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload = deserialize$kotlinTypeFromSmithyType()
                         null -> break@loop
                         else -> skipValue()
@@ -85,8 +80,8 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload = deserializeString().let { Instant.fromEpochSeconds(it) }
                         null -> break@loop
                         else -> skipValue()
@@ -116,16 +111,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<Instant>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<Instant>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); continue }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -155,8 +150,8 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload = NestedStructureDeserializer().deserialize(deserializer)
                         null -> break@loop
                         else -> skipValue()
@@ -188,8 +183,8 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload = UnionStructureDeserializer().deserialize(deserializer)
                         null -> break@loop
                         else -> skipValue()
@@ -219,16 +214,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<Int>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<Int>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -259,12 +254,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Int>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                     map0[k0] = v0
@@ -305,16 +300,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<FooUnion>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<FooUnion>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { FooUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -345,16 +340,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<Int?>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<Int?>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull() }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -388,23 +383,23 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<List<String>>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<List<String>>()
+                                while (hasNextElement()) {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableListOf<String>()
-                                        while(hasNextElement()) {
+                                        val col1 = mutableListOf<String>()
+                                        while (hasNextElement()) {
                                             val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
-                                            m1.add(el1)
+                                            col1.add(el1)
                                         }
-                                        m1
+                                        col1
                                     }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -438,16 +433,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<NestedStructure>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<NestedStructure>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { NestedStructureDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -485,30 +480,30 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<List<List<Boolean>>>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<List<List<Boolean>>>()
+                                while (hasNextElement()) {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableListOf<List<Boolean>>()
-                                        while(hasNextElement()) {
+                                        val col1 = mutableListOf<List<Boolean>>()
+                                        while (hasNextElement()) {
                                             val el1 = deserializer.deserializeList(PAYLOAD_C1_DESCRIPTOR) {
-                                                val m2 = mutableListOf<Boolean>()
-                                                while(hasNextElement()) {
+                                                val col2 = mutableListOf<Boolean>()
+                                                while (hasNextElement()) {
                                                     val el2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
-                                                    m2.add(el2)
+                                                    col2.add(el2)
                                                 }
-                                                m2
+                                                col2
                                             }
-                                            m1.add(el1)
+                                            col1.add(el1)
                                         }
-                                        m1
+                                        col1
                                     }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -538,16 +533,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableSetOf<Int>()
-                                while(hasNextElement()) {
+                                val col0 = mutableSetOf<Int>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -582,24 +577,24 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableSetOf<Map<String, String>>()
-                                while(hasNextElement()) {
+                                val col0 = mutableSetOf<Map<String, String>>()
+                                while (hasNextElement()) {
                                     val el0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableMapOf<String, String>()
-                                        while(hasNextEntry()) {
+                                        val map1 = mutableMapOf<String, String>()
+                                        while (hasNextEntry()) {
                                             val k1 = key()
                                             val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
-                                            m1[k1] = v1
+                                            map1[k1] = v1
                                         }
-                                        m1
+                                        map1
                                     }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -633,23 +628,23 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableSetOf<List<String>>()
-                                while(hasNextElement()) {
+                                val col0 = mutableSetOf<List<String>>()
+                                while (hasNextElement()) {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableListOf<String>()
-                                        while(hasNextElement()) {
+                                        val col1 = mutableListOf<String>()
+                                        while (hasNextElement()) {
                                             val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
-                                            m1.add(el1)
+                                            col1.add(el1)
                                         }
-                                        m1
+                                        col1
                                     }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -683,8 +678,8 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload = FooStructDeserializer().deserialize(deserializer)
                         null -> break@loop
                         else -> skipValue()
@@ -718,23 +713,23 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<Set<Int>>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<Set<Int>>()
+                                while (hasNextElement()) {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableSetOf<Int>()
-                                        while(hasNextElement()) {
+                                        val col1 = mutableSetOf<Int>()
+                                        while (hasNextElement()) {
                                             val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                            m1.add(el1)
+                                            col1.add(el1)
                                         }
-                                        m1
+                                        col1
                                     }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -769,20 +764,20 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Set<Int>>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableSetOf<Int>()
-                                        while(hasNextElement()) {
+                                        val col1 = mutableSetOf<Int>()
+                                        while (hasNextElement()) {
                                             val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                            m1.add(el1)
+                                            col1.add(el1)
                                         }
-                                        m1
+                                        col1
                                     }
                                     map0[k0] = v0
                                 }
@@ -821,24 +816,24 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<Map<String, Boolean>>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<Map<String, Boolean>>()
+                                while (hasNextElement()) {
                                     val el0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableMapOf<String, Boolean>()
-                                        while(hasNextEntry()) {
+                                        val map1 = mutableMapOf<String, Boolean>()
+                                        while (hasNextEntry()) {
                                             val k1 = key()
                                             val v1 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
-                                            m1[k1] = v1
+                                            map1[k1] = v1
                                         }
-                                        m1
+                                        map1
                                     }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -869,12 +864,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, String>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
                                     map0[k0] = v0
@@ -916,12 +911,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, FooUnion>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { FooUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                     map0[k0] = v0
@@ -958,12 +953,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, String?>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { deserializeString() } else { deserializeNull() }
                                     map0[k0] = v0
@@ -1004,12 +999,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, FooStruct?>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { FooStructDeserializer().deserialize(deserializer) } else { deserializeNull() }
                                     map0[k0] = v0
@@ -1049,20 +1044,20 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, List<String>>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableListOf<String>()
-                                        while(hasNextElement()) {
+                                        val col1 = mutableListOf<String>()
+                                        while (hasNextElement()) {
                                             val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
-                                            m1.add(el1)
+                                            col1.add(el1)
                                         }
-                                        m1
+                                        col1
                                     }
                                     map0[k0] = v0
                                 }
@@ -1106,28 +1101,28 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, List<Map<String, Boolean>>>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableListOf<Map<String, Boolean>>()
-                                        while(hasNextElement()) {
+                                        val col1 = mutableListOf<Map<String, Boolean>>()
+                                        while (hasNextElement()) {
                                             val el1 = deserializer.deserializeMap(PAYLOAD_C1_DESCRIPTOR) {
-                                                val m2 = mutableMapOf<String, Boolean>()
-                                                while(hasNextEntry()) {
+                                                val map2 = mutableMapOf<String, Boolean>()
+                                                while (hasNextEntry()) {
                                                     val k2 = key()
                                                     val v2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
-                                                    m2[k2] = v2
+                                                    map2[k2] = v2
                                                 }
-                                                m2
+                                                map2
                                             }
-                                            m1.add(el1)
+                                            col1.add(el1)
                                         }
-                                        m1
+                                        col1
                                     }
                                     map0[k0] = v0
                                 }
@@ -1166,12 +1161,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, FooStructure>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { FooStructureDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                     map0[k0] = v0
@@ -1212,21 +1207,21 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Map<String, Int>>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                        val m1 = mutableMapOf<String, Int>()
-                                        while(hasNextEntry()) {
+                                        val map1 = mutableMapOf<String, Int>()
+                                        while (hasNextEntry()) {
                                             val k1 = key()
                                             val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                            m1[k1] = v1
+                                            map1[k1] = v1
                                         }
-                                        m1
+                                        map1
                                     }
                                     map0[k0] = v0
                                 }
@@ -1263,8 +1258,8 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         FIRSTENUM_DESCRIPTOR.index -> builder.firstEnum = deserializeString().let { SimpleYesNo.fromValue(it) }
                         SECONDENUM_DESCRIPTOR.index -> builder.secondEnum = deserializeString().let { TypedYesNo.fromValue(it) }
                         null -> break@loop
@@ -1298,16 +1293,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val collection0 = mutableListOf<SimpleYesNo>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<SimpleYesNo>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { deserializeString().let { SimpleYesNo.fromValue(it) } } else { deserializeNull(); continue }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -1341,12 +1336,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, SimpleYesNo>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { deserializeString().let { SimpleYesNo.fromValue(it) } } else { deserializeNull(); continue }
                                     map0[k0] = v0
@@ -1377,9 +1372,42 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         FOOBLOB_DESCRIPTOR.index -> builder.fooBlob = deserializeString().decodeBase64Bytes()
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+
+    @Test
+    // TODO ~ this codegen path is not exercised by protocol tests
+    fun `it deserializes a structure containing a structure`() {
+        val model = (
+                modelPrefix + """            
+            structure FooResponse { 
+                fooStructVal: FooStruct
+            }
+            
+            structure FooStruct {
+                strVal: String
+            }
+        """
+                ).asSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        FOOSTRUCTVAL_DESCRIPTOR.index -> builder.fooStructVal = FooStructDeserializer().deserialize(deserializer)
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -1409,12 +1437,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         FOOBLOBMAP_DESCRIPTOR.index -> builder.fooBlobMap =
                             deserializer.deserializeMap(FOOBLOBMAP_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, ByteArray>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { deserializeString().decodeBase64Bytes() } else { deserializeNull(); continue }
                                     map0[k0] = v0
@@ -1449,16 +1477,16 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         FOOBLOBLIST_DESCRIPTOR.index -> builder.fooBlobList =
                             deserializer.deserializeList(FOOBLOBLIST_DESCRIPTOR) {
-                                val collection0 = mutableListOf<ByteArray>()
-                                while(hasNextElement()) {
+                                val col0 = mutableListOf<ByteArray>()
+                                while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { deserializeString().decodeBase64Bytes() } else { deserializeNull(); continue }
-                                    collection0.add(el0)
+                                    col0.add(el0)
                                 }
-                                collection0
+                                col0
                             }
                         null -> break@loop
                         else -> skipValue()
@@ -1484,8 +1512,8 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         FOOTIME_DESCRIPTOR.index -> builder.fooTime = deserializeString().let { Instant.fromEpochSeconds(it) }
                         null -> break@loop
                         else -> skipValue()
@@ -1516,12 +1544,12 @@ class DeserializeStructGeneratorTest2 {
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while(true) {
-                    when(findNextFieldIndex()) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
                         FOOTIMESTAMPMAP_DESCRIPTOR.index -> builder.fooTimestampMap =
                             deserializer.deserializeMap(FOOTIMESTAMPMAP_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Instant>()
-                                while(hasNextEntry()) {
+                                while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 = if (nextHasValue()) { deserializeString().let { Instant.fromEpochSeconds(it) } } else { deserializeNull(); continue }
                                     map0[k0] = v0
@@ -1547,7 +1575,7 @@ class DeserializeStructGeneratorTest2 {
         val op = ctx.expectShape(shapeId)
 
         return testRender(ctx.responseMembers(op)) { members, writer ->
-            DeserializeStructGenerator2(
+            DeserializeStructGenerator(
                 ctx.generationCtx,
                 members,
                 writer,
