@@ -39,7 +39,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * }
  * ```
  */
-class DeserializeStructGenerator2(
+open class DeserializeStructGenerator2(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val members: List<MemberShape>,
     private val writer: KotlinWriter,
@@ -66,7 +66,7 @@ class DeserializeStructGenerator2(
         }
     }
 
-    private fun renderMemberShape(memberShape: MemberShape) {
+    protected fun renderMemberShape(memberShape: MemberShape) {
         val targetShape = ctx.model.expectShape(memberShape.target)
 
         when (targetShape.type) {
@@ -92,11 +92,12 @@ class DeserializeStructGenerator2(
         }
     }
 
+    // TODO ~ Not yet implemented
     private fun renderDocumentShapeDeserializer(memberShape: MemberShape) {
-        TODO("Not yet implemented")
+
     }
 
-    private fun renderPrimitiveShapeDeserializer(memberShape: MemberShape, any: Any) {
+    open fun renderPrimitiveShapeDeserializer(memberShape: MemberShape, any: Any) {
         val memberName = memberShape.defaultName()
         val descriptorName = memberShape.descriptorName()
         val deserialize = deserializerForPrimitiveShape(memberShape)
@@ -120,15 +121,17 @@ class DeserializeStructGenerator2(
             true -> "${targetShape.collectionElementType(ctx).name}?"
             false -> targetShape.collectionElementType(ctx).name
         }
+        val valueCollector = valueCollectorName("builder.$memberName")
+        val collectionReturnExpression = collectionReturnExpression(memberShape, "map0")
 
-        writer.write("$descriptorName.index -> builder.$memberName = ")
+        writer.write("$descriptorName.index -> $valueCollector = ")
                 .indent()
                 .withBlock("deserializer.deserializeMap($descriptorName) {", "}") {
                     write("val map0 = mutableMapOf<String, $targetCollectionMemberType>()")
                     withBlock("while(hasNextEntry()) {", "}") {
                         delegateMapDeserialization(memberShape, targetShape, nestingLevel, "map0")
                     }
-                    write("map0")
+                    write(collectionReturnExpression)
                 }
                 .dedent()
     }
@@ -199,6 +202,7 @@ class DeserializeStructGenerator2(
         }
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.nestedIdentifier(NestedIdentifierType.MUTABLE_COLLECTION)
+        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
 
         writer.write("val $keyName = key()")
         writer.withBlock("val $valueName = deserializer.deserializeMap($descriptorName) {", "}") {
@@ -206,7 +210,7 @@ class DeserializeStructGenerator2(
             withBlock("while(hasNextEntry()) {", "}") {
                 delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, memberName)
             }
-            write("$memberName")
+            write(collectionReturnExpression)
         }
         writer.write("$parentMemberName[$keyName] = $valueName")
     }
@@ -232,6 +236,7 @@ class DeserializeStructGenerator2(
         }
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.nestedIdentifier(NestedIdentifierType.MUTABLE_COLLECTION)
+        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
 
         writer.write("val $keyName = key()")
         writer.withBlock("val $valueName = deserializer.deserializeList($descriptorName) {", "}") {
@@ -239,7 +244,7 @@ class DeserializeStructGenerator2(
             withBlock("while(hasNextElement()) {", "}") {
                 delegateListDeserialization(rootMemberShape, collectionShape, nextNestingLevel, memberName)
             }
-            write("$memberName")
+            write(collectionReturnExpression)
         }
         writer.write("$parentMemberName[$keyName] = $valueName")
     }
@@ -319,18 +324,24 @@ class DeserializeStructGenerator2(
             true -> "${targetShape.collectionElementType(ctx).name}?"
             false -> targetShape.collectionElementType(ctx).name
         }
+        val valueCollector = valueCollectorName("builder.$memberName")
+        val collectionReturnExpression = collectionReturnExpression(memberShape, "collection0")
 
-        writer.write("$descriptorName.index -> builder.$memberName = ")
+        writer.write("$descriptorName.index -> $valueCollector = ")
             .indent()
             .withBlock("deserializer.deserializeList($descriptorName) {", "}") {
                 write("val collection0 = mutable${targetCollectionType}Of<$targetCollectionMemberType>()")
                 withBlock("while(hasNextElement()) {", "}") {
                     delegateListDeserialization(memberShape, targetShape, nestingLevel, "collection0")
                 }
-                write("collection0")
+                write(collectionReturnExpression)
             }
             .dedent()
     }
+
+    open fun collectionReturnExpression(memberShape: MemberShape, defaultCollectionName: String): String = defaultCollectionName
+
+    open fun valueCollectorName(default: String): String = default
 
     private fun CollectionShape.collectionElementType(context: ProtocolGenerator.GenerationContext): Symbol =
         context.symbolProvider.toSymbol(context.model.expectShape(member.target))
@@ -395,13 +406,14 @@ class DeserializeStructGenerator2(
             true -> "${mapShape.collectionElementType(ctx).name}?"
             false -> mapShape.collectionElementType(ctx).name
         }
+        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, mapName)
 
         writer.withBlock("val $elementName = deserializer.deserializeMap($descriptorName) {", "}") {
             write("val $mapName = mutableMapOf<String, $targetCollectionMemberType>()")
             withBlock("while(hasNextEntry()) {", "}") {
                 delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, mapName)
             }
-            write(mapName)
+            write(collectionReturnExpression)
         }
         writer.write("$parentMapMemberName.add($elementName)")
     }
@@ -420,13 +432,14 @@ class DeserializeStructGenerator2(
             true -> "${elementShape.collectionElementType(ctx).name}?"
             false -> elementShape.collectionElementType(ctx).name
         }
+        val collectionReturnExpression = collectionReturnExpression(rootMemberShape, listName)
 
         writer.withBlock("val $elementName = deserializer.deserializeList($descriptorName) {", "}") {
             write("val $listName = mutable${targetCollectionType}Of<$targetCollectionMemberType>()")
             withBlock("while(hasNextElement()) {", "}") {
                 delegateListDeserialization(rootMemberShape, elementShape, nextNestingLevel, listName)
             }
-            write(listName)
+            write(collectionReturnExpression)
         }
         writer.write("$parentListMemberName.add($elementName)")
     }
@@ -485,7 +498,7 @@ class DeserializeStructGenerator2(
         TODO()
     }
 
-    private fun deserializerForPrimitiveShape(shape: Shape): String {
+    protected fun deserializerForPrimitiveShape(shape: Shape): String {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
 

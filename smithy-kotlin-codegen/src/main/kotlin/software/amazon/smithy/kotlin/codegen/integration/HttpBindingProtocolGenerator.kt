@@ -820,7 +820,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("val payload = response.body.readAll()")
                         writer.withBlock("if (payload != null) {", "}") {
                             writer.write("val deserializer = provider(payload)")
-                            DeserializeStructGenerator(ctx, documentMembers, writer, defaultTimestampFormat).render()
+                            DeserializeStructGenerator2(ctx, documentMembers, writer, defaultTimestampFormat).render()
                         }
                     }
                 }
@@ -1109,7 +1109,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 } else {
                     writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
                         writer.write("val builder = ${symbol.name}.dslBuilder()")
-                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        DeserializeStructGenerator2(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                         writer.write("return builder.build()")
                     }
                         .closeBlock("}")

@@ -137,7 +137,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                 val list0 = mutableListOf<Int>()
                 while(hasNextElement()) {
-                    val el0 = deserializeInt()
+                    val el0 = deserializeInteger()
                     list0.add(el0)
                 }
                 MyAggregateUnion.IntList(list0)
@@ -147,7 +147,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 val map0 = mutableMapOf<String, Int>()
                 while(hasNextEntry()) {
                     val k0 = key()
-                    val el0 = deserializeInt()
+                    val el0 = deserializeInteger()
                     map0[k0] = el0
                 }
                 MyAggregateUnion.IntMap(map0)

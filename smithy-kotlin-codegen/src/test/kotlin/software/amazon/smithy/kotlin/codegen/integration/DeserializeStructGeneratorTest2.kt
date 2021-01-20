@@ -1540,9 +1540,11 @@ class DeserializeStructGeneratorTest2 {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
+    // TODO - test to render a list/map w/ nested structure
+
     private fun getContentsForShape(model: Model, shapeId: String): String {
         val ctx = model.newTestContext()
-        val op = ctx.expectShape("com.test#Foo")
+        val op = ctx.expectShape(shapeId)
 
         return testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeStructGenerator2(
