@@ -17,9 +17,9 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.traits.IdempotencyTokenTrait
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 
@@ -37,7 +37,7 @@ protected constructor(builder: Builder<T>) {
     protected val testCases: List<T> = builder.testCases!!
     protected val operation: OperationShape = builder.operation!!
     protected val writer: KotlinWriter = builder.writer!!
-    protected val serviceName: String = builder.serviceName!!
+    protected val serviceShape: ServiceShape = builder.service!!
 
     protected val idempotentFieldsInModel: Boolean by lazy {
         operation.input.isPresent &&
@@ -90,14 +90,14 @@ protected constructor(builder: Builder<T>) {
         var testCases: List<T>? = null
         var operation: OperationShape? = null
         var writer: KotlinWriter? = null
-        var serviceName: String? = null
+        var service: ServiceShape? = null
 
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
         fun model(model: Model): Builder<T> = apply { this.model = model }
         fun testCases(testCases: List<T>): Builder<T> = apply { this.testCases = testCases }
         fun operation(operation: OperationShape): Builder<T> = apply { this.operation = operation }
         fun writer(writer: KotlinWriter): Builder<T> = apply { this.writer = writer }
-        fun serviceName(serviceName: String): Builder<T> = apply { this.serviceName = serviceName }
+        fun service(service: ServiceShape): Builder<T> = apply { this.service = service }
         abstract fun build(): HttpProtocolUnitTestGenerator<T>
     }
 }
