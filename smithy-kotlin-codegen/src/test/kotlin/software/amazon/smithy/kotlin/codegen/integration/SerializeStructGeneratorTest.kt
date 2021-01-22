@@ -224,8 +224,12 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (col0 in input.payload) {
-                            serializeSdkSerializable(FooUnionSerializer(col0))
+                        for (el0 in input.payload) {
+                            serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
+                                for (el1 in el0) {
+                                    serializeString(el1)
+                                }
+                            }
                         }
                     }
                 }
@@ -330,7 +334,7 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializeString(el1)
                                 }
                             }
@@ -408,9 +412,9 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializer.serializeList(PAYLOAD_C1_DESCRIPTOR) {
-                                        for (el2 in col1) {
+                                        for (el2 in el1) {
                                             serializeBoolean(el2)
                                         }
                                     }
@@ -520,7 +524,7 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializeString(el1)
                                 }
                             }
@@ -588,7 +592,7 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializeInt(el1)
                                 }
                             }
