@@ -349,7 +349,7 @@ open class SerializeStructGenerator(
 
         writer.withBlock("for ($elementName in $containerName$parentListMemberName) {", "}") {
             writer.withBlock("serializer.serializeList($descriptorName) {", "}") {
-                delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, nestingLevel.variableNameFor(NestedIdentifierType.COLLECTION))
+                delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, elementName)
             }
         }
     }
@@ -377,6 +377,8 @@ open class SerializeStructGenerator(
      * ```
      */
     private fun renderBlobEntry(nestingLevel: Int, listMemberName: String) {
+        importBase64Utils(writer)
+
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
 

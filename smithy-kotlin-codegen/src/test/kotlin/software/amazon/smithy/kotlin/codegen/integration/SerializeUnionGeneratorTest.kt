@@ -141,7 +141,7 @@ class SerializeUnionGeneratorTest {
                         listField(INTLISTLISTVAL_DESCRIPTOR) {
                             for (el0 in input.value) {
                                 serializer.serializeList(INTLISTLISTVAL_C0_DESCRIPTOR) {
-                                    for (el1 in col0) {
+                                    for (el1 in el0) {
                                         serializeInt(el1)
                                     }
                                 }

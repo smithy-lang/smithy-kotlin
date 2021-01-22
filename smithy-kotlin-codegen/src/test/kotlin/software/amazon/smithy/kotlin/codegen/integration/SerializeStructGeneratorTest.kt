@@ -203,6 +203,45 @@ class SerializeStructGeneratorTest2 {
     }
 
     @Test
+    fun `it serializes a structure containing a list of a list of primitive type`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: ListOfList
+            }
+            
+            list ListOfList {
+                member: StringList
+            }
+            
+            list StringList {
+                member: String
+            }
+        """
+            ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (el0 in input.payload) {
+                            serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
+                                for (el1 in el0) {
+                                    serializeString(el1)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a list of a union of primitive type`() {
         val model = (
             modelPrefix + """            
@@ -295,7 +334,7 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializeString(el1)
                                 }
                             }
@@ -373,9 +412,9 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializer.serializeList(PAYLOAD_C1_DESCRIPTOR) {
-                                        for (el2 in col1) {
+                                        for (el2 in el1) {
                                             serializeBoolean(el2)
                                         }
                                     }
@@ -485,7 +524,7 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializeString(el1)
                                 }
                             }
@@ -553,7 +592,7 @@ class SerializeStructGeneratorTest2 {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (el1 in col0) {
+                                for (el1 in el0) {
                                     serializeInt(el1)
                                 }
                             }
