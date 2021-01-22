@@ -251,8 +251,8 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             if (input.intList != null) {
                 listField(INTLIST_DESCRIPTOR) {
-                    for (col0 in input.intList) {
-                        serializeInt(col0)
+                    for (el0 in input.intList) {
+                        serializeInt(el0)
                     }
                 }
             }
@@ -578,8 +578,8 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
             input.normal?.let { rawField(NORMAL_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
             if (input.timestampList != null) {
                 listField(TIMESTAMPLIST_DESCRIPTOR) {
-                    for (col0 in input.timestampList) {
-                        serializeRaw(col0.format(TimestampFormat.EPOCH_SECONDS))
+                    for (el0 in input.timestampList) {
+                        serializeRaw(el0.format(TimestampFormat.EPOCH_SECONDS))
                     }
                 }
             }
@@ -856,8 +856,8 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
             if (input.mapOfLists != null) {
                 mapField(MAPOFLISTS_DESCRIPTOR) {
                     input.mapOfLists.forEach { (key, value) -> listEntry(key, MAPOFLISTS_C0_DESCRIPTOR) {
-                        for (col1 in value) {
-                            serializeInt(col1)
+                        for (el1 in value) {
+                            serializeInt(el1)
                         }
                     }}
                 }

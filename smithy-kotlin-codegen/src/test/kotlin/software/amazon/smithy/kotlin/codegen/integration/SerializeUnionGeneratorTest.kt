@@ -139,10 +139,10 @@ class SerializeUnionGeneratorTest {
                 when (input) {
                     is FooUnion.IntListListVal -> {
                         listField(INTLISTLISTVAL_DESCRIPTOR) {
-                            for (col0 in input.value) {
+                            for (el0 in input.value) {
                                 serializer.serializeList(INTLISTLISTVAL_C0_DESCRIPTOR) {
-                                    for (col1 in col0) {
-                                        serializeInt(col1)
+                                    for (el1 in col0) {
+                                        serializeInt(el1)
                                     }
                                 }
                             }
@@ -150,8 +150,8 @@ class SerializeUnionGeneratorTest {
                     }
                     is FooUnion.IntListVal -> {
                         listField(INTLISTVAL_DESCRIPTOR) {
-                            for (col0 in input.value) {
-                                serializeInt(col0)
+                            for (el0 in input.value) {
+                                serializeInt(el0)
                             }
                         }
                     }
