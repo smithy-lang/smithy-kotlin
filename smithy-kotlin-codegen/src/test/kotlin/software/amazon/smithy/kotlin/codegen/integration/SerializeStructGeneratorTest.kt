@@ -203,6 +203,41 @@ class SerializeStructGeneratorTest2 {
     }
 
     @Test
+    fun `it serializes a structure containing a list of a list of primitive type`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: ListOfList
+            }
+            
+            list ListOfList {
+                member: StringList
+            }
+            
+            list StringList {
+                member: String
+            }
+        """
+            ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    listField(PAYLOAD_DESCRIPTOR) {
+                        for (col0 in input.payload) {
+                            serializeSdkSerializable(FooUnionSerializer(col0))
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure containing a list of a union of primitive type`() {
         val model = (
             modelPrefix + """            
