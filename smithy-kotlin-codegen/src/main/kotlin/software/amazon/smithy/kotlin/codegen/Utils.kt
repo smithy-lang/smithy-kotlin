@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 
@@ -34,3 +35,33 @@ fun isValidKotlinIdentifier(s: String): Boolean {
  */
 inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
     this.expectShape(ShapeId.from(shapeId), T::class.java)
+
+/**
+ * If is member shape returns target, otherwise returns self.
+ * @param model for loading the target shape
+ */
+internal fun Shape.targetOrSelf(model: Model) = when (this) {
+    is MemberShape -> model.expectShape(this.target)
+    else -> this
+}
+
+/**
+ * Specifies the type of value the identifier represents
+ */
+internal enum class NestedIdentifierType(val prefix: String) {
+    KEY("k"), // Generated variable names for map keys
+    VALUE("v"), // Generated variable names for map values
+    ELEMENT("el"), // Generated variable name for list elements
+    COLLECTION("col"), // Generated variable name for collection types (list, set)
+    MAP("map"); // Generated variable name for map type
+}
+/**
+ * Generate an identifier for a given nesting level
+ * @param type intended type of value
+ */
+internal fun Int.variableNameFor(type: NestedIdentifierType): String = "${type.prefix}$this"
+
+/**
+ * Generate an identifier for a given nesting level
+ */
+internal fun Int.nestedDescriptorName(): String = "_c$this"

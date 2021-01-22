@@ -17,16 +17,9 @@ package software.amazon.smithy.kotlin.codegen.integration
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import software.amazon.smithy.kotlin.codegen.asSmithyModel
-import software.amazon.smithy.kotlin.codegen.newTestContext
-import software.amazon.smithy.kotlin.codegen.shouldContainOnlyOnceWithDiff
-import software.amazon.smithy.kotlin.codegen.testRender
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
-import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class SerializeStructGeneratorTest2 {
@@ -111,8 +104,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
+                        for (el0 in input.payload) {
+                            serializeRaw(el0.format(TimestampFormat.EPOCH_SECONDS))
                         }
                     }
                 }
@@ -127,7 +120,7 @@ class SerializeStructGeneratorTest2 {
     // TODO ~ Support Document Type
 
     @Test
-    fun `it serializes a structure with containing a structure`() {
+    fun `it serializes a structure with a nested structure`() {
         val model = (
             modelPrefix + """            
             structure FooRequest { 
@@ -196,8 +189,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeInt(c0)
+                        for (el0 in input.payload) {
+                            serializeInt(el0)
                         }
                     }
                 }
@@ -233,8 +226,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeSdkSerializable(FooUnionSerializer(c0))
+                        for (col0 in input.payload) {
+                            serializeSdkSerializable(FooUnionSerializer(col0))
                         }
                     }
                 }
@@ -265,8 +258,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            if (c0 != null) serializeInt(c0) else serializeNull()
+                        for (el0 in input.payload) {
+                            if (el0 != null) serializeInt(el0) else serializeNull()
                         }
                     }
                 }
@@ -300,10 +293,10 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
-                                    serializeString(c1)
+                                for (el1 in col0) {
+                                    serializeString(el1)
                                 }
                             }
                         }
@@ -339,8 +332,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeSdkSerializable(NestedStructureSerializer(c0))
+                        for (col0 in input.payload) {
+                            serializeSdkSerializable(NestedStructureSerializer(col0))
                         }
                     }
                 }
@@ -378,12 +371,12 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
+                                for (el1 in col0) {
                                     serializer.serializeList(PAYLOAD_C1_DESCRIPTOR) {
-                                        for (c2 in c1) {
-                                            serializeBoolean(c2)
+                                        for (el2 in col1) {
+                                            serializeBoolean(el2)
                                         }
                                     }
                                 }
@@ -417,8 +410,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeInt(c0)
+                        for (el0 in input.payload) {
+                            serializeInt(el0)
                         }
                     }
                 }
@@ -453,9 +446,9 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (el0 in input.payload) {
                             serializer.serializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                c0.forEach { (key1, value1) -> entry(key1, value1) }
+                                el0.forEach { (key1, value1) -> entry(key1, value1) }
                             }
                         }
                     }
@@ -490,10 +483,10 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
-                                    serializeString(c1)
+                                for (el1 in col0) {
+                                    serializeString(el1)
                                 }
                             }
                         }
@@ -558,10 +551,10 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (el0 in input.payload) {
                             serializer.serializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                for (c1 in c0) {
-                                    serializeInt(c1)
+                                for (el1 in col0) {
+                                    serializeInt(el1)
                                 }
                             }
                         }
@@ -599,8 +592,8 @@ class SerializeStructGeneratorTest2 {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (c1 in value) {
-                                serializeInt(c1)
+                            for (el1 in value) {
+                                serializeInt(el1)
                             }
                         }}
                     }
@@ -636,9 +629,9 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
+                        for (el0 in input.payload) {
                             serializer.serializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                c0.forEach { (key1, value1) -> entry(key1, value1) }
+                                el0.forEach { (key1, value1) -> entry(key1, value1) }
                             }
                         }
                     }
@@ -807,8 +800,8 @@ class SerializeStructGeneratorTest2 {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (c1 in value) {
-                                serializeString(c1)
+                            for (el1 in value) {
+                                serializeString(el1)
                             }
                         }}
                     }
@@ -850,9 +843,9 @@ class SerializeStructGeneratorTest2 {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
                         input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (c1 in value) {
+                            for (el1 in value) {
                                 serializer.serializeMap(PAYLOAD_C1_DESCRIPTOR) {
-                                    c1.forEach { (key2, value2) -> entry(key2, value2) }
+                                    el1.forEach { (key2, value2) -> entry(key2, value2) }
                                 }
                             }
                         }}
@@ -987,8 +980,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (c0 in input.payload) {
-                            serializeString(c0.value)
+                        for (el0 in input.payload) {
+                            serializeString(el0.value)
                         }
                     }
                 }
@@ -1102,8 +1095,8 @@ class SerializeStructGeneratorTest2 {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.fooBlobList != null) {
                     listField(FOOBLOBLIST_DESCRIPTOR) {
-                        for (c0 in input.fooBlobList) {
-                            serializeString(c0.encodeBase64String())
+                        for (el0 in input.fooBlobList) {
+                            serializeString(el0.encodeBase64String())
                         }
                     }
                 }
@@ -1169,22 +1162,8 @@ class SerializeStructGeneratorTest2 {
     private fun getContentsForShape(model: Model, shapeId: String): String {
         val ctx = model.newTestContext()
 
-        val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
-            is OperationShape -> {
-                val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-                val requestBindings = bindingIndex.getRequestBindings(shape)
-                requestBindings.values
-                    .filter { it.location == HttpBinding.Location.DOCUMENT }
-                    .sortedBy { it.memberName }
-                    .map { it.member }
-            }
-            is StructureShape -> {
-                shape.members().toList()
-            }
-            else -> throw RuntimeException("unknown conversion for $shapeId")
-        }
-
-        return testRender(testMembers) { members, writer ->
+        val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
+        return testRender(ctx.requestMembers(op)) { members, writer ->
             SerializeStructGenerator(
                 ctx.generationCtx,
                 members,
