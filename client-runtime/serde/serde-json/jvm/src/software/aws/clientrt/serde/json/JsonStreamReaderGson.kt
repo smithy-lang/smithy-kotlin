@@ -12,7 +12,7 @@ import com.google.gson.stream.JsonToken as RawToken
 private class JsonStreamReaderGson(payload: ByteArray, charset: Charset = Charsets.UTF_8) : JsonStreamReader {
     private val reader = JsonReader(payload.inputStream().reader(charset))
 
-    override suspend fun nextToken(): JsonToken {
+    override fun nextToken(): JsonToken {
         return when (peek()) {
             RawJsonToken.BeginArray -> {
                 reader.beginArray()
@@ -42,9 +42,9 @@ private class JsonStreamReaderGson(payload: ByteArray, charset: Charset = Charse
         }
     }
 
-    override suspend fun skipNext() = reader.skipValue()
+    override fun skipNext() = reader.skipValue()
 
-    override suspend fun peek(): RawJsonToken {
+    override fun peek(): RawJsonToken {
         return when (reader.peek()) {
             RawToken.BEGIN_ARRAY -> RawJsonToken.BeginArray
             RawToken.END_ARRAY -> RawJsonToken.EndArray

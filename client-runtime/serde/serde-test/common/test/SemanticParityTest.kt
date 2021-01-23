@@ -9,7 +9,6 @@ import software.aws.clientrt.serde.xml.XmlDeserializer
 import software.aws.clientrt.serde.xml.XmlList
 import software.aws.clientrt.serde.xml.XmlMap
 import software.aws.clientrt.serde.xml.XmlSerializer
-import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -17,7 +16,7 @@ import kotlin.test.assertEquals
 class SemanticParityTest {
 
     @Test
-    fun xmlDeserializesIntoObjectFormThenDeserializesToJsonThenSerializesToObjectFormThenDeserializesToOriginalXml() = runSuspendTest {
+    fun xmlDeserializesIntoObjectFormThenDeserializesToJsonThenSerializesToObjectFormThenDeserializesToOriginalXml() {
         for (test in getTests()) {
             // xml
             val xmlPayload = test.xmlSerialization
@@ -47,7 +46,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun jsonDeserializesIntoObjectFormThenDeserializesToXmlThenSerializesToObjectFormThenDeserializesToOriginalJson() = runSuspendTest {
+    fun jsonDeserializesIntoObjectFormThenDeserializesToXmlThenSerializesToObjectFormThenDeserializesToOriginalJson() {
         for (test in getTests()) {
             // json
             val jsonPayload = test.jsonSerialization
@@ -77,7 +76,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun objectFormSerializesIntoEquivalentRepresentationsInJsonAndXml() = runSuspendTest {
+    fun objectFormSerializesIntoEquivalentRepresentationsInJsonAndXml() {
         for (test in getTests()) {
             val bst = test.sdkSerializable
 
@@ -98,7 +97,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun equivalentJsonAndXmlSerialFormsProduceTheSameObjectForm() = runSuspendTest {
+    fun equivalentJsonAndXmlSerialFormsProduceTheSameObjectForm() {
         for (test in getTests()) {
             val jsonDeserializer = JsonDeserializer(test.jsonSerialization.encodeToByteArray())
             val jsonBst = test.deserialize(jsonDeserializer)
@@ -111,7 +110,7 @@ class SemanticParityTest {
     }
 
     @Test
-    fun itDeserializesFromJsonAndThenSerializesToXml() = runSuspendTest {
+    fun itDeserializesFromJsonAndThenSerializesToXml() {
         for (test in getTests()) {
             val jsonDeserializer = JsonDeserializer(test.jsonSerialization.encodeToByteArray())
             val bst = test.deserialize(jsonDeserializer)
@@ -127,7 +126,7 @@ class SemanticParityTest {
         val jsonSerialization: String
         val xmlSerialization: String
         val sdkSerializable: SdkSerializable
-        suspend fun deserialize(deserializer: Deserializer): SdkSerializable
+        fun deserialize(deserializer: Deserializer): SdkSerializable
     }
 
     companion object {
@@ -150,7 +149,7 @@ class SemanticParityTest {
                 field(Z_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): BasicStructTest {
+            fun deserialize(deserializer: Deserializer): BasicStructTest {
                 val result = BasicStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -182,7 +181,7 @@ class SemanticParityTest {
         override val sdkSerializable: SdkSerializable
             get() = BasicStructTest(1, "two", true)
 
-        override suspend fun deserialize(deserializer: Deserializer): SdkSerializable =
+        override fun deserialize(deserializer: Deserializer): SdkSerializable =
             BasicStructTest.deserialize(deserializer)
     }
 
@@ -194,7 +193,7 @@ class SemanticParityTest {
                 field(LIST_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): ListTest {
+            fun deserialize(deserializer: Deserializer): ListTest {
                 val result = ListTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -233,7 +232,7 @@ class SemanticParityTest {
         override val sdkSerializable: SdkSerializable
             get() = ListTest(listOf(1, 2, 3, 10))
 
-        override suspend fun deserialize(deserializer: Deserializer): SdkSerializable =
+        override fun deserialize(deserializer: Deserializer): SdkSerializable =
             ListTest.deserialize(deserializer)
     }
 
@@ -245,7 +244,7 @@ class SemanticParityTest {
                 field(MAP_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): MapTest {
+            fun deserialize(deserializer: Deserializer): MapTest {
                 val result = MapTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -284,7 +283,7 @@ class SemanticParityTest {
         override val sdkSerializable: SdkSerializable
             get() = MapTest(mapOf("key1" to "val1", "key2" to "val2", "key3" to "val3"))
 
-        override suspend fun deserialize(deserializer: Deserializer): SdkSerializable =
+        override fun deserialize(deserializer: Deserializer): SdkSerializable =
             MapTest.deserialize(deserializer)
     }
 
@@ -299,7 +298,7 @@ class SemanticParityTest {
                 field(NESTED_STRUCT_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): NestedStructTest {
+            fun deserialize(deserializer: Deserializer): NestedStructTest {
                 val result = NestedStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -327,7 +326,7 @@ class SemanticParityTest {
         override val sdkSerializable: SdkSerializable
             get() = NestedStructTest(BasicStructTest(1, "two", true))
 
-        override suspend fun deserialize(deserializer: Deserializer): SdkSerializable =
+        override fun deserialize(deserializer: Deserializer): SdkSerializable =
             NestedStructTest.deserialize(deserializer)
     }
 }

@@ -1,7 +1,6 @@
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.xml.XmlDeserializer
-import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -20,7 +19,7 @@ class NullDeserializationParityTest {
                 field(Y_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): AnonStruct {
+            fun deserialize(deserializer: Deserializer): AnonStruct {
                 val result = AnonStruct()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -46,7 +45,7 @@ class NullDeserializationParityTest {
                 field(X_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): ParentStruct {
+            fun deserialize(deserializer: Deserializer): ParentStruct {
                 val result = ParentStruct()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -74,7 +73,7 @@ class NullDeserializationParityTest {
                 field(Y_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): ChildStruct {
+            fun deserialize(deserializer: Deserializer): ChildStruct {
                 val result = ChildStruct()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -95,7 +94,7 @@ class NullDeserializationParityTest {
      * Empty objects should deserialize into empty instances of their target type.
      */
     @Test
-    fun itDeserializesAnEmptyDocumentIntoAnEmptyAnonymousStruct() = runSuspendTest {
+    fun itDeserializesAnEmptyDocumentIntoAnEmptyAnonymousStruct() {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<AnonStruct />".encodeToByteArray()
 
@@ -113,7 +112,7 @@ class NullDeserializationParityTest {
      * deserialize those children as null references.
      */
     @Test
-    fun itDeserializesAReferenceToANullObject() = runSuspendTest {
+    fun itDeserializesAReferenceToANullObject() {
         val jsonPayload = """
             { "ChildStruct" : null }
         """.trimIndent().encodeToByteArray()
@@ -134,7 +133,7 @@ class NullDeserializationParityTest {
      * those deserialized children exist but are empty.
      */
     @Test
-    fun itDeserializesAReferenceToAnEmptyObject() = runSuspendTest {
+    fun itDeserializesAReferenceToAnEmptyObject() {
         val jsonPayload = """
             { "ChildStruct" : {}} }
         """.trimIndent().encodeToByteArray()

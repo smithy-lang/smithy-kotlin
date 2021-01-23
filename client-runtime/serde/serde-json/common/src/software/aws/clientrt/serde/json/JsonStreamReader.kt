@@ -11,17 +11,17 @@ interface JsonStreamReader {
     /**
      * Grab the next token in the stream
      */
-    suspend fun nextToken(): JsonToken
+    fun nextToken(): JsonToken
 
     /**
      * Recursively skip the next token. Meant for discarding unwanted/unrecognized properties in a JSON document
      */
-    suspend fun skipNext()
+    fun skipNext()
 
     /**
      * Peek at the next token type
      */
-    suspend fun peek(): RawJsonToken
+    fun peek(): RawJsonToken
 }
 
 /*

@@ -60,23 +60,23 @@ interface XmlStreamReader {
      *
      * @throws XmlGenerationException upon any error.
      */
-    suspend fun nextToken(): XmlToken
+    fun nextToken(): XmlToken
 
     /**
      * Recursively skip the next token. Meant for discarding unwanted/unrecognized nodes in an XML document
      */
-    suspend fun skipNext()
+    fun skipNext()
 
     /**
      * Peek at the next token type.  Successive calls will return the same value, meaning there is only one
      * look-ahead at any given time during the parsing of input data.
      */
-    suspend fun peek(): XmlToken
+    fun peek(): XmlToken
 
     /**
      * Return the current node depth of the parser.
      */
-    suspend fun currentDepth(): Int
+    fun currentDepth(): Int
 }
 
 /*
