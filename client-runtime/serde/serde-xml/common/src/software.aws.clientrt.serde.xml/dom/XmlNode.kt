@@ -21,10 +21,10 @@ data class XmlName(val local: String, val namespace: String? = null)
 class XmlNode {
     var name: XmlName? = null
     // child element name -> children
-    var children: MutableMap<String, MutableList<XmlNode>> = mutableMapOf()
+    var children: MutableMap<String, MutableList<XmlNode>> = linkedMapOf()
     var text: String? = null
-    var attributes: MutableMap<String, String> = mutableMapOf()
-    var namespaces: MutableMap<String, String> = mutableMapOf()
+    var attributes: MutableMap<String, String> = linkedMapOf()
+    var namespaces: MutableMap<String, String> = linkedMapOf()
     var parent: XmlNode? = null
 
     override fun toString(): String = "XmlNode($name)"
@@ -120,8 +120,6 @@ fun XmlNode.toXmlString(pretty: Boolean = false): String {
 }
 
 internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty: Boolean) {
-    // FIXME - apply a canonical ordering to attributes and flattened child nodes
-
     sb.apply {
         val indent = if (pretty) " ".repeat(depth * 4) else ""
 
