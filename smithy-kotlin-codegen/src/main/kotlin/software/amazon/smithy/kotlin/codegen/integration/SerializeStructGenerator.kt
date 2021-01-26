@@ -164,7 +164,7 @@ open class SerializeStructGenerator(
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
             ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
-            ShapeType.TIMESTAMP -> renderTimestampEntry(mapShape.value, nestingLevel, parentMemberName)
+            ShapeType.TIMESTAMP -> renderTimestampEntry(mapShape.value, elementShape, nestingLevel, parentMemberName)
             ShapeType.SET,
             ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
@@ -193,7 +193,7 @@ open class SerializeStructGenerator(
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
-            ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, nestingLevel, parentMemberName)
+            ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST,
             ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
@@ -392,9 +392,17 @@ open class SerializeStructGenerator(
      * input.fooTimestampMap.forEach { (key, value) -> rawEntry(key, it.format(TimestampFormat.EPOCH_SECONDS)) }
      * ```
      */
-    private fun renderTimestampEntry(memberShape: Shape, nestingLevel: Int, listMemberName: String) {
+    private fun renderTimestampEntry(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         importTimestampFormat(writer)
-        val tsFormat = memberShape
+
+        // favor the member shape if it overrides the value shape trait
+        val shape = if (memberShape.hasTrait(TimestampFormatTrait::class.java)) {
+            memberShape
+        } else {
+            elementShape
+        }
+
+        val tsFormat = shape
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
             .orElse(defaultTimestampFormat)
@@ -470,10 +478,18 @@ open class SerializeStructGenerator(
      *      serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
      * }
      */
-    private fun renderTimestampElement(memberShape: Shape, nestingLevel: Int, listMemberName: String) {
+    private fun renderTimestampElement(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         // :test(timestamp, member > timestamp)
         importTimestampFormat(writer)
-        val tsFormat = memberShape
+
+        // favor the member shape if it overrides the value shape trait
+        val shape = if (memberShape.hasTrait(TimestampFormatTrait::class.java)) {
+            memberShape
+        } else {
+            elementShape
+        }
+
+        val tsFormat = shape
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
             .orElse(defaultTimestampFormat)
@@ -573,7 +589,11 @@ open class SerializeStructGenerator(
                 val tsFormat = shape
                     .getTrait(TimestampFormatTrait::class.java)
                     .map { it.format }
-                    .orElse(defaultTimestampFormat)
+                    .orElseGet {
+                        target.getTrait(TimestampFormatTrait::class.java)
+                            .map { it.format }
+                            .orElse(defaultTimestampFormat)
+                    }
 
                 if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
                     serializerFn = "raw${serializerFn.capitalize()}"
