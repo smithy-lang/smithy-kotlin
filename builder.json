@@ -6,6 +6,9 @@
         "pwd",
         "./gradlew assemble" 
     ],
+    "post_build_steps": [
+        "./gradlew publishToMavenLocal" 
+    ],
     "test_steps": [
         "./gradlew test allTests"
     ],
