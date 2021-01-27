@@ -25,7 +25,7 @@ data class XmlMap(
     val keyName: String = "key",
     val valueName: String = "value",
     val flattened: Boolean = false
-) : FieldTrait
+): FieldTrait
 
 /**
  * Specifies that a field represents a List structure and the XML node names used to encode that structure.
@@ -39,10 +39,15 @@ data class XmlList(
 ) : FieldTrait
 
 /**
+ * Specifies a namespace that a field is encoded into for Xml nodes.
+ */
+data class XmlNamespace(val namespace: String, val uri: String): FieldTrait
+
+/**
  * Specifies that a field is encoded into an XML attribute and describes the XML.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlattribute-trait
  *
  * @param name the name of the attribute
  * @param namespace the namespace of the attribute, or null for none.
  */
-data class XmlAttribute(val name: String, val namespace: String? = null) : FieldTrait
+data class XmlAttribute(val name: String, val namespace: String? = null): FieldTrait
