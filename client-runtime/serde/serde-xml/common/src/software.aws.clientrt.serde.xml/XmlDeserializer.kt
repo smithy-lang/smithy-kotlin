@@ -101,8 +101,7 @@ class XmlDeserializer(
      * Deserialize an integer value defined as the text section of an Xml element.
      */
 
-    override fun deserializeBoolean(): Boolean =
-        deserializePrimitive { it.toBoolean() }
+    override fun deserializeBoolean(): Boolean = deserializePrimitive { it.toBoolean() }
 
     override fun deserializeNull(): Nothing? {
         check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }

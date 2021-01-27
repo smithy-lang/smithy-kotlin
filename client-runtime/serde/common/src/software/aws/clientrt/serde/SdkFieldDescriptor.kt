@@ -44,6 +44,7 @@ sealed class SerialKind {
  * Metadata to describe how a given member property maps to serialization.
  *
  * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
+ * // TODO consider for Xml that serialName has to include namespace
  */
 open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var index: Int = 0, vararg val trait: FieldTrait) {
 

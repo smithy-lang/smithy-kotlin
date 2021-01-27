@@ -4,10 +4,7 @@
  */
 package software.aws.clientrt.serde.xml
 
-import software.aws.clientrt.serde.DeserializationException
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkObjectDescriptor
-import software.aws.clientrt.serde.SerialKind
+import software.aws.clientrt.serde.*
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -18,122 +15,103 @@ import kotlin.test.assertTrue
 class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesDoubles() {
-        val payload = "<node>1.2</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Double))
-        }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeDouble()!!
+        val deserializer = XmlDeserializer2("<node>1.2</node>".wrapInStruct())
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Double), deserializer::deserializeDouble)
         val expected = 1.2
         assertTrue(abs(actual - expected) <= 0.0001)
     }
 
     @Test
     fun itHandlesFloats() {
-        val payload = "<node>1.2</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Float))
-        }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeFloat()!!
+        val deserializer = XmlDeserializer2("<node>1.2</node>".wrapInStruct())
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Float), deserializer::deserializeFloat)
         val expected = 1.2f
         assertTrue(abs(actual - expected) <= 0.0001f)
     }
 
     @Test
     fun itHandlesInt() {
-        val payload = "<node>${Int.MAX_VALUE}</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Integer))
-        }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeInt()
+        val deserializer = XmlDeserializer2("<node>${Int.MAX_VALUE}</node>".wrapInStruct())
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
         val expected = 2147483647
         assertEquals(expected, actual)
     }
 
     @Test
     fun itHandlesByteAsNumber() {
-        val payload = "<node>1</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Byte))
-        }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeByte()
+        val deserializer = XmlDeserializer2("<node>1</node>".wrapInStruct())
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Byte), deserializer::deserializeByte)
         val expected: Byte = 1
         assertEquals(expected, actual)
     }
 
     @Test
     fun itHandlesShort() {
-        val payload = "<node>${Short.MAX_VALUE}</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Short))
-        }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeShort()
+        val deserializer = XmlDeserializer2("<node>${Short.MAX_VALUE}</node>".wrapInStruct())
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Short), deserializer::deserializeShort)
         val expected: Short = 32767
         assertEquals(expected, actual)
     }
 
     @Test
     fun itHandlesLong() {
-        val payload = "<node>${Long.MAX_VALUE}</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Struct))
-        }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeLong()
+        val deserializer = XmlDeserializer2("<node>${Long.MAX_VALUE}</node>".wrapInStruct())
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Long), deserializer::deserializeLong)
         val expected = 9223372036854775807L
         assertEquals(expected, actual)
     }
 
     @Test
     fun itHandlesBool() {
-        val payload = "<node>true</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Boolean))
-        }
-        val actual = deserializer.deserializeStruct(objSerializer).deserializeBoolean()!!
+        val deserializer = XmlDeserializer2("<node>true</node>".wrapInStruct())
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Boolean), deserializer::deserializeBoolean)
         assertTrue(actual)
     }
 
     @Test
     fun itFailsInvalidTypeSpecificationForInt() {
-        val payload = "<node>1.2</node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Integer))
-        }
+        val deserializer = XmlDeserializer2("<node>1.2</node>".wrapInStruct())
         assertFailsWith(DeserializationException::class) {
-            deserializer.deserializeStruct(objSerializer).deserializeInt()
+            deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
         }
     }
 
     @Test
     // TODO: It's unclear if this test should result in an exception or null value.
     fun itFailsMissingTypeSpecificationForInt() {
-        val payload = "<node></node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Integer))
-        }
+        val deserializer = XmlDeserializer2("<node></node>".wrapInStruct())
         assertFailsWith(DeserializationException::class) {
-            deserializer.deserializeStruct(objSerializer).deserializeInt()
+            deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
         }
     }
 
     @Test
     // TODO: It's unclear if this test should result in an exception or null value.
     fun itFailsWhitespaceTypeSpecificationForInt() {
-        val payload = "<node> </node>".encodeToByteArray()
-        val deserializer = XmlDeserializer(payload)
-        val objSerializer = SdkObjectDescriptor.build {
-            field(SdkFieldDescriptor("node", SerialKind.Integer))
-        }
+        val deserializer = XmlDeserializer2("<node> </node>".wrapInStruct())
         assertFailsWith(DeserializationException::class) {
-            deserializer.deserializeStruct(objSerializer).deserializeInt()
+            deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
         }
+    }
+
+    private fun String.wrapInStruct(): ByteArray = "<structure>$this</structure>".encodeToByteArray()
+
+    private fun <T> Deserializer.deserializeSingleValue(fieldDescriptor: SdkFieldDescriptor, deserializeFn: () -> T): T {
+        val objSerializer = SdkObjectDescriptor.build {
+            serialName = "structure"
+            field(fieldDescriptor)
+        }
+        var actual: T? = null
+        deserializeStruct(objSerializer) {
+            loop@ while (true) {
+                when (findNextFieldIndex()) {
+                    0 -> actual = deserializeFn()
+                    null -> break@loop
+                    else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                }
+            }
+        }
+
+        return actual ?: throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
     }
 }

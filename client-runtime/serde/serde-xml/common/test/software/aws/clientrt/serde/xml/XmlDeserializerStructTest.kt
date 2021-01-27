@@ -13,19 +13,47 @@ import kotlin.test.assertTrue
 class XmlDeserializerStructTest {
 
     @Test
-    fun itHandlesBasicStructsWithAttribs() {
+    fun `it handles basic structs with attribs`() {
         val payload = """
-            <payload>
-                <x value="1" />
-                <y value="2" />
-            </payload>
-        """.encodeToByteArray()
+               <?xml version="1.0" encoding="UTF-8"?>
+               <!--
+                 ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+                 ~ SPDX-License-Identifier: Apache-2.0.
+                 -->
+                
+               <payload>
+                    <x xmlns="https://route53.amazonaws.com/doc/2013-04-01/" value="1" />
+                    <y value="2" />
+               </payload>
+        """.trimIndent().encodeToByteArray()
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val bst = StructWithAttribsClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)
         assertEquals(2, bst.y)
+    }
+
+    @Test
+    fun `it handles basic structs with multi attribs and text`() {
+        val payload = """
+               <?xml version="1.0" encoding="UTF-8"?>
+               <!--
+                 ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+                 ~ SPDX-License-Identifier: Apache-2.0.
+                 -->
+                
+               <payload>
+                    <x xmlns="https://route53.amazonaws.com/doc/2013-04-01/" xval="1" yval="2">nodeval</x>
+               </payload>
+        """.trimIndent().encodeToByteArray()
+
+        val deserializer = XmlDeserializer2(payload)
+        val bst = StructWithMultiAttribsAndTextValClass.deserialize(deserializer)
+
+        assertEquals(1, bst.x)
+        assertEquals(2, bst.y)
+        assertEquals("nodeval", bst.txt)
     }
 
     @Test
@@ -38,7 +66,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val bst = BasicAttribTextStructTest.deserialize(deserializer)
 
         assertEquals(1, bst.xa)
@@ -99,7 +127,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val bst = SimpleStructClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)
@@ -115,7 +143,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer(payload1)
+        val deserializer = XmlDeserializer2(payload1)
         val bst = SimpleStructClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)
@@ -128,7 +156,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer2 = XmlDeserializer(payload2)
+        val deserializer2 = XmlDeserializer2(payload2)
         val bst2 = SimpleStructClass.deserialize(deserializer2)
 
         assertEquals(null, bst2.x)
@@ -140,14 +168,16 @@ class XmlDeserializerStructTest {
         val payload = """
                <payload>
                    <x>1</x>
-                   <z>unknown field</z>
+                   <z attribval="strval">unknown field</z>
                    <y>2</y>
                </payload>
            """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val bst = SimpleStructClass.deserialize(deserializer)
 
-        assertTrue(bst.unknownFieldCount == 1, "unknown field not enumerated")
+        assertEquals(1, bst.x)
+        assertEquals(2, bst.y)
+        assertEquals("strval", bst.z)
     }
 }
