@@ -6,6 +6,9 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.FieldTrait
+import software.aws.clientrt.serde.SdkFieldDescriptor
+import software.aws.clientrt.serde.SdkObjectDescriptor
+import software.aws.clientrt.serde.SerialKind
 
 // TODO: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
 
@@ -38,10 +41,14 @@ data class XmlList(
     val flattened: Boolean = false
 ) : FieldTrait
 
+data class XmlNamespace(val namespace: String, val uri: String)
+
 /**
  * Specifies a namespace that a field is encoded into for Xml nodes.
  */
-data class XmlNamespace(val namespace: String, val uri: String): FieldTrait
+data class XmlSerialName(val name: String, val namespace: XmlNamespace? = null): FieldTrait {
+    fun toQualifiedName(): XmlToken.QualifiedName = XmlToken.QualifiedName(name, namespace?.namespace)
+}
 
 /**
  * Specifies that a field is encoded into an XML attribute and describes the XML.
@@ -51,3 +58,24 @@ data class XmlNamespace(val namespace: String, val uri: String): FieldTrait
  * @param namespace the namespace of the attribute, or null for none.
  */
 data class XmlAttribute(val name: String, val namespace: String? = null): FieldTrait
+
+fun SdkFieldDescriptor(name: String, kind: SerialKind, index: Int = 0, trait: FieldTrait? = null): SdkFieldDescriptor {
+    val xmlSerialName = if (name.contains(':')) {
+        val (name, namespace) = name.split(':')
+        XmlSerialName(name, XmlNamespace(namespace, "https://someuri"))
+    } else {
+        XmlSerialName(name)
+    }
+
+    return if (trait != null)
+        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName, trait))
+    else
+        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName))
+}
+
+val SdkFieldDescriptor.serialName: XmlSerialName
+    get() = expectTrait()
+
+var SdkObjectDescriptor.DslBuilder.serialName
+    get(): String = error { "Should not be called" }
+    set(value) = trait(XmlSerialName(value))

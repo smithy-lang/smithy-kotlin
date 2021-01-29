@@ -40,35 +40,32 @@ sealed class SerialKind {
     }
 }
 
+
 /**
  * Metadata to describe how a given member property maps to serialization.
- *
- * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
- * // TODO consider for Xml that serialName has to include namespace
  */
-open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var index: Int = 0, vararg val trait: FieldTrait) {
+open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val traits: Set<FieldTrait> = emptySet()) {
+    constructor(kind: SerialKind, index: Int = 0, trait: FieldTrait): this(kind, index, setOf(trait))
 
-    companion object {
-        // For use in formats which provide ways of encoding nameless entities.  Value is disregarded.
-        val ANONYMOUS_DESCRIPTOR = SdkFieldDescriptor("ANONYMOUS_FIELD", SerialKind.Struct)
-    }
+    companion object;
+
     /**
      * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
      */
     inline fun <reified TExpected : FieldTrait> expectTrait(): TExpected {
-        val x = trait.find { it::class == TExpected::class }
+        val x = traits.find { it::class == TExpected::class }
         requireNotNull(x) { "Expected to find trait ${TExpected::class} in $this but was not present." }
 
         return x as TExpected
     }
 
     inline fun <reified TExpected : FieldTrait> findTrait(): TExpected? {
-        val x = trait.find { it::class == TExpected::class }
+        val x = traits.find { it::class == TExpected::class }
 
         return x as TExpected?
     }
 
     override fun toString(): String {
-        return "$serialName($kind, ${trait.joinToString(separator = ",") }})"
+        return "($kind, ${traits.joinToString(separator = ",") }})"
     }
 }

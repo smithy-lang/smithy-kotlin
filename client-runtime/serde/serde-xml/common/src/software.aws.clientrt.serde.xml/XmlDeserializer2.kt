@@ -94,8 +94,7 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         init {
             val token = reader.nextToken()
             check(token is XmlToken.BeginElement) { "Expected XmlToken.BeginElement but found ${token::class.qualifiedName}" }
-            check(token.id.name == objDescriptor.serialName) { "Expected name ${objDescriptor.serialName} but found ${token.id.name}" }
-            //TODO match namespace
+            check(token.id == objDescriptor.serialName.toQualifiedName()) { "Expected name ${objDescriptor.serialName} but found ${token.id.name}" }
         }
 
         override fun findNextFieldIndex(): Int? {
@@ -109,9 +108,9 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
                         objDescriptor.fields
                             .filter { fieldDescriptor ->
                                 // Only look at fields matching serialName
-                                fieldDescriptor.serialName == nextToken.id.name /* TODO namespace */
+                                fieldDescriptor.serialName.toQualifiedName() == nextToken.id
                             }
-                            .sortedBy { it.trait.isEmpty() } // Hackish way of putting Text nodes at the bottom
+                            .sortedBy { it.traits.isEmpty() } // Hackish way of putting Text nodes at the bottom
                             .forEach { sdkFieldDescriptor ->
                                 // Load all NodeProperties with values from field descriptors in fieldToNodeIndex
                                 sdkFieldDescriptor.toNodePropertyIfValue(reader, nextToken)?.let { fieldToNodeIndex.add(it) }
@@ -230,14 +229,12 @@ private inline fun <reified TExpected> requireToken(token: XmlToken) {
 }
 
 private fun SdkFieldDescriptor.toNodeProperty(): XmlDeserializer2.NodeProperty {
-    check(trait.size < 2) { "Multiple traits associated with descriptor" }
     return when {
-        trait.isEmpty() -> XmlDeserializer2.NodeProperty.XmlTextValue(index)
-        trait.any { it is XmlAttribute } -> {
-            val trait = trait[0] as XmlAttribute
+        traits.any { it is XmlAttribute } -> {
+            val trait = expectTrait<XmlAttribute>()
             XmlDeserializer2.NodeProperty.XmlAttributeValue(index, trait.toQualifiedName())
         }
-        else -> error("Unhandled trait ${trait.first()::class.qualifiedName}")
+        else -> XmlDeserializer2.NodeProperty.XmlTextValue(index) // Assume a text value if no attributes defined.
     }
 }
 

@@ -44,7 +44,7 @@ class XmlDeserializer(
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
         val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
-        require(descriptor.serialName == beginNode.id.name) { "Expected list start tag of ${beginNode.id} but got ${descriptor.serialName}" }
+        require(descriptor.serialName.toQualifiedName() == beginNode.id) { "Expected list start tag of ${beginNode.id} but got ${descriptor.serialName}" }
 
         return CompositeIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
     }
@@ -56,7 +56,7 @@ class XmlDeserializer(
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
 
         val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
-        require(descriptor.serialName == beginNode.id.name) { "Expected map start tag of ${beginNode.id} but got ${descriptor.serialName}" }
+        require(descriptor.serialName.toQualifiedName() == beginNode.id) { "Expected map start tag of ${beginNode.id} but got ${descriptor.serialName}" }
 
         return CompositeIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
     }
@@ -351,7 +351,7 @@ private class XmlFieldIterator(
             .filter { field -> !handledFields.contains(field) }
             .filter { field -> field.findTrait<XmlAttribute>() != null }
             // FIXME: The following filter needs to take XML namespace into account when matching.
-            .filter { field -> field.serialName == nextToken.id.name }
+            .filter { field -> field.serialName.toQualifiedName() == nextToken.id }
 
         // If present, take the next and return
         if (unhandledAttribFields.isNotEmpty()) {
@@ -372,7 +372,7 @@ private class XmlFieldIterator(
         // FIXME: The following filter needs to take XML namespace into account when matching.
         // If no attributes are present, take the field matching the serialName
         return descriptor.fields
-            .find { it.serialName == nextToken.id.name && !handledFields.contains(it) }
+            .find { it.serialName.toQualifiedName() == nextToken.id && !handledFields.contains(it) }
             .also { descriptor -> if (descriptor != null) handledFields.add(descriptor) }
     }
 

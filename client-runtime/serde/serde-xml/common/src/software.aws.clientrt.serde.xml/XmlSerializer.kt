@@ -17,7 +17,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         xmlWriter.startTag(descriptor.serialName)
 
-        nodeStack.add(descriptor.serialName)
+        nodeStack.add(descriptor.serialName.name)
 
         return this
     }
@@ -154,7 +154,12 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(this)
+
+
 }
+
+private fun XmlStreamWriter.startTag(name: XmlSerialName) = startTag(name.name, name.namespace?.namespace)
+private fun XmlStreamWriter.endTag(serialName: XmlSerialName) = endTag(serialName.name, serialName.namespace?.namespace)
 
 private class XmlMapSerializer(
     private val descriptor: SdkFieldDescriptor,
@@ -257,6 +262,8 @@ private class XmlMapSerializer(
         xmlWriter.endTag(nodeName)
     }
 }
+
+
 
 private class XmlListSerializer(
     private val descriptor: SdkFieldDescriptor,
