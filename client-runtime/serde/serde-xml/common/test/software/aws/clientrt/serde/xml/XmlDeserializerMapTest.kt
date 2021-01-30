@@ -27,7 +27,7 @@ class XmlDeserializerMapTest {
                 </entry>
             </values>
         """.encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor("values", SerialKind.Map, 0, XmlMap())
+        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {
@@ -59,7 +59,7 @@ class XmlDeserializerMapTest {
             </mymap>
         """.encodeToByteArray()
         val fieldDescriptor =
-            SdkFieldDescriptor("mymap", SerialKind.Map, 0, XmlMap("myentry", "mykey", "myvalue"))
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mymap"), XmlMap("myentry", "mykey", "myvalue"))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {
             val map = mutableMapOf<String, Int>()
@@ -95,7 +95,7 @@ class XmlDeserializerMapTest {
             </Bar>
         """.encodeToByteArray()
         val containerFieldDescriptor =
-            SdkFieldDescriptor("Bar", SerialKind.Map, 0, XmlMap("flatMap", "key", "value", true))
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("Bar"), XmlMap("flatMap", "key", "value", true))
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
             val map = mutableMapOf<String, Int?>()
@@ -114,7 +114,7 @@ class XmlDeserializerMapTest {
             <Map></Map>
         """.encodeToByteArray()
         val containerFieldDescriptor =
-            SdkFieldDescriptor("Map", SerialKind.Map, 0, XmlMap())
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("Map"), XmlMap())
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(containerFieldDescriptor) {
             val map = mutableMapOf<String, Int?>()
@@ -141,7 +141,7 @@ class XmlDeserializerMapTest {
                 </entry>
             </values>
         """.encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor("values", SerialKind.Map, 0, XmlMap())
+        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {
@@ -175,7 +175,7 @@ class XmlDeserializerMapTest {
                 </entry>
             </values>
         """.encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor("values", SerialKind.Map, 0, XmlMap())
+        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeMap(fieldDescriptor) {

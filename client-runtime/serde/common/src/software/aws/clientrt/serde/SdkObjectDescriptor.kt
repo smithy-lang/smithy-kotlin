@@ -21,6 +21,9 @@ class SdkObjectDescriptor private constructor(builder: BuilderImpl) : SdkFieldDe
          * Declare a field belonging to this object
          */
         fun field(field: SdkFieldDescriptor)
+        /**
+         * Declare a trait belonging to this object
+         */
         fun trait(trait: FieldTrait)
         fun build(): SdkObjectDescriptor
     }

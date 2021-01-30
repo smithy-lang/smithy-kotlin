@@ -94,7 +94,11 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         init {
             val token = reader.nextToken()
             check(token is XmlToken.BeginElement) { "Expected XmlToken.BeginElement but found ${token::class.qualifiedName}" }
-            check(token.id == objDescriptor.serialName.toQualifiedName()) { "Expected name ${objDescriptor.serialName} but found ${token.id.name}" }
+            val qname = objDescriptor.serialName.toQualifiedName(objDescriptor.findTrait())
+            check(token.id.name == qname.name) { "Expected name ${qname.name} but found ${token.id.name}" }
+            if (objDescriptor.findTrait<XmlNamespace>()?.isDefault() == true) { // If a default namespace is set, verify that the serialized form matches obj descriptor
+                check(token.id.namespaceUri == objDescriptor.findTrait<XmlNamespace>()?.uri) { "Expected name ${objDescriptor.findTrait<XmlNamespace>()?.uri} but found ${token.id.namespaceUri}" }
+            }
         }
 
         override fun findNextFieldIndex(): Int? {
@@ -108,7 +112,9 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
                         objDescriptor.fields
                             .filter { fieldDescriptor ->
                                 // Only look at fields matching serialName
-                                fieldDescriptor.serialName.toQualifiedName() == nextToken.id
+                                val qname = fieldDescriptor.serialName.toQualifiedName(objDescriptor.findTrait())
+                                println("desc: $qname token: ${nextToken.id}")
+                                qname == nextToken.id
                             }
                             .sortedBy { it.traits.isEmpty() } // Hackish way of putting Text nodes at the bottom
                             .forEach { sdkFieldDescriptor ->

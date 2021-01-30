@@ -4,6 +4,8 @@
  */
 package software.aws.clientrt.serde
 
+import kotlin.reflect.KClass
+
 /**
  * This tag interface provides a mechanism to attach type-specific metadata to any field.
  * See [software.aws.clientrt.serde.xml.XmlList] for an example implementation.
@@ -45,8 +47,10 @@ sealed class SerialKind {
  * Metadata to describe how a given member property maps to serialization.
  */
 open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val traits: Set<FieldTrait> = emptySet()) {
-    constructor(kind: SerialKind, index: Int = 0, trait: FieldTrait): this(kind, index, setOf(trait))
+    constructor(kind: SerialKind, vararg trait: FieldTrait): this(kind, 0, trait.toSet())
+    constructor(kind: SerialKind, traits: Set<FieldTrait>): this(kind, 0, traits)
 
+    // Reserved for format-specific companion extension functions
     companion object;
 
     /**
@@ -64,6 +68,8 @@ open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val trai
 
         return x as TExpected?
     }
+
+    inline fun <reified TExpected : FieldTrait> hasTrait() = traits.any { it is TExpected  }
 
     override fun toString(): String {
         return "($kind, ${traits.joinToString(separator = ",") }})"

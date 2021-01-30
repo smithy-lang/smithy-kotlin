@@ -16,9 +16,9 @@ class XmlDeserializerAWSTest {
         val comment: String? = builder.comment
 
         companion object {
-            val COMMENT_DESCRIPTOR = SdkFieldDescriptor("Comment", SerialKind.String)
+            val COMMENT_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("Comment"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "HostedZoneConfig"
+                trait(XmlSerialName("HostedZoneConfig"))
                 field(COMMENT_DESCRIPTOR)
             }
 
@@ -63,12 +63,12 @@ class XmlDeserializerAWSTest {
         val hostedZoneConfig: HostedZoneConfig? = builder.hostedZoneConfig
 
         companion object {
-            val NAME_DESCRIPTOR = SdkFieldDescriptor("Name", SerialKind.String)
-            val CALLER_REFERENCE_DESCRIPTOR = SdkFieldDescriptor("CallerReference", SerialKind.String)
-            val HOSTED_ZONE_DESCRIPTOR = SdkFieldDescriptor("HostedZoneConfig", SerialKind.Struct)
+            val NAME_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("Name"))
+            val CALLER_REFERENCE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("CallerReference"))
+            val HOSTED_ZONE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("HostedZoneConfig"))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "CreateHostedZoneRequest"
+                trait(XmlSerialName("CreateHostedZoneRequest"))
                 field(NAME_DESCRIPTOR)
                 field(CALLER_REFERENCE_DESCRIPTOR)
                 field(HOSTED_ZONE_DESCRIPTOR)

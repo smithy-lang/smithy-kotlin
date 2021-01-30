@@ -16,11 +16,11 @@ class SimpleStructClass {
     var unknownFieldCount: Int = 0
 
     companion object {
-        val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
-        val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
-        val Z_DESCRIPTOR = SdkFieldDescriptor("z", SerialKind.String, 0, XmlAttribute("attribval"))
+        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
+        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"))
+        val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("z"), XmlAttribute("attribval"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-            serialName = "payload"
+            trait(XmlSerialName("payload"))
             field(X_DESCRIPTOR)
             field(Y_DESCRIPTOR)
             field(Z_DESCRIPTOR)
@@ -50,10 +50,10 @@ class StructWithAttribsClass {
     var unknownFieldCount: Int = 0
 
     companion object {
-        val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0, XmlAttribute("value"))
-        val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer, 0, XmlAttribute("value"))
+        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("value"))
+        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"), XmlAttribute("value"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-            serialName = "payload"
+            trait(XmlSerialName("payload"))
             field(X_DESCRIPTOR)
             field(Y_DESCRIPTOR)
         }
@@ -86,11 +86,11 @@ class StructWithMultiAttribsAndTextValClass {
     var unknownFieldCount: Int = 0
 
     companion object {
-        val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0, XmlAttribute("xval"))
-        val Y_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0, XmlAttribute("yval"))
-        val TXT_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0)
+        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("xval"))
+        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("yval"))
+        val TXT_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-            serialName = "payload"
+            trait(XmlSerialName("payload"))
             field(TXT_DESCRIPTOR)
             field(X_DESCRIPTOR)
             field(Y_DESCRIPTOR)

@@ -41,14 +41,40 @@ data class XmlList(
     val flattened: Boolean = false
 ) : FieldTrait
 
-data class XmlNamespace(val namespace: String, val uri: String)
+data class XmlNamespace(val uri: String, val prefix: String? = null) : FieldTrait {
+    fun isDefault() = prefix == null
+}
+
 
 /**
  * Specifies a namespace that a field is encoded into for Xml nodes.
  */
-data class XmlSerialName(val name: String, val namespace: XmlNamespace? = null): FieldTrait {
-    fun toQualifiedName(): XmlToken.QualifiedName = XmlToken.QualifiedName(name, namespace?.namespace)
-}
+data class XmlSerialName(val name: String): FieldTrait {
+    fun toQualifiedName(xmlNamespace: XmlNamespace? = null): XmlToken.QualifiedName =
+        when {
+            xmlNamespace != null -> {
+                val (nodeName, prefix) = name.parseNodeWithPrefix()
+
+                if (xmlNamespace.prefix == prefix) XmlToken.QualifiedName(nodeName, xmlNamespace.uri, xmlNamespace.prefix) else XmlToken.QualifiedName(name)
+            }
+            name.nodeHasPrefix() -> {
+                val (nodeName, prefix) = name.parseNodeWithPrefix()
+                XmlToken.QualifiedName(nodeName, null, prefix)
+            }
+            else -> XmlToken.QualifiedName(name)
+        }
+    }
+
+
+fun String.nodeHasPrefix(): Boolean = this.contains(':')
+
+fun String.parseNodeWithPrefix(): Pair<String, String?> =
+    if (this.nodeHasPrefix()) {
+        val (namespacePrefix, name) = this.split(':')
+        name to namespacePrefix
+    } else {
+        this to null
+    }
 
 /**
  * Specifies that a field is encoded into an XML attribute and describes the XML.
@@ -59,10 +85,22 @@ data class XmlSerialName(val name: String, val namespace: XmlNamespace? = null):
  */
 data class XmlAttribute(val name: String, val namespace: String? = null): FieldTrait
 
-fun SdkFieldDescriptor(name: String, kind: SerialKind, index: Int = 0, trait: FieldTrait? = null): SdkFieldDescriptor {
-    val xmlSerialName = if (name.contains(':')) {
-        val (name, namespace) = name.split(':')
-        XmlSerialName(name, XmlNamespace(namespace, "https://someuri"))
+/*fun SdkFieldDescriptor(name: String, kind: SerialKind, index: Int = 0, trait: FieldTrait? = null): SdkFieldDescriptor {
+    val xmlSerialName = XmlSerialName(name)
+
+    return if (trait != null)
+        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName, trait))
+    else
+        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName))
+}*/
+
+val SdkFieldDescriptor.serialName: XmlSerialName
+    get() = expectTrait()
+
+/*
+fun SdkFieldDescriptor(name: String, kind: SerialKind, namespaceUri: String? = null, namespacePrefix: String? = null, index: Int = 0, trait: FieldTrait? = null): SdkFieldDescriptor {
+    val xmlSerialName = if (namespaceUri != null) {
+        XmlSerialName(name, namespacePrefix)
     } else {
         XmlSerialName(name)
     }
@@ -78,4 +116,19 @@ val SdkFieldDescriptor.serialName: XmlSerialName
 
 var SdkObjectDescriptor.DslBuilder.serialName
     get(): String = error { "Should not be called" }
-    set(value) = trait(XmlSerialName(value))
+    set(value) {
+        check(!traits.any { it is XmlSerialName }) { "Serial name cannot be set multiple times" }
+        val trait = if (value.contains(':')) {
+            val (prefix, name) = value.split(':')
+            XmlSerialName(name, prefix)
+        } else {
+            XmlSerialName(value)
+        }
+        traits.add(trait)
+    }
+
+var SdkObjectDescriptor.DslBuilder.namespace
+    get(): XmlNamespace = error { "Should not be called" }
+    set(value) {
+        traits.add(value)
+    }*/

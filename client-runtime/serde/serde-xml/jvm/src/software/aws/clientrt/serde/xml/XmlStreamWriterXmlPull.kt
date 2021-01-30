@@ -63,6 +63,10 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
         return this
     }
 
+    override fun namespacePrefix(uri: String, prefix: String?) {
+        serializer.setPrefix(prefix ?: "", uri)
+    }
+
     override fun toString(): String {
         return String(bytes)
     }

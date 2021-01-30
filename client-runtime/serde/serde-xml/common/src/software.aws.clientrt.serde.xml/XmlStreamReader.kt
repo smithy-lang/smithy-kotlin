@@ -12,7 +12,7 @@ sealed class XmlToken {
     /**
      * Defines the name and namespace of an element
      */
-    data class QualifiedName(val name: String, val namespace: String? = null)
+    data class QualifiedName(val name: String, val namespaceUri: String? = null, val namespacePrefix: String? = null)
 
     /**
      * The opening of an XML element

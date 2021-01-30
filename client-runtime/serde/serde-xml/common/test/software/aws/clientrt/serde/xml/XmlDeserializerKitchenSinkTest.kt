@@ -19,10 +19,10 @@ class XmlDeserializerKitchenSinkTest {
 
         companion object {
             val LIST2_FIELD_DESCRIPTOR =
-                SdkFieldDescriptor("list2", SerialKind.List, 0, XmlList(elementName = "element"))
-            val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor("int2", SerialKind.Integer)
+                SdkFieldDescriptor(SerialKind.List, XmlSerialName("list2"), XmlList(elementName = "element"))
+            val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("int2"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "nested2"
+                trait(XmlSerialName("nested2"))
                 field(LIST2_FIELD_DESCRIPTOR)
                 field(INT2_FIELD_DESCRIPTOR)
             }
@@ -61,10 +61,10 @@ class XmlDeserializerKitchenSinkTest {
         var bool2: Boolean? = null
 
         companion object {
-            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested2", SerialKind.Struct)
-            val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool2", SerialKind.Boolean)
+            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested2"))
+            val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("bool2"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "nested"
+                trait(XmlSerialName("nested"))
                 field(NESTED2_FIELD_DESCRIPTOR)
                 field(BOOL2_FIELD_DESCRIPTOR)
             }
@@ -103,20 +103,20 @@ class XmlDeserializerKitchenSinkTest {
         var mapField: Map<String, String>? = null
 
         companion object {
-            val INT_FIELD_DESCRIPTOR = SdkFieldDescriptor("int", SerialKind.Integer)
-            val LONG_FIELD_DESCRIPTOR = SdkFieldDescriptor("long", SerialKind.Long)
-            val SHORT_FIELD_DESCRIPTOR = SdkFieldDescriptor("short", SerialKind.Short)
-            val BOOL_FIELD_DESCRIPTOR = SdkFieldDescriptor("bool", SerialKind.Boolean)
-            val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor("str", SerialKind.String)
-            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List, 0, XmlList())
-            val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor("double", SerialKind.Double)
-            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor("nested", SerialKind.Struct)
-            val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor("float", SerialKind.Float)
+            val INT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("int"))
+            val LONG_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Long, XmlSerialName("long"))
+            val SHORT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Short, XmlSerialName("short"))
+            val BOOL_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("bool"))
+            val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("str"))
+            val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Double, XmlSerialName("double"))
+            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+            val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Float, XmlSerialName("float"))
+            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlList(), XmlSerialName("list"))
             val MAP_FIELD_DESCRIPTOR =
-                SdkFieldDescriptor("map", SerialKind.Map, 0, XmlMap("entry", "key", "value", true))
+                SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"), XmlMap("entry", "key", "value", true))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "payload"
+                trait(XmlSerialName("payload"))
                 field(INT_FIELD_DESCRIPTOR)
                 field(LONG_FIELD_DESCRIPTOR)
                 field(SHORT_FIELD_DESCRIPTOR)

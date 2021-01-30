@@ -188,8 +188,8 @@ class JsonDeserializerTest {
         var x: Int? = null
         var y: Int? = null
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("x", SerialKind.Integer)
-            val Y_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("y", SerialKind.Integer)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
@@ -297,8 +297,8 @@ class JsonDeserializerTest {
         var list2: List<String>? = null
         var int2: Int? = null
         companion object {
-            val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("list2", SerialKind.List)
-            val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("int2", SerialKind.Integer)
+            val LIST2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("list2"))
+            val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("int2"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(LIST2_FIELD_DESCRIPTOR)
                 field(INT2_FIELD_DESCRIPTOR)
@@ -333,8 +333,8 @@ class JsonDeserializerTest {
         var bool2: Boolean? = null
 
         companion object {
-            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("nested2", SerialKind.Struct)
-            val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("bool2", SerialKind.Boolean)
+            val NESTED2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("nested2"))
+            val BOOL2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, JsonSerialName("bool2"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(NESTED2_FIELD_DESCRIPTOR)
                 field(BOOL2_FIELD_DESCRIPTOR)
@@ -373,16 +373,16 @@ class JsonDeserializerTest {
         var mapField: Map<String, String>? = null
 
         companion object {
-            val INT_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("int", SerialKind.Integer)
-            val LONG_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("long", SerialKind.Long)
-            val SHORT_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("short", SerialKind.Short)
-            val BOOL_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("bool", SerialKind.Boolean)
-            val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("str", SerialKind.String)
-            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("list", SerialKind.List)
-            val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("double", SerialKind.Double)
-            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("nested", SerialKind.Struct)
-            val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("float", SerialKind.Float)
-            val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("map", SerialKind.Map)
+            val INT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("int"))
+            val LONG_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Long, JsonSerialName("long"))
+            val SHORT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Short, JsonSerialName("short"))
+            val BOOL_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, JsonSerialName("bool"))
+            val STR_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("str"))
+            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("list"))
+            val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Double, JsonSerialName("double"))
+            val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("nested"))
+            val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Float, JsonSerialName("float"))
+            val MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, JsonSerialName("map"))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(INT_FIELD_DESCRIPTOR)
@@ -501,9 +501,9 @@ class JsonDeserializerTest {
         var x: Int? = null
         var y: Int? = null
         var z: Int? = null
-        val X_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("x", SerialKind.Integer)
-        val Y_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("y", SerialKind.Integer)
-        val Z_DESCRIPTOR = SdkFieldDescriptor.fromSerialName("z", SerialKind.Integer)
+        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("x"))
+        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("y"))
+        val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("z"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(X_DESCRIPTOR)
             field(Y_DESCRIPTOR)

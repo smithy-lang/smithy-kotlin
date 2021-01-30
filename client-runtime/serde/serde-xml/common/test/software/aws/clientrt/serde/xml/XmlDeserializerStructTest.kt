@@ -83,12 +83,12 @@ class XmlDeserializerStructTest {
         var unknownFieldCount: Int = 0
 
         companion object {
-            val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0, XmlAttribute("value"))
-            val X_VALUE_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0)
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer, 0, XmlAttribute("value"))
-            val Z_DESCRIPTOR = SdkFieldDescriptor("z", SerialKind.Boolean)
+            val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("value"))
+            val X_VALUE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"), XmlAttribute("value"))
+            val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("z"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "payload"
+                trait(XmlSerialName("payload"))
                 field(X_ATTRIB_DESCRIPTOR)
                 field(X_VALUE_DESCRIPTOR)
                 field(Y_DESCRIPTOR)

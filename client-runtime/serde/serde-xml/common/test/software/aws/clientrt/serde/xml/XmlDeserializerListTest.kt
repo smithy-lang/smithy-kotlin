@@ -71,9 +71,9 @@ class XmlDeserializerListTest {
                 </list>
             </object>
         """.encodeToByteArray()
-        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List, 0, XmlList())
+        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList())
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-            serialName = "object"
+            trait(XmlSerialName("object"))
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
         }
 
@@ -93,9 +93,9 @@ class XmlDeserializerListTest {
                 <element>3</element>
             </object>
         """.encodeToByteArray()
-        val elementFieldDescriptor = SdkFieldDescriptor("element", SerialKind.List, 0, XmlList(flattened = true))
+        val elementFieldDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("element"), XmlList(flattened = true))
         val objectDescriptor = SdkObjectDescriptor.build {
-            serialName = "object"
+            trait(XmlSerialName("object"))
             field(elementFieldDescriptor)
         }
         val deserializer = XmlDeserializer(payload)
@@ -120,7 +120,7 @@ class XmlDeserializerListTest {
                </list>
            """.encodeToByteArray()
         val listWrapperFieldDescriptor =
-            SdkFieldDescriptor("list", SerialKind.List, 0, XmlList(elementName = "payload"))
+            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
@@ -153,7 +153,7 @@ class XmlDeserializerListTest {
                </list>
            """.encodeToByteArray()
         val listWrapperFieldDescriptor =
-            SdkFieldDescriptor("list", SerialKind.List, 0, XmlList(elementName = "payload"))
+            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
@@ -184,7 +184,7 @@ class XmlDeserializerListTest {
                </list>
            """.encodeToByteArray()
         val listWrapperFieldDescriptor =
-            SdkFieldDescriptor("list", SerialKind.List, 0, XmlList(elementName = "payload"))
+            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
@@ -208,7 +208,7 @@ class XmlDeserializerListTest {
                <list></list>
            """.encodeToByteArray()
         val listWrapperFieldDescriptor =
-            SdkFieldDescriptor("list", SerialKind.List, 0, XmlList(elementName = "payload"))
+            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
 
         val deserializer = XmlDeserializer(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {

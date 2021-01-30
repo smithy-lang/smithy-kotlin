@@ -16,7 +16,7 @@ class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesDoubles() {
         val deserializer = XmlDeserializer2("<node>1.2</node>".wrapInStruct())
-        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Double), deserializer::deserializeDouble)
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Double, XmlSerialName("node")), deserializer::deserializeDouble)
         val expected = 1.2
         assertTrue(abs(actual - expected) <= 0.0001)
     }
@@ -24,7 +24,7 @@ class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesFloats() {
         val deserializer = XmlDeserializer2("<node>1.2</node>".wrapInStruct())
-        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Float), deserializer::deserializeFloat)
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Float, XmlSerialName("node")), deserializer::deserializeFloat)
         val expected = 1.2f
         assertTrue(abs(actual - expected) <= 0.0001f)
     }
@@ -32,7 +32,7 @@ class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesInt() {
         val deserializer = XmlDeserializer2("<node>${Int.MAX_VALUE}</node>".wrapInStruct())
-        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("node")), deserializer::deserializeInt)
         val expected = 2147483647
         assertEquals(expected, actual)
     }
@@ -40,7 +40,7 @@ class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesByteAsNumber() {
         val deserializer = XmlDeserializer2("<node>1</node>".wrapInStruct())
-        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Byte), deserializer::deserializeByte)
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Byte, XmlSerialName("node")), deserializer::deserializeByte)
         val expected: Byte = 1
         assertEquals(expected, actual)
     }
@@ -48,7 +48,7 @@ class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesShort() {
         val deserializer = XmlDeserializer2("<node>${Short.MAX_VALUE}</node>".wrapInStruct())
-        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Short), deserializer::deserializeShort)
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Short, XmlSerialName("node")), deserializer::deserializeShort)
         val expected: Short = 32767
         assertEquals(expected, actual)
     }
@@ -56,7 +56,7 @@ class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesLong() {
         val deserializer = XmlDeserializer2("<node>${Long.MAX_VALUE}</node>".wrapInStruct())
-        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Long), deserializer::deserializeLong)
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Long, XmlSerialName("node")), deserializer::deserializeLong)
         val expected = 9223372036854775807L
         assertEquals(expected, actual)
     }
@@ -64,7 +64,7 @@ class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesBool() {
         val deserializer = XmlDeserializer2("<node>true</node>".wrapInStruct())
-        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Boolean), deserializer::deserializeBoolean)
+        val actual = deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("node")), deserializer::deserializeBoolean)
         assertTrue(actual)
     }
 
@@ -72,7 +72,7 @@ class XmlDeserializerPrimitiveTest {
     fun itFailsInvalidTypeSpecificationForInt() {
         val deserializer = XmlDeserializer2("<node>1.2</node>".wrapInStruct())
         assertFailsWith(DeserializationException::class) {
-            deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
+            deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("node")), deserializer::deserializeInt)
         }
     }
 
@@ -81,7 +81,7 @@ class XmlDeserializerPrimitiveTest {
     fun itFailsMissingTypeSpecificationForInt() {
         val deserializer = XmlDeserializer2("<node></node>".wrapInStruct())
         assertFailsWith(DeserializationException::class) {
-            deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
+            deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("node")), deserializer::deserializeInt)
         }
     }
 
@@ -90,7 +90,7 @@ class XmlDeserializerPrimitiveTest {
     fun itFailsWhitespaceTypeSpecificationForInt() {
         val deserializer = XmlDeserializer2("<node> </node>".wrapInStruct())
         assertFailsWith(DeserializationException::class) {
-            deserializer.deserializeSingleValue(SdkFieldDescriptor("node", SerialKind.Integer), deserializer::deserializeInt)
+            deserializer.deserializeSingleValue(SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("node")), deserializer::deserializeInt)
         }
     }
 
@@ -98,7 +98,7 @@ class XmlDeserializerPrimitiveTest {
 
     private fun <T> Deserializer.deserializeSingleValue(fieldDescriptor: SdkFieldDescriptor, deserializeFn: () -> T): T {
         val objSerializer = SdkObjectDescriptor.build {
-            serialName = "structure"
+            trait(XmlSerialName("structure"))
             field(fieldDescriptor)
         }
         var actual: T? = null

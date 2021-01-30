@@ -8,16 +8,20 @@ import software.aws.clientrt.serde.*
 
 class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
-    private var nodeStack = mutableListOf<String>()
+    private var nodeStack = mutableListOf<XmlSerialName>()
 
     override fun toByteArray(): ByteArray {
         return xmlWriter.bytes
     }
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
+        descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
+            xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
+        }
+
         xmlWriter.startTag(descriptor.serialName)
 
-        nodeStack.add(descriptor.serialName.name)
+        nodeStack.add(descriptor.serialName)
 
         return this
     }
@@ -154,12 +158,10 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(this)
-
-
 }
 
-private fun XmlStreamWriter.startTag(name: XmlSerialName) = startTag(name.name, name.namespace?.namespace)
-private fun XmlStreamWriter.endTag(serialName: XmlSerialName) = endTag(serialName.name, serialName.namespace?.namespace)
+private fun XmlStreamWriter.startTag(name: XmlSerialName) = startTag(name.name)
+private fun XmlStreamWriter.endTag(serialName: XmlSerialName) = endTag(serialName.name)
 
 private class XmlMapSerializer(
     private val descriptor: SdkFieldDescriptor,

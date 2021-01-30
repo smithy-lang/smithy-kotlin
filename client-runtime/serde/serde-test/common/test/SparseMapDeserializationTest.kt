@@ -161,7 +161,7 @@ class SparseMapDeserializationTest {
     class GetFooDeserializer {
 
         companion object {
-            private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor("sparseStructMap", SerialKind.Map, 0, XmlMap())
+            private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "sparseStructMap".toSerialNames() + XmlMap())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(SPARSESTRUCTMAP_DESCRIPTOR)
             }
@@ -200,7 +200,7 @@ class SparseMapDeserializationTest {
     class GreetingDeserializer {
 
         companion object {
-            private val SAYING_DESCRIPTOR = SdkFieldDescriptor("saying", SerialKind.String)
+            private val SAYING_DESCRIPTOR = SdkFieldDescriptor( SerialKind.String, "saying".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 field(SAYING_DESCRIPTOR)
             }

@@ -3,12 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.serde.SdkFieldDescriptor
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.json.JsonSerializer
-import software.aws.clientrt.serde.xml.XmlDeserializer
-import software.aws.clientrt.serde.xml.XmlList
-import software.aws.clientrt.serde.xml.XmlMap
-import software.aws.clientrt.serde.xml.XmlSerializer
+import software.aws.clientrt.serde.xml.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -139,11 +137,11 @@ class SemanticParityTest {
         CrossProtocolSerdeTest {
 
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.String)
-            val Z_DESCRIPTOR = SdkFieldDescriptor("z", SerialKind.Boolean)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "x".toSerialNames())
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, "y".toSerialNames())
+            val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, "z".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "payload"
+                trait(XmlSerialName("payload"))
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
                 field(Z_DESCRIPTOR)
@@ -187,9 +185,9 @@ class SemanticParityTest {
 
     data class ListTest(var intList: List<Int>? = null) : SdkSerializable, CrossProtocolSerdeTest {
         companion object {
-            val LIST_DESCRIPTOR = SdkFieldDescriptor("list", SerialKind.List, 0, XmlList())
+            val LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, setOf(XmlList()) + "list".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "payload"
+                trait(XmlSerialName("payload"))
                 field(LIST_DESCRIPTOR)
             }
 
@@ -201,7 +199,7 @@ class SemanticParityTest {
                             LIST_DESCRIPTOR.index -> result.intList = deserializer.deserializeList(LIST_DESCRIPTOR) {
                                 val intList = mutableListOf<Int>()
                                 while (this.hasNextElement()) {
-                                    intList.add(this.deserializeInt()!!)
+                                    intList.add(this.deserializeInt())
                                 }
                                 result.intList = intList
                                 return@deserializeList intList
@@ -238,9 +236,9 @@ class SemanticParityTest {
 
     data class MapTest(var strMap: Map<String, String>? = null) : SdkSerializable, CrossProtocolSerdeTest {
         companion object {
-            val MAP_DESCRIPTOR = SdkFieldDescriptor("map", SerialKind.Map, 0, XmlMap())
+            val MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "map".toSerialNames() + XmlMap())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "payload"
+                trait(XmlSerialName("payload"))
                 field(MAP_DESCRIPTOR)
             }
 
@@ -292,9 +290,9 @@ class SemanticParityTest {
         CrossProtocolSerdeTest {
 
         companion object {
-            val NESTED_STRUCT_DESCRIPTOR = SdkFieldDescriptor("payload", SerialKind.Struct)
+            val NESTED_STRUCT_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, "payload".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "outerpayload"
+                trait(XmlSerialName("outerpayload"))
                 field(NESTED_STRUCT_DESCRIPTOR)
             }
 

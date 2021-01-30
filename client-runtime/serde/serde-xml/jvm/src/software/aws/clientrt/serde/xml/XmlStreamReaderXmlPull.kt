@@ -5,6 +5,7 @@
 
 package software.aws.clientrt.serde.xml
 
+import org.xmlpull.mxp1.MXParser
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.ByteArrayInputStream
@@ -19,6 +20,7 @@ private class XmlStreamReaderXmlPull(
     private var peekedToken: XmlToken? = null
 
     init {
+        parser.setFeature(MXParser.FEATURE_PROCESS_NAMESPACES, true)
         parser.setInput(ByteArrayInputStream(payload), charset.toString())
     }
 
@@ -61,7 +63,7 @@ private class XmlStreamReaderXmlPull(
 
     // Create qualified name from current node
     private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
-        XmlToken.QualifiedName(name, namespace.blankToNull())
+        XmlToken.QualifiedName(name, namespace.blankToNull(), prefix.blankToNull())
 
     // Return attribute map from attributes of current node
     private fun parseAttributes(): Map<XmlToken.QualifiedName, String> {
