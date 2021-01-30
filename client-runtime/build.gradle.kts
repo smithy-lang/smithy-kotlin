@@ -37,7 +37,7 @@ subprojects {
     // FIXME - Workaround for unspecified kotlin target error after 1.4 upgrade.
     //  See https://www.pivotaltracker.com/story/show/175292052
     val needsConfigure = platforms.any { projectNeedsPlatform(project, it)}
-    println("$project needs configure: $needsConfigure")
+    logger.info("$project needs configure: $needsConfigure")
     // don't configure anything
     if (!needsConfigure) return@subprojects
 
@@ -50,7 +50,7 @@ subprojects {
         plugin("org.jetbrains.dokka")
     }
 
-    println("Configuring: $project")
+    logger.info("configuring: $project")
 
     // this works by iterating over each platform name and inspecting the projects files. If the project contains
     // a directory with the corresponding platform name we apply the common configuration settings for that platform
@@ -59,7 +59,7 @@ subprojects {
     platforms.forEach { platform ->
         if (projectNeedsPlatform(project, platform)) {
             configure(listOf(project)){
-                println("${project.name} needs platform: $platform")
+                logger.info("${project.name} needs platform: $platform")
                 apply(from = rootProject.file("gradle/${platform}.gradle"))
             }
         }
