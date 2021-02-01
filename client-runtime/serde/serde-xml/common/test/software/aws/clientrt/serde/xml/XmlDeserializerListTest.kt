@@ -77,11 +77,32 @@ class XmlDeserializerListTest {
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
         }
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val actual = ListDeserializer.deserialize(deserializer, OBJ_DESCRIPTOR, ELEMENT_LIST_FIELD_DESCRIPTOR).list
         val expected = listOf(1, 2, 3)
 
         actual.shouldContainExactly(expected)
+    }
+
+    @Test
+    fun itHandlesEmptyLists() {
+        val payload = """
+            <object>
+                <list>                    
+                </list>
+            </object>
+        """.encodeToByteArray()
+        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList())
+        val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(ELEMENT_LIST_FIELD_DESCRIPTOR)
+        }
+
+        val deserializer = XmlDeserializer2(payload)
+        val actual = ListDeserializer.deserialize(deserializer, OBJ_DESCRIPTOR, ELEMENT_LIST_FIELD_DESCRIPTOR).list
+        val expected = null
+
+        assertEquals(expected, actual)
     }
 
     @Test
@@ -98,7 +119,7 @@ class XmlDeserializerListTest {
             trait(XmlSerialName("object"))
             field(elementFieldDescriptor)
         }
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val actual = ListDeserializer.deserialize(deserializer, objectDescriptor, elementFieldDescriptor).list
         val expected = listOf(1, 2, 3)
 
@@ -122,7 +143,7 @@ class XmlDeserializerListTest {
         val listWrapperFieldDescriptor =
             SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
             val list = mutableListOf<SimpleStructClass>()
             while (hasNextElement()) {
@@ -155,7 +176,7 @@ class XmlDeserializerListTest {
         val listWrapperFieldDescriptor =
             SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
             val list = mutableListOf<SimpleStructClass>()
             while (hasNextElement()) {
@@ -186,7 +207,7 @@ class XmlDeserializerListTest {
         val listWrapperFieldDescriptor =
             SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
             val list = mutableListOf<SimpleStructClass>()
             while (hasNextElement()) {
@@ -200,25 +221,5 @@ class XmlDeserializerListTest {
         assertEquals(2, actual[0].y)
         assertEquals(null, actual[1].x)
         assertEquals(null, actual[1].y)
-    }
-
-    @Test
-    fun itHandlesEmptyLists() {
-        val payload = """
-               <list></list>
-           """.encodeToByteArray()
-        val listWrapperFieldDescriptor =
-            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
-
-        val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeList(listWrapperFieldDescriptor) {
-            val list = mutableListOf<SimpleStructClass>()
-            while (hasNextElement()) {
-                val obj = SimpleStructClass.deserialize(deserializer)
-                list.add(obj)
-            }
-            return@deserializeList list
-        }
-        assertEquals(0, actual.size)
     }
 }

@@ -155,11 +155,11 @@ class XmlStreamReaderTest {
         val nt = reader.peek()
         assertTrue(nt is XmlToken.BeginElement)
 
-        assertEquals("unknown", nt.id.name)
+        assertEquals("unknown", nt.qualifiedName.name)
         reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.id.name)
+        assertEquals("y", y.qualifiedName.name)
     }
 
     @Test
@@ -176,11 +176,11 @@ class XmlStreamReaderTest {
         assertTrue(reader.peek() is XmlToken.BeginElement)
 
         val zElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("z", zElement.id.name)
+        assertEquals("z", zElement.qualifiedName.name)
         reader.skipNext()
 
         val yElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", yElement.id.name)
+        assertEquals("y", yElement.qualifiedName.name)
     }
 }
 

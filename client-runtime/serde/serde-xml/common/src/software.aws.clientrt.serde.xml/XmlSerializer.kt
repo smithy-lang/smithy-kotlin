@@ -27,7 +27,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
-        xmlWriter.startTag(descriptor.serialName)
+        if (!descriptor.expectTrait<XmlList>().flattened) xmlWriter.startTag(descriptor.serialName)
         return XmlListSerializer(descriptor, xmlWriter, this)
     }
 
@@ -274,7 +274,7 @@ private class XmlListSerializer(
 ) : ListSerializer {
 
     override fun endList() {
-        xmlWriter.endTag(descriptor.serialName)
+        if (!descriptor.expectTrait<XmlList>().flattened) xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun serializeBoolean(value: Boolean) = serializePrimitive(value)

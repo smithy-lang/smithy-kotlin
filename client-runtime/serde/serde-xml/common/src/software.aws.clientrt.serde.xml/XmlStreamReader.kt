@@ -18,7 +18,7 @@ sealed class XmlToken {
      * The opening of an XML element
      */
     data class BeginElement(
-        val id: QualifiedName,
+        val qualifiedName: QualifiedName,
         val attributes: Map<QualifiedName, String> = emptyMap()
     ) : XmlToken() {
         // Convenience constructor for name-only nodes.
@@ -30,7 +30,7 @@ sealed class XmlToken {
     /**
      * The closing of an XML element
      */
-    data class EndElement(val name: QualifiedName) : XmlToken() {
+    data class EndElement(val qualifiedName: QualifiedName) : XmlToken() {
         // Convenience constructor for name-only nodes.
         constructor(name: String) : this(QualifiedName(name))
     }
@@ -47,8 +47,8 @@ sealed class XmlToken {
     object EndDocument : XmlToken()
 
     override fun toString(): String = when (this) {
-        is BeginElement -> "<${this.id}>"
-        is EndElement -> "</${this.name}>"
+        is BeginElement -> "<${this.qualifiedName}>"
+        is EndElement -> "</${this.qualifiedName}>"
         is Text -> "${this.value}"
         EndDocument -> "[EndDocument]"
     }

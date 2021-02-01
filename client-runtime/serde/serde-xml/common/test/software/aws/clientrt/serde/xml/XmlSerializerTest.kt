@@ -63,12 +63,28 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"))) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList("b", false))) {
             for (value in obj) {
                 value.serialize(xml)
             }
         }
         assertEquals("""<list><b><v>1</v></b><b><v>2</v></b><b><v>3</v></b></list>""", xml.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun canSerializeFlatListOfClasses() {
+        val obj = listOf(
+            B(1),
+            B(2),
+            B(3)
+        )
+        val xml = XmlSerializer()
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList("b", true))) {
+            for (value in obj) {
+                value.serialize(xml)
+            }
+        }
+        assertEquals("""<b><v>1</v></b><b><v>2</v></b><b><v>3</v></b>""", xml.toByteArray().decodeToString())
     }
 
     // See https://awslabs.github.io/smithy/spec/xml.html#wrapped-map-serialization
