@@ -22,7 +22,7 @@ class XmlDeserializerStructTest {
                  -->
                 
                <payload>
-                    <x xmlns="https://route53.amazonaws.com/doc/2013-04-01/" value="1" />
+                    <x value="1" />
                     <y value="2" />
                </payload>
         """.trimIndent().encodeToByteArray()
@@ -44,7 +44,7 @@ class XmlDeserializerStructTest {
                  -->
                 
                <payload>
-                    <x xmlns="https://route53.amazonaws.com/doc/2013-04-01/" xval="1" yval="2">nodeval</x>
+                    <x xval="1" yval="2">nodeval</x>
                </payload>
         """.trimIndent().encodeToByteArray()
 
