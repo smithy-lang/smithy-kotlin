@@ -115,6 +115,18 @@ interface KotlinIntegration {
     ) {
         // pass
     }
+
+    /**
+     * Write additional files defined by this integration
+     * @param ctx The codegen generation context
+     * @param delegator File writer(s)
+     */
+    fun writeAdditionalFiles(
+        ctx: CodegenContext,
+        delegator: KotlinDelegator
+    ) {
+        // pass
+    }
 }
 
 /**

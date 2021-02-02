@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.node.Node
@@ -15,13 +16,16 @@ class KotlinSettingsTest {
     @Test fun `infers default service`() {
         val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
+        val contents = """
+            {
+                "module": "example",
+                "moduleVersion": "1.0.0"
+            }
+        """.trimIndent()
+
         val settings = KotlinSettings.from(
             model,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("example"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
-                .build()
+            Node.parse(contents).expectObjectNode()
         )
 
         assertEquals(ShapeId.from("smithy.example#Example"), settings.service)
@@ -32,15 +36,44 @@ class KotlinSettingsTest {
     @Test fun `correctly reads rootProject var from build settings`() {
         val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
+        val contents = """
+            {
+                "module": "example",
+                "moduleVersion": "1.0.0",
+                "build": {
+                    "rootProject": true
+                }
+            }
+        """.trimIndent()
+
         val settings = KotlinSettings.from(
             model,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("example"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(true)).build())
-                .build()
+            Node.parse(contents).expectObjectNode()
         )
 
-        assertTrue(settings.build.rootProject)
+        assertTrue(settings.build.generateFullProject)
+        assertTrue(settings.build.generateBuildFiles)
+    }
+
+    @Test fun `correctly reads generateBuildFIles var from build settings`() {
+        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+
+        val contents = """
+            {
+                "module": "example",
+                "moduleVersion": "1.0.0",
+                "build": {
+                    "generateBuildFiles": false
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode()
+        )
+
+        assertFalse(settings.build.generateFullProject)
+        assertFalse(settings.build.generateBuildFiles)
     }
 }

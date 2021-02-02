@@ -130,12 +130,27 @@ class KotlinSettings(
     }
 }
 
-data class BuildSettings(val rootProject: Boolean = false) {
+data class BuildSettings(
+    /**
+     * Flag indicating to generate a full project that will exist independent of other projects
+     */
+    val generateFullProject: Boolean = false,
+
+    /**
+     * Flag indicating if (Gradle) build files should be spit out. This can be used to turn off generated gradle
+     * files by default in-favor of e.g. spitting out your own custom Gradle file as part of an integration.
+     */
+    val generateBuildFiles: Boolean = true,
+) {
     companion object {
         private const val ROOT_PROJECT = "rootProject"
+        private const val GENERATE_BUILD_FILES = "generateBuildFiles"
+
         fun fromNode(node: Optional<ObjectNode>): BuildSettings {
             return if (node.isPresent) {
-                BuildSettings(node.get().getMember(ROOT_PROJECT).get().asBooleanNode().get().value)
+                val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
+                val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_BUILD_FILES, true)
+                BuildSettings(generateFullProject, generateBuildFiles)
             } else {
                 Default
             }
@@ -144,7 +159,7 @@ data class BuildSettings(val rootProject: Boolean = false) {
         /**
          * Default build settings
          */
-        val Default: BuildSettings = BuildSettings(false)
+        val Default: BuildSettings = BuildSettings()
     }
 }
 

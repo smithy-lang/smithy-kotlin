@@ -24,14 +24,14 @@ fun writeGradleBuild(
     }
 
     writer.withBlock("plugins {", "}\n") {
-        if (settings.build.rootProject) {
+        if (settings.build.generateFullProject) {
             write("kotlin(\"jvm\") version \$S", KOTLIN_VERSION)
         } else {
             write("kotlin(\"jvm\")")
         }
     }
 
-    if (settings.build.rootProject) {
+    if (settings.build.generateFullProject) {
         writer.withBlock("repositories {", "}\n") {
             write("mavenLocal()")
             write("mavenCentral()")
@@ -80,7 +80,7 @@ fun writeGradleBuild(
 
     val contents = writer.toString()
     manifest.writeFile("build.gradle.kts", contents)
-    if (settings.build.rootProject) {
+    if (settings.build.generateFullProject) {
         manifest.writeFile("settings.gradle.kts", "")
     }
 }

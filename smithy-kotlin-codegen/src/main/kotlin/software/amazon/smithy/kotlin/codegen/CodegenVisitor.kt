@@ -112,10 +112,15 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             generateProtocolClient(ctx)
         }
 
-        val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
-        writeGradleBuild(settings, fileManifest, dependencies, integrations)
+        if (settings.build.generateBuildFiles) {
+            val dependencies = writers.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
+            writeGradleBuild(settings, fileManifest, dependencies, integrations)
+        }
 
-        println("flushing writers")
+        // write files defined by integrations
+        integrations.forEach { it.writeAdditionalFiles(baseGenerationContext, writers) }
+
+        LOGGER.info("flushing writers")
         writers.flushWriters()
     }
 
