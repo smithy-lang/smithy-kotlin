@@ -4,8 +4,6 @@
  */
 package software.aws.clientrt.serde
 
-import kotlin.reflect.KClass
-
 /**
  * This tag interface provides a mechanism to attach type-specific metadata to any field.
  * See [software.aws.clientrt.serde.xml.XmlList] for an example implementation.
@@ -14,6 +12,9 @@ import kotlin.reflect.KClass
  * in a tag called "boo", pass an instance of XmlList to the FieldDescriptor of `XmlList(elementName="boo")`.
  */
 interface FieldTrait
+
+// Denotes that a Map or List may contain null values
+object SparseValues: FieldTrait
 
 /**
  * A protocol-agnostic type description of a field.

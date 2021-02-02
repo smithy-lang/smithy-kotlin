@@ -37,11 +37,12 @@ private class XmlStreamReaderXmlPull(
         if (peekedToken != null) {
             val rv = peekedToken!!
             peekedToken = null
+            println("Consumed peeked xml token $rv")
             return rv
         }
 
         try {
-            return when (val nt = parser.nextToken()) {
+            val rv = when (val nt = parser.nextToken()) {
                 XmlPullParser.START_DOCUMENT -> nextToken()
                 XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
                 XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes())
@@ -56,6 +57,9 @@ private class XmlStreamReaderXmlPull(
                 }
                 else -> throw IllegalStateException("Unhandled tag $nt")
             }
+
+            println("Consumed xml token $rv")
+            return rv
         } catch (e: Exception) {
             throw XmlGenerationException(e)
         }

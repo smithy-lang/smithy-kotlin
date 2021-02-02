@@ -4,19 +4,19 @@ import software.aws.clientrt.serde.*
 
 class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
 
-    private var activeStructDeserializer: XmlFieldIterator3? = null
+    private var rootStructDeserializer: XmlFieldIterator3? = null
 
     constructor(input: ByteArray) : this(xmlStreamReader(input))
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         val structDeserializer = XmlFieldIterator3(descriptor, reader, currentToken = reader.peek() as XmlToken.BeginElement)
-        activeStructDeserializer = structDeserializer
+        rootStructDeserializer = structDeserializer
         return structDeserializer
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        check(activeStructDeserializer != null) { "List cannot be deserialized independently from a parent struct" }
-        return XmlListFieldIterator3(descriptor, reader, activeStructDeserializer!!)
+        check(rootStructDeserializer != null) { "List cannot be deserialized independently from a parent struct" }
+        return XmlListFieldIterator3(descriptor, reader, rootStructDeserializer!!)
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
@@ -27,43 +27,43 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
      * Deserialize a byte value defined as the text section of an Xml element.
      *
      */
-    override fun deserializeByte(): Byte = activeStructDeserializer?.deserializeByte() ?: error("No serializer available")
+    override fun deserializeByte(): Byte = rootStructDeserializer?.deserializeByte() ?: error("No serializer available")
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeInt(): Int = activeStructDeserializer?.deserializeInt() ?: error("No serializer available")
+    override fun deserializeInt(): Int = rootStructDeserializer?.deserializeInt() ?: error("No serializer available")
 
     /**
      * Deserialize a short value defined as the text section of an Xml element.
      */
-    override fun deserializeShort(): Short = activeStructDeserializer?.deserializeShort() ?: error("No serializer available")
+    override fun deserializeShort(): Short = rootStructDeserializer?.deserializeShort() ?: error("No serializer available")
 
     /**
      * Deserialize a long value defined as the text section of an Xml element.
      */
-    override fun deserializeLong(): Long = activeStructDeserializer?.deserializeLong() ?: error("No serializer available")
+    override fun deserializeLong(): Long = rootStructDeserializer?.deserializeLong() ?: error("No serializer available")
 
     /**
      * Deserialize an float value defined as the text section of an Xml element.
      */
-    override fun deserializeFloat(): Float = activeStructDeserializer?.deserializeFloat() ?: error("No serializer available")
+    override fun deserializeFloat(): Float = rootStructDeserializer?.deserializeFloat() ?: error("No serializer available")
 
     /**
      * Deserialize a double value defined as the text section of an Xml element.
      */
-    override fun deserializeDouble(): Double = activeStructDeserializer?.deserializeDouble() ?: error("No serializer available")
+    override fun deserializeDouble(): Double = rootStructDeserializer?.deserializeDouble() ?: error("No serializer available")
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
-    override fun deserializeString(): String = activeStructDeserializer?.deserializeString() ?: error("No serializer available")
+    override fun deserializeString(): String = rootStructDeserializer?.deserializeString() ?: error("No serializer available")
 
     /**
      * Deserialize an integer value defined as the text section of an Xml element.
      */
 
-    override fun deserializeBoolean(): Boolean = activeStructDeserializer?.deserializeBoolean() ?: error("No serializer available")
+    override fun deserializeBoolean(): Boolean = rootStructDeserializer?.deserializeBoolean() ?: error("No serializer available")
 
 
     override fun deserializeNull(): Nothing? {
@@ -89,15 +89,17 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         private val listFieldDescriptor: SdkFieldDescriptor,
         private val reader: XmlStreamReader,
         private val parentDeserializer: XmlFieldIterator3,
+        private val startLevel: Int = reader.currentDepth()
     ) : Deserializer.ElementIterator {
 
         override fun hasNextElement(): Boolean {
             // Check the next token, if it is the corresponding end node to the start, exit.
             val nextToken = reader.peek()
 
-            if (nextToken is XmlToken.EndElement/* && nextToken.qualifiedName == parentDeserializer.currentToken.qualifiedName*/) {
+            if (nextToken is XmlToken.EndElement) {
                 parentDeserializer.clearNodeProperties()
-                reader.takeNextToken<XmlToken.EndElement>()
+                //Depending on flat/not-flat, may need to pull of multiple end nodes
+                while(reader.currentDepth() > startLevel) reader.takeNextToken<XmlToken.EndElement>()
                 return false
             }
 
@@ -105,13 +107,15 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         }
 
         private fun <T> deserializeValue(transform: ((String) -> T)): T {
-            val flattened = listFieldDescriptor.expectTrait<XmlList>().flattened
-
             if (reader.peek() is XmlToken.BeginElement) {
                 // In the case of flattened lists, we "fall" into the first node as there is no wrapper.
                 // this conditional checks that case for the first element of the list.
                 val listElementToken = reader.takeNextToken<XmlToken.BeginElement>()
-                check(listElementToken.qualifiedName.name == listFieldDescriptor.expectTrait<XmlList>().elementName) // It's unclear if list elements model XML namespaces. For now match only node name.
+                // It's unclear if list elements model XML namespaces. For now match only node name.
+                if (listElementToken.qualifiedName.name != listFieldDescriptor.expectTrait<XmlList>().elementName) {
+                    //Depending on flat/not-flat, may need to consume multiple start nodes
+                    return deserializeValue(transform)
+                }
             }
 
             val token = reader.takeNextToken<XmlToken.Text>()
@@ -163,11 +167,28 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
         override fun deserializeNull(): Nothing? {
-            TODO("Not yet implemented")
+            reader.takeNextToken<XmlToken.EndElement>()
+            return null
         }
 
         override fun nextHasValue(): Boolean {
-            TODO("Not yet implemented")
+            return when (reader.peek()) {
+                is XmlToken.EndElement,
+                is XmlToken.EndDocument -> false
+                is XmlToken.BeginElement -> {
+                    // Here we need to read the next token so we can peek the next to determine if there is a value.
+                    // deserializeValue() can conditionally handle start or value nodes
+                    reader.takeNextToken<XmlToken.BeginElement>()
+
+                    when (reader.peek()) {
+                        is XmlToken.EndElement,
+                        is XmlToken.EndDocument -> false
+                        else -> true
+                    }
+                }
+                else -> true
+            }
+
         }
     }
 
@@ -224,7 +245,6 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
             return if (parsedNodeProperties.isNotEmpty()) {
                 parsedNodeProperties.first().fieldIndex
             } else {
-                // reader.takeUntil<XmlToken.EndElement>()
                 findNextFieldIndex()
             }
         }
