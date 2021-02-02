@@ -52,10 +52,10 @@ class KotlinSettingsTest {
         )
 
         assertTrue(settings.build.generateFullProject)
-        assertTrue(settings.build.generateBuildFiles)
+        assertTrue(settings.build.generateDefaultBuildFiles)
     }
 
-    @Test fun `correctly reads generateBuildFIles var from build settings`() {
+    @Test fun `correctly reads generateBuildFiles var from build settings`() {
         val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
         val contents = """
@@ -63,7 +63,7 @@ class KotlinSettingsTest {
                 "module": "example",
                 "moduleVersion": "1.0.0",
                 "build": {
-                    "generateBuildFiles": false
+                    "generateDefaultBuildFiles": false
                 }
             }
         """.trimIndent()
@@ -74,6 +74,28 @@ class KotlinSettingsTest {
         )
 
         assertFalse(settings.build.generateFullProject)
-        assertFalse(settings.build.generateBuildFiles)
+        assertFalse(settings.build.generateDefaultBuildFiles)
+    }
+
+    @Test fun `correctly reads optin annotations from build settings`() {
+        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+
+        val contents = """
+            {
+                "module": "example",
+                "moduleVersion": "1.0.0",
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                }
+            }
+        """.trimIndent()
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode()
+        )
+
+        val expected = listOf("foo", "bar")
+        assertEquals(expected, settings.build.optInAnnotations)
     }
 }

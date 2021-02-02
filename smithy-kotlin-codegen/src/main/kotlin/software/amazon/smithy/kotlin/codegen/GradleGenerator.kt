@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.build.FileManifest
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.utils.CodeWriter
 
 /**
@@ -14,8 +13,7 @@ import software.amazon.smithy.utils.CodeWriter
 fun writeGradleBuild(
     settings: KotlinSettings,
     manifest: FileManifest,
-    dependencies: List<KotlinDependency>,
-    integrations: List<KotlinIntegration> = listOf()
+    dependencies: List<KotlinDependency>
 ) {
     val writer = CodeWriter().apply {
         trimBlankLines()
@@ -47,6 +45,26 @@ fun writeGradleBuild(
         for (dependency in orderedDependencies) {
             write("${dependency.config}(\"\$L:\$L:\$L\")", dependency.group, dependency.artifact, dependency.version)
         }
+    }
+
+    val annotations = settings.build.optInAnnotations
+    if (annotations != null && annotations.isNotEmpty()) {
+        writer.openBlock("val experimentalAnnotations = listOf(")
+            .call {
+                val formatted = annotations.joinToString(
+                    separator = ",\n",
+                    transform = {
+                        "\"$it\""
+                    }
+                )
+
+                writer.write(formatted)
+            }
+            .closeBlock(")")
+
+        writer.openBlock("kotlin.sourceSets.all {")
+            .write("experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) } ")
+            .closeBlock("}")
     }
 
     writer.write("")
