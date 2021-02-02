@@ -14,9 +14,6 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  */
 class CodegenTestIntegration : KotlinIntegration {
     override val protocolGenerators: List<ProtocolGenerator> = listOf(RestJsonTestProtocolGenerator())
-    override val customBuildSettings: GradleBuildSettings? = GradleBuildSettings().apply {
-        experimentalAnnotations.add("software.aws.clientrt.util.InternalAPI")
-    }
 }
 
 /**

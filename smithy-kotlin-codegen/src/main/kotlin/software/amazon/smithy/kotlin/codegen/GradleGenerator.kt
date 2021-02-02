@@ -49,26 +49,6 @@ fun writeGradleBuild(
         }
     }
 
-    val annotations = integrations.flatMap { it.customBuildSettings?.experimentalAnnotations ?: listOf<String>() }.toSet()
-    if (annotations.isNotEmpty()) {
-        writer.openBlock("val experimentalAnnotations = listOf(")
-            .call {
-                val formatted = annotations.joinToString(
-                    separator = ",\n",
-                    transform = {
-                        "\"$it\""
-                    }
-                )
-
-                writer.write(formatted)
-            }
-            .closeBlock(")")
-
-        writer.openBlock("kotlin.sourceSets.all {")
-            .write("experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) } ")
-            .closeBlock("}")
-    }
-
     writer.write("")
         .openBlock("tasks.test {")
         .write("useJUnitPlatform()")
