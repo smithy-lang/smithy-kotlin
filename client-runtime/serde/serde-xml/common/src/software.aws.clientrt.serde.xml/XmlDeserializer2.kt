@@ -16,8 +16,16 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
                 structSerializer
             }
             else -> {
-                rootStructDeserializer!!.clearNodeProperties() // Flush existing token to avoid revisiting same node upon return
-                XmlFieldIterator3(descriptor, reader, currentToken = rootStructDeserializer!!.currentToken)
+                // Flush existing token to avoid revisiting same node upon return
+                rootStructDeserializer!!.clearNodeProperties()
+
+                // Optionally consume next token until we match our objectDescriptor.
+                // This can vary depending on where deserializeStruct() is called from (list/map vs struct)
+                var token = rootStructDeserializer!!.currentToken
+                val targetTokenName = descriptor.expectTrait<XmlSerialName>().name
+                while(token.qualifiedName.name != targetTokenName) token = reader.takeNextToken()
+
+                XmlFieldIterator3(descriptor, reader, currentToken = token)
             }
         }
     }
