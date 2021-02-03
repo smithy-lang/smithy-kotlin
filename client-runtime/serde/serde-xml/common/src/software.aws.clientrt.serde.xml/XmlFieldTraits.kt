@@ -18,13 +18,13 @@ import software.aws.clientrt.serde.SerialKind
  * Specifies that a field represents a Map structure and describes the XML node names used to encode that structure.
  * See https://awslabs.github.io/smithy/spec/xml.html#map-serialization
  *
- * @param entry the name of the entry node which wraps map entries.
+ * @param entry the name of the entry node which wraps map entries. Should be null for flat maps.
  * @param keyName the name of the key field
  * @param valueName the name of the value field
  * @param flattened determines of the map has a flattened structure.  See https://awslabs.github.io/smithy/spec/xml.html#flattened-map-serialization
  */
 data class XmlMap(
-    val entry: String = "entry",
+    val entry: String? = "entry",
     val keyName: String = "key",
     val valueName: String = "value",
     val flattened: Boolean = false

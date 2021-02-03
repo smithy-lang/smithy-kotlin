@@ -69,6 +69,7 @@ class XmlDeserializerAWSTest {
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("CreateHostedZoneRequest"))
+                trait(XmlNamespace("https://route53.amazonaws.com/doc/2013-04-01/"))
                 field(NAME_DESCRIPTOR)
                 field(CALLER_REFERENCE_DESCRIPTOR)
                 field(HOSTED_ZONE_DESCRIPTOR)

@@ -179,14 +179,14 @@ private class XmlMapSerializer(
     fun generalEntry(key: String, valueFn: () -> Unit) {
         val mapTrait = descriptor.expectTrait<XmlMap>()
 
-        xmlWriter.startTag(mapTrait.entry)
+        if (!mapTrait.flattened) xmlWriter.startTag(mapTrait.entry!!)
         xmlWriter.startTag(mapTrait.keyName)
         xmlWriter.text(key)
         xmlWriter.endTag(mapTrait.keyName)
         xmlWriter.startTag(mapTrait.valueName)
         valueFn()
         xmlWriter.endTag(mapTrait.valueName)
-        xmlWriter.endTag(mapTrait.entry)
+        if (!mapTrait.flattened) xmlWriter.endTag(mapTrait.entry!!)
     }
 
     override fun entry(key: String, value: Int?) = generalEntry(key) { xmlWriter.text(value.toString()) }

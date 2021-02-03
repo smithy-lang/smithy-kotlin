@@ -561,7 +561,7 @@ private fun SdkFieldDescriptor.getWrapperName(): String {
         is SerialKind.Map -> {
             val mapTrait = this.expectTrait<XmlMap>()
             require(!mapTrait.flattened) { "Cannot get wrapper name of flattened map." }
-            mapTrait.entry
+            mapTrait.entry!!
         }
         else -> error("Unexpected descriptor kind: ${this::class}")
     }

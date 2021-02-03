@@ -5,9 +5,7 @@
 package software.aws.clientrt.serde.xml
 
 import io.kotest.matchers.maps.shouldContainExactly
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SerialKind
-import software.aws.clientrt.serde.deserializeMap
+import software.aws.clientrt.serde.*
 import kotlin.test.Test
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -16,29 +14,44 @@ class XmlDeserializerMapTest {
     @Test
     fun itHandlesMapsWithDefaultNodeNames() {
         val payload = """
-            <values>
-                <entry>
-                    <key>key1</key>
-                    <value>1</value>
-                </entry>
-                <entry>
-                    <key>key2</key>
-                    <value>2</value>
-                </entry>
-            </values>
+            <object>
+                <values>
+                    <entry>
+                        <key>key1</key>
+                        <value>1</value>
+                    </entry>
+                    <entry>
+                        <key>key2</key>
+                        <value>2</value>
+                    </entry>
+                </values>
+            </object>
         """.encodeToByteArray()
         val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(fieldDescriptor)
+        }
 
-        val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeMap(fieldDescriptor) {
-            val map = mutableMapOf<String, Int>()
-            while (hasNextEntry()) {
-                val key = key()
-                val value = deserializeInt()!!
-
-                map[key] = value
+        var actual = mutableMapOf<String, Int>()
+        val deserializer = XmlDeserializer2(payload)
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    fieldDescriptor.index -> actual =
+                        deserializer.deserializeMap(fieldDescriptor) {
+                            val map0 = mutableMapOf<String, Int>()
+                            while (hasNextEntry()) {
+                                val k0 = key()
+                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                map0[k0] = v0
+                            }
+                            map0
+                        }
+                    null -> break@loop
+                    else -> skipValue()
+                }
             }
-            return@deserializeMap map
         }
         val expected = mapOf("key1" to 1, "key2" to 2)
         actual.shouldContainExactly(expected)
@@ -47,29 +60,44 @@ class XmlDeserializerMapTest {
     @Test
     fun itHandlesMapsWithCustomNodeNames() {
         val payload = """
-            <mymap>
-                <myentry>
-                    <mykey>key1</mykey>
-                    <myvalue>1</myvalue>
-                </myentry>
-                <myentry>
-                    <mykey>key2</mykey>
-                    <myvalue>2</myvalue>
-                </myentry>
-            </mymap>
+            <object>
+                <mymap>
+                    <myentry>
+                        <mykey>key1</mykey>
+                        <myvalue>1</myvalue>
+                    </myentry>
+                    <myentry>
+                        <mykey>key2</mykey>
+                        <myvalue>2</myvalue>
+                    </myentry>
+                </mymap>
+            </object>
         """.encodeToByteArray()
         val fieldDescriptor =
             SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mymap"), XmlMap("myentry", "mykey", "myvalue"))
-        val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeMap(fieldDescriptor) {
-            val map = mutableMapOf<String, Int>()
-            while (hasNextEntry()) {
-                val key = key()
-                val value = deserializeInt()!!
-
-                map[key] = value
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(fieldDescriptor)
+        }
+        var actual = mutableMapOf<String, Int>()
+        val deserializer = XmlDeserializer2(payload)
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    fieldDescriptor.index -> actual =
+                        deserializer.deserializeMap(fieldDescriptor) {
+                            val map0 = mutableMapOf<String, Int>()
+                            while (hasNextEntry()) {
+                                val k0 = key()
+                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                map0[k0] = v0
+                            }
+                            map0
+                        }
+                    null -> break@loop
+                    else -> skipValue()
+                }
             }
-            return@deserializeMap map
         }
         val expected = mapOf("key1" to 1, "key2" to 2)
         actual.shouldContainExactly(expected)
@@ -79,7 +107,7 @@ class XmlDeserializerMapTest {
     @Test
     fun itHandlesFlatMaps() {
         val payload = """
-            <Bar>
+            <object>
                 <flatMap>
                     <key>key1</key>
                     <value>1</value>
@@ -92,17 +120,33 @@ class XmlDeserializerMapTest {
                     <key>key3</key>
                     <value>3</value>
                 </flatMap>
-            </Bar>
+            </object>
         """.encodeToByteArray()
         val containerFieldDescriptor =
-            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("Bar"), XmlMap("flatMap", "key", "value", true))
-        val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeMap(containerFieldDescriptor) {
-            val map = mutableMapOf<String, Int?>()
-            while (hasNextEntry()) {
-                map[key()] = deserializer.deserializeInt()
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMap(null, "key", "value", true))
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(containerFieldDescriptor)
+        }
+        var actual = mutableMapOf<String, Int>()
+        val deserializer = XmlDeserializer2(payload)
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    containerFieldDescriptor.index -> actual =
+                        deserializer.deserializeMap(containerFieldDescriptor) {
+                            val map0 = mutableMapOf<String, Int>()
+                            while (hasNextEntry()) {
+                                val k0 = key()
+                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                map0[k0] = v0
+                            }
+                            map0
+                        }
+                    null -> break@loop
+                    else -> skipValue()
+                }
             }
-            return@deserializeMap map
         }
         val expected = mapOf("key1" to 1, "key2" to 2, "key3" to 3)
         actual.shouldContainExactly(expected)
@@ -111,18 +155,38 @@ class XmlDeserializerMapTest {
     @Test
     fun itHandlesEmptyMaps() {
         val payload = """
-            <Map></Map>
+            <object>
+                <map />
+            </object>
         """.encodeToByteArray()
         val containerFieldDescriptor =
             SdkFieldDescriptor(SerialKind.Map, XmlSerialName("Map"), XmlMap())
-        val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeMap(containerFieldDescriptor) {
-            val map = mutableMapOf<String, Int?>()
-            while (hasNextEntry()) {
-                map[key()] = deserializer.deserializeInt()
-            }
-            return@deserializeMap map
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(containerFieldDescriptor)
         }
+
+        val deserializer = XmlDeserializer2(payload)
+        var actual = mutableMapOf<String, Int>()
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    containerFieldDescriptor.index -> actual =
+                        deserializer.deserializeMap(containerFieldDescriptor) {
+                            val map0 = mutableMapOf<String, Int>()
+                            while (hasNextEntry()) {
+                                val k0 = key()
+                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                map0[k0] = v0
+                            }
+                            map0
+                        }
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+
         val expected = emptyMap<String, Int>()
         actual.shouldContainExactly(expected)
     }
@@ -130,33 +194,50 @@ class XmlDeserializerMapTest {
     @Test
     fun itHandlesSparseMaps() {
         val payload = """
-            <values>
-                <entry>
-                    <key>key1</key>
-                    <value>1</value>
-                </entry>
-                <entry>
-                    <key>key2</key>
-                    <value></value>
-                </entry>
-            </values>
+            <object>
+                <values>
+                    <entry>
+                        <key>key1</key>
+                        <value>1</value>
+                    </entry>
+                    <entry>
+                        <key>key2</key>
+                        <value></value>
+                    </entry>
+                </values>
+            </object>
         """.encodeToByteArray()
         val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
-
-        val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeMap(fieldDescriptor) {
-            val map = mutableMapOf<String, Int?>()
-            while (hasNextEntry()) {
-                val key = key()
-                val value = when (nextHasValue()) {
-                    true -> deserializeInt()
-                    false -> deserializeNull()
-                }
-
-                map[key] = value
-            }
-            return@deserializeMap map
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(fieldDescriptor)
         }
+
+        val deserializer = XmlDeserializer2(payload)
+        var actual = mutableMapOf<String, Int?>()
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    fieldDescriptor.index -> actual =
+                        deserializer.deserializeMap(fieldDescriptor) {
+                            val map = mutableMapOf<String, Int?>()
+                            while (hasNextEntry()) {
+                                val key = key()
+                                val value = when (nextHasValue()) {
+                                    true -> deserializeInt()
+                                    false -> deserializeNull()
+                                }
+
+                                map[key] = value
+                            }
+                            return@deserializeMap map
+                        }
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+
         val expected = mapOf("key1" to 1, "key2" to null)
         actual.shouldContainExactly(expected)
     }
@@ -164,32 +245,46 @@ class XmlDeserializerMapTest {
     @Test
     fun itHandlesCheckingMapValuesForNull() {
         val payload = """
-            <values>
-                <entry>
-                    <key>key1</key>
-                    <value>1</value>
-                </entry>
-                <entry>
-                    <key>key2</key>
-                    <value></value>
-                </entry>
-            </values>
+            <object>
+                <values>
+                    <entry>
+                        <key>key1</key>
+                        <value>1</value>
+                    </entry>
+                    <entry>
+                        <key>key2</key>
+                        <value></value>
+                    </entry>
+                </values>
+            </object>
         """.encodeToByteArray()
         val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(fieldDescriptor)
+        }
 
-        val deserializer = XmlDeserializer(payload)
-        val actual = deserializer.deserializeMap(fieldDescriptor) {
-            val map = mutableMapOf<String, Int?>()
-            while (hasNextEntry()) {
-                val key = key()
-                if (nextHasValue()) {
-                    val value = deserializeInt()
-
-                    map[key] = value
+        val deserializer = XmlDeserializer2(payload)
+        var actual = mutableMapOf<String, Int>()
+        deserializer.deserializeStruct(objDescriptor) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    fieldDescriptor.index -> actual =
+                        deserializer.deserializeMap(fieldDescriptor) {
+                            val map0 = mutableMapOf<String, Int>()
+                            while (hasNextEntry()) {
+                                val k0 = key()
+                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                map0[k0] = v0
+                            }
+                            map0
+                        }
+                    null -> break@loop
+                    else -> skipValue()
                 }
             }
-            return@deserializeMap map
         }
+
         val expected = mapOf("key1" to 1)
         actual.shouldContainExactly(expected)
     }
