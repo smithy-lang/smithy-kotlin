@@ -59,10 +59,10 @@ class XmlStreamReaderTest {
 
     @Test
     fun itHandlesNilNodeValues() {
-        val payload = """<null xsi:nil="true"></null>""".encodeToByteArray()
+        val payload = """<null></null>""".encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
         val expected = listOf(
-            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("xsi:nil") to "true")),
+            XmlToken.BeginElement("null"),
             XmlToken.EndElement("null"),
             XmlToken.EndDocument
         )
@@ -90,7 +90,7 @@ class XmlStreamReaderTest {
             </l2>
             <falsey>false</falsey>
           </nested>
-          <null xsi:nil="true"></null>
+          <null></null>
         </root>
         """.trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
@@ -129,7 +129,7 @@ class XmlStreamReaderTest {
             XmlToken.Text("false"),
             XmlToken.EndElement("falsey"),
             XmlToken.EndElement("nested"),
-            XmlToken.BeginElement("null", mapOf(XmlToken.QualifiedName("xsi:nil") to "true")),
+            XmlToken.BeginElement("null"),
             XmlToken.EndElement("null"),
             XmlToken.EndElement("root"),
             XmlToken.EndDocument

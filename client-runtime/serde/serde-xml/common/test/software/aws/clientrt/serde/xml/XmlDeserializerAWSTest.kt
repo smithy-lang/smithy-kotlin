@@ -19,6 +19,7 @@ class XmlDeserializerAWSTest {
             val COMMENT_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("Comment"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("HostedZoneConfig"))
+                trait(XmlNamespace("https://route53.amazonaws.com/doc/2013-04-01/"))
                 field(COMMENT_DESCRIPTOR)
             }
 
@@ -134,7 +135,7 @@ class XmlDeserializerAWSTest {
                </CreateHostedZoneRequest>
         """.trimIndent()
 
-        val unit = XmlDeserializer(testXml.encodeToByteArray())
+        val unit = XmlDeserializer2(testXml.encodeToByteArray())
 
         val createHostedZoneRequest = CreateHostedZoneRequest.deserialize(unit)
 

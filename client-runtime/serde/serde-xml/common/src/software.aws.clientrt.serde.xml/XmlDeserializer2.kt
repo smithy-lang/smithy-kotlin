@@ -9,9 +9,17 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
     constructor(input: ByteArray) : this(xmlStreamReader(input))
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        val structDeserializer = XmlFieldIterator3(descriptor, reader, currentToken = reader.peek() as XmlToken.BeginElement)
-        rootStructDeserializer = structDeserializer
-        return structDeserializer
+        return when (rootStructDeserializer) {
+            null -> {
+                val structSerializer = XmlFieldIterator3(descriptor, reader, currentToken = reader.peekTo<XmlToken.BeginElement>())
+                rootStructDeserializer = structSerializer
+                structSerializer
+            }
+            else -> {
+                rootStructDeserializer!!.clearNodeProperties() // Flush existing token to avoid revisiting same node upon return
+                XmlFieldIterator3(descriptor, reader, currentToken = rootStructDeserializer!!.currentToken)
+            }
+        }
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
@@ -196,7 +204,7 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
     class XmlFieldIterator3(
         private val objDescriptor: SdkObjectDescriptor,
         private val reader: XmlStreamReader,
-        private val parsedNodeProperties: MutableList<NodeProperty> = mutableListOf(),
+        val parsedNodeProperties: MutableList<NodeProperty> = mutableListOf(),
         var currentToken: XmlToken.BeginElement
     ) : Deserializer.FieldIterator {
 
@@ -458,6 +466,16 @@ private fun XmlAttribute.toQualifiedName(): XmlToken.QualifiedName = XmlToken.Qu
 
 private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): TExpected {
     var token = this.nextToken()
+    while (token::class != TExpected::class && token !is XmlToken.EndDocument) {
+        token = this.nextToken()
+    }
+
+    if (token::class != TExpected::class) error("Did not find ${TExpected::class}")
+    return token as TExpected
+}
+
+private inline fun <reified TExpected : XmlToken> XmlStreamReader.peekTo(): TExpected {
+    var token = this.peek()
     while (token::class != TExpected::class && token !is XmlToken.EndDocument) {
         token = this.nextToken()
     }
