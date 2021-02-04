@@ -4,22 +4,24 @@ import software.aws.clientrt.serde.*
 
 class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
 
-    private var rootStructDeserializer: StructDeserializer? = null
+    private var structSerializerStack = mutableListOf<Pair<StructDeserializer, Int>>()
 
     constructor(input: ByteArray) : this(xmlStreamReader(input))
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        return when (rootStructDeserializer) {
-            null -> { // Root deserializer
+        return when {
+            structSerializerStack.isEmpty() -> { // Root deserializer
                 reader.takeUntil<XmlToken.BeginElement>()
+
                 val structSerializer = StructDeserializer(descriptor, reader)
-                rootStructDeserializer = structSerializer
+                structSerializerStack.add(structSerializer to reader.currentDepth)
                 structSerializer
             }
             else -> { // Nested deserializer
                 // Flush existing token to avoid revisiting same node upon return
                 // This is safe because attributes are always processed before children
-                rootStructDeserializer!!.clearNodeProperties()
+                cleanupDeserializerStack()
+                structSerializerStack.last().first.clearNodeProperties()
 
                 // Optionally consume next token until we match our objectDescriptor.
                 // This can vary depending on where deserializeStruct() is called from (list/map vs struct)
@@ -31,19 +33,35 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
                 val targetTokenName = descriptor.expectTrait<XmlSerialName>().name
                 while(token.qualifiedName.name != targetTokenName) token = reader.takeNextToken<XmlToken.BeginElement>()
 
-                StructDeserializer(descriptor, reader)
+                val structSerializer = StructDeserializer(descriptor, reader)
+                structSerializerStack.add(structSerializer to reader.currentDepth)
+                structSerializer
             }
         }
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        check(rootStructDeserializer != null) { "List cannot be deserialized independently from a parent struct" }
-        return ListDeserializer(descriptor, reader, rootStructDeserializer!!)
+        check(structSerializerStack.isNotEmpty()) { "List cannot be deserialized independently from a parent struct" }
+        cleanupDeserializerStack()
+        return ListDeserializer(descriptor, reader, structSerializerStack.last().first)
     }
 
     override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
-        check(rootStructDeserializer != null) { "Map cannot be deserialized independently from a parent struct" }
-        return MapDeserializer(descriptor, reader, rootStructDeserializer!!)
+        check(structSerializerStack.isNotEmpty()) { "Map cannot be deserialized independently from a parent struct" }
+        cleanupDeserializerStack()
+        return MapDeserializer(descriptor, reader, structSerializerStack.last().first)
+    }
+
+    private fun cleanupDeserializerStack() {
+        var pair = structSerializerStack.lastOrNull()
+
+        while (pair != null && pair.second >= reader.currentDepth) {
+            pair.first.clearNodeProperties()
+            structSerializerStack.remove(pair)
+            println("removing from stack $pair")
+            pair = structSerializerStack.lastOrNull()
+        }
+        check(structSerializerStack.isNotEmpty()) { "root deserializer should never be removed" }
     }
 
     interface NodeField {
@@ -68,11 +86,13 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         private val startLevel: Int = reader.currentDepth
     ) : Deserializer.FieldIterator {
 
+        private val currentNode: XmlToken.BeginElement
+
         data class FieldTokenMapping(val field: SdkFieldDescriptor, val token: XmlToken.BeginElement)
 
         init {
             val qualifiedName = objDescriptor.serialName.toQualifiedName(objDescriptor.findTrait())
-            val currentNode = reader.currentToken as XmlToken.BeginElement
+            currentNode = reader.currentToken as XmlToken.BeginElement
             check(currentNode.qualifiedName.name == qualifiedName.name) { "Expected name ${qualifiedName.name} but found ${currentNode.qualifiedName.name}" }
             if (objDescriptor.findTrait<XmlNamespace>()?.isDefault() == true) { // If a default namespace is set, verify that the serialized form matches obj descriptor
                 check(currentNode.qualifiedName.namespaceUri == objDescriptor.findTrait<XmlNamespace>()?.uri) { "Expected name ${objDescriptor.findTrait<XmlNamespace>()?.uri} but found ${currentNode.qualifiedName.namespaceUri}" }
@@ -96,6 +116,7 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
                                 if (nodePropertyOption == null && reader.peekNextToken() is XmlToken.EndElement) {
                                     // Consume nodes without values
                                     reader.takeNextToken()
+                                    return findNextFieldIndex()
                                 }
                                 nodePropertyOption
                             }
@@ -103,7 +124,11 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
                     is XmlToken.EndDocument -> return null
                     is XmlToken.EndElement -> {
                         return when {
-                            reader.currentDepth > startLevel -> findNextFieldIndex()
+                            // Explicitly match the end node
+                            reader.currentDepth == startLevel && nextToken.qualifiedName == currentNode.qualifiedName -> null
+                            // Traverse children looking for matches to fields
+                            reader.currentDepth >= startLevel -> findNextFieldIndex()
+                            // We have left the node, exit
                             else -> null
                         }
                     }
@@ -115,12 +140,15 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
 
             return when {
                 parsedNodeTokens.isNotEmpty() -> parsedNodeTokens.first().fieldIndex
-                else -> findNextFieldIndex()
+                else -> {
+                    skipValue()
+                    if (reader.currentDepth >= startLevel) findNextFieldIndex() else null
+                }
             }
         }
 
         override fun skipValue() {
-            TODO("Not yet implemented")
+            reader.skipNext()
         }
 
         fun clearNodeProperties() = parsedNodeTokens.clear()
@@ -361,9 +389,9 @@ class MapDeserializer(
         if (reader.peekNextToken() is XmlToken.BeginElement) {
             // In the case of flattened lists, we "fall" into the first node as there is no wrapper.
             // this conditional checks that case for the first element of the list.
-            val listElementToken = reader.takeNextToken<XmlToken.BeginElement>()
+            val token = reader.takeNextToken<XmlToken.BeginElement>()
             // It's unclear if list elements model XML namespaces. For now match only node name.
-            if (listElementToken.qualifiedName.name != fieldDescriptor.expectTrait<XmlList>().elementName) {
+            if (token.qualifiedName.name != fieldDescriptor.expectTrait<XmlMap>().valueName) {
                 //Depending on flat/not-flat, may need to consume multiple start nodes
                 return deserializeValue(transform)
             }
