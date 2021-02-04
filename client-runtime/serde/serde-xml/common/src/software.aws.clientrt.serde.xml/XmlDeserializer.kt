@@ -117,7 +117,7 @@ private class CompositeIterator(
             if (!consumedWrapper && !mapInfo.flattened) {
                 consumedWrapper = true
                 require(beginToken.qualifiedName.name == mapInfo.entry) { "Expected node ${mapInfo.entry} but got ${beginToken.qualifiedName}" }
-                reader.peekToken<XmlToken.BeginElement>()
+                //reader.peekToken<XmlToken.BeginElement>()
             }
         }
 
@@ -253,7 +253,7 @@ private class XmlFieldIterator(
                 val field = findFieldIndex(descriptor.fields, nextToken)
 
                 if (!isContainerType(field)) {
-                    val token = reader.peekToken<XmlToken.BeginElement>()
+                    //val token = reader.peekToken<XmlToken.BeginElement>()
                     val xmlAttribTrait = field?.findTrait<XmlAttribute>()
                     attributeParseState = when (field?.findTrait<XmlAttribute>()) {
                         null -> {
@@ -265,7 +265,7 @@ private class XmlFieldIterator(
                             check(reader.peekNextToken() is XmlToken.Text) { "Expected to read a TEXT token to retrieve value but got ${reader.peekNextToken()}" }
                             null
                         }
-                        else -> AttributeParseState(xmlAttribTrait!!, token, lastAttributeInNode(handledFields, descriptor.fields, field))
+                        else -> null //AttributeParseState(xmlAttribTrait!!, token, lastAttributeInNode(handledFields, descriptor.fields, field))
                     }
                 }
 
@@ -427,23 +427,6 @@ private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeToken(node
     }
 
     return token as TExpected
-}
-
-/**
- * Verify that the next token is of a specified type but do not consume it.
- */
-private inline fun <reified TExpected : XmlToken> XmlStreamReader.peekToken(): TExpected {
-    val token = this.peekNextToken()
-    requireToken<TExpected>(token)
-
-    return token as TExpected
-}
-
-// require that the given token be of type [TExpected] or else throw an exception
-private inline fun <reified TExpected> requireToken(token: XmlToken) {
-    if (token::class != TExpected::class) {
-        throw DeserializerStateException("expected ${TExpected::class}; found ${token::class}")
-    }
 }
 
 /**

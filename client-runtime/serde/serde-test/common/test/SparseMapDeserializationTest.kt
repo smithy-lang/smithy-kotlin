@@ -2,11 +2,11 @@
 import io.kotest.matchers.maps.shouldContainKeys
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
-import software.aws.clientrt.serde.xml.XmlDeserializer
+import software.aws.clientrt.serde.xml.XmlDeserializer2
 import software.aws.clientrt.serde.xml.XmlMap
+import software.aws.clientrt.serde.xml.XmlSerialName
 import kotlin.jvm.JvmStatic
 import kotlin.test.*
-import kotlin.test.assertTrue
 
 /**
  * This test uses codegen snapshots generated from the following model:
@@ -163,6 +163,7 @@ class SparseMapDeserializationTest {
         companion object {
             private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "sparseStructMap".toSerialNames() + XmlMap())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+                trait(XmlSerialName("GetFoo"))
                 field(SPARSESTRUCTMAP_DESCRIPTOR)
             }
         }
@@ -202,6 +203,7 @@ class SparseMapDeserializationTest {
         companion object {
             private val SAYING_DESCRIPTOR = SdkFieldDescriptor( SerialKind.String, "saying".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+                trait(XmlSerialName("Greeting"))
                 field(SAYING_DESCRIPTOR)
             }
         }
@@ -226,7 +228,7 @@ class SparseMapDeserializationTest {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<GetFoo />".encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer2(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
@@ -247,7 +249,7 @@ class SparseMapDeserializationTest {
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer2(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
@@ -298,7 +300,7 @@ class SparseMapDeserializationTest {
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(/*JsonDeserializer(jsonPayload), */XmlDeserializer2(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)

@@ -85,50 +85,12 @@ fun String.parseNodeWithPrefix(): Pair<String, String?> =
  */
 data class XmlAttribute(val name: String, val namespace: String? = null): FieldTrait
 
-/*fun SdkFieldDescriptor(name: String, kind: SerialKind, index: Int = 0, trait: FieldTrait? = null): SdkFieldDescriptor {
-    val xmlSerialName = XmlSerialName(name)
-
-    return if (trait != null)
-        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName, trait))
-    else
-        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName))
-}*/
-
 val SdkFieldDescriptor.serialName: XmlSerialName
     get() = expectTrait()
 
-/*
-fun SdkFieldDescriptor(name: String, kind: SerialKind, namespaceUri: String? = null, namespacePrefix: String? = null, index: Int = 0, trait: FieldTrait? = null): SdkFieldDescriptor {
-    val xmlSerialName = if (namespaceUri != null) {
-        XmlSerialName(name, namespacePrefix)
-    } else {
-        XmlSerialName(name)
+// Return the name based on most specific type
+internal fun SdkFieldDescriptor.generalName() = when {
+        hasTrait<XmlList>() -> expectTrait<XmlList>().elementName
+        hasTrait<XmlMap>() -> expectTrait<XmlMap>().valueName
+        else -> expectTrait<XmlSerialName>().name
     }
-
-    return if (trait != null)
-        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName, trait))
-    else
-        SdkFieldDescriptor(kind = kind, index = index, traits = setOf(xmlSerialName))
-}
-
-val SdkFieldDescriptor.serialName: XmlSerialName
-    get() = expectTrait()
-
-var SdkObjectDescriptor.DslBuilder.serialName
-    get(): String = error { "Should not be called" }
-    set(value) {
-        check(!traits.any { it is XmlSerialName }) { "Serial name cannot be set multiple times" }
-        val trait = if (value.contains(':')) {
-            val (prefix, name) = value.split(':')
-            XmlSerialName(name, prefix)
-        } else {
-            XmlSerialName(value)
-        }
-        traits.add(trait)
-    }
-
-var SdkObjectDescriptor.DslBuilder.namespace
-    get(): XmlNamespace = error { "Should not be called" }
-    set(value) {
-        traits.add(value)
-    }*/

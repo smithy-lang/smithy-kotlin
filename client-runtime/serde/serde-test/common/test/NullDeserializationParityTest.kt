@@ -1,7 +1,6 @@
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.json.JsonSerialName
-import software.aws.clientrt.serde.xml.XmlDeserializer
 import software.aws.clientrt.serde.xml.XmlDeserializer2
 import software.aws.clientrt.serde.xml.XmlSerialName
 import kotlin.test.Test
