@@ -40,16 +40,19 @@ sealed class XmlToken {
      */
     data class Text(val value: String?) : XmlToken()
 
+    object StartDocument: XmlToken()
+
     /**
      * The end of the XML stream to signal that the XML-encoded value has no more
      * tokens
      */
-    object EndDocument : XmlToken()
+    object EndDocument: XmlToken()
 
     override fun toString(): String = when (this) {
         is BeginElement -> "<${this.qualifiedName}>"
         is EndElement -> "</${this.qualifiedName}>"
         is Text -> "${this.value}"
+        StartDocument -> "[StartDocument]"
         EndDocument -> "[EndDocument]"
     }
 }
@@ -60,23 +63,25 @@ interface XmlStreamReader {
      *
      * @throws XmlGenerationException upon any error.
      */
-    fun nextToken(): XmlToken
+    fun takeNextToken(): XmlToken
 
     /**
      * Recursively skip the next token. Meant for discarding unwanted/unrecognized nodes in an XML document
      */
     fun skipNext()
 
+    val currentToken: XmlToken
+
     /**
      * Peek at the next token type.  Successive calls will return the same value, meaning there is only one
      * look-ahead at any given time during the parsing of input data.
      */
-    fun peek(): XmlToken
+    fun peekNextToken(): XmlToken
 
     /**
      * Return the current node depth of the parser.
      */
-    fun currentDepth(): Int
+    val currentDepth: Int
 }
 
 /*

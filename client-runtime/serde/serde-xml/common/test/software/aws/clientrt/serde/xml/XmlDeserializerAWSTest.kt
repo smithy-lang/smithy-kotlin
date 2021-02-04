@@ -84,8 +84,7 @@ class XmlDeserializerAWSTest {
                             NAME_DESCRIPTOR.index -> builder.name = deserializeString()
                             CALLER_REFERENCE_DESCRIPTOR.index -> builder.callerReference = deserializeString()
                             HOSTED_ZONE_DESCRIPTOR.index ->
-                                builder.hostedZoneConfig =
-                                    HostedZoneConfig.deserialize(deserializer)
+                                builder.hostedZoneConfig = HostedZoneConfig.deserialize(deserializer)
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> skipValue()
                             else -> throw XmlGenerationException(IllegalStateException("unexpected field index in CreateHostedZoneRequest deserializer"))

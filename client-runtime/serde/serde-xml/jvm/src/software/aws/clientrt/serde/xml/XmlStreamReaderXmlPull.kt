@@ -17,6 +17,7 @@ private class XmlStreamReaderXmlPull(
     private val parser: XmlPullParser = xmlPullParserFactory()
 ) : XmlStreamReader {
 
+    private var _currentToken: XmlToken = XmlToken.StartDocument
     private var peekedToken: XmlToken? = null
 
     init {
@@ -31,34 +32,41 @@ private class XmlStreamReaderXmlPull(
         }
     }
 
+    override fun toString(): String {
+        return _currentToken.toString()
+    }
+
     // NOTE: Because of the way peeking is managed, any code in this class wanting to get the next token must call
     // this method rather than calling `parser.nextToken()` directly.
-    override fun nextToken(): XmlToken {
+    override fun takeNextToken(): XmlToken = pullToken(false)
+
+
+    private fun pullToken(isPeek: Boolean): XmlToken {
         if (peekedToken != null) {
             val rv = peekedToken!!
             peekedToken = null
-            println("Consumed peeked xml token $rv")
+            if (!isPeek) _currentToken = rv
             return rv
         }
 
         try {
             val rv = when (val nt = parser.nextToken()) {
-                XmlPullParser.START_DOCUMENT -> nextToken()
+                XmlPullParser.START_DOCUMENT -> pullToken(isPeek)
                 XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
                 XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes())
                 XmlPullParser.END_TAG -> XmlToken.EndElement(parser.qualifiedName())
                 XmlPullParser.CDSECT,
                 XmlPullParser.COMMENT,
                 XmlPullParser.DOCDECL,
-                XmlPullParser.IGNORABLE_WHITESPACE -> nextToken()
+                XmlPullParser.IGNORABLE_WHITESPACE -> pullToken(isPeek)
                 XmlPullParser.TEXT -> {
-                    if (parser.text.blankToNull() == null) nextToken()
+                    if (parser.text.blankToNull() == null) pullToken(isPeek)
                     else XmlToken.Text(parser.text.blankToNull())
                 }
                 else -> throw IllegalStateException("Unhandled tag $nt")
             }
 
-            println("Consumed xml token $rv")
+            if (!isPeek) _currentToken = rv
             return rv
         } catch (e: Exception) {
             throw XmlGenerationException(e)
@@ -91,31 +99,35 @@ private class XmlStreamReaderXmlPull(
     override fun skipNext() {
         val startDepth = parser.depth
 
-        when (peek()) {
+        when (peekNextToken()) {
             is XmlToken.EndDocument -> return
-            else -> traverseNode(nextToken(), startDepth)
+            else -> traverseNode(takeNextToken(), startDepth)
         }
 
         require(startDepth == parser.depth) { "Expected to maintain parser depth after skip, but started at $startDepth and now at ${parser.depth}" }
     }
 
+    override val currentToken: XmlToken
+        get() = _currentToken
+
     tailrec fun traverseNode(st: XmlToken, startDepth: Int) {
         if (st == XmlToken.EndDocument) return
         if (st is XmlToken.EndElement && parser.depth == startDepth) return
-        val next = nextToken()
+        val next = takeNextToken()
         require(parser.depth >= startDepth) { "Traversal depth ${parser.depth} exceeded start node depth $startDepth" }
         return traverseNode(next, startDepth)
     }
 
-    override fun peek(): XmlToken = when (peekedToken) {
+    override fun peekNextToken(): XmlToken = when (peekedToken) {
         null -> {
-            peekedToken = nextToken()
+            peekedToken = pullToken(true)
             peekedToken as XmlToken
         }
         else -> peekedToken as XmlToken
     }
 
-    override fun currentDepth(): Int = parser.depth
+    override val currentDepth: Int
+        get() = parser.depth
 }
 
 private fun String?.blankToNull(): String? = if (this?.isBlank() != false) null else this

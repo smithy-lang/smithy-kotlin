@@ -37,7 +37,7 @@ class XmlDeserializerKitchenSinkTest {
                                     deserializer.deserializeList(LIST2_FIELD_DESCRIPTOR) {
                                         val list = mutableListOf<String>()
                                         while (hasNextElement()) {
-                                            list.add(deserializeString()!!)
+                                            list.add(deserializeString())
                                         }
                                         return@deserializeList list
                                     }
@@ -184,7 +184,7 @@ class XmlDeserializerKitchenSinkTest {
            </payload>
         """.trimIndent().encodeToByteArray()
 
-        val deserializer = XmlDeserializer(payload)
+        val deserializer = XmlDeserializer2(payload)
         val sink = KitchenSinkTest()
         deserializer.deserializeStruct(KitchenSinkTest.OBJ_DESCRIPTOR) {
             loop@ while (true) {
@@ -199,7 +199,7 @@ class XmlDeserializerKitchenSinkTest {
                             deserializer.deserializeList(KitchenSinkTest.LIST_FIELD_DESCRIPTOR) {
                                 val list = mutableListOf<Int>()
                                 while (hasNextElement()) {
-                                    list.add(deserializeInt()!!)
+                                    list.add(deserializeInt())
                                 }
                                 return@deserializeList list
                             }
@@ -212,7 +212,7 @@ class XmlDeserializerKitchenSinkTest {
                                 val map = mutableMapOf<String, String>()
                                 while (hasNextEntry()) {
                                     val key = key()
-                                    val value = deserializeString()!!
+                                    val value = deserializeString()
                                     map[key] = value
                                 }
                                 return@deserializeMap map

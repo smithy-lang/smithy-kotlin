@@ -51,7 +51,7 @@ package software.aws.clientrt.serde
  * until it is exhausted and for each element/entry call the appropriate `deserialize*` methods.
  *
  */
-interface Deserializer : PrimitiveDeserializer {
+interface Deserializer {
     /**
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.

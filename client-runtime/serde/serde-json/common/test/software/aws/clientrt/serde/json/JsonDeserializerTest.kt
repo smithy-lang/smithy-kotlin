@@ -341,19 +341,21 @@ class JsonDeserializerTest {
             }
 
             fun deserialize(deserializer: Deserializer): Nested {
-                val struct = deserializer.deserializeStruct(OBJ_DESCRIPTOR)
                 val nested = Nested()
-                loop@ while (true) {
-                    when (struct.findNextFieldIndex()) {
-                        NESTED2_FIELD_DESCRIPTOR.index ->
-                            nested.nested2 =
-                                Nested2.deserialize(
-                                    deserializer
-                                )
-                        BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializer.deserializeBoolean()
-                        null -> break@loop
-                        else -> throw RuntimeException("unexpected field during test")
+                deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                    loop@ while (true) {
+                        when (findNextFieldIndex()) {
+                            NESTED2_FIELD_DESCRIPTOR.index ->
+                                nested.nested2 =
+                                    Nested2.deserialize(
+                                        deserializer
+                                    )
+                            BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializeBoolean()
+                            null -> break@loop
+                            else -> throw RuntimeException("unexpected field during test")
+                        }
                     }
+                    nested
                 }
                 return nested
             }

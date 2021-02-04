@@ -146,19 +146,19 @@ class XmlStreamReaderTest {
         val reader = xmlStreamReader(payload)
         // skip x
         reader.apply {
-            nextToken() // begin obj
-            nextToken() // x
-            nextToken() // value
-            nextToken() // end x
+            takeNextToken() // begin obj
+            takeNextToken() // x
+            takeNextToken() // value
+            takeNextToken() // end x
         }
 
-        val nt = reader.peek()
+        val nt = reader.peekNextToken()
         assertTrue(nt is XmlToken.BeginElement)
 
         assertEquals("unknown", nt.qualifiedName.name)
         reader.skipNext()
 
-        val y = reader.nextToken() as XmlToken.BeginElement
+        val y = reader.takeNextToken() as XmlToken.BeginElement
         assertEquals("y", y.qualifiedName.name)
     }
 
@@ -168,18 +168,18 @@ class XmlStreamReaderTest {
         val reader = xmlStreamReader(payload)
         // skip x
         reader.apply {
-            nextToken() // begin obj
-            nextToken() // x
+            takeNextToken() // begin obj
+            takeNextToken() // x
         }
         reader.skipNext()
 
-        assertTrue(reader.peek() is XmlToken.BeginElement)
+        assertTrue(reader.peekNextToken() is XmlToken.BeginElement)
 
-        val zElement = reader.nextToken() as XmlToken.BeginElement
+        val zElement = reader.takeNextToken() as XmlToken.BeginElement
         assertEquals("z", zElement.qualifiedName.name)
         reader.skipNext()
 
-        val yElement = reader.nextToken() as XmlToken.BeginElement
+        val yElement = reader.takeNextToken() as XmlToken.BeginElement
         assertEquals("y", yElement.qualifiedName.name)
     }
 }
@@ -187,7 +187,7 @@ class XmlStreamReaderTest {
 fun XmlStreamReader.allTokens(): List<XmlToken> {
     val tokens = mutableListOf<XmlToken>()
     while (true) {
-        val token = nextToken()
+        val token = takeNextToken()
         tokens.add(token)
         if (token is XmlToken.EndDocument) {
             break

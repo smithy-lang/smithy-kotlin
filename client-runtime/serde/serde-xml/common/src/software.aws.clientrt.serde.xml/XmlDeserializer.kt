@@ -34,7 +34,7 @@ class XmlDeserializer(
 
         val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
 
-        return XmlFieldIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
+        return XmlFieldIterator(this, reader.currentDepth, reader, beginNode, descriptor, nodeNameStack)
     }
 
     /**
@@ -46,7 +46,7 @@ class XmlDeserializer(
         val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
         require(descriptor.serialName.toQualifiedName() == beginNode.qualifiedName) { "Expected list start tag of ${beginNode.qualifiedName} but got ${descriptor.serialName}" }
 
-        return CompositeIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
+        return CompositeIterator(this, reader.currentDepth, reader, beginNode, descriptor, nodeNameStack)
     }
 
     /**
@@ -58,67 +58,7 @@ class XmlDeserializer(
         val beginNode = reader.takeToken<XmlToken.BeginElement>(nodeNameStack) // Consume the container start tag
         require(descriptor.serialName.toQualifiedName() == beginNode.qualifiedName) { "Expected map start tag of ${beginNode.qualifiedName} but got ${descriptor.serialName}" }
 
-        return CompositeIterator(this, reader.currentDepth(), reader, beginNode, descriptor, nodeNameStack)
-    }
-
-    /**
-     * Deserialize a byte value defined as the text section of an Xml element.
-     *
-     */
-    override fun deserializeByte(): Byte = deserializePrimitive { it.toInt().toByte() }
-
-    /**
-     * Deserialize an integer value defined as the text section of an Xml element.
-     */
-    override fun deserializeInt(): Int = deserializePrimitive { it.toInt() }
-
-    /**
-     * Deserialize a short value defined as the text section of an Xml element.
-     */
-    override fun deserializeShort(): Short = deserializePrimitive { it.toInt().toShort() }
-
-    /**
-     * Deserialize a long value defined as the text section of an Xml element.
-     */
-    override fun deserializeLong(): Long = deserializePrimitive { it.toLong() }
-
-    /**
-     * Deserialize an float value defined as the text section of an Xml element.
-     */
-    override fun deserializeFloat(): Float = deserializePrimitive { it.toFloat() }
-
-    /**
-     * Deserialize a double value defined as the text section of an Xml element.
-     */
-    override fun deserializeDouble(): Double = deserializePrimitive { it.toDouble() }
-
-    /**
-     * Deserialize an integer value defined as the text section of an Xml element.
-     */
-    override fun deserializeString(): String = deserializePrimitive { it }
-
-    /**
-     * Deserialize an integer value defined as the text section of an Xml element.
-     */
-
-    override fun deserializeBoolean(): Boolean = deserializePrimitive { it.toBoolean() }
-
-    override fun deserializeNull(): Nothing? {
-        check(reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)) { "Expected XmlToken.EndElement" }
-        return null
-    }
-
-    override fun nextHasValue(): Boolean {
-        val nextToken = reader.peek()
-
-        return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
-    }
-
-    private fun <T> deserializePrimitive(transform: (String) -> T?): T {
-        val rt = reader.takeToken<XmlToken.Text>(nodeNameStack)
-
-        val rv = rt.value ?: throw DeserializationException("Expected value but text of element was null.")
-        return transform(rv) ?: throw DeserializationException("Cannot parse $rv with ${transform::class}")
+        return CompositeIterator(this, reader.currentDepth, reader, beginNode, descriptor, nodeNameStack)
     }
 }
 
@@ -138,12 +78,12 @@ private class CompositeIterator(
 
     // Deserializer.EntryIterator, Deserializer.ElementIterator
     override fun hasNextElement(): Boolean {
-        require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
+        require(reader.currentDepth >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth}" }
 
         val flattenedList = descriptor.findTrait<XmlList>()?.flattened == true
 
         if (!consumedWrapper && !flattenedList) {
-            val nextToken = reader.peek()
+            val nextToken = reader.peekNextToken()
 
             if (nextToken is XmlToken.EndElement) return false // empty list
             if (nextToken is XmlToken.BeginElement) {
@@ -154,12 +94,12 @@ private class CompositeIterator(
             }
         }
 
-        return when (val nextToken = reader.peek()) {
+        return when (val nextToken = reader.peekNextToken()) {
             XmlToken.EndDocument -> false
             is XmlToken.EndElement ->
-                if (reader.currentDepth() < depth) {
+                if (reader.currentDepth < depth) {
                     false
-                } else if (reader.currentDepth() == depth && nextToken.qualifiedName == beginNode.qualifiedName && !flattenedList) {
+                } else if (reader.currentDepth == depth && nextToken.qualifiedName == beginNode.qualifiedName && !flattenedList) {
                     false
                 } else {
                     reader.takeToken<XmlToken.EndElement>(nodeNameStack) // Consume terminating node of child
@@ -170,7 +110,7 @@ private class CompositeIterator(
     }
 
     override fun hasNextEntry(): Boolean {
-        require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
+        require(reader.currentDepth >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth}" }
 
         reader.takeIfToken<XmlToken.BeginElement>(nodeNameStack) { beginToken ->
             val mapInfo = descriptor.expectTrait<XmlMap>()
@@ -181,10 +121,10 @@ private class CompositeIterator(
             }
         }
 
-        return when (val nextToken = reader.peek()) {
+        return when (val nextToken = reader.peekNextToken()) {
             XmlToken.EndDocument -> false
             is XmlToken.EndElement ->
-                if (reader.currentDepth() == depth && nextToken.qualifiedName == beginNode.qualifiedName) {
+                if (reader.currentDepth == depth && nextToken.qualifiedName == beginNode.qualifiedName) {
                     false
                 } else {
                     reader.takeToken<XmlToken.EndElement>(nodeNameStack) // Consume terminating node of child
@@ -217,50 +157,50 @@ private class CompositeIterator(
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
 
-        return deserializer.deserializeByte()
+        TODO() // return deserializer.deserializeByte()
     }
 
     override fun deserializeInt(): Int {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
 
-        return deserializer.deserializeInt()
+        TODO() // return deserializer.deserializeInt()
     }
 
     override fun deserializeShort(): Short {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
-        return deserializer.deserializeShort()
+        TODO() // return deserializer.deserializeShort()
     }
 
     override fun deserializeLong(): Long {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
-        return deserializer.deserializeLong()
+        TODO() // return deserializer.deserializeLong()
     }
 
     override fun deserializeFloat(): Float {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
-        return deserializer.deserializeFloat()
+        TODO() // return deserializer.deserializeFloat()
     }
 
     override fun deserializeDouble(): Double {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
-        return deserializer.deserializeDouble()
+        TODO() // return deserializer.deserializeDouble()
     }
 
     override fun deserializeString(): String {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
-        return deserializer.deserializeString()
+        TODO() // return deserializer.deserializeString()
     }
 
     override fun deserializeBoolean(): Boolean {
         reader.takeIfToken<XmlToken.EndElement>(nodeNameStack)
         reader.consumeListWrapper(descriptor, nodeNameStack)
-        return deserializer.deserializeBoolean()
+        TODO() // return deserializer.deserializeBoolean()
     }
 
     override fun deserializeNull(): Nothing? {
@@ -269,7 +209,7 @@ private class CompositeIterator(
     }
 
     override fun nextHasValue(): Boolean {
-        val nextToken = reader.peek()
+        val nextToken = reader.peekNextToken()
 
         return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
     }
@@ -295,15 +235,15 @@ private class XmlFieldIterator(
     // Deserializer.FieldIterator
     override fun findNextFieldIndex(): Int? {
         check(attributeParseState == null) { "Expected nextFieldValueSource to be null but found $attributeParseState" }
-        require(reader.currentDepth() >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth()}" }
+        require(reader.currentDepth >= depth) { "Unexpectedly traversed beyond $beginNode with depth ${reader.currentDepth}" }
 
-        return when (val nextToken = reader.peek()) {
+        return when (val nextToken = reader.peekNextToken()) {
             XmlToken.EndDocument -> null
             is XmlToken.EndElement -> {
                 // consume the token
                 val endToken = reader.takeToken<XmlToken.EndElement>(nodeNameStack)
 
-                if (reader.currentDepth() == depth && endToken.qualifiedName == beginNode.qualifiedName) {
+                if (reader.currentDepth == depth && endToken.qualifiedName == beginNode.qualifiedName) {
                     null
                 } else {
                     findNextFieldIndex() // recurse
@@ -321,8 +261,8 @@ private class XmlFieldIterator(
                             // can consume this node as this will be the TEXT element.
                             reader.takeToken<XmlToken.BeginElement>(nodeNameStack)
 
-                            if (reader.peek() is XmlToken.EndElement) return findNextFieldIndex()
-                            check(reader.peek() is XmlToken.Text) { "Expected to read a TEXT token to retrieve value but got ${reader.peek()}" }
+                            if (reader.peekNextToken() is XmlToken.EndElement) return findNextFieldIndex()
+                            check(reader.peekNextToken() is XmlToken.Text) { "Expected to read a TEXT token to retrieve value but got ${reader.peekNextToken()}" }
                             null
                         }
                         else -> AttributeParseState(xmlAttribTrait!!, token, lastAttributeInNode(handledFields, descriptor.fields, field))
@@ -447,7 +387,7 @@ private class XmlFieldIterator(
     }
 
     override fun nextHasValue(): Boolean {
-        val nextToken = reader.peek()
+        val nextToken = reader.peekNextToken()
 
         return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
     }
@@ -474,7 +414,7 @@ private class XmlFieldIterator(
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
 private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeToken(nodeNameStack: MutableList<XmlToken.QualifiedName>): TExpected {
-    val token = this.nextToken()
+    val token = this.takeNextToken()
     requireToken<TExpected>(token)
 
     when (TExpected::class) {
@@ -493,7 +433,7 @@ private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeToken(node
  * Verify that the next token is of a specified type but do not consume it.
  */
 private inline fun <reified TExpected : XmlToken> XmlStreamReader.peekToken(): TExpected {
-    val token = this.peek()
+    val token = this.peekNextToken()
     requireToken<TExpected>(token)
 
     return token as TExpected
@@ -516,10 +456,10 @@ private inline fun <reified TExpected> XmlStreamReader.takeIfToken(
     nodeNameStack: MutableList<XmlToken.QualifiedName>,
     block: (TExpected) -> Unit = {}
 ): Boolean {
-    val nextToken = this.peek()
+    val nextToken = this.peekNextToken()
 
     if (nextToken::class == TExpected::class) {
-        val expectedToken = this.nextToken() as TExpected
+        val expectedToken = this.takeNextToken() as TExpected
 
         when (TExpected::class) {
             XmlToken.BeginElement::class -> nodeNameStack.add((expectedToken as XmlToken.BeginElement).qualifiedName)
