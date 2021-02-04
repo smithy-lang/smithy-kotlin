@@ -85,6 +85,11 @@ interface Deserializer {
          * or the document has been read completely.
          */
         fun hasNextElement(): Boolean
+
+        /**
+         * Returns true if the next token contains a value, or false otherwise.
+         */
+        fun nextHasValue(): Boolean
     }
 
     /**
@@ -101,6 +106,11 @@ interface Deserializer {
          * Read the next key
          */
         fun key(): String
+
+        /**
+         * Returns true if the next token contains a value, or false otherwise.
+         */
+        fun nextHasValue(): Boolean
     }
 
     /**
@@ -174,11 +184,6 @@ interface PrimitiveDeserializer {
      * Consume the next token if represents a null value. Always returns null.
      */
     fun deserializeNull(): Nothing?
-
-    /**
-     * Returns true if the next token contains a value, or false otherwise.
-     */
-    fun nextHasValue(): Boolean
 }
 
 fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {

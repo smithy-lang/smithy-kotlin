@@ -173,10 +173,6 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
             return value
         }
 
-        override fun nextHasValue(): Boolean {
-            TODO("Not yet implemented")
-        }
-
         /**
          * Deserialize a byte value defined as the text section of an Xml element.
          *
@@ -571,25 +567,6 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
         reader.takeNextToken<XmlToken.EndElement>()
         return null
     }
-
-    override fun nextHasValue(): Boolean {
-        return when (reader.peekNextToken()) {
-            is XmlToken.EndElement,
-            is XmlToken.EndDocument -> false
-            is XmlToken.BeginElement -> {
-                // Here we need to read the next token so we can peek the next to determine if there is a value.
-                // deserializeValue() can conditionally handle start or value nodes
-                reader.takeNextToken<XmlToken.BeginElement>()
-
-                when (reader.peekNextToken()) {
-                    is XmlToken.EndElement,
-                    is XmlToken.EndDocument -> false
-                    else -> true
-                }
-            }
-            else -> true
-        }
-    }
 }
 
 private fun XmlAttribute.toQualifiedName(): XmlToken.QualifiedName = XmlToken.QualifiedName(name, namespace)
@@ -639,8 +616,11 @@ private fun SdkFieldDescriptor.toNodePropertyIfValue(currentToken: XmlToken.Begi
     return when (val property = toNodeValueToken()) {
         is XmlDeserializer2.XmlNodeValueToken.Text -> {
             when {
-                nextToken is XmlToken.Text && nextToken.value?.isNotBlank() == true -> property
+                nextToken is XmlToken.Text -> property
                 nextToken is XmlToken.BeginElement -> property
+                nextToken is XmlToken.EndElement &&
+                        currentToken.qualifiedName == nextToken.qualifiedName &&
+                        !this.kind.primitive -> property
                 else -> null
             }
         }

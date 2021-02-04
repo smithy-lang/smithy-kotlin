@@ -18,25 +18,26 @@ object SparseValues: FieldTrait
 
 /**
  * A protocol-agnostic type description of a field.
+ * @param container specifies if the kind can hold values or is just a value itself
  */
-sealed class SerialKind {
-    object Unit : SerialKind()
-    object Integer : SerialKind()
-    object Long : SerialKind()
-    object Double : SerialKind()
-    object String : SerialKind()
-    object Boolean : SerialKind()
-    object Byte : SerialKind()
-    object Char : SerialKind()
-    object Short : SerialKind()
-    object Float : SerialKind()
-    object Map : SerialKind()
-    object List : SerialKind()
-    object Struct : SerialKind()
-    object Timestamp : SerialKind()
-    object Blob : SerialKind()
-    object Document : SerialKind()
-    object BigNumber : SerialKind()
+sealed class SerialKind(val container: kotlin.Boolean) {
+    object Unit : SerialKind(false)
+    object Integer : SerialKind(false)
+    object Long : SerialKind(false)
+    object Double : SerialKind(false)
+    object String : SerialKind(false)
+    object Boolean : SerialKind(false)
+    object Byte : SerialKind(false)
+    object Char : SerialKind(false)
+    object Short : SerialKind(false)
+    object Float : SerialKind(false)
+    object Map : SerialKind(true)
+    object List : SerialKind(true)
+    object Struct : SerialKind(true)
+    object Timestamp : SerialKind(false)
+    object Blob : SerialKind(false)
+    object Document : SerialKind(false)
+    object BigNumber : SerialKind(false)
 
     override fun toString(): kotlin.String {
         return this::class.simpleName ?: "SerialKind"

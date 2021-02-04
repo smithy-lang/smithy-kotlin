@@ -386,11 +386,11 @@ private class XmlFieldIterator(
         return null
     }
 
-    override fun nextHasValue(): Boolean {
+/*    override fun nextHasValue(): Boolean {
         val nextToken = reader.peekNextToken()
 
         return nextToken is XmlToken.Text || nextToken is XmlToken.BeginElement
-    }
+    }*/
 
     // Read a primitive from either TEXT or an attribute based on value of [attributeParseState].
     private fun <T> deserializePrimitive(transform: (String) -> T?): T {
