@@ -26,7 +26,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
     // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
-    private fun <T> nextNumberValue(block: (value: String) -> T): T =
+    private suspend fun <T> nextNumberValue(block: (value: String) -> T): T =
         when (val token = reader.nextToken()) {
             is JsonToken.Number -> block(token.value)
             else -> throw DeserializationException("$token cannot be deserialized as type Number")
@@ -91,17 +91,14 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         }
 
     override suspend fun hasNextElement(): Boolean =
-        when (val nextToken = reader.peek()) {
+        when (reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndArray>()
                 false
             }
             RawJsonToken.EndDocument -> false
-            else -> {
-                nextToken.name
-                true
-            }
+            else -> true
         }
 }
 
@@ -159,7 +156,7 @@ private class JsonFieldIterator(
 }
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
-private inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
+private suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
     val token = this.nextToken()
     requireToken<TExpected>(token)
     return token as TExpected
