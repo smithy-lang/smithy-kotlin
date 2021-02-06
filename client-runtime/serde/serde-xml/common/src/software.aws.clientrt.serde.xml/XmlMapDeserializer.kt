@@ -29,7 +29,7 @@ class XmlMapDeserializer(
 
     override suspend fun key(): String {
         val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
-        reader.takeUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.keyName } ?: error("wtf")
+        reader.takeUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.keyName } ?: throw DeserializerStateException("Expected node named ${mapTrait.keyName}")
         val keyValue = reader.takeNextOf<XmlToken.Text>()
 
         if (keyValue.value == null || keyValue.value.isBlank()) throw DeserializerStateException("Key entry is empty.")
