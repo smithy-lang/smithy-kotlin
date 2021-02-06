@@ -1,7 +1,6 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
-import kotlin.contracts.contract
 
 class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
 
@@ -119,7 +118,7 @@ internal inline fun <reified TExpected> requireToken(token: XmlToken) {
 }
 
 // like check() but throws deserializer-specific exception for state problems
-internal inline fun checkDeserializerState(value: Boolean, lazyMessage: () -> Any): Unit {
+internal inline fun checkDeserializerState(value: Boolean, lazyMessage: () -> Any) {
     if (!value) {
         val message = lazyMessage()
         throw DeserializerStateException(message.toString())

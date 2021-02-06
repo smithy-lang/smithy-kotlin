@@ -7,7 +7,6 @@ package software.aws.clientrt.serde.xml
 import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerStructTest {

@@ -8,7 +8,7 @@ import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-private val testAnonObjDescriptor = SdkObjectDescriptor.build {  }
+private val testAnonObjDescriptor = SdkObjectDescriptor.build { }
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonSerializerTest {

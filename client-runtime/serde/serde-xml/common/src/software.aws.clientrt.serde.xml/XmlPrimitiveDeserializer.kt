@@ -7,7 +7,7 @@ import software.aws.clientrt.serde.SdkFieldDescriptor
 /**
  * Deserialize primitive values for single values, lists, and maps
  */
-class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor):
+class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor) :
     PrimitiveDeserializer {
 
     constructor(input: ByteArray, fieldDescriptor: SdkFieldDescriptor) : this(xmlStreamReader(input), fieldDescriptor)
@@ -18,7 +18,7 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
             // this conditional checks that case for the first element of the list.
             val wrapperToken = reader.takeNextTokenOf<XmlToken.BeginElement>()
             if (wrapperToken.qualifiedName.name != fieldDescriptor.generalName()) {
-                //Depending on flat/not-flat, may need to consume multiple start nodes
+                // Depending on flat/not-flat, may need to consume multiple start nodes
                 return deserializeValue(transform)
             }
         }
@@ -30,7 +30,7 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
         } ?: throw DeserializationException("Node specifies no or invalid value.")
 
         if (fieldDescriptor.hasTrait<XmlMap>()) {
-            //Optionally consume the entry wrapper
+            // Optionally consume the entry wrapper
             val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
             val nextToken = reader.peekNextToken()
             if (nextToken is XmlToken.EndElement) {
@@ -45,17 +45,17 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
         return returnValue
     }
 
-    override fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte()?: throw DeserializationException("Unable to deserialize $it as Byte") }
+    override fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it as Byte") }
 
     override fun deserializeInt(): Int = deserializeValue { it.toIntOrNull() ?: throw DeserializationException("Unable to deserialize $it as Int") }
 
-    override fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort()?: throw DeserializationException("Unable to deserialize $it as Short") }
+    override fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort() ?: throw DeserializationException("Unable to deserialize $it as Short") }
 
-    override fun deserializeLong(): Long = deserializeValue { it.toLongOrNull()?: throw DeserializationException("Unable to deserialize $it as Long") }
+    override fun deserializeLong(): Long = deserializeValue { it.toLongOrNull() ?: throw DeserializationException("Unable to deserialize $it as Long") }
 
-    override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull()?: throw DeserializationException("Unable to deserialize $it as Float") }
+    override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it as Float") }
 
-    override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull()?: throw DeserializationException("Unable to deserialize $it as Double") }
+    override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it as Double") }
 
     override fun deserializeString(): String = deserializeValue { it }
 

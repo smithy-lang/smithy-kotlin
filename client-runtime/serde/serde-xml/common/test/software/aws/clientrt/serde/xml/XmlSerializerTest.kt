@@ -270,7 +270,7 @@ class XmlSerializerTest {
     class MyStructure1(private val foo: String, private val bar: String) : SdkSerializable {
         companion object {
             val fooDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("foo"))
-            val barDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("bar") )
+            val barDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("bar"))
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
                 trait(XmlSerialName("MyStructure"))

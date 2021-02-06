@@ -201,7 +201,7 @@ class SparseMapDeserializationTest {
     class GreetingDeserializer {
 
         companion object {
-            private val SAYING_DESCRIPTOR = SdkFieldDescriptor( SerialKind.String, "saying".toSerialNames())
+            private val SAYING_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, "saying".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 trait(XmlSerialName("Greeting"))
                 field(SAYING_DESCRIPTOR)

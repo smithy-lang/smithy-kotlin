@@ -265,8 +265,6 @@ private class XmlMapSerializer(
     }
 }
 
-
-
 private class XmlListSerializer(
     private val descriptor: SdkFieldDescriptor,
     private val xmlWriter: XmlStreamWriter,

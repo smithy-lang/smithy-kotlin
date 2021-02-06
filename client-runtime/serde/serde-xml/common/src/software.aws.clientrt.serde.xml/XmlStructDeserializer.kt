@@ -60,7 +60,7 @@ class XmlStructDeserializer(
                         .mapNotNull { (fieldDescriptor, token) ->
                             // Load all NodeProperties with values from field descriptors in fieldToNodeIndex
                             val nodePropertyOption = fieldDescriptor.findNodeValueTokenForField(token, reader.peekNextToken())
-                            if ( reader.peekNextToken() is XmlToken.EndElement && nodePropertyOption == null) {
+                            if (reader.peekNextToken() is XmlToken.EndElement && nodePropertyOption == null) {
                                 // Consume nodes without values
                                 reader.takeNextToken()
                                 return findNextFieldIndex()
@@ -115,8 +115,10 @@ class XmlStructDeserializer(
             }
             is XmlNodeValueToken.Attribute -> {
                 val currentNode = reader.currentToken as XmlToken.BeginElement
-                transform(currentNode.attributes[nextNode.name]
-                    ?: throw DeserializerStateException("Expected attribute value ${nextNode.name} not found in node ${currentNode.qualifiedName}"))
+                transform(
+                    currentNode.attributes[nextNode.name]
+                        ?: throw DeserializerStateException("Expected attribute value ${nextNode.name} not found in node ${currentNode.qualifiedName}")
+                )
             }
         }
 
@@ -125,17 +127,17 @@ class XmlStructDeserializer(
         return value
     }
 
-    override fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte()?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it") }
 
     override fun deserializeInt(): Int = deserializeValue { it.toIntOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort()?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeLong(): Long = deserializeValue { it.toLongOrNull()?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeLong(): Long = deserializeValue { it.toLongOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull()?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull()?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
     override fun deserializeString(): String = deserializeValue { it }
 
@@ -174,8 +176,8 @@ internal fun SdkFieldDescriptor.findNodeValueTokenForField(currentToken: XmlToke
                 // The following allows for struct primitives to remain unvisited if no value
                 // but causes nested deserializers to be called even if they contain no value
                 nextToken is XmlToken.EndElement &&
-                        currentToken.qualifiedName == nextToken.qualifiedName &&
-                        this.kind.container -> property
+                    currentToken.qualifiedName == nextToken.qualifiedName &&
+                    this.kind.container -> property
                 else -> null
             }
         }

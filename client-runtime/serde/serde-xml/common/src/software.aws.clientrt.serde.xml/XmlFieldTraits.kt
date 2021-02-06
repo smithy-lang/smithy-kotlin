@@ -7,8 +7,6 @@ package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.FieldTrait
 import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.SdkObjectDescriptor
-import software.aws.clientrt.serde.SerialKind
 
 // TODO: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
 
@@ -28,7 +26,7 @@ data class XmlMap(
     val keyName: String = "key",
     val valueName: String = "value",
     val flattened: Boolean = false
-): FieldTrait
+) : FieldTrait
 
 /**
  * Specifies that a field represents a List structure and the XML node names used to encode that structure.
@@ -45,11 +43,10 @@ data class XmlNamespace(val uri: String, val prefix: String? = null) : FieldTrai
     fun isDefault() = prefix == null
 }
 
-
 /**
  * Specifies a namespace that a field is encoded into for Xml nodes.
  */
-data class XmlSerialName(val name: String): FieldTrait {
+data class XmlSerialName(val name: String) : FieldTrait {
     fun toQualifiedName(xmlNamespace: XmlNamespace? = null): XmlToken.QualifiedName =
         when {
             xmlNamespace != null -> {
@@ -63,8 +60,7 @@ data class XmlSerialName(val name: String): FieldTrait {
             }
             else -> XmlToken.QualifiedName(name)
         }
-    }
-
+}
 
 fun String.nodeHasPrefix(): Boolean = this.contains(':')
 
@@ -83,14 +79,14 @@ fun String.parseNodeWithPrefix(): Pair<String, String?> =
  * @param name the name of the attribute
  * @param namespace the namespace of the attribute, or null for none.
  */
-data class XmlAttribute(val name: String, val namespace: String? = null): FieldTrait
+data class XmlAttribute(val name: String, val namespace: String? = null) : FieldTrait
 
 val SdkFieldDescriptor.serialName: XmlSerialName
     get() = expectTrait()
 
 // Return the name based on most specific type
 internal fun SdkFieldDescriptor.generalName() = when {
-        hasTrait<XmlList>() -> expectTrait<XmlList>().elementName
-        hasTrait<XmlMap>() -> expectTrait<XmlMap>().valueName
-        else -> expectTrait<XmlSerialName>().name
-    }
+    hasTrait<XmlList>() -> expectTrait<XmlList>().elementName
+    hasTrait<XmlMap>() -> expectTrait<XmlMap>().valueName
+    else -> expectTrait<XmlSerialName>().name
+}

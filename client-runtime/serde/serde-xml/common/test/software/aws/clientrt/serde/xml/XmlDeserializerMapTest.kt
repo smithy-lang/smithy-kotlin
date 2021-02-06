@@ -38,16 +38,17 @@ class XmlDeserializerMapTest {
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    fieldDescriptor.index -> actual =
-                        deserializer.deserializeMap(fieldDescriptor) {
-                            val map0 = mutableMapOf<String, Int>()
-                            while (hasNextEntry()) {
-                                val k0 = key()
-                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                map0[k0] = v0
+                    fieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeMap(fieldDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
                             }
-                            map0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -84,16 +85,17 @@ class XmlDeserializerMapTest {
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    fieldDescriptor.index -> actual =
-                        deserializer.deserializeMap(fieldDescriptor) {
-                            val map0 = mutableMapOf<String, Int>()
-                            while (hasNextEntry()) {
-                                val k0 = key()
-                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                map0[k0] = v0
+                    fieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeMap(fieldDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
                             }
-                            map0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -133,16 +135,17 @@ class XmlDeserializerMapTest {
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    containerFieldDescriptor.index -> actual =
-                        deserializer.deserializeMap(containerFieldDescriptor) {
-                            val map0 = mutableMapOf<String, Int>()
-                            while (hasNextEntry()) {
-                                val k0 = key()
-                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                map0[k0] = v0
+                    containerFieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeMap(containerFieldDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
                             }
-                            map0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -171,16 +174,17 @@ class XmlDeserializerMapTest {
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    containerFieldDescriptor.index -> actual =
-                        deserializer.deserializeMap(containerFieldDescriptor) {
-                            val map0 = mutableMapOf<String, Int>()
-                            while (hasNextEntry()) {
-                                val k0 = key()
-                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                map0[k0] = v0
+                    containerFieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeMap(containerFieldDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
                             }
-                            map0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -218,20 +222,21 @@ class XmlDeserializerMapTest {
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    fieldDescriptor.index -> actual =
-                        deserializer.deserializeMap(fieldDescriptor) {
-                            val map = mutableMapOf<String, Int?>()
-                            while (hasNextEntry()) {
-                                val key = key()
-                                val value = when (nextHasValue()) {
-                                    true -> deserializeInt()
-                                    false -> deserializeNull()
-                                }
+                    fieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeMap(fieldDescriptor) {
+                                val map = mutableMapOf<String, Int?>()
+                                while (hasNextEntry()) {
+                                    val key = key()
+                                    val value = when (nextHasValue()) {
+                                        true -> deserializeInt()
+                                        false -> deserializeNull()
+                                    }
 
-                                map[key] = value
+                                    map[key] = value
+                                }
+                                return@deserializeMap map
                             }
-                            return@deserializeMap map
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -269,16 +274,17 @@ class XmlDeserializerMapTest {
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    fieldDescriptor.index -> actual =
-                        deserializer.deserializeMap(fieldDescriptor) {
-                            val map0 = mutableMapOf<String, Int>()
-                            while (hasNextEntry()) {
-                                val k0 = key()
-                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                map0[k0] = v0
+                    fieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeMap(fieldDescriptor) {
+                                val map0 = mutableMapOf<String, Int>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
                             }
-                            map0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -339,24 +345,25 @@ class XmlDeserializerMapTest {
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    ELEMENT_MAP_FIELD_DESCRIPTOR.index -> actual =
-                        deserializer.deserializeMap(ELEMENT_MAP_FIELD_DESCRIPTOR) {
-                            val map0 = mutableMapOf<String, Map<String, String>>()
-                            while (hasNextEntry()) {
-                                val k0 = key()
-                                val v0 = deserializer.deserializeMap(nestedMapDescriptor) {
-                                    val map1 = mutableMapOf<String, String>()
-                                    while (hasNextEntry()) {
-                                        val k1 = key()
-                                        val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
-                                        map1[k1] = v1
+                    ELEMENT_MAP_FIELD_DESCRIPTOR.index ->
+                        actual =
+                            deserializer.deserializeMap(ELEMENT_MAP_FIELD_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, Map<String, String>>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = deserializer.deserializeMap(nestedMapDescriptor) {
+                                        val map1 = mutableMapOf<String, String>()
+                                        while (hasNextEntry()) {
+                                            val k1 = key()
+                                            val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                            map1[k1] = v1
+                                        }
+                                        map1
                                     }
-                                    map1
+                                    map0[k0] = v0
                                 }
-                                map0[k0] = v0
+                                map0
                             }
-                            map0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }

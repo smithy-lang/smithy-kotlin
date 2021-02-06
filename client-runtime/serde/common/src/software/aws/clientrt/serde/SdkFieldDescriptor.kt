@@ -14,7 +14,7 @@ package software.aws.clientrt.serde
 interface FieldTrait
 
 // Denotes that a Map or List may contain null values
-object SparseValues: FieldTrait
+object SparseValues : FieldTrait
 
 /**
  * A protocol-agnostic type description of a field.
@@ -44,13 +44,12 @@ sealed class SerialKind(val container: kotlin.Boolean) {
     }
 }
 
-
 /**
  * Metadata to describe how a given member property maps to serialization.
  */
 open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val traits: Set<FieldTrait> = emptySet()) {
-    constructor(kind: SerialKind, vararg trait: FieldTrait): this(kind, 0, trait.toSet())
-    constructor(kind: SerialKind, traits: Set<FieldTrait>): this(kind, 0, traits)
+    constructor(kind: SerialKind, vararg trait: FieldTrait) : this(kind, 0, trait.toSet())
+    constructor(kind: SerialKind, traits: Set<FieldTrait>) : this(kind, 0, traits)
 
     // Reserved for format-specific companion extension functions
     companion object;
@@ -71,7 +70,7 @@ open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val trai
         return x as TExpected?
     }
 
-    inline fun <reified TExpected : FieldTrait> hasTrait() = traits.any { it is TExpected  }
+    inline fun <reified TExpected : FieldTrait> hasTrait() = traits.any { it is TExpected }
 
     override fun toString(): String {
         return "SdkFieldDescriptor.$kind(traits=${traits.joinToString(separator = ",") })"

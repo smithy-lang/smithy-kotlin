@@ -40,13 +40,13 @@ sealed class XmlToken {
      */
     data class Text(val value: String?) : XmlToken()
 
-    object StartDocument: XmlToken()
+    object StartDocument : XmlToken()
 
     /**
      * The end of the XML stream to signal that the XML-encoded value has no more
      * tokens
      */
-    object EndDocument: XmlToken()
+    object EndDocument : XmlToken()
 
     override fun toString(): String = when (this) {
         is BeginElement -> "<${this.qualifiedName}>"

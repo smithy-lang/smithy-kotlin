@@ -1,11 +1,10 @@
-import io.kotest.matchers.maps.shouldContainKeys
-import software.aws.clientrt.serde.Deserializer
+
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.json.JsonSerialName
 import software.aws.clientrt.serde.xml.XmlDeserializer2
 import software.aws.clientrt.serde.xml.XmlList
-import software.aws.clientrt.serde.xml.XmlMap
 import software.aws.clientrt.serde.xml.XmlSerialName
 import kotlin.jvm.JvmStatic
 import kotlin.test.Test
@@ -14,7 +13,6 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class SparseListDeserializationTest {
-
 
     class GetFooOutput private constructor(builder: BuilderImpl) {
         val sparseStructList: List<Greeting?>? = builder.sparseStructList
@@ -26,7 +24,6 @@ class SparseListDeserializationTest {
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
             operator fun invoke(block: DslBuilder.() -> Unit): GetFooOutput = BuilderImpl().apply(block).build()
-
         }
 
         override fun toString() = buildString {
@@ -84,7 +81,6 @@ class SparseListDeserializationTest {
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
             operator fun invoke(block: DslBuilder.() -> Unit): Greeting = BuilderImpl().apply(block).build()
-
         }
 
         override fun toString() = buildString {
@@ -132,7 +128,6 @@ class SparseListDeserializationTest {
         }
     }
 
-
     class GetFooDeserializer {
 
         companion object {
@@ -149,15 +144,16 @@ class SparseListDeserializationTest {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        SPARSESTRUCTLIST_DESCRIPTOR.index -> builder.sparseStructList =
-                            deserializer.deserializeList(SPARSESTRUCTLIST_DESCRIPTOR) {
-                                val col0 = mutableListOf<Greeting?>()
-                                while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { GreetingDeserializer().deserialize(deserializer) } else { deserializeNull() }
-                                    col0.add(el0)
+                        SPARSESTRUCTLIST_DESCRIPTOR.index ->
+                            builder.sparseStructList =
+                                deserializer.deserializeList(SPARSESTRUCTLIST_DESCRIPTOR) {
+                                    val col0 = mutableListOf<Greeting?>()
+                                    while (hasNextElement()) {
+                                        val el0 = if (nextHasValue()) { GreetingDeserializer().deserialize(deserializer) } else { deserializeNull() }
+                                        col0.add(el0)
+                                    }
+                                    col0
                                 }
-                                col0
-                            }
                         null -> break@loop
                         else -> skipValue()
                     }

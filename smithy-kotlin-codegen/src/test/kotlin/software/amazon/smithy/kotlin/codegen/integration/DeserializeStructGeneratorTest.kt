@@ -366,7 +366,7 @@ class DeserializeStructGeneratorTest {
     @Test
     fun `it deserializes a structure containing a sparse list of a struct`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooResponse { 
                 payload: SparseIntList
             }
@@ -380,7 +380,7 @@ class DeserializeStructGeneratorTest {
                 bar: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

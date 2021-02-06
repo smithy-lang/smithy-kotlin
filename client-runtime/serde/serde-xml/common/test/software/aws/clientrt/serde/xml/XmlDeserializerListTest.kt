@@ -97,15 +97,16 @@ class XmlDeserializerListTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@while (true) {
                         when (findNextFieldIndex()) {
-                            ELEMENT_LIST_FIELD_DESCRIPTOR.index -> builder.list =
-                                deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
-                                    val col0 = mutableListOf<Int?>()
-                                    while (hasNextElement()) {
-                                        val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull() }
-                                        col0.add(el0)
+                            ELEMENT_LIST_FIELD_DESCRIPTOR.index ->
+                                builder.list =
+                                    deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
+                                        val col0 = mutableListOf<Int?>()
+                                        while (hasNextElement()) {
+                                            val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull() }
+                                            col0.add(el0)
+                                        }
+                                        col0
                                     }
-                                    col0
-                                }
                             null -> break@loop
                             else -> skipValue()
                         }
@@ -308,22 +309,23 @@ class XmlDeserializerListTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@while (true) {
                         when (findNextFieldIndex()) {
-                            ELEMENT_LIST_FIELD_DESCRIPTOR.index -> builder.list =
-                                deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
-                                    val col0 = mutableListOf<List<String>>()
-                                    while (hasNextElement()) {
-                                        val el0 = deserializer.deserializeList(NESTED_DESCRIPTOR) {
-                                            val col1 = mutableListOf<String>()
-                                            while (hasNextElement()) {
-                                                val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
-                                                col1.add(el1)
+                            ELEMENT_LIST_FIELD_DESCRIPTOR.index ->
+                                builder.list =
+                                    deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
+                                        val col0 = mutableListOf<List<String>>()
+                                        while (hasNextElement()) {
+                                            val el0 = deserializer.deserializeList(NESTED_DESCRIPTOR) {
+                                                val col1 = mutableListOf<String>()
+                                                while (hasNextElement()) {
+                                                    val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                                    col1.add(el1)
+                                                }
+                                                col1
                                             }
-                                            col1
+                                            col0.add(el0)
                                         }
-                                        col0.add(el0)
+                                        col0
                                     }
-                                    col0
-                                }
                             null -> break@loop
                             else -> skipValue()
                         }

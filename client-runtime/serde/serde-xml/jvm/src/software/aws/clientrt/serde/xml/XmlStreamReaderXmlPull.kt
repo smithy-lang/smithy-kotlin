@@ -42,7 +42,6 @@ private class XmlStreamReaderXmlPull(
     // this method rather than calling `parser.nextToken()` directly.
     override fun takeNextToken(): XmlToken = pullToken(false)
 
-
     private fun pullToken(isPeek: Boolean): XmlToken {
         if (peekedToken != null) {
             val rv = peekedToken!!

@@ -8,7 +8,6 @@ import software.aws.clientrt.serde.*
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalStdlibApi::class)
