@@ -47,6 +47,7 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         check(structDeserializerStack.isNotEmpty()) { "List cannot be deserialized independently from a parent struct" }
         cleanupDeserializerStack()
         return XmlListDeserializer(
+            descriptor,
             reader,
             structDeserializerStack.last().structSerializer,
             primitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
@@ -76,23 +77,6 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
         }
         check(structDeserializerStack.isNotEmpty()) { "root deserializer should never be removed" }
     }
-}
-
-/**
- * Determine if more tokens to process at current struct level.  If not clean up any remaining closing nodes.
- * NOTE: This function may mutate the underlying parser in cases where no more tokens are available.
- * @return true if more nodes to parse at this level, false otherwise
- */
-internal fun XmlStreamReader.moreOrCleanup(parentDeserializer: XmlStructDeserializer, startLevel: Int) = when (peekNextToken()) {
-    is XmlToken.EndDocument -> false
-    is XmlToken.EndElement -> {
-        parentDeserializer.clearNodeValueTokens()
-        //Depending on flat/not-flat, may need to pull of multiple end nodes
-        while (currentDepth >= startLevel && peekNextToken() is XmlToken.EndElement) takeNextTokenOf<XmlToken.EndElement>()
-        val retVal = peekNextToken() is XmlToken.BeginElement
-        retVal
-    }
-    else -> true
 }
 
 private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): TExpected {

@@ -364,6 +364,50 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
+    fun `it deserializes a structure containing a sparse list of a struct`() {
+        val model = (
+                modelPrefix + """            
+            structure FooResponse { 
+                payload: SparseIntList
+            }
+            
+            @sparse
+            list SparseIntList {
+                member: SparseListElement
+            }
+            
+            structure SparseListElement {
+                bar: String
+            }
+        """
+                ).asSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                            deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
+                                val col0 = mutableListOf<SparseListElement?>()
+                                while (hasNextElement()) {
+                                    val el0 = if (nextHasValue()) { SparseListElementDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    col0.add(el0)
+                                }
+                                col0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it deserializes a structure containing a list of a nested list of a primitive type`() {
         val model = (
             modelPrefix + """            

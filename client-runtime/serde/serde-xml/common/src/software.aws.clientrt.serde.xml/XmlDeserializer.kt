@@ -412,6 +412,16 @@ private class XmlFieldIterator(
     }
 }
 
+private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): TExpected {
+    var token = this.takeNextToken()
+    while (token::class != TExpected::class && token !is XmlToken.EndDocument) {
+        token = this.takeNextToken()
+    }
+
+    if (token::class != TExpected::class) error("Did not find ${TExpected::class}")
+    return token as TExpected
+}
+
 // return the next token and require that it be of type [TExpected] or else throw an exception
 private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeToken(nodeNameStack: MutableList<XmlToken.QualifiedName>): TExpected {
     val token = this.takeNextToken()

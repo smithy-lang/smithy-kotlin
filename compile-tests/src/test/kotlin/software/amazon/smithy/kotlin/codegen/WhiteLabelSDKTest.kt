@@ -17,7 +17,7 @@ import java.net.URL
 class WhiteLabelSDKTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK.
     private val warningThreshold = 3
-    private val copyGeneratedSdksToTmp = false
+    private val copyGeneratedSdksToTmp = true
 
     @Test
     fun `white label sdk compiles without errors`() {
@@ -46,6 +46,46 @@ class WhiteLabelSDKTest {
             .count()
 
         assertTrue( result <= warningThreshold, "Compiler warnings ($result) breached threshold of $warningThreshold.")
+    }
+
+    @Test
+    fun boo() {
+        val model = """
+             namespace com.test
+             
+             use aws.protocols#restJson1
+             
+             @restJson1
+             service Example {
+                  version: "1.0.0",
+                  operations: [GetFoo]
+             }
+             
+             @http(method: "POST", uri: "/input/list")
+                  operation GetFoo {
+                  output: GetFooOutput
+             }
+
+             map OuterMap {
+                key: String,
+                value: InnerMap
+             }
+             
+             map InnerMap {
+                key: String,
+                value: String
+             }
+             
+             structure GetFooOutput {
+                  sparseStructList: OuterMap
+             }
+        """.trimIndent().asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        compileOutputStream.flush()
+
+        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
     }
 }
 

@@ -17,8 +17,10 @@ private class XmlStreamReaderXmlPull(
     private val parser: XmlPullParser = xmlPullParserFactory()
 ) : XmlStreamReader {
 
+    data class PeekState(val token: XmlToken, val depth: Int)
+
     private var _currentToken: XmlToken = XmlToken.StartDocument
-    private var peekedToken: XmlToken? = null
+    private var peekedToken: PeekState? = null
 
     init {
         parser.setFeature(MXParser.FEATURE_PROCESS_NAMESPACES, true)
@@ -45,8 +47,11 @@ private class XmlStreamReaderXmlPull(
         if (peekedToken != null) {
             val rv = peekedToken!!
             peekedToken = null
-            if (!isPeek) _currentToken = rv
-            return rv
+            if (!isPeek) {
+                _currentToken = rv.token
+                println("Pulled token $_currentToken")
+            }
+            return rv.token
         }
 
         try {
@@ -66,7 +71,10 @@ private class XmlStreamReaderXmlPull(
                 else -> throw IllegalStateException("Unhandled tag $nt")
             }
 
-            if (!isPeek) _currentToken = rv
+            if (!isPeek) {
+                _currentToken = rv
+                println("Pulled token $_currentToken")
+            }
             return rv
         } catch (e: Exception) {
             throw XmlGenerationException(e)
@@ -120,14 +128,15 @@ private class XmlStreamReaderXmlPull(
 
     override fun peekNextToken(): XmlToken = when (peekedToken) {
         null -> {
-            peekedToken = pullToken(true)
-            peekedToken as XmlToken
+            val currentDepth = parser.depth
+            peekedToken = PeekState(pullToken(true), currentDepth)
+            peekedToken!!.token
         }
-        else -> peekedToken as XmlToken
+        else -> peekedToken!!.token
     }
 
     override val currentDepth: Int
-        get() = parser.depth
+        get() = if (peekedToken != null) peekedToken!!.depth else parser.depth
 }
 
 private fun String?.blankToNull(): String? = if (this?.isBlank() != false) null else this

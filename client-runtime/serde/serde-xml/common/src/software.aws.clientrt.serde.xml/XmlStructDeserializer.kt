@@ -59,7 +59,7 @@ class XmlStructDeserializer(
                         .mapNotNull { (fieldDescriptor, token) ->
                             // Load all NodeProperties with values from field descriptors in fieldToNodeIndex
                             val nodePropertyOption = fieldDescriptor.findNodeValueTokenForField(token, reader.peekNextToken())
-                            if (nodePropertyOption == null && reader.peekNextToken() is XmlToken.EndElement) {
+                            if ( reader.peekNextToken() is XmlToken.EndElement && nodePropertyOption == null) {
                                 // Consume nodes without values
                                 reader.takeNextToken()
                                 return findNextFieldIndex()
@@ -169,6 +169,21 @@ internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextToken
     requireToken<TExpected>(token)
     return token as TExpected
 }
+
+// Reads the stream while until a node is not the specified type or the predicate returns true.
+// Returns null if a different node was found or the node that matches the predicate.
+internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeAllUntil(predicate: (TExpected) -> Boolean): TExpected? {
+    var token = takeNextToken()
+
+    while (tokenIsType<TExpected>(token) && !predicate.invoke(token as TExpected)) {
+        token = takeNextToken()
+    }
+
+    return if (tokenIsType<TExpected>(token)) token as TExpected else null
+}
+
+// require that the given token be of type [TExpected] or else throw an exception
+internal inline fun <reified TExpected> tokenIsType(token: XmlToken) = token::class == TExpected::class
 
 // require that the given token be of type [TExpected] or else throw an exception
 internal inline fun <reified TExpected> requireToken(token: XmlToken) {

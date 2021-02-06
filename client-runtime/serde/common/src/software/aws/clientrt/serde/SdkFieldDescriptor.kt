@@ -74,6 +74,6 @@ open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val trai
     inline fun <reified TExpected : FieldTrait> hasTrait() = traits.any { it is TExpected  }
 
     override fun toString(): String {
-        return "($kind, ${traits.joinToString(separator = ",") }})"
+        return "SdkFieldDescriptor.$kind(traits=${traits.joinToString(separator = ",") })"
     }
 }

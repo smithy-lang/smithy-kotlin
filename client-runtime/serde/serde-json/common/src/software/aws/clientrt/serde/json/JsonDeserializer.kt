@@ -91,14 +91,17 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         }
 
     override fun hasNextElement(): Boolean =
-        when (reader.peek()) {
+        when (val nextToken = reader.peek()) {
             RawJsonToken.EndArray -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndArray>()
                 false
             }
             RawJsonToken.EndDocument -> false
-            else -> true
+            else -> {
+                nextToken.name
+                true
+            }
         }
 }
 

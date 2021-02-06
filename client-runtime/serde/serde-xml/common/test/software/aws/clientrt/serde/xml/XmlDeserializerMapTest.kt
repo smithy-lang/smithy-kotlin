@@ -288,4 +288,86 @@ class XmlDeserializerMapTest {
         val expected = mapOf("key1" to 1)
         actual.shouldContainExactly(expected)
     }
+
+    @Test
+    fun itHandlesNestedMap() {
+        val payload = """
+            <object>
+                <map>
+                    <outerEntry>
+                        <key>outer1</key>
+                        <outerValue>
+                            <nestedMap>
+                                <innerEntry>
+                                    <key>inner1</key>
+                                    <innerValue>innerValue1</innerValue>
+                                </innerEntry>
+                                <innerEntry>
+                                    <key>inner2</key>
+                                    <innerValue>innerValue2</innerValue>
+                                </innerEntry>
+                            </nestedMap>
+                        </outerValue>
+                    </outerEntry>
+                    <outerEntry>
+                        <key>outer2</key>
+                        <outerValue>
+                            <nestedMap>
+                                <innerEntry>
+                                    <key>inner3</key>
+                                    <innerValue>innerValue3</innerValue>
+                                </innerEntry>
+                                <innerEntry>
+                                    <key>inner4</key>
+                                    <innerValue>innerValue4</innerValue>
+                                </innerEntry>
+                            </nestedMap>
+                        </outerValue>
+                    </outerEntry>
+                </map>
+            </object>
+        """.encodeToByteArray()
+        val ELEMENT_MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"), XmlMap(entry = "outerEntry", valueName = "outerValue"))
+        val nestedMapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("nestedMap"), XmlMap(entry = "innerEntry", valueName = "innerValue"))
+        val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("object"))
+            field(ELEMENT_MAP_FIELD_DESCRIPTOR)
+        }
+
+        val deserializer = XmlDeserializer2(payload)
+        var actual = mutableMapOf<String, Map<String, String>>()
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    ELEMENT_MAP_FIELD_DESCRIPTOR.index -> actual =
+                        deserializer.deserializeMap(ELEMENT_MAP_FIELD_DESCRIPTOR) {
+                            val map0 = mutableMapOf<String, Map<String, String>>()
+                            while (hasNextEntry()) {
+                                val k0 = key()
+                                val v0 = deserializer.deserializeMap(nestedMapDescriptor) {
+                                    val map1 = mutableMapOf<String, String>()
+                                    while (hasNextEntry()) {
+                                        val k1 = key()
+                                        val v1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                        map1[k1] = v1
+                                    }
+                                    map1
+                                }
+                                map0[k0] = v0
+                            }
+                            map0
+                        }
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+
+        val expected = mapOf(
+            "outer1" to mapOf("inner1" to "innerValue1", "inner2" to "innerValue2"),
+            "outer2" to mapOf("inner3" to "innerValue3", "inner4" to "innerValue4")
+        )
+
+        actual.shouldContainExactly(expected)
+    }
 }

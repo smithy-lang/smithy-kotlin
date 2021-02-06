@@ -182,6 +182,32 @@ class XmlStreamReaderTest {
         val yElement = reader.takeNextToken() as XmlToken.BeginElement
         assertEquals("y", yElement.qualifiedName.name)
     }
+
+    @Test
+    fun itPeeksWithoutImpactingNestingLevel() {
+        val payload = """<l1><l2><l3>text</l3></l2></l1>""".trimIndent().encodeToByteArray()
+        val reader = xmlStreamReader(payload)
+
+        assertTrue(reader.currentDepth == 0, "Expected to start at level 0")
+        var peekedToken = reader.peekNextToken()
+        assertTrue(peekedToken is XmlToken.BeginElement)
+        assertTrue(peekedToken.qualifiedName.name == "l1")
+        assertTrue(reader.currentDepth == 0, "Expected peek to not effect level")
+
+        peekedToken = reader.takeNextToken()
+        assertTrue(reader.currentDepth == 1, "Expected level 1")
+        assertTrue(peekedToken is XmlToken.BeginElement)
+        assertTrue(peekedToken.qualifiedName.name == "l1")
+        peekedToken = reader.peekNextToken()
+        assertTrue(reader.currentDepth == 1, "Expected peek to not effect level")
+
+        peekedToken = reader.takeNextToken()
+        assertTrue(reader.currentDepth == 2, "Expected level 2")
+        assertTrue(peekedToken is XmlToken.BeginElement)
+        assertTrue(peekedToken.qualifiedName.name == "l2")
+        peekedToken = reader.peekNextToken()
+        assertTrue(reader.currentDepth == 2, "Expected peek to not effect level")
+    }
 }
 
 fun XmlStreamReader.allTokens(): List<XmlToken> {

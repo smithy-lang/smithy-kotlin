@@ -2,11 +2,12 @@ package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.PrimitiveDeserializer
+import software.aws.clientrt.serde.SdkFieldDescriptor
 
 class XmlListDeserializer(
+    private val fieldDescriptor: SdkFieldDescriptor,
     private val reader: XmlStreamReader,
     private val parentDeserializer: XmlStructDeserializer,
-    private val startLevel: Int = reader.currentDepth,
     primitiveDeserializer: XmlPrimitiveDeserializer
 ) : Deserializer.ElementIterator, PrimitiveDeserializer by primitiveDeserializer {
 
@@ -14,9 +15,12 @@ class XmlListDeserializer(
         is XmlToken.EndDocument -> false
         is XmlToken.EndElement -> {
             parentDeserializer.clearNodeValueTokens()
-            //Depending on flat/not-flat, may need to pull of multiple end nodes
-            while (reader.currentDepth >= startLevel && reader.peekNextToken() is XmlToken.EndElement) reader.takeNextTokenOf<XmlToken.EndElement>()
-            false
+
+            if (fieldDescriptor.findTrait<XmlList>()?.flattened == false && reader.peekNextToken() is XmlToken.EndElement) {
+                reader.takeNextTokenOf<XmlToken.EndElement>()
+            }
+
+            reader.peekNextToken() is XmlToken.BeginElement
         }
         else -> true
     }
