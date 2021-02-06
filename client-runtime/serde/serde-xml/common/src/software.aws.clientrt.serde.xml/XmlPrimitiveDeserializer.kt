@@ -27,7 +27,7 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
 
         val returnValue = token.value?.let { transform(it) }?.also {
             reader.takeNextTokenOf<XmlToken.EndElement>()
-        } ?: error("wtf")
+        } ?: throw DeserializationException("Node specifies no or invalid value.")
 
         if (fieldDescriptor.hasTrait<XmlMap>()) {
             //Optionally consume the entry wrapper

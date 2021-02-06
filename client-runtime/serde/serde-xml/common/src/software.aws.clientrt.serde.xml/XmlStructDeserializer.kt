@@ -39,9 +39,10 @@ class XmlStructDeserializer(
         // Validate inputs
         val qualifiedName = objDescriptor.serialName.toQualifiedName(objDescriptor.findTrait())
         currentNode = reader.currentToken as XmlToken.BeginElement
-        check(currentNode.qualifiedName.name == qualifiedName.name) { "Expected name ${qualifiedName.name} but found ${currentNode.qualifiedName.name}" }
-        if (objDescriptor.findTrait<XmlNamespace>()?.isDefault() == true) { // If a default namespace is set, verify that the serialized form matches obj descriptor
-            check(currentNode.qualifiedName.namespaceUri == objDescriptor.findTrait<XmlNamespace>()?.uri) { "Expected name ${objDescriptor.findTrait<XmlNamespace>()?.uri} but found ${currentNode.qualifiedName.namespaceUri}" }
+        if (currentNode.qualifiedName.name != qualifiedName.name) throw DeserializerStateException("Expected name ${qualifiedName.name} but found ${currentNode.qualifiedName.name}")
+        if (objDescriptor.findTrait<XmlNamespace>()?.isDefault() == true && currentNode.qualifiedName.namespaceUri != objDescriptor.findTrait<XmlNamespace>()?.uri) {
+            // If a default namespace is set, verify that the serialized form matches obj descriptor
+            throw DeserializerStateException("Expected name ${objDescriptor.findTrait<XmlNamespace>()?.uri} but found ${currentNode.qualifiedName.namespaceUri}")
         }
     }
 
@@ -78,7 +79,7 @@ class XmlStructDeserializer(
                         else -> null
                     }
                 }
-                else -> error("Unexpected token $nextToken")
+                else -> throw DeserializerStateException("Unexpected token $nextToken")
             }
 
             parsedNodeTokens.addAll(nodeValueTokens.sortedBy { it is XmlNodeValueToken.Text })
@@ -104,17 +105,18 @@ class XmlStructDeserializer(
 
     // Based on the top [XmlNodeValueToken], deserialize a text or attribute value.
     private fun <T> deserializeValue(transform: ((String) -> T)): T {
-        check(parsedNodeTokens.isNotEmpty()) { "fieldToNodeIndex is empty, was findNextFieldIndex() called?" }
+        if (parsedNodeTokens.isEmpty()) throw DeserializationException("fieldToNodeIndex is empty, was findNextFieldIndex() called?")
 
         val value = when (val nextNode = parsedNodeTokens.removeFirst()) {
             is XmlNodeValueToken.Text -> {
-                check(!parsedNodeTokens.any { it is XmlNodeValueToken.Attribute }) { "Text tokens should always be consumed last" }
+                if (parsedNodeTokens.any { it is XmlNodeValueToken.Attribute }) throw DeserializationException("Text tokens should always be consumed last")
                 val token = reader.takeNextTokenOf<XmlToken.Text>()
-                token.value?.let { transform(it) } ?: error("wtf")
+                token.value?.let { transform(it) } ?: throw DeserializerStateException("Expected value in node ${currentNode.qualifiedName}")
             }
             is XmlNodeValueToken.Attribute -> {
                 val currentNode = reader.currentToken as XmlToken.BeginElement
-                transform(currentNode.attributes[nextNode.name] ?: error("WFT"))
+                transform(currentNode.attributes[nextNode.name]
+                    ?: throw DeserializerStateException("Expected attribute value ${nextNode.name} not found in node ${currentNode.qualifiedName}"))
             }
         }
 

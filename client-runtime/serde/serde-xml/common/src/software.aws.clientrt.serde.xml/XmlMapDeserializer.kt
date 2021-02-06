@@ -1,6 +1,7 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.Deserializer
+import software.aws.clientrt.serde.DeserializerStateException
 import software.aws.clientrt.serde.PrimitiveDeserializer
 import software.aws.clientrt.serde.SdkFieldDescriptor
 
@@ -31,8 +32,8 @@ class XmlMapDeserializer(
         reader.takeAllUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.keyName } ?: error("wtf")
         val keyValue = reader.takeNextTokenOf<XmlToken.Text>()
 
-        check(keyValue.value != null && keyValue.value.isNotBlank()) { "Key entry is empty." }
-        check(reader.takeNextTokenOf<XmlToken.EndElement>().qualifiedName.name == mapTrait.keyName) { "Expected end of key field" }
+        if (keyValue.value == null || keyValue.value.isBlank()) throw DeserializerStateException("Key entry is empty.")
+        if (reader.takeNextTokenOf<XmlToken.EndElement>().qualifiedName.name != mapTrait.keyName) throw DeserializerStateException("Expected end of key field")
 
         return keyValue.value
     }
@@ -40,7 +41,8 @@ class XmlMapDeserializer(
     override fun nextHasValue(): Boolean {
         val valueWrapperToken = reader.takeNextTokenOf<XmlToken.BeginElement>()
         val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
-        check(valueWrapperToken.qualifiedName.name == mapTrait.valueName) { "Expected map value name but found ${valueWrapperToken.qualifiedName}" }
+
+        if (valueWrapperToken.qualifiedName.name != mapTrait.valueName) throw DeserializerStateException("Expected map value name but found ${valueWrapperToken.qualifiedName}")
 
         val nextToken = reader.peekNextToken()
 
