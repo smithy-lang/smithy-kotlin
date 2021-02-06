@@ -154,44 +154,6 @@ class XmlStructDeserializer(
 
 private fun XmlAttribute.toQualifiedName(): XmlToken.QualifiedName = XmlToken.QualifiedName(name, namespace)
 
-private inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): TExpected {
-    var token = this.takeNextToken()
-    while (token::class != TExpected::class && token !is XmlToken.EndDocument) {
-        token = this.takeNextToken()
-    }
-
-    if (token::class != TExpected::class) error("Did not find ${TExpected::class}")
-    return token as TExpected
-}
-
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextTokenOf(): TExpected {
-    val token = this.takeNextToken()
-    requireToken<TExpected>(token)
-    return token as TExpected
-}
-
-// Reads the stream while until a node is not the specified type or the predicate returns true.
-// Returns null if a different node was found or the node that matches the predicate.
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeAllUntil(predicate: (TExpected) -> Boolean): TExpected? {
-    var token = takeNextToken()
-
-    while (tokenIsType<TExpected>(token) && !predicate.invoke(token as TExpected)) {
-        token = takeNextToken()
-    }
-
-    return if (tokenIsType<TExpected>(token)) token as TExpected else null
-}
-
-// require that the given token be of type [TExpected] or else throw an exception
-internal inline fun <reified TExpected> tokenIsType(token: XmlToken) = token::class == TExpected::class
-
-// require that the given token be of type [TExpected] or else throw an exception
-internal inline fun <reified TExpected> requireToken(token: XmlToken) {
-    if (token::class != TExpected::class) {
-        throw DeserializerStateException("expected ${TExpected::class}; found ${token::class} ($token)")
-    }
-}
-
 // Produce a [XmlNodeValueToken] type based on presence of traits of field
 // A field without an attribute trait is assumed to be a text token
 private fun SdkFieldDescriptor.toNodeValueToken(): XmlNodeValueToken =
@@ -201,7 +163,7 @@ private fun SdkFieldDescriptor.toNodeValueToken(): XmlNodeValueToken =
     }
 
 // Returns a [XmlNodeValueToken] if the field maps to the current node
-private fun SdkFieldDescriptor.findNodeValueTokenForField(currentToken: XmlToken.BeginElement, nextToken: XmlToken): XmlNodeValueToken? {
+internal fun SdkFieldDescriptor.findNodeValueTokenForField(currentToken: XmlToken.BeginElement, nextToken: XmlToken): XmlNodeValueToken? {
     return when (val property = toNodeValueToken()) {
         is XmlNodeValueToken.Text -> {
             when {
