@@ -26,7 +26,7 @@ class SimpleStructClass {
             field(Z_DESCRIPTOR)
         }
 
-        fun deserialize(deserializer: Deserializer): SimpleStructClass {
+        suspend fun deserialize(deserializer: Deserializer): SimpleStructClass {
             val result = SimpleStructClass()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
@@ -58,7 +58,7 @@ class StructWithAttribsClass {
             field(Y_DESCRIPTOR)
         }
 
-        fun deserialize(deserializer: Deserializer): StructWithAttribsClass {
+        suspend fun deserialize(deserializer: Deserializer): StructWithAttribsClass {
             val result = StructWithAttribsClass()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
@@ -96,7 +96,7 @@ class StructWithMultiAttribsAndTextValClass {
             field(Y_DESCRIPTOR)
         }
 
-        fun deserialize(deserializer: Deserializer): StructWithMultiAttribsAndTextValClass {
+        suspend fun deserialize(deserializer: Deserializer): StructWithMultiAttribsAndTextValClass {
             val result = StructWithMultiAttribsAndTextValClass()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {

@@ -5,6 +5,7 @@ import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.xml.XmlDeserializer
 import software.aws.clientrt.serde.xml.XmlMap
 import software.aws.clientrt.serde.xml.XmlSerialName
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.jvm.JvmStatic
 import kotlin.test.*
 
@@ -168,7 +169,7 @@ class SparseMapDeserializationTest {
             }
         }
 
-        fun deserialize(deserializer: Deserializer): GetFooOutput {
+        suspend fun deserialize(deserializer: Deserializer): GetFooOutput {
             val builder = GetFooOutput.dslBuilder()
 
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -208,7 +209,7 @@ class SparseMapDeserializationTest {
             }
         }
 
-        fun deserialize(deserializer: Deserializer): Greeting {
+        suspend fun deserialize(deserializer: Deserializer): Greeting {
             val builder = Greeting.dslBuilder()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
@@ -224,7 +225,7 @@ class SparseMapDeserializationTest {
     }
 
     @Test
-    fun itDeserializesAnEmptyDocumentIntoAnEmptyStruct() {
+    fun itDeserializesAnEmptyDocumentIntoAnEmptyStruct() = runSuspendTest {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<GetFoo />".encodeToByteArray()
 
@@ -237,7 +238,7 @@ class SparseMapDeserializationTest {
     }
 
     @Test
-    fun itDeserializesAnEmptyMapIntoAnStructWithEmptyMap() {
+    fun itDeserializesAnEmptyMapIntoAnStructWithEmptyMap() = runSuspendTest {
         val jsonPayload = """
             {
                 "sparseStructMap": {}
@@ -259,7 +260,7 @@ class SparseMapDeserializationTest {
     }
 
     @Test
-    fun itDeserializesAMapWithNullValuesIntoAnStructWithMapContainingKeysWithNullValues() {
+    fun itDeserializesAMapWithNullValuesIntoAnStructWithMapContainingKeysWithNullValues() = runSuspendTest {
         val jsonPayload = """
             {
             	"sparseStructMap": {

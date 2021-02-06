@@ -11,7 +11,7 @@ class XmlListDeserializer(
     primitiveDeserializer: XmlPrimitiveDeserializer
 ) : Deserializer.ElementIterator, PrimitiveDeserializer by primitiveDeserializer {
 
-    override fun hasNextElement(): Boolean = when (reader.peekNextToken()) {
+    override suspend fun hasNextElement(): Boolean = when (reader.peekNextToken()) {
         is XmlToken.EndDocument -> false
         is XmlToken.EndElement -> {
             parentDeserializer.clearNodeValueTokens()
@@ -25,7 +25,7 @@ class XmlListDeserializer(
         else -> true
     }
 
-    override fun nextHasValue(): Boolean {
+    override suspend fun nextHasValue(): Boolean {
         return when (reader.peekNextToken()) {
             is XmlToken.EndElement,
             is XmlToken.EndDocument -> false

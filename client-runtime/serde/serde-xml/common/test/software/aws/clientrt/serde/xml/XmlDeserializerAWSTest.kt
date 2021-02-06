@@ -5,6 +5,7 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -23,7 +24,7 @@ class XmlDeserializerAWSTest {
                 field(COMMENT_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): HostedZoneConfig {
+            suspend fun deserialize(deserializer: Deserializer): HostedZoneConfig {
                 val builder = BuilderImpl()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -76,7 +77,7 @@ class XmlDeserializerAWSTest {
                 field(HOSTED_ZONE_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): CreateHostedZoneRequest {
+            suspend fun deserialize(deserializer: Deserializer): CreateHostedZoneRequest {
                 val builder = BuilderImpl()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -118,7 +119,7 @@ class XmlDeserializerAWSTest {
     }
 
     @Test
-    fun itHandlesRoute53XML() {
+    fun itHandlesRoute53XML() = runSuspendTest {
         val testXml = """
                <?xml version="1.0" encoding="UTF-8"?><!--
                  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.

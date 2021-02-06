@@ -20,7 +20,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 
     constructor(input: ByteArray) : this(xmlStreamReader(input))
 
-    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
+    override suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         return when {
             structDeserializerStack.isEmpty() -> { // Root deserializer
                 reader.takeUntil<XmlToken.BeginElement>()
@@ -53,7 +53,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
         }
     }
 
-    override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
+    override suspend fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         check(structDeserializerStack.isNotEmpty()) { "List cannot be deserialized independently from a parent struct" }
         cleanupDeserializerStack()
         return XmlListDeserializer(
@@ -64,7 +64,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
         )
     }
 
-    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
+    override suspend fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
         check(structDeserializerStack.isNotEmpty()) { "Map cannot be deserialized independently from a parent struct" }
         cleanupDeserializerStack()
         return XmlMapDeserializer(

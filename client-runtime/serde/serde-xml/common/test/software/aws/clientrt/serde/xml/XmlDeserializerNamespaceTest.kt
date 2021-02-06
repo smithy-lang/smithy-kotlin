@@ -5,6 +5,7 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -13,7 +14,7 @@ import kotlin.test.assertEquals
 class XmlDeserializerNamespaceTest {
 
     @Test
-    fun `it handles struct with namespace`() {
+    fun `it handles struct with namespace`() = runSuspendTest {
         val payload = """
            <MyStructure xmlns="http://foo.com">
                 <foo>example1</foo>
@@ -42,7 +43,7 @@ class XmlDeserializerNamespaceTest {
                 field(BAR_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): NamespaceStructTest {
+            suspend fun deserialize(deserializer: Deserializer): NamespaceStructTest {
                 val result = NamespaceStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -60,7 +61,7 @@ class XmlDeserializerNamespaceTest {
     }
 
     @Test
-    fun `it handles struct with node namespace`() {
+    fun `it handles struct with node namespace`() = runSuspendTest {
         val payload = """
            <MyStructure xmlns:baz="http://foo.com">
                 <foo>example1</foo>
@@ -89,7 +90,7 @@ class XmlDeserializerNamespaceTest {
                 field(BAR_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): NodeNamespaceStructTest {
+            suspend fun deserialize(deserializer: Deserializer): NodeNamespaceStructTest {
                 val result = NodeNamespaceStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {

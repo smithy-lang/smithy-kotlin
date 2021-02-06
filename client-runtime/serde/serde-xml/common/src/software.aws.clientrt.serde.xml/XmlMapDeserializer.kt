@@ -12,7 +12,7 @@ class XmlMapDeserializer(
     primitiveDeserializer: XmlPrimitiveDeserializer
 ) : Deserializer.EntryIterator, PrimitiveDeserializer by primitiveDeserializer {
 
-    override fun hasNextEntry(): Boolean = when (reader.peekNextToken()) {
+    override suspend fun hasNextEntry(): Boolean = when (reader.peekNextToken()) {
         is XmlToken.EndDocument -> false
         is XmlToken.EndElement -> {
             parentDeserializer.clearNodeValueTokens()
@@ -27,7 +27,7 @@ class XmlMapDeserializer(
         else -> true
     }
 
-    override fun key(): String {
+    override suspend fun key(): String {
         val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
         reader.takeUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.keyName } ?: error("wtf")
         val keyValue = reader.takeNextOf<XmlToken.Text>()
@@ -38,7 +38,7 @@ class XmlMapDeserializer(
         return keyValue.value
     }
 
-    override fun nextHasValue(): Boolean {
+    override suspend fun nextHasValue(): Boolean {
         val valueWrapperToken = reader.takeNextOf<XmlToken.BeginElement>()
         val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
 

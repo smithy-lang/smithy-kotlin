@@ -7,6 +7,7 @@ package software.aws.clientrt.serde.xml
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.math.abs
 import kotlin.test.*
 
@@ -27,7 +28,7 @@ class XmlDeserializerKitchenSinkTest {
                 field(INT2_FIELD_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): Nested2 {
+            suspend fun deserialize(deserializer: Deserializer): Nested2 {
                 val nested2 = Nested2()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -69,7 +70,7 @@ class XmlDeserializerKitchenSinkTest {
                 field(BOOL2_FIELD_DESCRIPTOR)
             }
 
-            fun deserialize(deserializer: Deserializer): Nested {
+            suspend fun deserialize(deserializer: Deserializer): Nested {
                 val nested = Nested()
 
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -132,7 +133,7 @@ class XmlDeserializerKitchenSinkTest {
     }
 
     @Test
-    fun itHandlesKitchenSink() {
+    fun itHandlesKitchenSink() = runSuspendTest {
         val payload = """
            <?xml version="1.0" encoding="UTF-8" ?>
            <payload>

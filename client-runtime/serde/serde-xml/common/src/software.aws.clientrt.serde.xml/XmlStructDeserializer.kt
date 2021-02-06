@@ -46,7 +46,7 @@ class XmlStructDeserializer(
         }
     }
 
-    override fun findNextFieldIndex(): Int? {
+    override suspend fun findNextFieldIndex(): Int? {
         if (parsedNodeTokens.isEmpty()) {
             // if the current node has nothing more to deserialize, take the next token from the stream.
             val nodeValueTokens = when (val nextToken = reader.takeNextToken()) {
@@ -96,7 +96,7 @@ class XmlStructDeserializer(
         }
     }
 
-    override fun skipValue() = reader.skipNext()
+    override suspend fun skipValue() = reader.skipNext()
 
     /**
      * Clear any existing [XmlNodeValueToken]s. This is necessary when codegen deserializers dive into children.
@@ -127,23 +127,23 @@ class XmlStructDeserializer(
         return value
     }
 
-    override fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it") }
+    override suspend fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeInt(): Int = deserializeValue { it.toIntOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override suspend fun deserializeInt(): Int = deserializeValue { it.toIntOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort() ?: throw DeserializationException("Unable to deserialize $it") }
+    override suspend fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeLong(): Long = deserializeValue { it.toLongOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override suspend fun deserializeLong(): Long = deserializeValue { it.toLongOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override suspend fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override suspend fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override fun deserializeString(): String = deserializeValue { it }
+    override suspend fun deserializeString(): String = deserializeValue { it }
 
-    override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
+    override suspend fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
-    override fun deserializeNull(): Nothing? {
+    override suspend fun deserializeNull(): Nothing? {
         reader.takeNextOf<XmlToken.EndElement>()
         return null
     }

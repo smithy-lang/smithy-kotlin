@@ -6,6 +6,7 @@ import software.aws.clientrt.serde.json.JsonSerialName
 import software.aws.clientrt.serde.xml.XmlDeserializer
 import software.aws.clientrt.serde.xml.XmlList
 import software.aws.clientrt.serde.xml.XmlSerialName
+import software.aws.clientrt.testing.runSuspendTest
 import kotlin.jvm.JvmStatic
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -138,7 +139,7 @@ class SparseListDeserializationTest {
             }
         }
 
-        fun deserialize(deserializer: Deserializer): GetFooOutput {
+        suspend fun deserialize(deserializer: Deserializer): GetFooOutput {
             val builder = GetFooOutput.dslBuilder()
 
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -175,7 +176,7 @@ class SparseListDeserializationTest {
             }
         }
 
-        fun deserialize(deserializer: Deserializer): Greeting {
+        suspend fun deserialize(deserializer: Deserializer): Greeting {
             val builder = Greeting.dslBuilder()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
@@ -191,7 +192,7 @@ class SparseListDeserializationTest {
     }
 
     @Test
-    fun itDeserializesAnEmptyDocumentIntoAnEmptyStruct() {
+    fun itDeserializesAnEmptyDocumentIntoAnEmptyStruct() = runSuspendTest {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<GetFoo />".encodeToByteArray()
 
@@ -204,7 +205,7 @@ class SparseListDeserializationTest {
     }
 
     @Test
-    fun itDeserializesAnEmptyMapIntoAnStructWithEmptyMap() {
+    fun itDeserializesAnEmptyMapIntoAnStructWithEmptyMap() = runSuspendTest {
         val jsonPayload = """
             {
                 "sparseStructList": []
@@ -226,7 +227,7 @@ class SparseListDeserializationTest {
     }
 
     @Test
-    fun itDeserializesAMapWithNullValuesIntoAnStructWithMapContainingKeysWithNullValues() {
+    fun itDeserializesAMapWithNullValuesIntoAnStructWithMapContainingKeysWithNullValues() = runSuspendTest {
         val jsonPayload = """
             {
                 "sparseStructList": [
