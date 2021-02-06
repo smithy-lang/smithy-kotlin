@@ -134,7 +134,7 @@ class XmlDeserializerAWSTest {
                </CreateHostedZoneRequest>
         """.trimIndent()
 
-        val unit = XmlDeserializer2(testXml.encodeToByteArray())
+        val unit = XmlDeserializer(testXml.encodeToByteArray())
 
         val createHostedZoneRequest = CreateHostedZoneRequest.deserialize(unit)
 

@@ -3,7 +3,7 @@ import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.json.JsonSerialName
-import software.aws.clientrt.serde.xml.XmlDeserializer2
+import software.aws.clientrt.serde.xml.XmlDeserializer
 import software.aws.clientrt.serde.xml.XmlList
 import software.aws.clientrt.serde.xml.XmlSerialName
 import kotlin.jvm.JvmStatic
@@ -195,7 +195,7 @@ class SparseListDeserializationTest {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<GetFoo />".encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer2(xmlPayload))) {
+        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
@@ -216,7 +216,7 @@ class SparseListDeserializationTest {
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer2(xmlPayload))) {
+        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
@@ -254,7 +254,7 @@ class SparseListDeserializationTest {
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer2(xmlPayload))) {
+        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)

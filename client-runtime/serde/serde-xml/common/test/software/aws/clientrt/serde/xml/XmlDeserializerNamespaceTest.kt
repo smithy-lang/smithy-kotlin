@@ -21,7 +21,7 @@ class XmlDeserializerNamespaceTest {
             </MyStructure>
         """.trimIndent().encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val bst = NamespaceStructTest.deserialize(deserializer)
 
         assertEquals("example1", bst.foo)
@@ -68,7 +68,7 @@ class XmlDeserializerNamespaceTest {
             </MyStructure>
         """.trimIndent().encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val bst = NodeNamespaceStructTest.deserialize(deserializer)
 
         assertEquals("example1", bst.foo)

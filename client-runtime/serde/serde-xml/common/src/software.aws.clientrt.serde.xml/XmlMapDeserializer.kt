@@ -17,9 +17,9 @@ class XmlMapDeserializer(
         is XmlToken.EndElement -> {
             parentDeserializer.clearNodeValueTokens()
 
-            reader.takeNextTokenOf<XmlToken.EndElement>()
+            reader.takeNextOf<XmlToken.EndElement>()
             if (fieldDescriptor.findTrait<XmlMap>()?.flattened == false && reader.peekNextToken() is XmlToken.EndElement) {
-                reader.takeNextTokenOf<XmlToken.EndElement>()
+                reader.takeNextOf<XmlToken.EndElement>()
             }
 
             reader.peekNextToken() is XmlToken.BeginElement
@@ -29,17 +29,17 @@ class XmlMapDeserializer(
 
     override fun key(): String {
         val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
-        reader.takeAllUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.keyName } ?: error("wtf")
-        val keyValue = reader.takeNextTokenOf<XmlToken.Text>()
+        reader.takeUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.keyName } ?: error("wtf")
+        val keyValue = reader.takeNextOf<XmlToken.Text>()
 
         if (keyValue.value == null || keyValue.value.isBlank()) throw DeserializerStateException("Key entry is empty.")
-        if (reader.takeNextTokenOf<XmlToken.EndElement>().qualifiedName.name != mapTrait.keyName) throw DeserializerStateException("Expected end of key field")
+        if (reader.takeNextOf<XmlToken.EndElement>().qualifiedName.name != mapTrait.keyName) throw DeserializerStateException("Expected end of key field")
 
         return keyValue.value
     }
 
     override fun nextHasValue(): Boolean {
-        val valueWrapperToken = reader.takeNextTokenOf<XmlToken.BeginElement>()
+        val valueWrapperToken = reader.takeNextOf<XmlToken.BeginElement>()
         val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
 
         if (valueWrapperToken.qualifiedName.name != mapTrait.valueName) throw DeserializerStateException("Expected map value name but found ${valueWrapperToken.qualifiedName}")

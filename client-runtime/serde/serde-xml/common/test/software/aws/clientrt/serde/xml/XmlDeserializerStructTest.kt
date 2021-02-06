@@ -26,7 +26,7 @@ class XmlDeserializerStructTest {
                </payload>
         """.trimIndent().encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val bst = StructWithAttribsClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)
@@ -47,7 +47,7 @@ class XmlDeserializerStructTest {
                </payload>
         """.trimIndent().encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val bst = StructWithMultiAttribsAndTextValClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)
@@ -65,7 +65,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val bst = BasicAttribTextStructTest.deserialize(deserializer)
 
         assertEquals(1, bst.xa)
@@ -126,7 +126,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val bst = SimpleStructClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)
@@ -142,7 +142,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload1)
+        val deserializer = XmlDeserializer(payload1)
         val bst = SimpleStructClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)
@@ -155,7 +155,7 @@ class XmlDeserializerStructTest {
             </payload>
         """.encodeToByteArray()
 
-        val deserializer2 = XmlDeserializer2(payload2)
+        val deserializer2 = XmlDeserializer(payload2)
         val bst2 = SimpleStructClass.deserialize(deserializer2)
 
         assertEquals(null, bst2.x)
@@ -172,7 +172,7 @@ class XmlDeserializerStructTest {
                </payload>
            """.encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val bst = SimpleStructClass.deserialize(deserializer)
 
         assertEquals(1, bst.x)

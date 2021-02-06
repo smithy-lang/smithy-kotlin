@@ -77,7 +77,7 @@ class XmlDeserializerListTest {
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val actual = ListDeserializer.deserialize(deserializer, OBJ_DESCRIPTOR, ELEMENT_LIST_FIELD_DESCRIPTOR).list
         val expected = listOf(1, 2, 3)
 
@@ -152,7 +152,7 @@ class XmlDeserializerListTest {
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val actual = SparseListDeserializer.deserialize(deserializer, OBJ_DESCRIPTOR, ELEMENT_LIST_FIELD_DESCRIPTOR).list
         val expected = listOf(1, null, 3)
 
@@ -173,7 +173,7 @@ class XmlDeserializerListTest {
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val actual = ListDeserializer.deserialize(deserializer, OBJ_DESCRIPTOR, ELEMENT_LIST_FIELD_DESCRIPTOR).list
         val expected = emptyList<Unit>()
 
@@ -194,7 +194,7 @@ class XmlDeserializerListTest {
             trait(XmlSerialName("object"))
             field(elementFieldDescriptor)
         }
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val actual = ListDeserializer.deserialize(deserializer, objectDescriptor, elementFieldDescriptor).list
         val expected = listOf(1, 2, 3)
 
@@ -224,7 +224,7 @@ class XmlDeserializerListTest {
             field(listWrapperFieldDescriptor)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         var actual: MutableList<SimpleStructClass>? = null
         deserializer.deserializeStruct(objectDescriptor) {
             loop@ while (true) {
@@ -272,7 +272,7 @@ class XmlDeserializerListTest {
             field(listWrapperFieldDescriptor)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         var actual: MutableList<SimpleStructClass>? = null
         deserializer.deserializeStruct(objectDescriptor) {
             loop@ while (true) {
@@ -381,7 +381,7 @@ class XmlDeserializerListTest {
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val actual = NestedListDeserializer.deserialize(deserializer, OBJ_DESCRIPTOR, ELEMENT_LIST_FIELD_DESCRIPTOR, nestedListDescriptor).list
         val expected = listOf(listOf("a", "b"), listOf("c", "d"))
 

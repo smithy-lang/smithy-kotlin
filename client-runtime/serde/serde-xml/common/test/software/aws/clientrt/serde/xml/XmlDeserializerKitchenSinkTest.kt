@@ -184,7 +184,7 @@ class XmlDeserializerKitchenSinkTest {
            </payload>
         """.trimIndent().encodeToByteArray()
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         val sink = KitchenSinkTest()
         deserializer.deserializeStruct(KitchenSinkTest.OBJ_DESCRIPTOR) {
             loop@ while (true) {

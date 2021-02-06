@@ -2,9 +2,19 @@ package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
 
-class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
+/**
+ * Top-level class to drive deserialization messages into codegened response types.
+ *
+ * This deserializer only supports access methods which codegen produce.  For example,
+ * a list cannot be deserialized without first deserializing a parent structure.
+ */
+class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 
-    data class StructDeserializerInstance(val structSerializer: XmlStructDeserializer, val parseLevel: Int)
+    // Track each nested deserializer and the node level in which it was created.
+    data class StructDeserializerInstance(
+        val structSerializer: XmlStructDeserializer,
+        val parseLevel: Int // Used to determine when the deserializer instance can be discarded
+    )
 
     private var structDeserializerStack = mutableListOf<StructDeserializerInstance>()
 
@@ -34,7 +44,7 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
 
                 val targetTokenName = descriptor.expectTrait<XmlSerialName>().name
                 while (token.qualifiedName.name != targetTokenName) token =
-                    reader.takeNextTokenOf<XmlToken.BeginElement>()
+                    reader.takeNextOf<XmlToken.BeginElement>()
 
                 val structSerializer = XmlStructDeserializer(descriptor, reader)
                 structDeserializerStack.add(StructDeserializerInstance(structSerializer, reader.currentDepth))
@@ -79,6 +89,7 @@ class XmlDeserializer2(private val reader: XmlStreamReader) : Deserializer {
     }
 }
 
+// Continue to consume tokens from the stream until the specified token is found.
 internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): TExpected {
     var token = this.takeNextToken()
     while (token::class != TExpected::class && token !is XmlToken.EndDocument) {
@@ -89,7 +100,8 @@ internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): 
     return token as TExpected
 }
 
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextTokenOf(): TExpected {
+// Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
+internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextOf(): TExpected {
     val token = this.takeNextToken()
     requireToken<TExpected>(token)
     return token as TExpected
@@ -97,7 +109,7 @@ internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextToken
 
 // Reads the stream while until a node is not the specified type or the predicate returns true.
 // Returns null if a different node was found or the node that matches the predicate.
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeAllUntil(predicate: (TExpected) -> Boolean): TExpected? {
+internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(predicate: (TExpected) -> Boolean = { true }): TExpected? {
     var token = takeNextToken()
 
     while (tokenIsType<TExpected>(token) && !predicate.invoke(token as TExpected)) {
@@ -114,13 +126,5 @@ internal inline fun <reified TExpected> tokenIsType(token: XmlToken) = token::cl
 internal inline fun <reified TExpected> requireToken(token: XmlToken) {
     if (token::class != TExpected::class) {
         throw DeserializerStateException("expected ${TExpected::class}; found ${token::class} ($token)")
-    }
-}
-
-// like check() but throws deserializer-specific exception for state problems
-internal inline fun checkDeserializerState(value: Boolean, lazyMessage: () -> Any) {
-    if (!value) {
-        val message = lazyMessage()
-        throw DeserializerStateException(message.toString())
     }
 }

@@ -34,7 +34,7 @@ class XmlDeserializerMapTest {
         }
 
         var actual = mutableMapOf<String, Int>()
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
@@ -81,7 +81,7 @@ class XmlDeserializerMapTest {
             field(fieldDescriptor)
         }
         var actual = mutableMapOf<String, Int>()
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
@@ -131,7 +131,7 @@ class XmlDeserializerMapTest {
             field(containerFieldDescriptor)
         }
         var actual = mutableMapOf<String, Int>()
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
@@ -169,7 +169,7 @@ class XmlDeserializerMapTest {
             field(containerFieldDescriptor)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         var actual = mutableMapOf<String, Int>()
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
@@ -217,7 +217,7 @@ class XmlDeserializerMapTest {
             field(fieldDescriptor)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         var actual = mutableMapOf<String, Int?>()
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
@@ -269,7 +269,7 @@ class XmlDeserializerMapTest {
             field(fieldDescriptor)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         var actual = mutableMapOf<String, Int>()
         deserializer.deserializeStruct(objDescriptor) {
             loop@while (true) {
@@ -340,7 +340,7 @@ class XmlDeserializerMapTest {
             field(ELEMENT_MAP_FIELD_DESCRIPTOR)
         }
 
-        val deserializer = XmlDeserializer2(payload)
+        val deserializer = XmlDeserializer(payload)
         var actual = mutableMapOf<String, Map<String, String>>()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {

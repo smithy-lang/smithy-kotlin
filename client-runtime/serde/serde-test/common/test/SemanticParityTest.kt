@@ -20,7 +20,7 @@ class SemanticParityTest {
             val xmlPayload = test.xmlSerialization
 
             // object
-            val xmlDeserializer = XmlDeserializer2(xmlPayload.encodeToByteArray())
+            val xmlDeserializer = XmlDeserializer(xmlPayload.encodeToByteArray())
             val bst = test.deserialize(xmlDeserializer)
 
             // json
@@ -59,7 +59,7 @@ class SemanticParityTest {
             val xmlPayload = xmlSerializer.toByteArray().decodeToString()
 
             // object
-            val xmlDeserializer = XmlDeserializer2(xmlPayload.encodeToByteArray())
+            val xmlDeserializer = XmlDeserializer(xmlPayload.encodeToByteArray())
             val bst2 = test.deserialize(xmlDeserializer)
 
             assertEquals(bst, bst2)
@@ -100,7 +100,7 @@ class SemanticParityTest {
             val jsonDeserializer = JsonDeserializer(test.jsonSerialization.encodeToByteArray())
             val jsonBst = test.deserialize(jsonDeserializer)
 
-            val xmlDeserializer = XmlDeserializer2(test.xmlSerialization.encodeToByteArray())
+            val xmlDeserializer = XmlDeserializer(test.xmlSerialization.encodeToByteArray())
             val xmlBst = test.deserialize(xmlDeserializer)
 
             assertEquals(jsonBst, xmlBst)

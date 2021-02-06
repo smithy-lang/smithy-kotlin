@@ -17,7 +17,7 @@ class XmlListDeserializer(
             parentDeserializer.clearNodeValueTokens()
 
             if (fieldDescriptor.findTrait<XmlList>()?.flattened == false && reader.peekNextToken() is XmlToken.EndElement) {
-                reader.takeNextTokenOf<XmlToken.EndElement>()
+                reader.takeNextOf<XmlToken.EndElement>()
             }
 
             reader.peekNextToken() is XmlToken.BeginElement
@@ -32,7 +32,7 @@ class XmlListDeserializer(
             is XmlToken.BeginElement -> {
                 // Here we need to read the next token so we can peek the next to determine if there is a value.
                 // deserializeValue() can conditionally handle start or value nodes
-                reader.takeNextTokenOf<XmlToken.BeginElement>()
+                reader.takeNextOf<XmlToken.BeginElement>()
 
                 when (reader.peekNextToken()) {
                     is XmlToken.EndElement,

@@ -110,7 +110,7 @@ class XmlStructDeserializer(
         val value = when (val nextNode = parsedNodeTokens.removeFirst()) {
             is XmlNodeValueToken.Text -> {
                 if (parsedNodeTokens.any { it is XmlNodeValueToken.Attribute }) throw DeserializationException("Text tokens should always be consumed last")
-                val token = reader.takeNextTokenOf<XmlToken.Text>()
+                val token = reader.takeNextOf<XmlToken.Text>()
                 token.value?.let { transform(it) } ?: throw DeserializerStateException("Expected value in node ${currentNode.qualifiedName}")
             }
             is XmlNodeValueToken.Attribute -> {
@@ -144,7 +144,7 @@ class XmlStructDeserializer(
     override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
     override fun deserializeNull(): Nothing? {
-        reader.takeNextTokenOf<XmlToken.EndElement>()
+        reader.takeNextOf<XmlToken.EndElement>()
         return null
     }
 
