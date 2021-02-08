@@ -23,7 +23,7 @@ private const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"
 class KotlinDelegator(
     private val settings: KotlinSettings,
     private val model: Model,
-    private val fileManifest: FileManifest,
+    val fileManifest: FileManifest,
     private val symbolProvider: SymbolProvider,
     private val integrations: List<KotlinIntegration> = listOf()
 ) {

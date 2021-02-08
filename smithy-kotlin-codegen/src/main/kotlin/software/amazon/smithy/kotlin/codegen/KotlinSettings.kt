@@ -130,12 +130,40 @@ class KotlinSettings(
     }
 }
 
-data class BuildSettings(val rootProject: Boolean = false) {
+data class BuildSettings(
+    /**
+     * Flag indicating to generate a full project that will exist independent of other projects
+     */
+    val generateFullProject: Boolean = false,
+
+    /**
+     * Flag indicating if (Gradle) build files should be spit out. This can be used to turn off generated gradle
+     * files by default in-favor of e.g. spitting out your own custom Gradle file as part of an integration.
+     */
+    val generateDefaultBuildFiles: Boolean = true,
+
+    /**
+     * Kotlin opt-in annotations
+     * See: https://kotlinlang.org/docs/reference/opt-in-requirements.html
+     */
+    val optInAnnotations: List<String>? = null
+) {
     companion object {
         private const val ROOT_PROJECT = "rootProject"
+        private const val GENERATE_DEFAULT_BUILD_FILES = "generateDefaultBuildFiles"
+        private const val ANNOTATIONS = "optInAnnotations"
+
         fun fromNode(node: Optional<ObjectNode>): BuildSettings {
             return if (node.isPresent) {
-                BuildSettings(node.get().getMember(ROOT_PROJECT).get().asBooleanNode().get().value)
+                val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
+                val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
+                val annotations = node.get().getArrayMember(ANNOTATIONS).map {
+                    it.elements.mapNotNull {
+                        it.asStringNode().map { it.value }.orNull()
+                    }
+                }.orNull()
+
+                BuildSettings(generateFullProject, generateBuildFiles, annotations)
             } else {
                 Default
             }
@@ -144,8 +172,10 @@ data class BuildSettings(val rootProject: Boolean = false) {
         /**
          * Default build settings
          */
-        val Default: BuildSettings = BuildSettings(false)
+        val Default: BuildSettings = BuildSettings()
     }
 }
 
 class UnresolvableProtocolException(message: String) : CodegenException(message)
+
+private fun <T> Optional<T>.orNull(): T? = if (isPresent) get() else null

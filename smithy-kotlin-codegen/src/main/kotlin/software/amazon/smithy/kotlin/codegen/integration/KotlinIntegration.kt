@@ -47,12 +47,6 @@ interface KotlinIntegration {
         get() = listOf()
 
     /**
-     * Get any custom gradle build settings required by the generated code
-     */
-    val customBuildSettings: GradleBuildSettings?
-        get() = null
-
-    /**
      * Additional properties to be add to the generated service config interface
      * @param ctx The current codegen context. This allows integrations to filter properties
      * by things like the protocol being generated for, settings, etc.
@@ -115,12 +109,16 @@ interface KotlinIntegration {
     ) {
         // pass
     }
-}
 
-/**
- * Custom gradle build settings that integrations can define to influence the generated build file(s)
- */
-class GradleBuildSettings {
-    // any opt-in requirements
-    val experimentalAnnotations = mutableListOf<String>()
+    /**
+     * Write additional files defined by this integration
+     * @param ctx The codegen generation context
+     * @param delegator File writer(s)
+     */
+    fun writeAdditionalFiles(
+        ctx: CodegenContext,
+        delegator: KotlinDelegator
+    ) {
+        // pass
+    }
 }
