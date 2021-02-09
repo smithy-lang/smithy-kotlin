@@ -13,31 +13,33 @@ package software.aws.clientrt.serde
  */
 interface FieldTrait
 
-// Denotes that a Map or List may contain null values
+/**
+ * Denotes that a Map or List may contain null values
+ * Details at https://awslabs.github.io/smithy/1.0/spec/core/type-refinement-traits.html#sparse-trait
+ */
 object SparseValues : FieldTrait
 
 /**
  * A protocol-agnostic type description of a field.
- * @param container specifies if the kind can hold values or is just a value itself
  */
-sealed class SerialKind(val container: kotlin.Boolean) {
-    object Unit : SerialKind(false)
-    object Integer : SerialKind(false)
-    object Long : SerialKind(false)
-    object Double : SerialKind(false)
-    object String : SerialKind(false)
-    object Boolean : SerialKind(false)
-    object Byte : SerialKind(false)
-    object Char : SerialKind(false)
-    object Short : SerialKind(false)
-    object Float : SerialKind(false)
-    object Map : SerialKind(true)
-    object List : SerialKind(true)
-    object Struct : SerialKind(true)
-    object Timestamp : SerialKind(false)
-    object Blob : SerialKind(false)
-    object Document : SerialKind(false)
-    object BigNumber : SerialKind(false)
+sealed class SerialKind {
+    object Unit : SerialKind()
+    object Integer : SerialKind()
+    object Long : SerialKind()
+    object Double : SerialKind()
+    object String : SerialKind()
+    object Boolean : SerialKind()
+    object Byte : SerialKind()
+    object Char : SerialKind()
+    object Short : SerialKind()
+    object Float : SerialKind()
+    object Map : SerialKind()
+    object List : SerialKind()
+    object Struct : SerialKind()
+    object Timestamp : SerialKind()
+    object Blob : SerialKind()
+    object Document : SerialKind()
+    object BigNumber : SerialKind()
 
     override fun toString(): kotlin.String {
         return this::class.simpleName ?: "SerialKind"
@@ -54,25 +56,25 @@ open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val trai
     // Reserved for format-specific companion extension functions
     companion object;
 
-    /**
-     * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
-     */
-    inline fun <reified TExpected : FieldTrait> expectTrait(): TExpected {
-        val x = traits.find { it::class == TExpected::class }
-        requireNotNull(x) { "Expected to find trait ${TExpected::class} in $this but was not present." }
-
-        return x as TExpected
-    }
-
-    inline fun <reified TExpected : FieldTrait> findTrait(): TExpected? {
-        val x = traits.find { it::class == TExpected::class }
-
-        return x as TExpected?
-    }
-
-    inline fun <reified TExpected : FieldTrait> hasTrait() = traits.any { it is TExpected }
-
     override fun toString(): String {
         return "SdkFieldDescriptor.$kind(traits=${traits.joinToString(separator = ",") })"
     }
 }
+
+/**
+ * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
+ */
+inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.expectTrait(): TExpected {
+    val x = traits.find { it::class == TExpected::class }
+    requireNotNull(x) { "Expected to find trait ${TExpected::class} in $this but was not present." }
+
+    return x as TExpected
+}
+
+inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.findTrait(): TExpected? {
+    val x = traits.find { it::class == TExpected::class }
+
+    return x as TExpected?
+}
+
+inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.hasTrait() = traits.any { it is TExpected }

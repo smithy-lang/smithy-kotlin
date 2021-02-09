@@ -110,7 +110,7 @@ class XmlStructDeserializer(
         val value = when (val nextNode = parsedNodeTokens.removeFirst()) {
             is XmlNodeValueToken.Text -> {
                 if (parsedNodeTokens.any { it is XmlNodeValueToken.Attribute }) throw DeserializationException("Text tokens should always be consumed last")
-                val token = reader.takeNextOf<XmlToken.Text>()
+                val token = reader.takeNextAs<XmlToken.Text>()
                 token.value?.let { transform(it) } ?: throw DeserializerStateException("Expected value in node ${currentNode.qualifiedName}")
             }
             is XmlNodeValueToken.Attribute -> {
@@ -144,7 +144,7 @@ class XmlStructDeserializer(
     override suspend fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
     override suspend fun deserializeNull(): Nothing? {
-        reader.takeNextOf<XmlToken.EndElement>()
+        reader.takeNextAs<XmlToken.EndElement>()
         return null
     }
 
@@ -155,6 +155,12 @@ class XmlStructDeserializer(
         return fieldQname == tokenQname
     }
 }
+
+private val SerialKind.isContainer: Boolean
+    get() = when(this) {
+        is SerialKind.Map, SerialKind.List, SerialKind.Struct -> true
+        else -> false
+    }
 
 private fun XmlAttribute.toQualifiedName(): XmlToken.QualifiedName = XmlToken.QualifiedName(name, namespace)
 
@@ -177,7 +183,7 @@ internal fun SdkFieldDescriptor.findNodeValueTokenForField(currentToken: XmlToke
                 // but causes nested deserializers to be called even if they contain no value
                 nextToken is XmlToken.EndElement &&
                     currentToken.qualifiedName == nextToken.qualifiedName &&
-                    this.kind.container -> property
+                    this.kind.isContainer -> property
                 else -> null
             }
         }

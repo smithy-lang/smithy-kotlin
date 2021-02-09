@@ -1,8 +1,6 @@
 package software.aws.clientrt.serde.xml
 
-import software.aws.clientrt.serde.DeserializationException
-import software.aws.clientrt.serde.PrimitiveDeserializer
-import software.aws.clientrt.serde.SdkFieldDescriptor
+import software.aws.clientrt.serde.*
 
 /**
  * Deserialize primitive values for single values, lists, and maps
@@ -16,17 +14,17 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
         if (reader.peekNextToken() is XmlToken.BeginElement) {
             // In the case of flattened lists, we "fall" into the first node as there is no wrapper.
             // this conditional checks that case for the first element of the list.
-            val wrapperToken = reader.takeNextOf<XmlToken.BeginElement>()
+            val wrapperToken = reader.takeNextAs<XmlToken.BeginElement>()
             if (wrapperToken.qualifiedName.name != fieldDescriptor.generalName()) {
                 // Depending on flat/not-flat, may need to consume multiple start nodes
                 return deserializeValue(transform)
             }
         }
 
-        val token = reader.takeNextOf<XmlToken.Text>()
+        val token = reader.takeNextAs<XmlToken.Text>()
 
         val returnValue = token.value?.let { transform(it) }?.also {
-            reader.takeNextOf<XmlToken.EndElement>()
+            reader.takeNextAs<XmlToken.EndElement>()
         } ?: throw DeserializationException("Node specifies no or invalid value.")
 
         if (fieldDescriptor.hasTrait<XmlMap>()) {
@@ -38,7 +36,7 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
                     true -> nextToken.qualifiedName.name == fieldDescriptor.expectTrait<XmlSerialName>().name
                     false -> nextToken.qualifiedName.name == mapTrait.entry
                 }
-                if (consumeEndToken) reader.takeNextOf<XmlToken.EndElement>()
+                if (consumeEndToken) reader.takeNextAs<XmlToken.EndElement>()
             }
         }
 
@@ -62,7 +60,7 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
     override suspend fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
     override suspend fun deserializeNull(): Nothing? {
-        reader.takeNextOf<XmlToken.EndElement>()
+        reader.takeNextAs<XmlToken.EndElement>()
         return null
     }
 }

@@ -7,6 +7,8 @@ package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.FieldTrait
 import software.aws.clientrt.serde.SdkFieldDescriptor
+import software.aws.clientrt.serde.expectTrait
+import software.aws.clientrt.serde.hasTrait
 
 // TODO: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
 
@@ -39,6 +41,10 @@ data class XmlList(
     val flattened: Boolean = false
 ) : FieldTrait
 
+/**
+ * Describes the namespace associated with a field.
+ * See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
+ */
 data class XmlNamespace(val uri: String, val prefix: String? = null) : FieldTrait {
     fun isDefault() = prefix == null
 }
@@ -62,8 +68,17 @@ data class XmlSerialName(val name: String) : FieldTrait {
         }
 }
 
+/**
+ * This predicate relies on the ability in Smithy
+ * to specify a namespace as part of the name:
+ * https://awslabs.github.io/smithy/spec/xml.html#xmlname-trait
+ */
 fun String.nodeHasPrefix(): Boolean = this.contains(':')
 
+/**
+ * Return none name and namespace as a pair or just the name and null namespace
+ * if no namespace is defined.
+ */
 fun String.parseNodeWithPrefix(): Pair<String, String?> =
     if (this.nodeHasPrefix()) {
         val (namespacePrefix, name) = this.split(':')
@@ -81,6 +96,9 @@ fun String.parseNodeWithPrefix(): Pair<String, String?> =
  */
 data class XmlAttribute(val name: String, val namespace: String? = null) : FieldTrait
 
+/**
+ * Provides the serialized name of the field.
+ */
 val SdkFieldDescriptor.serialName: XmlSerialName
     get() = expectTrait()
 

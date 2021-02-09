@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
@@ -12,11 +16,13 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 
     // Track each nested deserializer and the node level in which it was created.
     data class StructDeserializerInstance(
-        val structSerializer: XmlStructDeserializer,
-        val parseLevel: Int // Used to determine when the deserializer instance can be discarded
+        val deserializer: XmlStructDeserializer,
+        // Used to clean up deserializer state by removing instances of [StructDeserializerInstance]
+        // that are deeper than the current node.
+        val parseLevel: Int
     )
 
-    private var structDeserializerStack = mutableListOf<StructDeserializerInstance>()
+    private val structDeserializerStack = mutableListOf<StructDeserializerInstance>()
 
     constructor(input: ByteArray) : this(xmlStreamReader(input))
 
@@ -33,18 +39,19 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
                 // Flush existing token to avoid revisiting same node upon return
                 // This is safe because attributes are always processed before children
                 cleanupDeserializerStack()
-                structDeserializerStack.last().structSerializer.clearNodeValueTokens()
+                structDeserializerStack.last().deserializer.clearNodeValueTokens()
 
                 // Optionally consume next token until we match our objectDescriptor.
                 // This can vary depending on where deserializeStruct() is called from (list/map vs struct)
-                var token = if (reader.currentToken is XmlToken.BeginElement)
+                var token = if (reader.currentToken is XmlToken.BeginElement) {
                     reader.currentToken as XmlToken.BeginElement
-                else
+                } else {
                     reader.takeUntil()
+                }
 
                 val targetTokenName = descriptor.expectTrait<XmlSerialName>().name
                 while (token.qualifiedName.name != targetTokenName) token =
-                    reader.takeNextOf<XmlToken.BeginElement>()
+                    reader.takeNextAs<XmlToken.BeginElement>()
 
                 val structSerializer = XmlStructDeserializer(descriptor, reader)
                 structDeserializerStack.add(StructDeserializerInstance(structSerializer, reader.currentDepth))
@@ -59,7 +66,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
         return XmlListDeserializer(
             descriptor,
             reader,
-            structDeserializerStack.last().structSerializer,
+            structDeserializerStack.last().deserializer,
             primitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
         )
     }
@@ -70,7 +77,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
         return XmlMapDeserializer(
             descriptor,
             reader,
-            structDeserializerStack.last().structSerializer,
+            structDeserializerStack.last().deserializer,
             primitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
         )
     }
@@ -78,12 +85,12 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
     // Each struct deserializer maintains a set of NodeValueTokens.  When structs
     // traverse into other container, these tokens need to be cleared.
     private fun cleanupDeserializerStack() {
-        var pair = structDeserializerStack.lastOrNull()
+        var deserializerInstance = structDeserializerStack.lastOrNull()
 
-        while (pair != null && pair.parseLevel >= reader.currentDepth) {
-            pair.structSerializer.clearNodeValueTokens()
-            structDeserializerStack.remove(pair)
-            pair = structDeserializerStack.lastOrNull()
+        while (deserializerInstance != null && deserializerInstance.parseLevel >= reader.currentDepth) {
+            deserializerInstance.deserializer.clearNodeValueTokens()
+            structDeserializerStack.remove(deserializerInstance)
+            deserializerInstance = structDeserializerStack.lastOrNull()
         }
         check(structDeserializerStack.isNotEmpty()) { "root deserializer should never be removed" }
     }
@@ -96,12 +103,12 @@ internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): 
         token = this.takeNextToken()
     }
 
-    if (token::class != TExpected::class) throw DeserializerStateException("Did not find ${TExpected::class}")
+    if (token::class != TExpected::class) throw DeserializerStateException("Expected ${TExpected::class} but instead found ${token::class}")
     return token as TExpected
 }
 
 // Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextOf(): TExpected {
+internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
     val token = this.takeNextToken()
     requireToken<TExpected>(token)
     return token as TExpected

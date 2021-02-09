@@ -1250,11 +1250,11 @@ class DeserializeStructGeneratorTest {
             ).asSmithyModel()
 
         val expected = """
-            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while (true) {
-                    when (findNextFieldIndex()) {
-                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
-                            deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+    loop@while (true) {
+        when (findNextFieldIndex()) {
+            PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
                                 val map0 = mutableMapOf<String, Map<String, Int>>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
