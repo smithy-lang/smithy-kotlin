@@ -12,6 +12,7 @@ import software.aws.clientrt.serde.*
  * This deserializer only supports access methods which codegen produce.  For example,
  * a list cannot be deserialized without first deserializing a parent structure.
  */
+// TODO - mark class internal and remove integration tests once serde is stable
 class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 
     // Track each nested deserializer and the node level in which it was created.
@@ -97,10 +98,10 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 }
 
 // Continue to consume tokens from the stream until the specified token is found.
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): TExpected {
-    var token = this.takeNextToken()
+internal suspend inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): TExpected {
+    var token = this.nextToken()
     while (token::class != TExpected::class && token !is XmlToken.EndDocument) {
-        token = this.takeNextToken()
+        token = this.nextToken()
     }
 
     if (token::class != TExpected::class) throw DeserializerStateException("Expected ${TExpected::class} but instead found ${token::class}")
@@ -108,19 +109,19 @@ internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(): 
 }
 
 // Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
-    val token = this.takeNextToken()
+internal suspend inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
+    val token = this.nextToken()
     requireToken<TExpected>(token)
     return token as TExpected
 }
 
 // Reads the stream while until a node is not the specified type or the predicate returns true.
 // Returns null if a different node was found or the node that matches the predicate.
-internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(predicate: (TExpected) -> Boolean = { true }): TExpected? {
-    var token = takeNextToken()
+internal suspend inline fun <reified TExpected : XmlToken> XmlStreamReader.takeUntil(predicate: (TExpected) -> Boolean = { true }): TExpected? {
+    var token = nextToken()
 
     while (tokenIsType<TExpected>(token) && !predicate.invoke(token as TExpected)) {
-        token = takeNextToken()
+        token = nextToken()
     }
 
     return if (tokenIsType<TExpected>(token)) token as TExpected else null

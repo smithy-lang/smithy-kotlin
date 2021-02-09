@@ -63,7 +63,7 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList("b", false))) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList("b"))) {
             for (value in obj) {
                 value.serialize(xml)
             }
@@ -79,7 +79,7 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList("b", true))) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList("b"), Flattened)) {
             for (value in obj) {
                 value.serialize(xml)
             }
@@ -203,7 +203,7 @@ class XmlSerializerTest {
         companion object {
             // Setting the map to be flattened removes two levels of nesting
             //                                                      *- ignored                                *- ignored
-            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMap(entry = "flatMap", flattened = true))
+            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMap(entry = "flatMap"), Flattened)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("Bar"))
                 field(FLAT_MAP_DESCRIPTOR)
@@ -223,7 +223,7 @@ class XmlSerializerTest {
 
     class Foo(var values: Map<String, String>? = null) : SdkSerializable {
         companion object {
-            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap(entry = "entry", flattened = false))
+            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap(entry = "entry"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("Foo"))
                 field(FLAT_MAP_DESCRIPTOR)

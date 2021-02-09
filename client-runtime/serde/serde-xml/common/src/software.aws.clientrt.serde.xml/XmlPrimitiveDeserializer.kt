@@ -5,13 +5,13 @@ import software.aws.clientrt.serde.*
 /**
  * Deserialize primitive values for single values, lists, and maps
  */
-class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor) :
+internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val fieldDescriptor: SdkFieldDescriptor) :
     PrimitiveDeserializer {
 
     constructor(input: ByteArray, fieldDescriptor: SdkFieldDescriptor) : this(xmlStreamReader(input), fieldDescriptor)
 
-    private fun <T> deserializeValue(transform: ((String) -> T)): T {
-        if (reader.peekNextToken() is XmlToken.BeginElement) {
+    private suspend fun <T> deserializeValue(transform: ((String) -> T)): T {
+        if (reader.peek() is XmlToken.BeginElement) {
             // In the case of flattened lists, we "fall" into the first node as there is no wrapper.
             // this conditional checks that case for the first element of the list.
             val wrapperToken = reader.takeNextAs<XmlToken.BeginElement>()
@@ -30,9 +30,9 @@ class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, private val 
         if (fieldDescriptor.hasTrait<XmlMap>()) {
             // Optionally consume the entry wrapper
             val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
-            val nextToken = reader.peekNextToken()
+            val nextToken = reader.peek()
             if (nextToken is XmlToken.EndElement) {
-                val consumeEndToken = when (mapTrait.flattened) {
+                val consumeEndToken = when (fieldDescriptor.hasTrait<Flattened>()) {
                     true -> nextToken.qualifiedName.name == fieldDescriptor.expectTrait<XmlSerialName>().name
                     false -> nextToken.qualifiedName.name == mapTrait.entry
                 }

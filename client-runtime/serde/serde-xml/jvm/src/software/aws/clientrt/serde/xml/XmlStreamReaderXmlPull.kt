@@ -38,10 +38,11 @@ private class XmlStreamReaderXmlPull(
         return _currentToken.toString()
     }
 
-    // NOTE: Because of the way peeking is managed, any code in this class wanting to get the next token must call
-    // this method rather than calling `parser.nextToken()` directly.
-    override fun takeNextToken(): XmlToken = pullToken(false)
+    override suspend fun nextToken(): XmlToken = pullToken(false)
 
+    /**
+     * @param isPeek if true, the value returned will still be taken upon the next call to nextToken().
+     */
     private fun pullToken(isPeek: Boolean): XmlToken {
         if (peekedToken != null) {
             val rv = peekedToken!!
@@ -103,12 +104,12 @@ private class XmlStreamReaderXmlPull(
     // 1: if the next token is BeginElement, then that node is skipped
     // 2: if the next token is Text or EndElement, read tokens until the end of the current node is exited
     // 3: if the next token is EndDocument, NOP
-    override fun skipNext() {
+    override suspend fun skipNext() {
         val startDepth = parser.depth
 
-        when (peekNextToken()) {
+        when (peek()) {
             is XmlToken.EndDocument -> return
-            else -> traverseNode(takeNextToken(), startDepth)
+            else -> traverseNode(nextToken(), startDepth)
         }
 
         require(startDepth == parser.depth) { "Expected to maintain parser depth after skip, but started at $startDepth and now at ${parser.depth}" }
@@ -117,15 +118,15 @@ private class XmlStreamReaderXmlPull(
     override val currentToken: XmlToken
         get() = _currentToken
 
-    tailrec fun traverseNode(st: XmlToken, startDepth: Int) {
+    tailrec suspend fun traverseNode(st: XmlToken, startDepth: Int) {
         if (st == XmlToken.EndDocument) return
         if (st is XmlToken.EndElement && parser.depth == startDepth) return
-        val next = takeNextToken()
+        val next = nextToken()
         require(parser.depth >= startDepth) { "Traversal depth ${parser.depth} exceeded start node depth $startDepth" }
         return traverseNode(next, startDepth)
     }
 
-    override fun peekNextToken(): XmlToken = when (peekedToken) {
+    override suspend fun peek(): XmlToken = when (peekedToken) {
         null -> {
             val currentDepth = parser.depth
             peekedToken = PeekState(pullToken(true), currentDepth)

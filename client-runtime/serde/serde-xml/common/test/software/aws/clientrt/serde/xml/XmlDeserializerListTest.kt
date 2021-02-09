@@ -190,7 +190,7 @@ class XmlDeserializerListTest {
                 <element>3</element>
             </object>
         """.encodeToByteArray()
-        val elementFieldDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("element"), XmlList(flattened = true))
+        val elementFieldDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("element"), XmlList(), Flattened)
         val objectDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(elementFieldDescriptor)

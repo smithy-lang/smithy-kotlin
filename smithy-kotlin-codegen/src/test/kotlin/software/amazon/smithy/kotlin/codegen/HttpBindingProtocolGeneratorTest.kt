@@ -465,7 +465,7 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
         }
     }
 
-    fun deserialize(deserializer: Deserializer): MyUnion? {
+    suspend fun deserialize(deserializer: Deserializer): MyUnion? {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             when(findNextFieldIndex()) {
@@ -792,7 +792,7 @@ class Nested3Deserializer {
         }
     }
 
-    fun deserialize(deserializer: Deserializer): Nested3 {
+    suspend fun deserialize(deserializer: Deserializer): Nested3 {
         val builder = Nested3.dslBuilder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {

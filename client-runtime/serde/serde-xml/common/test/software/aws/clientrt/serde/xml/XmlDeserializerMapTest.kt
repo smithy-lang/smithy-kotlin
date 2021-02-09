@@ -126,7 +126,7 @@ class XmlDeserializerMapTest {
             </object>
         """.encodeToByteArray()
         val containerFieldDescriptor =
-            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMap(null, "key", "value", true))
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMap(null, "key", "value"), Flattened)
         val objDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(containerFieldDescriptor)

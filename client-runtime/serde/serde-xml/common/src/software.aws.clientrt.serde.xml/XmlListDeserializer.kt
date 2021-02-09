@@ -1,33 +1,30 @@
 package software.aws.clientrt.serde.xml
 
-import software.aws.clientrt.serde.Deserializer
-import software.aws.clientrt.serde.PrimitiveDeserializer
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.findTrait
+import software.aws.clientrt.serde.*
 
-class XmlListDeserializer(
+internal class XmlListDeserializer(
     private val fieldDescriptor: SdkFieldDescriptor,
     private val reader: XmlStreamReader,
     private val parentDeserializer: XmlStructDeserializer,
     primitiveDeserializer: XmlPrimitiveDeserializer
 ) : Deserializer.ElementIterator, PrimitiveDeserializer by primitiveDeserializer {
 
-    override suspend fun hasNextElement(): Boolean = when (reader.peekNextToken()) {
-        is XmlToken.EndDocument -> false
+    override suspend fun hasNextElement(): Boolean = when (reader.peek()) {
+        is XmlToken.EndDocument -> throw DeserializerStateException("Unexpected end of document.")
         is XmlToken.EndElement -> {
-            parentDeserializer.clearNodeValueTokens()
-
-            if (fieldDescriptor.findTrait<XmlList>()?.flattened == false && reader.peekNextToken() is XmlToken.EndElement) {
+            if (!fieldDescriptor.hasTrait<Flattened>() && reader.peek() is XmlToken.EndElement) {
                 reader.takeNextAs<XmlToken.EndElement>()
             }
 
-            reader.peekNextToken() is XmlToken.BeginElement
+            val hasNext = reader.peek() is XmlToken.BeginElement
+            if (!hasNext) parentDeserializer.clearNodeValueTokens()
+            hasNext
         }
         else -> true
     }
 
     override suspend fun nextHasValue(): Boolean {
-        return when (reader.peekNextToken()) {
+        return when (reader.peek()) {
             is XmlToken.EndElement,
             is XmlToken.EndDocument -> false
             is XmlToken.BeginElement -> {
@@ -35,7 +32,7 @@ class XmlListDeserializer(
                 // deserializeValue() can conditionally handle start or value nodes
                 reader.takeNextAs<XmlToken.BeginElement>()
 
-                when (reader.peekNextToken()) {
+                when (reader.peek()) {
                     is XmlToken.EndElement,
                     is XmlToken.EndDocument -> false
                     else -> true

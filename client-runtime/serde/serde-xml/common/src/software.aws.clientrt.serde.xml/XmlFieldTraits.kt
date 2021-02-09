@@ -21,13 +21,11 @@ import software.aws.clientrt.serde.hasTrait
  * @param entry the name of the entry node which wraps map entries. Should be null for flat maps.
  * @param keyName the name of the key field
  * @param valueName the name of the value field
- * @param flattened determines of the map has a flattened structure.  See https://awslabs.github.io/smithy/spec/xml.html#flattened-map-serialization
  */
 data class XmlMap(
     val entry: String? = "entry",
     val keyName: String = "key",
-    val valueName: String = "value",
-    val flattened: Boolean = false
+    val valueName: String = "value"
 ) : FieldTrait
 
 /**
@@ -37,9 +35,14 @@ data class XmlMap(
  * @param elementName the name of the XML node which wraps each list entry.
  */
 data class XmlList(
-    val elementName: String = "element",
-    val flattened: Boolean = false
+    val elementName: String = "element"
 ) : FieldTrait
+
+/*
+ * Denotes a collection type that uses a flattened XML representation
+ * see: [xmlflattened trait](https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html#xmlflattened-trait)
+ */
+object Flattened: FieldTrait
 
 /**
  * Describes the namespace associated with a field.
