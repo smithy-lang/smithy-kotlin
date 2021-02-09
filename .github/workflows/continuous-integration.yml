@@ -23,7 +23,6 @@ jobs:
         image:
           - manylinux2014-x64
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - name: Checkout sources
       uses: actions/checkout@v2
     - uses: actions/cache@v2
@@ -39,9 +38,47 @@ jobs:
         CI_USER: ${{ secrets.CI_USER}}
         CI_ACCESS_TOKEN: ${{ secrets.CI_ACCESS_TOKEN }}
       run: |
-        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
-        chmod a+x builder
-        GIT_ASKPASS="$(pwd)/scripts/git-ci-askpass.sh" ./builder build -p ${{ env.PACKAGE_NAME }}
+        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
+        chmod a+x builder.pyz
+        GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
+
+  macos-compat:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - name: Build and Test ${{ env.PACKAGE_NAME }}
+      env:
+        CI_USER: ${{ secrets.CI_USER}}
+        CI_ACCESS_TOKEN: ${{ secrets.CI_ACCESS_TOKEN }}
+      run: |
+        python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
+        chmod a+x builder.pyz
+        GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
+
+  # windows-compat:
+  #   runs-on: windows-latest
+  #   steps:
+  #   - name: Checkout sources
+  #     uses: actions/checkout@v2
+  #   - uses: actions/cache@v2
+  #   - name: Build and Test ${{ env.PACKAGE_NAME }}
+  #     env:
+  #       CI_USER: ${{ secrets.CI_USER}}
+  #       CI_ACCESS_TOKEN: ${{ secrets.CI_ACCESS_TOKEN }}
+  #     shell: pwsh
+  #     run: |
+  #       python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
+  #       $env:GIT_ASKPASS="$pwd\.github\scripts\git-ci-askpass.ps"
+  #       python3 builder.pyz build -p ${{ env.PACKAGE_NAME }}
 
   downstream:
     needs: linux-compat
@@ -64,4 +101,4 @@ jobs:
       run: |
         python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
         chmod a+x builder
-        GIT_ASKPASS="$(pwd)/scripts/git-ci-askpass.sh" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
+        GIT_ASKPASS="$(pwd)/.github/scripts/git-ci-askpass.sh" ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream
