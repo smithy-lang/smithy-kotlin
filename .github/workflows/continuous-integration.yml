@@ -18,10 +18,6 @@ env:
 jobs:
   linux-compat:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        image:
-          - manylinux2014-x64
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
