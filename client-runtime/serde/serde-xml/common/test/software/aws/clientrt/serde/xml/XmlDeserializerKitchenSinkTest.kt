@@ -20,7 +20,7 @@ class XmlDeserializerKitchenSinkTest {
 
         companion object {
             val LIST2_FIELD_DESCRIPTOR =
-                SdkFieldDescriptor(SerialKind.List, XmlSerialName("list2"), XmlList(elementName = "element"), Flattened)
+                SdkFieldDescriptor(SerialKind.List, XmlSerialName("list2"), XmlListSetProperties(elementName = "element"), Flattened)
             val INT2_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("int2"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("nested2"))
@@ -112,9 +112,9 @@ class XmlDeserializerKitchenSinkTest {
             val DOUBLE_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Double, XmlSerialName("double"))
             val NESTED_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
             val FLOAT_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Float, XmlSerialName("float"))
-            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlList(), Flattened, XmlSerialName("list"))
+            val LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, Flattened, XmlSerialName("list"))
             val MAP_FIELD_DESCRIPTOR =
-                SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"), XmlMap("entry", "key", "value"))
+                SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"), XmlMapProperties("entry", "key", "value"))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("payload"))

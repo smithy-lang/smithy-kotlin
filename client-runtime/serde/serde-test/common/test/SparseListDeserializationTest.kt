@@ -4,7 +4,6 @@ import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.json.JsonSerialName
 import software.aws.clientrt.serde.xml.XmlDeserializer
-import software.aws.clientrt.serde.xml.XmlList
 import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.jvm.JvmStatic
@@ -132,7 +131,7 @@ class SparseListDeserializationTest {
     class GetFooDeserializer {
 
         companion object {
-            private val SPARSESTRUCTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, "sparseStructList".toSerialNames() + XmlList())
+            private val SPARSESTRUCTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, "sparseStructList".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 trait(XmlSerialName("GetFoo"))
                 field(SPARSESTRUCTLIST_DESCRIPTOR)

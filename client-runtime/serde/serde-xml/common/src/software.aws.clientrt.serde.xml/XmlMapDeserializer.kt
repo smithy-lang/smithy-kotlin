@@ -25,7 +25,7 @@ internal class XmlMapDeserializer(
     }
 
     override suspend fun key(): String {
-        val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
+        val mapTrait = fieldDescriptor.findTrait() ?: XmlMapProperties.DEFAULT
         reader.takeUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.keyName } ?: throw DeserializerStateException("Expected node named ${mapTrait.keyName} but found ${reader.currentToken}")
         val keyValue = reader.takeNextAs<XmlToken.Text>()
 
@@ -37,7 +37,7 @@ internal class XmlMapDeserializer(
 
     override suspend fun nextHasValue(): Boolean {
         val valueWrapperToken = reader.takeNextAs<XmlToken.BeginElement>()
-        val mapTrait = fieldDescriptor.expectTrait<XmlMap>()
+        val mapTrait = fieldDescriptor.findTrait() ?: XmlMapProperties.DEFAULT
 
         if (valueWrapperToken.qualifiedName.name != mapTrait.valueName) throw DeserializerStateException("Expected map value ${mapTrait.valueName} but found ${valueWrapperToken.qualifiedName}")
 

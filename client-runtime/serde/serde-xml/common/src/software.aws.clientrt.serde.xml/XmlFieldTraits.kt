@@ -5,38 +5,57 @@
 
 package software.aws.clientrt.serde.xml
 
-import software.aws.clientrt.serde.FieldTrait
-import software.aws.clientrt.serde.SdkFieldDescriptor
-import software.aws.clientrt.serde.expectTrait
-import software.aws.clientrt.serde.hasTrait
-
-// TODO: The XML specific Traits which describe names will need to be amended to include namespace (or a Qualified Name)
+import software.aws.clientrt.serde.*
 
 // NOTE: By default, a descriptor without any Xml trait is assumed to be a primitive TEXT value.
 
 /**
- * Specifies that a field represents a Map structure and describes the XML node names used to encode that structure.
+ * Specifies properties used to encode a Map structure.
  * See https://awslabs.github.io/smithy/spec/xml.html#map-serialization
  *
- * @param entry the name of the entry node which wraps map entries. Should be null for flat maps.
+ * This trait need only be added to a [SdkFieldDescriptor] if the map entry, key, or value is something
+ * other than the default specified in [XmlMapProperties.DEFAULT]
+ *
+ * @param entry the name of the entry node which wraps map entries. Must be null for flat maps.
  * @param keyName the name of the key field
  * @param valueName the name of the value field
  */
-data class XmlMap(
-    val entry: String? = "entry",
-    val keyName: String = "key",
-    val valueName: String = "value"
-) : FieldTrait
+data class XmlMapProperties(
+    val entry: String? = DEFAULT.entry,
+    val keyName: String = DEFAULT.keyName,
+    val valueName: String = DEFAULT.valueName
+): FieldTrait {
+    companion object {
+        /**
+         * The default serialized names for aspects of a Map in XML.
+         * These defaults are specified here: https://awslabs.github.io/smithy/spec/xml.html#map-serialization
+         */
+        val DEFAULT = XmlMapProperties("entry", "key", "value")
+    }
+}
+
+
 
 /**
- * Specifies that a field represents a List structure and the XML node names used to encode that structure.
+ * Specifies properties used to encode a List structure.
  * See https://awslabs.github.io/smithy/spec/xml.html#list-and-set-serialization
  *
- * @param elementName the name of the XML node which wraps each list entry.
+ * This trait need only be added to a [SdkFieldDescriptor] if the element name is something
+ * other than the default specified in [XmlListSetProperties.DEFAULT]
+ *
+ * @param elementName the name of the XML node which wraps each list or set entry.
  */
-data class XmlList(
-    val elementName: String = "element"
-) : FieldTrait
+data class XmlListSetProperties(
+    val elementName: String
+) : FieldTrait {
+    companion object {
+        /**
+         * The default serialized name for a list or set element.
+         * This default is specified here: https://awslabs.github.io/smithy/spec/xml.html#list-and-set-serialization
+         */
+        val DEFAULT = XmlListSetProperties("member")
+    }
+}
 
 /*
  * Denotes a collection type that uses a flattened XML representation
@@ -107,7 +126,7 @@ val SdkFieldDescriptor.serialName: XmlSerialName
 
 // Return the name based on most specific type
 internal fun SdkFieldDescriptor.generalName() = when {
-    hasTrait<XmlList>() -> expectTrait<XmlList>().elementName
-    hasTrait<XmlMap>() -> expectTrait<XmlMap>().valueName
+    hasTrait<XmlListSetProperties>() -> findTrait<XmlListSetProperties>()?.elementName ?: XmlListSetProperties.DEFAULT.elementName
+    hasTrait<XmlMapProperties>() -> findTrait<XmlMapProperties>()?.valueName ?: XmlMapProperties.DEFAULT.valueName
     else -> expectTrait<XmlSerialName>().name
 }

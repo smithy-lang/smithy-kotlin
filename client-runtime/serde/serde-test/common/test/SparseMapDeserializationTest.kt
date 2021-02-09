@@ -3,7 +3,6 @@ import io.kotest.matchers.maps.shouldContainKeys
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.xml.XmlDeserializer
-import software.aws.clientrt.serde.xml.XmlMap
 import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.jvm.JvmStatic
@@ -162,7 +161,7 @@ class SparseMapDeserializationTest {
     class GetFooDeserializer {
 
         companion object {
-            private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "sparseStructMap".toSerialNames() + XmlMap())
+            private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "sparseStructMap".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 trait(XmlSerialName("GetFoo"))
                 field(SPARSESTRUCTMAP_DESCRIPTOR)

@@ -72,7 +72,7 @@ class XmlDeserializerListTest {
                 </list>
             </object>
         """.encodeToByteArray()
-        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList())
+        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
@@ -147,7 +147,7 @@ class XmlDeserializerListTest {
                 </list>
             </object>
         """.encodeToByteArray()
-        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(), SparseValues)
+        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), SparseValues)
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
@@ -168,7 +168,7 @@ class XmlDeserializerListTest {
                 </list>
             </object>
         """.encodeToByteArray()
-        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList())
+        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)
@@ -190,7 +190,7 @@ class XmlDeserializerListTest {
                 <element>3</element>
             </object>
         """.encodeToByteArray()
-        val elementFieldDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("element"), XmlList(), Flattened)
+        val elementFieldDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("element"), Flattened)
         val objectDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(elementFieldDescriptor)
@@ -219,7 +219,7 @@ class XmlDeserializerListTest {
            </object>
            """.encodeToByteArray()
         val listWrapperFieldDescriptor =
-            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
+            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlListSetProperties(elementName = "payload"))
         val objectDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(listWrapperFieldDescriptor)
@@ -267,7 +267,7 @@ class XmlDeserializerListTest {
             </object>
            """.encodeToByteArray()
         val listWrapperFieldDescriptor =
-            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList(elementName = "payload"))
+            SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlListSetProperties(elementName = "payload"))
         val objectDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(listWrapperFieldDescriptor)
@@ -375,8 +375,8 @@ class XmlDeserializerListTest {
                 </list>
             </object>
         """.encodeToByteArray()
-        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlList())
-        val nestedListDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("nestedList"), XmlList())
+        val ELEMENT_LIST_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"))
+        val nestedListDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("nestedList"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(ELEMENT_LIST_FIELD_DESCRIPTOR)

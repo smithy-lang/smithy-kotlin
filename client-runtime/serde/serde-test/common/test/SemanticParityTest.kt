@@ -186,7 +186,7 @@ class SemanticParityTest {
 
     data class ListTest(var intList: List<Int>? = null) : SdkSerializable, CrossProtocolSerdeTest {
         companion object {
-            val LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, setOf(XmlList()) + "list".toSerialNames())
+            val LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, "list".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("payload"))
                 field(LIST_DESCRIPTOR)
@@ -227,7 +227,7 @@ class SemanticParityTest {
         override val jsonSerialization: String
             get() = """{"list":[1,2,3,10]}"""
         override val xmlSerialization: String
-            get() = "<payload><list><element>1</element><element>2</element><element>3</element><element>10</element></list></payload>"
+            get() = "<payload><list><member>1</member><member>2</member><member>3</member><member>10</member></list></payload>"
         override val sdkSerializable: SdkSerializable
             get() = ListTest(listOf(1, 2, 3, 10))
 
@@ -237,7 +237,7 @@ class SemanticParityTest {
 
     data class MapTest(var strMap: Map<String, String>? = null) : SdkSerializable, CrossProtocolSerdeTest {
         companion object {
-            val MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "map".toSerialNames() + XmlMap())
+            val MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "map".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("payload"))
                 field(MAP_DESCRIPTOR)
@@ -251,7 +251,7 @@ class SemanticParityTest {
                             MAP_DESCRIPTOR.index -> result.strMap = deserializer.deserializeMap(MAP_DESCRIPTOR) {
                                 val map = mutableMapOf<String, String>()
                                 while (this.hasNextEntry()) {
-                                    map[key()] = deserializeString()!!
+                                    map[key()] = deserializeString()
                                 }
                                 result.strMap = map
                                 return@deserializeMap map

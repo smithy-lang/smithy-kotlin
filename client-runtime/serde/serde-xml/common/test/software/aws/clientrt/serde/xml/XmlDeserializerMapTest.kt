@@ -28,7 +28,7 @@ class XmlDeserializerMapTest {
                 </values>
             </object>
         """.encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
+        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"))
         val objDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(fieldDescriptor)
@@ -76,7 +76,7 @@ class XmlDeserializerMapTest {
             </object>
         """.encodeToByteArray()
         val fieldDescriptor =
-            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mymap"), XmlMap("myentry", "mykey", "myvalue"))
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("mymap"), XmlMapProperties("myentry", "mykey", "myvalue"))
         val objDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(fieldDescriptor)
@@ -126,7 +126,7 @@ class XmlDeserializerMapTest {
             </object>
         """.encodeToByteArray()
         val containerFieldDescriptor =
-            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMap(null, "key", "value"), Flattened)
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMapProperties(null, "key", "value"), Flattened)
         val objDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(containerFieldDescriptor)
@@ -164,7 +164,7 @@ class XmlDeserializerMapTest {
             </object>
         """.encodeToByteArray()
         val containerFieldDescriptor =
-            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("Map"), XmlMap())
+            SdkFieldDescriptor(SerialKind.Map, XmlSerialName("Map"))
         val objDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(containerFieldDescriptor)
@@ -212,7 +212,7 @@ class XmlDeserializerMapTest {
                 </values>
             </object>
         """.encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
+        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"))
         val objDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(fieldDescriptor)
@@ -264,7 +264,7 @@ class XmlDeserializerMapTest {
                 </values>
             </object>
         """.encodeToByteArray()
-        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMap())
+        val fieldDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"))
         val objDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(fieldDescriptor)
@@ -334,8 +334,8 @@ class XmlDeserializerMapTest {
                 </map>
             </object>
         """.encodeToByteArray()
-        val ELEMENT_MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"), XmlMap(entry = "outerEntry", valueName = "outerValue"))
-        val nestedMapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("nestedMap"), XmlMap(entry = "innerEntry", valueName = "innerValue"))
+        val ELEMENT_MAP_FIELD_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("map"), XmlMapProperties(entry = "outerEntry", valueName = "outerValue"))
+        val nestedMapDescriptor = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("nestedMap"), XmlMapProperties(entry = "innerEntry", valueName = "innerValue"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(ELEMENT_MAP_FIELD_DESCRIPTOR)
