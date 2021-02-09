@@ -17,7 +17,7 @@ internal class XmlListDeserializer(
             }
 
             val hasNext = reader.peek() is XmlToken.BeginElement
-            if (!hasNext) parentDeserializer.clearNodeValueTokens()
+            if (!hasNext) parentDeserializer.clearParsedFields()
             hasNext
         }
         else -> true

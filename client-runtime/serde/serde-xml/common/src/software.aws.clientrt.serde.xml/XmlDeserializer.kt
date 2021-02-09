@@ -40,7 +40,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
                 // Flush existing token to avoid revisiting same node upon return
                 // This is safe because attributes are always processed before children
                 cleanupDeserializerStack()
-                structDeserializerStack.last().deserializer.clearNodeValueTokens()
+                structDeserializerStack.last().deserializer.clearParsedFields()
 
                 // Optionally consume next token until we match our objectDescriptor.
                 // This can vary depending on where deserializeStruct() is called from (list/map vs struct)
@@ -63,7 +63,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 
     override suspend fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         check(structDeserializerStack.isNotEmpty()) { "List cannot be deserialized independently from a parent struct" }
-        cleanupDeserializerStack()
+        cleanupDeserializerStack() // Set state on current deserializer that we are deserializing a container
         return XmlListDeserializer(
             descriptor,
             reader,
@@ -74,7 +74,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 
     override suspend fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
         check(structDeserializerStack.isNotEmpty()) { "Map cannot be deserialized independently from a parent struct" }
-        cleanupDeserializerStack()
+        cleanupDeserializerStack() // Set state on current deserializer that we are deserializing a container
         return XmlMapDeserializer(
             descriptor,
             reader,
@@ -83,13 +83,17 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
         )
     }
 
-    // Each struct deserializer maintains a set of NodeValueTokens.  When structs
-    // traverse into other container, these tokens need to be cleared.
+    // Each struct deserializer maintains a set of [FieldLocation]s.  When structs
+    // traverse into another container, these field locations need to be cleared.  This is
+    // because those are intended for use by [XmlStructDeserializer] and are not needed
+    // for nested container types such as list and maps.  If they are not cleared when the
+    // codegen'd deserializer code returns to the branching layer, it will return to codegen
+    // that there are remaining fields to deserializer, but there are not.
     private fun cleanupDeserializerStack() {
         var deserializerInstance = structDeserializerStack.lastOrNull()
 
         while (deserializerInstance != null && deserializerInstance.parseLevel >= reader.currentDepth) {
-            deserializerInstance.deserializer.clearNodeValueTokens()
+            deserializerInstance.deserializer.clearParsedFields()
             structDeserializerStack.remove(deserializerInstance)
             deserializerInstance = structDeserializerStack.lastOrNull()
         }

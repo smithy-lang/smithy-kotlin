@@ -94,7 +94,7 @@ class XmlStructDeserializer(
     /**
      * Clear any existing [FieldLocation]s. This is necessary when codegen deserializers dive into children.
      */
-    fun clearNodeValueTokens() = parsedFields.clear()
+    fun clearParsedFields() = parsedFields.clear()
 
     // Based on the top [FieldLocation], deserialize a text or attribute value.
     private suspend fun <T> deserializeValue(transform: ((String) -> T)): T {
