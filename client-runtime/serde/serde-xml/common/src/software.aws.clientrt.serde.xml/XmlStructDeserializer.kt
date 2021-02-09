@@ -166,8 +166,8 @@ class XmlStructDeserializer(
                     // The following allows for struct primitives to remain unvisited if no value
                     // but causes nested deserializers to be called even if they contain no value
                     nextToken is XmlToken.EndElement &&
-                            currentToken.qualifiedName == nextToken.qualifiedName &&
-                            this.kind.isContainer -> property
+                        currentToken.qualifiedName == nextToken.qualifiedName &&
+                        this.kind.isContainer -> property
                     else -> null
                 }
             }
@@ -179,12 +179,10 @@ class XmlStructDeserializer(
 
     // Returns true if the SerialKind holds other values
     private val SerialKind.isContainer: Boolean
-        get() = when(this) {
+        get() = when (this) {
             is SerialKind.Map, SerialKind.List, SerialKind.Struct -> true
             else -> false
         }
 
     private fun XmlAttribute.toQualifiedName(): XmlToken.QualifiedName = XmlToken.QualifiedName(name, namespace)
 }
-
-

@@ -42,7 +42,7 @@ data class XmlList(
  * Denotes a collection type that uses a flattened XML representation
  * see: [xmlflattened trait](https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html#xmlflattened-trait)
  */
-object Flattened: FieldTrait
+object Flattened : FieldTrait
 
 /**
  * Describes the namespace associated with a field.
