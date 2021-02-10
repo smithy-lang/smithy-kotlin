@@ -2,15 +2,18 @@
     "name": "smithy-kotlin",
     "needs_compiler": false,
     "packages": [],
+    "variables": {
+        "gradlew": "{project_source_dir}/gradlew -p {project_source_dir}"
+    },
     "build_steps": [
         "pwd",
-        "./gradlew assemble" 
+        "{gradlew} assemble" 
     ],
     "post_build_steps": [
-        "./gradlew publishToMavenLocal" 
+        "{gradlew} publishToMavenLocal" 
     ],
     "test_steps": [
-        "./gradlew test allTests"
+        "{gradlew} test allTests"
     ],
     "imports": [
         "JDK8"
