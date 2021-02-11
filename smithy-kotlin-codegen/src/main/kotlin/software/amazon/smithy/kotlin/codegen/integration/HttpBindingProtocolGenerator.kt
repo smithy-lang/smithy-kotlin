@@ -313,14 +313,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val serialName = member.getTrait(JsonNameTrait::class.java).map { it.value }.orElse(member.memberName)
                     val serialKind = ctx.model.expectShape(member.target).serialKind()
                     val memberTarget = ctx.model.expectShape(member.target)
-                    write("private val \$L = SdkFieldDescriptor(\$S, $serialKind)", member.descriptorName(), serialName)
+                    write("private val \$L = SdkFieldDescriptor($serialKind, JsonSerialName(\$S))", member.descriptorName(), serialName)
 
                     val nestedMember = memberTarget.childShape(ctx)
                     if (nestedMember?.isContainerShape() == true) {
                         renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
                     }
                 }
-                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {", "}") {
+                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
                     for (member in sortedMembers) {
                         write("field(\$L)", member.descriptorName())
                     }
@@ -337,7 +337,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serialName = rootShape.getTrait(JsonNameTrait::class.java).map { it.value }.orElse("${rootShape.memberName}C$level")
         val nestedSerialKind = childShape.serialKind()
 
-        writer.write("private val \$L = SdkFieldDescriptor(\$S, $nestedSerialKind)", childName, serialName)
+        writer.write("private val \$L = SdkFieldDescriptor($nestedSerialKind, JsonSerialName(\$S))", childName, serialName)
 
         val nestedMember = childShape.childShape(ctx)
         if (nestedMember?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMember, level + 1, writer)
@@ -1150,7 +1150,9 @@ fun formatInstant(paramName: String, tsFmt: TimestampFormatTrait.Format, forceSt
 // import CLIENT-RT.*
 internal fun importSerdePackage(writer: KotlinWriter) {
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE_JSON.namespace, "JsonSerialName")
     writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
+    writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE_JSON.dependencies)
 }
 
 // import CLIENT-RT.time.TimestampFormat
