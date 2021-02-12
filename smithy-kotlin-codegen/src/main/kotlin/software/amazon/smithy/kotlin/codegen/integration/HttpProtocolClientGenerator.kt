@@ -19,6 +19,7 @@ import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.traits.EndpointTrait
 
 /**
  * HttpFeature interface that allows pipeline middleware to be registered and configured with the protocol generator
@@ -220,6 +221,21 @@ open class HttpProtocolClientGenerator(
                 // property from implementing SdkClient
                 writer.write("service = serviceName")
                 writer.write("operationName = \$S", op.id.name)
+
+                // optional endpoint trait
+                op.getTrait(EndpointTrait::class.java).ifPresent {
+                    val hostPrefix = it.hostPrefix.segments.joinToString(separator = "") { segment ->
+                        if (segment.isLabel) {
+                            // hostLabel can only target string shapes
+                            // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
+                            val member = inputShape.get().members().first { it.memberName == segment.content }
+                            "\${input.${member.defaultName()}}"
+                        } else {
+                            segment.content
+                        }
+                    }
+                    writer.write("hostPrefix = \$S", hostPrefix)
+                }
             }
             .closeBlock("}")
     }
