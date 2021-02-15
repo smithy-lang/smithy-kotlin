@@ -6,10 +6,10 @@ package software.aws.clientrt.http
 
 import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.middleware.Service
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.http.request.HttpRequestPipeline
-import software.aws.clientrt.http.request.PreparedHttpRequest
-import software.aws.clientrt.http.response.HttpResponsePipeline
+import software.aws.clientrt.http.request.OperationRequest
+import software.aws.clientrt.http.response.HttpResponse
 
 /**
  * Create an [SdkHttpClient] with the given engine, and optionally configure it
@@ -31,17 +31,7 @@ fun sdkHttpClient(
 class SdkHttpClient(
     val engine: HttpClientEngine,
     val config: HttpClientConfig
-) {
-
-    /**
-     * Request pipeline (middleware stack). Responsible for transforming inputs into an outgoing [software.aws.clientrt.http.request.HttpRequest]
-     */
-    val requestPipeline = HttpRequestPipeline()
-
-    /**
-     * Response pipeline. Responsible for transforming [software.aws.clientrt.http.response.HttpResponse] to the expected type
-     */
-    val responsePipeline = HttpResponsePipeline()
+): Service<HttpRequestBuilder, HttpResponse> {
 
     init {
         // wire up the features
@@ -49,6 +39,10 @@ class SdkHttpClient(
 
         // install ourselves into the engine
         engine.install(this)
+    }
+
+    override suspend fun call(request: HttpRequestBuilder): HttpResponse {
+        return engine.roundTrip(request)
     }
 
     /**
@@ -59,21 +53,27 @@ class SdkHttpClient(
     }
 }
 
-/**
- * Make an HTTP request with the given input type. The input type is expected to be transformable by the request
- * pipeline. The output type [TResponse] is expected to be producible by the response pipeline.
- */
-suspend inline fun <reified TResponse> SdkHttpClient.roundTrip(context: ExecutionContext, builder: HttpRequestBuilder? = null): TResponse =
-    PreparedHttpRequest(this, builder, context).receive()
+// FIXME - how do we now signal that the HTTP response is done
+// perhaps we should have `OperationResponse<T>(call: HttpCall, output: T) such that we can close the response
 
-/**
- * Make an HTTP request with the given [HttpRequestBuilder] and run the [block] with the result of the response pipeline.
- *
- * The underlying HTTP response will remain available until the block returns making this method suitable for
- * streaming responses.
- */
-suspend inline fun <reified TResponse, R> SdkHttpClient.execute(
+suspend inline fun<reified I, O> SdkHttpClient.roundTrip(
     context: ExecutionContext,
-    builder: HttpRequestBuilder? = null,
-    crossinline block: suspend (TResponse) -> R
-): R = PreparedHttpRequest(this, builder, context).execute(block)
+    service: Service<OperationRequest<I>, O>,
+    input: I
+): O {
+    val opRequest = OperationRequest(context, input)
+    return service.call(opRequest)
+}
+//
+//suspend inline fun<reified I, O, R> SdkHttpClient.execute(
+//    context: ExecutionContext,
+//    service: Service<OperationRequest<I>, O>,
+//    input: I,
+//    crossinline block: suspend (O) -> R
+//): R {
+//    TODO()
+////    val service = execution.decorate(this)
+////    val opRequest = OperationRequest(context, input)
+////    val output = service.call(opRequest)
+////    return block(output)
+//}

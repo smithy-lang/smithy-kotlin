@@ -7,9 +7,7 @@ package software.aws.clientrt.http.feature
 import software.aws.clientrt.config.IdempotencyTokenProvider
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.http.request.HttpRequestPipeline
 import software.aws.clientrt.http.response.HttpResponse
-import software.aws.clientrt.http.response.HttpResponsePipeline
 import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.SerdeProvider
 import software.aws.clientrt.serde.Serializer
@@ -61,19 +59,19 @@ class HttpSerde(private val serde: SerdeProvider, private val idempotencyTokenPr
     }
 
     override fun install(client: SdkHttpClient) {
-        client.requestPipeline.intercept(HttpRequestPipeline.Transform) { subject ->
-            val serializer = context.executionContext.getOrNull(SdkHttpOperation.OperationSerializer) ?: return@intercept
-            serializer.serialize(subject, SerializationContext(serde::serializer, idempotencyTokenProvider))
-        }
-
-        client.responsePipeline.intercept(HttpResponsePipeline.Transform) {
-            val deserializer = context.executionContext.getOrNull(SdkHttpOperation.OperationDeserializer) ?: return@intercept
-
-            // it's possible that the response doesn't expect a serialized payload and can be completely
-            // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming
-            // we can't read the body into memory ourselves
-            val content = deserializer.deserialize(context.response, serde::deserializer)
-            proceedWith(content)
-        }
+//        client.requestPipeline.intercept(HttpRequestPipeline.Transform) { subject ->
+//            val serializer = context.executionContext.getOrNull(SdkHttpOperation.OperationSerializer) ?: return@intercept
+//            serializer.serialize(subject, SerializationContext(serde::serializer, idempotencyTokenProvider))
+//        }
+//
+//        client.responsePipeline.intercept(HttpResponsePipeline.Transform) {
+//            val deserializer = context.executionContext.getOrNull(SdkHttpOperation.OperationDeserializer) ?: return@intercept
+//
+//            // it's possible that the response doesn't expect a serialized payload and can be completely
+//            // deserialized from the HTTP protocol response (e.g. headers) OR in the case of streaming
+//            // we can't read the body into memory ourselves
+//            val content = deserializer.deserialize(context.response, serde::deserializer)
+//            proceedWith(content)
+//        }
     }
 }

@@ -8,8 +8,7 @@ package software.aws.clientrt.http
 import software.aws.clientrt.client.ClientOptionsBuilder
 import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.client.SdkClientOption
-import software.aws.clientrt.http.feature.HttpDeserialize
-import software.aws.clientrt.http.feature.HttpSerialize
+import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.util.AttributeKey
 import software.aws.clientrt.util.InternalAPI
 
@@ -20,20 +19,25 @@ import software.aws.clientrt.util.InternalAPI
 open class SdkHttpOperation {
 
     companion object {
-        /**
-         * The operation serializer (if any) is stored under this key
-         */
-        val OperationSerializer: AttributeKey<HttpSerialize> = AttributeKey("OperationSerializer")
-
-        /**
-         * The operation deserializer (if any) is stored under this key
-         */
-        val OperationDeserializer: AttributeKey<HttpDeserialize> = AttributeKey("OperationDeserializer")
+//        /**
+//         * The operation serializer (if any) is stored under this key
+//         */
+//        val OperationSerializer: AttributeKey<HttpSerialize> = AttributeKey("OperationSerializer")
+//
+//        /**
+//         * The operation deserializer (if any) is stored under this key
+//         */
+//        val OperationDeserializer: AttributeKey<HttpDeserialize> = AttributeKey("OperationDeserializer")
 
         /**
          * The expected HTTP status code of a successful response is stored under this key
          */
         val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("ExpectedHttpStatus")
+
+        /**
+         * Raw HTTP response
+         */
+        val HttpResponse: AttributeKey<HttpResponse> = AttributeKey("HttpResponse")
 
         /**
          * Build this operation into an HTTP [ExecutionContext]
@@ -56,15 +60,15 @@ open class SdkHttpOperation {
          */
         var operationName: String? by requiredOption(SdkClientOption.OperationName)
 
-        /**
-         * The serializer to use for the request
-         */
-        var serializer: HttpSerialize? by option(OperationSerializer)
-
-        /**
-         * The deserializer to use for the response
-         */
-        var deserializer: HttpDeserialize? by option(OperationDeserializer)
+//        /**
+//         * The serializer to use for the request
+//         */
+//        var serializer: HttpSerialize? by option(OperationSerializer)
+//
+//        /**
+//         * The deserializer to use for the response
+//         */
+//        var deserializer: HttpDeserialize? by option(OperationDeserializer)
 
         /**
          * The expected HTTP status code on success
