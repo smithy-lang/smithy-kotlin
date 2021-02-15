@@ -4,38 +4,36 @@
  */
 package software.aws.clientrt.http.feature
 
-import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
-import software.aws.clientrt.http.response.HttpResponseContext
-import software.aws.clientrt.http.response.TypeInfo
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
 class DefaultValidateResponseTest {
     @Test
     fun itThrowsExceptionOnNon200Response() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
-            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
+            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
+                return HttpResponse(
+                    HttpStatusCode.BadRequest,
+                    Headers {},
+                    HttpBody.Empty,
+                    HttpRequestBuilder().build()
+                )
+            }
         }
 
-        val client = sdkHttpClient(mockEngine) {
-            install(DefaultValidateResponse)
-        }
+        val client = sdkHttpClient(mockEngine)
 
-        val httpResp = HttpResponse(
-            HttpStatusCode.BadRequest,
-            Headers {},
-            HttpBody.Empty,
-            HttpRequestBuilder().build()
-        )
+        val op = newTestOperation<String, String>(HttpRequestBuilder(), "bar")
+        op.install(DefaultValidateResponse)
 
-        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), ExecutionContext())
         assertFailsWith(HttpResponseException::class) {
-            client.responsePipeline.execute(context, httpResp.body)
+            op.roundTrip(client, "foo")
         }
 
         return@runSuspendTest
@@ -44,22 +42,22 @@ class DefaultValidateResponseTest {
     @Test
     fun itPassesSuccessResponses() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
-            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse { throw NotImplementedError() }
+            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
+                return HttpResponse(
+                    HttpStatusCode.Accepted,
+                    Headers {},
+                    HttpBody.Empty,
+                    HttpRequestBuilder().build()
+                )
+            }
         }
 
-        val client = sdkHttpClient(mockEngine) {
-            install(DefaultValidateResponse)
-        }
+        val client = sdkHttpClient(mockEngine)
 
-        val httpResp = HttpResponse(
-            HttpStatusCode.Accepted,
-            Headers {},
-            HttpBody.Empty,
-            HttpRequestBuilder().build()
-        )
-
-        val context = HttpResponseContext(httpResp, TypeInfo(Int::class), ExecutionContext())
-        client.responsePipeline.execute(context, httpResp.body)
+        val op = newTestOperation<String, String>(HttpRequestBuilder(), "bar")
+        op.install(DefaultValidateResponse)
+        val actual = op.roundTrip(client, "foo")
+        assertEquals("bar", actual)
 
         return@runSuspendTest
     }

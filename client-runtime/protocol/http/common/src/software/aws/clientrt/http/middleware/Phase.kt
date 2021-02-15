@@ -13,7 +13,7 @@ package software.aws.clientrt.http.middleware
  * Giving these individual steps names and types allows for targeted application of middleware at
  * the (most) appropriate step.
  */
-class Phase<Request, Response>: Middleware<Request, Response> {
+class Phase<Request, Response> : Middleware<Request, Response> {
     enum class Order {
         Before, After
     }
@@ -39,7 +39,7 @@ class Phase<Request, Response>: Middleware<Request, Response> {
      * Register a middleware in a specific order
      */
     fun register(order: Order, middleware: Middleware<Request, Response>) {
-        when(order) {
+        when (order) {
             Order.Before -> middlewares.add(0, middleware)
             Order.After -> middlewares.add(middleware)
         }

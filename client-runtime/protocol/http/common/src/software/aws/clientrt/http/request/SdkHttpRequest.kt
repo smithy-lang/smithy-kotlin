@@ -12,7 +12,6 @@ import software.aws.clientrt.client.ExecutionContext
  */
 data class OperationRequest<T>(val context: ExecutionContext, val input: T)
 
-
 /**
  * An outgoing HTTP request being built
  */

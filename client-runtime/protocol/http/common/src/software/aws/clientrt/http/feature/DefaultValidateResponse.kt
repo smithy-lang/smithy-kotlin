@@ -58,22 +58,22 @@ class DefaultValidateResponse : Feature {
         }
     }
 
-    override fun install(client: SdkHttpClient) {
-//        client.responsePipeline.intercept(HttpResponsePipeline.Receive) {
-//            if (context.response.status.isSuccess()) {
-//                proceed()
-//                return@intercept
-//            }
-//
-//            val message = "received unsuccessful HTTP response: ${context.response.status}"
-//            val httpException = HttpResponseException(message).apply {
-//                statusCode = context.response.status
-//                headers = context.response.headers
-//                body = context.response.body.readAll()
-//                request = context.response.request
-//            }
-//
-//            throw httpException
-//        }
+    override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
+        operation.execution.receive.intercept { req, next ->
+            val response = next.call(req)
+            if (response.status.isSuccess()) {
+                return@intercept response
+            }
+
+            val message = "received unsuccessful HTTP response: ${response.status}"
+            val httpException = HttpResponseException(message).apply {
+                statusCode = response.status
+                headers = response.headers
+                body = response.body.readAll()
+                request = response.request
+            }
+
+            throw httpException
+        }
     }
 }

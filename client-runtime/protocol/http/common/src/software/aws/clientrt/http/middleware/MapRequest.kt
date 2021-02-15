@@ -12,10 +12,8 @@ class MapRequest<R1, R2, Response, S>(
     private val inner: S,
     private val fn: suspend (R1) -> R2
 ) : Service<R1, Response>
-        where S: Service<R2, Response>
-{
+        where S : Service<R2, Response> {
     override suspend fun call(request: R1): Response {
         return inner.call(fn(request))
     }
 }
-

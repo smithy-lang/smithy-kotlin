@@ -5,74 +5,95 @@
 
 package software.aws.clientrt.http
 
-import software.aws.clientrt.client.ClientOptionsBuilder
 import software.aws.clientrt.client.ExecutionContext
-import software.aws.clientrt.client.SdkClientOption
-import software.aws.clientrt.http.response.HttpResponse
-import software.aws.clientrt.util.AttributeKey
+import software.aws.clientrt.http.feature.HttpDeserialize
+import software.aws.clientrt.http.feature.HttpSerialize
+import software.aws.clientrt.http.request.OperationRequest
 import software.aws.clientrt.util.InternalAPI
 
 /**
- * Common configuration for an SDK (HTTP) operation/call
+ * A (Smithy) HTTP based operation.
+ * @property execution Phases used to execute the operation request and get a response instance
+ * @property context An [ExecutionContext] instance scoped to this operation
  */
 @InternalAPI
-open class SdkHttpOperation {
+data class SdkHttpOperation<I, O>(
+    val execution: SdkOperationExecution<I, O>,
+    val context: ExecutionContext,
+    internal val serializer: HttpSerialize<I>,
+    internal val deserializer: HttpDeserialize<O>,
+) {
 
-    companion object {
-//        /**
-//         * The operation serializer (if any) is stored under this key
-//         */
-//        val OperationSerializer: AttributeKey<HttpSerialize> = AttributeKey("OperationSerializer")
-//
-//        /**
-//         * The operation deserializer (if any) is stored under this key
-//         */
-//        val OperationDeserializer: AttributeKey<HttpDeserialize> = AttributeKey("OperationDeserializer")
-
-        /**
-         * The expected HTTP status code of a successful response is stored under this key
-         */
-        val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("ExpectedHttpStatus")
-
-        /**
-         * Raw HTTP response
-         */
-        val HttpResponse: AttributeKey<HttpResponse> = AttributeKey("HttpResponse")
-
-        /**
-         * Build this operation into an HTTP [ExecutionContext]
-         */
-        fun build(block: Builder.() -> Unit): ExecutionContext = Builder().apply(block).build()
-    }
+    private val features: MutableMap<FeatureKey<*>, Feature> = mutableMapOf()
 
     /**
-     * Convenience builder for constructing HTTP client operations
+     * Install a specific [feature] and optionally [configure] it.
      */
-    open class Builder : ClientOptionsBuilder() {
+    fun <TConfig : Any, TFeature : Feature> install(
+        feature: HttpClientFeatureFactory<TConfig, TFeature>,
+        configure: TConfig.() -> Unit = {}
+    ) {
+        require(!features.contains(feature.key)) { "feature $feature has already been installed and configured" }
+        val instance = feature.create(configure)
+        features[feature.key] = instance
+        instance.install(this)
+    }
 
-        /**
-         * The service name
-         */
-        var service: String? by requiredOption(SdkClientOption.ServiceName)
+    companion object {
+        fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
+            SdkHttpOperationBuilder<I, O>().apply(block).build()
+    }
+}
 
-        /**
-         * The name of the operation
-         */
-        var operationName: String? by requiredOption(SdkClientOption.OperationName)
+/**
+ * Round trip an operation using the given [HttpService]
+ */
+@InternalAPI
+suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
+    httpService: HttpService,
+    input: I,
+): O = execute(httpService, input) { it }
 
-//        /**
-//         * The serializer to use for the request
-//         */
-//        var serializer: HttpSerialize? by option(OperationSerializer)
-//
-//        /**
-//         * The deserializer to use for the response
-//         */
-//        var deserializer: HttpDeserialize? by option(OperationDeserializer)
+/**
+ * Make an operation request with the given [input] and return the result of executing [block] with the output.
+ *
+ * The response and any resources will remain open until the end of the [block]. This facilitates streaming
+ * output responses where the underlying raw HTTP connection needs to remain open
+ */
+@InternalAPI
+suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
+    httpService: HttpService,
+    input: I,
+    block: suspend (O) -> R
+): R {
+    val service = execution.decorate(httpService, serializer, deserializer)
+    val request = OperationRequest(context, input)
+    val output = service.call(request)
+    try {
+        return block(output)
+    } finally {
+        // pull the raw response out of the context and cleanup any resources
+        val httpResp = context.getOrNull(HttpOperationContext.HttpResponse)?.complete()
+    }
+}
 
-        /**
-         * The expected HTTP status code on success
-         */
-        var expectedHttpStatus: Int? by option(ExpectedHttpStatus)
+@InternalAPI
+class SdkHttpOperationBuilder<I, O> {
+    var serializer: HttpSerialize<I>? = null
+    var deserializer: HttpDeserialize<O>? = null
+    val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
+    private val contextBuilder = HttpOperationContext.Builder()
+
+    /**
+     * Configure HTTP operation context elements
+     */
+    fun context(block: HttpOperationContext.Builder.() -> Unit) {
+        contextBuilder.apply(block)
+    }
+
+    fun build(): SdkHttpOperation<I, O> {
+        val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
+        val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
+        return SdkHttpOperation(execution, contextBuilder.build(), opSerializer, opDeserializer)
     }
 }

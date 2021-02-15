@@ -9,11 +9,11 @@ import software.aws.clientrt.client.SdkClientOption
 import software.aws.clientrt.util.get
 import kotlin.test.*
 
-class SdkOperationTest {
+class HttpOperationContextTest {
 
     @Test
     fun testBuilder() {
-        val op = SdkHttpOperation.build {
+        val op = HttpOperationContext.build {
             service = "test"
             operationName = "operation"
             expectedHttpStatus = 418
@@ -21,14 +21,13 @@ class SdkOperationTest {
 
         assertEquals("test", op[(SdkClientOption.ServiceName)])
         assertEquals("operation", op[SdkClientOption.OperationName])
-        assertEquals(418, op[SdkHttpOperation.ExpectedHttpStatus])
-        assertNull(op.getOrNull(SdkHttpOperation.OperationSerializer))
+        assertEquals(418, op[HttpOperationContext.ExpectedHttpStatus])
     }
 
     @Test
     fun testMissingRequiredProperties() {
         val ex = assertFailsWith<IllegalArgumentException> {
-            SdkHttpOperation.build {
+            HttpOperationContext.build {
                 service = "test"
             }
         }
