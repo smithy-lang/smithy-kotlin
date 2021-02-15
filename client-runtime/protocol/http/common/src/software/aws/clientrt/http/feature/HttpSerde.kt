@@ -20,3 +20,17 @@ interface HttpSerialize<T> {
 interface HttpDeserialize<T> {
     suspend fun deserialize(response: HttpResponse): T
 }
+
+/**
+ * Convenience deserialize implementation for a type with no output type
+ */
+object UnitDeserializer : HttpDeserialize<Unit> {
+    override suspend fun deserialize(response: HttpResponse) {}
+}
+
+/**
+ * Convenience serialize implementation for a type with no input type
+ */
+object UnitSerializer : HttpSerialize<Unit> {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: Unit) {}
+}
