@@ -22,8 +22,6 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(project(":client-runtime:testing"))
-                // for testing a concrete provider
-                implementation(project(":client-runtime:serde:serde-json"))
             }
         }
     }
