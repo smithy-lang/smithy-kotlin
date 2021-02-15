@@ -63,7 +63,7 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlListSetProperties("b"))) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"))) {
             for (value in obj) {
                 value.serialize(xml)
             }
@@ -79,7 +79,7 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlListSetProperties("b"), Flattened)) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"), Flattened)) {
             for (value in obj) {
                 value.serialize(xml)
             }
@@ -203,7 +203,7 @@ class XmlSerializerTest {
         companion object {
             // Setting the map to be flattened removes two levels of nesting
             //                                                      *- ignored                                *- ignored
-            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMapProperties(entry = "flatMap"), Flattened)
+            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMapName(entry = "flatMap"), Flattened)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("Bar"))
                 field(FLAT_MAP_DESCRIPTOR)
@@ -223,7 +223,7 @@ class XmlSerializerTest {
 
     class Foo(var values: Map<String, String>? = null) : SdkSerializable {
         companion object {
-            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMapProperties(entry = "entry"))
+            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMapName(entry = "entry"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("Foo"))
                 field(FLAT_MAP_DESCRIPTOR)
@@ -336,7 +336,7 @@ data class Primitives(
         val descriptorChar = SdkFieldDescriptor(SerialKind.Char, XmlSerialName("char"))
         val descriptorString = SdkFieldDescriptor(SerialKind.String, XmlSerialName("string"))
         // val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
-        val descriptorListInt = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listInt"), XmlListSetProperties(elementName = "number"))
+        val descriptorListInt = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listInt"), XmlCollectionName(element = "number"))
     }
 
     override fun serialize(serializer: Serializer) {
