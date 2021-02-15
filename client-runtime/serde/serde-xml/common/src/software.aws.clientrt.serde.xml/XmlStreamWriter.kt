@@ -58,6 +58,11 @@ interface XmlStreamWriter {
     fun text(text: String): XmlStreamWriter
 
     /**
+     * Set the namespace prefix
+     */
+    fun namespacePrefix(uri: String, prefix: String? = null)
+
+    /**
      * XML content will be constructed in this UTF-8 encoded byte array.
      */
     val bytes: ByteArray

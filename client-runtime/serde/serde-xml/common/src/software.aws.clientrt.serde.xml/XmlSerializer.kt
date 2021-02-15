@@ -6,15 +6,24 @@ package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
 
+/**
+ * Provides serialization for the XML message format.
+ * @param xmlWriter where content is serialize to
+ */
+// TODO - mark class internal and remove integration tests once serde is stable
 class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
-    private var nodeStack = mutableListOf<String>()
+    private var nodeStack = mutableListOf<XmlSerialName>()
 
     override fun toByteArray(): ByteArray {
         return xmlWriter.bytes
     }
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
+        descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
+            xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
+        }
+
         xmlWriter.startTag(descriptor.serialName)
 
         nodeStack.add(descriptor.serialName)
@@ -23,14 +32,12 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer {
-        xmlWriter.startTag(descriptor.serialName)
+        if (!descriptor.hasTrait<Flattened>()) xmlWriter.startTag(descriptor.serialName)
         return XmlListSerializer(descriptor, xmlWriter, this)
     }
 
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
-        val mapTrait = descriptor.expectTrait<XmlMap>()
-
-        if (!mapTrait.flattened) {
+        if (!descriptor.hasTrait<Flattened>()) {
             xmlWriter.startTag(descriptor.serialName)
         }
         return XmlMapSerializer(descriptor, xmlWriter, this)
@@ -156,6 +163,9 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(this)
 }
 
+private fun XmlStreamWriter.startTag(name: XmlSerialName) = startTag(name.name)
+private fun XmlStreamWriter.endTag(serialName: XmlSerialName) = endTag(serialName.name)
+
 private class XmlMapSerializer(
     private val descriptor: SdkFieldDescriptor,
     private val xmlWriter: XmlStreamWriter,
@@ -163,23 +173,22 @@ private class XmlMapSerializer(
 ) : MapSerializer {
 
     override fun endMap() {
-        val mapTrait = descriptor.expectTrait<XmlMap>()
-        if (!mapTrait.flattened) {
+        if (!descriptor.hasTrait<Flattened>()) {
             xmlWriter.endTag(descriptor.serialName)
         }
     }
 
     fun generalEntry(key: String, valueFn: () -> Unit) {
-        val mapTrait = descriptor.expectTrait<XmlMap>()
+        val mapTrait = descriptor.findTrait() ?: XmlMapName.DEFAULT
 
-        xmlWriter.startTag(mapTrait.entry)
-        xmlWriter.startTag(mapTrait.keyName)
+        if (!descriptor.hasTrait<Flattened>()) xmlWriter.startTag(mapTrait.entry!!)
+        xmlWriter.startTag(mapTrait.key)
         xmlWriter.text(key)
-        xmlWriter.endTag(mapTrait.keyName)
-        xmlWriter.startTag(mapTrait.valueName)
+        xmlWriter.endTag(mapTrait.key)
+        xmlWriter.startTag(mapTrait.value)
         valueFn()
-        xmlWriter.endTag(mapTrait.valueName)
-        xmlWriter.endTag(mapTrait.entry)
+        xmlWriter.endTag(mapTrait.value)
+        if (!descriptor.hasTrait<Flattened>()) xmlWriter.endTag(mapTrait.entry!!)
     }
 
     override fun entry(key: String, value: Int?) = generalEntry(key) { xmlWriter.text(value.toString()) }
@@ -242,18 +251,18 @@ private class XmlMapSerializer(
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
-    override fun serializeRaw(value: String) {
-        TODO("Not yet implemented")
-    }
+    override fun serializeRaw(value: String) = serializeString(value)
 
     override fun serializeNull() {
-        TODO("Not yet implemented")
+        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
+        xmlWriter.startTag(nodeName)
+        xmlWriter.endTag(nodeName)
     }
 
     private fun serializePrimitive(value: Any) {
-        val nodeName = descriptor.expectTrait<XmlMap>().valueName
+        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
         xmlWriter.startTag(nodeName)
-        xmlWriter.text(value?.toString() ?: "") // NOTE: this may not be the correct serialization format for `null`
+        xmlWriter.text(value.toString())
         xmlWriter.endTag(nodeName)
     }
 }
@@ -265,7 +274,7 @@ private class XmlListSerializer(
 ) : ListSerializer {
 
     override fun endList() {
-        xmlWriter.endTag(descriptor.serialName)
+        if (!descriptor.hasTrait<Flattened>()) xmlWriter.endTag(descriptor.serialName)
     }
 
     override fun serializeBoolean(value: Boolean) = serializePrimitive(value)
@@ -289,17 +298,17 @@ private class XmlListSerializer(
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
     override fun serializeNull() {
-        TODO("Not yet implemented")
+        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.DEFAULT.element
+        xmlWriter.startTag(nodeName)
+        xmlWriter.endTag(nodeName)
     }
 
-    override fun serializeRaw(value: String) {
-        TODO("Not yet implemented")
-    }
+    override fun serializeRaw(value: String) = serializeString(value)
 
     private fun serializePrimitive(value: Any) {
-        val nodeName = descriptor.expectTrait<XmlList>().elementName
+        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.DEFAULT.element
         xmlWriter.startTag(nodeName)
-        xmlWriter.text(value?.toString() ?: "") // NOTE: this may not be the correct serialization format for `null`
+        xmlWriter.text(value.toString())
         xmlWriter.endTag(nodeName)
     }
 }

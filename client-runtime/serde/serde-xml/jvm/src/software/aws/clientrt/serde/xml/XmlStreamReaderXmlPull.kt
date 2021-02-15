@@ -5,6 +5,7 @@
 
 package software.aws.clientrt.serde.xml
 
+import org.xmlpull.mxp1.MXParser
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.ByteArrayInputStream
@@ -16,9 +17,13 @@ private class XmlStreamReaderXmlPull(
     private val parser: XmlPullParser = xmlPullParserFactory()
 ) : XmlStreamReader {
 
-    private var peekedToken: XmlToken? = null
+    data class PeekState(val token: XmlToken, val depth: Int)
+
+    private var _currentToken: XmlToken = XmlToken.StartDocument
+    private var peekedToken: PeekState? = null
 
     init {
+        parser.setFeature(MXParser.FEATURE_PROCESS_NAMESPACES, true)
         parser.setInput(ByteArrayInputStream(payload), charset.toString())
     }
 
@@ -29,31 +34,48 @@ private class XmlStreamReaderXmlPull(
         }
     }
 
-    // NOTE: Because of the way peeking is managed, any code in this class wanting to get the next token must call
-    // this method rather than calling `parser.nextToken()` directly.
-    override suspend fun nextToken(): XmlToken {
+    override fun toString(): String {
+        return _currentToken.toString()
+    }
+
+    override suspend fun nextToken(): XmlToken = pullToken(false)
+
+    /**
+     * @param isPeek if true, the value returned will still be taken upon the next call to nextToken().
+     */
+    private fun pullToken(isPeek: Boolean): XmlToken {
         if (peekedToken != null) {
             val rv = peekedToken!!
             peekedToken = null
-            return rv
+            if (!isPeek) {
+                _currentToken = rv.token
+                println("Pulled token $_currentToken")
+            }
+            return rv.token
         }
 
         try {
-            return when (val nt = parser.nextToken()) {
-                XmlPullParser.START_DOCUMENT -> nextToken()
+            val rv = when (val nt = parser.nextToken()) {
+                XmlPullParser.START_DOCUMENT -> pullToken(isPeek)
                 XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
                 XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes())
                 XmlPullParser.END_TAG -> XmlToken.EndElement(parser.qualifiedName())
                 XmlPullParser.CDSECT,
                 XmlPullParser.COMMENT,
                 XmlPullParser.DOCDECL,
-                XmlPullParser.IGNORABLE_WHITESPACE -> nextToken()
+                XmlPullParser.IGNORABLE_WHITESPACE -> pullToken(isPeek)
                 XmlPullParser.TEXT -> {
-                    if (parser.text.blankToNull() == null) nextToken()
+                    if (parser.text.blankToNull() == null) pullToken(isPeek)
                     else XmlToken.Text(parser.text.blankToNull())
                 }
                 else -> throw IllegalStateException("Unhandled tag $nt")
             }
+
+            if (!isPeek) {
+                _currentToken = rv
+                println("Pulled token $_currentToken")
+            }
+            return rv
         } catch (e: Exception) {
             throw XmlGenerationException(e)
         }
@@ -61,7 +83,7 @@ private class XmlStreamReaderXmlPull(
 
     // Create qualified name from current node
     private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
-        XmlToken.QualifiedName(name, namespace.blankToNull())
+        XmlToken.QualifiedName(name, namespace.blankToNull(), prefix.blankToNull())
 
     // Return attribute map from attributes of current node
     private fun parseAttributes(): Map<XmlToken.QualifiedName, String> {
@@ -93,6 +115,9 @@ private class XmlStreamReaderXmlPull(
         require(startDepth == parser.depth) { "Expected to maintain parser depth after skip, but started at $startDepth and now at ${parser.depth}" }
     }
 
+    override val currentToken: XmlToken
+        get() = _currentToken
+
     tailrec suspend fun traverseNode(st: XmlToken, startDepth: Int) {
         if (st == XmlToken.EndDocument) return
         if (st is XmlToken.EndElement && parser.depth == startDepth) return
@@ -103,13 +128,15 @@ private class XmlStreamReaderXmlPull(
 
     override suspend fun peek(): XmlToken = when (peekedToken) {
         null -> {
-            peekedToken = nextToken()
-            peekedToken as XmlToken
+            val currentDepth = parser.depth
+            peekedToken = PeekState(pullToken(true), currentDepth)
+            peekedToken!!.token
         }
-        else -> peekedToken as XmlToken
+        else -> peekedToken!!.token
     }
 
-    override suspend fun currentDepth(): Int = parser.depth
+    override val currentDepth: Int
+        get() = if (peekedToken != null) peekedToken!!.depth else parser.depth
 }
 
 private fun String?.blankToNull(): String? = if (this?.isBlank() != false) null else this

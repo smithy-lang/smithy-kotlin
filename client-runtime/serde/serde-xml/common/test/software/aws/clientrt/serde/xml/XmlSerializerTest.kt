@@ -23,10 +23,10 @@ class XmlSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("b"))
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName = "a"
+                trait(XmlSerialName("a"))
                 field(descriptorB)
             }
         }
@@ -40,10 +40,10 @@ class XmlSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("v", SerialKind.Integer)
+            val descriptorValue = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("v"))
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName = "b"
+                trait(XmlSerialName("b"))
                 field(descriptorValue)
             }
         }
@@ -63,12 +63,28 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor("list", SerialKind.List)) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"))) {
             for (value in obj) {
                 value.serialize(xml)
             }
         }
         assertEquals("""<list><b><v>1</v></b><b><v>2</v></b><b><v>3</v></b></list>""", xml.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun canSerializeFlatListOfClasses() {
+        val obj = listOf(
+            B(1),
+            B(2),
+            B(3)
+        )
+        val xml = XmlSerializer()
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"), Flattened)) {
+            for (value in obj) {
+                value.serialize(xml)
+            }
+        }
+        assertEquals("""<b><v>1</v></b><b><v>2</v></b><b><v>3</v></b>""", xml.toByteArray().decodeToString())
     }
 
     // See https://awslabs.github.io/smithy/spec/xml.html#wrapped-map-serialization
@@ -98,8 +114,9 @@ class XmlSerializerTest {
         )
         val xml = XmlSerializer()
         bar.serialize(xml)
+        val expected = """<Bar><key>example-key1</key><value>example1</value><key>example-key2</key><value>example2</value><key>example-key3</key><value>example3</value></Bar>"""
 
-        assertEquals("""<Bar><flatMap><key>example-key1</key><value>example1</value></flatMap><flatMap><key>example-key2</key><value>example2</value></flatMap><flatMap><key>example-key3</key><value>example3</value></flatMap></Bar>""", xml.toByteArray().decodeToString())
+        assertEquals(expected, xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -110,16 +127,16 @@ class XmlSerializerTest {
             "A3" to listOf("g", "h", "i")
         )
         val xml = XmlSerializer()
-        xml.serializeMap(SdkFieldDescriptor("objs", SerialKind.Map, 0, XmlMap())) {
+        xml.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objs"))) {
             for (obj in objs) {
-                listEntry(obj.key, SdkFieldDescriptor("elements", SerialKind.List, 0, XmlList())) {
+                listEntry(obj.key, SdkFieldDescriptor(SerialKind.List, XmlSerialName("elements"))) {
                     for (v in obj.value) {
                         serializeString(v)
                     }
                 }
             }
         }
-        assertEquals("""<objs><entry><key>A1</key><value><elements><element>a</element><element>b</element><element>c</element></elements></value></entry><entry><key>A2</key><value><elements><element>d</element><element>e</element><element>f</element></elements></value></entry><entry><key>A3</key><value><elements><element>g</element><element>h</element><element>i</element></elements></value></entry></objs>""", xml.toByteArray().decodeToString())
+        assertEquals("""<objs><entry><key>A1</key><value><elements><member>a</member><member>b</member><member>c</member></elements></value></entry><entry><key>A2</key><value><elements><member>d</member><member>e</member><member>f</member></elements></value></entry><entry><key>A3</key><value><elements><member>g</member><member>h</member><member>i</member></elements></value></entry></objs>""", xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -130,16 +147,16 @@ class XmlSerializerTest {
             listOf("g", "h", "i")
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor("objs", SerialKind.List, 0, XmlList())) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("objs"))) {
             for (obj in objs) {
-                xml.serializeList(SdkFieldDescriptor("elements", SerialKind.List, 0, XmlList())) {
+                xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("elements"))) {
                     for (v in obj) {
                         serializeString(v)
                     }
                 }
             }
         }
-        assertEquals("""<objs><elements><element>a</element><element>b</element><element>c</element></elements><elements><element>d</element><element>e</element><element>f</element></elements><elements><element>g</element><element>h</element><element>i</element></elements></objs>""", xml.toByteArray().decodeToString())
+        assertEquals("""<objs><elements><member>a</member><member>b</member><member>c</member></elements><elements><member>d</member><member>e</member><member>f</member></elements><elements><member>g</member><member>h</member><member>i</member></elements></objs>""", xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -150,9 +167,9 @@ class XmlSerializerTest {
             mapOf("i" to "j", "k" to "l"),
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor("elements", SerialKind.List, 0, XmlList())) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("elements"))) {
             for (obj in objs) {
-                xml.serializeMap(SdkFieldDescriptor("entries", SerialKind.Map, 0, XmlMap())) {
+                xml.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("entries"))) {
                     for (v in obj) {
                         entry(v.key, v.value)
                     }
@@ -170,9 +187,9 @@ class XmlSerializerTest {
             "A3" to mapOf("i" to "j", "k" to "l"),
         )
         val json = XmlSerializer()
-        json.serializeMap(SdkFieldDescriptor("objs", SerialKind.Map, 0, XmlMap())) {
+        json.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objs"))) {
             for (obj in objs) {
-                mapEntry(obj.key, SdkFieldDescriptor("objvals", SerialKind.Map, 0, XmlMap())) {
+                mapEntry(obj.key, SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objvals"))) {
                     for (v in obj.value) {
                         entry(v.key, v.value)
                     }
@@ -186,9 +203,9 @@ class XmlSerializerTest {
         companion object {
             // Setting the map to be flattened removes two levels of nesting
             //                                                      *- ignored                                *- ignored
-            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor("flatMap", SerialKind.Map, 0, XmlMap(entry = "flatMap", flattened = true))
+            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMapName(entry = "flatMap"), Flattened)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "Bar"
+                trait(XmlSerialName("Bar"))
                 field(FLAT_MAP_DESCRIPTOR)
             }
         }
@@ -206,9 +223,9 @@ class XmlSerializerTest {
 
     class Foo(var values: Map<String, String>? = null) : SdkSerializable {
         companion object {
-            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor("values", SerialKind.Map, 0, XmlMap(entry = "entry", flattened = false))
+            val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("values"), XmlMapName(entry = "entry"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "Foo"
+                trait(XmlSerialName("Foo"))
                 field(FLAT_MAP_DESCRIPTOR)
             }
         }
@@ -235,6 +252,63 @@ class XmlSerializerTest {
 
         assertEquals("""<struct><boolean>true</boolean><byte>10</byte><short>20</short><int>30</int><long>40</long><float>50.0</float><double>60.0</double><char>A</char><string>Str0</string><listInt><number>1</number><number>2</number><number>3</number></listInt></struct>""", xml.toByteArray().decodeToString())
     }
+
+    // See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
+    @Test
+    fun canSerializeNamespaces() {
+        val myStructure = MyStructure1("example", "example")
+        val xml = XmlSerializer()
+        myStructure.serialize(xml)
+        assertEquals("""<MyStructure xmlns="http://foo.com"><foo>example</foo><bar>example</bar></MyStructure>""", xml.toByteArray().decodeToString())
+
+        val myStructure2 = MyStructure2("example", "example")
+        val xml2 = XmlSerializer()
+        myStructure2.serialize(xml2)
+        assertEquals("""<MyStructure xmlns:baz="http://foo.com"><foo>example</foo><baz:bar>example</baz:bar></MyStructure>""", xml2.toByteArray().decodeToString())
+    }
+
+    class MyStructure1(private val foo: String, private val bar: String) : SdkSerializable {
+        companion object {
+            val fooDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("foo"))
+            val barDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("bar"))
+
+            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+                trait(XmlSerialName("MyStructure"))
+                trait(XmlNamespace("http://foo.com"))
+                field(fooDescriptor)
+                field(barDescriptor)
+            }
+        }
+
+        override fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(objectDescriptor) {
+                field(fooDescriptor, foo)
+                field(barDescriptor, bar)
+            }
+        }
+    }
+
+    class MyStructure2(private val foo: String, private val bar: String) : SdkSerializable {
+        companion object {
+            val fooDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("foo"))
+            val barDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("baz:bar"))
+
+            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+                trait(XmlSerialName("MyStructure"))
+                trait(XmlNamespace("http://foo.com", "baz"))
+
+                field(fooDescriptor)
+                field(barDescriptor)
+            }
+        }
+
+        override fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(objectDescriptor) {
+                field(fooDescriptor, foo)
+                field(barDescriptor, bar)
+            }
+        }
+    }
 }
 
 data class Primitives(
@@ -252,21 +326,21 @@ data class Primitives(
     val listInt: List<Int>
 ) : SdkSerializable {
     companion object {
-        val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean)
-        val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte)
-        val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short)
-        val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer)
-        val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long)
-        val descriptorFloat = SdkFieldDescriptor("float", SerialKind.Float)
-        val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double)
-        val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char)
-        val descriptorString = SdkFieldDescriptor("string", SerialKind.String)
+        val descriptorBoolean = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("boolean"))
+        val descriptorByte = SdkFieldDescriptor(SerialKind.Byte, XmlSerialName("byte"))
+        val descriptorShort = SdkFieldDescriptor(SerialKind.Short, XmlSerialName("short"))
+        val descriptorInt = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("int"))
+        val descriptorLong = SdkFieldDescriptor(SerialKind.Long, XmlSerialName("long"))
+        val descriptorFloat = SdkFieldDescriptor(SerialKind.Float, XmlSerialName("float"))
+        val descriptorDouble = SdkFieldDescriptor(SerialKind.Double, XmlSerialName("double"))
+        val descriptorChar = SdkFieldDescriptor(SerialKind.Char, XmlSerialName("char"))
+        val descriptorString = SdkFieldDescriptor(SerialKind.String, XmlSerialName("string"))
         // val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
-        val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List, 0, XmlList(elementName = "number"))
+        val descriptorListInt = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listInt"), XmlCollectionName(element = "number"))
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct(SdkFieldDescriptor("struct", SerialKind.Struct)) {
+        serializer.serializeStruct(SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("struct"))) {
             serializeNull()
             field(descriptorBoolean, boolean)
             field(descriptorByte, byte)

@@ -1,21 +1,24 @@
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
+import software.aws.clientrt.serde.json.JsonSerialName
 import software.aws.clientrt.serde.xml.XmlDeserializer
+import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-class NullDeserializationParityTest {
+fun String.toSerialNames(): Set<FieldTrait> = setOf(JsonSerialName(this), XmlSerialName(this))
 
+class NullDeserializationParityTest {
     class AnonStruct {
         var x: Int? = null
         var y: Int? = null
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "x".toSerialNames())
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "y".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "AnonStruct"
+                trait(XmlSerialName("AnonStruct"))
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
             }
@@ -41,8 +44,9 @@ class NullDeserializationParityTest {
         var childStruct: ChildStruct? = null
 
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("ChildStruct", SerialKind.Map)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, JsonSerialName("ChildStruct"), XmlSerialName("ChildStruct"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                trait(XmlSerialName("ParentStruct"))
                 field(X_DESCRIPTOR)
             }
 
@@ -66,10 +70,10 @@ class NullDeserializationParityTest {
         var x: Int? = null
         var y: Int? = null
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "x".toSerialNames())
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "y".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "ChildStruct"
+                trait(XmlSerialName("ChildStruct"))
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
             }
