@@ -1255,27 +1255,27 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         when (findNextFieldIndex()) {
             PAYLOAD_DESCRIPTOR.index -> builder.payload =
                 deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
-                                val map0 = mutableMapOf<String, Map<String, Int>>()
-                                while (hasNextEntry()) {
-                                    val k0 = key()
-                                    val v0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                        val map1 = mutableMapOf<String, Int>()
-                                        while (hasNextEntry()) {
-                                            val k1 = key()
-                                            val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                            map1[k1] = v1
-                                        }
-                                        map1
-                                    }
-                                    map0[k0] = v0
-                                }
-                                map0
+                    val map0 = mutableMapOf<String, Map<String, Int>>()
+                    while (hasNextEntry()) {
+                        val k0 = key()
+                        val v0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
+                            val map1 = mutableMapOf<String, Int>()
+                            while (hasNextEntry()) {
+                                val k1 = key()
+                                val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                map1[k1] = v1
                             }
-                        null -> break@loop
-                        else -> skipValue()
+                            map1
+                        }
+                        map0[k0] = v0
                     }
+                    map0
                 }
-            }
+            null -> break@loop
+            else -> skipValue()
+        }
+    }
+}
         """.trimIndent()
 
         val actual = getContentsForShape(model, "com.test#Foo")

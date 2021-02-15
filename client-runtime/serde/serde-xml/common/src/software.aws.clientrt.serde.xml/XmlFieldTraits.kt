@@ -10,50 +10,48 @@ import software.aws.clientrt.serde.*
 // NOTE: By default, a descriptor without any Xml trait is assumed to be a primitive TEXT value.
 
 /**
- * Specifies properties used to encode a Map structure.
+ * Specifies entry, key, and value node names used to encode a Map structure.
  * See https://awslabs.github.io/smithy/spec/xml.html#map-serialization
  *
  * This trait need only be added to a [SdkFieldDescriptor] if the map entry, key, or value is something
- * other than the default specified in [XmlMapProperties.DEFAULT]
+ * other than the default specified in [XmlMapName.DEFAULT]
  *
  * @param entry the name of the entry node which wraps map entries. Must be null for flat maps.
- * @param keyName the name of the key field
- * @param valueName the name of the value field
+ * @param key the name of the key field
+ * @param value the name of the value field
  */
-data class XmlMapProperties(
+data class XmlMapName(
     val entry: String? = DEFAULT.entry,
-    val keyName: String = DEFAULT.keyName,
-    val valueName: String = DEFAULT.valueName
-): FieldTrait {
+    val key: String = DEFAULT.key,
+    val value: String = DEFAULT.value
+) : FieldTrait {
     companion object {
         /**
          * The default serialized names for aspects of a Map in XML.
          * These defaults are specified here: https://awslabs.github.io/smithy/spec/xml.html#map-serialization
          */
-        val DEFAULT = XmlMapProperties("entry", "key", "value")
+        val DEFAULT = XmlMapName("entry", "key", "value")
     }
 }
 
-
-
 /**
- * Specifies properties used to encode a List structure.
+ * Specifies element wrapper name used to encode a List structure.
  * See https://awslabs.github.io/smithy/spec/xml.html#list-and-set-serialization
  *
  * This trait need only be added to a [SdkFieldDescriptor] if the element name is something
- * other than the default specified in [XmlListSetProperties.DEFAULT]
+ * other than the default specified in [XmlCollectionName.DEFAULT]
  *
- * @param elementName the name of the XML node which wraps each list or set entry.
+ * @param element the name of the XML node which wraps each list or set entry.
  */
-data class XmlListSetProperties(
-    val elementName: String
+data class XmlCollectionName(
+    val element: String
 ) : FieldTrait {
     companion object {
         /**
          * The default serialized name for a list or set element.
          * This default is specified here: https://awslabs.github.io/smithy/spec/xml.html#list-and-set-serialization
          */
-        val DEFAULT = XmlListSetProperties("member")
+        val DEFAULT = XmlCollectionName("member")
     }
 }
 
@@ -80,7 +78,14 @@ data class XmlSerialName(val name: String) : FieldTrait {
             xmlNamespace != null -> {
                 val (nodeName, prefix) = name.parseNodeWithPrefix()
 
-                if (xmlNamespace.prefix == prefix) XmlToken.QualifiedName(nodeName, xmlNamespace.uri, xmlNamespace.prefix) else XmlToken.QualifiedName(name)
+                when (prefix) {
+                    xmlNamespace.prefix -> XmlToken.QualifiedName(
+                        nodeName,
+                        xmlNamespace.uri,
+                        xmlNamespace.prefix
+                    )
+                    else -> XmlToken.QualifiedName(name)
+                }
             }
             name.nodeHasPrefix() -> {
                 val (nodeName, prefix) = name.parseNodeWithPrefix()
@@ -126,7 +131,7 @@ val SdkFieldDescriptor.serialName: XmlSerialName
 
 // Return the name based on most specific type
 internal fun SdkFieldDescriptor.generalName() = when {
-    hasTrait<XmlListSetProperties>() -> findTrait<XmlListSetProperties>()?.elementName ?: XmlListSetProperties.DEFAULT.elementName
-    hasTrait<XmlMapProperties>() -> findTrait<XmlMapProperties>()?.valueName ?: XmlMapProperties.DEFAULT.valueName
+    hasTrait<XmlCollectionName>() -> findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.DEFAULT.element
+    hasTrait<XmlMapName>() -> findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
     else -> expectTrait<XmlSerialName>().name
 }

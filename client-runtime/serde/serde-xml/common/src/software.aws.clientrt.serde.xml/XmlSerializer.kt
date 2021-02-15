@@ -179,15 +179,15 @@ private class XmlMapSerializer(
     }
 
     fun generalEntry(key: String, valueFn: () -> Unit) {
-        val mapTrait = descriptor.findTrait() ?: XmlMapProperties.DEFAULT
+        val mapTrait = descriptor.findTrait() ?: XmlMapName.DEFAULT
 
         if (!descriptor.hasTrait<Flattened>()) xmlWriter.startTag(mapTrait.entry!!)
-        xmlWriter.startTag(mapTrait.keyName)
+        xmlWriter.startTag(mapTrait.key)
         xmlWriter.text(key)
-        xmlWriter.endTag(mapTrait.keyName)
-        xmlWriter.startTag(mapTrait.valueName)
+        xmlWriter.endTag(mapTrait.key)
+        xmlWriter.startTag(mapTrait.value)
         valueFn()
-        xmlWriter.endTag(mapTrait.valueName)
+        xmlWriter.endTag(mapTrait.value)
         if (!descriptor.hasTrait<Flattened>()) xmlWriter.endTag(mapTrait.entry!!)
     }
 
@@ -254,13 +254,13 @@ private class XmlMapSerializer(
     override fun serializeRaw(value: String) = serializeString(value)
 
     override fun serializeNull() {
-        val nodeName = descriptor.findTrait<XmlMapProperties>()?.valueName ?: XmlMapProperties.DEFAULT.valueName
+        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
         xmlWriter.startTag(nodeName)
         xmlWriter.endTag(nodeName)
     }
 
     private fun serializePrimitive(value: Any) {
-        val nodeName = descriptor.findTrait<XmlMapProperties>()?.valueName ?: XmlMapProperties.DEFAULT.valueName
+        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value.toString())
         xmlWriter.endTag(nodeName)
@@ -298,7 +298,7 @@ private class XmlListSerializer(
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
     override fun serializeNull() {
-        val nodeName = descriptor.findTrait<XmlListSetProperties>()?.elementName ?: XmlListSetProperties.DEFAULT.elementName
+        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.DEFAULT.element
         xmlWriter.startTag(nodeName)
         xmlWriter.endTag(nodeName)
     }
@@ -306,7 +306,7 @@ private class XmlListSerializer(
     override fun serializeRaw(value: String) = serializeString(value)
 
     private fun serializePrimitive(value: Any) {
-        val nodeName = descriptor.findTrait<XmlListSetProperties>()?.elementName ?: XmlListSetProperties.DEFAULT.elementName
+        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.DEFAULT.element
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value.toString())
         xmlWriter.endTag(nodeName)

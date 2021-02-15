@@ -27,9 +27,9 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
             reader.takeNextAs<XmlToken.EndElement>()
         } ?: throw DeserializationException("Node specifies no or invalid value.")
 
-        if (fieldDescriptor.hasTrait<XmlMapProperties>()) {
+        if (fieldDescriptor.hasTrait<XmlMapName>()) {
             // Optionally consume the entry wrapper
-            val mapTrait = fieldDescriptor.findTrait() ?: XmlMapProperties.DEFAULT
+            val mapTrait = fieldDescriptor.findTrait() ?: XmlMapName.DEFAULT
             val nextToken = reader.peek()
             if (nextToken is XmlToken.EndElement) {
                 val consumeEndToken = when (fieldDescriptor.hasTrait<Flattened>()) {
