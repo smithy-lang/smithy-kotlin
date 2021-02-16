@@ -50,7 +50,6 @@ class HttpProtocolTestGenerator(
     fun generateProtocolTests() {
         val operationIndex: OperationIndex = OperationIndex.of(ctx.model)
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-        val serviceSymbol = ctx.symbolProvider.toSymbol(ctx.service)
 
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
 
@@ -75,7 +74,7 @@ class HttpProtocolTestGenerator(
                             .model(ctx.model)
                             .symbolProvider(ctx.symbolProvider)
                             .operation(operation)
-                            .serviceName(serviceSymbol.name)
+                            .service(ctx.service)
                             .testCases(testCases)
                             .build()
                             .renderTestClass(testClassName)
@@ -101,7 +100,7 @@ class HttpProtocolTestGenerator(
                             .model(ctx.model)
                             .symbolProvider(ctx.symbolProvider)
                             .operation(operation)
-                            .serviceName(serviceSymbol.name)
+                            .service(ctx.service)
                             .testCases(testCases)
                             .build()
                             .renderTestClass(testClassName)
@@ -132,7 +131,7 @@ class HttpProtocolTestGenerator(
                                 .model(ctx.model)
                                 .symbolProvider(ctx.symbolProvider)
                                 .operation(operation)
-                                .serviceName(serviceSymbol.name)
+                                .service(ctx.service)
                                 .testCases(testCases)
                                 .build()
                                 .renderTestClass(testClassName)
