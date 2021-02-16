@@ -18,6 +18,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import java.util.*
 
 /**
  * Test if a string is a valid Kotlin identifier name
@@ -65,3 +66,8 @@ internal fun Int.variableNameFor(type: NestedIdentifierType): String = "${type.p
  * Generate an identifier for a given nesting level
  */
 internal fun Int.nestedDescriptorName(): String = "_c$this"
+
+/**
+ * Get the value if present otherwise return null
+ */
+fun <T> Optional<T>.getOrNull(): T? = if (isPresent) get() else null
