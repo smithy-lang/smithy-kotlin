@@ -30,6 +30,12 @@ open class HttpOperationContext {
         val HttpResponse: AttributeKey<HttpResponse> = AttributeKey("HttpResponse")
 
         /**
+         * A prefix to prepend the resolved hostname with.
+         * See: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#endpoint-trait
+         */
+        val HostPrefix: AttributeKey<String> = AttributeKey("HostPrefix")
+
+        /**
          * Build this operation into an HTTP [ExecutionContext]
          */
         fun build(block: Builder.() -> Unit): ExecutionContext = Builder().apply(block).build()
@@ -54,5 +60,10 @@ open class HttpOperationContext {
          * The expected HTTP status code on success
          */
         var expectedHttpStatus: Int? by option(ExpectedHttpStatus)
+
+        /**
+         * (Optional) prefix to prepend to a (resolved) hostname
+         */
+        var hostPrefix: String? by option(HostPrefix)
     }
 }

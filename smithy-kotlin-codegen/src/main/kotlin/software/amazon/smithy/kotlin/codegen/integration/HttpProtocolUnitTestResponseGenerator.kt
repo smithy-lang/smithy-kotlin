@@ -94,7 +94,8 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     writer.write("val input = ${inputSymbol.name}{}")
                 }
 
-                writer.openBlock("val service = \$L {", serviceName)
+                val service = symbolProvider.toSymbol(serviceShape)
+                writer.openBlock("val service = \$L {", service.name)
                     .call { renderConfigureServiceClient(test) }
                     .closeBlock("}")
 

@@ -228,4 +228,56 @@ class HttpProtocolClientGeneratorTest {
         assertEquals(openBraces, closedBraces)
         assertEquals(openParens, closedParens)
     }
+
+    @Test
+    fun `it handles endpointTrait hostPrefix with label`() {
+        val model = """
+            namespace com.test
+            use aws.protocols#awsJson1_1
+
+            @awsJson1_1
+            service Example {
+                version: "1.0.0",
+                operations: [ GetStatus ]
+            }
+
+            @readonly
+            @endpoint(hostPrefix: "{foo}.data.")
+            @http(method: "POST", uri: "/status")
+            operation GetStatus {
+                input: GetStatusInput,
+                output: GetStatusOutput
+            }
+
+            structure GetStatusInput {
+                @required
+                @hostLabel
+                foo: String
+            }
+            
+            structure GetStatusOutput {}
+        """.asSmithyModel()
+
+        val ctx = model.newTestContext("com.test#Example")
+        val writer = KotlinWriter("com.test")
+        val generator = HttpProtocolClientGenerator(
+            ctx.generationCtx, "test", listOf(),
+            HttpTraitResolver(ctx.generationCtx, "application/json")
+        )
+        generator.render(writer)
+        val contents = writer.toString()
+
+        val prefix = "\${input.foo}.data."
+        val expectedFragment = """
+        val execCtx = SdkHttpOperation.build {
+            serializer = GetStatusSerializer(input)
+            deserializer = GetStatusDeserializer()
+            expectedHttpStatus = 200
+            service = serviceName
+            operationName = "GetStatus"
+            hostPrefix = "$prefix"
+        }
+        """
+        contents.shouldContainOnlyOnceWithDiff(expectedFragment)
+    }
 }
