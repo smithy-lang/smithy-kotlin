@@ -5,9 +5,9 @@
 package software.aws.clientrt.http
 
 import software.aws.clientrt.http.engine.HttpClientEngine
-import software.aws.clientrt.http.middleware.Service
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.io.Service
 
 typealias HttpService = Service<HttpRequestBuilder, HttpResponse>
 

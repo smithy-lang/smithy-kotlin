@@ -8,14 +8,14 @@ extra["displayName"] = "Smithy :: Kotlin :: HTTP Core"
 extra["moduleName"] = "software.aws.clientrt.http"
 
 kotlin {
-
     sourceSets {
         commonMain {
             dependencies {
                 api(project(":client-runtime:client-rt-core"))
-                // exposes Attributes
+                // exposes: Attributes
                 api(project(":client-runtime:utils"))
-                implementation(project(":client-runtime:io"))
+                // exposes: service+middleware
+                api(project(":client-runtime:io"))
             }
         }
 

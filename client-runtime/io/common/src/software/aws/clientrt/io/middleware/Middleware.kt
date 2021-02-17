@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.aws.clientrt.http.middleware
+package software.aws.clientrt.io.middleware
+
+import software.aws.clientrt.io.Service
 
 /**
  * Decorates a [Service], transforming either the request or the response

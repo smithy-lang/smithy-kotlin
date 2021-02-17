@@ -6,11 +6,13 @@
 package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.http.HttpService
-import software.aws.clientrt.http.middleware.*
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.OperationRequest
 import software.aws.clientrt.http.request.SdkHttpRequest
 import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.io.Service
+import software.aws.clientrt.io.middleware.MapRequest
+import software.aws.clientrt.io.middleware.Phase
 import software.aws.clientrt.util.InternalAPI
 
 /**
@@ -63,12 +65,12 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
         sdkRequest.request
     }
 
-    val receiveService = decorate(inner, receive)
+    val receiveService = software.aws.clientrt.io.middleware.decorate(inner, receive)
     val deserializeService = deserializer.decorate(receiveService)
-    val finalizeService = decorate(FinalizeService(deserializeService), finalize)
-    val stateService = decorate(StateService(finalizeService), state)
+    val finalizeService = software.aws.clientrt.io.middleware.decorate(FinalizeService(deserializeService), finalize)
+    val stateService = software.aws.clientrt.io.middleware.decorate(StateService(finalizeService), state)
     val serializeService = serializer.decorate(stateService)
-    return decorate(InitializeService(serializeService), initialize)
+    return software.aws.clientrt.io.middleware.decorate(InitializeService(serializeService), initialize)
 }
 
 private fun <I, O> HttpSerialize<I>.decorate(

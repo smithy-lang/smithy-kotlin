@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.aws.clientrt.http.middleware
+package software.aws.clientrt.io.middleware
+
+import software.aws.clientrt.io.Service
 
 /**
  * A specific point in the lifecycle of executing a request where the input and output type(s)

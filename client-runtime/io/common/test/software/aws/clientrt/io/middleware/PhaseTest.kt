@@ -3,8 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.aws.clientrt.http.middleware
+package software.aws.clientrt.io.middleware
 
+import software.aws.clientrt.io.Service
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
