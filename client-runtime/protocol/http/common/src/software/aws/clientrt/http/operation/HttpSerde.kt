@@ -7,6 +7,9 @@ package software.aws.clientrt.http.operation
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 
+// FIXME - if SAM interfaces support suspend soon we should consider updating HttpSerialize/Deserialize to use them instead
+// see: https://youtrack.jetbrains.com/issue/KT-40978
+
 /**
  * Implemented by types that know how to serialize to the HTTP protocol.
  */

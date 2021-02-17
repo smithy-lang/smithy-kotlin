@@ -7,8 +7,6 @@ package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.http.HttpService
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.http.request.OperationRequest
-import software.aws.clientrt.http.request.SdkHttpRequest
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.io.Service
 import software.aws.clientrt.io.middleware.MapRequest

@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.aws.clientrt.http.request
+package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.client.ExecutionContext
+import software.aws.clientrt.http.request.HttpRequestBuilder
 
 /**
  * Wrapper around an operation [input] type with an execution context.

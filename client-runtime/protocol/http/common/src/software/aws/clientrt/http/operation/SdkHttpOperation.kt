@@ -10,7 +10,6 @@ import software.aws.clientrt.http.Feature
 import software.aws.clientrt.http.FeatureKey
 import software.aws.clientrt.http.HttpClientFeatureFactory
 import software.aws.clientrt.http.HttpService
-import software.aws.clientrt.http.request.OperationRequest
 import software.aws.clientrt.util.InternalAPI
 
 /**
