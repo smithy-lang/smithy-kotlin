@@ -6,6 +6,7 @@ package software.aws.clientrt.http.feature
 
 import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.http.*
+import software.aws.clientrt.http.operation.SdkHttpOperation
 import software.aws.clientrt.http.request.HttpRequest
 
 /**

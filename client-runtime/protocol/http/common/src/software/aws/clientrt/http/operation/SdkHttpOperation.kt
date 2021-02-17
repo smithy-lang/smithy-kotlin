@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.aws.clientrt.http
+package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.client.ExecutionContext
-import software.aws.clientrt.http.feature.HttpDeserialize
-import software.aws.clientrt.http.feature.HttpSerialize
+import software.aws.clientrt.http.Feature
+import software.aws.clientrt.http.FeatureKey
+import software.aws.clientrt.http.HttpClientFeatureFactory
+import software.aws.clientrt.http.HttpService
 import software.aws.clientrt.http.request.OperationRequest
 import software.aws.clientrt.util.InternalAPI
 

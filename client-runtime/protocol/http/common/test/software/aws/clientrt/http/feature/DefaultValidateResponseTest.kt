@@ -6,6 +6,8 @@ package software.aws.clientrt.http.feature
 
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.operation.newTestOperation
+import software.aws.clientrt.http.operation.roundTrip
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.testing.runSuspendTest

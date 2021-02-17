@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.aws.clientrt.http.feature
+package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
@@ -33,4 +33,13 @@ object UnitDeserializer : HttpDeserialize<Unit> {
  */
 object UnitSerializer : HttpSerialize<Unit> {
     override suspend fun serialize(builder: HttpRequestBuilder, input: Unit) {}
+}
+
+/**
+ * Convenience deserialize implementation that returns the response without modification
+ */
+object IdentityDeserializer : HttpDeserialize<HttpResponse> {
+    override suspend fun deserialize(response: HttpResponse): HttpResponse {
+        return response
+    }
 }

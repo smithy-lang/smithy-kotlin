@@ -4,6 +4,8 @@
  */
 package software.aws.clientrt.http
 
+import software.aws.clientrt.http.operation.SdkHttpOperation
+
 /**
  * Used to identify a particular feature
  */
