@@ -82,18 +82,15 @@ class SdkHttpOperationBuilder<I, O> {
     var serializer: HttpSerialize<I>? = null
     var deserializer: HttpDeserialize<O>? = null
     val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
-    private val contextBuilder = HttpOperationContext.Builder()
-
-    /**
-     * Configure HTTP operation context elements
-     */
-    fun context(block: HttpOperationContext.Builder.() -> Unit) {
-        contextBuilder.apply(block)
-    }
+    val context = HttpOperationContext.Builder()
 
     fun build(): SdkHttpOperation<I, O> {
         val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
         val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
-        return SdkHttpOperation(execution, contextBuilder.build(), opSerializer, opDeserializer)
+        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer)
     }
 }
+/**
+ * Configure HTTP operation context elements
+ */
+fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) = context.apply(block)
