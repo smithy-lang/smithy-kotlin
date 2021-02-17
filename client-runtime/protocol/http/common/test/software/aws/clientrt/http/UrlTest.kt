@@ -171,11 +171,19 @@ class UrlTest {
     @Test
     fun testEncodePath() {
         val url = UrlBuilder()
-        url.parameters.appendAll("q", listOf("dogs", "&", "7"))
+        url.parameters {
+            appendAll("q", listOf("dogs", "&", "7"))
+            append("empty", "")
+        }
         url.path = "/foo/bar"
         url.fragment = "header1"
-        val expected = "/foo/bar?q=dogs&q=%26&q=7#header1"
+        val expected = "/foo/bar?empty=&q=dogs&q=%26&q=7#header1"
         assertEquals(expected, url.encodedPath)
         assertEquals(expected, url.build().encodedPath)
+
+        val noParams = UrlBuilder {
+            path = "/foo/bar"
+        }
+        assertEquals("/foo/bar", noParams.encodedPath)
     }
 }
