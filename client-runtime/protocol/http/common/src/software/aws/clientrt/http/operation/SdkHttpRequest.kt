@@ -14,6 +14,7 @@ import software.aws.clientrt.http.request.HttpRequestBuilder
 data class OperationRequest<T>(val context: ExecutionContext, val input: T)
 
 /**
- * An outgoing HTTP request being built
+ * Wrapper around an outgoing HTTP request being built ([HttpRequestBuilder])
+ * with an execution context.
  */
-data class SdkHttpRequest(val context: ExecutionContext, val request: HttpRequestBuilder)
+data class SdkHttpRequest(val context: ExecutionContext, val builder: HttpRequestBuilder)

@@ -60,7 +60,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 ): Service<OperationRequest<Request>, Response> {
 
     val inner = MapRequest(service) { sdkRequest: SdkHttpRequest ->
-        sdkRequest.request
+        sdkRequest.builder
     }
 
     val receiveService = software.aws.clientrt.io.middleware.decorate(inner, receive)
