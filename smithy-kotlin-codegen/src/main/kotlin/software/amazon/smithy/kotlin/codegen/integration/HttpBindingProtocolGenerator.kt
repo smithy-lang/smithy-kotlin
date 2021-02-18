@@ -432,22 +432,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val prefixHeaderBindings = requestBindings
                     .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
-                val setContentType = when (httpTrait.method.toUpperCase()) {
-                    // Only add content-type to requests which may contain a body
-                    // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
-                    // FIXME - we can probably be even more precise here and deal with this by checking
-                    // `builder.body.contentLength` and special casing streaming (there shouldn't be any harm
-                    // in setting this header but signing it when it's not expected causes issues. It's more correct
-                    // to just leave it off though than special case the signing middleware)
-                    "POST", "PUT", "PATCH", "DELETE" -> true
-                    else -> false
-                }
-
-                if (setContentType || headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
+                if (headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
                     writer.withBlock("builder.headers {", "}") {
-                        if (setContentType) {
-                            write("setMissing(\"Content-Type\", \"\$L\")", contentType)
-                        }
                         renderStringValuesMapParameters(ctx, headerBindings, writer)
                         prefixHeaderBindings.forEach {
                             writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
@@ -458,7 +444,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             .write("")
-            .call {
+            .callIf(hasHttpBody(requestBindings)) {
                 // payload member(s)
                 val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
                 if (httpPayload != null) {
@@ -472,6 +458,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .sortedBy { it.memberName }
 
                     renderUnboundPayloadSerde(ctx, documentMembers, writer)
+                }
+
+                // render content-type as last thing once the body has been set
+                writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
+                    writer.write("builder.headers[\"Content-Type\"] = \$S", contentType)
                 }
             }
             .closeBlock("}")
@@ -1212,3 +1203,7 @@ fun Shape.serialKind(): String = when (this.type) {
     ShapeType.UNION -> "SerialKind.Struct"
     else -> throw CodegenException("unknown SerialKind for $this")
 }
+
+// test if the request bindings have any members bound to the HTTP payload (body)
+private fun hasHttpBody(requestBindings: List<HttpBindingDescriptor>): Boolean =
+    requestBindings.any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }

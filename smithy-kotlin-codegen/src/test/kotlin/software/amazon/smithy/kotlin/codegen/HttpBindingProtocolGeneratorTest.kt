@@ -101,7 +101,6 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
             if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
@@ -114,6 +113,9 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -135,12 +137,11 @@ class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize
             path = "/explicit/string"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "text/plain")
-        }
-
         if (input.payload1 != null) {
             builder.body = ByteArrayContent(input.payload1.toByteArray())
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "text/plain"
         }
     }
 }
@@ -161,12 +162,11 @@ class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
             path = "/explicit/blob"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/octet-stream")
-        }
-
         if (input.payload1 != null) {
             builder.body = ByteArrayContent(input.payload1)
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/octet-stream"
         }
     }
 }
@@ -187,12 +187,11 @@ class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpS
             path = "/explicit/blobstream"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/octet-stream")
-        }
-
         if (input.payload1 != null) {
             builder.body = input.payload1.toHttpBody() ?: HttpBody.Empty
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/octet-stream"
         }
     }
 }
@@ -213,14 +212,13 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
             path = "/explicit/struct"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
         if (input.payload1 != null) {
             val serializer = serializationContext.serializationProvider()
             Nested2Serializer(input.payload1).serialize(serializer)
             builder.body = ByteArrayContent(serializer.toByteArray())
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
         }
     }
 }
@@ -324,16 +322,15 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
             path = "/input/union"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -514,7 +511,6 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
         }
 
@@ -524,6 +520,9 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -565,7 +564,6 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             if (input.headerEpoch != null) append("X-Epoch", input.headerEpoch.format(TimestampFormat.EPOCH_SECONDS))
             if (input.headerHttpDate != null) append("X-Date", input.headerHttpDate.format(TimestampFormat.RFC_5322))
         }
@@ -586,6 +584,9 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -617,7 +618,6 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
@@ -627,6 +627,9 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -847,10 +850,6 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
             path = "/input/map"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             if (input.mapOfLists != null) {
@@ -865,6 +864,9 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """

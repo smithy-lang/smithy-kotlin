@@ -50,16 +50,15 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
             path = "/input/AllocateWidget"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, serializationContext.idempotencyTokenProvider.generateToken())
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body != HttpBody.Empty) {
+            builder.headers.set("Content-Type", "application/json")
+        }
     }
 }
 """
@@ -82,10 +81,6 @@ class AllocateWidgetQuerySerializer(val input: AllocateWidgetInputQuery) : HttpS
             }
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
     }
 }
 """
@@ -106,7 +101,6 @@ class AllocateWidgetHeaderSerializer(val input: AllocateWidgetInputHeader) : Htt
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.generateToken()))
         }
 
