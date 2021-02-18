@@ -18,6 +18,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.utils.CodeWriter
 import java.util.*
 
 /**
@@ -71,3 +72,14 @@ internal fun Int.nestedDescriptorName(): String = "_c$this"
  * Get the value if present otherwise return null
  */
 fun <T> Optional<T>.getOrNull(): T? = if (isPresent) get() else null
+
+/**
+ * Optionally call the [Runnable] if [test] is true, otherwise do nothing and return the instance without
+ * running the block
+ */
+fun CodeWriter.callIf(test: Boolean, runnable: Runnable): CodeWriter {
+    if (test) {
+        runnable.run()
+    }
+    return this
+}
