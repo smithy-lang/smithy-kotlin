@@ -56,8 +56,8 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
-        if (builder.body != HttpBody.Empty) {
-            builder.headers.set("Content-Type", "application/json")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
         }
     }
 }
