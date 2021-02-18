@@ -535,6 +535,7 @@ open class SerializeStructGenerator(
      * @return string intended for codegen output
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
+        // FIXME - this needs addressed...where do we get the token provider
         if (memberShape.hasTrait(IdempotencyTokenTrait::class.java)) {
             " ?: field(${memberShape.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
         } else {

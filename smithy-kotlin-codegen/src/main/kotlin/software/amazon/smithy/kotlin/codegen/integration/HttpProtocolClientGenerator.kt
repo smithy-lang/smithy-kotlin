@@ -33,6 +33,11 @@ interface HttpFeature {
         get() = true
 
     /**
+     * Register any imports or dependencies that will be needed to use this feature at runtime
+     */
+    fun addImportsAndDependencies(writer: KotlinWriter) {}
+
+    /**
      * Render the body of the install step which configures this feature. Implementations do not need to open
      * the surrounding block.
      *
@@ -46,55 +51,27 @@ interface HttpFeature {
     fun renderConfigure(writer: KotlinWriter) {}
 
     /**
-     * Register any imports or dependencies that will be needed to use this feature at runtime
+     * Render any instance properties (e.g. add private properties that exist for the lifetime of the client
+     * that are re-used by the feature)
      */
-    fun addImportsAndDependencies(writer: KotlinWriter) {}
-}
-
-/**
- * Client Runtime `HttpSerde` feature
- * @property serdeProvider The name of the serde provider (e.g. JsonSerdeProvider)
- * @property generateIdempotencyTokenConfig determines if Service's Config type implements [IdempotencyTokenProvider].
- */
-abstract class HttpSerde(private val serdeProvider: String, private val generateIdempotencyTokenConfig: Boolean) : HttpFeature {
-    override val name: String = "HttpSerde"
-
-    override fun renderConfigure(writer: KotlinWriter) {
-        writer.write("serdeProvider = $serdeProvider()")
-        if (generateIdempotencyTokenConfig) {
-            writer.write("idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default")
-        }
-    }
-
-    override fun addImportsAndDependencies(writer: KotlinWriter) {
-        val httpSerdeSymbol = Symbol.builder()
-            .name("HttpSerde")
-            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature", ".")
-            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-            .addDependency(KotlinDependency.CLIENT_RT_SERDE)
-            .build()
-        writer.addImport(httpSerdeSymbol)
-
-        if (generateIdempotencyTokenConfig) {
-            val idempotencyTokenProviderSymbol = Symbol.builder()
-                .name("IdempotencyTokenProvider")
-                .namespace("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", ".")
-                .addDependency(KotlinDependency.CLIENT_RT_CORE)
-                .build()
-            writer.addImport(idempotencyTokenProviderSymbol)
-        }
-    }
+    fun renderProperties(writer: KotlinWriter) {}
 }
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
  */
-open class HttpProtocolClientGenerator(
+abstract class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val rootNamespace: String,
     protected val features: List<HttpFeature>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
+
+    /**
+     * The serialization/deserialization provider to be used for serialize/deserialize
+     * See: https://github.com/awslabs/smithy-kotlin/blob/main/client-runtime/serde/common/src/software/aws/clientrt/serde/SerdeProvider.kt
+     */
+    abstract val serdeProviderSymbol: Symbol
 
     /**
      * Render the implementation of the service client interface
@@ -107,17 +84,29 @@ open class HttpProtocolClientGenerator(
 
         importSymbols(writer)
         writer.openBlock("class Default${symbol.name}(private val config: ${symbol.name}.Config) : ${symbol.name} {")
-            .write("private val client: SdkHttpClient")
+            .call { renderProperties(writer) }
             .call { renderInit(writer) }
             .call {
                 operations.forEach { op ->
                     renderOperationBody(writer, operationsIndex, op)
                 }
             }
+            .call { renderOperationMiddleware(writer) }
             .call { renderClose(writer) }
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
             .write("")
+    }
+
+    /**
+     * Render any properties this class should have.
+     */
+    protected open fun renderProperties(writer: KotlinWriter) {
+        writer.write("private val client: SdkHttpClient")
+        writer.write("private val serde: SerdeProvider = ${serdeProviderSymbol.name}()")
+        features.forEach {
+            it.renderProperties(writer)
+        }
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -127,8 +116,13 @@ open class HttpProtocolClientGenerator(
         // http.*
         val httpRootPkg = KotlinDependency.CLIENT_RT_HTTP.namespace
         writer.addImport(httpRootPkg, "*")
+        writer.addImport("$httpRootPkg.operation", "*")
         writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
+
+        // serialization
+        writer.addImport(serdeProviderSymbol)
+        writer.addImport("SerdeProvider", KotlinDependency.CLIENT_RT_SERDE)
 
         // TODO - engine needs configurable (either auto detected or passed in through config).
         //  For now default it to Ktor since it's the only available engine
@@ -146,26 +140,12 @@ open class HttpProtocolClientGenerator(
      * registered features
      */
     protected open fun renderInit(writer: KotlinWriter) {
-        writer.openBlock("init {")
-            // FIXME - this will eventually come from the client config/builder
-            .write("val engineConfig = HttpClientEngineConfig()")
-            .write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)")
-            .openBlock("client = sdkHttpClient(httpClientEngine) {")
-            .call { renderHttpClientConfiguration(writer) }
-            .closeBlock("}")
-            .closeBlock("}")
-    }
-
-    private fun renderHttpClientConfiguration(writer: KotlinWriter) {
-        features.forEach { feat ->
-            feat.addImportsAndDependencies(writer)
-            if (feat.needsConfiguration) {
-                writer.openBlock("install(\$L) {", feat.name)
-                    .call { feat.renderConfigure(writer) }
-                    .closeBlock("}")
-            } else {
-                writer.write("install(\$L)", feat.name)
-            }
+        writer.openBlock("init {", "}") {
+            // FIXME - should the generated service client have httpClientEngineConfig on it? If you pass in an engine it's a conflicting property
+            // as it'll never be consumed...
+            writer.write("val engineConfig = config.httpClientEngineConfig ?: HttpClientEngineConfig()")
+            writer.write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)")
+            writer.write("client = sdkHttpClient(httpClientEngine)")
         }
     }
 
@@ -191,32 +171,37 @@ open class HttpProtocolClientGenerator(
         val outputShape = opIndex.getOutput(op)
         val httpTrait = httpBindingResolver.httpTrait(op)
 
-        if (!inputShape.isPresent) {
-            // no serializer implementation is generated for operations with no input, inline the HTTP
-            // protocol request from the operation itself
-            val requestBuilderSymbol = Symbol.builder()
-                .name("HttpRequestBuilder")
-                .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", ".")
-                .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                .build()
-            writer.addImport(requestBuilderSymbol)
-            writer.openBlock("val builder = HttpRequestBuilder().apply {")
-                .write("method = HttpMethod.\$L", httpTrait.method.toUpperCase())
-                // NOTE: since there is no input the URI can only be a literal (no labels to fill)
-                .write("url.path = \"\$L\"", httpTrait.uri.toString())
-                .closeBlock("}")
-        }
+        val inputSymbolName = inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: "Unit"
+        val outputSymbolName = outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: "Unit"
 
-        // build the execution context
-        writer.openBlock("val execCtx = SdkHttpOperation.build {")
-            .call {
-                if (inputShape.isPresent) {
-                    writer.write("serializer = ${op.serializerName()}(input)")
+        writer.openBlock(
+            "val op = SdkHttpOperation.build<\$L, \$L>{", "}",
+            inputSymbolName,
+            outputSymbolName
+        ) {
+            if (inputShape.isPresent) {
+                writer.write("serializer = ${op.serializerName()}(serde::serializer)")
+            } else {
+                // no serializer implementation is generated for operations with no input, inline the HTTP
+                // protocol request from the operation itself
+                // FIXME - this goes away when we implement model evolution and generate input/output types regardless of whether the model has them
+                writer.openBlock("serializer = object : HttpSerialize<Unit> {", "}") {
+                    writer.openBlock("override suspend fun serialize(builder: HttpRequestBuilder, input: Unit){", "}") {
+                        writer.write("builder.method = HttpMethod.\$L", httpTrait.method.toUpperCase())
+                        // NOTE: since there is no input the URI can only be a literal (no labels to fill)
+                        writer.write("builder.url.path = \"\$L\"", httpTrait.uri.toString())
+                    }
                 }
+            }
 
-                if (outputShape.isPresent) {
-                    writer.write("deserializer = ${op.deserializerName()}()")
-                }
+            if (outputShape.isPresent) {
+                writer.write("deserializer = ${op.deserializerName()}(serde::deserializer)")
+            } else {
+                writer.write("deserializer = UnitDeserializer")
+            }
+
+            // execution context
+            writer.openBlock("context {", "}") {
                 writer.write("expectedHttpStatus = ${httpTrait.code}")
                 // property from implementing SdkClient
                 writer.write("service = serviceName")
@@ -237,7 +222,9 @@ open class HttpProtocolClientGenerator(
                     writer.write("hostPrefix = \$S", hostPrefix)
                 }
             }
-            .closeBlock("}")
+        }
+
+        writer.write("registerDefaultMiddleware(op)")
     }
 
     /**
@@ -247,24 +234,38 @@ open class HttpProtocolClientGenerator(
         val inputShape = opIndex.getInput(op)
         val outputShape = opIndex.getOutput(op)
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
-        val httpRequestBuilder = if (!inputShape.isPresent) "builder" else "null"
+        val inputVariableName = if (inputShape.isPresent) "input" else "Unit"
+
         if (hasOutputStream) {
-            writer.write("return client.execute(execCtx, \$L, block)", httpRequestBuilder)
+            writer.write("return op.execute(client, \$L, block)", inputVariableName)
         } else {
             if (outputShape.isPresent) {
-                writer.write("return client.roundTrip(execCtx, \$L)", httpRequestBuilder)
+                writer.write("return op.roundTrip(client, \$L)", inputVariableName)
             } else {
-                val httpResponseSymbol = Symbol.builder()
-                    .name("HttpResponse")
-                    .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", ".")
-                    .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                    .build()
-                writer.addImport(httpResponseSymbol)
-                // need to not run the response pipeline because there is no valid transform. Explicitly
-                // specify the raw (closed) HttpResponse
-                writer.write("client.roundTrip<HttpResponse>(execCtx, \$L)", httpRequestBuilder)
+                writer.write("op.roundTrip(client, \$L)", inputVariableName)
             }
         }
+    }
+
+    protected open fun renderOperationMiddleware(writer: KotlinWriter) {
+        writer.openBlock("private fun <I, O>  registerDefaultMiddleware(op: SdkHttpOperation<I,O>){")
+            .openBlock("op.apply {")
+            .call {
+                // FIXME - naive install ... for things like errors we probably want a single instance re-used across operations
+                // OR we want to inline the error deserialization as part of an operation's deserialize
+                features.forEach { feat ->
+                    feat.addImportsAndDependencies(writer)
+                    if (feat.needsConfiguration) {
+                        writer.openBlock("install(\$L) {", feat.name)
+                            .call { feat.renderConfigure(writer) }
+                            .closeBlock("}")
+                    } else {
+                        writer.write("install(\$L)", feat.name)
+                    }
+                }
+            }
+            .closeBlock("}")
+            .closeBlock("}")
     }
 
     protected open fun renderClose(writer: KotlinWriter) {
