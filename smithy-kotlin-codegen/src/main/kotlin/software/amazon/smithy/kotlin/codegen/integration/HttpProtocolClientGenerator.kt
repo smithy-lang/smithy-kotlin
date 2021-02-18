@@ -91,8 +91,8 @@ abstract class HttpProtocolClientGenerator(
                     renderOperationBody(writer, operationsIndex, op)
                 }
             }
-            .call { renderOperationMiddleware(writer) }
             .call { renderClose(writer) }
+            .call { renderOperationMiddleware(writer) }
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
             .write("")
@@ -163,7 +163,7 @@ abstract class HttpProtocolClientGenerator(
     }
 
     /**
-     * Renders the operation body up to the point where the call is executed. This function is responsbile for setting
+     * Renders the operation body up to the point where the call is executed. This function is responsible for setting
      * up the execution context used for this operation
      */
     protected open fun renderOperationSetup(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
@@ -171,11 +171,11 @@ abstract class HttpProtocolClientGenerator(
         val outputShape = opIndex.getOutput(op)
         val httpTrait = httpBindingResolver.httpTrait(op)
 
-        val inputSymbolName = inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: "Unit"
-        val outputSymbolName = outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: "Unit"
+        val inputSymbolName = inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit
+        val outputSymbolName = outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit
 
         writer.openBlock(
-            "val op = SdkHttpOperation.build<\$L, \$L>{", "}",
+            "val op = SdkHttpOperation.build<\$L, \$L> {", "}",
             inputSymbolName,
             outputSymbolName
         ) {
@@ -185,8 +185,8 @@ abstract class HttpProtocolClientGenerator(
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
                 // FIXME - this goes away when we implement model evolution and generate input/output types regardless of whether the model has them
-                writer.openBlock("serializer = object : HttpSerialize<Unit> {", "}") {
-                    writer.openBlock("override suspend fun serialize(builder: HttpRequestBuilder, input: Unit){", "}") {
+                writer.openBlock("serializer = object : HttpSerialize<${KotlinTypes.Unit}> {", "}") {
+                    writer.openBlock("override suspend fun serialize(builder: HttpRequestBuilder, input: ${KotlinTypes.Unit}){", "}") {
                         writer.write("builder.method = HttpMethod.\$L", httpTrait.method.toUpperCase())
                         // NOTE: since there is no input the URI can only be a literal (no labels to fill)
                         writer.write("builder.url.path = \"\$L\"", httpTrait.uri.toString())
@@ -234,7 +234,7 @@ abstract class HttpProtocolClientGenerator(
         val inputShape = opIndex.getInput(op)
         val outputShape = opIndex.getOutput(op)
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
-        val inputVariableName = if (inputShape.isPresent) "input" else "Unit"
+        val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit
 
         if (hasOutputStream) {
             writer.write("return op.execute(client, \$L, block)", inputVariableName)

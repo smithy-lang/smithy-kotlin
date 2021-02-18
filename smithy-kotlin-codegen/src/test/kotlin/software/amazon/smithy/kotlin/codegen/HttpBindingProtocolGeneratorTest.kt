@@ -32,6 +32,9 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = RestJson1Trait.ID
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
+
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
+        TestProtocolClientGenerator(ctx, ctx.settings.moduleName, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
 }
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
@@ -77,7 +80,7 @@ class HttpBindingProtocolGeneratorTest {
         contents.shouldSyntacticSanityCheck()
         val label1 = "\${input.label1}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
+class SmokeTestSerializer(private val provider: SerializationProvider) : HttpSerialize<SmokeTestRequest> {
 
     companion object {
         private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
@@ -90,7 +93,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: SmokeTestRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -106,7 +109,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
             if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
 
-        val serializer = serializationContext.serializationProvider()
+        val serializer = provider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payload1?.let { field(PAYLOAD1_DESCRIPTOR, it) }
             input.payload2?.let { field(PAYLOAD2_DESCRIPTOR, it) }
@@ -127,8 +130,8 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         val contents = getTransformFileContents("ExplicitStringSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+class ExplicitStringSerializer(private val provider: SerializationProvider) : HttpSerialize<ExplicitStringRequest> {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: ExplicitStringRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -153,8 +156,8 @@ class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize
         val contents = getTransformFileContents("ExplicitBlobSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+class ExplicitBlobSerializer(private val provider: SerializationProvider) : HttpSerialize<ExplicitBlobRequest> {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: ExplicitBlobRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -179,8 +182,8 @@ class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
         val contents = getTransformFileContents("ExplicitBlobStreamSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+class ExplicitBlobStreamSerializer(private val provider: SerializationProvider) : HttpSerialize<ExplicitBlobStreamRequest> {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: ExplicitBlobStreamRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -205,8 +208,8 @@ class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpS
         val contents = getTransformFileContents("ExplicitStructSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+class ExplicitStructSerializer(private val provider: SerializationProvider) : HttpSerialize<ExplicitStructRequest> {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: ExplicitStructRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -218,7 +221,7 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
         }
 
         if (input.payload1 != null) {
-            val serializer = serializationContext.serializationProvider()
+            val serializer = provider()
             Nested2Serializer(input.payload1).serialize(serializer)
             builder.body = ByteArrayContent(serializer.toByteArray())
         }
@@ -308,7 +311,7 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
         val contents = getTransformFileContents("UnionInputSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
+class UnionInputSerializer(private val provider: SerializationProvider) : HttpSerialize<UnionRequest> {
 
     companion object {
         private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
@@ -317,7 +320,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: UnionRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -328,7 +331,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
             setMissing("Content-Type", "application/json")
         }
 
-        val serializer = serializationContext.serializationProvider()
+        val serializer = provider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
         }
@@ -347,7 +350,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
         val contents = getTransformFileContents("UnionOutputDeserializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class UnionOutputDeserializer : HttpDeserialize {
+class UnionOutputDeserializer(private val provider: DeserializationProvider): HttpDeserialize<UnionRequest> {
 
     companion object {
         private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
@@ -356,7 +359,7 @@ class UnionOutputDeserializer : HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionRequest {
+    override suspend fun deserialize(response: HttpResponse): UnionRequest {
         val builder = UnionRequest.dslBuilder()
 
         val payload = response.body.readAll()
@@ -386,7 +389,7 @@ class UnionOutputDeserializer : HttpDeserialize {
         val contents = getTransformFileContents("UnionAggregateOutputDeserializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class UnionAggregateOutputDeserializer : HttpDeserialize {
+class UnionAggregateOutputDeserializer(private val provider: DeserializationProvider): HttpDeserialize<UnionAggregateRequest> {
 
     companion object {
         private val PAYLOADAGGREGATEUNION_DESCRIPTOR = SdkFieldDescriptor("payloadAggregateUnion", SerialKind.Struct)
@@ -395,7 +398,7 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): UnionAggregateRequest {
+    override suspend fun deserialize(response: HttpResponse): UnionAggregateRequest {
         val builder = UnionAggregateRequest.dslBuilder()
 
         val payload = response.body.readAll()
@@ -497,7 +500,7 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
         val contents = getTransformFileContents("EnumInputSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
+class EnumInputSerializer(private val provider: SerializationProvider) : HttpSerialize<EnumInputRequest> {
 
     companion object {
         private val NESTEDWITHENUM_DESCRIPTOR = SdkFieldDescriptor("nestedWithEnum", SerialKind.Struct)
@@ -506,7 +509,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: EnumInputRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -518,7 +521,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
         }
 
-        val serializer = serializationContext.serializationProvider()
+        val serializer = provider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.nestedWithEnum?.let { field(NESTEDWITHENUM_DESCRIPTOR, NestedEnumSerializer(it)) }
         }
@@ -536,7 +539,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         contents.shouldSyntacticSanityCheck()
         val tsLabel = "\${input.tsLabel?.format(TimestampFormat.ISO_8601)}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize {
+class TimestampInputSerializer(private val provider: SerializationProvider) : HttpSerialize<TimestampInputRequest> {
 
     companion object {
         private val DATETIME_DESCRIPTOR = SdkFieldDescriptor("dateTime", SerialKind.Timestamp)
@@ -553,7 +556,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: TimestampInputRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -570,7 +573,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
             if (input.headerHttpDate != null) append("X-Date", input.headerHttpDate.format(TimestampFormat.RFC_5322))
         }
 
-        val serializer = serializationContext.serializationProvider()
+        val serializer = provider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.dateTime?.let { field(DATETIME_DESCRIPTOR, it.format(TimestampFormat.ISO_8601)) }
             input.epochSeconds?.let { rawField(EPOCHSECONDS_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
@@ -600,7 +603,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         val contents = getTransformFileContents("BlobInputSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
+class BlobInputSerializer(private val provider: SerializationProvider) : HttpSerialize<BlobInputRequest> {
 
     companion object {
         private val PAYLOADBLOB_DESCRIPTOR = SdkFieldDescriptor("payloadBlob", SerialKind.Blob)
@@ -609,7 +612,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: BlobInputRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -621,7 +624,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
             if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
-        val serializer = serializationContext.serializationProvider()
+        val serializer = provider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payloadBlob?.let { field(PAYLOADBLOB_DESCRIPTOR, it.encodeBase64String()) }
         }
@@ -641,8 +644,8 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         contents.shouldSyntacticSanityCheck()
         val label1 = "\${input.hello}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+class ConstantQueryStringSerializer(private val provider: SerializationProvider) : HttpSerialize<ConstantQueryStringInput> {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: ConstantQueryStringInput) {
         builder.method = HttpMethod.GET
 
         builder.url {
@@ -664,7 +667,7 @@ class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpS
         val contents = getTransformFileContents("SmokeTestDeserializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class SmokeTestDeserializer : HttpDeserialize {
+class SmokeTestDeserializer(private val provider: DeserializationProvider): HttpDeserialize<SmokeTestResponse> {
 
     companion object {
         private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
@@ -679,7 +682,7 @@ class SmokeTestDeserializer : HttpDeserialize {
         }
     }
 
-    override suspend fun deserialize(response: HttpResponse, provider: DeserializationProvider): SmokeTestResponse {
+    override suspend fun deserialize(response: HttpResponse): SmokeTestResponse {
         val builder = SmokeTestResponse.dslBuilder()
 
         builder.intHeader = response.headers["X-Header2"]?.toInt()
@@ -830,7 +833,7 @@ class Nested3Deserializer {
         val contents = getTransformFileContents("MapInputSerializer.kt", mapModel)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
+class MapInputSerializer(private val provider: SerializationProvider) : HttpSerialize<MapInputRequest> {
 
     companion object {
         private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor("mapOfLists", SerialKind.Map)
@@ -840,7 +843,7 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+    override suspend fun serialize(builder: HttpRequestBuilder, input: MapInputRequest) {
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -851,7 +854,7 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
             setMissing("Content-Type", "application/json")
         }
 
-        val serializer = serializationContext.serializationProvider()
+        val serializer = provider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             if (input.mapOfLists != null) {
                 mapField(MAPOFLISTS_DESCRIPTOR) {

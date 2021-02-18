@@ -658,7 +658,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 // delegate to the member serializer
                 writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
                 val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
-                writer.write("val serializer = serializationContext.serializationProvider()")
+                writer.write("val serializer = provider()")
                     .write("\$LSerializer(input.\$L).serialize(serializer)", memberSymbol.name, memberName)
                     .write("builder.body = ByteArrayContent(serializer.toByteArray())")
             }

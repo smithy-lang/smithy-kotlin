@@ -17,11 +17,7 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
-import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.kotlin.codegen.integration.HttpSerde
-import software.amazon.smithy.kotlin.codegen.integration.HttpTraitResolver
+import software.amazon.smithy.kotlin.codegen.integration.*
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
@@ -34,23 +30,11 @@ class HttpProtocolClientGeneratorTest {
         }
     }
 
-    class MockHttpSerde : HttpSerde("MockSerdeProvider", true) {
-        override fun addImportsAndDependencies(writer: KotlinWriter) {
-            super.addImportsAndDependencies(writer)
-            val serdeJsonSymbol = Symbol.builder()
-                .name("JsonSerdeProvider")
-                .namespace(KotlinDependency.CLIENT_RT_SERDE_JSON.namespace, ".")
-                .addDependency(KotlinDependency.CLIENT_RT_SERDE_JSON)
-                .build()
-            writer.addImport(serdeJsonSymbol)
-        }
-    }
-
     init {
         val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
         val ctx = model.newTestContext("com.test#Example")
-        val features: List<HttpFeature> = listOf(MockHttpFeature1(), MockHttpSerde())
-        val generator = HttpProtocolClientGenerator(
+        val features: List<HttpFeature> = listOf(MockHttpFeature1())
+        val generator = TestProtocolClientGenerator(
             ctx.generationCtx, "test", features,
             HttpTraitResolver(ctx.generationCtx, "application/json")
         )
@@ -66,7 +50,6 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
 
         // test for feature imports that are added
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature.HttpSerde")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_SERDE_JSON.namespace}.JsonSerdeProvider")
     }
 
@@ -80,17 +63,9 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnce("val client: SdkHttpClient")
         val expected = """
     init {
-        val engineConfig = HttpClientEngineConfig()
+        val engineConfig = config.httpClientEngineConfig ?: HttpClientEngineConfig()
         val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
-        client = sdkHttpClient(httpClientEngine) {
-            install(MockHttpFeature1) {
-                configurationField1 = "testing"
-            }
-            install(HttpSerde) {
-                serdeProvider = MockSerdeProvider()
-                idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
-            }
-        }
+        client = sdkHttpClient(httpClientEngine)
     }
 """
         commonTestContents.shouldContainOnlyOnce(expected)
@@ -111,103 +86,123 @@ class HttpProtocolClientGeneratorTest {
         val expectedBodies = listOf(
 """
     override suspend fun getFoo(input: GetFooRequest): GetFooResponse {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooSerializer(input)
-            deserializer = GetFooDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFoo"
+        val op = SdkHttpOperation.build<GetFooRequest, GetFooResponse> {
+            serializer = GetFooSerializer(serde::serializer)
+            deserializer = GetFooDeserializer(serde::deserializer)
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFoo"
+            }
         }
-        return client.roundTrip(execCtx, null)
+        registerDefaultMiddleware(op)
+        return op.roundTrip(client, input)
     }
 """,
 """
     override suspend fun getFooNoInput(): GetFooResponse {
-        val builder = HttpRequestBuilder().apply {
-            method = HttpMethod.GET
-            url.path = "/foo-no-input"
+        val op = SdkHttpOperation.build<kotlin.Unit, GetFooResponse> {
+            serializer = object : HttpSerialize<kotlin.Unit> {
+                override suspend fun serialize(builder: HttpRequestBuilder, input: kotlin.Unit){
+                    builder.method = HttpMethod.GET
+                    builder.url.path = "/foo-no-input"
+                }
+            }
+            deserializer = GetFooNoInputDeserializer(serde::deserializer)
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooNoInput"
+            }
         }
-        val execCtx = SdkHttpOperation.build {
-            deserializer = GetFooNoInputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooNoInput"
-        }
-        return client.roundTrip(execCtx, builder)
+        registerDefaultMiddleware(op)
+        return op.roundTrip(client, kotlin.Unit)
     }
 """,
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooNoOutputSerializer(input)
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooNoOutput"
+        val op = SdkHttpOperation.build<GetFooRequest, kotlin.Unit> {
+            serializer = GetFooNoOutputSerializer(serde::serializer)
+            deserializer = UnitDeserializer
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooNoOutput"
+            }
         }
-        client.roundTrip<HttpResponse>(execCtx, null)
+        registerDefaultMiddleware(op)
+        op.roundTrip(client, input)
     }
 """,
 """
     override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooStreamingInputSerializer(input)
-            deserializer = GetFooStreamingInputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingInput"
+        val op = SdkHttpOperation.build<GetFooStreamingRequest, GetFooResponse> {
+            serializer = GetFooStreamingInputSerializer(serde::serializer)
+            deserializer = GetFooStreamingInputDeserializer(serde::deserializer)
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingInput"
+            }
         }
-        return client.roundTrip(execCtx, null)
+        registerDefaultMiddleware(op)
+        return op.roundTrip(client, input)
     }
 """,
 """
     override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooStreamingOutputSerializer(input)
-            deserializer = GetFooStreamingOutputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingOutput"
+        val op = SdkHttpOperation.build<GetFooRequest, GetFooStreamingResponse> {
+            serializer = GetFooStreamingOutputSerializer(serde::serializer)
+            deserializer = GetFooStreamingOutputDeserializer(serde::deserializer)
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingOutput"
+            }
         }
-        return client.execute(execCtx, null, block)
+        registerDefaultMiddleware(op)
+        return op.execute(client, input, block)
     }
 """,
 """
     override suspend fun <T> getFooStreamingOutputNoInput(block: suspend (GetFooStreamingResponse) -> T): T {
-        val builder = HttpRequestBuilder().apply {
-            method = HttpMethod.POST
-            url.path = "/foo-streaming-output-no-input"
+        val op = SdkHttpOperation.build<kotlin.Unit, GetFooStreamingResponse> {
+            serializer = object : HttpSerialize<kotlin.Unit> {
+                override suspend fun serialize(builder: HttpRequestBuilder, input: kotlin.Unit){
+                    builder.method = HttpMethod.POST
+                    builder.url.path = "/foo-streaming-output-no-input"
+                }
+            }
+            deserializer = GetFooStreamingOutputNoInputDeserializer(serde::deserializer)
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingOutputNoInput"
+            }
         }
-        val execCtx = SdkHttpOperation.build {
-            deserializer = GetFooStreamingOutputNoInputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingOutputNoInput"
-        }
-        return client.execute(execCtx, builder, block)
+        registerDefaultMiddleware(op)
+        return op.execute(client, kotlin.Unit, block)
     }
 """,
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooStreamingInputNoOutputSerializer(input)
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingInputNoOutput"
+        val op = SdkHttpOperation.build<GetFooStreamingRequest, kotlin.Unit> {
+            serializer = GetFooStreamingInputNoOutputSerializer(serde::serializer)
+            deserializer = UnitDeserializer
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingInputNoOutput"
+            }
         }
-        client.roundTrip<HttpResponse>(execCtx, null)
+        registerDefaultMiddleware(op)
+        op.roundTrip(client, input)
     }
 """
         )
         expectedBodies.forEach {
             commonTestContents.shouldContainOnlyOnce(it)
         }
-    }
-
-    @Test
-    fun `it registers feature dependencies`() {
-        // Serde, Http, KtorEngine, + SerdeJson (via feature)
-        val ktDependencies = writer.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
-        assertEquals(5, ktDependencies.size)
     }
 
     @Test
@@ -260,7 +255,7 @@ class HttpProtocolClientGeneratorTest {
 
         val ctx = model.newTestContext("com.test#Example")
         val writer = KotlinWriter("com.test")
-        val generator = HttpProtocolClientGenerator(
+        val generator = TestProtocolClientGenerator(
             ctx.generationCtx, "test", listOf(),
             HttpTraitResolver(ctx.generationCtx, "application/json")
         )
@@ -269,15 +264,25 @@ class HttpProtocolClientGeneratorTest {
 
         val prefix = "\${input.foo}.data."
         val expectedFragment = """
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetStatusSerializer(input)
-            deserializer = GetStatusDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetStatus"
-            hostPrefix = "$prefix"
+        val op = SdkHttpOperation.build<GetStatusInput, GetStatusOutput> {
+            serializer = GetStatusSerializer(serde::serializer)
+            deserializer = GetStatusDeserializer(serde::deserializer)
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetStatus"
+                hostPrefix = "$prefix"
+            }
         }
         """
         contents.shouldContainOnlyOnceWithDiff(expectedFragment)
     }
+
+    /*
+    TODO - rendersMiddlewareConfigure
+            install(MockHttpFeature1) {
+                configurationField1 = "testing"
+            }
+        }
+     */
 }
