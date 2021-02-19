@@ -44,9 +44,7 @@ class UnionGenerator(
             }
         }
         // generate the unknown which will always be last
-        writer.withBlock("data class SdkUnknown(val value: kotlin.String) : ${symbol.name}() {", "}") {
-            renderToStringOverride()
-        }
+        writer.write("object SdkUnknown : ${symbol.name}()")
         writer.closeBlock("}").write("")
     }
 
@@ -114,10 +112,5 @@ class UnionGenerator(
             write("")
             write("return true")
         }
-    }
-
-    private fun renderToStringOverride() {
-        // override to string to use the union constant value
-        writer.write("override fun toString(): kotlin.String = value")
     }
 }

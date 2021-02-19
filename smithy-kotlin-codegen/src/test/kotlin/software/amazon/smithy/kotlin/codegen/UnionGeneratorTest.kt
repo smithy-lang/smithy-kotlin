@@ -70,9 +70,7 @@ class UnionGeneratorTest {
                  * Documentation for foo
                  */
                 data class Foo(val value: String) : MyUnion()
-                data class SdkUnknown(val value: kotlin.String) : MyUnion() {
-                    override fun toString(): kotlin.String = value
-                }
+                object SdkUnknown : MyUnion()
             }
         """.trimIndent()
 

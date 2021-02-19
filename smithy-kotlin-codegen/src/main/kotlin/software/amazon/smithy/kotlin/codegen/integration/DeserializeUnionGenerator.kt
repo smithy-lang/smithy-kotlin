@@ -33,7 +33,7 @@ class DeserializeUnionGenerator(
                 members
                     .sortedBy { it.memberName }
                     .forEach { memberShape -> renderMemberShape(memberShape) }
-                write("else -> value = $unionName.SdkUnknown(deserializeString())")
+                write("else -> value = $unionName.SdkUnknown.also { skipValue() }")
             }
         }
     }

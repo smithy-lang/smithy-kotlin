@@ -60,7 +60,7 @@ class DeserializeUnionGeneratorTest {
                 when(findNextFieldIndex()) {
                     I32_DESCRIPTOR.index -> value = PrimitiveUnion.I32(deserializeInt())
                     STRINGA_DESCRIPTOR.index -> value = PrimitiveUnion.StringA(deserializeString())
-                    else -> value = PrimitiveUnion.SdkUnknown(deserializeString())
+                    else -> value = PrimitiveUnion.SdkUnknown.also { skipValue() }
                 }
             }
         """.trimIndent()
@@ -116,7 +116,7 @@ class DeserializeUnionGeneratorTest {
                             }
                             MyAggregateUnion.IntMap(map0)
                         }
-                    else -> value = MyAggregateUnion.SdkUnknown(deserializeString())
+                    else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                 }
             }
         """.trimIndent()
@@ -209,7 +209,7 @@ class DeserializeUnionGeneratorTest {
                             }
                             FooUnion.StrMapVal(map0)
                         }
-                    else -> value = FooUnion.SdkUnknown(deserializeString())
+                    else -> value = FooUnion.SdkUnknown.also { skipValue() }
                 }
             }
 
@@ -309,7 +309,7 @@ class DeserializeUnionGeneratorTest {
                             }
                             MyAggregateUnion.MapOfLists(map0)
                         }
-                    else -> value = MyAggregateUnion.SdkUnknown(deserializeString())
+                    else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                 }
             }
         """.trimIndent()

@@ -468,7 +468,7 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
             when(findNextFieldIndex()) {
                 I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
                 STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
-                else -> value = MyUnion.SdkUnknown(deserializeString())
+                else -> value = MyUnion.SdkUnknown.also { skipValue() }
             }
         }
         return value ?: throw DeserializationException("Deserialized value unexpectedly null: MyUnion")
