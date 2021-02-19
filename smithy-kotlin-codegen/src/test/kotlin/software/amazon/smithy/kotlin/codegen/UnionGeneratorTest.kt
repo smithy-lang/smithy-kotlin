@@ -8,9 +8,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
 import java.lang.IllegalStateException
 
@@ -77,7 +74,7 @@ class UnionGeneratorTest {
                     override fun toString(): kotlin.String = value
                 }
             }
-            """.trimIndent()
+        """.trimIndent()
 
         contents.shouldContainOnlyOnceWithDiff(expectedClassDecl)
     }

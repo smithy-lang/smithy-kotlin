@@ -129,7 +129,7 @@ class DeserializeUnionGeneratorTest {
     @Test
     fun `it deserializes a structure containing a union of collection types containing collections`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
                     structure FooResponse { 
                         payload: FooUnion
                     }
@@ -170,7 +170,7 @@ class DeserializeUnionGeneratorTest {
                         member: Integer
                     }
                 """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
