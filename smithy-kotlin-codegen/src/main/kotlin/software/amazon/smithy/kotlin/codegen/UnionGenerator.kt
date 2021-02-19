@@ -24,7 +24,8 @@ class UnionGenerator(
      * Renders a Smithy union to a Kotlin sealed class
      */
     fun render() {
-        check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) }) { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
+        check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) })
+            { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
         val symbol = symbolProvider.toSymbol(shape)
         writer.renderDocumentation(shape)
         writer.openBlock("sealed class \$L {", symbol.name)
