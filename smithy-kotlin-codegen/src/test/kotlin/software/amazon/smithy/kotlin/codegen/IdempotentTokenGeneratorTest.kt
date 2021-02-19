@@ -38,7 +38,7 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
 
     companion object {
         private val CLIENTTOKEN_DESCRIPTOR = SdkFieldDescriptor("clientToken", SerialKind.String)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(CLIENTTOKEN_DESCRIPTOR)
         }
     }

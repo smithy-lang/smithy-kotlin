@@ -15,6 +15,7 @@ import software.amazon.smithy.utils.StringUtils
 
 class DeserializeUnionGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
+    private val unionName: String,
     private val members: List<MemberShape>,
     private val writer: KotlinWriter,
     defaultTimestampFormat: TimestampFormatTrait.Format
@@ -32,7 +33,7 @@ class DeserializeUnionGenerator(
                 members
                     .sortedBy { it.memberName }
                     .forEach { memberShape -> renderMemberShape(memberShape) }
-                write("else -> skipValue()")
+                write("else -> value = $unionName.SdkUnknown(deserializeString())")
             }
         }
     }
@@ -71,11 +72,11 @@ class DeserializeUnionGenerator(
      * ```
      */
     override fun renderPrimitiveShapeDeserializer(memberShape: MemberShape) {
-        val unionDeserializerExpression = memberShape.unionTypeName(memberShape)
+        val unionTypeName = memberShape.unionTypeName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val deserialize = deserializerForPrimitiveShape(memberShape)
 
-        writer.write("$descriptorName.index -> value = $deserialize.let { $unionDeserializerExpression(it) }")
+        writer.write("$descriptorName.index -> value = $unionTypeName($deserialize)")
     }
 
     // Union response types hold a single value for any variant

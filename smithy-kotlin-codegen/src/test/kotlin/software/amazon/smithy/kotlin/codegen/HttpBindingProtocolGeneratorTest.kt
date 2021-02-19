@@ -83,7 +83,7 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
         private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2", SerialKind.Integer)
         private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
             field(PAYLOAD3_DESCRIPTOR)
@@ -238,7 +238,7 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
         private val INTLIST_DESCRIPTOR = SdkFieldDescriptor("intList", SerialKind.List)
         private val INTMAP_DESCRIPTOR = SdkFieldDescriptor("intMap", SerialKind.Map)
         private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.Integer)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(INTLIST_DESCRIPTOR)
             field(INTMAP_DESCRIPTOR)
             field(MEMBER1_DESCRIPTOR)
@@ -280,7 +280,7 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
         private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.String)
         private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2", SerialKind.String)
         private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
             field(MEMBER3_DESCRIPTOR)
@@ -310,7 +310,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
 
     companion object {
         private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADUNION_DESCRIPTOR)
         }
     }
@@ -348,7 +348,7 @@ class UnionOutputDeserializer : HttpDeserialize {
 
     companion object {
         private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADUNION_DESCRIPTOR)
         }
     }
@@ -387,7 +387,7 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
 
     companion object {
         private val PAYLOADAGGREGATEUNION_DESCRIPTOR = SdkFieldDescriptor("payloadAggregateUnion", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADAGGREGATEUNION_DESCRIPTOR)
         }
     }
@@ -427,7 +427,7 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
     companion object {
         private val I32_DESCRIPTOR = SdkFieldDescriptor("i32", SerialKind.Integer)
         private val STRINGA_DESCRIPTOR = SdkFieldDescriptor("stringA", SerialKind.String)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(I32_DESCRIPTOR)
             field(STRINGA_DESCRIPTOR)
         }
@@ -456,22 +456,22 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
     companion object {
         private val I32_DESCRIPTOR = SdkFieldDescriptor("i32", SerialKind.Integer)
         private val STRINGA_DESCRIPTOR = SdkFieldDescriptor("stringA", SerialKind.String)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(I32_DESCRIPTOR)
             field(STRINGA_DESCRIPTOR)
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): MyUnion? {
+    suspend fun deserialize(deserializer: Deserializer): MyUnion {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = deserializeInt().let { MyUnion.I32(it) }
-                STRINGA_DESCRIPTOR.index -> value = deserializeString().let { MyUnion.StringA(it) }
-                else -> skipValue()
+                I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
+                STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
+                else -> value = MyUnion.SdkUnknown(deserializeString())
             }
         }
-        return value
+        return value ?: throw DeserializationException("Deserialized value unexpectedly null: MyUnion")
     }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
@@ -498,7 +498,7 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
 
     companion object {
         private val NESTEDWITHENUM_DESCRIPTOR = SdkFieldDescriptor("nestedWithEnum", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(NESTEDWITHENUM_DESCRIPTOR)
         }
     }
@@ -543,7 +543,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         private val HTTPDATE_DESCRIPTOR = SdkFieldDescriptor("httpDate", SerialKind.Timestamp)
         private val NORMAL_DESCRIPTOR = SdkFieldDescriptor("normal", SerialKind.Timestamp)
         private val TIMESTAMPLIST_DESCRIPTOR = SdkFieldDescriptor("timestampList", SerialKind.List)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(DATETIME_DESCRIPTOR)
             field(EPOCHSECONDS_DESCRIPTOR)
             field(HTTPDATE_DESCRIPTOR)
@@ -605,7 +605,7 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
 
     companion object {
         private val PAYLOADBLOB_DESCRIPTOR = SdkFieldDescriptor("payloadBlob", SerialKind.Blob)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADBLOB_DESCRIPTOR)
         }
     }
@@ -674,7 +674,7 @@ class SmokeTestDeserializer : HttpDeserialize {
         private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2", SerialKind.Integer)
         private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3", SerialKind.Struct)
         private val PAYLOAD4_DESCRIPTOR = SdkFieldDescriptor("payload4", SerialKind.Timestamp)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
             field(PAYLOAD3_DESCRIPTOR)
@@ -788,7 +788,7 @@ class Nested3Deserializer {
         private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.String)
         private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2", SerialKind.String)
         private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
             field(MEMBER3_DESCRIPTOR)
@@ -838,7 +838,7 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
     companion object {
         private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor("mapOfLists", SerialKind.Map)
         private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor("mapOfListsC0", SerialKind.List)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MAPOFLISTS_DESCRIPTOR)
         }
     }
