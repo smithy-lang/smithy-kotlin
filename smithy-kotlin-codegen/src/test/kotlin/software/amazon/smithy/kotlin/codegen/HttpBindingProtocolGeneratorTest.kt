@@ -359,7 +359,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
     @Test
     fun `it serializes documents with union members containing collections of structures`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooRequest { 
                 payload: FooUnion
             }
@@ -376,7 +376,7 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
                 someValue: FooUnion
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
         val contents = getTransformFileContents("FooUnionSerializer.kt", model)
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """

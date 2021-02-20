@@ -295,7 +295,7 @@ class SerializeStructGeneratorTest {
     @Test
     fun `it serializes a union containing a list of a structure type`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooRequest { 
                 payload: FooUnion
             }
@@ -312,7 +312,7 @@ class SerializeStructGeneratorTest {
                 someValue: String
             }
         """
-                ).asSmithyModel()
+            ).asSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
