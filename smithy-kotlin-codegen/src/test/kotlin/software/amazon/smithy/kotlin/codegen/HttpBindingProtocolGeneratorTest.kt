@@ -37,6 +37,24 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTest {
     private val defaultModel = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+    private val modelPrefix = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                input: FooRequest
+            }        
+    """.trimIndent()
 
     private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
         val (ctx, manifest, generator) = testModel.newTestContext()
@@ -336,6 +354,57 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.UnionRequest")
+    }
+
+    @Test
+    fun `it serializes documents with union members containing collections of structures`() {
+        val model = (
+                modelPrefix + """            
+            structure FooRequest { 
+                payload: FooUnion
+            }
+            
+            union FooUnion {
+                structList: BarList
+            }
+            
+            list BarList {
+                member: BarStruct
+            }
+            
+            structure BarStruct {
+                someValue: FooUnion
+            }
+        """
+                ).asSmithyModel()
+        val contents = getTransformFileContents("FooUnionSerializer.kt", model)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+            class FooUnionSerializer(val input: FooUnion) : SdkSerializable {
+            
+                companion object {
+                    private val STRUCTLIST_DESCRIPTOR = SdkFieldDescriptor("structList", SerialKind.List)
+                    private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                        field(STRUCTLIST_DESCRIPTOR)
+                    }
+                }
+            
+                override fun serialize(serializer: Serializer) {
+                    serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                        when (input) {
+                            is FooUnion.StructList -> {
+                                listField(STRUCTLIST_DESCRIPTOR) {
+                                    for (col0 in input.value) {
+                                        serializeSdkSerializable(BarStructSerializer(col0))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test

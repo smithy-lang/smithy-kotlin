@@ -74,7 +74,7 @@ class DeserializeUnionGenerator(
     override fun renderPrimitiveShapeDeserializer(memberShape: MemberShape) {
         val unionTypeName = memberShape.unionTypeName(memberShape)
         val descriptorName = memberShape.descriptorName()
-        val deserialize = deserializerForPrimitiveShape(memberShape)
+        val deserialize = deserializerForShape(memberShape)
 
         writer.write("$descriptorName.index -> value = $unionTypeName($deserialize)")
     }

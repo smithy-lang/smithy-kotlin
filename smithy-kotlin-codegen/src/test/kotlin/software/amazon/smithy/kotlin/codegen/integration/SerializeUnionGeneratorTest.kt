@@ -207,4 +207,57 @@ class SerializeUnionGeneratorTest {
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
+
+    @Test
+    fun `it serializes a structure containing a union of collection of structures`() {
+        val model = (
+                modelPrefix + """            
+                    structure FooRequest { 
+                        payload: FooUnion
+                    }
+                    
+                    union FooUnion {
+                        intListVal: IntList,
+                        strMapVal: StringMap,
+                    }
+                    
+                    list IntList {
+                        member: BarStruct
+                    }
+                    
+                    map StringMap {
+                        key: String,
+                        value: BarStruct
+                    }
+                    
+                    structure BarStruct {
+                        foo: String,
+                        bar: Integer
+                    }
+                """
+                ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                when (input) {
+                    is FooUnion.IntListVal -> {
+                        listField(INTLISTVAL_DESCRIPTOR) {
+                            for (col0 in input.value) {
+                                serializeSdkSerializable(BarStructSerializer(col0))
+                            }
+                        }
+                    }
+                    is FooUnion.StrMapVal -> {
+                        mapField(STRMAPVAL_DESCRIPTOR) {
+                            input.value.forEach { (key, value) -> entry(key, BarStructSerializer(value)) }
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
 }
