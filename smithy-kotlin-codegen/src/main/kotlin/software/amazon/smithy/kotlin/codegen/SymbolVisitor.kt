@@ -140,14 +140,14 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun stringShape(shape: StringShape): Symbol {
-        val enumTrait = shape.getTrait(EnumTrait::class.java)
-        if (enumTrait.isPresent) {
-            return createEnumSymbol(shape, enumTrait.get())
+        return if (shape.isEnum) {
+            createEnumSymbol(shape)
+        } else {
+            createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
         }
-        return createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
     }
 
-    fun createEnumSymbol(shape: StringShape, trait: EnumTrait): Symbol {
+    fun createEnumSymbol(shape: StringShape): Symbol {
         val namespace = "$rootNamespace.model"
         return createSymbolBuilder(shape, shape.defaultName(), namespace, boxed = true)
             .definitionFile("${shape.defaultName()}.kt")
@@ -379,3 +379,10 @@ fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextO
 
     return addReference(ref)
 }
+
+/**
+ * Test if a shape represents an enumeration
+ * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
+ */
+val Shape.isEnum: Boolean
+    get() = isStringShape && hasTrait(EnumTrait::class.java)
