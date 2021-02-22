@@ -80,12 +80,11 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         // fully qualified type: `aws.sdk.kotlin.model.Foo`
         putFormatter('Q', KotlinSymbolFormatter(fullyQualifiedNames = true))
 
-        // fully qualified type with nullability.
         // like `T` but with nullability information: `aws.sdk.kotlin.model.Foo?`. This is mostly useful
         // when formatting properties
         putFormatter('P', KotlinPropertyFormatter())
 
-        // like `P` but with default set: `aws.sdk.kotlin.model.Foo = 1`
+        // like `P` but with default set (if applicable): `aws.sdk.kotlin.model.Foo = 1`
         putFormatter('D', KotlinPropertyFormatter(setDefault = true))
     }
 
