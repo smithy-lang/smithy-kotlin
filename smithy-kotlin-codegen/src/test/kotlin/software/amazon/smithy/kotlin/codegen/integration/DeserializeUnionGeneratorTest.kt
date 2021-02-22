@@ -79,8 +79,8 @@ class DeserializeUnionGeneratorTest {
             }
             
             union MyAggregateUnion {
-                intList: MyAggregateUnionList,
-                intMap: MyAggregateUnionMap,
+                unionList: MyAggregateUnionList,
+                unionMap: MyAggregateUnionMap,
             }
             
             list MyAggregateUnionList {
@@ -97,24 +97,24 @@ class DeserializeUnionGeneratorTest {
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 when(findNextFieldIndex()) {
-                    INTLIST_DESCRIPTOR.index -> value =
-                        deserializer.deserializeList(INTLIST_DESCRIPTOR) {
+                    UNIONLIST_DESCRIPTOR.index -> value =
+                        deserializer.deserializeList(UNIONLIST_DESCRIPTOR) {
                             val col0 = mutableListOf<MyAggregateUnion>()
                             while (hasNextElement()) {
                                 val el0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                 col0.add(el0)
                             }
-                            MyAggregateUnion.IntList(col0)
+                            MyAggregateUnion.UnionList(col0)
                         }
-                    INTMAP_DESCRIPTOR.index -> value =
-                        deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
+                    UNIONMAP_DESCRIPTOR.index -> value =
+                        deserializer.deserializeMap(UNIONMAP_DESCRIPTOR) {
                             val map0 = mutableMapOf<String, MyAggregateUnion>()
                             while (hasNextEntry()) {
                                 val k0 = key()
                                 val v0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                 map0[k0] = v0
                             }
-                            MyAggregateUnion.IntMap(map0)
+                            MyAggregateUnion.UnionMap(map0)
                         }
                     else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                 }
