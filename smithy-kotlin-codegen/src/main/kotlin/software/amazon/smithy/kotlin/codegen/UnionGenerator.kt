@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -32,7 +33,7 @@ class UnionGenerator(
             writer.renderMemberDocumentation(model, it)
             val memberName = symbolProvider.toMemberName(it)
             val targetType = model.expectShape(it.target).type
-            writer.writeInline("data class \$L(val value: \$L) : \$L()", memberName.capitalize(), symbolProvider.toSymbol(it).name, symbol.name)
+            writer.writeInline("data class \$L(val value: \$Q) : \$Q()", memberName.capitalize(), symbolProvider.toSymbol(it), symbol)
             when (targetType) {
                 ShapeType.BLOB -> {
                     writer.withBlock(" {", "}") {
@@ -44,14 +45,14 @@ class UnionGenerator(
             }
         }
         // generate the unknown which will always be last
-        writer.write("object SdkUnknown : ${symbol.name}()")
+        writer.write("object SdkUnknown : \$Q()", symbol)
         writer.closeBlock("}").write("")
     }
 
     // generate a `hashCode()` implementation
     private fun renderHashCode(model: Model, sortedMembers: List<MemberShape>, symbolProvider: SymbolProvider, writer: CodeWriter) {
         writer.write("")
-        writer.withBlock("override fun hashCode(): Int {", "}") {
+        writer.withBlock("override fun hashCode(): \$Q {", "}", KotlinTypes.Int) {
             write("return value\$L", selectHashFunctionForShape(model, sortedMembers[0], symbolProvider))
         }
     }
@@ -92,7 +93,7 @@ class UnionGenerator(
     // generate a `equals()` implementation
     private fun renderEquals(model: Model, sortedMembers: List<MemberShape>, typeName: String, writer: CodeWriter) {
         writer.write("")
-        writer.withBlock("override fun equals(other: Any?): Boolean {", "}") {
+        writer.withBlock("override fun equals(other: \$Q?): \$Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
             write("if (javaClass != other?.javaClass) return false")
             write("")

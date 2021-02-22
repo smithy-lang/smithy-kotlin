@@ -6,7 +6,6 @@ package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -22,141 +21,33 @@ class StructureGeneratorTest {
     // Structure generation is rather involved, instead of one giant substr search to see that everything is right we
     // look for parts of the whole as individual tests
     private val commonTestContents: String
-    private val clientErrorTestContents: String
-    private val serverErrorTestContents: String
 
     init {
-        val member1 = MemberShape.builder().id("com.test#MyStruct\$foo").target("smithy.api#String").build()
-        val member2 = MemberShape.builder().id("com.test#MyStruct\$bar").target("smithy.api#PrimitiveInteger").addTrait(DocumentationTrait("This *is* documentation about the member.")).build()
-        val member3 = MemberShape.builder().id("com.test#MyStruct\$baz").target("smithy.api#Integer").build()
 
-        // struct 2 will be of type `Qux` under `MyStruct::quux` member
-        val struct2 = StructureShape.builder()
-            .id("com.test#Qux")
-            .build()
-        // structure member shape - note the capitalization of the member name (generated code should use the Kotlin class member name)
-        val member4 = MemberShape.builder().id("com.test#MyStruct\$Quux").target(struct2).build()
-        val member5 = MemberShape.builder().id("com.test#MyStruct\$byteValue").target("smithy.api#Byte").build()
-
-        val struct = StructureShape.builder()
-            .id("com.test#MyStruct")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .addMember(member4)
-            .addMember(member5)
-            .addTrait(DocumentationTrait("This *is* documentation about the shape."))
-            .build()
-
-        /*
-        @httpError(400)
-        @error("client")
-        @documentation("Input fails to satisfy the constraints specified by the service")
-        structure ValidationException {
-            @documentation("""
-                Enumerated reason why the input was invalid
-            """)
-            @required
-            reason: ValidationExceptionReason,
-            @documentation("""
-                List of specific input fields which were invalid
-            """)
-            @required
-            fieldList: ValidationExceptionFieldList
-        }
-        */
-        val trait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("Reason1").name("REASON1").build())
-            .addEnum(EnumDefinition.builder().value("Reason2").name("REASON2").build())
-            .build()
-        val enumShape = StringShape.builder()
-            .id("com.error.test#ValidationExceptionReason")
-            .addTrait(trait)
-            .build()
-        val errorMember1 = MemberShape.builder()
-            .id("com.error.test#ValidationException\$reason")
-            .addTrait(DocumentationTrait("Enumerated reason why the input was invalid"))
-            .target(enumShape)
-            .build()
-        val mem = StructureShape.builder().id("com.error.test#ValidationExceptionField").build()
-        val listMember = MemberShape.builder().id("com.error.test#ValidationExceptionFieldList\$member").target(mem).build()
-        val list = ListShape.builder()
-            .id("com.error.test#ValidationExceptionFieldList")
-            .member(listMember)
-            .build()
-        val errorMember2 = MemberShape.builder()
-            .id("com.error.test#ValidationException\$fieldList")
-            .addTrait(DocumentationTrait("List of specific input fields which were invalid"))
-            .target(list)
-            .build()
-        val clientErrorShape = StructureShape.builder()
-            .id("com.error.test#ValidationException")
-            .addMember(errorMember1)
-            .addMember(errorMember2)
-            .addTrait(ErrorTrait("client"))
-            .addTrait(HttpErrorTrait(400))
-            .addTrait(DocumentationTrait("Input fails to satisfy the constraints specified by the service"))
-            .build()
-
-        /*
-        @httpError(500)
-        @error("server")
-        @retryable
-        @documentation("Internal server error")
-        structure InternalServerException {
-            @required
-            message: String
-        }
-        */
-        val errorMessageMember = MemberShape.builder().id("com.test#InternalServerException\$message").target("smithy.api#String").build()
-        val serverErrorShape = StructureShape.builder()
-            .id("com.test#InternalServerException")
-            .addMember(errorMessageMember)
-            .addTrait(ErrorTrait("server"))
-            .addTrait(RetryableTrait.builder().throttling(false).build())
-            .addTrait(HttpErrorTrait(500))
-            .addTrait(DocumentationTrait("Internal server error"))
-            .build()
-
-        /*
+        val model = """
         namespace com.test
+        
         structure Qux { }
-
+        
+        @documentation("This *is* documentation about the shape.")
         structure MyStruct {
             foo: String,
+            @documentation("This *is* documentation about the member.")
             bar: PrimitiveInteger,
             baz: Integer,
-            quux: Qux
+            Quux: Qux,
+            byteValue: Byte
         }
-        */
-        val model = Model.assembler()
-            .addShapes(struct, struct2, member1, member2, member3)
-            .assemble()
-            .unwrap()
+        
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
+        val struct = model.expectShape<StructureShape>("com.test#MyStruct")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
 
         commonTestContents = writer.toString()
-
-        val errorModel = Model.assembler()
-            .addShapes(clientErrorShape, errorMember1, errorMember2, listMember, enumShape, list, mem)
-            .assemble()
-            .unwrap()
-
-        val errorProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(errorModel, "error.test", "Test")
-        val errorWriter = KotlinWriter("com.error.test")
-        val clientErrorGenerator = StructureGenerator(errorModel, errorProvider, errorWriter, clientErrorShape)
-        clientErrorGenerator.render()
-
-        clientErrorTestContents = errorWriter.toString()
-
-        val serverErrorGenerator = StructureGenerator(model, provider, writer, serverErrorShape)
-        serverErrorGenerator.render()
-
-        serverErrorTestContents = writer.toString()
     }
 
     @Test
@@ -196,7 +87,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
 
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
-        operator fun invoke(block: DslBuilder.() -> Unit): MyStruct = BuilderImpl().apply(block).build()
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
 
     }
 """
@@ -206,7 +97,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     @Test
     fun `it renders a toString implementation`() {
         val expected = """
-    override fun toString() = buildString {
+    override fun toString(): kotlin.String = buildString {
         append("MyStruct(")
         append("bar=${'$'}bar,")
         append("baz=${'$'}baz,")
@@ -221,7 +112,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     @Test
     fun `it renders a hashCode implementation`() {
         val expected = """
-    override fun hashCode(): Int {
+    override fun hashCode(): kotlin.Int {
         var result = bar
         result = 31 * result + (baz ?: 0)
         result = 31 * result + (byteValue?.toInt() ?: 0)
@@ -236,7 +127,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     @Test
     fun `it renders an equals implementation`() {
         val expected = """
-    override fun equals(other: Any?): Boolean {
+    override fun equals(other: kotlin.Any?): kotlin.Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
@@ -257,7 +148,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
     @Test
     fun `it renders a copy implementation`() {
         val expected = """
-    fun copy(block: DslBuilder.() -> Unit = {}): MyStruct = BuilderImpl(this).apply(block).build()
+    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): MyStruct = BuilderImpl(this).apply(block).build()
 """
         commonTestContents.shouldContainOnlyOnce(expected)
     }
@@ -288,7 +179,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         var quux: Qux?
 
         fun build(): MyStruct
-        fun quux(block: Qux.DslBuilder.() -> Unit) {
+        fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
             this.quux = Qux.invoke(block)
         }
     }
@@ -496,61 +387,6 @@ class MyStruct private constructor(builder: BuilderImpl) {
     }
 
     @Test
-    fun `error generator extends correctly`() {
-        val expectedClientClassDecl = """
-class ValidationException private constructor(builder: BuilderImpl) : ServiceException() {
-"""
-
-        clientErrorTestContents.shouldContain(expectedClientClassDecl)
-
-        val expectedServerClassDecl = """
-class InternalServerException private constructor(builder: BuilderImpl) : ServiceException() {
-"""
-
-        serverErrorTestContents.shouldContain(expectedServerClassDecl)
-    }
-
-    @Test
-    fun `error generator sets error type correctly`() {
-        val expectedClientClassDecl = "override val errorType = ErrorType.Client"
-
-        clientErrorTestContents.shouldContain(expectedClientClassDecl)
-
-        val expectedServerClassDecl = "override val errorType = ErrorType.Server"
-
-        serverErrorTestContents.shouldContain(expectedServerClassDecl)
-    }
-
-    @Test
-    fun `error generator syntactic sanity checks`() {
-        // sanity check since we are testing fragments
-        clientErrorTestContents.shouldSyntacticSanityCheck()
-        serverErrorTestContents.shouldSyntacticSanityCheck()
-    }
-
-    @Test
-    fun `error generator renders override with message member`() {
-        val expectedConstr = """
-    override val message: String = builder.message!!
-"""
-
-        serverErrorTestContents.shouldContain(expectedConstr)
-
-        clientErrorTestContents.shouldNotContain(expectedConstr)
-    }
-
-    @Test
-    fun `error generator renders isRetryable`() {
-        val expectedConstr = """
-        override val isRetryable = true
-"""
-
-        serverErrorTestContents.shouldContain(expectedConstr)
-
-        clientErrorTestContents.shouldNotContain(expectedConstr)
-    }
-
-    @Test
     fun `error generator throws if message property is of wrong type`() {
         val errorMessageMember =
             MemberShape.builder().id("com.test#InternalServerException\$message").target("smithy.api#Integer").build()
@@ -604,7 +440,7 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
         val contents = writer.toString()
 
         val expectedEqualsContent = """
-    override fun equals(other: Any?): Boolean {
+    override fun equals(other: kotlin.Any?): kotlin.Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
@@ -621,7 +457,7 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
 """
 
         val expectedHashCodeContent = """
-    override fun hashCode(): Int {
+    override fun hashCode(): kotlin.Int {
         var result = bar?.hashCode() ?: 0
         result = 31 * result + (foo?.contentHashCode() ?: 0)
         return result

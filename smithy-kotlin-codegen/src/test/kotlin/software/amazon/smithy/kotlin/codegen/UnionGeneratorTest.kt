@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -15,26 +16,27 @@ class UnionGeneratorTest {
     @Test
     fun `it renders unions`() {
         val model = """
-            namespace com.test
-
-            structure MyStruct {
-                qux: String,
-            }
-
-            /// Documentation for MyUnion
-            union MyUnion {
-                /// Documentation for foo
-                foo: String,
-                bar: PrimitiveInteger,
-                baz: Integer,
-                blz: Blob,
-                MyStruct: MyStruct,
-            }
+        namespace com.test
+        
+        @documentation("Documentation for MyUnion")
+        union MyUnion {
+            @documentation("Documentation for foo")
+            foo: String,
+            bar: PrimitiveInteger,
+            baz: Integer,
+            blz: Blob,
+            myStruct: MyStruct
+        }
+        
+        structure MyStruct {
+            qux: String
+        }
+            
         """.asSmithyModel()
-        val union = model.expectShape<UnionShape>("com.test#MyUnion")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
+        val union = model.expectShape<UnionShape>("com.test#MyUnion")
         val generator = UnionGenerator(model, provider, writer, union)
         generator.render()
 
@@ -42,39 +44,39 @@ class UnionGeneratorTest {
         assertTrue(contents.contains("package com.test"))
 
         val expectedClassDecl = """
-            /**
-             * Documentation for MyUnion
-             */
-            sealed class MyUnion {
-                data class MyStruct(val value: MyStruct) : MyUnion()
-                data class Bar(val value: Int) : MyUnion()
-                data class Baz(val value: Int) : MyUnion()
-                data class Blz(val value: ByteArray) : MyUnion() {
-            
-                    override fun hashCode(): Int {
-                        return value.contentHashCode()
-                    }
-            
-                    override fun equals(other: Any?): Boolean {
-                        if (this === other) return true
-                        if (javaClass != other?.javaClass) return false
-            
-                        other as Blz
-            
-                        if (!value.contentEquals(other.value)) return false
-            
-                        return true
-                    }
-                }
-                /**
-                 * Documentation for foo
-                 */
-                data class Foo(val value: String) : MyUnion()
-                object SdkUnknown : MyUnion()
-            }
-        """.trimIndent()
+/**
+ * Documentation for MyUnion
+ */
+sealed class MyUnion {
+    data class Bar(val value: kotlin.Int) : test.model.MyUnion()
+    data class Baz(val value: kotlin.Int) : test.model.MyUnion()
+    data class Blz(val value: kotlin.ByteArray) : test.model.MyUnion() {
 
-        contents.shouldContainOnlyOnceWithDiff(expectedClassDecl)
+        override fun hashCode(): kotlin.Int {
+            return value.contentHashCode()
+        }
+
+        override fun equals(other: kotlin.Any?): kotlin.Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Blz
+
+            if (!value.contentEquals(other.value)) return false
+
+            return true
+        }
+    }
+    /**
+     * Documentation for foo
+     */
+    data class Foo(val value: kotlin.String) : test.model.MyUnion()
+    data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
+    object SdkUnknown : test.model.MyUnion()
+}
+"""
+
+        contents.shouldContain(expectedClassDecl)
     }
 
     @Test
