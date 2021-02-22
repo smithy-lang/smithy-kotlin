@@ -26,18 +26,6 @@ class BuiltinPreprocessor : KotlinIntegration {
 
     private val logger = Logger.getLogger(javaClass.name)
 
-    // non-exhaustive list of kotlin builtin symbols. These are some of the more common ones
-    // a customer may interact with all the time and warrants renaming
-    private val kotlinBuiltins = setOf(
-        "Unit", "Any",
-        "String",
-        "Byte", "UByte", "Char",
-        "ByteArray", "CharArray", "UByteArray",
-        "Int", "Long", "Short", "UInt", "ULong", "UShort",
-        "Float", "Double",
-        "Boolean",
-    )
-
     override fun preprocessModel(model: Model, settings: KotlinSettings): Model {
         val transformer = ModelTransformer.create()
         val renamed = getRenamed(model, settings)
@@ -46,6 +34,7 @@ class BuiltinPreprocessor : KotlinIntegration {
 
     private fun getRenamed(model: Model, settings: KotlinSettings): Map<ShapeId, ShapeId> {
         val serviceNamespace = settings.getService(model).id.namespace
+        val kotlinBuiltins = KotlinTypes.All.map { it.name }.toSet()
 
         return model.shapeIds
             .filter {
