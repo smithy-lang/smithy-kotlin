@@ -121,7 +121,7 @@ open class DeserializeStructGenerator(
     open fun renderPrimitiveShapeDeserializer(memberShape: MemberShape) {
         val memberName = memberShape.defaultName()
         val descriptorName = memberShape.descriptorName()
-        val deserialize = deserializerForPrimitiveShape(memberShape)
+        val deserialize = deserializerForShape(memberShape)
 
         writer.write("$descriptorName.index -> builder.$memberName = $deserialize")
     }
@@ -179,7 +179,7 @@ open class DeserializeStructGenerator(
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER,
             ShapeType.BLOB,
-            ShapeType.TIMESTAMP -> renderPrimitiveEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.TIMESTAMP -> renderEntry(elementShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.SET,
             ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
@@ -204,10 +204,10 @@ open class DeserializeStructGenerator(
         isSparse: Boolean,
         parentMemberName: String
     ) {
-        val deserializerFn = deserializerForPrimitiveShape(elementShape)
+        val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val populateNullValuePostfix = populateNullValueOption(isSparse)
+        val populateNullValuePostfix = if (isSparse) "" else "; continue"
 
         writer.write("val $keyName = key()")
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
@@ -301,11 +301,11 @@ open class DeserializeStructGenerator(
      * map0[k0] = el0
      * ```
      */
-    private fun renderPrimitiveEntry(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
-        val deserializerFn = deserializerForPrimitiveShape(elementShape)
+    private fun renderEntry(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
+        val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
-        val populateNullValuePostfix = populateNullValueOption(isSparse)
+        val populateNullValuePostfix = if (isSparse) "" else "; continue"
 
         writer.write("val $keyName = key()")
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
@@ -364,12 +364,12 @@ open class DeserializeStructGenerator(
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER,
             ShapeType.BLOB,
-            ShapeType.TIMESTAMP -> renderPrimitiveElement(elementShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.TIMESTAMP -> renderElement(elementShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.LIST,
             ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
+            ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape, nestingLevel, isSparse, parentMemberName)
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -381,11 +381,12 @@ open class DeserializeStructGenerator(
      * col0.add(el0)
      * ```
      */
-    private fun renderNestedStructureElement(elementShape: Shape, nestingLevel: Int, parentMemberName: String) {
-        val deserializer = deserializerForPrimitiveShape(elementShape)
+    private fun renderNestedStructureElement(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, parentMemberName: String) {
+        val deserializer = deserializerForShape(elementShape)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
+        val populateNullValuePostfix = if (isSparse) "" else "; continue"
 
-        writer.write("val $elementName = if (nextHasValue()) { $deserializer } else { deserializeNull(); continue }")
+        writer.write("val $elementName = if (nextHasValue()) { $deserializer } else { deserializeNull()$populateNullValuePostfix }")
         writer.write("$parentMemberName.add($elementName)")
     }
 
@@ -467,10 +468,10 @@ open class DeserializeStructGenerator(
      * col0.add(el0)
      * ```
      */
-    private fun renderPrimitiveElement(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, listMemberName: String) {
-        val deserializerFn = deserializerForPrimitiveShape(elementShape)
+    private fun renderElement(elementShape: Shape, nestingLevel: Int, isSparse: Boolean, listMemberName: String) {
+        val deserializerFn = deserializerForShape(elementShape)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val populateNullValuePostfix = populateNullValueOption(isSparse)
+        val populateNullValuePostfix = if (isSparse) "" else "; continue"
 
         writer.write("val $elementName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
         writer.write("$listMemberName.add($elementName)")
@@ -480,7 +481,7 @@ open class DeserializeStructGenerator(
      * Return Kotlin function that deserializes a primitive value.
      * @param shape primitive [Shape] associated with value.
      */
-    protected fun deserializerForPrimitiveShape(shape: Shape): String {
+    protected fun deserializerForShape(shape: Shape): String {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
 
@@ -526,12 +527,6 @@ open class DeserializeStructGenerator(
             }
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
         }
-    }
-
-    // For sparse collections, deserialize nulls into response values.
-    private fun populateNullValueOption(isSparse: Boolean) = when (isSparse) {
-        true -> ""
-        false -> "; continue"
     }
 
     // Return the function to generate a mutable instance of collection type of input shape.
