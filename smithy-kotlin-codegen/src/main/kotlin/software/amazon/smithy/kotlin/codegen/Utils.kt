@@ -22,17 +22,6 @@ import software.amazon.smithy.utils.CodeWriter
 import java.util.*
 
 /**
- * Test if a string is a valid Kotlin identifier name
- */
-fun isValidKotlinIdentifier(s: String): Boolean {
-    val c = s.firstOrNull() ?: return false
-    return when (c) {
-        in 'a'..'z', in 'A'..'Z', '_' -> true
-        else -> false
-    }
-}
-
-/**
  * Concise extension function to return a shape of expected type.
  */
 inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =

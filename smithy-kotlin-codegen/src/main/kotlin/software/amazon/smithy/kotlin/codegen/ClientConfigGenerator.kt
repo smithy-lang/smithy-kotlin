@@ -84,7 +84,7 @@ class ClientConfigGenerator(
     private fun renderImmutableProperties() {
         props.forEach { prop ->
             val override = if (prop.requiresOverride) "override " else ""
-            ctx.writer.write("${override}val \$1L: \$2T = builder.\$1L", prop.propertyName, prop.symbol)
+            ctx.writer.write("${override}val \$1L: \$2P = builder.\$1L", prop.propertyName, prop.symbol)
         }
     }
 
@@ -104,7 +104,7 @@ class ClientConfigGenerator(
             .withBlock("interface DslBuilder {", "}") {
                 props.forEach { prop ->
                     prop.documentation?.let { ctx.writer.dokka(it) }
-                    write("var \$L: \$T", prop.propertyName, prop.symbol)
+                    write("var \$L: \$P", prop.propertyName, prop.symbol)
                     write("")
                 }
                 write("")

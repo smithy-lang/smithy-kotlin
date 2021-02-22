@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.kotlin.codegen.lang.isBuiltIn
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -35,8 +36,13 @@ import java.util.function.BiFunction
  * writer.closeBlock("}")
  * ```
  */
-fun <T : CodeWriter> T.withBlock(textBeforeNewLine: String, textAfterNewLine: String, block: T.() -> Unit): T {
-    openBlock(textBeforeNewLine)
+fun <T : CodeWriter> T.withBlock(
+    textBeforeNewLine: String,
+    textAfterNewLine: String,
+    vararg args: Any,
+    block: T.() -> Unit
+): T {
+    openBlock(textBeforeNewLine, *args)
     block(this)
     closeBlock(textAfterNewLine)
     return this
@@ -68,16 +74,28 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
-        // type with default set
-        putFormatter('D', KotlinSymbolFormatter(setDefault = true))
-        // type only
+
+        // type name: `Foo`
         putFormatter('T', KotlinSymbolFormatter())
+        // fully qualified type: `aws.sdk.kotlin.model.Foo`
+        putFormatter('Q', KotlinSymbolFormatter(fullyQualifiedNames = true))
+
+        // fully qualified type with nullability.
+        // like `T` but with nullability information: `aws.sdk.kotlin.model.Foo?`. This is mostly useful
+        // when formatting properties
+        putFormatter('P', KotlinPropertyFormatter())
+
+        // like `P` but with default set: `aws.sdk.kotlin.model.Foo = 1`
+        putFormatter('D', KotlinPropertyFormatter(setDefault = true))
     }
 
     internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
     private val imports = ImportDeclarations()
 
     fun addImport(symbol: Symbol, alias: String = symbol.name) {
+        // don't import built-in symbols
+        if (symbol.isBuiltIn) return
+
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
 
@@ -176,30 +194,51 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
             // API Gateway and maybe others intentionally embed "*/" in comments.
             .replace("*/", "\\*\\/")
     }
+}
 
-    /**
-     * Implements Kotlin symbol formatting for the `$T` formatter
-     */
-    private class KotlinSymbolFormatter(val setDefault: Boolean = false) : BiFunction<Any, String, String> {
-        override fun apply(type: Any, indent: String): String {
-            when (type) {
-                is Symbol -> {
-                    var formatted = type.name
-                    if (type.isBoxed()) {
-                        formatted += "?"
-                    }
-
-                    val defaultValue = type.defaultValue()
-                    if (defaultValue != null && setDefault) {
-                        formatted += " = $defaultValue"
-                    }
-                    return formatted
-                }
-//                is SymbolReference -> {
-//                    return type.alias
-//                }
-                else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
+/**
+ * Implements Kotlin symbol formatting for the `$T` and `$Q` formatter(s)
+ */
+private class KotlinSymbolFormatter(
+    private val fullyQualifiedNames: Boolean = false,
+) : BiFunction<Any, String, String> {
+    override fun apply(type: Any, indent: String): String {
+        when (type) {
+            is Symbol -> {
+                return if (fullyQualifiedNames) type.fullName else type.name
             }
+            else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
+        }
+    }
+}
+
+/**
+ * Implements Kotlin symbol formatting for the `$D` and `$P` formatter(s)
+ */
+class KotlinPropertyFormatter(
+    // set defaults
+    private val setDefault: Boolean = false,
+    // format with nullability `?`
+    private val includeNullability: Boolean = true,
+    // use fully qualified names
+    private val fullyQualifiedNames: Boolean = false,
+) : BiFunction<Any, String, String> {
+    override fun apply(type: Any, indent: String): String {
+        when (type) {
+            is Symbol -> {
+                var formatted = if (fullyQualifiedNames) type.fullName else type.name
+                if (includeNullability && type.isBoxed()) {
+                    formatted += "?"
+                }
+
+                if (setDefault) {
+                    type.defaultValue()?.let {
+                        formatted += " = $it"
+                    }
+                }
+                return formatted
+            }
+            else -> throw CodegenException("Invalid type provided for ${javaClass.name}. Expected a Symbol, but found `$type`")
         }
     }
 }
