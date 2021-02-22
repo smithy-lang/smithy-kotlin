@@ -12,14 +12,54 @@ import software.amazon.smithy.kotlin.codegen.buildSymbol
  * Builtin kotlin types
  */
 object KotlinTypes {
+    val Unit: Symbol = builtInSymbol("Unit")
+    val Any: Symbol = builtInSymbol("Any")
+    val Nothing: Symbol = builtInSymbol("Nothing")
+
+    val String: Symbol = builtInSymbol("String")
+    val Byte: Symbol = builtInSymbol("Byte")
+    val UByte: Symbol = builtInSymbol("UByte")
+    val Char: Symbol = builtInSymbol("Char")
+    val ByteArray: Symbol = builtInSymbol("ByteArray")
+    val UByteArray: Symbol = builtInSymbol("UByteArray")
+    val CharArray: Symbol = builtInSymbol("CharArray")
+
     val Int: Symbol = builtInSymbol("Int")
+    val Short: Symbol = builtInSymbol("Short")
     val Long: Symbol = builtInSymbol("Long")
+    val UInt: Symbol = builtInSymbol("UInt")
+    val UShort: Symbol = builtInSymbol("UShort")
+    val ULong: Symbol = builtInSymbol("ULong")
     val Float: Symbol = builtInSymbol("Float")
     val Double: Symbol = builtInSymbol("Double")
-    val String: Symbol = builtInSymbol("String")
-    val Unit: Symbol = builtInSymbol("Unit")
     val Boolean: Symbol = builtInSymbol("Boolean")
-    val Any: Symbol = builtInSymbol("Any")
+
+    /**
+     * A (non-exhaustive) set of builtin Kotlin symbols
+     */
+    val All: Set<Symbol> = setOf(
+        Unit,
+        Any,
+        Nothing,
+
+        String,
+        Byte,
+        UByte,
+        Char,
+        ByteArray,
+        UByteArray,
+        CharArray,
+
+        Int,
+        Short,
+        Long,
+        UInt,
+        UShort,
+        ULong,
+        Float,
+        Double,
+        Boolean,
+    )
 }
 
 private fun builtInSymbol(symbol: String): Symbol = buildSymbol {
