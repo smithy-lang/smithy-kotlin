@@ -394,8 +394,8 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
                         when (input) {
                             is FooUnion.StructList -> {
                                 listField(STRUCTLIST_DESCRIPTOR) {
-                                    for (col0 in input.value) {
-                                        serializeSdkSerializable(BarStructSerializer(col0))
+                                    for (el0 in input.value) {
+                                        serializeSdkSerializable(BarStructSerializer(el0))
                                     }
                                 }
                             }

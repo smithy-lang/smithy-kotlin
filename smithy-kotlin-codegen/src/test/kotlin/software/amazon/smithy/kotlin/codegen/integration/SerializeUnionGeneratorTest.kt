@@ -242,8 +242,8 @@ class SerializeUnionGeneratorTest {
                 when (input) {
                     is FooUnion.IntListVal -> {
                         listField(INTLISTVAL_DESCRIPTOR) {
-                            for (col0 in input.value) {
-                                serializeSdkSerializable(BarStructSerializer(col0))
+                            for (el0 in input.value) {
+                                serializeSdkSerializable(BarStructSerializer(el0))
                             }
                         }
                     }
