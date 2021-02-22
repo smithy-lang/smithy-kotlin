@@ -320,7 +320,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
                     }
                 }
-                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {", "}") {
+                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
                     for (member in sortedMembers) {
                         write("field(\$L)", member.descriptorName())
                     }
@@ -1091,10 +1091,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .call {
 
                 if (shape.isUnionShape) {
-                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
+                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
                         writer.write("var value: ${symbol.name}? = null")
-                        DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                        writer.write("return value")
+                        DeserializeUnionGenerator(ctx, symbol.name, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        writer.write("return value ?: throw DeserializationException(\"Deserialized value unexpectedly null: ${symbol.name}\")")
                     }
                         .closeBlock("}")
                 } else {

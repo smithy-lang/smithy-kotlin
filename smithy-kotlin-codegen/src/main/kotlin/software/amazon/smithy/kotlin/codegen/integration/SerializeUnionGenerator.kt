@@ -39,7 +39,10 @@ class SerializeUnionGenerator(
     override fun parentName(defaultName: String): String = "value"
 
     // Return the union instance
-    override fun valueToSerializeName(defaultName: String): String = "input.value"
+    override fun valueToSerializeName(defaultName: String): String = when (defaultName) {
+        "it" -> "input.value" // Union populates a singular value
+        else -> defaultName // Otherwise return the default
+    }
 
     /**
      * Iterate over all supplied [MemberShape]s to generate serializers. Example:

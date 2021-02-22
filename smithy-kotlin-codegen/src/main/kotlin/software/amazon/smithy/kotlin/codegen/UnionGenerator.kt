@@ -20,14 +20,11 @@ class UnionGenerator(
     private val shape: UnionShape
 ) {
 
-    fun render() {
-        renderUnion()
-    }
-
     /**
      * Renders a Smithy union to a Kotlin sealed class
      */
-    private fun renderUnion() {
+    fun render() {
+        check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) }) { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
         val symbol = symbolProvider.toSymbol(shape)
         writer.renderDocumentation(shape)
         writer.openBlock("sealed class \$L {", symbol.name)
@@ -46,6 +43,8 @@ class UnionGenerator(
                 else -> writer.write("")
             }
         }
+        // generate the unknown which will always be last
+        writer.write("object SdkUnknown : ${symbol.name}()")
         writer.closeBlock("}").write("")
     }
 

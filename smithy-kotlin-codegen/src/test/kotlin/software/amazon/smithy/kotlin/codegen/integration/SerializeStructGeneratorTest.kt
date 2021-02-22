@@ -355,8 +355,8 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (col0 in input.payload) {
-                            serializeSdkSerializable(FooUnionSerializer(col0))
+                        for (el0 in input.payload) {
+                            serializeSdkSerializable(FooUnionSerializer(el0))
                         }
                     }
                 }
@@ -461,8 +461,8 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
-                        for (col0 in input.payload) {
-                            serializeSdkSerializable(NestedStructureSerializer(col0))
+                        for (el0 in input.payload) {
+                            serializeSdkSerializable(NestedStructureSerializer(el0))
                         }
                     }
                 }
