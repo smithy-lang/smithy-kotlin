@@ -20,41 +20,39 @@ import software.amazon.smithy.model.traits.StreamingTrait
 class SymbolProviderTest {
     @Test
     fun `escapes reserved member names`() {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$class").target("smithy.api#String").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
+        val model = """
+        namespace com.test
+        
+        structure MyStruct {
+            class: String
+        }
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$class")
         val actual = provider.toMemberName(member)
         assertEquals("`class`", actual)
     }
 
     @Test
     fun `creates symbols in correct namespace`() {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#String").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
+        val model = """
+        namespace com.test
+        
+        structure MyStruct {
+            quux: String
+        }
+            
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val struct = model.expectShape<StructureShape>("com.test#MyStruct")
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
         val structSymbol = provider.toSymbol(struct)
         val memberSymbol = provider.toSymbol(member)
         assertEquals("test.model", structSymbol.namespace)
         assertEquals(".", structSymbol.namespaceDelimiter)
-
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+        assertEquals("kotlin", memberSymbol.namespace)
     }
 
     @DisplayName("Creates primitives")
@@ -89,8 +87,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val memberSymbol = provider.toSymbol(member)
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+        assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
         assertEquals(boxed, memberSymbol.isBoxed())
 
@@ -106,23 +103,19 @@ class SymbolProviderTest {
 
     @Test
     fun `creates blobs`() {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#Blob").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
+        val model = """
+        namespace com.test
+        structure MyStruct {
+            quux: Blob
+        }
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
         val memberSymbol = provider.toSymbol(member)
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+        assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed())
-
         assertEquals("ByteArray", memberSymbol.name)
     }
 

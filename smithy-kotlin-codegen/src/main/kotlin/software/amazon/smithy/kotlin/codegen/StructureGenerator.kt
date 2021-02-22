@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
@@ -90,9 +91,9 @@ class StructureGenerator(
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
                 }
                 // Override Throwable's message property
-                writer.write("override val \$1L: \$2L = builder.\$1L!!", memberName, memberSymbol)
+                writer.write("override val \$1L: \$2L = builder.\$1L!!", memberName, memberSymbol.name)
             } else {
-                writer.write("val \$1L: \$2T = builder.\$1L", memberName, memberSymbol)
+                writer.write("val \$1L: \$2P = builder.\$1L", memberName, memberSymbol)
             }
         }
     }
@@ -104,7 +105,7 @@ class StructureGenerator(
             write("")
             write("fun dslBuilder(): DslBuilder = BuilderImpl()")
             write("")
-            write("operator fun invoke(block: DslBuilder.() -> Unit): \$class.name:L = BuilderImpl().apply(block).build()")
+            write("operator fun invoke(block: DslBuilder.() -> \$Q): \$class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
             write("")
         }
     }
@@ -112,7 +113,7 @@ class StructureGenerator(
     // generate a `toString()` implementation
     private fun renderToString() {
         writer.write("")
-        writer.withBlock("override fun toString() = buildString {", "}") {
+        writer.withBlock("override fun toString(): \$Q = buildString {", "}", KotlinTypes.String) {
             write("append(\"\$class.name:L(\")")
 
             if (sortedMembers.isEmpty()) {
@@ -136,7 +137,7 @@ class StructureGenerator(
     // generate a `hashCode()` implementation
     private fun renderHashCode() {
         writer.write("")
-        writer.withBlock("override fun hashCode(): Int {", "}") {
+        writer.withBlock("override fun hashCode(): \$Q {", "}", KotlinTypes.Int) {
             if (sortedMembers.isEmpty()) {
                 write("var result = javaClass.hashCode()")
             } else {
@@ -197,7 +198,7 @@ class StructureGenerator(
     // generate a `equals()` implementation
     private fun renderEquals() {
         writer.write("")
-        writer.withBlock("override fun equals(other: Any?): Boolean {", "}") {
+        writer.withBlock("override fun equals(other: \$Q?): \$Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
             write("if (javaClass != other?.javaClass) return false")
             write("")
@@ -231,7 +232,7 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-            .write("fun copy(block: DslBuilder.() -> Unit = {}): \$class.name:L = BuilderImpl(this).apply(block).build()")
+            .write("fun copy(block: DslBuilder.() -> \$Q = {}): \$class.name:L = BuilderImpl(this).apply(block).build()", KotlinTypes.Unit)
             .write("")
     }
 
@@ -242,7 +243,7 @@ class StructureGenerator(
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     // we want the type names sans nullability (?) for arguments
-                    write("fun \$1L(\$1L: \$2L): Builder", memberName, memberSymbol.name)
+                    write("fun \$1L(\$1L: \$2T): Builder", memberName, memberSymbol)
                 }
             }
     }
@@ -259,14 +260,14 @@ class StructureGenerator(
                         targetShape.isStructureShape -> structMembers.add(member)
                     }
 
-                    write("var \$L: \$T", memberName, memberSymbol)
+                    write("var \$L: \$P", memberName, memberSymbol)
                 }
 
                 write("")
                 write("fun build(): \$class.name:L")
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
-                    openBlock("fun \$L(block: \$L.DslBuilder.() -> Unit) {", memberName, memberSymbol.name)
+                    openBlock("fun \$L(block: \$L.DslBuilder.() -> \$Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
                         .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")
                 }
@@ -300,7 +301,7 @@ class StructureGenerator(
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     // we want the type names sans nullability (?) for arguments
-                    write("override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1L = \$1L }", memberName, memberSymbol.name)
+                    write("override fun \$1L(\$1L: \$2T): Builder = apply { this.\$1L = \$1L }", memberName, memberSymbol)
                 }
             }
     }
