@@ -70,6 +70,17 @@ fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDe
 }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
+    private val htmlTags = setOf(
+        "a",
+        "b",
+        "code",
+        "i",
+        "li",
+        "note",
+        "p",
+        "ul",
+    ).map { listOf("<$it>", "</$it>") }.flatten()
+
     init {
         trimBlankLines()
         trimTrailingSpaces()
@@ -159,7 +170,11 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 
     fun dokka(docs: String) {
         dokka {
-            write(sanitizeDocumentation(docs))
+            write(
+                formatDocumentation(
+                    sanitizeDocumentation(docs)
+                )
+            )
         }
     }
 
@@ -172,10 +187,9 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 
     // handles the documentation for member shapes
     fun renderMemberDocumentation(model: Model, shape: MemberShape) {
-        if (shape.getTrait(DocumentationTrait::class.java).isPresent) {
-            dokka(shape.getTrait(DocumentationTrait::class.java).get().value)
-        } else if (shape.getMemberTrait(model, DocumentationTrait::class.java).isPresent) {
-            dokka(shape.getMemberTrait(model, DocumentationTrait::class.java).get().value)
+        when {
+            shape.hasTrait(DocumentationTrait::class.java) -> dokka(shape.expectTrait(DocumentationTrait::class.java).value)
+            shape.getMemberTrait(model, DocumentationTrait::class.java).isPresent -> dokka(shape.getMemberTrait(model, DocumentationTrait::class.java).get().value)
         }
     }
 
@@ -186,12 +200,26 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         }
     }
 
+    private fun formatDocumentation(doc: String): String {
+        return doc.split('\n').joinToString(separator = "\n") { it.trim() }
+    }
+
     private fun sanitizeDocumentation(doc: String): String {
         return doc
+            .stripAll(htmlTags)
             // Docs can have valid $ characters that shouldn't run through formatters.
             .replace("\$", "\$\$")
             // API Gateway and maybe others intentionally embed "*/" in comments.
-            .replace("*/", "\\*\\/")
+            .replace("/*", "&#47;*")
+            .replace("*/", "*&#47;")
+    }
+
+    private fun String.stripAll(stripList: List<String>): String {
+        var newStr = this
+
+        for (item in stripList) newStr = newStr.replace(item, "")
+
+        return newStr
     }
 }
 
