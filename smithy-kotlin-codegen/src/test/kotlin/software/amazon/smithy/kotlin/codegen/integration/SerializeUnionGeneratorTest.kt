@@ -217,11 +217,11 @@ class SerializeUnionGeneratorTest {
                     }
                     
                     union FooUnion {
-                        intListVal: IntList,
+                        structListVal: BarStructList,
                         strMapVal: StringMap,
                     }
                     
-                    list IntList {
+                    list BarStructList {
                         member: BarStruct
                     }
                     
@@ -240,16 +240,16 @@ class SerializeUnionGeneratorTest {
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 when (input) {
-                    is FooUnion.IntListVal -> {
-                        listField(INTLISTVAL_DESCRIPTOR) {
-                            for (el0 in input.value) {
-                                serializeSdkSerializable(BarStructSerializer(el0))
-                            }
-                        }
-                    }
                     is FooUnion.StrMapVal -> {
                         mapField(STRMAPVAL_DESCRIPTOR) {
                             input.value.forEach { (key, value) -> entry(key, BarStructSerializer(value)) }
+                        }
+                    }
+                    is FooUnion.StructListVal -> {
+                        listField(STRUCTLISTVAL_DESCRIPTOR) {
+                            for (el0 in input.value) {
+                                serializeSdkSerializable(BarStructSerializer(el0))
+                            }
                         }
                     }
                 }
