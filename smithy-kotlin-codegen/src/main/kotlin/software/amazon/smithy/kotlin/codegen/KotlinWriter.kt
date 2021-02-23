@@ -210,9 +210,9 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     // Remove blank lines
     private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
         doc
-            .split('\n')          // Break the doc into lines
-            .filter { it.isNotBlank() }     // Remove empty lines
-            .joinToString(separator = lineSeparator) { it.trim() }  // Trim line
+            .split('\n') // Break the doc into lines
+            .filter { it.isNotBlank() } // Remove empty lines
+            .joinToString(separator = lineSeparator) { it.trim() } // Trim line
 
     // Replace characters in the input documentation to prevent issues in codegen or rendering.
     // NOTE: Currently we look for specific strings of Html tags commonly found in docs
