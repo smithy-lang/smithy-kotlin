@@ -71,7 +71,7 @@ fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDe
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     // Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
-    private val htmlTags = setOf(
+    private val commonHtmlTags = setOf(
         "a",
         "b",
         "code",
@@ -207,8 +207,12 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     }
 
     // Remove whitespace from the beginning and end of each line of documentation
+    // Remove blank lines
     private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
-        doc.split('\n').joinToString(separator = lineSeparator) { it.trim() }
+        doc
+            .split('\n')          // Break the doc into lines
+            .filter { it.isNotBlank() }     // Remove empty lines
+            .joinToString(separator = lineSeparator) { it.trim() }  // Trim line
 
     // Replace characters in the input documentation to prevent issues in codegen or rendering.
     // NOTE: Currently we look for specific strings of Html tags commonly found in docs
@@ -217,17 +221,16 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     // TODO: https://www.pivotaltracker.com/story/show/177053427
     private fun sanitizeDocumentation(doc: String): String {
         return doc
-            .stripAll(htmlTags)
+            .stripAll(commonHtmlTags)
             // Docs can have valid $ characters that shouldn't run through formatters.
             .replace("\$", "\$\$")
-            // API Gateway and maybe others intentionally embed "*/" in comments.
+            // Services may have comment string literals embedded in documentation.
             .replace("/*", "&#47;*")
             .replace("*/", "*&#47;")
     }
 
     private fun String.stripAll(stripList: List<String>): String {
         var newStr = this
-
         for (item in stripList) newStr = newStr.replace(item, "")
 
         return newStr
