@@ -27,16 +27,21 @@ private const val BOXED_KEY: String = "boxed"
 private const val SHAPE_KEY: String = "shape"
 
 /**
- * Test if a symbol is boxed or not
+ * Test if a symbol is boxed
  */
-fun Symbol.isBoxed(): Boolean {
-    return getProperty(BOXED_KEY).map {
+val Symbol.isBoxed: Boolean
+    get() = getProperty(BOXED_KEY).map {
         when (it) {
             is Boolean -> it
             else -> false
         }
     }.orElse(false)
-}
+
+/**
+ * Test if a symbol is not boxed
+ */
+val Symbol.isNotBoxed: Boolean
+    get() = !isBoxed
 
 /**
  * Gets the default value for the symbol if present, else null
@@ -44,7 +49,7 @@ fun Symbol.isBoxed(): Boolean {
  */
 fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
     // boxed types should always be defaulted to null
-    if (isBoxed()) {
+    if (isBoxed) {
         return defaultBoxed
     }
 
@@ -119,7 +124,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short")
 
-    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long")
+    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
 
     override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0.0f")
 
@@ -195,7 +200,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
+        val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
         return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
             .addReference(reference)
@@ -206,7 +211,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
+        val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
         return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
             .addReference(reference)
@@ -239,7 +244,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
-        return if (shape.hasTrait(StreamingTrait::class.java)) {
+        return if (shape.hasTrait<StreamingTrait>()) {
             val dependency = KotlinDependency.CLIENT_RT_CORE
             createSymbolBuilder(shape, "ByteStream", boxed = true)
                 .namespace("${dependency.namespace}.content", ".")
@@ -294,7 +299,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .putProperty(SHAPE_KEY, shape)
             .name(typeName)
 
-        val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
+        val explicitlyBoxed = shape?.hasTrait<BoxTrait>() ?: false
         if (explicitlyBoxed || boxed) {
             builder.boxed()
         }
@@ -381,8 +386,20 @@ fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextO
 }
 
 /**
+ * Get the shape this symbol was created from
+ */
+val Symbol.shape: Shape?
+    get() = getProperty(SHAPE_KEY, Shape::class.java).getOrNull()
+
+/**
  * Test if a shape represents an enumeration
  * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
  */
 val Shape.isEnum: Boolean
     get() = isStringShape && hasTrait(EnumTrait::class.java)
+
+/**
+ * Test if a shape represents an Kotlin number type
+ */
+val Shape.isNumberShape: Boolean
+    get() = this is NumberShape

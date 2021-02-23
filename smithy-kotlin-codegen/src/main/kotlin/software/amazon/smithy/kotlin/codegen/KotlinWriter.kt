@@ -226,7 +226,7 @@ class KotlinPropertyFormatter(
         when (type) {
             is Symbol -> {
                 var formatted = if (fullyQualifiedNames) type.fullName else type.name
-                if (includeNullability && type.isBoxed()) {
+                if (includeNullability && type.isBoxed) {
                     formatted += "?"
                 }
 
