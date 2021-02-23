@@ -70,15 +70,21 @@ fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDe
 }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
+    // Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
     private val htmlTags = setOf(
         "a",
         "b",
         "code",
+        "dd",
+        "dl",
+        "dt",
         "i",
+        "important",
         "li",
         "note",
         "p",
-        "ul",
+        "strong",
+        "ul"
     ).map { listOf("<$it>", "</$it>") }.flatten()
 
     init {
@@ -200,10 +206,15 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         }
     }
 
-    private fun formatDocumentation(doc: String): String {
-        return doc.split('\n').joinToString(separator = "\n") { it.trim() }
-    }
+    // Remove whitespace from the beginning and end of each line of documentation
+    private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
+        doc.split('\n').joinToString(separator = lineSeparator) { it.trim() }
 
+    // Replace characters in the input documentation to prevent issues in codegen or rendering.
+    // NOTE: Currently we look for specific strings of Html tags commonly found in docs
+    //       and remove them.  A better solution would be to generally convert from HTML to "pure"
+    //       markdown such that formatting is preserved.
+    // TODO: https://www.pivotaltracker.com/story/show/177053427
     private fun sanitizeDocumentation(doc: String): String {
         return doc
             .stripAll(htmlTags)
