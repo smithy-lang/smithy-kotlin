@@ -749,19 +749,30 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val memberTarget = ctx.model.expectShape(hdrBinding.member.target)
             val memberName = hdrBinding.member.defaultName()
             val headerName = hdrBinding.locationName
+
+            val targetSymbol = ctx.symbolProvider.toSymbol(hdrBinding.member)
+            val defaultValuePostfix = if (targetSymbol.isNotBoxed && targetSymbol.defaultValue() != null) {
+                " ?: ${targetSymbol.defaultValue()}"
+            } else {
+                ""
+            }
+
             when (memberTarget) {
                 is NumberShape -> {
                     writer.write(
-                        "builder.\$L = response.headers[\$S]?.\$L",
+                        "builder.\$L = response.headers[\$S]?.\$L$defaultValuePostfix",
                         memberName, headerName, stringToNumber(memberTarget)
+                    )
+                }
+                is BooleanShape -> {
+                    writer.write(
+                        "builder.\$L = response.headers[\$S]?.toBoolean()$defaultValuePostfix",
+                        memberName, headerName
                     )
                 }
                 is BlobShape -> {
                     importBase64Utils(writer)
                     writer.write("builder.\$L = response.headers[\$S]?.decodeBase64()", memberName, headerName)
-                }
-                is BooleanShape -> {
-                    writer.write("builder.\$L = response.headers[\$S]?.toBoolean()", memberName, headerName)
                 }
                 is StringShape -> {
                     when {

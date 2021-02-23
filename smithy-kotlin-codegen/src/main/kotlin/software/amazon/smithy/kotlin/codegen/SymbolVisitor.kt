@@ -396,7 +396,7 @@ val Symbol.shape: Shape?
  * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
  */
 val Shape.isEnum: Boolean
-    get() = isStringShape && hasTrait(EnumTrait::class.java)
+    get() = isStringShape && hasTrait<EnumTrait>()
 
 /**
  * Test if a shape represents an Kotlin number type
