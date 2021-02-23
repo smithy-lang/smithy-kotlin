@@ -7,10 +7,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
-import software.amazon.smithy.model.traits.SparseTrait
-import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.*
 
 /**
  * Generate serialization for members bound to the payload.
@@ -523,10 +520,23 @@ open class SerializeStructGenerator(
      */
     open fun renderPrimitiveShapeSerializer(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
         val (serializeFn, encoded) = serializerNameFn(memberShape)
-        // FIXME - this doesn't account for unboxed primitives
         val postfix = idempotencyTokenPostfix(memberShape)
 
-        writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
+        val targetShape = ctx.model.expectShape(memberShape.target)
+        val targetSymbol = ctx.symbolProvider.toSymbol(memberShape)
+        val defaultValue = targetSymbol.defaultValue()
+
+        if ((targetShape.isNumberShape || targetShape.isBooleanShape) && targetSymbol.isNotBoxed && defaultValue != null) {
+            // unboxed primitive with a default value
+            val ident = "input.${memberShape.defaultName()}"
+            val check = when (memberShape.hasTrait<RequiredTrait>()) {
+                true -> "" // always serialize a required member even if it's the default
+                else -> "if ($ident != $defaultValue) "
+            }
+            writer.write("${check}$serializeFn(\$L, $ident)", memberShape.descriptorName())
+        } else {
+            writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
+        }
     }
 
     /**

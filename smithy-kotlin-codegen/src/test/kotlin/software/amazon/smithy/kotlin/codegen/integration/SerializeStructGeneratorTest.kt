@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
@@ -57,6 +58,58 @@ class SerializeStructGeneratorTest {
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 input.payload?.let { field(PAYLOAD_DESCRIPTOR, it) }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @ParameterizedTest(name = "{index} ==> ''{0}''")
+    @CsvSource(
+        "PrimitiveInteger, 0",
+        "PrimitiveShort, 0",
+        "PrimitiveLong, 0L",
+        "PrimitiveByte, 0",
+        "PrimitiveFloat, 0.0f",
+        "PrimitiveDouble, 0.0",
+        "PrimitiveBoolean, false"
+    )
+    fun `it serializes a structure with primitive fields`(memberType: String, defaultValue: String) {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: $memberType
+            }
+        """
+            ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != $defaultValue) field(PAYLOAD_DESCRIPTOR, input.payload)
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it always serializes a structure with required primitive fields`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                @required
+                payload: PrimitiveInteger
+            }
+        """
+            ).asSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(PAYLOAD_DESCRIPTOR, input.payload)
             }
         """.trimIndent()
 
