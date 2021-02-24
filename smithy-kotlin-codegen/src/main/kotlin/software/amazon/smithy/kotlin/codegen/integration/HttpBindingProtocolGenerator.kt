@@ -423,7 +423,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         renderStringValuesMapParameters(ctx, headerBindings, writer)
                         prefixHeaderBindings.forEach {
                             writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
-                                write("append(\"#L\$\$key\", value!!)", it.locationName)
+                                write("append(\"#L\$key\", value!!)", it.locationName)
                             }
                         }
                     }
