@@ -633,6 +633,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
 
         builder.headers {
+            if (input.headerDateTime != null) append("X-DateTime", input.headerDateTime.format(TimestampFormat.ISO_8601))
             if (input.headerEpoch != null) append("X-Epoch", input.headerEpoch.format(TimestampFormat.EPOCH_SECONDS))
             if (input.headerHttpDate != null) append("X-Date", input.headerHttpDate.format(TimestampFormat.RFC_5322))
         }
@@ -798,6 +799,20 @@ class SmokeTestDeserializer : HttpDeserialize {
         }
 """
         contents.shouldContainOnlyOnce(expectedContents)
+    }
+
+    @Test
+    fun `it deserializes primitive headers`() {
+        val contents = getTransformFileContents("PrimitiveShapesOperationDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        builder.hBool = response.headers["X-d"]?.toBoolean() ?: false
+        builder.hFloat = response.headers["X-c"]?.toFloat() ?: 0.0f
+        builder.hInt = response.headers["X-a"]?.toInt() ?: 0
+        builder.hLong = response.headers["X-b"]?.toLong() ?: 0L
+        builder.hRequiredInt = response.headers["X-required"]?.toInt() ?: 0
+"""
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test

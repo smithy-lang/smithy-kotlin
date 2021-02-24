@@ -18,6 +18,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.utils.CodeWriter
 import java.util.*
 
@@ -72,3 +73,8 @@ fun CodeWriter.callIf(test: Boolean, runnable: Runnable): CodeWriter {
     }
     return this
 }
+
+/**
+ * Kotlin sugar for hasTrait() check. e.g. shape.hasTrait<EnumTrait>() instead of shape.hasTrait(EnumTrait::class.java)
+ */
+inline fun <reified T : Trait> Shape.hasTrait(): Boolean = hasTrait(T::class.java)

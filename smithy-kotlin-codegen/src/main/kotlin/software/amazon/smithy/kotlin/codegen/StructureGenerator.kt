@@ -170,12 +170,12 @@ class StructureGenerator(
 
         return when (targetShape.type) {
             ShapeType.INTEGER ->
-                when (targetSymbol.isBoxed()) {
+                when (targetSymbol.isBoxed) {
                     true -> " ?: 0"
                     else -> ""
                 }
             ShapeType.BYTE ->
-                when (targetSymbol.isBoxed()) {
+                when (targetSymbol.isBoxed) {
                     true -> "?.toInt() ?: 0"
                     else -> ".toInt()"
                 }
@@ -188,7 +188,7 @@ class StructureGenerator(
                     "?.contentHashCode() ?: 0"
                 }
             else ->
-                when (targetSymbol.isBoxed()) {
+                when (targetSymbol.isBoxed) {
                     true -> "?.hashCode() ?: 0"
                     else -> ".hashCode()"
                 }
