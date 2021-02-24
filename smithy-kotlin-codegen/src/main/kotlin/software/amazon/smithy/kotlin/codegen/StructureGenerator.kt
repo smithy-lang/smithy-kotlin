@@ -53,7 +53,7 @@ class StructureGenerator(
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
-        startGenericStructureBlock("class \$class.name:L private constructor(builder: BuilderImpl) {")
+        startGenericStructureBlock("class #class.name:L private constructor(builder: BuilderImpl) {")
         writer.closeBlock("}").write("")
 
         writer.removeContext("class.name")
@@ -91,9 +91,9 @@ class StructureGenerator(
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
                 }
                 // Override Throwable's message property
-                writer.write("override val \$1L: \$2L = builder.\$1L!!", memberName, memberSymbol.name)
+                writer.write("override val #1L: #2L = builder.#1L!!", memberName, memberSymbol.name)
             } else {
-                writer.write("val \$1L: \$2P = builder.\$1L", memberName, memberSymbol)
+                writer.write("val #1L: #2P = builder.#1L", memberName, memberSymbol)
             }
         }
     }
@@ -105,7 +105,7 @@ class StructureGenerator(
             write("")
             write("fun dslBuilder(): DslBuilder = BuilderImpl()")
             write("")
-            write("operator fun invoke(block: DslBuilder.() -> \$Q): \$class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
+            write("operator fun invoke(block: DslBuilder.() -> #Q): #class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
             write("")
         }
     }
@@ -113,8 +113,8 @@ class StructureGenerator(
     // generate a `toString()` implementation
     private fun renderToString() {
         writer.write("")
-        writer.withBlock("override fun toString(): \$Q = buildString {", "}", KotlinTypes.String) {
-            write("append(\"\$class.name:L(\")")
+        writer.withBlock("override fun toString(): #Q = buildString {", "}", KotlinTypes.String) {
+            write("append(\"#class.name:L(\")")
 
             if (sortedMembers.isEmpty()) {
                 write("append(\")\")")
@@ -125,9 +125,9 @@ class StructureGenerator(
 
                     val targetShape = model.expectShape(memberShape.target)
                     if (targetShape.hasTrait<SensitiveTrait>()) {
-                        write("append(\"\$1L=*** Sensitive Data Redacted ***$separator\")", memberName)
+                        write("append(\"#1L=*** Sensitive Data Redacted ***$separator\")", memberName)
                     } else {
-                        write("append(\"\$1L=$$\$1L$separator\")", memberName)
+                        write("append(\"#1L=\$#1L$separator\")", memberName)
                     }
                 }
             }
@@ -137,12 +137,12 @@ class StructureGenerator(
     // generate a `hashCode()` implementation
     private fun renderHashCode() {
         writer.write("")
-        writer.withBlock("override fun hashCode(): \$Q {", "}", KotlinTypes.Int) {
+        writer.withBlock("override fun hashCode(): #Q {", "}", KotlinTypes.Int) {
             if (sortedMembers.isEmpty()) {
                 write("var result = javaClass.hashCode()")
             } else {
                 write(
-                    "var result = \$1L\$2L",
+                    "var result = #1L#2L",
                     sortedMembers[0].defaultName(),
                     selectHashFunctionForShape(sortedMembers[0])
                 )
@@ -152,7 +152,7 @@ class StructureGenerator(
                         if (index == 0) continue
 
                         write(
-                            "result = 31 * result + (\$1L\$2L)",
+                            "result = 31 * result + (#1L#2L)",
                             memberShape.defaultName(), selectHashFunctionForShape(memberShape)
                         )
                     }
@@ -198,23 +198,23 @@ class StructureGenerator(
     // generate a `equals()` implementation
     private fun renderEquals() {
         writer.write("")
-        writer.withBlock("override fun equals(other: \$Q?): \$Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
+        writer.withBlock("override fun equals(other: #Q?): #Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
             write("if (javaClass != other?.javaClass) return false")
             write("")
-            write("other as \$class.name:L")
+            write("other as #class.name:L")
             write("")
 
             for (memberShape in sortedMembers) {
                 val target = model.expectShape(memberShape.target)
                 val memberName = memberShape.defaultName()
                 if (target is BlobShape && !target.hasTrait<StreamingTrait>()) {
-                    openBlock("if (\$1L != null) {", memberName)
-                        .write("if (other.\$1L == null) return false", memberName)
-                        .write("if (!\$1L.contentEquals(other.\$1L)) return false", memberName)
-                        .closeBlock("} else if (other.\$1L != null) return false", memberName)
+                    openBlock("if (#1L != null) {", memberName)
+                        .write("if (other.#1L == null) return false", memberName)
+                        .write("if (!#1L.contentEquals(other.#1L)) return false", memberName)
+                        .closeBlock("} else if (other.#1L != null) return false", memberName)
                 } else {
-                    write("if (\$1L != other.\$1L) return false", memberName)
+                    write("if (#1L != other.#1L) return false", memberName)
                 }
             }
 
@@ -232,18 +232,18 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-            .write("fun copy(block: DslBuilder.() -> \$Q = {}): \$class.name:L = BuilderImpl(this).apply(block).build()", KotlinTypes.Unit)
+            .write("fun copy(block: DslBuilder.() -> #Q = {}): #class.name:L = BuilderImpl(this).apply(block).build()", KotlinTypes.Unit)
             .write("")
     }
 
     private fun renderJavaBuilderInterface() {
         writer.write("")
             .withBlock("interface Builder {", "}") {
-                write("fun build(): \$class.name:L")
+                write("fun build(): #class.name:L")
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     // we want the type names sans nullability (?) for arguments
-                    write("fun \$1L(\$1L: \$2T): Builder", memberName, memberSymbol)
+                    write("fun #1L(#1L: #2T): Builder", memberName, memberSymbol)
                 }
             }
     }
@@ -260,15 +260,15 @@ class StructureGenerator(
                         targetShape.isStructureShape -> structMembers.add(member)
                     }
 
-                    write("var \$L: \$P", memberName, memberSymbol)
+                    write("var #L: #P", memberName, memberSymbol)
                 }
 
                 write("")
-                write("fun build(): \$class.name:L")
+                write("fun build(): #class.name:L")
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
-                    openBlock("fun \$L(block: \$L.DslBuilder.() -> \$Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
-                        .write("this.\$L = \$L.invoke(block)", memberName, memberSymbol.name)
+                    openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
+                        .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")
                 }
             }
@@ -280,16 +280,16 @@ class StructureGenerator(
                 // override DSL properties
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
-                    write("override var \$L: \$D", memberName, memberSymbol)
+                    write("override var #L: #D", memberName, memberSymbol)
                 }
 
                 write("")
 
                 // generate the constructor that converts from the underlying immutable class to a builder instance
-                withBlock("constructor(x: \$class.name:L) : this() {", "}") {
+                withBlock("constructor(x: #class.name:L) : this() {", "}") {
                     for (member in sortedMembers) {
                         val (memberName, _) = byMemberShape[member]!!
-                        write("this.\$1L = x.\$1L", memberName)
+                        write("this.#1L = x.#1L", memberName)
                     }
                 }
 
@@ -297,11 +297,11 @@ class StructureGenerator(
                 // NOTE: The enum overloads are the same in both the Java and DslBuilder interfaces, generating
                 // the Java builder implementation will satisfy the DslInterface w.r.t enum overloads
                 write("")
-                write("override fun build(): \$class.name:L = \$class.name:L(this)")
+                write("override fun build(): #class.name:L = #class.name:L(this)")
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = byMemberShape[member]!!
                     // we want the type names sans nullability (?) for arguments
-                    write("override fun \$1L(\$1L: \$2T): Builder = apply { this.\$1L = \$1L }", memberName, memberSymbol)
+                    write("override fun #1L(#1L: #2T): Builder = apply { this.#1L = #1L }", memberName, memberSymbol)
                 }
             }
     }
@@ -316,7 +316,7 @@ class StructureGenerator(
         val exceptionBaseClass = protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
         writer.addImport(exceptionBaseClass)
 
-        startGenericStructureBlock("class \$class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
+        startGenericStructureBlock("class #class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
         writer.withBlock("", "}") {
             write("")
             if (isRetryable) {
