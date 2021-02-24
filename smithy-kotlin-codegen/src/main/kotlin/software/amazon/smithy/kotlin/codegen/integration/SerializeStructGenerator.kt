@@ -147,7 +147,7 @@ open class SerializeStructGenerator(
      */
     protected fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
-        val isSparse = mapShape.hasTrait(SparseTrait::class.java)
+        val isSparse = mapShape.hasTrait<SparseTrait>()
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -176,7 +176,7 @@ open class SerializeStructGenerator(
      */
     protected fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
-        val isSparse = listShape.hasTrait(SparseTrait::class.java)
+        val isSparse = listShape.hasTrait<SparseTrait>()
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -393,7 +393,7 @@ open class SerializeStructGenerator(
         importTimestampFormat(writer)
 
         // favor the member shape if it overrides the value shape trait
-        val shape = if (memberShape.hasTrait(TimestampFormatTrait::class.java)) {
+        val shape = if (memberShape.hasTrait<TimestampFormatTrait>()) {
             memberShape
         } else {
             elementShape
@@ -480,7 +480,7 @@ open class SerializeStructGenerator(
         importTimestampFormat(writer)
 
         // favor the member shape if it overrides the value shape trait
-        val shape = if (memberShape.hasTrait(TimestampFormatTrait::class.java)) {
+        val shape = if (memberShape.hasTrait<TimestampFormatTrait>()) {
             memberShape
         } else {
             elementShape
@@ -545,7 +545,7 @@ open class SerializeStructGenerator(
      * @return string intended for codegen output
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
-        if (memberShape.hasTrait(IdempotencyTokenTrait::class.java)) {
+        if (memberShape.hasTrait<IdempotencyTokenTrait>()) {
             " ?: field(${memberShape.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
         } else {
             ""
@@ -612,7 +612,7 @@ open class SerializeStructGenerator(
                 formatInstant(defaultIdentifier, tsFormat, forceString = true)
             }
             ShapeType.STRING -> when {
-                target.hasTrait(EnumTrait::class.java) -> "$defaultIdentifier.value"
+                target.hasTrait<EnumTrait>() -> "$defaultIdentifier.value"
                 else -> defaultIdentifier
             }
             else -> throw CodegenException("unknown serializer for member: $shape; target: $target")
@@ -624,7 +624,7 @@ open class SerializeStructGenerator(
     /**
      * @return true if shape is a String with enum trait, false otherwise.
      */
-    private fun Shape.isEnum() = isStringShape && hasTrait(EnumTrait::class.java)
+    private fun Shape.isEnum() = isStringShape && hasTrait<EnumTrait>()
 
     /**
      * Generate key and value names for iteration based on nesting level

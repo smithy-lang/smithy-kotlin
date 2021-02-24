@@ -94,11 +94,11 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     private val generatedNames = mutableSetOf<String>()
 
     init {
-        assert(shape.getTrait(EnumTrait::class.java).isPresent)
+        assert(shape.hasTrait<EnumTrait>())
     }
 
     val enumTrait: EnumTrait by lazy {
-        shape.getTrait(EnumTrait::class.java).get()
+        shape.expectTrait()
     }
 
     fun render() {

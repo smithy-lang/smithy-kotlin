@@ -134,7 +134,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     override fun stringShape(shape: StringShape) {
-        if (shape.hasTrait(EnumTrait::class.java)) {
+        if (shape.hasTrait<EnumTrait>()) {
             writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
         }
     }

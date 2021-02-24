@@ -168,11 +168,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     }
 
     // handles the documentation for shapes
-    fun renderDocumentation(shape: Shape) {
-        shape.getTrait(DocumentationTrait::class.java).ifPresent {
-            dokka(it.value)
-        }
-    }
+    fun renderDocumentation(shape: Shape) = shape.getTrait<DocumentationTrait>()?.let { dokka(it.value) }
 
     // handles the documentation for member shapes
     fun renderMemberDocumentation(model: Model, shape: MemberShape) =

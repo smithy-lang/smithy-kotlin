@@ -31,7 +31,7 @@ class StructureGenerator(
 ) {
 
     fun render() {
-        if (!shape.hasTrait(ErrorTrait::class.java)) {
+        if (!shape.hasTrait<ErrorTrait>()) {
             renderStructure()
         } else {
             renderError()
@@ -84,7 +84,7 @@ class StructureGenerator(
         sortedMembers.forEach {
             val (memberName, memberSymbol) = byMemberShape[it]!!
             writer.renderMemberDocumentation(model, it)
-            if (shape.hasTrait(ErrorTrait::class.java) && "message" == memberName) {
+            if (shape.hasTrait<ErrorTrait>() && "message" == memberName) {
                 // TODO: Have to handle the case where "cause" is a property in the Smithy model
                 val targetShape = model.getShape(it.target).get()
                 if (!targetShape.isStringShape) {
@@ -124,7 +124,7 @@ class StructureGenerator(
                     val separator = if (index < sortedMembers.size - 1) "," else ")"
 
                     val targetShape = model.expectShape(memberShape.target)
-                    if (targetShape.hasTrait(SensitiveTrait::class.java)) {
+                    if (targetShape.hasTrait<SensitiveTrait>()) {
                         write("append(\"\$1L=*** Sensitive Data Redacted ***$separator\")", memberName)
                     } else {
                         write("append(\"\$1L=$$\$1L$separator\")", memberName)
@@ -180,7 +180,7 @@ class StructureGenerator(
                     else -> ".toInt()"
                 }
             ShapeType.BLOB ->
-                if (targetShape.hasTrait(StreamingTrait::class.java)) {
+                if (targetShape.hasTrait<StreamingTrait>()) {
                     // ByteStream
                     "?.hashCode() ?: 0"
                 } else {
@@ -208,7 +208,7 @@ class StructureGenerator(
             for (memberShape in sortedMembers) {
                 val target = model.expectShape(memberShape.target)
                 val memberName = memberShape.defaultName()
-                if (target is BlobShape && !target.hasTrait(StreamingTrait::class.java)) {
+                if (target is BlobShape && !target.hasTrait<StreamingTrait>()) {
                     openBlock("if (\$1L != null) {", memberName)
                         .write("if (other.\$1L == null) return false", memberName)
                         .write("if (!\$1L.contentEquals(other.\$1L)) return false", memberName)
@@ -310,8 +310,8 @@ class StructureGenerator(
      * Renders a Smithy error type to a Kotlin exception type
      */
     private fun renderError() {
-        val errorTrait: ErrorTrait = shape.expectTrait(ErrorTrait::class.java)
-        val isRetryable = shape.getTrait(RetryableTrait::class.java).isPresent
+        val errorTrait: ErrorTrait = shape.expectTrait()
+        val isRetryable = shape.hasTrait<RetryableTrait>()
 
         val exceptionBaseClass = protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
         writer.addImport(exceptionBaseClass)
