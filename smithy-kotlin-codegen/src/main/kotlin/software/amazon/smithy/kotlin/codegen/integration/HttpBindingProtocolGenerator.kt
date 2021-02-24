@@ -878,7 +878,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val memberName = binding.member.defaultName()
 
         val keyCollName = "keysFor${memberName.capitalize()}"
-        val filter = if (prefix.isNotEmpty()) ".filter { it.startsWith(\"$prefix\") }" else ""
+        val filter = if (prefix?.isNotEmpty() == true) ".filter { it.startsWith(\"$prefix\") }" else ""
 
         writer.write("val $keyCollName = response.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
@@ -893,7 +893,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 // get()/getAll() returns String? or List<String>?, this shouldn't ever trigger the continue though...
                 writer.write("val el = response.headers$getFn ?: continue")
-                if (prefix.isNotEmpty()) {
+                if (prefix?.isNotEmpty() == true) {
                     writer.write("val key = hdrKey.removePrefix(\$S)", prefix)
                     writer.write("map[key] = el")
                 } else {

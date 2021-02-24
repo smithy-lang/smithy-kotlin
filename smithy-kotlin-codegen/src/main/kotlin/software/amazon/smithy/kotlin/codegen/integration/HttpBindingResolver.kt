@@ -13,7 +13,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 data class HttpBindingDescriptor(
     val member: MemberShape,
     val location: HttpBinding.Location,
-    val locationName: String
+    val locationName: String? = null
 ) {
     /**
      * @param Smithy [HttpBinding] to create from
