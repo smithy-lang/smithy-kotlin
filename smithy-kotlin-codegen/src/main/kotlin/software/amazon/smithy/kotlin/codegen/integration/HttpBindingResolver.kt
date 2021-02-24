@@ -1,5 +1,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
+import software.amazon.smithy.kotlin.codegen.expectTrait
+import software.amazon.smithy.kotlin.codegen.hasTrait
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -92,10 +94,10 @@ class HttpTraitResolver(
 
     override fun bindingOperations(): List<OperationShape> {
         return topDownIndex.getContainedOperations(generationContext.service)
-            .filter { op -> op.hasTrait(HttpTrait::class.java) }.toList<OperationShape>()
+            .filter { op -> op.hasTrait<HttpTrait>() }.toList<OperationShape>()
     }
 
-    override fun httpTrait(operationShape: OperationShape): HttpTrait = operationShape.expectTrait(HttpTrait::class.java)
+    override fun httpTrait(operationShape: OperationShape): HttpTrait = operationShape.expectTrait()
 
     override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> {
         return bindingIndex.getRequestBindings(operationShape).values.map { HttpBindingDescriptor(it) }

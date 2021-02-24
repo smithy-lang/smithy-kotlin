@@ -165,7 +165,7 @@ open class DeserializeStructGenerator(
         parentMemberName: String
     ) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
-        val isSparse = mapShape.hasTrait(SparseTrait::class.java)
+        val isSparse = mapShape.hasTrait<SparseTrait>()
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -350,7 +350,7 @@ open class DeserializeStructGenerator(
      */
     private fun delegateListDeserialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
-        val isSparse = listShape.hasTrait(SparseTrait::class.java)
+        val isSparse = listShape.hasTrait<SparseTrait>()
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -512,7 +512,7 @@ open class DeserializeStructGenerator(
                 }
             }
             ShapeType.STRING -> when {
-                target.hasTrait(EnumTrait::class.java) -> {
+                target.hasTrait<EnumTrait>() -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol)
                     "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"

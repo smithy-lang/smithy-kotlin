@@ -102,14 +102,14 @@ class ShapeValueGenerator(
         var suffix = ""
         when (shape.type) {
             ShapeType.STRING -> {
-                if (shape.hasTrait(EnumTrait::class.java)) {
+                if (shape.hasTrait<EnumTrait>()) {
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("\$L.fromValue(", symbol.name)
                     suffix = ")"
                 }
             }
             ShapeType.BLOB -> {
-                if (shape.hasTrait(StreamingTrait::class.java)) {
+                if (shape.hasTrait<StreamingTrait>()) {
                     writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.content", "*")
                     writer.writeInline("StringContent(")
                     suffix = ")"

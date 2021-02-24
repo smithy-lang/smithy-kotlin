@@ -75,7 +75,7 @@ class UnionGenerator(
                     else -> ".toInt()"
                 }
             ShapeType.BLOB ->
-                if (targetShape.hasTrait(StreamingTrait::class.java)) {
+                if (targetShape.hasTrait<StreamingTrait>()) {
                     // ByteStream
                     ".hashCode() ?: 0"
                 } else {
@@ -103,7 +103,7 @@ class UnionGenerator(
             for (memberShape in sortedMembers) {
                 val target = model.expectShape(memberShape.target)
                 val memberName = "value"
-                if (target is BlobShape && !target.hasTrait(StreamingTrait::class.java)) {
+                if (target is BlobShape && !target.hasTrait<StreamingTrait>()) {
                     writer.write("if (!\$1L.contentEquals(other.\$1L)) return false", memberName)
                 } else {
                     write("if (\$1L != other.\$1L) return false", memberName)
