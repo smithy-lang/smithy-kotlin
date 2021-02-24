@@ -70,23 +70,6 @@ fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDe
 }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
-    // Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
-    private val commonHtmlTags = setOf(
-        "a",
-        "b",
-        "code",
-        "dd",
-        "dl",
-        "dt",
-        "i",
-        "important",
-        "li",
-        "note",
-        "p",
-        "strong",
-        "ul"
-    ).map { listOf("<$it>", "</$it>") }.flatten()
-
     init {
         trimBlankLines()
         trimTrailingSpaces()
@@ -192,48 +175,14 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     }
 
     // handles the documentation for member shapes
-    fun renderMemberDocumentation(model: Model, shape: MemberShape) {
-        when {
-            shape.hasTrait(DocumentationTrait::class.java) -> dokka(shape.expectTrait(DocumentationTrait::class.java).value)
-            shape.getMemberTrait(model, DocumentationTrait::class.java).isPresent -> dokka(shape.getMemberTrait(model, DocumentationTrait::class.java).get().value)
-        }
-    }
+    fun renderMemberDocumentation(model: Model, shape: MemberShape) =
+        shape.getMemberTrait(model, DocumentationTrait::class.java).getOrNull()?.let { dokka(it.value) }
 
     // handles the documentation for enum definitions
     fun renderEnumDefinitionDocumentation(enumDefinition: EnumDefinition) {
         enumDefinition.documentation.ifPresent {
             dokka(it)
         }
-    }
-
-    // Remove whitespace from the beginning and end of each line of documentation
-    // Remove blank lines
-    private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
-        doc
-            .split('\n') // Break the doc into lines
-            .filter { it.isNotBlank() } // Remove empty lines
-            .joinToString(separator = lineSeparator) { it.trim() } // Trim line
-
-    // Replace characters in the input documentation to prevent issues in codegen or rendering.
-    // NOTE: Currently we look for specific strings of Html tags commonly found in docs
-    //       and remove them.  A better solution would be to generally convert from HTML to "pure"
-    //       markdown such that formatting is preserved.
-    // TODO: https://www.pivotaltracker.com/story/show/177053427
-    private fun sanitizeDocumentation(doc: String): String {
-        return doc
-            .stripAll(commonHtmlTags)
-            // Docs can have valid $ characters that shouldn't run through formatters.
-            .replace("\$", "\$\$")
-            // Services may have comment string literals embedded in documentation.
-            .replace("/*", "&#47;*")
-            .replace("*/", "*&#47;")
-    }
-
-    private fun String.stripAll(stripList: List<String>): String {
-        var newStr = this
-        for (item in stripList) newStr = newStr.replace(item, "")
-
-        return newStr
     }
 }
 
@@ -283,3 +232,51 @@ class KotlinPropertyFormatter(
         }
     }
 }
+
+// Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
+private val commonHtmlTags = setOf(
+    "a",
+    "b",
+    "code",
+    "dd",
+    "dl",
+    "dt",
+    "i",
+    "important",
+    "li",
+    "note",
+    "p",
+    "strong",
+    "ul"
+).map { listOf("<$it>", "</$it>") }.flatten()
+
+// Replace characters in the input documentation to prevent issues in codegen or rendering.
+// NOTE: Currently we look for specific strings of Html tags commonly found in docs
+//       and remove them.  A better solution would be to generally convert from HTML to "pure"
+//       markdown such that formatting is preserved.
+// TODO: https://www.pivotaltracker.com/story/show/177053427
+private fun sanitizeDocumentation(doc: String): String {
+    return doc
+        .stripAll(commonHtmlTags)
+        // Docs can have valid $ characters that shouldn't run through formatters.
+        .replace("\$", "\$\$")
+        // Services may have comment string literals embedded in documentation.
+        .replace("/*", "&#47;*")
+        .replace("*/", "*&#47;")
+}
+
+// Remove all strings from source string and return the result
+private fun String.stripAll(stripList: List<String>): String {
+    var newStr = this
+    for (item in stripList) newStr = newStr.replace(item, "")
+
+    return newStr
+}
+
+// Remove whitespace from the beginning and end of each line of documentation
+// Remove blank lines
+private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
+    doc
+        .split('\n') // Break the doc into lines
+        .filter { it.isNotBlank() } // Remove empty lines
+        .joinToString(separator = lineSeparator) { it.trim() } // Trim line
