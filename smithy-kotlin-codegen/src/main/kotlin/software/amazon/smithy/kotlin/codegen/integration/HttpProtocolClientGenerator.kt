@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -235,7 +236,7 @@ abstract class HttpProtocolClientGenerator(
         val inputShape = opIndex.getInput(op)
         val outputShape = opIndex.getOutput(op)
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
-        val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit
+        val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
         if (hasOutputStream) {
             writer.write("return op.execute(client, \$L, block)", inputVariableName)
