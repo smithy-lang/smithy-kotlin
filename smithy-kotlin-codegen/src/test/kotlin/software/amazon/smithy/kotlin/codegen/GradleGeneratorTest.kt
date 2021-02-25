@@ -17,8 +17,6 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.kotlin.codegen.integration.GradleBuildSettings
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.node.Node
 
 class GradleGeneratorTest {
@@ -76,47 +74,5 @@ class GradleGeneratorTest {
 
         contents.shouldContain(expectedRepositories)
         contents.shouldContain(expectedVersion)
-    }
-
-    @Test
-    fun `it writes exp annotations`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
-
-        val settings = KotlinSettings.from(
-            model,
-            Node.objectNodeBuilder()
-                .withMember("module", Node.from("example"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
-                .build()
-        )
-
-        val manifest = MockManifest()
-        val dependencies = listOf(KotlinDependency.CLIENT_RT_CORE)
-        val mockIntegration = object : KotlinIntegration {
-            override val customBuildSettings: GradleBuildSettings? =
-                GradleBuildSettings().apply {
-                    experimentalAnnotations.add("foo")
-                    experimentalAnnotations.add("bar")
-                }
-        }
-        val integrations = listOf(mockIntegration)
-        writeGradleBuild(settings, manifest, dependencies, integrations)
-        val contents = manifest.getFileString("build.gradle.kts").get()
-
-        val expected = """
-            val experimentalAnnotations = listOf(
-                "foo",
-                "bar"
-            )
-        """.trimIndent()
-
-        contents.shouldContain(expected)
-
-        val languageSettingsExpected = """
-        experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) }
-        """.trimIndent()
-
-        contents.shouldContain(languageSettingsExpected)
     }
 }

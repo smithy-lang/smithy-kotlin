@@ -364,6 +364,50 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
+    fun `it deserializes a structure containing a sparse list of a struct`() {
+        val model = (
+            modelPrefix + """            
+            structure FooResponse { 
+                payload: SparseIntList
+            }
+            
+            @sparse
+            list SparseIntList {
+                member: SparseListElement
+            }
+            
+            structure SparseListElement {
+                bar: String
+            }
+        """
+            ).asSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                            deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
+                                val col0 = mutableListOf<SparseListElement?>()
+                                while (hasNextElement()) {
+                                    val el0 = if (nextHasValue()) { SparseListElementDeserializer().deserialize(deserializer) } else { deserializeNull() }
+                                    col0.add(el0)
+                                }
+                                col0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it deserializes a structure containing a list of a nested list of a primitive type`() {
         val model = (
             modelPrefix + """            
@@ -1206,32 +1250,32 @@ class DeserializeStructGeneratorTest {
             ).asSmithyModel()
 
         val expected = """
-            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while (true) {
-                    when (findNextFieldIndex()) {
-                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
-                            deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
-                                val map0 = mutableMapOf<String, Map<String, Int>>()
-                                while (hasNextEntry()) {
-                                    val k0 = key()
-                                    val v0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                                        val map1 = mutableMapOf<String, Int>()
-                                        while (hasNextEntry()) {
-                                            val k1 = key()
-                                            val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                            map1[k1] = v1
-                                        }
-                                        map1
-                                    }
-                                    map0[k0] = v0
-                                }
-                                map0
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+    loop@while (true) {
+        when (findNextFieldIndex()) {
+            PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
+                    val map0 = mutableMapOf<String, Map<String, Int>>()
+                    while (hasNextEntry()) {
+                        val k0 = key()
+                        val v0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
+                            val map1 = mutableMapOf<String, Int>()
+                            while (hasNextEntry()) {
+                                val k1 = key()
+                                val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                map1[k1] = v1
                             }
-                        null -> break@loop
-                        else -> skipValue()
+                            map1
+                        }
+                        map0[k0] = v0
                     }
+                    map0
                 }
-            }
+            null -> break@loop
+            else -> skipValue()
+        }
+    }
+}
         """.trimIndent()
 
         val actual = getContentsForShape(model, "com.test#Foo")

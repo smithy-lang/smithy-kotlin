@@ -37,6 +37,24 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTest {
     private val defaultModel = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+    private val modelPrefix = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                input: FooRequest
+            }        
+    """.trimIndent()
 
     private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
         val (ctx, manifest, generator) = testModel.newTestContext()
@@ -80,10 +98,10 @@ class HttpBindingProtocolGeneratorTest {
 class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
 
     companion object {
-        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
-        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2", SerialKind.Integer)
-        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("payload1"))
+        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("payload2"))
+        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payload3"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
             field(PAYLOAD3_DESCRIPTOR)
@@ -101,7 +119,6 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
             if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
@@ -114,6 +131,9 @@ class SmokeTestSerializer(val input: SmokeTestRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -135,12 +155,11 @@ class ExplicitStringSerializer(val input: ExplicitStringRequest) : HttpSerialize
             path = "/explicit/string"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "text/plain")
-        }
-
         if (input.payload1 != null) {
             builder.body = ByteArrayContent(input.payload1.toByteArray())
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "text/plain"
         }
     }
 }
@@ -161,12 +180,11 @@ class ExplicitBlobSerializer(val input: ExplicitBlobRequest) : HttpSerialize {
             path = "/explicit/blob"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/octet-stream")
-        }
-
         if (input.payload1 != null) {
             builder.body = ByteArrayContent(input.payload1)
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/octet-stream"
         }
     }
 }
@@ -187,12 +205,11 @@ class ExplicitBlobStreamSerializer(val input: ExplicitBlobStreamRequest) : HttpS
             path = "/explicit/blobstream"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/octet-stream")
-        }
-
         if (input.payload1 != null) {
             builder.body = input.payload1.toHttpBody() ?: HttpBody.Empty
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/octet-stream"
         }
     }
 }
@@ -213,14 +230,13 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
             path = "/explicit/struct"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
         if (input.payload1 != null) {
             val serializer = serializationContext.serializationProvider()
             Nested2Serializer(input.payload1).serialize(serializer)
             builder.body = ByteArrayContent(serializer.toByteArray())
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
         }
     }
 }
@@ -237,10 +253,10 @@ class ExplicitStructSerializer(val input: ExplicitStructRequest) : HttpSerialize
 class Nested4Serializer(val input: Nested4) : SdkSerializable {
 
     companion object {
-        private val INTLIST_DESCRIPTOR = SdkFieldDescriptor("intList", SerialKind.List)
-        private val INTMAP_DESCRIPTOR = SdkFieldDescriptor("intMap", SerialKind.Map)
-        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.Integer)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val INTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("intList"))
+        private val INTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, JsonSerialName("intMap"))
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("member1"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(INTLIST_DESCRIPTOR)
             field(INTMAP_DESCRIPTOR)
             field(MEMBER1_DESCRIPTOR)
@@ -279,10 +295,10 @@ class Nested4Serializer(val input: Nested4) : SdkSerializable {
 class Nested3Serializer(val input: Nested3) : SdkSerializable {
 
     companion object {
-        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.String)
-        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2", SerialKind.String)
-        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("member1"))
+        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("member2"))
+        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("member3"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
             field(MEMBER3_DESCRIPTOR)
@@ -298,7 +314,7 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.Nested3")
     }
 
@@ -311,8 +327,8 @@ class Nested3Serializer(val input: Nested3) : SdkSerializable {
 class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
 
     companion object {
-        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payloadUnion"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADUNION_DESCRIPTOR)
         }
     }
@@ -324,21 +340,71 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
             path = "/input/union"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.payloadUnion?.let { field(PAYLOADUNION_DESCRIPTOR, MyUnionSerializer(it)) }
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.UnionRequest")
+    }
+
+    @Test
+    fun `it serializes documents with union members containing collections of structures`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: FooUnion
+            }
+            
+            union FooUnion {
+                structList: BarList
+            }
+            
+            list BarList {
+                member: BarStruct
+            }
+            
+            structure BarStruct {
+                someValue: FooUnion
+            }
+        """
+            ).asSmithyModel()
+        val contents = getTransformFileContents("FooUnionSerializer.kt", model)
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+            class FooUnionSerializer(val input: FooUnion) : SdkSerializable {
+            
+                companion object {
+                    private val STRUCTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("structList"))
+                    private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                        field(STRUCTLIST_DESCRIPTOR)
+                    }
+                }
+            
+                override fun serialize(serializer: Serializer) {
+                    serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                        when (input) {
+                            is FooUnion.StructList -> {
+                                listField(STRUCTLIST_DESCRIPTOR) {
+                                    for (el0 in input.value) {
+                                        serializeSdkSerializable(BarStructSerializer(el0))
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test
@@ -350,8 +416,8 @@ class UnionInputSerializer(val input: UnionRequest) : HttpSerialize {
 class UnionOutputDeserializer : HttpDeserialize {
 
     companion object {
-        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor("payloadUnion", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payloadUnion"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADUNION_DESCRIPTOR)
         }
     }
@@ -389,8 +455,8 @@ class UnionOutputDeserializer : HttpDeserialize {
 class UnionAggregateOutputDeserializer : HttpDeserialize {
 
     companion object {
-        private val PAYLOADAGGREGATEUNION_DESCRIPTOR = SdkFieldDescriptor("payloadAggregateUnion", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val PAYLOADAGGREGATEUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payloadAggregateUnion"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADAGGREGATEUNION_DESCRIPTOR)
         }
     }
@@ -420,7 +486,7 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
     }
 
     @Test
-    fun `it geneartes union member serializers`() {
+    fun `it generates union member serializers`() {
         // non operational input (nested member somewhere in the graph) that has another non-operational struct as a member
         val contents = getTransformFileContents("MyUnionSerializer.kt")
         contents.shouldSyntacticSanityCheck()
@@ -428,9 +494,9 @@ class UnionAggregateOutputDeserializer : HttpDeserialize {
 class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
 
     companion object {
-        private val I32_DESCRIPTOR = SdkFieldDescriptor("i32", SerialKind.Integer)
-        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor("stringA", SerialKind.String)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val I32_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("i32"))
+        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("stringA"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(I32_DESCRIPTOR)
             field(STRINGA_DESCRIPTOR)
         }
@@ -446,7 +512,7 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.MyUnion")
     }
 
@@ -457,24 +523,24 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
     companion object {
-        private val I32_DESCRIPTOR = SdkFieldDescriptor("i32", SerialKind.Integer)
-        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor("stringA", SerialKind.String)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val I32_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("i32"))
+        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("stringA"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(I32_DESCRIPTOR)
             field(STRINGA_DESCRIPTOR)
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): MyUnion? {
+    suspend fun deserialize(deserializer: Deserializer): MyUnion {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = deserializeInt().let { MyUnion.I32(it) }
-                STRINGA_DESCRIPTOR.index -> value = deserializeString().let { MyUnion.StringA(it) }
-                else -> skipValue()
+                I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
+                STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
+                else -> value = MyUnion.SdkUnknown.also { skipValue() }
             }
         }
-        return value
+        return value ?: throw DeserializationException("Deserialized value unexpectedly null: MyUnion")
     }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
@@ -500,8 +566,8 @@ class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
 class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
 
     companion object {
-        private val NESTEDWITHENUM_DESCRIPTOR = SdkFieldDescriptor("nestedWithEnum", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val NESTEDWITHENUM_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("nestedWithEnum"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(NESTEDWITHENUM_DESCRIPTOR)
         }
     }
@@ -514,7 +580,6 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
         }
 
@@ -524,6 +589,9 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -539,12 +607,12 @@ class EnumInputSerializer(val input: EnumInputRequest) : HttpSerialize {
 class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize {
 
     companion object {
-        private val DATETIME_DESCRIPTOR = SdkFieldDescriptor("dateTime", SerialKind.Timestamp)
-        private val EPOCHSECONDS_DESCRIPTOR = SdkFieldDescriptor("epochSeconds", SerialKind.Timestamp)
-        private val HTTPDATE_DESCRIPTOR = SdkFieldDescriptor("httpDate", SerialKind.Timestamp)
-        private val NORMAL_DESCRIPTOR = SdkFieldDescriptor("normal", SerialKind.Timestamp)
-        private val TIMESTAMPLIST_DESCRIPTOR = SdkFieldDescriptor("timestampList", SerialKind.List)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val DATETIME_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp, JsonSerialName("dateTime"))
+        private val EPOCHSECONDS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp, JsonSerialName("epochSeconds"))
+        private val HTTPDATE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp, JsonSerialName("httpDate"))
+        private val NORMAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp, JsonSerialName("normal"))
+        private val TIMESTAMPLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("timestampList"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(DATETIME_DESCRIPTOR)
             field(EPOCHSECONDS_DESCRIPTOR)
             field(HTTPDATE_DESCRIPTOR)
@@ -565,7 +633,7 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
+            if (input.headerDateTime != null) append("X-DateTime", input.headerDateTime.format(TimestampFormat.ISO_8601))
             if (input.headerEpoch != null) append("X-Epoch", input.headerEpoch.format(TimestampFormat.EPOCH_SECONDS))
             if (input.headerHttpDate != null) append("X-Date", input.headerHttpDate.format(TimestampFormat.RFC_5322))
         }
@@ -586,6 +654,9 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -603,8 +674,8 @@ class TimestampInputSerializer(val input: TimestampInputRequest) : HttpSerialize
 class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
 
     companion object {
-        private val PAYLOADBLOB_DESCRIPTOR = SdkFieldDescriptor("payloadBlob", SerialKind.Blob)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val PAYLOADBLOB_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Blob, JsonSerialName("payloadBlob"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADBLOB_DESCRIPTOR)
         }
     }
@@ -617,7 +688,6 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
@@ -627,6 +697,9 @@ class BlobInputSerializer(val input: BlobInputRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -667,11 +740,11 @@ class ConstantQueryStringSerializer(val input: ConstantQueryStringInput) : HttpS
 class SmokeTestDeserializer : HttpDeserialize {
 
     companion object {
-        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor("payload1", SerialKind.String)
-        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor("payload2", SerialKind.Integer)
-        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor("payload3", SerialKind.Struct)
-        private val PAYLOAD4_DESCRIPTOR = SdkFieldDescriptor("payload4", SerialKind.Timestamp)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("payload1"))
+        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("payload2"))
+        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payload3"))
+        private val PAYLOAD4_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp, JsonSerialName("payload4"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
             field(PAYLOAD3_DESCRIPTOR)
@@ -729,6 +802,20 @@ class SmokeTestDeserializer : HttpDeserialize {
     }
 
     @Test
+    fun `it deserializes primitive headers`() {
+        val contents = getTransformFileContents("PrimitiveShapesOperationDeserializer.kt")
+        contents.shouldSyntacticSanityCheck()
+        val expectedContents = """
+        builder.hBool = response.headers["X-d"]?.toBoolean() ?: false
+        builder.hFloat = response.headers["X-c"]?.toFloat() ?: 0.0f
+        builder.hInt = response.headers["X-a"]?.toInt() ?: 0
+        builder.hLong = response.headers["X-b"]?.toLong() ?: 0L
+        builder.hRequiredInt = response.headers["X-required"]?.toInt() ?: 0
+"""
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
+    }
+
+    @Test
     fun `it deserializes explicit string payloads`() {
         val contents = getTransformFileContents("ExplicitStringDeserializer.kt")
         contents.shouldSyntacticSanityCheck()
@@ -782,10 +869,10 @@ class SmokeTestDeserializer : HttpDeserialize {
 class Nested3Deserializer {
 
     companion object {
-        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor("member1", SerialKind.String)
-        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor("member2", SerialKind.String)
-        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor("member3", SerialKind.Struct)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("member1"))
+        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("member2"))
+        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("member3"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
             field(MEMBER3_DESCRIPTOR)
@@ -833,9 +920,9 @@ class Nested3Deserializer {
 class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
 
     companion object {
-        private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor("mapOfLists", SerialKind.Map)
-        private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor("mapOfListsC0", SerialKind.List)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, JsonSerialName("mapOfLists"))
+        private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("mapOfListsC0"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MAPOFLISTS_DESCRIPTOR)
         }
     }
@@ -845,10 +932,6 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
 
         builder.url {
             path = "/input/map"
-        }
-
-        builder.headers {
-            setMissing("Content-Type", "application/json")
         }
 
         val serializer = serializationContext.serializationProvider()
@@ -865,6 +948,9 @@ class MapInputSerializer(val input: MapInputRequest) : HttpSerialize {
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """

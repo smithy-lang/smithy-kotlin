@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.kotlin.codegen.lang.isBuiltIn
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -35,8 +36,13 @@ import java.util.function.BiFunction
  * writer.closeBlock("}")
  * ```
  */
-fun <T : CodeWriter> T.withBlock(textBeforeNewLine: String, textAfterNewLine: String, block: T.() -> Unit): T {
-    openBlock(textBeforeNewLine)
+fun <T : CodeWriter> T.withBlock(
+    textBeforeNewLine: String,
+    textAfterNewLine: String,
+    vararg args: Any,
+    block: T.() -> Unit
+): T {
+    openBlock(textBeforeNewLine, *args)
     block(this)
     closeBlock(textAfterNewLine)
     return this
@@ -68,16 +74,28 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
-        // type with default set
-        putFormatter('D', KotlinSymbolFormatter(setDefault = true))
-        // type only
+        expressionStart = '#'
+
+        // type name: `Foo`
         putFormatter('T', KotlinSymbolFormatter())
+        // fully qualified type: `aws.sdk.kotlin.model.Foo`
+        putFormatter('Q', KotlinSymbolFormatter(fullyQualifiedNames = true))
+
+        // like `T` but with nullability information: `aws.sdk.kotlin.model.Foo?`. This is mostly useful
+        // when formatting properties
+        putFormatter('P', KotlinPropertyFormatter())
+
+        // like `P` but with default set (if applicable): `aws.sdk.kotlin.model.Foo = 1`
+        putFormatter('D', KotlinPropertyFormatter(setDefault = true))
     }
 
     internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
     private val imports = ImportDeclarations()
 
     fun addImport(symbol: Symbol, alias: String = symbol.name) {
+        // don't import built-in symbols
+        if (symbol.isBuiltIn) return
+
         // always add dependencies
         dependencies.addAll(symbol.dependencies)
 
@@ -142,25 +160,20 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 
     fun dokka(docs: String) {
         dokka {
-            write(sanitizeDocumentation(docs))
+            write(
+                formatDocumentation(
+                    sanitizeDocumentation(docs)
+                )
+            )
         }
     }
 
     // handles the documentation for shapes
-    fun renderDocumentation(shape: Shape) {
-        shape.getTrait(DocumentationTrait::class.java).ifPresent {
-            dokka(it.value)
-        }
-    }
+    fun renderDocumentation(shape: Shape) = shape.getTrait<DocumentationTrait>()?.let { dokka(it.value) }
 
     // handles the documentation for member shapes
-    fun renderMemberDocumentation(model: Model, shape: MemberShape) {
-        if (shape.getTrait(DocumentationTrait::class.java).isPresent) {
-            dokka(shape.getTrait(DocumentationTrait::class.java).get().value)
-        } else if (shape.getMemberTrait(model, DocumentationTrait::class.java).isPresent) {
-            dokka(shape.getMemberTrait(model, DocumentationTrait::class.java).get().value)
-        }
-    }
+    fun renderMemberDocumentation(model: Model, shape: MemberShape) =
+        shape.getMemberTrait(model, DocumentationTrait::class.java).getOrNull()?.let { dokka(it.value) }
 
     // handles the documentation for enum definitions
     fun renderEnumDefinitionDocumentation(enumDefinition: EnumDefinition) {
@@ -168,38 +181,99 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
             dokka(it)
         }
     }
+}
 
-    private fun sanitizeDocumentation(doc: String): String {
-        return doc
-            // Docs can have valid $ characters that shouldn't run through formatters.
-            .replace("\$", "\$\$")
-            // API Gateway and maybe others intentionally embed "*/" in comments.
-            .replace("*/", "\\*\\/")
-    }
-
-    /**
-     * Implements Kotlin symbol formatting for the `$T` formatter
-     */
-    private class KotlinSymbolFormatter(val setDefault: Boolean = false) : BiFunction<Any, String, String> {
-        override fun apply(type: Any, indent: String): String {
-            when (type) {
-                is Symbol -> {
-                    var formatted = type.name
-                    if (type.isBoxed()) {
-                        formatted += "?"
-                    }
-
-                    val defaultValue = type.defaultValue()
-                    if (defaultValue != null && setDefault) {
-                        formatted += " = $defaultValue"
-                    }
-                    return formatted
-                }
-//                is SymbolReference -> {
-//                    return type.alias
-//                }
-                else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
+/**
+ * Implements Kotlin symbol formatting for the `#T` and `#Q` formatter(s)
+ */
+private class KotlinSymbolFormatter(
+    private val fullyQualifiedNames: Boolean = false,
+) : BiFunction<Any, String, String> {
+    override fun apply(type: Any, indent: String): String {
+        when (type) {
+            is Symbol -> {
+                return if (fullyQualifiedNames) type.fullName else type.name
             }
+            else -> throw CodegenException("Invalid type provided for #T. Expected a Symbol, but found `$type`")
         }
     }
 }
+
+/**
+ * Implements Kotlin symbol formatting for the `#D` and `#P` formatter(s)
+ */
+class KotlinPropertyFormatter(
+    // set defaults
+    private val setDefault: Boolean = false,
+    // format with nullability `?`
+    private val includeNullability: Boolean = true,
+    // use fully qualified names
+    private val fullyQualifiedNames: Boolean = false,
+) : BiFunction<Any, String, String> {
+    override fun apply(type: Any, indent: String): String {
+        when (type) {
+            is Symbol -> {
+                var formatted = if (fullyQualifiedNames) type.fullName else type.name
+                if (includeNullability && type.isBoxed) {
+                    formatted += "?"
+                }
+
+                if (setDefault) {
+                    type.defaultValue()?.let {
+                        formatted += " = $it"
+                    }
+                }
+                return formatted
+            }
+            else -> throw CodegenException("Invalid type provided for ${javaClass.name}. Expected a Symbol, but found `$type`")
+        }
+    }
+}
+
+// Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
+private val commonHtmlTags = setOf(
+    "a",
+    "b",
+    "code",
+    "dd",
+    "dl",
+    "dt",
+    "i",
+    "important",
+    "li",
+    "note",
+    "p",
+    "strong",
+    "ul"
+).map { listOf("<$it>", "</$it>") }.flatten()
+
+// Replace characters in the input documentation to prevent issues in codegen or rendering.
+// NOTE: Currently we look for specific strings of Html tags commonly found in docs
+//       and remove them.  A better solution would be to generally convert from HTML to "pure"
+//       markdown such that formatting is preserved.
+// TODO: https://www.pivotaltracker.com/story/show/177053427
+private fun sanitizeDocumentation(doc: String): String {
+    return doc
+        .stripAll(commonHtmlTags)
+        // Docs can have valid $ characters that shouldn't run through formatters.
+        .replace("#", "##")
+        // Services may have comment string literals embedded in documentation.
+        .replace("/*", "&##47;*")
+        .replace("*/", "*&##47;")
+}
+
+// Remove all strings from source string and return the result
+private fun String.stripAll(stripList: List<String>): String {
+    var newStr = this
+    for (item in stripList) newStr = newStr.replace(item, "")
+
+    return newStr
+}
+
+// Remove whitespace from the beginning and end of each line of documentation
+// Remove blank lines
+private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
+    doc
+        .split('\n') // Break the doc into lines
+        .filter { it.isNotBlank() } // Remove empty lines
+        .joinToString(separator = lineSeparator) { it.trim() } // Trim line

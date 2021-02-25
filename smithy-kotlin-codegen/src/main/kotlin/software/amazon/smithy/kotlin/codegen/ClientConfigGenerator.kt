@@ -59,7 +59,7 @@ class ClientConfigGenerator(
             .joinToString(", ")
 
         val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
-        ctx.writer.openBlock("class \$configClass.name:L private constructor(builder: BuilderImpl)$formattedBaseClasses {")
+        ctx.writer.openBlock("class #configClass.name:L private constructor(builder: BuilderImpl)$formattedBaseClasses {")
             .call { renderImmutableProperties() }
             .call { renderJavaBuilderInterface() }
             .call { renderDslBuilderInterface() }
@@ -84,7 +84,7 @@ class ClientConfigGenerator(
     private fun renderImmutableProperties() {
         props.forEach { prop ->
             val override = if (prop.requiresOverride) "override " else ""
-            ctx.writer.write("${override}val \$1L: \$2T = builder.\$1L", prop.propertyName, prop.symbol)
+            ctx.writer.write("${override}val #1L: #2P = builder.#1L", prop.propertyName, prop.symbol)
         }
     }
 
@@ -93,9 +93,9 @@ class ClientConfigGenerator(
             .withBlock("interface Builder {", "}") {
                 props.forEach { prop ->
                     // we want the type names sans nullability (?) for arguments
-                    write("fun \$1L(\$1L: \$2L): Builder", prop.propertyName, prop.symbol.name)
+                    write("fun #1L(#1L: #2L): Builder", prop.propertyName, prop.symbol.name)
                 }
-                write("fun build(): \$configClass.name:L")
+                write("fun build(): #configClass.name:L")
             }
     }
 
@@ -104,11 +104,11 @@ class ClientConfigGenerator(
             .withBlock("interface DslBuilder {", "}") {
                 props.forEach { prop ->
                     prop.documentation?.let { ctx.writer.dokka(it) }
-                    write("var \$L: \$T", prop.propertyName, prop.symbol)
+                    write("var #L: #P", prop.propertyName, prop.symbol)
                     write("")
                 }
                 write("")
-                write("fun build(): \$configClass.name:L")
+                write("fun build(): #configClass.name:L")
             }
     }
 
@@ -117,15 +117,15 @@ class ClientConfigGenerator(
             .withBlock("internal class BuilderImpl() : Builder, DslBuilder {", "}") {
                 // override DSL properties
                 props.forEach { prop ->
-                    write("override var \$L: \$D", prop.propertyName, prop.symbol)
+                    write("override var #L: #D", prop.propertyName, prop.symbol)
                 }
                 write("")
 
                 write("")
-                write("override fun build(): \$configClass.name:L = \$configClass.name:L(this)")
+                write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
                 props.forEach { prop ->
                     // we want the type names sans nullability (?) for arguments
-                    write("override fun \$1L(\$1L: \$2L): Builder = apply { this.\$1L = \$1L }", prop.propertyName, prop.symbol.name)
+                    write("override fun #1L(#1L: #2L): Builder = apply { this.#1L = #1L }", prop.propertyName, prop.symbol.name)
                 }
             }
     }

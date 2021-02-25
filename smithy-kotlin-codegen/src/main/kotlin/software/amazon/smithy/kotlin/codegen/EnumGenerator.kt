@@ -6,6 +6,8 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
+import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
@@ -92,18 +94,18 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     private val generatedNames = mutableSetOf<String>()
 
     init {
-        assert(shape.getTrait(EnumTrait::class.java).isPresent)
+        assert(shape.hasTrait<EnumTrait>())
     }
 
     val enumTrait: EnumTrait by lazy {
-        shape.getTrait(EnumTrait::class.java).get()
+        shape.expectTrait()
     }
 
     fun render() {
         writer.renderDocumentation(shape)
         // NOTE: The smithy spec only allows string shapes to apply to a string shape at the moment
         writer.withBlock("sealed class ${symbol.name} {", "}") {
-            write("\nabstract val value: kotlin.String\n")
+            write("\nabstract val value: #Q\n", KotlinTypes.String)
 
             val sortedDefinitions = enumTrait
                 .values
@@ -117,7 +119,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
             if (generatedNames.contains("SdkUnknown")) throw CodegenException("generating SdkUnknown would cause duplicate variant for enum shape: $shape")
 
             // generate the unknown which will always be last
-            writer.withBlock("data class SdkUnknown(override val value: kotlin.String) : ${symbol.name}() {", "}") {
+            writer.withBlock("data class SdkUnknown(override val value: #Q) : #Q() {", "}", KotlinTypes.String, symbol) {
                 renderToStringOverride()
             }
 
@@ -126,7 +128,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
             // generate the fromValue() static method
             withBlock("companion object {", "}") {
                 writer.dokka("Convert a raw value to one of the sealed variants or [SdkUnknown]")
-                openBlock("fun fromValue(str: kotlin.String): \$L = when(str) {", symbol.name)
+                openBlock("fun fromValue(str: #Q): #Q = when(str) {", KotlinTypes.String, symbol)
                     .call {
                         sortedDefinitions.forEach { definition ->
                             val variantName = getVariantName(definition)
@@ -138,7 +140,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
                     .write("")
 
                 writer.dokka("Get a list of all possible variants")
-                openBlock("fun values(): List<\$L> = listOf(", symbol.name)
+                openBlock("fun values(): List<#Q> = listOf(", symbol)
                     .call {
                         sortedDefinitions.forEachIndexed { idx, definition ->
                             val variantName = getVariantName(definition)
@@ -153,7 +155,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
 
     private fun renderToStringOverride() {
         // override to string to use the enum constant value
-        writer.write("override fun toString(): kotlin.String = value")
+        writer.write("override fun toString(): #Q = value", KotlinTypes.String)
     }
 
     private fun generateSealedClassVariant(definition: EnumDefinition) {
@@ -163,8 +165,8 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
             throw CodegenException("prefixing invalid enum value to form a valid Kotlin identifier causes generated sealed class names to not be unique: $variantName; shape=$shape")
         }
 
-        writer.openBlock("object $variantName : ${symbol.name}() {")
-            .write("override val value: kotlin.String = \"${definition.value}\"")
+        writer.openBlock("object $variantName : #Q() {", symbol)
+            .write("override val value: #Q = #S", KotlinTypes.String, definition.value)
             .call { renderToStringOverride() }
             .closeBlock("}")
     }

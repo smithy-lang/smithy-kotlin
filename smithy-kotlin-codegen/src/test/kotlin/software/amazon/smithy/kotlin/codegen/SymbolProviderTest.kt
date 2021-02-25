@@ -20,41 +20,39 @@ import software.amazon.smithy.model.traits.StreamingTrait
 class SymbolProviderTest {
     @Test
     fun `escapes reserved member names`() {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$class").target("smithy.api#String").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
+        val model = """
+        namespace com.test
+        
+        structure MyStruct {
+            class: String
+        }
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$class")
         val actual = provider.toMemberName(member)
         assertEquals("`class`", actual)
     }
 
     @Test
     fun `creates symbols in correct namespace`() {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#String").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
+        val model = """
+        namespace com.test
+        
+        structure MyStruct {
+            quux: String
+        }
+            
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val struct = model.expectShape<StructureShape>("com.test#MyStruct")
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
         val structSymbol = provider.toSymbol(struct)
         val memberSymbol = provider.toSymbol(member)
         assertEquals("test.model", structSymbol.namespace)
         assertEquals(".", structSymbol.namespaceDelimiter)
-
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+        assertEquals("kotlin", memberSymbol.namespace)
     }
 
     @DisplayName("Creates primitives")
@@ -66,7 +64,7 @@ class SymbolProviderTest {
         "Short, null, true",
         "PrimitiveShort, 0, false",
         "Long, null, true",
-        "PrimitiveLong, 0, false",
+        "PrimitiveLong, 0L, false",
         "Byte, null, true",
         "PrimitiveByte, 0, false",
         "Float, null, true",
@@ -89,10 +87,9 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val memberSymbol = provider.toSymbol(member)
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+        assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
-        assertEquals(boxed, memberSymbol.isBoxed())
+        assertEquals(boxed, memberSymbol.isBoxed)
 
         val expectedName = translateTypeName(primitiveType.removePrefix("Primitive"))
         assertEquals(expectedName, memberSymbol.name)
@@ -106,23 +103,19 @@ class SymbolProviderTest {
 
     @Test
     fun `creates blobs`() {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#Blob").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct, member)
-            .assemble()
-            .unwrap()
+        val model = """
+        namespace com.test
+        structure MyStruct {
+            quux: Blob
+        }
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
         val memberSymbol = provider.toSymbol(member)
-        // builtins should not have a namespace set
-        assertEquals("", memberSymbol.namespace)
+        assertEquals("kotlin", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertEquals(true, memberSymbol.isBoxed())
-
+        assertEquals(true, memberSymbol.isBoxed)
         assertEquals("ByteArray", memberSymbol.name)
     }
 
@@ -146,7 +139,7 @@ class SymbolProviderTest {
 
         assertEquals("software.aws.clientrt.content", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
-        assertEquals(true, memberSymbol.isBoxed())
+        assertEquals(true, memberSymbol.isBoxed)
         assertEquals("ByteStream", memberSymbol.name)
         val dependency = memberSymbol.dependencies[0].expectProperty("dependency") as KotlinDependency
         assertEquals("client-rt-core", dependency.artifact)
@@ -173,7 +166,7 @@ class SymbolProviderTest {
         val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
 
         assertEquals("List<Record>", listSymbol.name)
-        assertEquals(true, listSymbol.isBoxed())
+        assertEquals(true, listSymbol.isBoxed)
         assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -182,7 +175,7 @@ class SymbolProviderTest {
         val sparseListSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#SparseRecords"))
 
         assertEquals("List<Record?>", sparseListSymbol.name)
-        assertEquals(true, sparseListSymbol.isBoxed())
+        assertEquals(true, sparseListSymbol.isBoxed)
         assertEquals("null", sparseListSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -206,7 +199,7 @@ class SymbolProviderTest {
         val setSymbol = provider.toSymbol(set)
 
         assertEquals("Set<Record>", setSymbol.name)
-        assertEquals(true, setSymbol.isBoxed())
+        assertEquals(true, setSymbol.isBoxed)
         assertEquals("null", setSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -237,7 +230,7 @@ class SymbolProviderTest {
         val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("foo.bar#MyMap"))
 
         assertEquals("Map<String, Record>", mapSymbol.name)
-        assertEquals(true, mapSymbol.isBoxed())
+        assertEquals(true, mapSymbol.isBoxed)
         assertEquals("null", mapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -246,7 +239,7 @@ class SymbolProviderTest {
         val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("foo.bar#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
-        assertEquals(true, sparseMapSymbol.isBoxed())
+        assertEquals(true, sparseMapSymbol.isBoxed)
         assertEquals("null", sparseMapSymbol.defaultValue())
 
         // collections should contain a reference to the member type
@@ -271,7 +264,7 @@ class SymbolProviderTest {
         val bigSymbol = provider.toSymbol(member)
         assertEquals("java.math", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
-        assertEquals(true, bigSymbol.isBoxed())
+        assertEquals(true, bigSymbol.isBoxed)
         assertEquals("$type", bigSymbol.name)
     }
 
@@ -297,7 +290,7 @@ class SymbolProviderTest {
 
         assertEquals("test.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed())
+        assertEquals(true, symbol.isBoxed)
         assertEquals("Baz", symbol.name)
         assertEquals("Baz.kt", symbol.definitionFile)
     }
@@ -324,7 +317,7 @@ class SymbolProviderTest {
 
         assertEquals("test.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
-        assertEquals(true, symbol.isBoxed())
+        assertEquals(true, symbol.isBoxed)
         assertEquals("MyUnion", symbol.name)
         assertEquals("MyUnion.kt", symbol.definitionFile)
     }
@@ -346,7 +339,7 @@ class SymbolProviderTest {
         assertEquals("test.model", structSymbol.namespace)
         assertEquals("MyStruct", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isBoxed())
+        assertEquals(true, structSymbol.isBoxed)
         assertEquals("MyStruct.kt", structSymbol.definitionFile)
         assertEquals(1, structSymbol.references.size)
     }
@@ -363,7 +356,7 @@ class SymbolProviderTest {
         val documentSymbol = provider.toSymbol(document)
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
-        assertEquals(true, documentSymbol.isBoxed())
+        assertEquals(true, documentSymbol.isBoxed)
         assertEquals("${KotlinDependency.CLIENT_RT_CORE.namespace}.smithy", documentSymbol.namespace)
         assertEquals(1, documentSymbol.dependencies.size)
     }
@@ -430,7 +423,7 @@ class SymbolProviderTest {
         assertEquals("software.aws.clientrt.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
         assertEquals("null", timestampSymbol.defaultValue())
-        assertEquals(true, timestampSymbol.isBoxed())
+        assertEquals(true, timestampSymbol.isBoxed)
         assertEquals(1, timestampSymbol.dependencies.size)
     }
 
@@ -473,7 +466,7 @@ class SymbolProviderTest {
         assertEquals("test.model", structSymbol.namespace)
         assertEquals("MyStruct1", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
-        assertEquals(true, structSymbol.isBoxed())
+        assertEquals(true, structSymbol.isBoxed)
         assertEquals("MyStruct1.kt", structSymbol.definitionFile)
         assertEquals(2, structSymbol.references.size)
     }

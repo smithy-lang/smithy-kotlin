@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
@@ -37,7 +36,7 @@ class EnumGeneratorTest {
         """.asSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
-        val shape = model.expectShape(ShapeId.from("com.test#Baz")).asStringShape().get()
+        val shape = model.expectShape<StringShape>("com.test#Baz")
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
         EnumGenerator(shape, symbol, writer).render()
@@ -54,17 +53,17 @@ sealed class Baz {
     /**
      * Documentation for bar
      */
-    object Bar : Baz() {
+    object Bar : test.model.Baz() {
         override val value: kotlin.String = "BAR"
         override fun toString(): kotlin.String = value
     }
 
-    object Foo : Baz() {
+    object Foo : test.model.Baz() {
         override val value: kotlin.String = "FOO"
         override fun toString(): kotlin.String = value
     }
 
-    data class SdkUnknown(override val value: kotlin.String) : Baz() {
+    data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
         override fun toString(): kotlin.String = value
     }
 
@@ -72,7 +71,7 @@ sealed class Baz {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: kotlin.String): Baz = when(str) {
+        fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
             "BAR" -> Bar
             "FOO" -> Foo
             else -> SdkUnknown(str)
@@ -81,7 +80,7 @@ sealed class Baz {
         /**
          * Get a list of all possible variants
          */
-        fun values(): List<Baz> = listOf(
+        fun values(): List<test.model.Baz> = listOf(
             Bar,
             Foo
         )
@@ -119,7 +118,7 @@ sealed class Baz {
         """.asSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
-        val shape = model.expectShape(ShapeId.from("com.test#Baz")).asStringShape().get()
+        val shape = model.expectShape<StringShape>("com.test#Baz")
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
         EnumGenerator(shape, symbol, writer).render()
@@ -139,17 +138,17 @@ sealed class Baz {
      * performance with the ability to burst above the
      * baseline.
      */
-    object T2Micro : Baz() {
+    object T2Micro : test.model.Baz() {
         override val value: kotlin.String = "t2.micro"
         override fun toString(): kotlin.String = value
     }
 
-    object T2Nano : Baz() {
+    object T2Nano : test.model.Baz() {
         override val value: kotlin.String = "t2.nano"
         override fun toString(): kotlin.String = value
     }
 
-    data class SdkUnknown(override val value: kotlin.String) : Baz() {
+    data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
         override fun toString(): kotlin.String = value
     }
 
@@ -157,7 +156,7 @@ sealed class Baz {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: kotlin.String): Baz = when(str) {
+        fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
             "t2.micro" -> T2Micro
             "t2.nano" -> T2Nano
             else -> SdkUnknown(str)
@@ -166,7 +165,7 @@ sealed class Baz {
         /**
          * Get a list of all possible variants
          */
-        fun values(): List<Baz> = listOf(
+        fun values(): List<test.model.Baz> = listOf(
             T2Micro,
             T2Nano
         )
@@ -214,7 +213,7 @@ sealed class Baz {
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
-        contents.shouldContainOnlyOnce("object _0 : Baz()")
+        contents.shouldContainOnlyOnce("object _0 : test.model.Baz()")
     }
 
     @Test

@@ -58,20 +58,20 @@ class DeserializeUnionGeneratorTest {
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 when(findNextFieldIndex()) {
-                    I32_DESCRIPTOR.index -> value = deserializeInt().let { PrimitiveUnion.I32(it) }
-                    STRINGA_DESCRIPTOR.index -> value = deserializeString().let { PrimitiveUnion.StringA(it) }
-                    else -> skipValue()
+                    I32_DESCRIPTOR.index -> value = PrimitiveUnion.I32(deserializeInt())
+                    STRINGA_DESCRIPTOR.index -> value = PrimitiveUnion.StringA(deserializeString())
+                    else -> value = PrimitiveUnion.SdkUnknown.also { skipValue() }
                 }
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getContentsForShape(model, "com.test#Foo", "PrimitiveUnion")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
-    fun `it deserializes a structure with collection types`() {
+    fun `it deserializes a structure with union containing collections of itself`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -79,60 +79,143 @@ class DeserializeUnionGeneratorTest {
             }
             
             union MyAggregateUnion {
-                intList: IntList,
-                intMap: IntMap,
-                nested3: Nested,
-                @timestampFormat("date-time")
-                timestamp4: Timestamp
+                unionList: MyAggregateUnionList,
+                unionMap: MyAggregateUnionMap,
             }
             
-            list IntList {
-                member: Integer
+            list MyAggregateUnionList {
+                member: MyAggregateUnion
             }
             
-            map IntMap {
+            map MyAggregateUnionMap {
                 key: String,
-                value: Integer
-            }
-            
-            structure Nested {
-                member1: String,
-                member2: String
-            }
-                
+                value: MyAggregateUnion
+            }                
         """
             ).asSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 when(findNextFieldIndex()) {
-                    INTLIST_DESCRIPTOR.index -> value =
-                        deserializer.deserializeList(INTLIST_DESCRIPTOR) {
+                    UNIONLIST_DESCRIPTOR.index -> value =
+                        deserializer.deserializeList(UNIONLIST_DESCRIPTOR) {
+                            val col0 = mutableListOf<MyAggregateUnion>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            MyAggregateUnion.UnionList(col0)
+                        }
+                    UNIONMAP_DESCRIPTOR.index -> value =
+                        deserializer.deserializeMap(UNIONMAP_DESCRIPTOR) {
+                            val map0 = mutableMapOf<String, MyAggregateUnion>()
+                            while (hasNextEntry()) {
+                                val k0 = key()
+                                val v0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                map0[k0] = v0
+                            }
+                            MyAggregateUnion.UnionMap(map0)
+                        }
+                    else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
+                }
+            }
+        """.trimIndent()
+
+        val actual = getContentsForShape(model, "com.test#Foo", "MyAggregateUnion")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it deserializes a structure containing a union of collection types containing collections`() {
+        val model = (
+            modelPrefix + """            
+                    structure FooResponse { 
+                        payload: FooUnion
+                    }
+                    
+                    union FooUnion {
+                        intListVal: IntList,
+                        strMapVal: BarStructMap
+                    }
+                    
+                    list IntList {
+                        member: Integer
+                    }
+                    
+                    map BarStructMap {
+                        key: String,
+                        value: BarStructList
+                    }                
+                    
+                    list BarStructList {
+                        member: Bar2StructMap
+                    }
+                    
+                    map Bar2StructMap {
+                        key: String,
+                        value: BarUnion
+                    }
+                    
+                    union BarUnion {
+                        i32: IntStruct,
+                        stringA: StringStruct
+                    }
+                    
+                    structure StringStruct {
+                        member: String
+                    }
+                    
+                    structure IntStruct {
+                        member: Integer
+                    }
+                """
+            ).asSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                when(findNextFieldIndex()) {
+                    INTLISTVAL_DESCRIPTOR.index -> value =
+                        deserializer.deserializeList(INTLISTVAL_DESCRIPTOR) {
                             val col0 = mutableListOf<Int>()
                             while (hasNextElement()) {
                                 val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                 col0.add(el0)
                             }
-                            MyAggregateUnion.IntList(col0)
+                            FooUnion.IntListVal(col0)
                         }
-                    INTMAP_DESCRIPTOR.index -> value =
-                        deserializer.deserializeMap(INTMAP_DESCRIPTOR) {
-                            val map0 = mutableMapOf<String, Int>()
+                    STRMAPVAL_DESCRIPTOR.index -> value =
+                        deserializer.deserializeMap(STRMAPVAL_DESCRIPTOR) {
+                            val map0 = mutableMapOf<String, List<Map<String, BarUnion>>>()
                             while (hasNextEntry()) {
                                 val k0 = key()
-                                val v0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                val v0 = deserializer.deserializeList(STRMAPVAL_C0_DESCRIPTOR) {
+                                    val col1 = mutableListOf<Map<String, BarUnion>>()
+                                    while (hasNextElement()) {
+                                        val el1 = deserializer.deserializeMap(STRMAPVAL_C1_DESCRIPTOR) {
+                                            val map2 = mutableMapOf<String, BarUnion>()
+                                            while (hasNextEntry()) {
+                                                val k2 = key()
+                                                val v2 = if (nextHasValue()) { BarUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                                map2[k2] = v2
+                                            }
+                                            FooUnion.StrMapVal(map2)
+                                        }
+                                        col1.add(el1)
+                                    }
+                                    FooUnion.StrMapVal(col1)
+                                }
                                 map0[k0] = v0
                             }
-                            MyAggregateUnion.IntMap(map0)
+                            FooUnion.StrMapVal(map0)
                         }
-                    NESTED3_DESCRIPTOR.index -> value = NestedDeserializer().deserialize(deserializer).let { MyAggregateUnion.Nested3(it) }
-                    TIMESTAMP4_DESCRIPTOR.index -> value = deserializeString().let { Instant.fromIso8601(it) }.let { MyAggregateUnion.Timestamp4(it) }
-                    else -> skipValue()
+                    else -> value = FooUnion.SdkUnknown.also { skipValue() }
                 }
             }
+
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getContentsForShape(model, "com.test#Foo", "FooUnion")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -183,7 +266,7 @@ class DeserializeUnionGeneratorTest {
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 when(findNextFieldIndex()) {
-                    I32_DESCRIPTOR.index -> value = deserializeInt().let { MyAggregateUnion.I32(it) }
+                    I32_DESCRIPTOR.index -> value = MyAggregateUnion.I32(deserializeInt())
                     INTLIST_DESCRIPTOR.index -> value =
                         deserializer.deserializeList(INTLIST_DESCRIPTOR) {
                             val col0 = mutableListOf<Int>()
@@ -226,23 +309,24 @@ class DeserializeUnionGeneratorTest {
                             }
                             MyAggregateUnion.MapOfLists(map0)
                         }
-                    else -> skipValue()
+                    else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                 }
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#UnionTestOperation")
+        val actual = getContentsForShape(model, "com.test#UnionTestOperation", "MyAggregateUnion")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    private fun getContentsForShape(model: Model, shapeId: String): String {
+    private fun getContentsForShape(model: Model, shapeId: String, unionName: String): String {
         val ctx = model.newTestContext()
         val op = ctx.expectShape(shapeId)
 
         return testRender(ctx.responseMembers(op)) { members, writer ->
             DeserializeUnionGenerator(
                 ctx.generationCtx,
+                unionName,
                 members,
                 writer,
                 TimestampFormatTrait.Format.EPOCH_SECONDS

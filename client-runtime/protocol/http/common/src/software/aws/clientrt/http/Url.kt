@@ -5,6 +5,7 @@
 package software.aws.clientrt.http
 
 import software.aws.clientrt.http.util.encodeUrlPath
+import software.aws.clientrt.util.InternalAPI
 
 /**
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
@@ -55,27 +56,37 @@ data class Url(
             append(":$port")
         }
 
-        append(encodedPath())
+        append(encodedPath)
     }
 
     /**
      * Get the full encoded path including query parameters and fragment
      */
-    public fun encodedPath(): String = buildString {
-        if (path.isNotBlank()) {
-            append("/")
-            append(path.removePrefix("/").encodeUrlPath())
-        }
+    public val encodedPath: String
+        get() = encodePath(path, parameters?.entries(), fragment, forceQuery)
+}
 
-        if ((parameters != null && !parameters.isEmpty()) || forceQuery) {
-            append("?")
-        }
-        parameters?.urlEncodeTo(this)
+// get the full encoded URL path component e.g. `/path/foo/bar?x=1&y=2#fragment`
+private fun encodePath(
+    path: String,
+    queryParameters: Set<Map.Entry<String, List<String>>>? = null,
+    fragment: String? = null,
+    forceQuery: Boolean = false
+): String = buildString {
+    if (path.isNotBlank()) {
+        append("/")
+        append(path.removePrefix("/").encodeUrlPath())
+    }
 
-        if (fragment != null && fragment.isNotBlank()) {
-            append("#")
-            append(fragment)
-        }
+    if ((queryParameters != null && queryParameters.isNotEmpty()) || forceQuery) {
+        append("?")
+    }
+
+    queryParameters?.let { urlEncodeQueryParametersTo(it, this) }
+
+    if (fragment != null && fragment.isNotBlank()) {
+        append("#")
+        append(fragment)
     }
 }
 
@@ -118,3 +129,7 @@ fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters
 // TODO - when we get to other platforms we will likely just roll our own - for now we are going to punt and use JVM
 // capabilities to bootstrap this
 internal expect fun platformUrlParse(url: String): Url
+
+@InternalAPI
+val UrlBuilder.encodedPath: String
+    get() = encodePath(path, parameters.entries(), fragment, forceQuery)

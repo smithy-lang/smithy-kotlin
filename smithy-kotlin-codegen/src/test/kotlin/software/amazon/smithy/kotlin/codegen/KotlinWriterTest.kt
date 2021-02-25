@@ -32,16 +32,20 @@ class KotlinWriterTest {
      */
     @Test
     fun `escapes comment tokens in doc strings`() {
-        val expected = """
-            /**
-             * This is \*\/ valid documentation.
-             */
-        """.trimIndent()
         val writer = KotlinWriter("com.test")
-        val docs = "This is */ valid documentation."
+        val docs = "This is */ valid /* documentation."
         writer.dokka(docs)
-        val result = writer.toString()
+        val actual = writer.toString()
+        val expected = "This is *&#47; valid &#47;* documentation."
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
 
-        Assertions.assertTrue(result.contains(expected))
+    @Test
+    fun `it strips html tags from doc strings`() {
+        val unit = KotlinWriter("com.test")
+        val docs = "<p>here is <b>some</b> sweet <i>sweet</i> <a>html</a></p>"
+        unit.dokka(docs)
+        val actual = unit.toString()
+        actual.shouldContainOnlyOnceWithDiff("here is some sweet sweet html")
     }
 }

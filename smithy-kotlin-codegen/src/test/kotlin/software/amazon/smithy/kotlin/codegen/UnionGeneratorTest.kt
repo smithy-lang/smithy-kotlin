@@ -5,44 +5,38 @@
 package software.amazon.smithy.kotlin.codegen
 
 import io.kotest.matchers.string.shouldContain
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.shapes.UnionShape
-import software.amazon.smithy.model.traits.DocumentationTrait
+import java.lang.IllegalStateException
 
 class UnionGeneratorTest {
     @Test
     fun `it renders unions`() {
-        val member1 = MemberShape.builder().id("com.test#MyUnion\$foo").target("smithy.api#String").addTrait(DocumentationTrait("Documentation for foo")).build()
-        val member2 = MemberShape.builder().id("com.test#MyUnion\$bar").target("smithy.api#PrimitiveInteger").build()
-        val member3 = MemberShape.builder().id("com.test#MyUnion\$baz").target("smithy.api#Integer").build()
-        val member4 = MemberShape.builder().id("com.test#MyUnion\$blz").target("smithy.api#Blob").build()
-        val member5 = MemberShape.builder().id("com.test#MyStruct\$qux").target("smithy.api#String").build()
-
-        val struct = StructureShape.builder()
-            .id("com.test#MyStruct")
-            .addMember(member5)
-            .build()
-        val union = UnionShape.builder()
-            .id("com.test#MyUnion")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .addMember(member4)
-            .addMember(struct.defaultName(), struct.id)
-            .addTrait(DocumentationTrait("Documentation for MyUnion"))
-            .build()
-        val model = Model.assembler()
-            .addShapes(union, struct, member1, member2, member3, member5)
-            .assemble()
-            .unwrap()
+        val model = """
+        namespace com.test
+        
+        @documentation("Documentation for MyUnion")
+        union MyUnion {
+            @documentation("Documentation for foo")
+            foo: String,
+            bar: PrimitiveInteger,
+            baz: Integer,
+            blz: Blob,
+            myStruct: MyStruct
+        }
+        
+        structure MyStruct {
+            qux: String
+        }
+            
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
+        val union = model.expectShape<UnionShape>("com.test#MyUnion")
         val generator = UnionGenerator(model, provider, writer, union)
         generator.render()
 
@@ -54,16 +48,15 @@ class UnionGeneratorTest {
  * Documentation for MyUnion
  */
 sealed class MyUnion {
-    data class MyStruct(val value: MyStruct) : MyUnion()
-    data class Bar(val value: Int) : MyUnion()
-    data class Baz(val value: Int) : MyUnion()
-    data class Blz(val value: ByteArray) : MyUnion() {
+    data class Bar(val value: kotlin.Int) : test.model.MyUnion()
+    data class Baz(val value: kotlin.Int) : test.model.MyUnion()
+    data class Blz(val value: kotlin.ByteArray) : test.model.MyUnion() {
 
-        override fun hashCode(): Int {
+        override fun hashCode(): kotlin.Int {
             return value.contentHashCode()
         }
 
-        override fun equals(other: Any?): Boolean {
+        override fun equals(other: kotlin.Any?): kotlin.Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false
 
@@ -77,10 +70,36 @@ sealed class MyUnion {
     /**
      * Documentation for foo
      */
-    data class Foo(val value: String) : MyUnion()
+    data class Foo(val value: kotlin.String) : test.model.MyUnion()
+    data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
+    object SdkUnknown : test.model.MyUnion()
 }
 """
 
         contents.shouldContain(expectedClassDecl)
+    }
+
+    @Test
+    fun `it fails to generate unions with colliding member names`() {
+        val model = """
+            namespace com.test
+
+            structure MyStruct {
+                qux: String,
+            }
+           
+            union MyUnion {                
+                sdkUnknown: String
+            }
+        """.asSmithyModel()
+        val union = model.expectShape<UnionShape>("com.test#MyUnion")
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val writer = KotlinWriter("com.test")
+        val generator = UnionGenerator(model, provider, writer, union)
+
+        Assertions.assertThrows(IllegalStateException::class.java) {
+            generator.render()
+        }
     }
 }

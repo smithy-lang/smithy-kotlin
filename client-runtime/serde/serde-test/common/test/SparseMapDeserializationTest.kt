@@ -3,11 +3,10 @@ import io.kotest.matchers.maps.shouldContainKeys
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonDeserializer
 import software.aws.clientrt.serde.xml.XmlDeserializer
-import software.aws.clientrt.serde.xml.XmlMap
+import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.jvm.JvmStatic
 import kotlin.test.*
-import kotlin.test.assertTrue
 
 /**
  * This test uses codegen snapshots generated from the following model:
@@ -162,8 +161,9 @@ class SparseMapDeserializationTest {
     class GetFooDeserializer {
 
         companion object {
-            private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor("sparseStructMap", SerialKind.Map, 0, XmlMap())
+            private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "sparseStructMap".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+                trait(XmlSerialName("GetFoo"))
                 field(SPARSESTRUCTMAP_DESCRIPTOR)
             }
         }
@@ -182,7 +182,7 @@ class SparseMapDeserializationTest {
                                         val k0 = key()
                                         val el0 = when (nextHasValue()) {
                                             true -> GreetingDeserializer().deserialize(deserializer)
-                                            false -> deserializer.deserializeNull()
+                                            false -> deserializeNull()
                                         }
                                         map0[k0] = el0
                                     }
@@ -201,8 +201,9 @@ class SparseMapDeserializationTest {
     class GreetingDeserializer {
 
         companion object {
-            private val SAYING_DESCRIPTOR = SdkFieldDescriptor("saying", SerialKind.String)
+            private val SAYING_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, "saying".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+                trait(XmlSerialName("Greeting"))
                 field(SAYING_DESCRIPTOR)
             }
         }
@@ -304,7 +305,7 @@ class SparseMapDeserializationTest {
 
             assertNotNull(struct)
             assertNotNull(struct.sparseStructMap)
-            assertTrue(struct.sparseStructMap.size == 3)
+            assertEquals(3, struct.sparseStructMap.size)
             struct.sparseStructMap.shouldContainKeys("greeting1", "greeting2", "greeting3")
             assertNull(struct.sparseStructMap["greeting2"])
         }

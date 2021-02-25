@@ -6,7 +6,7 @@ package software.aws.clientrt.serde.json
 
 import software.aws.clientrt.serde.*
 
-class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator {
+class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
     private val reader = jsonStreamReader(payload)
 
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
@@ -103,7 +103,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 }
 
 // Represents the deserialization of a null object.
-private class JsonNullFieldIterator(deserializer: Deserializer) : Deserializer.FieldIterator, Deserializer by deserializer {
+private class JsonNullFieldIterator(deserializer: JsonDeserializer) : Deserializer.FieldIterator, Deserializer by deserializer, PrimitiveDeserializer by deserializer {
     override suspend fun findNextFieldIndex(): Int? = null
 
     override suspend fun skipValue() {
@@ -114,8 +114,8 @@ private class JsonNullFieldIterator(deserializer: Deserializer) : Deserializer.F
 private class JsonFieldIterator(
     private val reader: JsonStreamReader,
     private val descriptor: SdkObjectDescriptor,
-    deserializer: Deserializer
-) : Deserializer.FieldIterator, Deserializer by deserializer {
+    deserializer: JsonDeserializer
+) : Deserializer.FieldIterator, Deserializer by deserializer, PrimitiveDeserializer by deserializer {
 
     override suspend fun findNextFieldIndex(): Int? {
         val candidate = when (reader.peek()) {

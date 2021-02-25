@@ -12,13 +12,13 @@ sealed class XmlToken {
     /**
      * Defines the name and namespace of an element
      */
-    data class QualifiedName(val name: String, val namespace: String? = null)
+    data class QualifiedName(val name: String, val namespaceUri: String? = null, val namespacePrefix: String? = null)
 
     /**
      * The opening of an XML element
      */
     data class BeginElement(
-        val id: QualifiedName,
+        val qualifiedName: QualifiedName,
         val attributes: Map<QualifiedName, String> = emptyMap()
     ) : XmlToken() {
         // Convenience constructor for name-only nodes.
@@ -30,7 +30,7 @@ sealed class XmlToken {
     /**
      * The closing of an XML element
      */
-    data class EndElement(val name: QualifiedName) : XmlToken() {
+    data class EndElement(val qualifiedName: QualifiedName) : XmlToken() {
         // Convenience constructor for name-only nodes.
         constructor(name: String) : this(QualifiedName(name))
     }
@@ -40,6 +40,8 @@ sealed class XmlToken {
      */
     data class Text(val value: String?) : XmlToken()
 
+    object StartDocument : XmlToken()
+
     /**
      * The end of the XML stream to signal that the XML-encoded value has no more
      * tokens
@@ -47,9 +49,10 @@ sealed class XmlToken {
     object EndDocument : XmlToken()
 
     override fun toString(): String = when (this) {
-        is BeginElement -> "<${this.id}>"
-        is EndElement -> "</${this.name}>"
+        is BeginElement -> "<${this.qualifiedName}>"
+        is EndElement -> "</${this.qualifiedName}>"
         is Text -> "${this.value}"
+        StartDocument -> "[StartDocument]"
         EndDocument -> "[EndDocument]"
     }
 }
@@ -68,6 +71,11 @@ interface XmlStreamReader {
     suspend fun skipNext()
 
     /**
+     * Return the last token to be taken
+     */
+    val currentToken: XmlToken
+
+    /**
      * Peek at the next token type.  Successive calls will return the same value, meaning there is only one
      * look-ahead at any given time during the parsing of input data.
      */
@@ -76,7 +84,7 @@ interface XmlStreamReader {
     /**
      * Return the current node depth of the parser.
      */
-    suspend fun currentDepth(): Int
+    val currentDepth: Int
 }
 
 /*

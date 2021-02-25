@@ -29,8 +29,7 @@ internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
         port = sdkUrl.port ?: DEFAULT_PORT
         encodedPath = sdkUrl.path.encodeURLPath()
         if (!sdkUrl.parameters.isEmpty()) {
-            val sdkParams = sdkUrl.parameters.build()
-            sdkParams.forEach { name, values ->
+            sdkUrl.parameters.entries().forEach { (name, values) ->
                 parameters.appendAll(name, values)
             }
         }

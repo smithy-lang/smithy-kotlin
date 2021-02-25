@@ -51,7 +51,7 @@ package software.aws.clientrt.serde
  * until it is exhausted and for each element/entry call the appropriate `deserialize*` methods.
  *
  */
-interface Deserializer : PrimitiveDeserializer {
+interface Deserializer {
     /**
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.
@@ -85,6 +85,11 @@ interface Deserializer : PrimitiveDeserializer {
          * or the document has been read completely.
          */
         suspend fun hasNextElement(): Boolean
+
+        /**
+         * Returns true if the next token contains a value, or false otherwise.
+         */
+        suspend fun nextHasValue(): Boolean
     }
 
     /**
@@ -101,6 +106,11 @@ interface Deserializer : PrimitiveDeserializer {
          * Read the next key
          */
         suspend fun key(): String
+
+        /**
+         * Returns true if the next token contains a value, or false otherwise.
+         */
+        suspend fun nextHasValue(): Boolean
     }
 
     /**
@@ -174,11 +184,6 @@ interface PrimitiveDeserializer {
      * Consume the next token if represents a null value. Always returns null.
      */
     suspend fun deserializeNull(): Nothing?
-
-    /**
-     * Returns true if the next token contains a value, or false otherwise.
-     */
-    suspend fun nextHasValue(): Boolean
 }
 
 suspend fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: suspend Deserializer.FieldIterator.() -> Unit) {
