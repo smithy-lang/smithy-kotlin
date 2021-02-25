@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
@@ -22,17 +23,25 @@ private const val DEFAULT_VALUE_KEY: String = "defaultValue"
 // Boolean property indicating this symbol should be boxed
 private const val BOXED_KEY: String = "boxed"
 
+// the original shape the symbol was created from
+private const val SHAPE_KEY: String = "shape"
+
 /**
- * Test if a symbol is boxed or not
+ * Test if a symbol is boxed
  */
-fun Symbol.isBoxed(): Boolean {
-    return getProperty(BOXED_KEY).map {
+val Symbol.isBoxed: Boolean
+    get() = getProperty(BOXED_KEY).map {
         when (it) {
             is Boolean -> it
             else -> false
         }
     }.orElse(false)
-}
+
+/**
+ * Test if a symbol is not boxed
+ */
+val Symbol.isNotBoxed: Boolean
+    get() = !isBoxed
 
 /**
  * Gets the default value for the symbol if present, else null
@@ -40,7 +49,7 @@ fun Symbol.isBoxed(): Boolean {
  */
 fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
     // boxed types should always be defaulted to null
-    if (isBoxed()) {
+    if (isBoxed) {
         return defaultBoxed
     }
 
@@ -81,50 +90,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     private var depth = 0
 
     init {
-        // FIXME - Loading of reserved-words.txt file from resources fails randomly with exception:
-        //  `Projection source failed: java.io.UncheckedIOException: java.util.zip.ZipException: ZipFile invalid LOC header (bad signature)`
-//        val reservedWords = ReservedWordsBuilder()
-//            .loadWords(KotlinCodegenPlugin::class.java.getResource("reserved-words.txt"))
-//            .build()
-
-        // For now we are going to hard code the hard reserved words and debug this later
-        val hardReservedWords = listOf(
-            "as",
-            "as?",
-            "break",
-            "class",
-            "continue",
-            "do",
-            "else",
-            "false",
-            "for",
-            "fun",
-            "if",
-            "in",
-            "!in",
-            "interface",
-            "is",
-            "!is",
-            "null",
-            "object",
-            "package",
-            "return",
-            "super",
-            "this",
-            "throw",
-            "true",
-            "try",
-            "typealias",
-            "typeof",
-            "val",
-            "var",
-            "when",
-            "while"
-        )
-        val reservedWords = ReservedWordsBuilder().apply {
-            hardReservedWords.forEach { put(it, "`$it`") }
-        }.build()
-
+        val reservedWords = kotlinReservedWords()
         escaper = ReservedWordSymbolProvider.builder()
             .nameReservedWords(reservedWords)
             .memberReservedWords(reservedWords)
@@ -152,20 +118,20 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         return escaper.escapeMemberName(shape.defaultName())
     }
 
-    override fun byteShape(shape: ByteShape?): Symbol = numberShape(shape, "Byte")
+    override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Byte")
 
-    override fun integerShape(shape: IntegerShape?): Symbol = numberShape(shape, "Int")
+    override fun integerShape(shape: IntegerShape): Symbol = numberShape(shape, "Int")
 
-    override fun shortShape(shape: ShortShape?): Symbol = numberShape(shape, "Short")
+    override fun shortShape(shape: ShortShape): Symbol = numberShape(shape, "Short")
 
-    override fun longShape(shape: LongShape?): Symbol = numberShape(shape, "Long")
+    override fun longShape(shape: LongShape): Symbol = numberShape(shape, "Long", "0L")
 
-    override fun floatShape(shape: FloatShape?): Symbol = numberShape(shape, "Float", "0.0f")
+    override fun floatShape(shape: FloatShape): Symbol = numberShape(shape, "Float", "0.0f")
 
-    override fun doubleShape(shape: DoubleShape?): Symbol = numberShape(shape, "Double", "0.0")
+    override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
-    private fun numberShape(shape: Shape?, typeName: String, defaultValue: String = "0"): Symbol {
-        return createSymbolBuilder(shape, typeName)
+    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol {
+        return createSymbolBuilder(shape, typeName, namespace = "kotlin")
             .defaultValue(defaultValue)
             .build()
     }
@@ -179,14 +145,14 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun stringShape(shape: StringShape): Symbol {
-        val enumTrait = shape.getTrait(EnumTrait::class.java)
-        if (enumTrait.isPresent) {
-            return createEnumSymbol(shape, enumTrait.get())
+        return if (shape.isEnum) {
+            createEnumSymbol(shape)
+        } else {
+            createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
         }
-        return createSymbolBuilder(shape, "String", boxed = true).build()
     }
 
-    fun createEnumSymbol(shape: StringShape, trait: EnumTrait): Symbol {
+    fun createEnumSymbol(shape: StringShape): Symbol {
         val namespace = "$rootNamespace.model"
         return createSymbolBuilder(shape, shape.defaultName(), namespace, boxed = true)
             .definitionFile("${shape.defaultName()}.kt")
@@ -194,7 +160,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun booleanShape(shape: BooleanShape?): Symbol =
-        createSymbolBuilder(shape, "Boolean").defaultValue("false").build()
+        createSymbolBuilder(shape, "Boolean", namespace = "kotlin").defaultValue("false").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
         val name = shape.defaultName()
@@ -234,7 +200,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
-        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
+        val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
         return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
             .addReference(reference)
@@ -245,7 +211,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
-        val valueType = if (shape.hasTrait(SparseTrait::class.java)) "${reference.name}?" else reference.name
+        val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
         return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
             .addReference(reference)
@@ -278,14 +244,14 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun blobShape(shape: BlobShape): Symbol {
-        return if (shape.hasTrait(StreamingTrait::class.java)) {
+        return if (shape.hasTrait<StreamingTrait>()) {
             val dependency = KotlinDependency.CLIENT_RT_CORE
             createSymbolBuilder(shape, "ByteStream", boxed = true)
                 .namespace("${dependency.namespace}.content", ".")
                 .addDependency(dependency)
                 .build()
         } else {
-            createSymbolBuilder(shape, "ByteArray", boxed = true).build()
+            createSymbolBuilder(shape, "ByteArray", boxed = true, namespace = "kotlin").build()
         }
     }
 
@@ -330,10 +296,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
      */
     private fun createSymbolBuilder(shape: Shape?, typeName: String, boxed: Boolean = false): Symbol.Builder {
         val builder = Symbol.builder()
-            .putProperty("shape", shape)
+            .putProperty(SHAPE_KEY, shape)
             .name(typeName)
 
-        val explicitlyBoxed = shape?.hasTrait(BoxTrait::class.java) ?: false
+        val explicitlyBoxed = shape?.hasTrait<BoxTrait>() ?: false
         if (explicitlyBoxed || boxed) {
             builder.boxed()
         }
@@ -418,3 +384,22 @@ fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextO
 
     return addReference(ref)
 }
+
+/**
+ * Get the shape this symbol was created from
+ */
+val Symbol.shape: Shape?
+    get() = getProperty(SHAPE_KEY, Shape::class.java).getOrNull()
+
+/**
+ * Test if a shape represents an enumeration
+ * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
+ */
+val Shape.isEnum: Boolean
+    get() = isStringShape && hasTrait<EnumTrait>()
+
+/**
+ * Test if a shape represents an Kotlin number type
+ */
+val Shape.isNumberShape: Boolean
+    get() = this is NumberShape

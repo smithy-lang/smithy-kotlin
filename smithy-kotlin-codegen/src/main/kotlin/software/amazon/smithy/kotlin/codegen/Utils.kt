@@ -18,18 +18,9 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.utils.CodeWriter
 import java.util.*
-
-/**
- * Test if a string is a valid Kotlin identifier name
- */
-fun isValidKotlinIdentifier(s: String): Boolean {
-    val c = s.firstOrNull() ?: return false
-    return when (c) {
-        in 'a'..'z', in 'A'..'Z', '_' -> true
-        else -> false
-    }
-}
 
 /**
  * Concise extension function to return a shape of expected type.
@@ -71,3 +62,29 @@ internal fun Int.nestedDescriptorName(): String = "_c$this"
  * Get the value if present otherwise return null
  */
 fun <T> Optional<T>.getOrNull(): T? = if (isPresent) get() else null
+
+/**
+ * Optionally call the [Runnable] if [test] is true, otherwise do nothing and return the instance without
+ * running the block
+ */
+fun CodeWriter.callIf(test: Boolean, runnable: Runnable): CodeWriter {
+    if (test) {
+        runnable.run()
+    }
+    return this
+}
+
+/**
+ * Kotlin sugar for hasTrait() check. e.g. shape.hasTrait<EnumTrait>() instead of shape.hasTrait(EnumTrait::class.java)
+ */
+inline fun <reified T : Trait> Shape.hasTrait(): Boolean = hasTrait(T::class.java)
+
+/**
+ * Kotlin sugar for expectTrait() check. e.g. shape.expectTrait<EnumTrait>() instead of shape.expectTrait(EnumTrait::class.java)
+ */
+inline fun <reified T : Trait> Shape.expectTrait(): T = expectTrait(T::class.java)
+
+/**
+ * Kotlin sugar for getTrait() check. e.g. shape.getTrait<EnumTrait>() instead of shape.getTrait(EnumTrait::class.java)
+ */
+inline fun <reified T : Trait> Shape.getTrait(): T? = getTrait(T::class.java).getOrNull()

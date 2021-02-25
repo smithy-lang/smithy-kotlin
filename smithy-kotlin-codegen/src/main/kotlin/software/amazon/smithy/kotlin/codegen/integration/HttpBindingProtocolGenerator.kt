@@ -315,7 +315,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
                     }
                 }
-                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {", "}") {
+                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
                     for (member in sortedMembers) {
                         write("field(\$L)", member.descriptorName())
                     }
@@ -336,20 +336,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val nestedMember = childShape.childShape(ctx)
         if (nestedMember?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMember, level + 1, writer)
-    }
-
-    // Returns [true] if the shape can contain other shapes.
-    private fun Shape.isContainerShape() = when (this) {
-        is CollectionShape,
-        is MapShape -> true
-        else -> false
-    }
-
-    // Returns [Shape] of the child member of the passed Shape is a collection type or null if not collection type.
-    private fun Shape.childShape(ctx: ProtocolGenerator.GenerationContext): Shape? = when (this) {
-        is CollectionShape -> ctx.model.expectShape(this.member.target)
-        is MapShape -> ctx.model.expectShape(this.value.target)
-        else -> null
     }
 
     // replace labels with any path bindings
@@ -429,22 +415,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val prefixHeaderBindings = requestBindings
                     .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
-                val setContentType = when (httpTrait.method.toUpperCase()) {
-                    // Only add content-type to requests which may contain a body
-                    // See: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
-                    // FIXME - we can probably be even more precise here and deal with this by checking
-                    // `builder.body.contentLength` and special casing streaming (there shouldn't be any harm
-                    // in setting this header but signing it when it's not expected causes issues. It's more correct
-                    // to just leave it off though than special case the signing middleware)
-                    "POST", "PUT", "PATCH", "DELETE" -> true
-                    else -> false
-                }
-
-                if (setContentType || headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
+                if (headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
                     writer.withBlock("builder.headers {", "}") {
-                        if (setContentType) {
-                            write("setMissing(\"Content-Type\", \"\$L\")", contentType)
-                        }
                         renderStringValuesMapParameters(ctx, headerBindings, writer)
                         prefixHeaderBindings.forEach {
                             writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
@@ -455,7 +427,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             .write("")
-            .call {
+            .callIf(hasHttpBody(requestBindings)) {
                 // payload member(s)
                 val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
                 if (httpPayload != null) {
@@ -469,6 +441,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .sortedBy { it.memberName }
 
                     renderUnboundPayloadSerde(ctx, documentMembers, writer)
+                }
+
+                // render content-type as last thing once the body has been set
+                writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
+                    writer.write("builder.headers[\"Content-Type\"] = \$S", contentType)
                 }
             }
             .closeBlock("}")
@@ -499,97 +476,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         bindings: List<HttpBindingDescriptor>,
         writer: KotlinWriter
     ) {
-        val protocolHttpBindingResolver = getProtocolHttpBindingResolver(ctx)
-        bindings.forEach {
-            val memberName = it.member.defaultName()
-            val memberTarget = ctx.model.expectShape(it.member.target)
-            val paramName = it.locationName
-            val location = it.location
-            val member = it.member
-            when (memberTarget) {
-                is CollectionShape -> {
-                    val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
-                    val mapFnContents = when (collectionMemberTarget.type) {
-                        ShapeType.TIMESTAMP -> {
-                            // special case of timestamp list
-                            val tsFormat = protocolHttpBindingResolver.determineTimestampFormat(member, location, defaultTimestampFormat)
-                            importTimestampFormat(writer)
-                            // headers/query params need to be a string
-                            formatInstant("it", tsFormat, forceString = true)
-                        }
-                        ShapeType.STRING -> {
-                            if (collectionMemberTarget.hasTrait(EnumTrait::class.java)) {
-                                // collections of enums should be mapped to the raw values
-                                "it.value"
-                            } else {
-                                // collections of string doesn't need mapped to anything
-                                ""
-                            }
-                        }
-                        // default to "toString"
-                        else -> "\"\$it\""
-                    }
-
-                    // appendAll collection parameter 2
-                    val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
-                    writer.write(
-                        "if (input.\$1L?.isNotEmpty() == true) appendAll(\"\$2L\", \$3L)",
-                        memberName,
-                        paramName,
-                        param2
-                    )
-                }
-                is TimestampShape -> {
-                    val tsFormat = protocolHttpBindingResolver.determineTimestampFormat(member, location, defaultTimestampFormat)
-                    // headers/query params need to be a string
-                    val formatted = formatInstant("input.$memberName", tsFormat, forceString = true)
-                    writer.write("if (input.\$1L != null) append(\"\$2L\", \$3L)", memberName, paramName, formatted)
-                    importTimestampFormat(writer)
-                }
-                is BlobShape -> {
-                    importBase64Utils(writer)
-                    writer.write(
-                        "if (input.\$1L?.isNotEmpty() == true) append(\"\$2L\", input.\$1L.encodeBase64String())",
-                        memberName,
-                        paramName
-                    )
-                }
-                is StringShape -> {
-                    // NOTE: query parameters are allowed to be empty, whereas headers should omit empty string
-                    // values from serde
-                    if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && member.hasTrait(IdempotencyTokenTrait::class.java)) {
-                        // FIXME - needs addressed...need to provide the idempotencyTokenProvider
-                        // Call the idempotency token function if no supplied value.
-                        writer.write("append(\"\$L\", (input.$memberName ?: serializationContext.idempotencyTokenProvider.generateToken()))", paramName)
-                    } else {
-                        val cond =
-                            if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait(EnumTrait::class.java)) {
-                                "input.$memberName != null"
-                            } else {
-                                "input.$memberName?.isNotEmpty() == true"
-                            }
-
-                        val suffix = when {
-                            memberTarget.hasTrait(EnumTrait::class.java) -> {
-                                ".value"
-                            }
-                            memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
-                                importBase64Utils(writer)
-                                ".encodeBase64()"
-                            }
-                            else -> ""
-                        }
-
-                        writer.write("if (\$1L) append(\"\$2L\", \$3L)", cond, paramName, "input.${memberName}$suffix")
-                    }
-                }
-                else -> {
-                    // encode to string
-                    val encodedValue = "\"\${input.$memberName}\""
-                    writer.write("if (input.\$1L != null) append(\"\$2L\", \$3L)", memberName, paramName, encodedValue)
-                }
-            }
-        }
+        val resolver = getProtocolHttpBindingResolver(ctx)
+        HttpStringValuesMapSerializer(ctx, bindings, resolver, defaultTimestampFormat).render(writer)
     }
 
     /**
@@ -637,7 +525,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         when (target.type) {
             ShapeType.BLOB -> {
-                val isBinaryStream = ctx.model.getShape(binding.member.target).get().hasTrait(StreamingTrait::class.java)
+                val isBinaryStream = ctx.model.expectShape(binding.member.target).hasTrait<StreamingTrait>()
                 if (isBinaryStream) {
                     writer.write("builder.body = input.\$L.toHttpBody() ?: HttpBody.Empty", memberName)
                 } else {
@@ -647,7 +535,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             ShapeType.STRING -> {
                 writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
-                val contents = if (target.hasTrait(EnumTrait::class.java)) {
+                val contents = if (target.isEnum) {
                     "$memberName.value"
                 } else {
                     memberName
@@ -759,7 +647,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .write("")
                 .call {
                     val documentMembers = shape.members().filterNot {
-                        it.hasTrait(HttpHeaderTrait::class.java) || it.hasTrait(HttpPrefixHeadersTrait::class.java)
+                        it.hasTrait<HttpHeaderTrait>() || it.hasTrait<HttpPrefixHeadersTrait>()
                     }
 
                     renderSerdeCompanionObject(ctx, documentMembers, writer)
@@ -861,23 +749,34 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val memberTarget = ctx.model.expectShape(hdrBinding.member.target)
             val memberName = hdrBinding.member.defaultName()
             val headerName = hdrBinding.locationName
+
+            val targetSymbol = ctx.symbolProvider.toSymbol(hdrBinding.member)
+            val defaultValuePostfix = if (targetSymbol.isNotBoxed && targetSymbol.defaultValue() != null) {
+                " ?: ${targetSymbol.defaultValue()}"
+            } else {
+                ""
+            }
+
             when (memberTarget) {
                 is NumberShape -> {
                     writer.write(
-                        "builder.\$L = response.headers[\$S]?.\$L",
+                        "builder.\$L = response.headers[\$S]?.\$L$defaultValuePostfix",
                         memberName, headerName, stringToNumber(memberTarget)
+                    )
+                }
+                is BooleanShape -> {
+                    writer.write(
+                        "builder.\$L = response.headers[\$S]?.toBoolean()$defaultValuePostfix",
+                        memberName, headerName
                     )
                 }
                 is BlobShape -> {
                     importBase64Utils(writer)
                     writer.write("builder.\$L = response.headers[\$S]?.decodeBase64()", memberName, headerName)
                 }
-                is BooleanShape -> {
-                    writer.write("builder.\$L = response.headers[\$S]?.toBoolean()", memberName, headerName)
-                }
                 is StringShape -> {
                     when {
-                        memberTarget.hasTrait(EnumTrait::class.java) -> {
+                        memberTarget.isEnum -> {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
                             writer.addImport(enumSymbol)
                             writer.write(
@@ -887,7 +786,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                 enumSymbol.name
                             )
                         }
-                        memberTarget.hasTrait(MediaTypeTrait::class.java) -> {
+                        memberTarget.hasTrait<MediaTypeTrait>() -> {
                             importBase64Utils(writer)
                             writer.write("builder.\$L = response.headers[\$S]?.decodeBase64()", memberName, headerName)
                         }
@@ -933,12 +832,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
                         is StringShape -> {
                             when {
-                                collectionMemberTarget.hasTrait(EnumTrait::class.java) -> {
+                                collectionMemberTarget.isEnum -> {
                                     val enumSymbol = ctx.symbolProvider.toSymbol(collectionMemberTarget)
                                     writer.addImport(enumSymbol)
                                     "${enumSymbol.name}.fromValue(it)"
                                 }
-                                collectionMemberTarget.hasTrait(MediaTypeTrait::class.java) -> {
+                                collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
                                     importBase64Utils(writer)
                                     "it.decodeBase64()"
                                 }
@@ -979,7 +878,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val memberName = binding.member.defaultName()
 
         val keyCollName = "keysFor${memberName.capitalize()}"
-        val filter = if (prefix.isNotEmpty()) ".filter { it.startsWith(\"$prefix\") }" else ""
+        val filter = if (prefix?.isNotEmpty() == true) ".filter { it.startsWith(\"$prefix\") }" else ""
 
         writer.write("val $keyCollName = response.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
@@ -994,7 +893,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 // get()/getAll() returns String? or List<String>?, this shouldn't ever trigger the continue though...
                 writer.write("val el = response.headers$getFn ?: continue")
-                if (prefix.isNotEmpty()) {
+                if (prefix?.isNotEmpty() == true) {
                     writer.write("val key = hdrKey.removePrefix(\$S)", prefix)
                     writer.write("map[key] = el")
                 } else {
@@ -1017,7 +916,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         when (target.type) {
             ShapeType.STRING -> {
                 writer.write("val contents = response.body.readAll()?.decodeToString()")
-                if (target.hasTrait(EnumTrait::class.java)) {
+                if (target.isEnum) {
                     writer.addImport(targetSymbol)
                     writer.write("builder.$memberName = contents?.let { ${targetSymbol.name}.fromValue(it) }")
                 } else {
@@ -1025,7 +924,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             ShapeType.BLOB -> {
-                val isBinaryStream = target.hasTrait(StreamingTrait::class.java)
+                val isBinaryStream = target.hasTrait<StreamingTrait>()
                 val conversion = if (isBinaryStream) {
                     "toByteStream()"
                 } else {
@@ -1101,10 +1000,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .call {
 
                 if (shape.isUnionShape) {
-                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name}? {", "}") {
+                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
                         writer.write("var value: ${symbol.name}? = null")
-                        DeserializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
-                        writer.write("return value")
+                        DeserializeUnionGenerator(ctx, symbol.name, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        writer.write("return value ?: throw DeserializationException(\"Deserialized value unexpectedly null: ${symbol.name}\")")
                     }
                         .closeBlock("}")
                 } else {
@@ -1212,4 +1111,22 @@ fun Shape.serialKind(): String = when (this.type) {
     ShapeType.STRUCTURE -> "SerialKind.Struct"
     ShapeType.UNION -> "SerialKind.Struct"
     else -> throw CodegenException("unknown SerialKind for $this")
+}
+
+// test if the request bindings have any members bound to the HTTP payload (body)
+private fun hasHttpBody(requestBindings: List<HttpBindingDescriptor>): Boolean =
+    requestBindings.any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
+
+// Returns [true] if the shape can contain other shapes.
+private fun Shape.isContainerShape() = when (this) {
+    is CollectionShape,
+    is MapShape -> true
+    else -> false
+}
+
+// Returns [Shape] of the child member of the passed Shape is a collection type or null if not collection type.
+private fun Shape.childShape(ctx: ProtocolGenerator.GenerationContext): Shape? = when (this) {
+    is CollectionShape -> ctx.model.expectShape(this.member.target)
+    is MapShape -> ctx.model.expectShape(this.value.target)
+    else -> null
 }

@@ -209,7 +209,7 @@ abstract class HttpProtocolClientGenerator(
                 writer.write("operationName = \$S", op.id.name)
 
                 // optional endpoint trait
-                op.getTrait(EndpointTrait::class.java).ifPresent {
+                op.getTrait<EndpointTrait>()?.let {
                     val hostPrefix = it.hostPrefix.segments.joinToString(separator = "") { segment ->
                         if (segment.isLabel) {
                             // hostLabel can only target string shapes

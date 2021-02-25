@@ -15,10 +15,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.ShapeValueGenerator
-import software.amazon.smithy.kotlin.codegen.defaultName
-import software.amazon.smithy.kotlin.codegen.hasStreamingMember
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
@@ -158,7 +155,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             val actMemberName = "actualResult.${member.defaultName()}"
             when (target) {
                 is BlobShape -> {
-                    val suffix = if (target.hasTrait(StreamingTrait::class.java)) {
+                    val suffix = if (target.hasTrait<StreamingTrait>()) {
                         "?.toByteArray()"
                     } else {
                         ""

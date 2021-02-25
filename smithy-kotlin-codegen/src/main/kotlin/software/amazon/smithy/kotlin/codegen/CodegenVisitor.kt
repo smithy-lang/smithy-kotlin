@@ -15,6 +15,7 @@ import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
+import software.amazon.smithy.model.transform.ModelTransformer
 import java.util.*
 import java.util.logging.Logger
 
@@ -25,7 +26,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val model: Model
-    private val modelWithoutTraits = context.modelWithoutTraitShapes
     private val settings = KotlinSettings.from(context.model, context.settings)
     private val service: ServiceShape
     private val fileManifest: FileManifest = context.fileManifest
@@ -87,6 +87,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         LOGGER.info("Generating Kotlin client for service ${settings.service}")
 
         LOGGER.info("Walking shapes from ${settings.service} to find shapes to generate")
+        val modelWithoutTraits = ModelTransformer.create().getModelWithoutTraitShapes(model)
         val serviceShapes = Walker(modelWithoutTraits).walkShapes(service)
         serviceShapes.forEach { it.accept(this) }
 
@@ -133,7 +134,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     override fun stringShape(shape: StringShape) {
-        if (shape.hasTrait(EnumTrait::class.java)) {
+        if (shape.hasTrait<EnumTrait>()) {
             writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
         }
     }

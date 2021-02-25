@@ -7,10 +7,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
-import software.amazon.smithy.model.traits.SparseTrait
-import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.model.traits.*
 
 /**
  * Generate serialization for members bound to the payload.
@@ -150,7 +147,7 @@ open class SerializeStructGenerator(
      */
     protected fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
-        val isSparse = mapShape.hasTrait(SparseTrait::class.java)
+        val isSparse = mapShape.hasTrait<SparseTrait>()
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -179,7 +176,7 @@ open class SerializeStructGenerator(
      */
     protected fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
-        val isSparse = listShape.hasTrait(SparseTrait::class.java)
+        val isSparse = listShape.hasTrait<SparseTrait>()
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -215,7 +212,7 @@ open class SerializeStructGenerator(
     private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
         val serializerTypeName = "${structureShape.defaultName()}Serializer"
-        val elementName = nestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
+        val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
         val valueToSerializeName = valueToSerializeName(elementName)
 
@@ -396,7 +393,7 @@ open class SerializeStructGenerator(
         importTimestampFormat(writer)
 
         // favor the member shape if it overrides the value shape trait
-        val shape = if (memberShape.hasTrait(TimestampFormatTrait::class.java)) {
+        val shape = if (memberShape.hasTrait<TimestampFormatTrait>()) {
             memberShape
         } else {
             elementShape
@@ -483,7 +480,7 @@ open class SerializeStructGenerator(
         importTimestampFormat(writer)
 
         // favor the member shape if it overrides the value shape trait
-        val shape = if (memberShape.hasTrait(TimestampFormatTrait::class.java)) {
+        val shape = if (memberShape.hasTrait<TimestampFormatTrait>()) {
             memberShape
         } else {
             elementShape
@@ -523,10 +520,23 @@ open class SerializeStructGenerator(
      */
     open fun renderPrimitiveShapeSerializer(memberShape: MemberShape, serializerNameFn: (MemberShape) -> SerializeInfo) {
         val (serializeFn, encoded) = serializerNameFn(memberShape)
-        // FIXME - this doesn't account for unboxed primitives
         val postfix = idempotencyTokenPostfix(memberShape)
 
-        writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
+        val targetShape = ctx.model.expectShape(memberShape.target)
+        val targetSymbol = ctx.symbolProvider.toSymbol(memberShape)
+        val defaultValue = targetSymbol.defaultValue()
+
+        if ((targetShape.isNumberShape || targetShape.isBooleanShape) && targetSymbol.isNotBoxed && defaultValue != null) {
+            // unboxed primitive with a default value
+            val ident = "input.${memberShape.defaultName()}"
+            val check = when (memberShape.hasTrait<RequiredTrait>()) {
+                true -> "" // always serialize a required member even if it's the default
+                else -> "if ($ident != $defaultValue) "
+            }
+            writer.write("${check}$serializeFn(\$L, $ident)", memberShape.descriptorName())
+        } else {
+            writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
+        }
     }
 
     /**
@@ -536,7 +546,7 @@ open class SerializeStructGenerator(
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
         // FIXME - this needs addressed...where do we get the token provider
-        if (memberShape.hasTrait(IdempotencyTokenTrait::class.java)) {
+        if (memberShape.hasTrait<IdempotencyTokenTrait>()) {
             " ?: field(${memberShape.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
         } else {
             ""
@@ -603,7 +613,7 @@ open class SerializeStructGenerator(
                 formatInstant(defaultIdentifier, tsFormat, forceString = true)
             }
             ShapeType.STRING -> when {
-                target.hasTrait(EnumTrait::class.java) -> "$defaultIdentifier.value"
+                target.hasTrait<EnumTrait>() -> "$defaultIdentifier.value"
                 else -> defaultIdentifier
             }
             else -> throw CodegenException("unknown serializer for member: $shape; target: $target")
@@ -615,7 +625,7 @@ open class SerializeStructGenerator(
     /**
      * @return true if shape is a String with enum trait, false otherwise.
      */
-    private fun Shape.isEnum() = isStringShape && hasTrait(EnumTrait::class.java)
+    private fun Shape.isEnum() = isStringShape && hasTrait<EnumTrait>()
 
     /**
      * Generate key and value names for iteration based on nesting level

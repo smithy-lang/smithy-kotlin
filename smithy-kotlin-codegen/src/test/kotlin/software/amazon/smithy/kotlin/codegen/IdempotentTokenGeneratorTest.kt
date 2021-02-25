@@ -38,7 +38,7 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
 
     companion object {
         private val CLIENTTOKEN_DESCRIPTOR = SdkFieldDescriptor("clientToken", SerialKind.String)
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(CLIENTTOKEN_DESCRIPTOR)
         }
     }
@@ -50,16 +50,15 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
             path = "/input/AllocateWidget"
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
         val serializer = serializationContext.serializationProvider()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, serializationContext.idempotencyTokenProvider.generateToken())
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers["Content-Type"] = "application/json"
+        }
     }
 }
 """
@@ -82,10 +81,6 @@ class AllocateWidgetQuerySerializer(val input: AllocateWidgetInputQuery) : HttpS
             }
         }
 
-        builder.headers {
-            setMissing("Content-Type", "application/json")
-        }
-
     }
 }
 """
@@ -106,7 +101,6 @@ class AllocateWidgetHeaderSerializer(val input: AllocateWidgetInputHeader) : Htt
         }
 
         builder.headers {
-            setMissing("Content-Type", "application/json")
             append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.generateToken()))
         }
 
