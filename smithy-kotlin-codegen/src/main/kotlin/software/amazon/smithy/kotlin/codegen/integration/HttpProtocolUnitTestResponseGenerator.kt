@@ -60,12 +60,12 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     .call {
                         test.body.ifPresent { body ->
                             if (body.isNotBlank()) {
-                                writer.write("body = \"\"\"\$L\"\"\"", body)
+                                writer.write("body = \"\"\"#L\"\"\"", body)
                             }
 
                             if (test.bodyMediaType.isPresent) {
                                 val bodyMediaType = test.bodyMediaType.get()
-                                writer.write("bodyMediaType = \$S", bodyMediaType)
+                                writer.write("bodyMediaType = #S", bodyMediaType)
                             }
                         }
                     }
@@ -92,7 +92,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                 }
 
                 val service = symbolProvider.toSymbol(serviceShape)
-                writer.openBlock("val service = \$L {", service.name)
+                writer.openBlock("val service = #L {", service.name)
                     .call { renderConfigureServiceClient(test) }
                     .closeBlock("}")
 
@@ -129,18 +129,18 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             // streaming requests have a different operation signature that require a block to be passed to
             // process the response - add an empty block if necessary
             if (isStreamingRequest) {
-                writer.openBlock("service.\$L(\$L){ actualResult ->", opName, inputParamName)
+                writer.openBlock("service.#L(#L){ actualResult ->", opName, inputParamName)
                     .call {
                         renderAssertions()
                     }
                     .closeBlock("}")
             } else {
-                writer.write("val actualResult = service.\$L(\$L)", opName, inputParamName)
+                writer.write("val actualResult = service.#L(#L)", opName, inputParamName)
                 renderAssertions()
             }
         } else {
             // no output...nothing to really assert...
-            writer.write("service.\$L(\$L)", opName, inputParamName)
+            writer.write("service.#L(#L)", opName, inputParamName)
         }
     }
 
@@ -173,7 +173,7 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
             .call {
                 for ((idx, hdr) in test.headers.entries.withIndex()) {
                     val suffix = if (idx < test.headers.size - 1) "," else ""
-                    writer.write("\$S to \$S$suffix", hdr.key, hdr.value)
+                    writer.write("#S to #S$suffix", hdr.key, hdr.value)
                 }
             }
             .closeBlock(")")

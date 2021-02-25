@@ -160,11 +160,11 @@ open class HttpProtocolClientGenerator(
         features.forEach { feat ->
             feat.addImportsAndDependencies(writer)
             if (feat.needsConfiguration) {
-                writer.openBlock("install(\$L) {", feat.name)
+                writer.openBlock("install(#L) {", feat.name)
                     .call { feat.renderConfigure(writer) }
                     .closeBlock("}")
             } else {
-                writer.write("install(\$L)", feat.name)
+                writer.write("install(#L)", feat.name)
             }
         }
     }
@@ -176,7 +176,7 @@ open class HttpProtocolClientGenerator(
         writer.write("")
         writer.renderDocumentation(op)
         val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op)
-        writer.openBlock("override \$L {", signature)
+        writer.openBlock("override #L {", signature)
             .call { renderOperationSetup(writer, opIndex, op) }
             .call { renderOperationExecute(writer, opIndex, op) }
             .closeBlock("}")
@@ -201,9 +201,9 @@ open class HttpProtocolClientGenerator(
                 .build()
             writer.addImport(requestBuilderSymbol)
             writer.openBlock("val builder = HttpRequestBuilder().apply {")
-                .write("method = HttpMethod.\$L", httpTrait.method.toUpperCase())
+                .write("method = HttpMethod.#L", httpTrait.method.toUpperCase())
                 // NOTE: since there is no input the URI can only be a literal (no labels to fill)
-                .write("url.path = \"\$L\"", httpTrait.uri.toString())
+                .write("url.path = \"#L\"", httpTrait.uri.toString())
                 .closeBlock("}")
         }
 
@@ -220,7 +220,7 @@ open class HttpProtocolClientGenerator(
                 writer.write("expectedHttpStatus = ${httpTrait.code}")
                 // property from implementing SdkClient
                 writer.write("service = serviceName")
-                writer.write("operationName = \$S", op.id.name)
+                writer.write("operationName = #S", op.id.name)
 
                 // optional endpoint trait
                 op.getTrait<EndpointTrait>()?.let {
@@ -234,7 +234,7 @@ open class HttpProtocolClientGenerator(
                             segment.content
                         }
                     }
-                    writer.write("hostPrefix = \$S", hostPrefix)
+                    writer.write("hostPrefix = #S", hostPrefix)
                 }
             }
             .closeBlock("}")
@@ -249,10 +249,10 @@ open class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val httpRequestBuilder = if (!inputShape.isPresent) "builder" else "null"
         if (hasOutputStream) {
-            writer.write("return client.execute(execCtx, \$L, block)", httpRequestBuilder)
+            writer.write("return client.execute(execCtx, #L, block)", httpRequestBuilder)
         } else {
             if (outputShape.isPresent) {
-                writer.write("return client.roundTrip(execCtx, \$L)", httpRequestBuilder)
+                writer.write("return client.roundTrip(execCtx, #L)", httpRequestBuilder)
             } else {
                 val httpResponseSymbol = Symbol.builder()
                     .name("HttpResponse")
@@ -262,7 +262,7 @@ open class HttpProtocolClientGenerator(
                 writer.addImport(httpResponseSymbol)
                 // need to not run the response pipeline because there is no valid transform. Explicitly
                 // specify the raw (closed) HttpResponse
-                writer.write("client.roundTrip<HttpResponse>(execCtx, \$L)", httpRequestBuilder)
+                writer.write("client.roundTrip<HttpResponse>(execCtx, #L)", httpRequestBuilder)
             }
         }
     }

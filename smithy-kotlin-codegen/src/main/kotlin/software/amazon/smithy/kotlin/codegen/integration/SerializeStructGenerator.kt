@@ -533,9 +533,9 @@ open class SerializeStructGenerator(
                 true -> "" // always serialize a required member even if it's the default
                 else -> "if ($ident != $defaultValue) "
             }
-            writer.write("${check}$serializeFn(\$L, $ident)", memberShape.descriptorName())
+            writer.write("${check}$serializeFn(#L, $ident)", memberShape.descriptorName())
         } else {
-            writer.write("input.\$L?.let { $serializeFn(\$L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
+            writer.write("input.#L?.let { $serializeFn(#L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
         }
     }
 
