@@ -186,8 +186,8 @@ abstract class HttpProtocolClientGenerator(
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
                 // FIXME - this goes away when we implement model evolution and generate input/output types regardless of whether the model has them
-                writer.addImport("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, subpackage = "request")
-                writer.addImport("ExecutionContext", KotlinDependency.CLIENT_RT_CORE, subpackage = "client")
+                writer.addImport(RuntimeTypes.Http.HttpRequestBuilder)
+                writer.addImport(RuntimeTypes.Core.ExecutionContext)
                 writer.openBlock("serializer = object : HttpSerialize<\$Q> {", "}", KotlinTypes.Unit) {
                     writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: \$Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
                         writer.write("val builder = HttpRequestBuilder()")
