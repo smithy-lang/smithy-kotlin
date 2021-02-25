@@ -18,6 +18,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.neighbor.RelationshipType
 import software.amazon.smithy.model.neighbor.Walker
@@ -378,7 +379,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 } else {
                     // literal
-                    segment.content
+                    segment.content.toEscapedLiteral()
                 }
             }
         )
