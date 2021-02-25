@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.build.FileManifest
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.utils.CodeWriter
 
 /**
@@ -14,24 +13,24 @@ import software.amazon.smithy.utils.CodeWriter
 fun writeGradleBuild(
     settings: KotlinSettings,
     manifest: FileManifest,
-    dependencies: List<KotlinDependency>,
-    integrations: List<KotlinIntegration> = listOf()
+    dependencies: List<KotlinDependency>
 ) {
     val writer = CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
+        expressionStart = '#'
     }
 
     writer.withBlock("plugins {", "}\n") {
-        if (settings.build.rootProject) {
-            write("kotlin(\"jvm\") version \$S", KOTLIN_VERSION)
+        if (settings.build.generateFullProject) {
+            write("kotlin(\"jvm\") version #S", KOTLIN_VERSION)
         } else {
             write("kotlin(\"jvm\")")
         }
     }
 
-    if (settings.build.rootProject) {
+    if (settings.build.generateFullProject) {
         writer.withBlock("repositories {", "}\n") {
             write("mavenLocal()")
             write("mavenCentral()")
@@ -45,12 +44,12 @@ fun writeGradleBuild(
         // TODO - Kotlin MPP setup (pass through KotlinSettings) - maybe separate gradle writers
         val orderedDependencies = dependencies.sortedWith(compareBy({ it.config }, { it.artifact }))
         for (dependency in orderedDependencies) {
-            write("${dependency.config}(\"\$L:\$L:\$L\")", dependency.group, dependency.artifact, dependency.version)
+            write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
         }
     }
 
-    val annotations = integrations.flatMap { it.customBuildSettings?.experimentalAnnotations ?: listOf<String>() }.toSet()
-    if (annotations.isNotEmpty()) {
+    val annotations = settings.build.optInAnnotations
+    if (annotations != null && annotations.isNotEmpty()) {
         writer.openBlock("val experimentalAnnotations = listOf(")
             .call {
                 val formatted = annotations.joinToString(
@@ -80,7 +79,7 @@ fun writeGradleBuild(
 
     val contents = writer.toString()
     manifest.writeFile("build.gradle.kts", contents)
-    if (settings.build.rootProject) {
+    if (settings.build.generateFullProject) {
         manifest.writeFile("settings.gradle.kts", "")
     }
 }

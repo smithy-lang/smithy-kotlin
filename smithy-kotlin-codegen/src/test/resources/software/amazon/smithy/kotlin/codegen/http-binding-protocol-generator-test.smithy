@@ -23,7 +23,9 @@ service Example {
         UnionInput,
         UnionAggregateInput,
         UnionOutput,
-        UnionAggregateOutput
+        UnionAggregateOutput,
+        PrimitiveShapesOperation,
+        HeaderListInput
     ]
 }
 
@@ -226,6 +228,23 @@ structure ListOutputResponse {
     blobList: BlobList
 }
 
+@http(method: "POST", uri: "/input/headerlist")
+operation HeaderListInput {
+    input: HeaderListInputRequest
+}
+
+structure HeaderListInputRequest {
+
+    @httpHeader("x-enumList")
+    enumList: EnumList,
+
+    @httpHeader("x-intList")
+    intList: IntList,
+
+    @httpHeader("x-tsList")
+    tsList: TimestampList
+}
+
 map IntMap {
     key: String,
     value: Integer
@@ -350,6 +369,10 @@ structure TimestampInputRequest {
     @timestampFormat("epoch-seconds")
     headerEpoch: Timestamp,
 
+    @httpHeader("X-DateTime")
+    @timestampFormat("date-time")
+    headerDateTime: Timestamp,
+
     @httpQuery("qtime")
     @timestampFormat("date-time")
     queryTimestamp: Timestamp,
@@ -442,4 +465,36 @@ union MyAggregateUnion {
     nested3: Nested,
     @timestampFormat("date-time")
     timestamp4: Timestamp
+}
+
+@http(method: "POST", uri: "/primitiveshapes")
+operation PrimitiveShapesOperation {
+    input: PrimitiveShapes,
+    output: PrimitiveShapes
+}
+
+structure PrimitiveShapes {
+    @httpHeader("X-a")
+    hInt: PrimitiveInteger,
+
+    @required
+    @httpHeader("X-required")
+    hRequiredInt: PrimitiveInteger,
+
+    @httpHeader("X-b")
+    hLong: PrimitiveLong,
+
+    @httpHeader("X-c")
+    hFloat: PrimitiveFloat,
+
+    @httpHeader("X-d")
+    hBool: PrimitiveBoolean,
+
+    @httpQuery("q-int")
+    qInt: PrimitiveInteger,
+
+    bInt: PrimitiveInteger,
+    bFloat: PrimitiveFloat,
+    bDouble: PrimitiveDouble,
+    bBool: PrimitiveBoolean
 }

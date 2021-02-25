@@ -58,7 +58,7 @@ class ShapeValueGenerator(
     private fun classDeclaration(writer: KotlinWriter, shape: StructureShape, block: () -> Unit) {
         val symbol = symbolProvider.toSymbol(shape)
         // invoke the generated DSL builder for the class
-        writer.writeInline("\$L {\n", symbol.name)
+        writer.writeInline("#L {\n", symbol.name)
             .indent()
             .call { block() }
             .dedent()
@@ -102,14 +102,14 @@ class ShapeValueGenerator(
         var suffix = ""
         when (shape.type) {
             ShapeType.STRING -> {
-                if (shape.hasTrait(EnumTrait::class.java)) {
+                if (shape.hasTrait<EnumTrait>()) {
                     val symbol = symbolProvider.toSymbol(shape)
-                    writer.writeInline("\$L.fromValue(", symbol.name)
+                    writer.writeInline("#L.fromValue(", symbol.name)
                     suffix = ")"
                 }
             }
             ShapeType.BLOB -> {
-                if (shape.hasTrait(StreamingTrait::class.java)) {
+                if (shape.hasTrait<StreamingTrait>()) {
                     writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.content", "*")
                     writer.writeInline("StringContent(")
                     suffix = ")"
@@ -147,7 +147,7 @@ class ShapeValueGenerator(
                         }
                         memberShape = generator.model.expectShape(member.target)
                         val memberName = generator.symbolProvider.toMemberName(member)
-                        writer.writeInline("\$L = ", memberName)
+                        writer.writeInline("#L = ", memberName)
                         generator.writeShapeValueInline(writer, memberShape, valueNode)
                         if (i < node.members.size - 1) {
                             writer.write("")
@@ -155,7 +155,7 @@ class ShapeValueGenerator(
                     }
                     is MapShape -> {
                         memberShape = generator.model.expectShape(currShape.value.target)
-                        writer.writeInline("\$S to ", keyNode.value)
+                        writer.writeInline("#S to ", keyNode.value)
 
                         if (valueNode is NullNode) {
                             writer.write("null")
@@ -188,7 +188,7 @@ class ShapeValueGenerator(
         }
 
         override fun stringNode(node: StringNode) {
-            writer.writeInline("\$S", node.value)
+            writer.writeInline("#S", node.value)
         }
 
         override fun nullNode(node: NullNode) {
@@ -211,17 +211,17 @@ class ShapeValueGenerator(
             when (currShape.type) {
                 ShapeType.TIMESTAMP -> {
                     writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "Instant")
-                    writer.writeInline("Instant.fromEpochSeconds(\$L, 0)", node.value)
+                    writer.writeInline("Instant.fromEpochSeconds(#L, 0)", node.value)
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
-                ShapeType.LONG -> writer.writeInline("\$L", node.value)
+                ShapeType.LONG -> writer.writeInline("#L", node.value)
 
                 // ensure float/doubles that are represented as integers in the params get converted
                 // since Kotlin doesn't support implicit conversions (e.g. '1' cannot be implicitly converted
                 // to a Kotlin float/double)
-                ShapeType.FLOAT -> writer.writeInline("\$L.toFloat()", node.value)
-                ShapeType.DOUBLE -> writer.writeInline("\$L.toDouble()", node.value)
+                ShapeType.FLOAT -> writer.writeInline("#L.toFloat()", node.value)
+                ShapeType.DOUBLE -> writer.writeInline("#L.toDouble()", node.value)
 
                 ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> {
                     // TODO - We need to decide non-JVM only symbols to generate for these before we know how to assign values to them
@@ -235,7 +235,7 @@ class ShapeValueGenerator(
                 throw CodegenException("unexpected shape type $currShape for boolean value")
             }
 
-            writer.writeInline("\$L", if (node.value) "true" else "false")
+            writer.writeInline("#L", if (node.value) "true" else "false")
         }
     }
 }

@@ -40,7 +40,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             .call {
                 writer
                     .write("method = HttpMethod.${test.method.toUpperCase()}")
-                    .write("uri = \$S", test.uri)
+                    .write("uri = #S", test.uri)
                     .call { renderExpectedQueryParams(test) }
                     .call { renderExpectedListOfParams("forbiddenQueryParams", test.forbidQueryParams) }
                     .call { renderExpectedListOfParams("requiredQueryParams", test.requireQueryParams) }
@@ -52,13 +52,13 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                             var bodyMediaType = ""
                             if (test.bodyMediaType.isPresent) {
                                 bodyMediaType = test.bodyMediaType.get()
-                                writer.write("bodyMediaType = \$S", bodyMediaType)
+                                writer.write("bodyMediaType = #S", bodyMediaType)
                             }
 
                             if (body.isBlank()) {
                                 writer.write("bodyAssert = ::assertEmptyBody")
                             } else {
-                                writer.write("body = \"\"\"\$L\"\"\"", body)
+                                writer.write("body = \"\"\"#L\"\"\"", body)
 
                                 val compareFunc = when (bodyMediaType.toLowerCase()) {
                                     "application/json" -> "::assertJsonBodiesEqual"
@@ -97,7 +97,8 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                         .write("")
                 }
 
-                writer.openBlock("val service = \$L {", serviceName)
+                val service = symbolProvider.toSymbol(serviceShape)
+                writer.openBlock("val service = #L {", service.name)
                     .call { renderConfigureServiceClient(test) }
                     .closeBlock("}")
 
@@ -107,7 +108,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 // streaming requests have a different operation signature that require a block to be passed to
                 // process the response - add an empty block if necessary
                 val block = if (isStreamingRequest) "{}" else ""
-                writer.write("service.\$L(\$L)$block", opName, inputParamName)
+                writer.write("service.#L(#L)$block", opName, inputParamName)
             }
             .closeBlock("}")
     }
@@ -137,7 +138,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             .call {
                 queryParams.forEachIndexed { idx, (key, value) ->
                     val suffix = if (idx < queryParams.size - 1) "," else ""
-                    writer.write("\$S to \$S$suffix", key, value)
+                    writer.write("#S to #S$suffix", key, value)
                 }
             }
             .closeBlock(")")
@@ -149,7 +150,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
             .call {
                 for ((idx, hdr) in test.headers.entries.withIndex()) {
                     val suffix = if (idx < test.headers.size - 1) "," else ""
-                    writer.write("\$S to \$S$suffix", hdr.key, hdr.value)
+                    writer.write("#S to #S$suffix", hdr.key, hdr.value)
                 }
             }
             .closeBlock(")")

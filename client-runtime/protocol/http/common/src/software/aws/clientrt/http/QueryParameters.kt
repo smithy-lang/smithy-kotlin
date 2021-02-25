@@ -41,8 +41,10 @@ fun QueryParameters.urlEncode(): String = buildString {
 /**
  * URL encode the query parameters components to the appendable output (without the leading '?')
  */
-fun QueryParameters.urlEncodeTo(out: Appendable) {
-    entries().sortedBy { it.key }.forEachIndexed { i, entry ->
+fun QueryParameters.urlEncodeTo(out: Appendable) = urlEncodeQueryParametersTo(entries(), out)
+
+internal fun urlEncodeQueryParametersTo(entries: Set<Map.Entry<String, List<String>>>, out: Appendable) {
+    entries.sortedBy { it.key }.forEachIndexed { i, entry ->
         entry.value.forEachIndexed { j, value ->
             if (i > 0 || j > 0) {
                 out.append("&")

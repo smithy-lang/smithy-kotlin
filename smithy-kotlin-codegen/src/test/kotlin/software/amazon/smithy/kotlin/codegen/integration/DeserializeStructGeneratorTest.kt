@@ -390,7 +390,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<SparseListElement?>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { SparseListElementDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { SparseListElementDeserializer().deserialize(deserializer) } else { deserializeNull() }
                                     col0.add(el0)
                                 }
                                 col0

@@ -125,7 +125,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.write("")
             .write("override val serviceName: String")
             .indent()
-            .write("get() = \"\$L\"", service.id.name)
+            .write("get() = \"#L\"", service.id.name)
             .dedent()
     }
 
@@ -137,7 +137,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
 }
 
 fun StructureShape.hasStreamingMember(model: Model): Boolean =
-    this.allMembers.values.any { model.getShape(it.target).get().hasTrait(StreamingTrait::class.java) }
+    this.allMembers.values.any { model.getShape(it.target).get().hasTrait<StreamingTrait>() }
 
 // Returns true if any operation bound to the service contains an input member marked with the IdempotencyTokenTrait
 fun ServiceShape.hasIdempotentTokenMember(model: Model) =
