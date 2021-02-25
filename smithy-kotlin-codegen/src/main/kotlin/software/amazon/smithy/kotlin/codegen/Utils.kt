@@ -88,3 +88,8 @@ inline fun <reified T : Trait> Shape.expectTrait(): T = expectTrait(T::class.jav
  * Kotlin sugar for getTrait() check. e.g. shape.getTrait<EnumTrait>() instead of shape.getTrait(EnumTrait::class.java)
  */
 inline fun <reified T : Trait> Shape.getTrait(): T? = getTrait(T::class.java).getOrNull()
+
+/**
+ * Escape characters in strings to ensure they are treated as pure literals.
+ */
+fun String.kotlinStringLiteral(): String = replace("\$", "\\$")

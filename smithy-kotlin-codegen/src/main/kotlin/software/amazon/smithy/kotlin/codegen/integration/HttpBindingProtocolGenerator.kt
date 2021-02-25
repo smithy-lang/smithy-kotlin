@@ -378,7 +378,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
                 } else {
                     // literal
-                    segment.content
+                    segment.content.kotlinStringLiteral()
                 }
             }
         )
