@@ -15,7 +15,7 @@ import software.amazon.smithy.codegen.core.Symbol
  */
 object RuntimeTypes {
     object Http {
-        val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP)
+        val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, subpackage = "request")
         val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.CLIENT_RT_HTTP, subpackage = "operation")
     }
 
