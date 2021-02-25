@@ -84,3 +84,8 @@ fun isValidKotlinIdentifier(s: String): Boolean {
  */
 val Symbol.isBuiltIn: Boolean
     get() = namespace == "kotlin"
+
+/**
+ * Escape characters in strings to ensure they are treated as pure literals.
+ */
+fun String.toEscapedLiteral(): String = replace("\$", "\\$")
