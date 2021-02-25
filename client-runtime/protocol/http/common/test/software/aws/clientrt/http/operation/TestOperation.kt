@@ -17,23 +17,7 @@ fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): Sd
     return SdkHttpOperation.build<I, O> {
         serializer = object : HttpSerialize<I> {
             override suspend fun serialize(context: ExecutionContext, input: I): HttpRequestBuilder {
-                val builder = HttpRequestBuilder()
-                builder.url.scheme = serialized.url.scheme
-                builder.url.host = serialized.url.host
-                builder.url.path = serialized.url.path
-                builder.url.port = serialized.url.port
-                serialized.url.parameters.entries().forEach {
-                    builder.url.parameters.appendAll(it.key, it.value)
-                }
-                builder.url.fragment = serialized.url.fragment
-                builder.url.forceQuery = serialized.url.forceQuery
-
-                serialized.headers.entries().forEach {
-                    builder.headers.appendAll(it.key, it.value)
-                }
-                builder.method = serialized.method
-                builder.body = serialized.body
-                return builder
+                return serialized
             }
         }
 
