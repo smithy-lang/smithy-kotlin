@@ -104,9 +104,11 @@ class HttpProtocolClientGeneratorTest {
     override suspend fun getFooNoInput(): GetFooResponse {
         val op = SdkHttpOperation.build<kotlin.Unit, GetFooResponse> {
             serializer = object : HttpSerialize<kotlin.Unit> {
-                override suspend fun serialize(builder: HttpRequestBuilder, input: kotlin.Unit){
+                override suspend fun serialize(context: ExecutionContext, input: kotlin.Unit): HttpRequestBuilder {
+                    val builder = HttpRequestBuilder()
                     builder.method = HttpMethod.GET
                     builder.url.path = "/foo-no-input"
+                    return builder
                 }
             }
             deserializer = GetFooNoInputDeserializer(serde::deserializer)
@@ -169,9 +171,11 @@ class HttpProtocolClientGeneratorTest {
     override suspend fun <T> getFooStreamingOutputNoInput(block: suspend (GetFooStreamingResponse) -> T): T {
         val op = SdkHttpOperation.build<kotlin.Unit, GetFooStreamingResponse> {
             serializer = object : HttpSerialize<kotlin.Unit> {
-                override suspend fun serialize(builder: HttpRequestBuilder, input: kotlin.Unit){
+                override suspend fun serialize(context: ExecutionContext, input: kotlin.Unit): HttpRequestBuilder {
+                    val builder = HttpRequestBuilder()
                     builder.method = HttpMethod.POST
                     builder.url.path = "/foo-streaming-output-no-input"
+                    return builder
                 }
             }
             deserializer = GetFooStreamingOutputNoInputDeserializer(serde::deserializer)
@@ -202,7 +206,7 @@ class HttpProtocolClientGeneratorTest {
 """
         )
         expectedBodies.forEach {
-            commonTestContents.shouldContainOnlyOnce(it)
+            commonTestContents.shouldContainOnlyOnceWithDiff(it)
         }
     }
 

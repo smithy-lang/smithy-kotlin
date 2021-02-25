@@ -5,6 +5,7 @@
 
 package software.aws.clientrt.http.operation
 
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.HttpService
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
@@ -74,12 +75,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 private fun <I, O> HttpSerialize<I>.decorate(
     inner: Service<SdkHttpRequest, O>
 ): Service<OperationRequest<I>, O> {
-    val mapRequest: suspend (input: I) -> HttpRequestBuilder = { input ->
-        HttpRequestBuilder().also {
-            serialize(it, input)
-        }
-    }
-    return SerializeService(inner, mapRequest)
+    return SerializeService(inner, ::serialize)
 }
 
 private fun <O> HttpDeserialize<O>.decorate(
@@ -100,10 +96,10 @@ private class InitializeService<Input, Output>(
 
 private class SerializeService<Input, Output> (
     private val inner: Service<SdkHttpRequest, Output>,
-    private val mapRequest: suspend (Input) -> HttpRequestBuilder
+    private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder
 ) : Service<OperationRequest<Input>, Output> {
     override suspend fun call(request: OperationRequest<Input>): Output {
-        val builder = mapRequest(request.input)
+        val builder = mapRequest(request.context, request.input)
         return inner.call(SdkHttpRequest(request.context, builder))
     }
 }
@@ -128,13 +124,13 @@ private class FinalizeService<Output> (
 
 private class DeserializeService<Output>(
     private val inner: Service<SdkHttpRequest, HttpResponse>,
-    private val mapResponse: suspend (HttpResponse) -> Output
+    private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output
 ) : Service<SdkHttpRequest, Output> {
 
     override suspend fun call(request: SdkHttpRequest): Output {
         // ensure the raw response is stashed in the context
         val rawResponse = inner.call(request)
         request.context[HttpOperationContext.HttpResponse] = rawResponse
-        return mapResponse(rawResponse)
+        return mapResponse(request.context, rawResponse)
     }
 }

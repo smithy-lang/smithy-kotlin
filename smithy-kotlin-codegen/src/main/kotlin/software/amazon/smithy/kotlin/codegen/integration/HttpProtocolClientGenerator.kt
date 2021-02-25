@@ -83,7 +83,7 @@ abstract class HttpProtocolClientGenerator(
         val operationsIndex = OperationIndex.of(ctx.model)
 
         importSymbols(writer)
-        writer.openBlock("class Default${symbol.name}(private val config: ${symbol.name}.Config) : ${symbol.name} {")
+        writer.openBlock("internal class Default${symbol.name}(private val config: ${symbol.name}.Config) : ${symbol.name} {")
             .call { renderProperties(writer) }
             .call { renderInit(writer) }
             .call {
@@ -172,8 +172,8 @@ abstract class HttpProtocolClientGenerator(
         val outputShape = opIndex.getOutput(op)
         val httpTrait = httpBindingResolver.httpTrait(op)
 
-        val inputSymbolName = inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit
-        val outputSymbolName = outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit
+        val inputSymbolName = inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
+        val outputSymbolName = outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
 
         writer.openBlock(
             "val op = SdkHttpOperation.build<\$L, \$L> {", "}",
@@ -186,12 +186,15 @@ abstract class HttpProtocolClientGenerator(
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
                 // FIXME - this goes away when we implement model evolution and generate input/output types regardless of whether the model has them
-                writer.addImport("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, "${KotlinDependency.CLIENT_RT_HTTP.namespace}.request")
-                writer.openBlock("serializer = object : HttpSerialize<${KotlinTypes.Unit}> {", "}") {
-                    writer.openBlock("override suspend fun serialize(builder: HttpRequestBuilder, input: ${KotlinTypes.Unit}){", "}") {
+                writer.addImport("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, subpackage = "request")
+                writer.addImport("ExecutionContext", KotlinDependency.CLIENT_RT_CORE, subpackage = "client")
+                writer.openBlock("serializer = object : HttpSerialize<\$Q> {", "}", KotlinTypes.Unit) {
+                    writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: \$Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
+                        writer.write("val builder = HttpRequestBuilder()")
                         writer.write("builder.method = HttpMethod.\$L", httpTrait.method.toUpperCase())
                         // NOTE: since there is no input the URI can only be a literal (no labels to fill)
-                        writer.write("builder.url.path = \"\$L\"", httpTrait.uri.toString())
+                        writer.write("builder.url.path = \$S", httpTrait.uri.toString())
+                        writer.write("return builder")
                     }
                 }
             }
@@ -253,8 +256,6 @@ abstract class HttpProtocolClientGenerator(
         writer.openBlock("private fun <I, O>  registerDefaultMiddleware(op: SdkHttpOperation<I,O>){")
             .openBlock("op.apply {")
             .call {
-                // FIXME - naive install ... for things like errors we probably want a single instance re-used across operations
-                // OR we want to inline the error deserialization as part of an operation's deserialize
                 features.forEach { feat ->
                     feat.addImportsAndDependencies(writer)
                     if (feat.needsConfiguration) {

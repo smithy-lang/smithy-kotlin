@@ -18,7 +18,7 @@ import software.aws.clientrt.util.InternalAPI
  * @property context An [ExecutionContext] instance scoped to this operation
  */
 @InternalAPI
-data class SdkHttpOperation<I, O>(
+class SdkHttpOperation<I, O>(
     val execution: SdkOperationExecution<I, O>,
     val context: ExecutionContext,
     internal val serializer: HttpSerialize<I>,

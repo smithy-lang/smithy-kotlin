@@ -224,7 +224,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         importSerdePackage(writer)
 
         writer.write("")
-            .openBlock("class \$L(val input: \$L) : SdkSerializable {", serializerSymbol.name, symbol.name)
+            .openBlock("internal class \$L(val input: \$L) : SdkSerializable {", serializerSymbol.name, symbol.name)
             .call {
                 renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
             }
@@ -276,10 +276,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             importSerdePackage(writer)
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", "*")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation", "HttpSerialize")
+            writer.addImport("HttpSerialize", KotlinDependency.CLIENT_RT_HTTP, subpackage = "operation")
 
             writer.write("")
-                .openBlock("class \$L(private val provider: SerializationProvider) : HttpSerialize<\$L> {", op.serializerName(), inputSymbol.name)
+                .openBlock("internal class \$L(private val provider: SerializationProvider) : HttpSerialize<\$T> {", op.serializerName(), inputSymbol)
                 .call {
                     val memberShapes = requestBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.map { it.member }
                     renderSerdeCompanionObject(ctx, memberShapes, writer)
@@ -387,8 +387,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         inputSymbol: Symbol,
         writer: KotlinWriter
     ) {
-        // FIXME need input symbol
-        writer.openBlock("override suspend fun serialize(builder: HttpRequestBuilder, input: \$L) {", inputSymbol.name)
+        val execContextSymbol = buildSymbol {
+            name = "ExecutionContext"
+            namespace(KotlinDependency.CLIENT_RT_CORE, "client")
+        }
+        writer.addImport(execContextSymbol)
+
+        writer.openBlock("override suspend fun serialize(context: \$T, input: \$T): HttpRequestBuilder {", execContextSymbol, inputSymbol)
+            .write("val builder = HttpRequestBuilder()")
             .write("builder.method = HttpMethod.\$L", httpTrait.method.toUpperCase())
             .write("")
             .call {
@@ -448,6 +454,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("builder.headers[\"Content-Type\"] = \$S", contentType)
                 }
             }
+            .write("return builder")
             .closeBlock("}")
     }
 
@@ -597,9 +604,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             writer.write("")
                 .openBlock(
-                    "class \$L(private val provider: DeserializationProvider): HttpDeserialize<\$L> {",
+                    "internal class \$L(private val provider: DeserializationProvider): HttpDeserialize<\$T> {",
                     op.deserializerName(),
-                    outputSymbol.name
+                    outputSymbol
                 )
                 .write("")
                 .call {
@@ -668,11 +675,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         responseBindings: List<HttpBindingDescriptor>,
         writer: KotlinWriter
     ) {
+        val execContextSymbol = buildSymbol {
+            name = "ExecutionContext"
+            namespace(KotlinDependency.CLIENT_RT_CORE, "client")
+        }
+        writer.addImport(execContextSymbol)
+
         writer.openBlock(
-            "override suspend fun deserialize(response: HttpResponse): \$L {",
-            outputSymbol.name
+            "override suspend fun deserialize(context: \$T, response: HttpResponse): \$T {",
+            execContextSymbol,
+            outputSymbol
         )
-            .write("val builder = ${outputSymbol.name}.dslBuilder()")
+            .write("val builder = \$T.dslBuilder()", outputSymbol)
             .write("")
             .call {
                 // headers
@@ -993,7 +1007,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         importSerdePackage(writer)
 
         writer.write("")
-            .openBlock("class \$L {", deserializerSymbol.name)
+            .openBlock("internal class \$L {", deserializerSymbol.name)
             .call {
                 renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
             }

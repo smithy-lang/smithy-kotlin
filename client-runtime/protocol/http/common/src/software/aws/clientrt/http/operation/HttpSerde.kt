@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.http.operation
 
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 
@@ -14,35 +15,35 @@ import software.aws.clientrt.http.response.HttpResponse
  * Implemented by types that know how to serialize to the HTTP protocol.
  */
 interface HttpSerialize<T> {
-    suspend fun serialize(builder: HttpRequestBuilder, input: T)
+    suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
 }
 
 /**
  * Implemented by types that know how to deserialize from the HTTP protocol.
  */
 interface HttpDeserialize<T> {
-    suspend fun deserialize(response: HttpResponse): T
+    suspend fun deserialize(context: ExecutionContext, response: HttpResponse): T
 }
 
 /**
  * Convenience deserialize implementation for a type with no output type
  */
 object UnitDeserializer : HttpDeserialize<Unit> {
-    override suspend fun deserialize(response: HttpResponse) {}
+    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse) {}
 }
 
 /**
  * Convenience serialize implementation for a type with no input type
  */
 object UnitSerializer : HttpSerialize<Unit> {
-    override suspend fun serialize(builder: HttpRequestBuilder, input: Unit) {}
+    override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = HttpRequestBuilder()
 }
 
 /**
  * Convenience deserialize implementation that returns the response without modification
  */
 object IdentityDeserializer : HttpDeserialize<HttpResponse> {
-    override suspend fun deserialize(response: HttpResponse): HttpResponse {
+    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): HttpResponse {
         return response
     }
 }

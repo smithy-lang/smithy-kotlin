@@ -5,6 +5,7 @@
 
 package software.aws.clientrt.http.operation
 
+import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 
@@ -15,7 +16,8 @@ import software.aws.clientrt.http.response.HttpResponse
 fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): SdkHttpOperation<I, O> {
     return SdkHttpOperation.build<I, O> {
         serializer = object : HttpSerialize<I> {
-            override suspend fun serialize(builder: HttpRequestBuilder, input: I) {
+            override suspend fun serialize(context: ExecutionContext, input: I): HttpRequestBuilder {
+                val builder = HttpRequestBuilder()
                 builder.url.scheme = serialized.url.scheme
                 builder.url.host = serialized.url.host
                 builder.url.path = serialized.url.path
@@ -31,11 +33,12 @@ fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): Sd
                 }
                 builder.method = serialized.method
                 builder.body = serialized.body
+                return builder
             }
         }
 
         deserializer = object : HttpDeserialize<O> {
-            override suspend fun deserialize(response: HttpResponse): O {
+            override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): O {
                 return deserialized
             }
         }
