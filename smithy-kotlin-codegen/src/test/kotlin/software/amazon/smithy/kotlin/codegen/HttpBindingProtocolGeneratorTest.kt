@@ -34,7 +34,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
 
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        TestProtocolClientGenerator(ctx, ctx.settings.moduleName, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
+        TestProtocolClientGenerator(ctx, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
 }
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite

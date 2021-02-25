@@ -63,7 +63,6 @@ interface HttpFeature {
  */
 abstract class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
-    protected val rootNamespace: String,
     protected val features: List<HttpFeature>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
@@ -111,6 +110,7 @@ abstract class HttpProtocolClientGenerator(
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
+        val rootNamespace = ctx.settings.moduleName
         writer.addImport("$rootNamespace.model", "*")
         writer.addImport("$rootNamespace.transform", "*")
 

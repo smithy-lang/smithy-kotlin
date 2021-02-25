@@ -195,10 +195,9 @@ fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T
 
 class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
-    rootNamespace: String,
     features: List<HttpFeature>,
     httpBindingResolver: HttpBindingResolver
-) : HttpProtocolClientGenerator(ctx, rootNamespace, features, httpBindingResolver) {
+) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver) {
     override val serdeProviderSymbol: Symbol = buildSymbol {
         name = "JsonSerdeProvider"
         namespace(KotlinDependency.CLIENT_RT_SERDE_JSON)
