@@ -157,7 +157,7 @@ abstract class HttpProtocolClientGenerator(
         writer.write("")
         writer.renderDocumentation(op)
         val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op)
-        writer.openBlock("override \$L {", signature)
+        writer.openBlock("override #L {", signature)
             .call { renderOperationSetup(writer, opIndex, op) }
             .call { renderOperationExecute(writer, opIndex, op) }
             .closeBlock("}")
@@ -176,7 +176,7 @@ abstract class HttpProtocolClientGenerator(
         val outputSymbolName = outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
 
         writer.openBlock(
-            "val op = SdkHttpOperation.build<\$L, \$L> {", "}",
+            "val op = SdkHttpOperation.build<#L, #L> {", "}",
             inputSymbolName,
             outputSymbolName
         ) {
@@ -188,12 +188,12 @@ abstract class HttpProtocolClientGenerator(
                 // FIXME - this goes away when we implement model evolution and generate input/output types regardless of whether the model has them
                 writer.addImport(RuntimeTypes.Http.HttpRequestBuilder)
                 writer.addImport(RuntimeTypes.Core.ExecutionContext)
-                writer.openBlock("serializer = object : HttpSerialize<\$Q> {", "}", KotlinTypes.Unit) {
-                    writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: \$Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
+                writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
+                    writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
                         writer.write("val builder = HttpRequestBuilder()")
-                        writer.write("builder.method = HttpMethod.\$L", httpTrait.method.toUpperCase())
+                        writer.write("builder.method = HttpMethod.#L", httpTrait.method.toUpperCase())
                         // NOTE: since there is no input the URI can only be a literal (no labels to fill)
-                        writer.write("builder.url.path = \$S", httpTrait.uri.toString())
+                        writer.write("builder.url.path = #S", httpTrait.uri.toString())
                         writer.write("return builder")
                     }
                 }
@@ -210,7 +210,7 @@ abstract class HttpProtocolClientGenerator(
                 writer.write("expectedHttpStatus = ${httpTrait.code}")
                 // property from implementing SdkClient
                 writer.write("service = serviceName")
-                writer.write("operationName = \$S", op.id.name)
+                writer.write("operationName = #S", op.id.name)
 
                 // optional endpoint trait
                 op.getTrait<EndpointTrait>()?.let {
@@ -224,7 +224,7 @@ abstract class HttpProtocolClientGenerator(
                             segment.content
                         }
                     }
-                    writer.write("hostPrefix = \$S", hostPrefix)
+                    writer.write("hostPrefix = #S", hostPrefix)
                 }
             }
         }
@@ -242,12 +242,12 @@ abstract class HttpProtocolClientGenerator(
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
         if (hasOutputStream) {
-            writer.write("return op.execute(client, \$L, block)", inputVariableName)
+            writer.write("return op.execute(client, #L, block)", inputVariableName)
         } else {
             if (outputShape.isPresent) {
-                writer.write("return op.roundTrip(client, \$L)", inputVariableName)
+                writer.write("return op.roundTrip(client, #L)", inputVariableName)
             } else {
-                writer.write("op.roundTrip(client, \$L)", inputVariableName)
+                writer.write("op.roundTrip(client, #L)", inputVariableName)
             }
         }
     }
@@ -259,11 +259,11 @@ abstract class HttpProtocolClientGenerator(
                 features.forEach { feat ->
                     feat.addImportsAndDependencies(writer)
                     if (feat.needsConfiguration) {
-                        writer.openBlock("install(\$L) {", feat.name)
+                        writer.openBlock("install(#L) {", feat.name)
                             .call { feat.renderConfigure(writer) }
                             .closeBlock("}")
                     } else {
-                        writer.write("install(\$L)", feat.name)
+                        writer.write("install(#L)", feat.name)
                     }
                 }
             }

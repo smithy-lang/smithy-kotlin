@@ -95,7 +95,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .nameReservedWords(reservedWords)
             .memberReservedWords(reservedWords)
             // only escape words when the symbol has a definition file to prevent escaping intentional references to built-in shapes
-            .escapePredicate { _, symbol -> !symbol.definitionFile.isEmpty() }
+            .escapePredicate { _, symbol -> symbol.definitionFile.isNotEmpty() }
             .buildEscaper()
     }
 

@@ -19,11 +19,12 @@ fun writeGradleBuild(
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
+        expressionStart = '#'
     }
 
     writer.withBlock("plugins {", "}\n") {
         if (settings.build.generateFullProject) {
-            write("kotlin(\"jvm\") version \$S", KOTLIN_VERSION)
+            write("kotlin(\"jvm\") version #S", KOTLIN_VERSION)
         } else {
             write("kotlin(\"jvm\")")
         }
@@ -43,7 +44,7 @@ fun writeGradleBuild(
         // TODO - Kotlin MPP setup (pass through KotlinSettings) - maybe separate gradle writers
         val orderedDependencies = dependencies.sortedWith(compareBy({ it.config }, { it.artifact }))
         for (dependency in orderedDependencies) {
-            write("${dependency.config}(\"\$L:\$L:\$L\")", dependency.group, dependency.artifact, dependency.version)
+            write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
         }
     }
 

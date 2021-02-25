@@ -28,12 +28,12 @@ class UnionGenerator(
         check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) }) { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
         val symbol = symbolProvider.toSymbol(shape)
         writer.renderDocumentation(shape)
-        writer.openBlock("sealed class \$L {", symbol.name)
+        writer.openBlock("sealed class #L {", symbol.name)
         shape.allMembers.values.sortedBy { it.memberName }.forEach {
             writer.renderMemberDocumentation(model, it)
             val memberName = symbolProvider.toMemberName(it)
             val targetType = model.expectShape(it.target).type
-            writer.writeInline("data class \$L(val value: \$Q) : \$Q()", memberName.capitalize(), symbolProvider.toSymbol(it), symbol)
+            writer.writeInline("data class #L(val value: #Q) : #Q()", memberName.capitalize(), symbolProvider.toSymbol(it), symbol)
             when (targetType) {
                 ShapeType.BLOB -> {
                     writer.withBlock(" {", "}") {
@@ -45,15 +45,15 @@ class UnionGenerator(
             }
         }
         // generate the unknown which will always be last
-        writer.write("object SdkUnknown : \$Q()", symbol)
+        writer.write("object SdkUnknown : #Q()", symbol)
         writer.closeBlock("}").write("")
     }
 
     // generate a `hashCode()` implementation
     private fun renderHashCode(model: Model, sortedMembers: List<MemberShape>, symbolProvider: SymbolProvider, writer: CodeWriter) {
         writer.write("")
-        writer.withBlock("override fun hashCode(): \$Q {", "}", KotlinTypes.Int) {
-            write("return value\$L", selectHashFunctionForShape(model, sortedMembers[0], symbolProvider))
+        writer.withBlock("override fun hashCode(): #Q {", "}", KotlinTypes.Int) {
+            write("return value#L", selectHashFunctionForShape(model, sortedMembers[0], symbolProvider))
         }
     }
 
@@ -93,7 +93,7 @@ class UnionGenerator(
     // generate a `equals()` implementation
     private fun renderEquals(model: Model, sortedMembers: List<MemberShape>, typeName: String, writer: CodeWriter) {
         writer.write("")
-        writer.withBlock("override fun equals(other: \$Q?): \$Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
+        writer.withBlock("override fun equals(other: #Q?): #Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
             write("if (javaClass != other?.javaClass) return false")
             write("")
@@ -104,9 +104,9 @@ class UnionGenerator(
                 val target = model.expectShape(memberShape.target)
                 val memberName = "value"
                 if (target is BlobShape && !target.hasTrait<StreamingTrait>()) {
-                    writer.write("if (!\$1L.contentEquals(other.\$1L)) return false", memberName)
+                    writer.write("if (!#1L.contentEquals(other.#1L)) return false", memberName)
                 } else {
-                    write("if (\$1L != other.\$1L) return false", memberName)
+                    write("if (#1L != other.#1L) return false", memberName)
                 }
             }
 

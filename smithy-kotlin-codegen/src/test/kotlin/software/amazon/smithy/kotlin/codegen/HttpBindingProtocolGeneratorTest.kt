@@ -327,7 +327,7 @@ internal class Nested3Serializer(val input: Nested3) : SdkSerializable {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.Nested3")
     }
 
@@ -527,7 +527,7 @@ internal class MyUnionSerializer(val input: MyUnion) : SdkSerializable {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
         contents.shouldContainOnlyOnce("import test.model.MyUnion")
     }
 

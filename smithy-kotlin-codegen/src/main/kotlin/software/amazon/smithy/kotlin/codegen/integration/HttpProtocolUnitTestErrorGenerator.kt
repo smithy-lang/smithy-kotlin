@@ -42,13 +42,13 @@ open class HttpProtocolUnitTestErrorGenerator protected constructor(builder: Bui
         val errorShapeHasMembers = error.asStructureShape().get().members().isNotEmpty()
         val lhs = if (errorShapeHasMembers) "val actualResult = " else ""
 
-        writer.openBlock("${lhs}assertFailsWith(\$L::class) {", responseSymbol?.name)
+        writer.openBlock("${lhs}assertFailsWith(#L::class) {", responseSymbol?.name)
             .call {
                 if (isStreamingRequest) {
-                    writer.openBlock("service.\$L(\$L){ result ->", opName, inputParamName)
+                    writer.openBlock("service.#L(#L){ result ->", opName, inputParamName)
                         .closeBlock("}")
                 } else {
-                    writer.write("service.\$L(\$L)", opName, inputParamName)
+                    writer.write("service.#L(#L)", opName, inputParamName)
                 }
             }
             .closeBlock("}")

@@ -44,13 +44,13 @@ class HttpStringValuesMapSerializer(
                     val tsFormat = resolver.determineTimestampFormat(member, location, defaultTimestampFormat)
                     // headers/query params need to be a string
                     val formatted = formatInstant("input.$memberName", tsFormat, forceString = true)
-                    writer.write("if (input.\$1L != null) append(\"\$2L\", \$3L)", memberName, paramName, formatted)
+                    writer.write("if (input.#1L != null) append(\"#2L\", #3L)", memberName, paramName, formatted)
                     importTimestampFormat(writer)
                 }
                 is BlobShape -> {
                     importBase64Utils(writer)
                     writer.write(
-                        "if (input.\$1L?.isNotEmpty() == true) append(\"\$2L\", input.\$1L.encodeBase64String())",
+                        "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.encodeBase64String())",
                         memberName,
                         paramName
                     )
@@ -66,12 +66,12 @@ class HttpStringValuesMapSerializer(
                         // unboxed primitive with a default value
                         if (member.hasTrait<RequiredTrait>()) {
                             // always serialize a required member even if it's the default
-                            writer.write("append(\$S, \$L)", paramName, encodedValue)
+                            writer.write("append(#S, #L)", paramName, encodedValue)
                         } else {
-                            writer.write("if (input.\$1L != $defaultValue) append(\$2S, \$3L)", memberName, paramName, encodedValue)
+                            writer.write("if (input.#1L != $defaultValue) append(#2S, #3L)", memberName, paramName, encodedValue)
                         }
                     } else {
-                        writer.write("if (input.\$1L != null) append(\$2S, \$3L)", memberName, paramName, encodedValue)
+                        writer.write("if (input.#1L != null) append(#2S, #3L)", memberName, paramName, encodedValue)
                     }
                 }
             }
@@ -106,7 +106,7 @@ class HttpStringValuesMapSerializer(
         // appendAll collection parameter 2
         val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
         writer.write(
-            "if (input.\$1L?.isNotEmpty() == true) appendAll(\"\$2L\", \$3L)",
+            "if (input.#1L?.isNotEmpty() == true) appendAll(\"#2L\", #3L)",
             memberName,
             paramName,
             param2
@@ -123,7 +123,7 @@ class HttpStringValuesMapSerializer(
         if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && binding.member.hasTrait<IdempotencyTokenTrait>()) {
             // Call the idempotency token function if no supplied value.
             writer.addImport(RuntimeTypes.Core.IdempotencyTokenProviderExt)
-            writer.write("append(\"\$L\", (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
+            writer.write("append(\"#L\", (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
         } else {
             val cond =
                 if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait<EnumTrait>()) {
@@ -143,7 +143,7 @@ class HttpStringValuesMapSerializer(
                 else -> ""
             }
 
-            writer.write("if (\$1L) append(\"\$2L\", \$3L)", cond, paramName, "input.${memberName}$suffix")
+            writer.write("if (#1L) append(\"#2L\", #3L)", cond, paramName, "input.${memberName}$suffix")
         }
     }
 }

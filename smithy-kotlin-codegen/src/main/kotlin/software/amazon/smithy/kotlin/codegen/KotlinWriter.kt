@@ -80,6 +80,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
+        expressionStart = '#'
 
         // type name: `Foo`
         putFormatter('T', KotlinSymbolFormatter())
@@ -189,7 +190,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 }
 
 /**
- * Implements Kotlin symbol formatting for the `$T` and `$Q` formatter(s)
+ * Implements Kotlin symbol formatting for the `#T` and `#Q` formatter(s)
  */
 private class KotlinSymbolFormatter(
     private val fullyQualifiedNames: Boolean = false,
@@ -199,13 +200,13 @@ private class KotlinSymbolFormatter(
             is Symbol -> {
                 return if (fullyQualifiedNames) type.fullName else type.name
             }
-            else -> throw CodegenException("Invalid type provided for \$T. Expected a Symbol, but found `$type`")
+            else -> throw CodegenException("Invalid type provided for #T. Expected a Symbol, but found `$type`")
         }
     }
 }
 
 /**
- * Implements Kotlin symbol formatting for the `$D` and `$P` formatter(s)
+ * Implements Kotlin symbol formatting for the `#D` and `#P` formatter(s)
  */
 class KotlinPropertyFormatter(
     // set defaults
@@ -261,10 +262,10 @@ private fun sanitizeDocumentation(doc: String): String {
     return doc
         .stripAll(commonHtmlTags)
         // Docs can have valid $ characters that shouldn't run through formatters.
-        .replace("\$", "\$\$")
+        .replace("#", "##")
         // Services may have comment string literals embedded in documentation.
-        .replace("/*", "&#47;*")
-        .replace("*/", "*&#47;")
+        .replace("/*", "&##47;*")
+        .replace("*/", "*&##47;")
 }
 
 // Remove all strings from source string and return the result
