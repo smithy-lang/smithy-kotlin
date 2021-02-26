@@ -51,7 +51,7 @@ class WhiteLabelSDKTest {
             .filterNot { it.indexOf('?') >= 0 || it.indexOf('!') >= 0 }
             .joinToString(separator = ",\n") { keyword -> "$keyword: String" }
 
-        val modelStr = """
+        val model = """
             namespace com.test
 
             use aws.protocols#restJson1
@@ -79,9 +79,7 @@ class WhiteLabelSDKTest {
             structure FooErrorStruct {
                 $fooMembers
             }
-    """
-        println(modelStr)
-        val model = modelStr.asSmithy()
+        """.asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)

@@ -136,12 +136,12 @@ class StructureGenerator(
         writer.withBlock("override fun hashCode(): #Q {", "}", KotlinTypes.Int) {
             when {
                 sortedMembers.isEmpty() -> write("var result = javaClass.hashCode()")
-                sortedMembers.size == 1 ->
-                    write("var result = #1L#2L", memberNameSymbolIndex[sortedMembers[0]]!!.first, selectHashFunctionForShape(sortedMembers[0]))
                 else -> {
                     write("var result = #1L#2L", memberNameSymbolIndex[sortedMembers[0]]!!.first, selectHashFunctionForShape(sortedMembers[0]))
-                    sortedMembers.drop(1).forEach { memberShape ->
-                        write("result = 31 * result + (#1L#2L)", memberNameSymbolIndex[memberShape]!!.first, selectHashFunctionForShape(memberShape))
+                    if (sortedMembers.size > 1) {
+                        sortedMembers.drop(1).forEach { memberShape ->
+                            write("result = 31 * result + (#1L#2L)", memberNameSymbolIndex[memberShape]!!.first, selectHashFunctionForShape(memberShape))
+                        }
                     }
                 }
             }
