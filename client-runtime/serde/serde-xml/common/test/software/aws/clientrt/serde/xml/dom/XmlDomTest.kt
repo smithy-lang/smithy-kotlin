@@ -5,6 +5,7 @@
 
 package software.aws.clientrt.serde.xml.dom
 
+import software.aws.clientrt.serde.xml.XmlToken
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,15 +23,15 @@ class XmlDomTest {
 
         val dom = XmlNode.parse(payload.encodeToByteArray())
 
-        assertEquals(XmlName("Foo"), dom.name)
+        assertEquals(XmlToken.QualifiedName("Foo"), dom.name)
         assertEquals(1, dom.children.size)
         val bars = dom.children["Bar"]
         assertNotNull(bars)
         assertEquals(2, bars.size)
-        assertEquals("Bar", bars[0].name!!.local)
+        assertEquals("Bar", bars[0].name!!.name)
         assertEquals("b1", bars[0].text)
 
-        assertEquals("Bar", bars[1].name!!.local)
+        assertEquals("Bar", bars[1].name!!.name)
         assertEquals("b2", bars[1].text)
     }
 
@@ -44,10 +45,12 @@ class XmlDomTest {
 
     @Test
     fun testBasicToXmlStringPretty() = runSuspendTest {
-        val expected = """<Foo>
-    <Bar>b1</Bar>
-    <Bar>b2</Bar>
-</Foo>"""
+        val expected = """
+            <Foo>
+                <Bar>b1</Bar>
+                <Bar>b2</Bar>
+            </Foo>
+        """.trimIndent()
 
         val dom = XmlNode.parse(expected.encodeToByteArray())
         val actual = dom.toXmlString(true)
@@ -56,17 +59,19 @@ class XmlDomTest {
 
     @Test
     fun testToXmlStringPretty() = runSuspendTest {
-        val expected = """<Foo>
-    <Bar>b1</Bar>
-    <Bar>
-        <Nested attr1="baz">quux</Nested>
-        <Foo>
-            <Bar>
-                <Nested attr1="spaz">qux</Nested>
-            </Bar>
-        </Foo>
-    </Bar>
-</Foo>"""
+        val expected = """
+            <Foo>
+                <Bar>b1</Bar>
+                <Bar>
+                    <Nested attr1="baz">quux</Nested>
+                    <Foo>
+                        <Bar>
+                            <Nested attr1="spaz">qux</Nested>
+                        </Bar>
+                    </Foo>
+                </Bar>
+            </Foo>
+        """.trimIndent()
 
         val dom = XmlNode.parse(expected.encodeToByteArray())
         val actual = dom.toXmlString(true)

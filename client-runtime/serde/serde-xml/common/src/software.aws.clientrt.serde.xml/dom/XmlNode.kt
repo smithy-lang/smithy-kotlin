@@ -11,15 +11,10 @@ import software.aws.clientrt.serde.xml.XmlToken
 import software.aws.clientrt.serde.xml.xmlStreamReader
 
 /**
- * Represents an XML name (local) annotated with a namespace identifier (namespace)
- */
-data class XmlName(val local: String, val namespace: String? = null)
-
-/**
  * DOM representation of an XML document
  */
 class XmlNode {
-    var name: XmlName? = null
+    var name: XmlToken.QualifiedName? = null
     // child element name -> children
     var children: MutableMap<String, MutableList<XmlNode>> = linkedMapOf()
     var text: String? = null
@@ -38,7 +33,7 @@ class XmlNode {
 
         internal fun fromToken(token: XmlToken.BeginElement): XmlNode {
             return XmlNode().apply {
-                name = XmlName(token.id.name, token.id.namespace)
+                name = token.qualifiedName
                 attributes = token.attributes.mapKeys { it.key.name }.toMutableMap()
                 // TODO - namespaces?
             }
@@ -47,7 +42,7 @@ class XmlNode {
 
     fun addChild(child: XmlNode) {
         val name = requireNotNull(child.name) { "child must have a name" }
-        val childNodes = children.getOrPut(name.local) {
+        val childNodes = children.getOrPut(name.name) {
             mutableListOf()
         }
         childNodes.add(child)
@@ -75,10 +70,10 @@ internal suspend fun parseDom(reader: XmlStreamReader): XmlNode {
             }
             is XmlToken.EndElement -> {
                 val curr = nodeStack.peek()
-                requireNotNull(curr.name) { "node must have a name" }
-                val currName = curr.name!!.local
-                if (currName != token.name.name) {
-                    throw DeserializationException("expected end of element: `$currName`, found: `${token.name.name}`")
+
+                val currName = requireNotNull(curr.name) { "node must have a name" }
+                if (currName != token.qualifiedName) {
+                    throw DeserializationException("expected end of element: `$currName`, found: `${token.qualifiedName}`")
                 }
 
                 if (nodeStack.count() > 1) {
@@ -126,7 +121,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         // FIXME - handle namespaces
         // open tag
         val name = requireNotNull(curr.name)
-        append("$indent<${name.local}")
+        append("$indent<${name.name}")
 
         // attributes
         if (curr.attributes.isNotEmpty()) append(" ")
@@ -150,7 +145,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         if (curr.children.isNotEmpty()) {
             append(indent)
         }
-        append("</${name.local}>")
+        append("</${name.name}>")
 
         if (pretty && depth > 0) appendLine()
     }

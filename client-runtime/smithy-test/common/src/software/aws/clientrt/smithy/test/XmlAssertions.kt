@@ -68,9 +68,9 @@ private fun toCanonical(root: XmlNode) {
     }
 
     // sort empty text nodes and nodes with no children by their name then by their textual value
-    nodesWithText.sortWith(compareBy({ it.name!!.local }, { it.text }))
+    nodesWithText.sortWith(compareBy({ it.name!!.name}, { it.text }))
 
-    nodesWithChildren.sortBy { it.name!!.local }
+    nodesWithChildren.sortBy { it.name!!.name }
 
     // re-add all the sorted children
     root.children.clear()
