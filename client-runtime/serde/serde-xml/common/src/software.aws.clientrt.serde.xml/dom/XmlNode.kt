@@ -14,13 +14,20 @@ import software.aws.clientrt.serde.xml.xmlStreamReader
  * DOM representation of an XML document
  */
 class XmlNode {
-    var name: XmlToken.QualifiedName? = null
-    // child element name -> children
-    var children: MutableMap<String, MutableList<XmlNode>> = linkedMapOf()
+    val name: XmlToken.QualifiedName
+
+    // child element name (local) -> children
+    val children: MutableMap<String, MutableList<XmlNode>> = linkedMapOf()
     var text: String? = null
-    var attributes: MutableMap<String, String> = linkedMapOf()
-    var namespaces: MutableMap<String, String> = linkedMapOf()
+    val attributes: MutableMap<XmlToken.QualifiedName, String> = linkedMapOf()
+    // namespaces declared by this node
+    val namespaces: MutableList<XmlToken.Namespace> = mutableListOf()
     var parent: XmlNode? = null
+
+    constructor(name: String) : this(XmlToken.QualifiedName(name))
+    constructor(name: XmlToken.QualifiedName) {
+        this.name = name
+    }
 
     override fun toString(): String = "XmlNode($name)"
 
@@ -32,10 +39,9 @@ class XmlNode {
         }
 
         internal fun fromToken(token: XmlToken.BeginElement): XmlNode {
-            return XmlNode().apply {
-                name = token.qualifiedName
-                attributes = token.attributes.mapKeys { it.key.name }.toMutableMap()
-                // TODO - namespaces?
+            return XmlNode(token.qualifiedName).apply {
+                attributes.putAll(token.attributes)
+                namespaces.addAll(token.nsDeclarations)
             }
         }
     }
@@ -71,9 +77,8 @@ internal suspend fun parseDom(reader: XmlStreamReader): XmlNode {
             is XmlToken.EndElement -> {
                 val curr = nodeStack.peek()
 
-                val currName = requireNotNull(curr.name) { "node must have a name" }
-                if (currName != token.qualifiedName) {
-                    throw DeserializationException("expected end of element: `$currName`, found: `${token.qualifiedName}`")
+                if (curr.name != token.qualifiedName) {
+                    throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.qualifiedName}`")
                 }
 
                 if (nodeStack.count() > 1) {
@@ -101,13 +106,6 @@ fun <T> MutableList<T>.peek(): T = this[count() - 1]
 fun <T> MutableList<T>.peekOrNull(): T? = if (isNotEmpty()) peek() else null
 typealias Stack<T> = MutableList<T>
 
-// build an XML document
-fun xml(block: XmlNode.() -> Unit): XmlNode {
-    val root = XmlNode()
-    root.block()
-    return root
-}
-
 fun XmlNode.toXmlString(pretty: Boolean = false): String {
     val sb = StringBuilder()
     formatXmlNode(this, 0, sb, pretty)
@@ -118,15 +116,22 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
     sb.apply {
         val indent = if (pretty) " ".repeat(depth * 4) else ""
 
-        // FIXME - handle namespaces
         // open tag
-        val name = requireNotNull(curr.name)
-        append("$indent<${name.name}")
+        append("$indent<")
+        append(curr.tagName)
+        curr.namespaces.forEach {
+            // namespaces declared by this node
+            append(" xmlns")
+            if (it.prefix != null) {
+                append(":${it.prefix}")
+            }
+            append("=\"${it.uri}\"")
+        }
 
         // attributes
         if (curr.attributes.isNotEmpty()) append(" ")
         curr.attributes.forEach {
-            append("${it.key}=\"${it.value}\"")
+            append("${it.key.prefixedName}=\"${it.value}\"")
         }
         append(">")
 
@@ -145,8 +150,19 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         if (curr.children.isNotEmpty()) {
             append(indent)
         }
-        append("</${name.name}>")
+
+        append("</")
+        append(curr.tagName)
+        append(">")
 
         if (pretty && depth > 0) appendLine()
     }
 }
+
+private val XmlNode.tagName: String
+    get() = name.prefixedName
+
+private val XmlToken.QualifiedName.prefixedName: String
+    get() {
+        return if (namespacePrefix?.isNotEmpty() == true) "$namespacePrefix:$name" else name
+    }

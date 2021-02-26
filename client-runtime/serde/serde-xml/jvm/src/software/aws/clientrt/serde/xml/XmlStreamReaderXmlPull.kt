@@ -49,7 +49,6 @@ private class XmlStreamReaderXmlPull(
             peekedToken = null
             if (!isPeek) {
                 _currentToken = rv.token
-                println("Pulled token $_currentToken")
             }
             return rv.token
         }
@@ -58,7 +57,7 @@ private class XmlStreamReaderXmlPull(
             val rv = when (val nt = parser.nextToken()) {
                 XmlPullParser.START_DOCUMENT -> pullToken(isPeek)
                 XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
-                XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes())
+                XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes(), parser.currDeclaredNamespaces())
                 XmlPullParser.END_TAG -> XmlToken.EndElement(parser.qualifiedName())
                 XmlPullParser.CDSECT,
                 XmlPullParser.COMMENT,
@@ -73,7 +72,6 @@ private class XmlStreamReaderXmlPull(
 
             if (!isPeek) {
                 _currentToken = rv
-                println("Pulled token $_currentToken")
             }
             return rv
         } catch (e: Exception) {
@@ -85,6 +83,20 @@ private class XmlStreamReaderXmlPull(
     private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
         XmlToken.QualifiedName(name, namespace.blankToNull(), prefix.blankToNull())
 
+    // get a list of all namespaces declared in this element
+    private fun XmlPullParser.currDeclaredNamespaces(): List<XmlToken.Namespace> {
+        val nsStart = getNamespaceCount(depth - 1)
+        val nsEnd = getNamespaceCount(depth)
+        if (nsStart >= nsEnd) return emptyList()
+        val decls = mutableListOf<XmlToken.Namespace>()
+        for (i in nsStart until nsEnd) {
+            val prefix = getNamespacePrefix(i)
+            val ns = getNamespaceUri(i)
+            decls.add(XmlToken.Namespace(ns, prefix))
+        }
+        return decls
+    }
+
     // Return attribute map from attributes of current node
     private fun parseAttributes(): Map<XmlToken.QualifiedName, String> {
         if (parser.attributeCount == 0) return emptyMap()
@@ -94,7 +106,8 @@ private class XmlStreamReaderXmlPull(
             .map { attributeIndex ->
                 XmlToken.QualifiedName(
                     parser.getAttributeName(attributeIndex),
-                    parser.getAttributeNamespace(attributeIndex).blankToNull()
+                    parser.getAttributeNamespace(attributeIndex).blankToNull(),
+                    parser.getAttributePrefix(attributeIndex).blankToNull()
                 ) to parser.getAttributeValue(attributeIndex)
             }
             .toMap()
