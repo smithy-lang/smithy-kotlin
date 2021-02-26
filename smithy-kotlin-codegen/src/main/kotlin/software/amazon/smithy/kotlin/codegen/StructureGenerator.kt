@@ -39,15 +39,10 @@ class StructureGenerator(
     }
 
     private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
-    private var byMemberShape: MutableMap<MemberShape, Pair<String, Symbol>> = mutableMapOf()
-
-    init {
-        for (member in sortedMembers) {
-            val memberName = symbolProvider.toMemberName(member)
-            val memberSymbol = symbolProvider.toSymbol(member)
-            byMemberShape[member] = Pair(memberName, memberSymbol)
-        }
-    }
+    private val memberNameSymbolIndex: Map<MemberShape, Pair<String, Symbol>> =
+        sortedMembers
+            .map { member -> member to Pair(symbolProvider.toMemberName(member), symbolProvider.toSymbol(member)) }
+            .toMap()
 
     /**
      * Renders a normal (non-error) Smithy structure to a Kotlin class
@@ -82,7 +77,7 @@ class StructureGenerator(
     private fun renderImmutableProperties() {
         // generate the immutable properties that are set from a builder
         sortedMembers.forEach {
-            val (memberName, memberSymbol) = byMemberShape[it]!!
+            val (memberName, memberSymbol) = memberNameSymbolIndex[it]!!
             writer.renderMemberDocumentation(model, it)
             if (shape.hasTrait<ErrorTrait>() && "message" == memberName) {
                 // TODO: Have to handle the case where "cause" is a property in the Smithy model
@@ -116,18 +111,19 @@ class StructureGenerator(
         writer.withBlock("override fun toString(): #Q = buildString {", "}", KotlinTypes.String) {
             write("append(\"#class.name:L(\")")
 
-            if (sortedMembers.isEmpty()) {
-                write("append(\")\")")
-            } else {
-                sortedMembers.forEachIndexed { index, memberShape ->
-                    val memberName = memberShape.defaultName()
-                    val separator = if (index < sortedMembers.size - 1) "," else ")"
+            when {
+                sortedMembers.isEmpty() -> write("append(\")\")")
+                else -> {
+                    sortedMembers.forEachIndexed { index, memberShape ->
+                        val (memberName, _) = memberNameSymbolIndex[memberShape]!!
+                        val separator = if (index < sortedMembers.size - 1) "," else ")"
 
-                    val targetShape = model.expectShape(memberShape.target)
-                    if (targetShape.hasTrait<SensitiveTrait>()) {
-                        write("append(\"#1L=*** Sensitive Data Redacted ***$separator\")", memberName)
-                    } else {
-                        write("append(\"#1L=\$#1L$separator\")", memberName)
+                        val targetShape = model.expectShape(memberShape.target)
+                        if (targetShape.hasTrait<SensitiveTrait>()) {
+                            write("append(\"#1L=*** Sensitive Data Redacted ***$separator\")", memberName)
+                        } else {
+                            write("append(\"#1L=\$#1L$separator\")", memberName)
+                        }
                     }
                 }
             }
@@ -138,23 +134,14 @@ class StructureGenerator(
     private fun renderHashCode() {
         writer.write("")
         writer.withBlock("override fun hashCode(): #Q {", "}", KotlinTypes.Int) {
-            if (sortedMembers.isEmpty()) {
-                write("var result = javaClass.hashCode()")
-            } else {
-                write(
-                    "var result = #1L#2L",
-                    sortedMembers[0].defaultName(),
-                    selectHashFunctionForShape(sortedMembers[0])
-                )
-
-                if (sortedMembers.size > 1) {
-                    for ((index, memberShape) in sortedMembers.withIndex()) {
-                        if (index == 0) continue
-
-                        write(
-                            "result = 31 * result + (#1L#2L)",
-                            memberShape.defaultName(), selectHashFunctionForShape(memberShape)
-                        )
+            when {
+                sortedMembers.isEmpty() -> write("var result = javaClass.hashCode()")
+                sortedMembers.size == 1 ->
+                    write("var result = #1L#2L", memberNameSymbolIndex[sortedMembers[0]]!!.first, selectHashFunctionForShape(sortedMembers[0]))
+                else -> {
+                    write("var result = #1L#2L", memberNameSymbolIndex[sortedMembers[0]]!!.first, selectHashFunctionForShape(sortedMembers[0]))
+                    sortedMembers.drop(1).forEach { memberShape ->
+                        write("result = 31 * result + (#1L#2L)", memberNameSymbolIndex[memberShape]!!.first, selectHashFunctionForShape(memberShape))
                     }
                 }
             }
@@ -207,7 +194,7 @@ class StructureGenerator(
 
             for (memberShape in sortedMembers) {
                 val target = model.expectShape(memberShape.target)
-                val memberName = memberShape.defaultName()
+                val memberName = memberNameSymbolIndex[memberShape]!!.first
                 if (target is BlobShape && !target.hasTrait<StreamingTrait>()) {
                     openBlock("if (#1L != null) {", memberName)
                         .write("if (other.#1L == null) return false", memberName)
@@ -241,7 +228,7 @@ class StructureGenerator(
             .withBlock("interface Builder {", "}") {
                 write("fun build(): #class.name:L")
                 for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = byMemberShape[member]!!
+                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
                     write("fun #1L(#1L: #2T): Builder", memberName, memberSymbol)
                 }
@@ -254,7 +241,7 @@ class StructureGenerator(
                 val structMembers: MutableList<MemberShape> = mutableListOf()
 
                 for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = byMemberShape[member]!!
+                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     val targetShape = model.getShape(member.target).get()
                     when {
                         targetShape.isStructureShape -> structMembers.add(member)
@@ -266,7 +253,7 @@ class StructureGenerator(
                 write("")
                 write("fun build(): #class.name:L")
                 for (member in structMembers) {
-                    val (memberName, memberSymbol) = byMemberShape[member]!!
+                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
                         .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")
@@ -279,7 +266,7 @@ class StructureGenerator(
             .withBlock("private class BuilderImpl() : Builder, DslBuilder {", "}") {
                 // override DSL properties
                 for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = byMemberShape[member]!!
+                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     write("override var #L: #D", memberName, memberSymbol)
                 }
 
@@ -288,7 +275,7 @@ class StructureGenerator(
                 // generate the constructor that converts from the underlying immutable class to a builder instance
                 withBlock("constructor(x: #class.name:L) : this() {", "}") {
                     for (member in sortedMembers) {
-                        val (memberName, _) = byMemberShape[member]!!
+                        val (memberName, _) = memberNameSymbolIndex[member]!!
                         write("this.#1L = x.#1L", memberName)
                     }
                 }
@@ -299,7 +286,7 @@ class StructureGenerator(
                 write("")
                 write("override fun build(): #class.name:L = #class.name:L(this)")
                 for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = byMemberShape[member]!!
+                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
                     write("override fun #1L(#1L: #2T): Builder = apply { this.#1L = #1L }", memberName, memberSymbol)
                 }

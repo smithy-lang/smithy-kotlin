@@ -15,7 +15,7 @@ fun kotlinReservedWords(): ReservedWords = ReservedWordsBuilder().apply {
     hardReservedWords.forEach { put(it, "`$it`") }
 }.build()
 
-private val hardReservedWords = listOf(
+val hardReservedWords = listOf(
     "as",
     "as?",
     "break",
