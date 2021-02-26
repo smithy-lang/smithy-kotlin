@@ -28,10 +28,10 @@ class XmlDomTest {
         val bars = dom.children["Bar"]
         assertNotNull(bars)
         assertEquals(2, bars.size)
-        assertEquals("Bar", bars[0].name.name)
+        assertEquals("Bar", bars[0].name.local)
         assertEquals("b1", bars[0].text)
 
-        assertEquals("Bar", bars[1].name.name)
+        assertEquals("Bar", bars[1].name.local)
         assertEquals("b2", bars[1].text)
     }
 

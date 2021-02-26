@@ -39,7 +39,7 @@ class XmlNode {
         }
 
         internal fun fromToken(token: XmlToken.BeginElement): XmlNode {
-            return XmlNode(token.qualifiedName).apply {
+            return XmlNode(token.name).apply {
                 attributes.putAll(token.attributes)
                 namespaces.addAll(token.nsDeclarations)
             }
@@ -48,7 +48,7 @@ class XmlNode {
 
     fun addChild(child: XmlNode) {
         val name = requireNotNull(child.name) { "child must have a name" }
-        val childNodes = children.getOrPut(name.name) {
+        val childNodes = children.getOrPut(name.local) {
             mutableListOf()
         }
         childNodes.add(child)
@@ -77,8 +77,8 @@ internal suspend fun parseDom(reader: XmlStreamReader): XmlNode {
             is XmlToken.EndElement -> {
                 val curr = nodeStack.peek()
 
-                if (curr.name != token.qualifiedName) {
-                    throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.qualifiedName}`")
+                if (curr.name != token.name) {
+                    throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.name}`")
                 }
 
                 if (nodeStack.count() > 1) {
@@ -164,5 +164,5 @@ private val XmlNode.tagName: String
 
 private val XmlToken.QualifiedName.prefixedName: String
     get() {
-        return if (namespacePrefix?.isNotEmpty() == true) "$namespacePrefix:$name" else name
+        return if (ns?.prefix?.isNotEmpty() == true) "${ns.prefix}:$local" else local
     }

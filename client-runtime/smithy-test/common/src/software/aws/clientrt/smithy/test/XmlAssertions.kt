@@ -47,7 +47,7 @@ fun XmlNode.toCanonicalForm() = toCanonical(this)
 
 private fun toCanonical(root: XmlNode) {
     // attributes by name
-    val sorted = root.attributes.toList().sortedBy { it.first.name }
+    val sorted = root.attributes.toList().sortedBy { it.first.local }
     root.attributes.clear()
     root.attributes.putAll(sorted)
 
@@ -70,9 +70,9 @@ private fun toCanonical(root: XmlNode) {
     }
 
     // sort empty text nodes and nodes with no children by their name then by their textual value
-    nodesWithText.sortWith(compareBy({ it.name.name }, { it.text }))
+    nodesWithText.sortWith(compareBy({ it.name.local }, { it.text }))
 
-    nodesWithChildren.sortBy { it.name.name }
+    nodesWithChildren.sortBy { it.name.local }
 
     // re-add all the sorted children
     root.children.clear()

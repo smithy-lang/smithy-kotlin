@@ -15,7 +15,7 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
             // In the case of flattened lists, we "fall" into the first node as there is no wrapper.
             // this conditional checks that case for the first element of the list.
             val wrapperToken = reader.takeNextAs<XmlToken.BeginElement>()
-            if (wrapperToken.qualifiedName.name != fieldDescriptor.generalName()) {
+            if (wrapperToken.name.local != fieldDescriptor.generalName()) {
                 // Depending on flat/not-flat, may need to consume multiple start nodes
                 return deserializeValue(transform)
             }
@@ -33,8 +33,8 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
             val nextToken = reader.peek()
             if (nextToken is XmlToken.EndElement) {
                 val consumeEndToken = when (fieldDescriptor.hasTrait<Flattened>()) {
-                    true -> nextToken.qualifiedName.name == fieldDescriptor.expectTrait<XmlSerialName>().name
-                    false -> nextToken.qualifiedName.name == mapTrait.entry
+                    true -> nextToken.name.local == fieldDescriptor.expectTrait<XmlSerialName>().name
+                    false -> nextToken.name.local == mapTrait.entry
                 }
                 if (consumeEndToken) reader.takeNextAs<XmlToken.EndElement>()
             }

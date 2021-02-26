@@ -17,14 +17,19 @@ sealed class XmlToken {
 
     /**
      * Defines the name and namespace of an element
+     * @property local The localized name of an element
+     * @property ns The namespace this element belongs to
      */
-    data class QualifiedName(val name: String, val namespaceUri: String? = null, val namespacePrefix: String? = null)
+    data class QualifiedName(val local: String, val ns: Namespace? = null) {
+        constructor(local: String, uri: String?, prefix: String?) : this(local, if (uri != null) Namespace(uri, prefix) else null)
+        constructor(local: String, uri: String?) : this(local, uri, null)
+    }
 
     /**
      * The opening of an XML element
      */
     data class BeginElement(
-        val qualifiedName: QualifiedName,
+        val name: QualifiedName,
         val attributes: Map<QualifiedName, String> = emptyMap(),
         val nsDeclarations: List<Namespace> = emptyList()
     ) : XmlToken() {
@@ -37,7 +42,7 @@ sealed class XmlToken {
     /**
      * The closing of an XML element
      */
-    data class EndElement(val qualifiedName: QualifiedName) : XmlToken() {
+    data class EndElement(val name: QualifiedName) : XmlToken() {
         // Convenience constructor for name-only nodes.
         constructor(name: String) : this(QualifiedName(name))
     }
@@ -56,8 +61,8 @@ sealed class XmlToken {
     object EndDocument : XmlToken()
 
     override fun toString(): String = when (this) {
-        is BeginElement -> "<${this.qualifiedName}>"
-        is EndElement -> "</${this.qualifiedName}>"
+        is BeginElement -> "<${this.name}>"
+        is EndElement -> "</${this.name}>"
         is Text -> "${this.value}"
         StartDocument -> "[StartDocument]"
         EndDocument -> "[EndDocument]"

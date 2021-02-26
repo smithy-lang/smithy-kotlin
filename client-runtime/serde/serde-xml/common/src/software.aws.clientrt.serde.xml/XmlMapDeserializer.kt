@@ -26,11 +26,11 @@ internal class XmlMapDeserializer(
 
     override suspend fun key(): String {
         val mapTrait = fieldDescriptor.findTrait() ?: XmlMapName.DEFAULT
-        reader.takeUntil<XmlToken.BeginElement> { it.qualifiedName.name == mapTrait.key } ?: throw DeserializerStateException("Expected node named ${mapTrait.key} but found ${reader.currentToken}")
+        reader.takeUntil<XmlToken.BeginElement> { it.name.local == mapTrait.key } ?: throw DeserializerStateException("Expected node named ${mapTrait.key} but found ${reader.currentToken}")
         val keyValue = reader.takeNextAs<XmlToken.Text>()
 
         if (keyValue.value == null || keyValue.value.isBlank()) throw DeserializerStateException("Expected String value for key but was empty: ${reader.currentToken}")
-        if (reader.takeNextAs<XmlToken.EndElement>().qualifiedName.name != mapTrait.key) throw DeserializerStateException("Expected end tag ${mapTrait.key} for key field")
+        if (reader.takeNextAs<XmlToken.EndElement>().name.local != mapTrait.key) throw DeserializerStateException("Expected end tag ${mapTrait.key} for key field")
 
         return keyValue.value
     }
@@ -39,7 +39,7 @@ internal class XmlMapDeserializer(
         val valueWrapperToken = reader.takeNextAs<XmlToken.BeginElement>()
         val mapTrait = fieldDescriptor.findTrait() ?: XmlMapName.DEFAULT
 
-        if (valueWrapperToken.qualifiedName.name != mapTrait.value) throw DeserializerStateException("Expected map value ${mapTrait.value} but found ${valueWrapperToken.qualifiedName}")
+        if (valueWrapperToken.name.local != mapTrait.value) throw DeserializerStateException("Expected map value ${mapTrait.value} but found ${valueWrapperToken.name}")
 
         val nextToken = reader.peek()
 

@@ -51,7 +51,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
                 }
 
                 val targetTokenName = descriptor.expectTrait<XmlSerialName>().name
-                while (token.qualifiedName.name != targetTokenName) token =
+                while (token.name.local != targetTokenName) token =
                     reader.takeNextAs<XmlToken.BeginElement>()
 
                 val structSerializer = XmlStructDeserializer(descriptor, reader)
