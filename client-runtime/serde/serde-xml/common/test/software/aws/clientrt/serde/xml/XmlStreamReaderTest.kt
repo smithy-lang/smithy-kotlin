@@ -257,7 +257,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesNamespacedAttriburtes() = runSuspendTest {
+    fun itHandlesNamespacedAttributes() = runSuspendTest {
         val payload = """
             <MyStructure xmlns:baz="http://foo.com">
                 <foo baz:k1="v1"></foo>
