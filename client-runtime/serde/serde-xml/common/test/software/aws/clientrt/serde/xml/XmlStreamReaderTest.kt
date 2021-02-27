@@ -95,7 +95,6 @@ class XmlStreamReaderTest {
         </root>
         """.trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
-        println(actual)
         val expected = listOf(
             XmlToken.BeginElement("root"),
             XmlToken.BeginElement("num"),
@@ -156,11 +155,11 @@ class XmlStreamReaderTest {
         val nt = reader.peek()
         assertTrue(nt is XmlToken.BeginElement)
 
-        assertEquals("unknown", nt.qualifiedName.name)
+        assertEquals("unknown", nt.name.local)
         reader.skipNext()
 
         val y = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", y.qualifiedName.name)
+        assertEquals("y", y.name.local)
     }
 
     @Test
@@ -177,11 +176,11 @@ class XmlStreamReaderTest {
         assertTrue(reader.peek() is XmlToken.BeginElement)
 
         val zElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("z", zElement.qualifiedName.name)
+        assertEquals("z", zElement.name.local)
         reader.skipNext()
 
         val yElement = reader.nextToken() as XmlToken.BeginElement
-        assertEquals("y", yElement.qualifiedName.name)
+        assertEquals("y", yElement.name.local)
     }
 
     @Test
@@ -192,22 +191,89 @@ class XmlStreamReaderTest {
         assertTrue(reader.currentDepth == 0, "Expected to start at level 0")
         var peekedToken = reader.peek()
         assertTrue(peekedToken is XmlToken.BeginElement)
-        assertTrue(peekedToken.qualifiedName.name == "l1")
+        assertTrue(peekedToken.name.local == "l1")
         assertTrue(reader.currentDepth == 0, "Expected peek to not effect level")
 
         peekedToken = reader.nextToken()
         assertTrue(reader.currentDepth == 1, "Expected level 1")
         assertTrue(peekedToken is XmlToken.BeginElement)
-        assertTrue(peekedToken.qualifiedName.name == "l1")
+        assertTrue(peekedToken.name.local == "l1")
         reader.peek()
         assertTrue(reader.currentDepth == 1, "Expected peek to not effect level")
 
         peekedToken = reader.nextToken()
         assertTrue(reader.currentDepth == 2, "Expected level 2")
         assertTrue(peekedToken is XmlToken.BeginElement)
-        assertTrue(peekedToken.qualifiedName.name == "l2")
+        assertTrue(peekedToken.name.local == "l2")
         reader.peek()
         assertTrue(reader.currentDepth == 2, "Expected peek to not effect level")
+    }
+
+    @Test
+    fun itHandlesNamespaceDefaults() = runSuspendTest {
+        val payload = """
+            <MyStructure xmlns="http://foo.com">
+                <foo>bar</foo>
+            </MyStructure>
+        """.encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+
+        val expected = listOf(
+            // root element belongs to default namespace declared
+            XmlToken.BeginElement(XmlToken.QualifiedName("MyStructure", uri = "http://foo.com"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com"))),
+            XmlToken.BeginElement(XmlToken.QualifiedName("foo", uri = "http://foo.com")),
+            XmlToken.Text("bar"),
+            XmlToken.EndElement(XmlToken.QualifiedName("foo", uri = "http://foo.com")),
+            XmlToken.EndElement(XmlToken.QualifiedName("MyStructure", uri = "http://foo.com")),
+            XmlToken.EndDocument
+        )
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itHandlesNamespacePrefixes() = runSuspendTest {
+        val payload = """
+            <MyStructure xmlns:baz="http://foo.com">
+                <foo>what</foo>
+                <baz:bar>yeah</baz:bar>
+            </MyStructure>
+        """.encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+
+        val expected = listOf(
+            XmlToken.BeginElement(XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
+            XmlToken.BeginElement("foo"),
+            XmlToken.Text("what"),
+            XmlToken.EndElement("foo"),
+            XmlToken.BeginElement(XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
+            XmlToken.Text("yeah"),
+            XmlToken.EndElement(XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
+            XmlToken.EndElement("MyStructure"),
+            XmlToken.EndDocument
+        )
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itHandlesNamespacedAttributes() = runSuspendTest {
+        val payload = """
+            <MyStructure xmlns:baz="http://foo.com">
+                <foo baz:k1="v1"></foo>
+            </MyStructure>
+        """.encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+
+        val expected = listOf(
+            XmlToken.BeginElement(XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
+            XmlToken.BeginElement("foo", attributes = mapOf(XmlToken.QualifiedName("k1", "http://foo.com", "baz") to "v1")),
+            XmlToken.EndElement("foo"),
+            XmlToken.EndElement("MyStructure"),
+            XmlToken.EndDocument
+        )
+
+        assertEquals(expected, actual)
     }
 }
 

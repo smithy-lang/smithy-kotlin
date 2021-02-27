@@ -176,7 +176,7 @@ class XmlDeserializerListTest {
 
         val deserializer = XmlDeserializer(payload)
         val actual = ListDeserializer.deserialize(deserializer, OBJ_DESCRIPTOR, ELEMENT_LIST_FIELD_DESCRIPTOR).list
-        val expected = emptyList<Unit>()
+        val expected = emptyList<Int>()
 
         assertEquals(expected, actual)
     }

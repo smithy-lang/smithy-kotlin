@@ -33,10 +33,10 @@ class XmlStructDeserializer(
         // Validate inputs
         val qualifiedName = objDescriptor.serialName.toQualifiedName(objDescriptor.findTrait())
         startNode = reader.currentToken as XmlToken.BeginElement
-        if (startNode.qualifiedName.name != qualifiedName.name) throw DeserializerStateException("Expected name ${qualifiedName.name} but found ${startNode.qualifiedName.name}")
-        if (objDescriptor.findTrait<XmlNamespace>()?.isDefault() == true && startNode.qualifiedName.namespaceUri != objDescriptor.findTrait<XmlNamespace>()?.uri) {
+        if (startNode.name.local != qualifiedName.local) throw DeserializerStateException("Expected name ${qualifiedName.local} but found ${startNode.name.local}")
+        if (objDescriptor.findTrait<XmlNamespace>()?.isDefault() == true && startNode.name.ns?.uri != objDescriptor.findTrait<XmlNamespace>()?.uri) {
             // If a default namespace is set, verify that the serialized form matches obj descriptor
-            throw DeserializerStateException("Expected name ${objDescriptor.findTrait<XmlNamespace>()?.uri} but found ${startNode.qualifiedName.namespaceUri}")
+            throw DeserializerStateException("Expected name ${objDescriptor.findTrait<XmlNamespace>()?.uri} but found ${startNode.name.ns?.uri}")
         }
     }
 
@@ -65,7 +65,7 @@ class XmlStructDeserializer(
                 is XmlToken.EndElement -> {
                     return when {
                         // Explicitly match the end node
-                        reader.currentDepth == startLevel && nextToken.qualifiedName == startNode.qualifiedName -> null
+                        reader.currentDepth == startLevel && nextToken.name == startNode.name -> null
                         // Traverse children looking for matches to fields
                         reader.currentDepth >= startLevel -> findNextFieldIndex()
                         // We have left the node, exit
@@ -104,13 +104,13 @@ class XmlStructDeserializer(
             is FieldLocation.Text -> {
                 if (parsedFields.any { it is FieldLocation.Attribute }) throw DeserializationException("Text tokens should always be consumed last")
                 val token = reader.takeNextAs<XmlToken.Text>()
-                token.value?.let { transform(it) } ?: throw DeserializerStateException("Expected value in node ${startNode.qualifiedName}")
+                token.value?.let { transform(it) } ?: throw DeserializerStateException("Expected value in node ${startNode.name}")
             }
             is FieldLocation.Attribute -> {
                 val currentNode = reader.currentToken as XmlToken.BeginElement
                 transform(
                     currentNode.attributes[nextNode.name]
-                        ?: throw DeserializerStateException("Expected attribute value ${nextNode.name} not found in node ${currentNode.qualifiedName}")
+                        ?: throw DeserializerStateException("Expected attribute value ${nextNode.name} not found in node ${currentNode.name}")
                 )
             }
         }
@@ -144,7 +144,7 @@ class XmlStructDeserializer(
     // Matches fields and tokens with matching qualified name
     private fun fieldTokenMatcher(fieldDescriptor: SdkFieldDescriptor, beginElement: XmlToken.BeginElement): Boolean {
         val fieldQname = fieldDescriptor.serialName.toQualifiedName(objDescriptor.findTrait())
-        val tokenQname = beginElement.qualifiedName
+        val tokenQname = beginElement.name
         return fieldQname == tokenQname
     }
 
@@ -166,7 +166,7 @@ class XmlStructDeserializer(
                     // The following allows for struct primitives to remain unvisited if no value
                     // but causes nested deserializers to be called even if they contain no value
                     nextToken is XmlToken.EndElement &&
-                        currentToken.qualifiedName == nextToken.qualifiedName &&
+                        currentToken.name == nextToken.name &&
                         this.kind.isContainer -> property
                     else -> null
                 }
