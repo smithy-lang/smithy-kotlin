@@ -89,3 +89,6 @@ val Symbol.isBuiltIn: Boolean
  * Escape characters in strings to ensure they are treated as pure literals.
  */
 fun String.toEscapedLiteral(): String = replace("\$", "\\$")
+
+fun String.kotlinNamespace(): String = split(".")
+    .joinToString(separator = ".") { segment -> segment.filter { it.isLetterOrDigit() } }

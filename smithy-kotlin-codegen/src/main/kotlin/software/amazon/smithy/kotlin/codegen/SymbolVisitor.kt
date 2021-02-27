@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.lang.kotlinNamespace
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
@@ -75,15 +76,16 @@ fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name
 /**
  * Convert shapes to Kotlin types
  * @param model The smithy model to generate for
- * @param rootNamespace All symbols will be created under this namespace (package) or as a direct child of it.
+ * @param rawNamespace All symbols will be created under this namespace (package) or as a direct child of it.
  * e.g. `com.foo` would create symbols under the `com.foo` package or `com.foo.model` package, etc.
  * @param sdkId name to use to represent client type.  e.g. an sdkId of "foo" would produce a client type "FooClient".
  */
-class SymbolVisitor(private val model: Model, private val rootNamespace: String = "", private val sdkId: String) :
+class SymbolVisitor(private val model: Model, rawNamespace: String = "", private val sdkId: String) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
     private val logger = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
+    private val rootNamespace: String = rawNamespace.kotlinNamespace()
 
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
     // how deep in the model we have recursed

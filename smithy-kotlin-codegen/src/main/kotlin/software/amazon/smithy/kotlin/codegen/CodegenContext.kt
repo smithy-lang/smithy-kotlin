@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.lang.kotlinNamespace
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
 
@@ -32,7 +33,7 @@ data class GenerationContext(
     override val settings: KotlinSettings,
     override val protocolGenerator: ProtocolGenerator? = null,
     override val integrations: List<KotlinIntegration> = listOf(),
-    override val rootNamespace: String = settings.moduleName,
+    override val rootNamespace: String = settings.rootNamespace,
 ) : CodegenContext
 
 /**
@@ -55,7 +56,7 @@ data class RenderingContext<T : Shape>(
     override val protocolGenerator: ProtocolGenerator? = null,
     override val integrations: List<KotlinIntegration> = listOf(),
     // override the root package name
-    override val rootNamespace: String = settings.moduleName,
+    override val rootNamespace: String = settings.rootNamespace,
 ) : CodegenContext {
 
     constructor(otherCtx: CodegenContext, writer: KotlinWriter, shape: T?) :

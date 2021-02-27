@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.lang.kotlinNamespace
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.ObjectNode
@@ -49,6 +50,11 @@ class KotlinSettings(
             .asServiceShape()
             .orElseThrow { CodegenException("Shape is not a service: $service") }
     }
+
+    /**
+     * The root namespace from which all service classes are generated.
+     */
+    val rootNamespace = moduleName.kotlinNamespace()
 
     companion object {
         private val LOGGER: Logger = Logger.getLogger(KotlinSettings::class.java.name)

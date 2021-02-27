@@ -63,11 +63,11 @@ class HttpProtocolTestGenerator(
 
                     val testClassName = "${operation.id.name.capitalize()}RequestTest"
                     val testFilename = "$testClassName.kt"
-                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.rootNamespace) { writer ->
                         LOGGER.fine("Generating request protocol test cases for ${operation.id}")
 
                         // import package.models.*
-                        writer.addImport("${ctx.settings.moduleName}.model", "*")
+                        writer.addImport("${ctx.settings.rootNamespace}.model", "*")
 
                         requestTestBuilder
                             .writer(writer)
@@ -91,10 +91,10 @@ class HttpProtocolTestGenerator(
 
                     val testClassName = "${operation.id.name.capitalize()}ResponseTest"
                     val testFilename = "$testClassName.kt"
-                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.rootNamespace) { writer ->
                         LOGGER.fine("Generating response protocol test cases for ${operation.id}")
 
-                        writer.addImport("${ctx.settings.moduleName}.model", "*")
+                        writer.addImport("${ctx.settings.rootNamespace}.model", "*")
                         responseTestBuilder
                             .writer(writer)
                             .model(ctx.model)
@@ -121,10 +121,10 @@ class HttpProtocolTestGenerator(
                         // multiple error (tests) may be associated with a single operation,
                         // use the operation name + error name as the class name
                         val testClassName = "${opName}${error.defaultName()}Test"
-                        ctx.delegator.useTestFileWriter(testFilename, ctx.settings.moduleName) { writer ->
+                        ctx.delegator.useTestFileWriter(testFilename, ctx.settings.rootNamespace) { writer ->
                             LOGGER.fine("Generating error protocol test cases for ${operation.id}")
 
-                            writer.addImport("${ctx.settings.moduleName}.model", "*")
+                            writer.addImport("${ctx.settings.rootNamespace}.model", "*")
                             errorTestBuilder
                                 .error(error)
                                 .writer(writer)

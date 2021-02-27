@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.lang.kotlinNamespace
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
@@ -91,10 +92,11 @@ abstract class HttpSerde(private val serdeProvider: String, private val generate
  */
 open class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
-    protected val rootNamespace: String,
+    namespace: String,
     protected val features: List<HttpFeature>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
+    private val rootNamespace: String = namespace.kotlinNamespace()
 
     /**
      * Render the implementation of the service client interface
