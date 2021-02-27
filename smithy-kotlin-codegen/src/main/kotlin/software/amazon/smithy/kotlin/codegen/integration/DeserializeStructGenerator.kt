@@ -44,7 +44,6 @@ open class DeserializeStructGenerator(
     private val writer: KotlinWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
-
     /**
      * Enables overriding the codegen output of the final value resulting
      * from the deserialization of a non-primitive type.
@@ -119,7 +118,7 @@ open class DeserializeStructGenerator(
      * ```
      */
     open fun renderPrimitiveShapeDeserializer(memberShape: MemberShape) {
-        val memberName = memberShape.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val deserialize = deserializerForShape(memberShape)
 
@@ -136,7 +135,7 @@ open class DeserializeStructGenerator(
      */
     protected fun renderMapMemberDeserializer(memberShape: MemberShape, targetShape: MapShape) {
         val nestingLevel = 0
-        val memberName = memberShape.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val mutableCollectionType = targetShape.mutableCollectionType()
         val valueCollector = deserializationResultName("builder.$memberName")
@@ -326,7 +325,7 @@ open class DeserializeStructGenerator(
      */
     protected fun renderListMemberDeserializer(memberShape: MemberShape, targetShape: CollectionShape) {
         val nestingLevel = 0
-        val memberName = memberShape.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val mutableCollectionType = targetShape.mutableCollectionType()
         val valueCollector = deserializationResultName("builder.$memberName")

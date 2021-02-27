@@ -36,7 +36,6 @@ open class SerializeStructGenerator(
     private val writer: KotlinWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
-
     /**
      * Container for serialization information for a particular shape being serialized to
      *
@@ -109,7 +108,7 @@ open class SerializeStructGenerator(
      * ```
      */
     open fun renderMapMemberSerializer(memberShape: MemberShape, targetShape: MapShape) {
-        val memberName = memberShape.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
@@ -131,7 +130,7 @@ open class SerializeStructGenerator(
      * ```
      */
     open fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
-        val memberName = memberShape.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
@@ -525,17 +524,18 @@ open class SerializeStructGenerator(
         val targetShape = ctx.model.expectShape(memberShape.target)
         val targetSymbol = ctx.symbolProvider.toSymbol(memberShape)
         val defaultValue = targetSymbol.defaultValue()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
 
         if ((targetShape.isNumberShape || targetShape.isBooleanShape) && targetSymbol.isNotBoxed && defaultValue != null) {
             // unboxed primitive with a default value
-            val ident = "input.${memberShape.defaultName()}"
+            val ident = "input.$memberName"
             val check = when (memberShape.hasTrait<RequiredTrait>()) {
                 true -> "" // always serialize a required member even if it's the default
                 else -> "if ($ident != $defaultValue) "
             }
             writer.write("${check}$serializeFn(#L, $ident)", memberShape.descriptorName())
         } else {
-            writer.write("input.#L?.let { $serializeFn(#L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
+            writer.write("input.#L?.let { $serializeFn(#L, $encoded) }$postfix", memberName, memberShape.descriptorName())
         }
     }
 

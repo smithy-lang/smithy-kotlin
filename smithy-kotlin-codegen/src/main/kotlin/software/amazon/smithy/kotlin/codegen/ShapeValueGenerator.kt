@@ -99,25 +99,25 @@ class ShapeValueGenerator(
     }
 
     private fun primitiveDeclaration(writer: KotlinWriter, shape: Shape, block: () -> Unit) {
-        var suffix = ""
-        when (shape.type) {
+        val suffix = when (shape.type) {
             ShapeType.STRING -> {
                 if (shape.hasTrait<EnumTrait>()) {
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("#L.fromValue(", symbol.name)
-                    suffix = ")"
-                }
+                    ")"
+                } else ""
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
                     writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.content", "*")
                     writer.writeInline("StringContent(")
-                    suffix = ")"
+                    ")"
                 } else {
                     // blob params are spit out as strings
-                    suffix = ".encodeAsByteArray()"
+                    ".encodeAsByteArray()"
                 }
             }
+            else -> ""
         }
 
         block()
