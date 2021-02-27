@@ -90,5 +90,8 @@ val Symbol.isBuiltIn: Boolean
  */
 fun String.toEscapedLiteral(): String = replace("\$", "\\$")
 
+/**
+ * Remove characters invalid for Kotlin package namespace identifier
+ */
 fun String.kotlinNamespace(): String = split(".")
     .joinToString(separator = ".") { segment -> segment.filter { it.isLetterOrDigit() } }
