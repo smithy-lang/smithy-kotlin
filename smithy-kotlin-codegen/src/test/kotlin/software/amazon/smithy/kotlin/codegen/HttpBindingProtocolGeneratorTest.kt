@@ -232,7 +232,7 @@ class ExplicitStructOperationSerializer(val input: ExplicitStructRequest) : Http
 
         if (input.payload1 != null) {
             val serializer = serializationContext.serializationProvider()
-            Nested2Serializer(input.payload1).serialize(serializer)
+            Nested2DocumentSerializer(input.payload1).serialize(serializer)
             builder.body = ByteArrayContent(serializer.toByteArray())
         }
         if (builder.body !is HttpBody.Empty) {
@@ -854,7 +854,7 @@ class SmokeTestOperationDeserializer : HttpDeserialize {
         val payload = response.body.readAll()
         if (payload != null) {
             val deserializer = provider(payload)
-            builder.payload1 = Nested2Deserializer().deserialize(deserializer)
+            builder.payload1 = Nested2DocumentDeserializer().deserialize(deserializer)
         }
 """
         contents.shouldContainOnlyOnce(expectedContents)

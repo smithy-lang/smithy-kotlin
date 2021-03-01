@@ -545,7 +545,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
                 val memberSymbol = ctx.symbolProvider.toSymbol(binding.member)
                 writer.write("val serializer = serializationContext.serializationProvider()")
-                    .write("#LSerializer(input.#L).serialize(serializer)", memberSymbol.name, memberName)
+                    .write("#L(input.#L).serialize(serializer)", memberSymbol.documentSerializerName(), memberName)
                     .write("builder.body = ByteArrayContent(serializer.toByteArray())")
             }
             ShapeType.DOCUMENT -> {
@@ -923,7 +923,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("val payload = response.body.readAll()")
                 writer.openBlock("if (payload != null) {")
                     .write("val deserializer = provider(payload)")
-                    .write("builder.$memberName = #LDeserializer().deserialize(deserializer)", targetSymbol.name)
+                    .write("builder.$memberName = #L().deserialize(deserializer)", targetSymbol.documentDeserializerName())
                     .closeBlock("}")
             }
             ShapeType.DOCUMENT -> {
