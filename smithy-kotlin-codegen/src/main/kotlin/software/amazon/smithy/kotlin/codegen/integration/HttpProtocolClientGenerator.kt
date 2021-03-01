@@ -103,7 +103,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
-        writer.write("private val serde: SerdeProvider = ${serdeProviderSymbol.name}()")
+        writer.write("private val serde: SerdeProvider = #T()", serdeProviderSymbol)
         features.forEach {
             it.renderProperties(writer)
         }
@@ -181,7 +181,7 @@ abstract class HttpProtocolClientGenerator(
             outputSymbolName
         ) {
             if (inputShape.isPresent) {
-                writer.write("serializer = ${op.serializerName()}(serde::serializer)")
+                writer.write("serializer = ${op.serializerName()}()")
             } else {
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
@@ -200,7 +200,7 @@ abstract class HttpProtocolClientGenerator(
             }
 
             if (outputShape.isPresent) {
-                writer.write("deserializer = ${op.deserializerName()}(serde::deserializer)")
+                writer.write("deserializer = ${op.deserializerName()}()")
             } else {
                 writer.write("deserializer = UnitDeserializer")
             }
@@ -226,6 +226,11 @@ abstract class HttpProtocolClientGenerator(
                     }
                     writer.write("hostPrefix = #S", hostPrefix)
                 }
+
+                // always register a serde provider into an operation's execution context.
+                // Individual serializers/deserializers determine if they need to use it
+                writer.addImport(RuntimeTypes.Serde.SerdeAttributes)
+                writer.write("set(SerdeAttributes.SerdeProvider, serde)")
             }
         }
 

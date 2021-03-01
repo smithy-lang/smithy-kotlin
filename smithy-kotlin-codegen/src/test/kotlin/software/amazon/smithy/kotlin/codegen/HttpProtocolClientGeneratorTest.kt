@@ -56,7 +56,7 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it renders constructor`() {
-        commonTestContents.shouldContainOnlyOnce("class DefaultExampleClient(private val config: ExampleClient.Config) : ExampleClient {")
+        commonTestContents.shouldContainOnlyOnce("internal class DefaultExampleClient(private val config: ExampleClient.Config) : ExampleClient {")
     }
 
     @Test
@@ -88,12 +88,13 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFoo(input: GetFooRequest): GetFooResponse {
         val op = SdkHttpOperation.build<GetFooRequest, GetFooResponse> {
-            serializer = GetFooSerializer(serde::serializer)
-            deserializer = GetFooDeserializer(serde::deserializer)
+            serializer = GetFooSerializer()
+            deserializer = GetFooDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFoo"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -111,11 +112,12 @@ class HttpProtocolClientGeneratorTest {
                     return builder
                 }
             }
-            deserializer = GetFooNoInputDeserializer(serde::deserializer)
+            deserializer = GetFooNoInputDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooNoInput"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -125,12 +127,13 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
         val op = SdkHttpOperation.build<GetFooRequest, kotlin.Unit> {
-            serializer = GetFooNoOutputSerializer(serde::serializer)
+            serializer = GetFooNoOutputSerializer()
             deserializer = UnitDeserializer
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooNoOutput"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -140,12 +143,13 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
         val op = SdkHttpOperation.build<GetFooStreamingRequest, GetFooResponse> {
-            serializer = GetFooStreamingInputSerializer(serde::serializer)
-            deserializer = GetFooStreamingInputDeserializer(serde::deserializer)
+            serializer = GetFooStreamingInputSerializer()
+            deserializer = GetFooStreamingInputDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingInput"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -155,12 +159,13 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
         val op = SdkHttpOperation.build<GetFooRequest, GetFooStreamingResponse> {
-            serializer = GetFooStreamingOutputSerializer(serde::serializer)
-            deserializer = GetFooStreamingOutputDeserializer(serde::deserializer)
+            serializer = GetFooStreamingOutputSerializer()
+            deserializer = GetFooStreamingOutputDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingOutput"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -178,11 +183,12 @@ class HttpProtocolClientGeneratorTest {
                     return builder
                 }
             }
-            deserializer = GetFooStreamingOutputNoInputDeserializer(serde::deserializer)
+            deserializer = GetFooStreamingOutputNoInputDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingOutputNoInput"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -192,12 +198,13 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
         val op = SdkHttpOperation.build<GetFooStreamingRequest, kotlin.Unit> {
-            serializer = GetFooStreamingInputNoOutputSerializer(serde::serializer)
+            serializer = GetFooStreamingInputNoOutputSerializer()
             deserializer = UnitDeserializer
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingInputNoOutput"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -271,24 +278,17 @@ class HttpProtocolClientGeneratorTest {
         val prefix = "\${input.foo}.data."
         val expectedFragment = """
         val op = SdkHttpOperation.build<GetStatusInput, GetStatusOutput> {
-            serializer = GetStatusSerializer(serde::serializer)
-            deserializer = GetStatusDeserializer(serde::deserializer)
+            serializer = GetStatusSerializer()
+            deserializer = GetStatusDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetStatus"
                 hostPrefix = "$prefix"
+                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         """
         contents.shouldContainOnlyOnceWithDiff(expectedFragment)
     }
-
-    /*
-    TODO - rendersMiddlewareConfigure
-            install(MockHttpFeature1) {
-                configurationField1 = "testing"
-            }
-        }
-     */
 }

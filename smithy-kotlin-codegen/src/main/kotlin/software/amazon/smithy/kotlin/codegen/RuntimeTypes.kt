@@ -16,12 +16,19 @@ import software.amazon.smithy.codegen.core.Symbol
 object RuntimeTypes {
     object Http {
         val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, subpackage = "request")
+        val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.CLIENT_RT_HTTP, subpackage = "response")
         val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.CLIENT_RT_HTTP, subpackage = "operation")
+        val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.CLIENT_RT_HTTP, subpackage = "operation")
+        val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_HTTP, subpackage = "content")
     }
 
     object Core {
         val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CLIENT_RT_CORE, "client")
         val ExecutionContext = runtimeSymbol("ExecutionContext", KotlinDependency.CLIENT_RT_CORE, "client")
+    }
+
+    object Serde {
+        val SerdeAttributes = runtimeSymbol("SerdeAttributes", KotlinDependency.CLIENT_RT_SERDE)
     }
 }
 
