@@ -142,10 +142,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderInit(writer: KotlinWriter) {
         writer.openBlock("init {", "}") {
-            // FIXME - should the generated service client have httpClientEngineConfig on it? If you pass in an engine it's a conflicting property
-            // as it'll never be consumed...
-            writer.write("val engineConfig = config.httpClientEngineConfig ?: HttpClientEngineConfig()")
-            writer.write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)")
+            writer.write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(HttpClientEngineConfig())")
             writer.write("client = sdkHttpClient(httpClientEngine)")
         }
     }

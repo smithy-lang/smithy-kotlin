@@ -34,7 +34,6 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
-    override val httpClientEngineConfig: HttpClientEngineConfig? = builder.httpClientEngineConfig
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
 """
         contents.shouldContain(expectedProps)
@@ -42,12 +41,11 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         val expectedJavaBuilderInterface = """
     interface Builder {
         fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
-        fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder
         fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder
         fun build(): Config
     }
 """
-        contents.shouldContain(expectedJavaBuilderInterface)
+        contents.shouldContainOnlyOnceWithDiff(expectedJavaBuilderInterface)
 
         val expectedDslBuilderInterface = """
     interface DslBuilder {
@@ -55,13 +53,6 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
          * Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)
          */
         var httpClientEngine: HttpClientEngine?
-
-        /**
-         * Override the default HTTP client engine used for round tripping requests. This allow sharing a common
-         * HTTP engine between multiple clients, substituting with a different engine, etc.
-         * User is responsible for cleaning up the engine and any associated resources.
-         */
-        var httpClientEngineConfig: HttpClientEngineConfig?
 
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
@@ -77,12 +68,10 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         val expectedBuilderImpl = """
     internal class BuilderImpl() : Builder, DslBuilder {
         override var httpClientEngine: HttpClientEngine? = null
-        override var httpClientEngineConfig: HttpClientEngineConfig? = null
         override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
 
         override fun build(): Config = Config(this)
         override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }
-        override fun httpClientEngineConfig(httpClientEngineConfig: HttpClientEngineConfig): Builder = apply { this.httpClientEngineConfig = httpClientEngineConfig }
         override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
     }
 """
@@ -90,7 +79,6 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
         val expectedImports = listOf(
             "import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.config.HttpClientConfig",
-            "import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig",
             "import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngine",
             "import ${KotlinDependency.CLIENT_RT_CORE.namespace}.config.IdempotencyTokenConfig",
             "import ${KotlinDependency.CLIENT_RT_CORE.namespace}.config.IdempotencyTokenProvider",

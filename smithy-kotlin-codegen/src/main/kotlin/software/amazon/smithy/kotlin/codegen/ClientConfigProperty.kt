@@ -151,7 +151,6 @@ private fun builtInProperty(name: String, symbol: Symbol, documentation: String?
  */
 object KotlinClientRuntimeConfigProperty {
     val HttpClientEngine: ClientConfigProperty
-    val HttpClientEngineConfig: ClientConfigProperty
     val IdempotencyTokenProvider: ClientConfigProperty
 
     init {
@@ -168,19 +167,6 @@ object KotlinClientRuntimeConfigProperty {
             baseClass = httpClientConfigSymbol
             documentation = """
             Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)    
-            """.trimIndent()
-        }
-
-        HttpClientEngineConfig = ClientConfigProperty {
-            symbol = buildSymbol {
-                name = "HttpClientEngineConfig"
-                namespace(KotlinDependency.CLIENT_RT_HTTP, "engine")
-            }
-            baseClass = httpClientConfigSymbol
-            documentation = """
-            Override the default HTTP client engine used for round tripping requests. This allow sharing a common
-            HTTP engine between multiple clients, substituting with a different engine, etc.
-            User is responsible for cleaning up the engine and any associated resources.
             """.trimIndent()
         }
 
