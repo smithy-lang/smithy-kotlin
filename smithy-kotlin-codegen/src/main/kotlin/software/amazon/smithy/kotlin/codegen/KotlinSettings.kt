@@ -19,9 +19,10 @@ import kotlin.streams.toList
 
 // shapeId of service from which to generate an SDK
 private const val SERVICE = "service"
-private const val MODULE_NAME = "module"
-private const val MODULE_DESCRIPTION = "moduleDescription"
-private const val MODULE_VERSION = "moduleVersion"
+private const val PACKAGE_SETTINGS = "package"
+private const val PACKAGE_NAME = "name"
+private const val PACKAGE_VERSION = "version"
+private const val PACKAGE_DESCRIPTION = "description"
 private const val BUILD_SETTINGS = "build"
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
@@ -31,12 +32,13 @@ private const val SDK_ID = "sdkId"
  */
 class KotlinSettings(
     val service: ShapeId,
-    val moduleName: String,
-    val moduleVersion: String,
-    val moduleDescription: String = "",
+    val pkg: PackageSettings,
     val sdkId: String,
     val build: BuildSettings = BuildSettings.Default
 ) {
+
+    data class PackageSettings(val name: String, val version: String, val description: String? = null)
+
     /**
      * Get the corresponding [ServiceShape] from a model.
      * @return Returns the found `Service`
@@ -62,19 +64,22 @@ class KotlinSettings(
          * @return Returns the extracted settings
          */
         fun from(model: Model, config: ObjectNode): KotlinSettings {
-            config.warnIfAdditionalProperties(listOf(SERVICE, MODULE_NAME, MODULE_DESCRIPTION, MODULE_VERSION, BUILD_SETTINGS, SDK_ID))
+            config.warnIfAdditionalProperties(listOf(SERVICE, PACKAGE_SETTINGS, BUILD_SETTINGS, SDK_ID))
 
             val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
                 .orElseGet { inferService(model) }
 
-            val moduleName = config.expectStringMember(MODULE_NAME).value
+            val packageNode = config.expectObjectMember(PACKAGE_SETTINGS)
+
+            val packageName = packageNode.expectStringMember(PACKAGE_NAME).value
+            val version = packageNode.expectStringMember(PACKAGE_VERSION).value
+            val desc = packageNode.getStringMemberOrDefault(PACKAGE_DESCRIPTION, "$packageName client")
+
             // Load the sdk id from configurations that define it, fall back to service name for those that don't.
             val sdkId = config.getStringMemberOrDefault(SDK_ID, serviceId.name)
-            val version = config.expectStringMember(MODULE_VERSION).value
-            val desc = config.getStringMemberOrDefault(MODULE_DESCRIPTION, "$moduleName client")
             val build = config.getObjectMember(BUILD_SETTINGS)
-            return KotlinSettings(serviceId, moduleName, version, desc, sdkId, BuildSettings.fromNode(build))
+            return KotlinSettings(serviceId, PackageSettings(packageName, version, desc), sdkId, BuildSettings.fromNode(build))
         }
 
         // infer the service to generate from a model

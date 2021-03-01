@@ -29,8 +29,8 @@ class KotlinSettingsTest {
         )
 
         assertEquals(ShapeId.from("smithy.example#Example"), settings.service)
-        assertEquals("example", settings.moduleName)
-        assertEquals("1.0.0", settings.moduleVersion)
+        assertEquals("example", settings.pkg.name)
+        assertEquals("1.0.0", settings.pkg.version)
     }
 
     @Test fun `correctly reads rootProject var from build settings`() {
