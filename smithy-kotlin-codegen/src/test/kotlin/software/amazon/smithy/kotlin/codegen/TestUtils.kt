@@ -193,6 +193,14 @@ fun TestContext.toGenerationContext(): GenerationContext =
 fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
     toGenerationContext().toRenderingContext(writer, forShape)
 
+// Format a multi-line string suitable for comparison with codegen, defaults to one level of indention.
+fun String.formatForTest(indent: String = "    ") =
+    trimIndent()
+        .prependIndent(indent)
+        .split('\n')
+        .map { if (it.isBlank()) "" else it }
+        .joinToString(separator = "\n") { it }
+
 class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     features: List<HttpFeature>,

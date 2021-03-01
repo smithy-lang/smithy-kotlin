@@ -28,14 +28,10 @@ import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
  * JVM [HttpClientEngine] backed by Ktor
  */
 class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
-    val client: HttpClient
-    private val logger = Logger.getLogger<KtorEngine>()
-
-    init {
-        client = HttpClient(OkHttp) {
-            // TODO - propagate applicable client engine config to OkHttp engine
-        }
+    val client: HttpClient = HttpClient(OkHttp) {
+        // TODO - propagate applicable client engine config to OkHttp engine
     }
+    private val logger = Logger.getLogger<KtorEngine>()
 
     override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): SdkHttpResponse {
         val callContext = coroutineContext
