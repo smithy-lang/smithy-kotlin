@@ -130,17 +130,17 @@ internal fun Model.defaultSettings(
     packageName: String = "test",
     packageVersion: String = "1.0.0"
 ): KotlinSettings = KotlinSettings.from(
-        this,
-        Node.objectNodeBuilder()
-            .withMember("service", Node.from(serviceName))
-            .withMember(
-                "package",
-                Node.objectNode()
-                    .withMember("name", Node.from(packageName))
-                    .withMember("version", Node.from(packageVersion))
-            )
-            .build()
-    )
+    this,
+    Node.objectNodeBuilder()
+        .withMember("service", Node.from(serviceName))
+        .withMember(
+            "package",
+            Node.objectNode()
+                .withMember("name", Node.from(packageName))
+                .withMember("version", Node.from(packageVersion))
+        )
+        .build()
+)
 
 // Execute the codegen and return the generated output
 fun testRender(
