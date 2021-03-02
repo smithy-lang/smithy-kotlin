@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.lang.isValidPackageName
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.node.ObjectNode
@@ -76,7 +77,7 @@ class KotlinSettings(
             val packageNode = config.expectObjectMember(PACKAGE_SETTINGS)
 
             val packageName = packageNode.expectStringMember(PACKAGE_NAME).value
-            if (packageName.isNullOrEmpty() || packageName.any { !it.isLetterOrDigit() })
+            if (!packageName.isValidPackageName())
                 throw CodegenException("Invalid package name, is empty or has invalid characters: '$packageName'")
 
             val version = packageNode.expectStringMember(PACKAGE_VERSION).value

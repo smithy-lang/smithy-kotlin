@@ -160,4 +160,26 @@ class KotlinSettingsTest {
             )
         }
     }
+
+    @Test
+    fun `allows valid package name`() {
+        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "aws.sdk.kotlin.runtime.protocoltest.awsrestjson",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                }
+            }
+        """.trimIndent()
+
+        KotlinSettings.from(
+            model,
+            Node.parse(contents).expectObjectNode()
+        )
+    }
 }
