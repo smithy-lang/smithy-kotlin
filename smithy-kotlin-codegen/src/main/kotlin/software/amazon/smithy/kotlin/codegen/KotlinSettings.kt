@@ -37,6 +37,9 @@ class KotlinSettings(
     val build: BuildSettings = BuildSettings.Default
 ) {
 
+    /**
+     * Configuration elements specific to the service's package namespace, version, and description.
+     */
     data class PackageSettings(val name: String, val version: String, val description: String? = null)
 
     /**

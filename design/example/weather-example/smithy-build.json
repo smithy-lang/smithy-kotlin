@@ -4,8 +4,8 @@
         "kotlin-codegen": {
             "service": "example.weather#Weather",
             "package": {
-                "module": "weather",
-                "moduleVersion": "0.0.1"
+                "name": "weather",
+                "version": "0.0.1"
             },
             "group": "com.xyzcorp"
         }

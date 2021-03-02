@@ -129,8 +129,7 @@ internal fun Model.defaultSettings(
     serviceName: String = "test#service",
     packageName: String = "test",
     packageVersion: String = "1.0.0"
-): KotlinSettings {
-    return KotlinSettings.from(
+): KotlinSettings = KotlinSettings.from(
         this,
         Node.objectNodeBuilder()
             .withMember("service", Node.from(serviceName))
@@ -142,7 +141,6 @@ internal fun Model.defaultSettings(
             )
             .build()
     )
-}
 
 // Execute the codegen and return the generated output
 fun testRender(
