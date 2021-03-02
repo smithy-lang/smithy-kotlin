@@ -10,7 +10,7 @@ import io.kotest.matchers.collections.shouldNotContainAll
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.asSmithyModel
-import software.amazon.smithy.kotlin.codegen.expectShape
+import software.amazon.smithy.kotlin.codegen.smithy.expectShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeId
 

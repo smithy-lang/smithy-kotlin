@@ -17,16 +17,9 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.Trait
 import software.amazon.smithy.utils.CodeWriter
 import java.util.*
-
-/**
- * Concise extension function to return a shape of expected type.
- */
-inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
-    this.expectShape(ShapeId.from(shapeId), T::class.java)
 
 /**
  * If is member shape returns target, otherwise returns self.
