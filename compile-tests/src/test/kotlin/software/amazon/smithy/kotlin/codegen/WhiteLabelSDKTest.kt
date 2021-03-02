@@ -16,7 +16,7 @@ import java.net.URL
 class WhiteLabelSDKTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK.
     private val warningThreshold = 3
-    private val copyGeneratedSdksToTmp = true
+    private val copyGeneratedSdksToTmp = false
 
     @Test
     fun `white label sdk compiles without errors`() {
