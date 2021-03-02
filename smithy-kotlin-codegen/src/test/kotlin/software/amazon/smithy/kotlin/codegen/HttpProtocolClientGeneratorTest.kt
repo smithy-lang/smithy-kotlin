@@ -51,7 +51,7 @@ class HttpProtocolClientGeneratorTest {
         val ctx = model.newTestContext("com.test#Example")
         val features: List<HttpFeature> = listOf(MockHttpFeature1(), MockHttpSerde())
         val generator = HttpProtocolClientGenerator(
-            ctx.generationCtx, "test", features,
+            ctx.generationCtx, features,
             HttpTraitResolver(ctx.generationCtx, "application/json")
         )
         generator.render(writer)
@@ -261,7 +261,7 @@ class HttpProtocolClientGeneratorTest {
         val ctx = model.newTestContext("com.test#Example")
         val writer = KotlinWriter("com.test")
         val generator = HttpProtocolClientGenerator(
-            ctx.generationCtx, "test", listOf(),
+            ctx.generationCtx, listOf(),
             HttpTraitResolver(ctx.generationCtx, "application/json")
         )
         generator.render(writer)

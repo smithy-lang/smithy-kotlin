@@ -62,7 +62,8 @@ fun URL.asSmithy(): Model =
  */
 fun String.asSmithyModel(sourceLocation: String? = null): Model {
     val processed = if (this.startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
-    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
+    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble()
+        .unwrap()
 }
 
 /**
@@ -121,22 +122,25 @@ fun Model.newTestContext(
 
 /**
  * Generate a KotlinSettings instance from a model.
- * @param moduleName name of module or "test" if unspecified
- * @param moduleVersion version of module or "1.0.0" if unspecified
+ * @param packageName name of module or "test" if unspecified
+ * @param packageVersion version of module or "1.0.0" if unspecified
  */
 internal fun Model.defaultSettings(
     serviceName: String = "test#service",
-    moduleName: String = "test",
-    moduleVersion: String = "1.0.0"
-): KotlinSettings =
-    KotlinSettings.from(
-        this,
-        Node.objectNodeBuilder()
-            .withMember("service", Node.from(serviceName))
-            .withMember("module", Node.from(moduleName))
-            .withMember("moduleVersion", Node.from(moduleVersion))
-            .build()
-    )
+    packageName: String = "test",
+    packageVersion: String = "1.0.0"
+): KotlinSettings = KotlinSettings.from(
+    this,
+    Node.objectNodeBuilder()
+        .withMember("service", Node.from(serviceName))
+        .withMember(
+            "package",
+            Node.objectNode()
+                .withMember("name", Node.from(packageName))
+                .withMember("version", Node.from(packageVersion))
+        )
+        .build()
+)
 
 // Execute the codegen and return the generated output
 fun testRender(

@@ -51,9 +51,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
      */
     open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
-        val rootNamespace = ctx.settings.moduleName
         val features = getHttpFeatures(ctx)
-        return HttpProtocolClientGenerator(ctx, rootNamespace, features, getProtocolHttpBindingResolver(ctx))
+        return HttpProtocolClientGenerator(ctx, features, getProtocolHttpBindingResolver(ctx))
     }
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
@@ -89,8 +88,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val rootNamespace = ctx.settings.moduleName
-        ctx.delegator.useFileWriter("Default${symbol.name}.kt", rootNamespace) { writer ->
+        ctx.delegator.useFileWriter("Default${symbol.name}.kt", ctx.settings.pkg.name) { writer ->
             val clientGenerator = getHttpProtocolClientGenerator(ctx)
             clientGenerator.render(writer)
         }
@@ -201,7 +199,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val serializerSymbol = Symbol.builder()
                 .definitionFile("${symbol.name}Serializer.kt")
                 .name("${symbol.name}Serializer")
-                .namespace("${ctx.settings.moduleName}.transform", ".")
+                .namespace("${ctx.settings.pkg.name}.transform", ".")
                 .addReference(reference)
                 .build()
 
@@ -267,7 +265,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serializerSymbol = Symbol.builder()
             .definitionFile("${op.serializerName()}.kt")
             .name(op.serializerName())
-            .namespace("${ctx.settings.moduleName}.transform", ".")
+            .namespace("${ctx.settings.pkg.name}.transform", ".")
             .addReference(ref)
             .build()
 
@@ -584,7 +582,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val deserializerSymbol = Symbol.builder()
             .definitionFile("${op.deserializerName()}.kt")
             .name(op.deserializerName())
-            .namespace("${ctx.settings.moduleName}.transform", ".")
+            .namespace("${ctx.settings.pkg.name}.transform", ".")
             .addReference(ref)
             .build()
 
@@ -632,7 +630,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val deserializerSymbol = Symbol.builder()
             .definitionFile("$deserializerName.kt")
             .name(deserializerName)
-            .namespace("${ctx.settings.moduleName}.transform", ".")
+            .namespace("${ctx.settings.pkg.name}.transform", ".")
             .addReference(ref)
             .build()
 
@@ -966,7 +964,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val deserializerSymbol = Symbol.builder()
                 .definitionFile("${symbol.name}Deserializer.kt")
                 .name("${symbol.name}Deserializer")
-                .namespace("${ctx.settings.moduleName}.transform", ".")
+                .namespace("${ctx.settings.pkg.name}.transform", ".")
                 .addReference(reference)
                 .build()
 
