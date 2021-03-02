@@ -3,8 +3,10 @@
     "plugins": {
         "kotlin-codegen": {
             "service": "example.weather#Weather",
-            "module": "weather",
-            "moduleVersion": "0.0.1"
+            "package": {
+                "module": "weather",
+                "moduleVersion": "0.0.1"
+            },
             "group": "com.xyzcorp"
         }
     }

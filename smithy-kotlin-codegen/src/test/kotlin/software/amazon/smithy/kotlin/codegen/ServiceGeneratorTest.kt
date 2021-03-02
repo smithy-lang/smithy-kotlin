@@ -111,7 +111,7 @@ class ServiceGeneratorTest {
                 .closeBlock("}")
         }
 
-        val settings = KotlinSettings(service.id,  KotlinSettings.PackageSettings("test", "0.0"), sdkId = service.id.name)
+        val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings("test", "0.0"), sdkId = service.id.name)
         val renderingCtx = RenderingContext(writer, service, model, provider, settings)
         val generator = ServiceGenerator(renderingCtx)
         generator.render()

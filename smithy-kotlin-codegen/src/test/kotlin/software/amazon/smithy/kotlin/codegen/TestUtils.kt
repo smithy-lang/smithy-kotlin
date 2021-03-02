@@ -62,7 +62,8 @@ fun URL.asSmithy(): Model =
  */
 fun String.asSmithyModel(sourceLocation: String? = null): Model {
     val processed = if (this.startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
-    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble().unwrap()
+    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble()
+        .unwrap()
 }
 
 /**
@@ -128,16 +129,20 @@ internal fun Model.defaultSettings(
     serviceName: String = "test#service",
     packageName: String = "test",
     packageVersion: String = "1.0.0"
-): KotlinSettings =
-    KotlinSettings.from(
+): KotlinSettings {
+    return KotlinSettings.from(
         this,
         Node.objectNodeBuilder()
             .withMember("service", Node.from(serviceName))
-            .withMember("package", Node.objectNode())
-            .withMember("name", Node.from(packageName))
-            .withMember("version", Node.from(packageVersion))
+            .withMember(
+                "package",
+                Node.objectNode()
+                    .withMember("name", Node.from(packageName))
+                    .withMember("version", Node.from(packageVersion))
+            )
             .build()
     )
+}
 
 // Execute the codegen and return the generated output
 fun testRender(

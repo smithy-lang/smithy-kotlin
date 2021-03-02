@@ -27,8 +27,12 @@ class GradleGeneratorTest {
         val settings = KotlinSettings.from(
             model,
             Node.objectNodeBuilder()
-                .withMember("module", Node.from("example"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
+                .withMember(
+                    "package",
+                    Node.objectNode()
+                        .withMember("name", Node.from("example"))
+                        .withMember("version", Node.from("1.0.0"))
+                )
                 .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
                 .build()
         )
@@ -51,8 +55,12 @@ class GradleGeneratorTest {
         val settings = KotlinSettings.from(
             model,
             Node.objectNodeBuilder()
-                .withMember("module", Node.from("example"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
+                .withMember(
+                    "package",
+                    Node.objectNode()
+                        .withMember("name", Node.from("example"))
+                        .withMember("version", Node.from("1.0.0"))
+                )
                 .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(true)).build())
                 .build()
         )

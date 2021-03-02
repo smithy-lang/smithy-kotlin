@@ -18,8 +18,10 @@ class KotlinSettingsTest {
 
         val contents = """
             {
-                "module": "example",
-                "moduleVersion": "1.0.0"
+                "package": {
+                    "name": "example",
+                    "version": "1.0.0"
+                }
             }
         """.trimIndent()
 
@@ -38,8 +40,10 @@ class KotlinSettingsTest {
 
         val contents = """
             {
-                "module": "example",
-                "moduleVersion": "1.0.0",
+                "package": {
+                    "name": "example",
+                    "version": "1.0.0"
+                },
                 "build": {
                     "rootProject": true
                 }
@@ -60,8 +64,10 @@ class KotlinSettingsTest {
 
         val contents = """
             {
-                "module": "example",
-                "moduleVersion": "1.0.0",
+                "package": {
+                    "name": "example",
+                    "version": "1.0.0"
+                },
                 "build": {
                     "generateDefaultBuildFiles": false
                 }
@@ -82,8 +88,10 @@ class KotlinSettingsTest {
 
         val contents = """
             {
-                "module": "example",
-                "moduleVersion": "1.0.0",
+                "package": {
+                    "name": "example",
+                    "version": "1.0.0"
+                },
                 "build": {
                     "optInAnnotations": ["foo", "bar"]
                 }

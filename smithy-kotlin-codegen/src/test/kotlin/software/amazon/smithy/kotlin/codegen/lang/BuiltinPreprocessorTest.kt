@@ -43,9 +43,10 @@ class BuiltinPreprocessorTest {
         val settings = KotlinSettings(
             ShapeId.from("com.test#FooService"),
             KotlinSettings.PackageSettings(
-            "test",
-            "1.0",
-            ""),
+                "test",
+                "1.0",
+                ""
+            ),
             "Foo"
         )
 
