@@ -911,44 +911,6 @@ class Nested3DocumentDeserializer {
     }
 
     @Test
-    fun `it generates non conflicting document deserializer for exceptions`() {
-        // test that an exception is re-used not as an error but as part of some other payload
-        val model = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [ Foo ]
-            }
-
-            @http(method: "POST", uri: "/foo-no-input")
-            operation Foo {
-                input: FooRequest,
-                output: FooOutput,
-                errors: [FooError]
-            }        
-            
-            structure FooRequest {}
-            structure FooOutput {
-                err: FooError
-            }
-            
-            @error("server")
-            structure FooError { 
-            }
-        """.asSmithyModel()
-        val ctx = model.newTestContext()
-        ctx.generator.generateDeserializers(ctx.generationCtx)
-        ctx.generationCtx.delegator.flushWriters()
-        // an error used in a "non-error" context (i.e. anywhere else in the model) should get a separate serialize/deserialize implementation
-        assertTrue(ctx.manifest.hasFile("src/main/kotlin/test/transform/FooErrorDeserializer.kt"))
-        assertTrue(ctx.manifest.hasFile("src/main/kotlin/test/transform/FooErrorDocumentDeserializer.kt"))
-    }
-
-    @Test
     fun `it creates map of lists serializer`() {
         val mapModel = javaClass.getResource("http-binding-map-model.smithy").asSmithy()
 

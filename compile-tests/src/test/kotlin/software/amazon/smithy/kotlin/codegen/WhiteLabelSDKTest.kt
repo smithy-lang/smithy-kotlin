@@ -16,7 +16,7 @@ import java.net.URL
 class WhiteLabelSDKTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK.
     private val warningThreshold = 3
-    private val copyGeneratedSdksToTmp = false
+    private val copyGeneratedSdksToTmp = true
 
     @Test
     fun `white label sdk compiles without errors`() {
@@ -78,6 +78,44 @@ class WhiteLabelSDKTest {
             @error("client")
             structure FooErrorStruct {
                 $fooMembers
+            }
+        """.asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        compileOutputStream.flush()
+
+        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+    }
+
+    @Test
+    fun `it has non conflicting document deserializer for exceptions`() {
+        // test that an exception is re-used not as an error but as part of some other payload (ticket: 176989575)
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [ Foo ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                input: FooRequest,
+                output: FooOutput,
+                errors: [FooError]
+            }        
+            
+            structure FooRequest {}
+            structure FooOutput {
+                err: FooError
+            }
+            
+            @error("server")
+            structure FooError { 
             }
         """.asSmithy()
 
