@@ -3,13 +3,13 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen.smithy.model
+package software.amazon.smithy.kotlin.codegen.model
 
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.asSmithyModel
+import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.kotlin.codegen.expectTrait
-import software.amazon.smithy.kotlin.codegen.smithy.expectShape
-import software.amazon.smithy.kotlin.codegen.smithy.traits.SyntheticClone
+import software.amazon.smithy.kotlin.codegen.traits.SyntheticClone
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape

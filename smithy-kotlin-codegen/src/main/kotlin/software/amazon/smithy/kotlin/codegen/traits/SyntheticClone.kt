@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen.smithy.traits
+package software.amazon.smithy.kotlin.codegen.traits
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.node.Node

@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen.smithy.model
+package software.amazon.smithy.kotlin.codegen.model
 
-import software.amazon.smithy.kotlin.codegen.smithy.expectShape
-import software.amazon.smithy.kotlin.codegen.smithy.shapes
-import software.amazon.smithy.kotlin.codegen.smithy.traits.SYNTHETIC_NAMESPACE
-import software.amazon.smithy.kotlin.codegen.smithy.traits.SyntheticClone
+import software.amazon.smithy.kotlin.codegen.expectShape
+import software.amazon.smithy.kotlin.codegen.shapes
+import software.amazon.smithy.kotlin.codegen.traits.SYNTHETIC_NAMESPACE
+import software.amazon.smithy.kotlin.codegen.traits.SyntheticClone
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 
