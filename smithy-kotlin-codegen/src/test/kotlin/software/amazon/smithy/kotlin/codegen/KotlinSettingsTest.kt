@@ -9,11 +9,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 
 class KotlinSettingsTest {
-    @Test fun `infers default service`() {
+    @Test
+    fun `infers default service`() {
         val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
         val contents = """
@@ -35,7 +38,8 @@ class KotlinSettingsTest {
         assertEquals("1.0.0", settings.pkg.version)
     }
 
-    @Test fun `correctly reads rootProject var from build settings`() {
+    @Test
+    fun `correctly reads rootProject var from build settings`() {
         val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
         val contents = """
@@ -59,7 +63,8 @@ class KotlinSettingsTest {
         assertTrue(settings.build.generateDefaultBuildFiles)
     }
 
-    @Test fun `correctly reads generateBuildFiles var from build settings`() {
+    @Test
+    fun `correctly reads generateBuildFiles var from build settings`() {
         val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
         val contents = """
@@ -83,7 +88,8 @@ class KotlinSettingsTest {
         assertFalse(settings.build.generateDefaultBuildFiles)
     }
 
-    @Test fun `correctly reads optin annotations from build settings`() {
+    @Test
+    fun `correctly reads optin annotations from build settings`() {
         val model = javaClass.getResource("simple-service.smithy").asSmithy()
 
         val contents = """
@@ -105,5 +111,53 @@ class KotlinSettingsTest {
 
         val expected = listOf("foo", "bar")
         assertEquals(expected, settings.build.optInAnnotations)
+    }
+
+    @Test
+    fun `throws exception with empty package name`() {
+        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                }
+            }
+        """.trimIndent()
+
+        assertThrows<CodegenException> {
+            KotlinSettings.from(
+                model,
+                Node.parse(contents).expectObjectNode()
+            )
+        }
+    }
+
+    @Test
+    fun `throws exception with invalid package name`() {
+        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+
+        val contents = """
+            {
+                "package": {
+                    "name": "rds-data",
+                    "version": "1.0.0"
+                },
+                "build": {
+                    "optInAnnotations": ["foo", "bar"]
+                }
+            }
+        """.trimIndent()
+
+        assertThrows<CodegenException> {
+            KotlinSettings.from(
+                model,
+                Node.parse(contents).expectObjectNode()
+            )
+        }
     }
 }
