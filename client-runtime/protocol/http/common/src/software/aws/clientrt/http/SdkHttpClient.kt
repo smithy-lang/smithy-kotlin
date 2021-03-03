@@ -31,7 +31,7 @@ fun sdkHttpClient(
 class SdkHttpClient(
     val engine: HttpClientEngine,
     val config: HttpClientConfig
-) : Service<HttpRequestBuilder, HttpResponse> {
+) : HttpService {
 
     override suspend fun call(request: HttpRequestBuilder): HttpResponse {
         return engine.roundTrip(request)
