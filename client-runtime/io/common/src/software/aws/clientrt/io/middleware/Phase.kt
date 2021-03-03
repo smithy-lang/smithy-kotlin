@@ -23,16 +23,9 @@ class Phase<Request, Response> : Middleware<Request, Response> {
     private val middlewares = mutableListOf<Middleware<Request, Response>>()
 
     /**
-     * Append [interceptor] to the set of interceptors for this phase
+     * Insert [interceptor] in a specific order into the set of interceptors for this phase
      */
-    fun intercept(interceptor: suspend (req: Request, next: Service<Request, Response>) -> Response) {
-        intercept(Order.After, interceptor)
-    }
-
-    /**
-     * Insert [interceptor] in a specific order
-     */
-    fun intercept(order: Order, interceptor: suspend (req: Request, next: Service<Request, Response>) -> Response) {
+    fun intercept(order: Order = Order.After, interceptor: suspend (req: Request, next: Service<Request, Response>) -> Response) {
         val wrapped = MiddlewareLambda(interceptor)
         register(order, wrapped)
     }
