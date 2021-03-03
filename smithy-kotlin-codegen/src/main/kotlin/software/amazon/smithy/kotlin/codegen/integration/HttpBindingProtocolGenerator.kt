@@ -51,9 +51,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
      */
     open fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
-        val rootNamespace = ctx.settings.moduleName
         val features = getHttpFeatures(ctx)
-        return HttpProtocolClientGenerator(ctx, rootNamespace, features, getProtocolHttpBindingResolver(ctx))
+        return HttpProtocolClientGenerator(ctx, features, getProtocolHttpBindingResolver(ctx))
     }
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
@@ -89,8 +88,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {
         val symbol = ctx.symbolProvider.toSymbol(ctx.service)
-        val rootNamespace = ctx.settings.moduleName
-        ctx.delegator.useFileWriter("Default${symbol.name}.kt", rootNamespace) { writer ->
+        ctx.delegator.useFileWriter("Default${symbol.name}.kt", ctx.settings.pkg.name) { writer ->
             val clientGenerator = getHttpProtocolClientGenerator(ctx)
             clientGenerator.render(writer)
         }
@@ -196,7 +194,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val serializerSymbol = buildSymbol {
                 definitionFile = "${symbol.documentSerializerName()}.kt"
                 name = symbol.documentSerializerName()
-                namespace = "${ctx.settings.moduleName}.transform"
+                namespace = "${ctx.settings.pkg.name}.transform"
 
                 // serializer class for the shape takes the shape's symbol as input
                 // ensure we get an import statement to the symbol from the .model package
@@ -260,7 +258,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val serializerSymbol = buildSymbol {
             definitionFile = "${op.serializerName()}.kt"
             name = op.serializerName()
-            namespace = "${ctx.settings.moduleName}.transform"
+            namespace = "${ctx.settings.pkg.name}.transform"
 
             reference(inputSymbol, SymbolReference.ContextOption.DECLARE)
         }
@@ -573,7 +571,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val deserializerSymbol = buildSymbol {
             definitionFile = "${op.deserializerName()}.kt"
             name = op.deserializerName()
-            namespace = "${ctx.settings.moduleName}.transform"
+            namespace = "${ctx.settings.pkg.name}.transform"
 
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
@@ -617,7 +615,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val deserializerName = "${outputSymbol.name}Deserializer"
             definitionFile = "$deserializerName.kt"
             name = deserializerName
-            namespace = "${ctx.settings.moduleName}.transform"
+            namespace = "${ctx.settings.pkg.name}.transform"
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
 
@@ -945,7 +943,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val deserializerSymbol = buildSymbol {
                 definitionFile = "${symbol.documentDeserializerName()}.kt"
                 name = symbol.documentDeserializerName()
-                namespace = "${ctx.settings.moduleName}.transform"
+                namespace = "${ctx.settings.pkg.name}.transform"
 
                 // deserializer class for the shape outputs the shape's symbol
                 // ensure we get an import statement to the symbol from the .model package

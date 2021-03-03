@@ -27,6 +27,7 @@ import java.io.File
 import java.io.OutputStream
 
 private const val SmithyVersion = "1.0"
+
 /**
  * Load and initialize a model from a Java resource URL
  */
@@ -34,6 +35,7 @@ fun String.asSmithy(sourceLocation: String = "test.smithy"): Model {
     val processed = if (!this.startsWith("\$version")) "\$version: ${SmithyVersion.doubleQuote()}\n$this" else this
     return Model.assembler().discoverModels().addUnparsedModel(sourceLocation, processed).assemble().unwrap()
 }
+
 private fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
 private fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
 
@@ -41,10 +43,10 @@ private fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$
  * Captures the result of a model transformation test
  */
 data class ModelChangeTestResult(
-        val originalModelCompilationResult: KotlinCompilation.Result,
-        val updatedModelCompilationResult: KotlinCompilation.Result,
-        val compileSuccess: Boolean,
-        val compileOutput: String
+    val originalModelCompilationResult: KotlinCompilation.Result,
+    val updatedModelCompilationResult: KotlinCompilation.Result,
+    val compileSuccess: Boolean,
+    val compileOutput: String
 )
 
 /**
@@ -57,17 +59,24 @@ data class ModelChangeTestResult(
  * @param emitSourcesToTmp a debugging function to emit generated SDKs to a temp directory for analysis.  Actual
  * target directory is provided in log output.
  */
-fun testModelChangeAgainstSource(originalModel: Model, updatedModel: Model, testSource: String, emitSourcesToTmp: Boolean = false): ModelChangeTestResult {
+fun testModelChangeAgainstSource(
+    originalModel: Model,
+    updatedModel: Model,
+    testSource: String,
+    emitSourcesToTmp: Boolean = false
+): ModelChangeTestResult {
     val compileOutputStream = ByteArrayOutputStream()
-    val originalModelCompilationResult = compileSdkAndTest(originalModel, testSource, compileOutputStream, emitSourcesToTmp)
-    val updatedModelCompilationResult = compileSdkAndTest(updatedModel, testSource, compileOutputStream, emitSourcesToTmp)
+    val originalModelCompilationResult =
+        compileSdkAndTest(originalModel, testSource, compileOutputStream, emitSourcesToTmp)
+    val updatedModelCompilationResult =
+        compileSdkAndTest(updatedModel, testSource, compileOutputStream, emitSourcesToTmp)
     compileOutputStream.flush()
 
     return ModelChangeTestResult(
-            originalModelCompilationResult,
-            updatedModelCompilationResult,
-            originalModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK &&
-                    updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK,
+        originalModelCompilationResult,
+        updatedModelCompilationResult,
+        originalModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK &&
+                updatedModelCompilationResult.exitCode == KotlinCompilation.ExitCode.OK,
         compileOutputStream.toString()
     )
 }
@@ -81,7 +90,12 @@ fun testModelChangeAgainstSource(originalModel: Model, updatedModel: Model, test
  * @param emitSourcesToTmp a debugging function to emit generated SDK to a temp directory for analysis.  Actual
  * target directory is provided in log output.
  */
-fun compileSdkAndTest(model: Model, testSource: String? = null, outputSink: OutputStream = System.out, emitSourcesToTmp: Boolean = false): KotlinCompilation.Result {
+fun compileSdkAndTest(
+    model: Model,
+    testSource: String? = null,
+    outputSink: OutputStream = System.out,
+    emitSourcesToTmp: Boolean = false
+): KotlinCompilation.Result {
     val sdkFileManifest = generateSdk(model)
 
     if (emitSourcesToTmp) {
@@ -110,35 +124,38 @@ fun compileSdkAndTest(model: Model, testSource: String? = null, outputSink: Outp
 // Ex: generateSdk(model2).writeToDirectory("/tmp/mysdk")
 fun MockManifest.writeToDirectory(dir: String) {
     files
-            .map { path -> File(dir, path.toString()) to expectFileString(path) }
-            .forEach { (file, content) ->
-                if (!file.parentFile.exists()) check(file.parentFile.mkdirs()) { "Unable to create directory ${file.parentFile}"}
-                file.writeText(content)
-            }
+        .map { path -> File(dir, path.toString()) to expectFileString(path) }
+        .forEach { (file, content) ->
+            if (!file.parentFile.exists()) check(file.parentFile.mkdirs()) { "Unable to create directory ${file.parentFile}" }
+            file.writeText(content)
+        }
 }
 
 // Convert a MockManifest into the Source File list expected by the compiler tool.
 fun MockManifest.toSourceFileList() =
-        files
-            .filter { file -> file.toString().endsWith(".kt") }
-            .map { file -> SourceFile.kotlin(file.fileName.toString(), expectFileString(file)) }
+    files
+        .filter { file -> file.toString().endsWith(".kt") }
+        .map { file -> SourceFile.kotlin(file.fileName.toString(), expectFileString(file)) }
 
 // Produce the generated service code given model inputs.
 fun generateSdk(
-        model: Model,
-        manifest: MockManifest = MockManifest(),
-        settings: ObjectNode = Node.objectNodeBuilder()
-                .withMember("module", Node.from("test"))
-                .withMember("moduleVersion", Node.from("1.0.0"))
-                .build()
+    model: Model,
+    manifest: MockManifest = MockManifest(),
+    settings: ObjectNode = Node.objectNodeBuilder()
+        .withMember(
+            "package", Node.objectNode()
+                .withMember("name", Node.from("test"))
+                .withMember("version", Node.from("1.0.0"))
+        )
+        .build()
 ): MockManifest {
     // Initialize context
     val pluginContext = PluginContext
-            .builder()
-            .model(model)
-            .fileManifest(manifest)
-            .settings(settings)
-            .build()
+        .builder()
+        .model(model)
+        .fileManifest(manifest)
+        .settings(settings)
+        .build()
 
     // Generate SDK
     CodegenVisitor(pluginContext).execute()
