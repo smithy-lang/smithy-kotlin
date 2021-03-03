@@ -91,7 +91,6 @@ abstract class HttpSerde(private val serdeProvider: String, private val generate
  */
 open class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
-    protected val rootNamespace: String,
     protected val features: List<HttpFeature>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
@@ -121,8 +120,8 @@ open class HttpProtocolClientGenerator(
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
-        writer.addImport("$rootNamespace.model", "*")
-        writer.addImport("$rootNamespace.transform", "*")
+        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+        writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
         // http.*
         val httpRootPkg = KotlinDependency.CLIENT_RT_HTTP.namespace

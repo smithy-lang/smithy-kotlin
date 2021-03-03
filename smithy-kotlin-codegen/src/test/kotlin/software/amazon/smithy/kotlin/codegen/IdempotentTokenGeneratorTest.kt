@@ -31,10 +31,10 @@ class IdempotentTokenGeneratorTest {
 
     @Test
     fun `it serializes operation payload inputs with idempotency token trait`() {
-        val contents = getTransformFileContents("AllocateWidgetSerializer.kt")
+        val contents = getTransformFileContents("AllocateWidgetOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
+class AllocateWidgetOperationSerializer(val input: AllocateWidgetInput) : HttpSerialize {
 
     companion object {
         private val CLIENTTOKEN_DESCRIPTOR = SdkFieldDescriptor("clientToken", SerialKind.String)
@@ -67,10 +67,10 @@ class AllocateWidgetSerializer(val input: AllocateWidgetInput) : HttpSerialize {
 
     @Test
     fun `it serializes operation query inputs with idempotency token trait`() {
-        val contents = getTransformFileContents("AllocateWidgetQuerySerializer.kt")
+        val contents = getTransformFileContents("AllocateWidgetQueryOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class AllocateWidgetQuerySerializer(val input: AllocateWidgetInputQuery) : HttpSerialize {
+class AllocateWidgetQueryOperationSerializer(val input: AllocateWidgetInputQuery) : HttpSerialize {
     override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 
@@ -89,10 +89,10 @@ class AllocateWidgetQuerySerializer(val input: AllocateWidgetInputQuery) : HttpS
 
     @Test
     fun `it serializes operation header inputs with idempotency token trait`() {
-        val contents = getTransformFileContents("AllocateWidgetHeaderSerializer.kt")
+        val contents = getTransformFileContents("AllocateWidgetHeaderOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class AllocateWidgetHeaderSerializer(val input: AllocateWidgetInputHeader) : HttpSerialize {
+class AllocateWidgetHeaderOperationSerializer(val input: AllocateWidgetInputHeader) : HttpSerialize {
     override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
         builder.method = HttpMethod.POST
 

@@ -20,7 +20,6 @@ interface CodegenContext {
     val settings: KotlinSettings
     val protocolGenerator: ProtocolGenerator?
     val integrations: List<KotlinIntegration>
-    val rootNamespace: String
 }
 
 /**
@@ -31,8 +30,7 @@ data class GenerationContext(
     override val symbolProvider: SymbolProvider,
     override val settings: KotlinSettings,
     override val protocolGenerator: ProtocolGenerator? = null,
-    override val integrations: List<KotlinIntegration> = listOf(),
-    override val rootNamespace: String = settings.moduleName,
+    override val integrations: List<KotlinIntegration> = listOf()
 ) : CodegenContext
 
 /**
@@ -54,10 +52,8 @@ data class RenderingContext<T : Shape>(
     override val settings: KotlinSettings,
     override val protocolGenerator: ProtocolGenerator? = null,
     override val integrations: List<KotlinIntegration> = listOf(),
-    // override the root package name
-    override val rootNamespace: String = settings.moduleName,
 ) : CodegenContext {
 
     constructor(otherCtx: CodegenContext, writer: KotlinWriter, shape: T?) :
-        this(writer, shape, otherCtx.model, otherCtx.symbolProvider, otherCtx.settings, otherCtx.protocolGenerator, otherCtx.integrations, otherCtx.rootNamespace)
+        this(writer, shape, otherCtx.model, otherCtx.symbolProvider, otherCtx.settings, otherCtx.protocolGenerator, otherCtx.integrations)
 }

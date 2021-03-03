@@ -23,8 +23,12 @@ class KotlinDelegatorTest {
             .settings(
                 Node.objectNodeBuilder()
                     .withMember("service", Node.from("smithy.example#Example"))
-                    .withMember("module", Node.from("example"))
-                    .withMember("moduleVersion", Node.from("0.1.0"))
+                    .withMember(
+                        "package",
+                        Node.objectNode()
+                            .withMember("name", Node.from("example"))
+                            .withMember("version", Node.from("1.0.0"))
+                    )
                     .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
                     .build()
             )
@@ -48,8 +52,12 @@ class KotlinDelegatorTest {
             .settings(
                 Node.objectNodeBuilder()
                     .withMember("service", Node.from("smithy.example#Example"))
-                    .withMember("module", Node.from("example"))
-                    .withMember("moduleVersion", Node.from("0.1.0"))
+                    .withMember(
+                        "package",
+                        Node.objectNode()
+                            .withMember("name", Node.from("example"))
+                            .withMember("version", Node.from("1.0.0"))
+                    )
                     .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
                     .build()
             )

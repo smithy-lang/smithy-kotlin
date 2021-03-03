@@ -101,7 +101,7 @@ class DeserializeUnionGeneratorTest {
                         deserializer.deserializeList(UNIONLIST_DESCRIPTOR) {
                             val col0 = mutableListOf<MyAggregateUnion>()
                             while (hasNextElement()) {
-                                val el0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                val el0 = if (nextHasValue()) { MyAggregateUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                 col0.add(el0)
                             }
                             MyAggregateUnion.UnionList(col0)
@@ -111,7 +111,7 @@ class DeserializeUnionGeneratorTest {
                             val map0 = mutableMapOf<String, MyAggregateUnion>()
                             while (hasNextEntry()) {
                                 val k0 = key()
-                                val v0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                val v0 = if (nextHasValue()) { MyAggregateUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                 map0[k0] = v0
                             }
                             MyAggregateUnion.UnionMap(map0)
@@ -196,7 +196,7 @@ class DeserializeUnionGeneratorTest {
                                             val map2 = mutableMapOf<String, BarUnion>()
                                             while (hasNextEntry()) {
                                                 val k2 = key()
-                                                val v2 = if (nextHasValue()) { BarUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                                val v2 = if (nextHasValue()) { BarUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                                 map2[k2] = v2
                                             }
                                             FooUnion.StrMapVal(map2)
