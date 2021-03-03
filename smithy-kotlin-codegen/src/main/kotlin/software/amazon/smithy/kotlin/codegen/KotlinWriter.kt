@@ -59,10 +59,16 @@ fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
 }
 
 // Convenience function to create symbol and add it as an import.
-fun KotlinWriter.addImport(name: String, dependency: KotlinDependency = KotlinDependency.CLIENT_RT_CORE, namespace: String = dependency.namespace) {
+fun KotlinWriter.addImport(
+    name: String,
+    dependency: KotlinDependency = KotlinDependency.CLIENT_RT_CORE,
+    namespace: String = dependency.namespace,
+    subpackage: String? = null
+) {
+    val fullNamespace = if (subpackage != null) "$namespace.$subpackage" else namespace
     val importSymbol = Symbol.builder()
         .name(name)
-        .namespace(namespace, ".")
+        .namespace(fullNamespace, ".")
         .addDependency(dependency)
         .build()
 

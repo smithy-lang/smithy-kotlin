@@ -3,13 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.aws.clientrt.http
+package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.client.ClientOptionsBuilder
 import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.client.SdkClientOption
-import software.aws.clientrt.http.feature.HttpDeserialize
-import software.aws.clientrt.http.feature.HttpSerialize
+import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.util.AttributeKey
 import software.aws.clientrt.util.InternalAPI
 
@@ -17,23 +16,18 @@ import software.aws.clientrt.util.InternalAPI
  * Common configuration for an SDK (HTTP) operation/call
  */
 @InternalAPI
-open class SdkHttpOperation {
+open class HttpOperationContext {
 
     companion object {
-        /**
-         * The operation serializer (if any) is stored under this key
-         */
-        val OperationSerializer: AttributeKey<HttpSerialize> = AttributeKey("OperationSerializer")
-
-        /**
-         * The operation deserializer (if any) is stored under this key
-         */
-        val OperationDeserializer: AttributeKey<HttpDeserialize> = AttributeKey("OperationDeserializer")
-
         /**
          * The expected HTTP status code of a successful response is stored under this key
          */
         val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("ExpectedHttpStatus")
+
+        /**
+         * Raw HTTP response
+         */
+        val HttpResponse: AttributeKey<HttpResponse> = AttributeKey("HttpResponse")
 
         /**
          * A prefix to prepend the resolved hostname with.
@@ -61,16 +55,6 @@ open class SdkHttpOperation {
          * The name of the operation
          */
         var operationName: String? by requiredOption(SdkClientOption.OperationName)
-
-        /**
-         * The serializer to use for the request
-         */
-        var serializer: HttpSerialize? by option(OperationSerializer)
-
-        /**
-         * The deserializer to use for the response
-         */
-        var deserializer: HttpDeserialize? by option(OperationDeserializer)
 
         /**
          * The expected HTTP status code on success

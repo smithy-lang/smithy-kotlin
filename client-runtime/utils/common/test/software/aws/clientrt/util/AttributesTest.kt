@@ -38,4 +38,25 @@ class AttributesTest {
         attributes.putIfAbsent(strKey, "bar")
         assertEquals("bar", attributes[strKey])
     }
+
+    @Test
+    fun testMerge() {
+        val attr1 = Attributes()
+        val key1 = AttributeKey<String>("k1")
+        val key2 = AttributeKey<String>("k2")
+        val key3 = AttributeKey<String>("k3")
+
+        attr1[key1] = "Foo"
+        attr1[key2] = "Bar"
+
+        val attr2 = Attributes()
+        attr2[key2] = "Baz"
+        attr2[key3] = "Quux"
+
+        attr1.merge(attr2)
+
+        assertEquals("Foo", attr1[key1])
+        assertEquals("Baz", attr1[key2])
+        assertEquals("Quux", attr1[key3])
+    }
 }

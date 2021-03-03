@@ -39,7 +39,6 @@ class ClientConfigGenerator(
      */
     private fun registerDefaultProps() {
         if (ctx.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
-            props.add(KotlinClientRuntimeConfigProperty.HttpClientEngineConfig)
             props.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
         }
         if (ctx.shape != null && ctx.shape.hasIdempotentTokenMember(ctx.model)) {

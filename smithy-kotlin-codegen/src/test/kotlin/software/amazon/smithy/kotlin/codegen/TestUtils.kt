@@ -17,7 +17,11 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.integration.HttpBindingResolver
+import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
+import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -200,3 +204,14 @@ fun String.formatForTest(indent: String = "    ") =
         .split('\n')
         .map { if (it.isBlank()) "" else it }
         .joinToString(separator = "\n") { it }
+
+class TestProtocolClientGenerator(
+    ctx: ProtocolGenerator.GenerationContext,
+    features: List<HttpFeature>,
+    httpBindingResolver: HttpBindingResolver
+) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver) {
+    override val serdeProviderSymbol: Symbol = buildSymbol {
+        name = "JsonSerdeProvider"
+        namespace(KotlinDependency.CLIENT_RT_SERDE_JSON)
+    }
+}

@@ -5,7 +5,11 @@
 package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.buildSymbol
 import software.amazon.smithy.kotlin.codegen.integration.*
+import software.amazon.smithy.kotlin.codegen.namespace
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
@@ -29,4 +33,21 @@ class RestJsonTestProtocolGenerator(
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         // NOP
     }
+
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
+        return MockRestJsonProtocolClientGenerator(ctx, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
+    }
+}
+
+class MockRestJsonProtocolClientGenerator(
+    ctx: ProtocolGenerator.GenerationContext,
+    features: List<HttpFeature>,
+    httpBindingResolver: HttpBindingResolver
+) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver) {
+
+    override val serdeProviderSymbol: Symbol
+        get() = buildSymbol {
+            name = "JsonSerdeProvider"
+            namespace(KotlinDependency.CLIENT_RT_SERDE_JSON)
+        }
 }
