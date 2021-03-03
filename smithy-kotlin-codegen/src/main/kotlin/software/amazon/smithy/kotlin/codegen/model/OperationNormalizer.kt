@@ -5,11 +5,13 @@
 
 package software.amazon.smithy.kotlin.codegen.model
 
-import software.amazon.smithy.kotlin.codegen.expectShape
-import software.amazon.smithy.kotlin.codegen.shapes
+import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.traits.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.Trait
+import kotlin.streams.toList
 
 /**
  * Generate synthetic input and output shapes for a operations as needed and normalize the names.
@@ -53,7 +55,37 @@ object OperationNormalizer {
     }
 
     private fun validateTransform(model: Model) {
-        // FIXME - implement some KnowledgeIndex's to commonize the logic for walking a model
+        val operations = model.shapes<OperationShape>()
+        // list of all renamed shapes
+        val newNames = operations.flatMap {
+            listOf(it.id.name + REQUEST_SUFFIX, it.id.name + RESPONSE_SUFFIX)
+        }.toSet()
+
+        val shapesResultingInType = model.shapes().filter {
+            // remove trait definitions (which are also structures)
+            !it.hasTrait<Trait>() && SymbolVisitor.isTypeGenerateForShape(it)
+        }.toList()
+
+        val possibleConflicts = shapesResultingInType.filter { it.id.name in newNames }
+        if (possibleConflicts.isEmpty()) return
+
+        val operationInputIds = operations.mapNotNull { it.input.getOrNull() }.toSet()
+        val operationOutputIds = operations.mapNotNull { it.output.getOrNull() }.toSet()
+        val allIds = operationInputIds + operationOutputIds
+
+        // a type that has the same name as a rename is a possible candidate for conflict
+        // we have to check if the type is an operational input or not. If it's an operational
+        // input already then a rename is effectively a no-op, if it isn't then it's going to conflict
+        val realConflicts = possibleConflicts.filterNot { it.id in allIds }
+        if (realConflicts.isNotEmpty()) {
+            val formatted = realConflicts.joinToString(separator = "\n", prefix = " * ") { it.id.toString() }
+            throw CodegenException(
+                """renaming operation inputs or outputs will result in a conflict for:
+                |$formatted
+                |Fix by supplying a manual rename customization for the shapes listed.
+            """.trimMargin()
+            )
+        }
     }
 
     private fun emptyOperationIOStruct(opShapeId: ShapeId, suffix: String): StructureShape {

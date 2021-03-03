@@ -5,7 +5,9 @@
 
 package software.amazon.smithy.kotlin.codegen.model
 
+import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.asSmithyModel
 import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.kotlin.codegen.expectTrait
@@ -15,10 +17,7 @@ import software.amazon.smithy.kotlin.codegen.traits.SyntheticClone
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class OperationNormalizerTest {
 
@@ -142,8 +141,9 @@ class OperationNormalizerTest {
             }
         """.asSmithyModel()
 
-        assertFails {
+        val ex = assertFailsWith(CodegenException::class) {
             OperationNormalizer.transform(model)
         }
+        ex.message!!.shouldContain("smithy.test#FooResponse")
     }
 }
