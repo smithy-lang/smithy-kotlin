@@ -14,7 +14,7 @@ import java.net.URL
  * Tests that validate the generated source for a white-label SDK
  */
 class WhiteLabelSDKTest {
-    // Max number of warnings the compiler can issue as a result of compiling SDK.
+    // Max number of warnings the compiler can issue as a result of compiling SDK with kitchen sink model.
     private val warningThreshold = 3
     private val copyGeneratedSdksToTmp = false
 
@@ -121,6 +121,84 @@ class WhiteLabelSDKTest {
 
         val compileOutputStream = ByteArrayOutputStream()
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        compileOutputStream.flush()
+
+        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+    }
+
+    @Test
+    fun `it has non conflicting document deserializer for exceptions`() {
+        // test that an exception is re-used not as an error but as part of some other payload (ticket: 176989575)
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [ Foo ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                input: FooRequest,
+                output: FooOutput,
+                errors: [FooError]
+            }        
+            
+            structure FooRequest {}
+            structure FooOutput {
+                err: FooError
+            }
+            
+            @error("server")
+            structure FooError { 
+            }
+        """.asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        compileOutputStream.flush()
+
+        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+    }
+
+    @Test
+    fun `it compiles models with nested unions`() {
+        val model = """
+            namespace com.test
+
+            use aws.protocols#restJson1
+
+            @restJson1
+            service Example {
+                version: "1.0.0",
+                operations: [
+                    Foo,
+                ]
+            }
+
+            @http(method: "POST", uri: "/foo-no-input")
+            operation Foo {
+                output: FooResponse
+            }
+
+            structure FooResponse { 
+                unionMember1: Union1
+            }
+            
+            union Union1 {
+                unionMember2: Union2
+            }
+            
+            union Union2 {
+                fooMember: String
+            }
+        """.asSmithy()
+
+        val compileOutputStream = ByteArrayOutputStream()
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = true)
         compileOutputStream.flush()
 
         assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
