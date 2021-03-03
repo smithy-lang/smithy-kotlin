@@ -52,11 +52,7 @@ fun <Request, Response> decorate(
     vararg middleware: Middleware<Request, Response>
 ): Service<Request, Response> {
     if (middleware.isEmpty()) return service
-
-    var s = DecoratedService(service, middleware.last())
-    for (i in middleware.lastIndex - 1 downTo 0) {
-        s = DecoratedService(service = s, with = middleware[i])
+    return middleware.dropLast(1).foldRight(DecoratedService(service, middleware.last())) { m, s ->
+        DecoratedService(service = s, with = m)
     }
-
-    return s
 }
