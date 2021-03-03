@@ -14,13 +14,10 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import software.aws.clientrt.http.Headers
-import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
-import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.http.response.HttpResponsePipeline
 import software.aws.clientrt.logging.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -101,26 +98,6 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
 
     override fun close() {
         client.close()
-    }
-
-    override fun install(client: SdkHttpClient) {
-        super.install(client)
-        client.responsePipeline.intercept(HttpResponsePipeline.Finalize) {
-            // ensure the response body is consumed and resources are released
-            val body = context.response.body
-            when (body) {
-                is HttpBody.Streaming -> {
-                    val source = body.readFrom()
-                    if (source.isClosedForRead) {
-                        // If the response is a streaming body the end user is responsible for ensuring it gets read and closed.
-                        // This either happens by reading the content or explicit cancellation. If the source
-                        // is closed we just ensure that it is cancelled (which could happen if there was no content to read).
-                        // This releases the ktor client coroutine if it was waiting for a body to be consumed
-                        source.cancel(null)
-                    }
-                }
-            }
-        }
     }
 }
 

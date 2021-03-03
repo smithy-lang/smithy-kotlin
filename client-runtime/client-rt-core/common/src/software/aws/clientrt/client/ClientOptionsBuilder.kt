@@ -13,8 +13,7 @@ import kotlin.reflect.KProperty
 /**
  * Base class for building client options
  */
-public abstract class ClientOptionsBuilder {
-    protected val options = Attributes()
+public abstract class ClientOptionsBuilder(protected val options: Attributes = Attributes()) : Attributes by options {
     private val requiredKeys = mutableSetOf<AttributeKey<*>>()
 
     // TODO - currently can only have nullable (T?) values delegated. Look at providing either a default/initial value

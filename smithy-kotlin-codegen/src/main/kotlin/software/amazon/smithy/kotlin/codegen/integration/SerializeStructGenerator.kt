@@ -546,7 +546,8 @@ open class SerializeStructGenerator(
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
         if (memberShape.hasTrait<IdempotencyTokenTrait>()) {
-            " ?: field(${memberShape.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
+            writer.addImport(RuntimeTypes.Core.IdempotencyTokenProviderExt)
+            " ?: field(${memberShape.descriptorName()}, context.idempotencyTokenProvider.generateToken())"
         } else {
             ""
         }

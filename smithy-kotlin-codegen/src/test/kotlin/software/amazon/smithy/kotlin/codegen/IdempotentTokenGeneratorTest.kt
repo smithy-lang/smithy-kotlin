@@ -34,7 +34,7 @@ class IdempotentTokenGeneratorTest {
         val contents = getTransformFileContents("AllocateWidgetOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class AllocateWidgetOperationSerializer(val input: AllocateWidgetInput) : HttpSerialize {
+internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidgetInput> {
 
     companion object {
         private val CLIENTTOKEN_DESCRIPTOR = SdkFieldDescriptor("clientToken", SerialKind.String)
@@ -43,22 +43,24 @@ class AllocateWidgetOperationSerializer(val input: AllocateWidgetInput) : HttpSe
         }
     }
 
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetInput): HttpRequestBuilder {
+        val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
 
         builder.url {
             path = "/input/AllocateWidget"
         }
 
-        val serializer = serializationContext.serializationProvider()
+        val serializer = context.serializer()
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
-            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, serializationContext.idempotencyTokenProvider.generateToken())
+            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
         }
 
         builder.body = ByteArrayContent(serializer.toByteArray())
         if (builder.body !is HttpBody.Empty) {
             builder.headers["Content-Type"] = "application/json"
         }
+        return builder
     }
 }
 """
@@ -70,17 +72,19 @@ class AllocateWidgetOperationSerializer(val input: AllocateWidgetInput) : HttpSe
         val contents = getTransformFileContents("AllocateWidgetQueryOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class AllocateWidgetQueryOperationSerializer(val input: AllocateWidgetInputQuery) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+internal class AllocateWidgetQueryOperationSerializer(): HttpSerialize<AllocateWidgetInputQuery> {
+    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetInputQuery): HttpRequestBuilder {
+        val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
 
         builder.url {
             path = "/input/AllocateWidgetQuery"
             parameters {
-                append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.generateToken()))
+                append("clientToken", (input.clientToken ?: context.idempotencyTokenProvider.generateToken()))
             }
         }
 
+        return builder
     }
 }
 """
@@ -92,8 +96,9 @@ class AllocateWidgetQueryOperationSerializer(val input: AllocateWidgetInputQuery
         val contents = getTransformFileContents("AllocateWidgetHeaderOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-class AllocateWidgetHeaderOperationSerializer(val input: AllocateWidgetInputHeader) : HttpSerialize {
-    override suspend fun serialize(builder: HttpRequestBuilder, serializationContext: SerializationContext) {
+internal class AllocateWidgetHeaderOperationSerializer(): HttpSerialize<AllocateWidgetInputHeader> {
+    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetInputHeader): HttpRequestBuilder {
+        val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
 
         builder.url {
@@ -101,9 +106,10 @@ class AllocateWidgetHeaderOperationSerializer(val input: AllocateWidgetInputHead
         }
 
         builder.headers {
-            append("clientToken", (input.clientToken ?: serializationContext.idempotencyTokenProvider.generateToken()))
+            append("clientToken", (input.clientToken ?: context.idempotencyTokenProvider.generateToken()))
         }
 
+        return builder
     }
 }
 """

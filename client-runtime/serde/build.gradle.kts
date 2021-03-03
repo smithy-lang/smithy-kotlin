@@ -8,6 +8,16 @@ extra["displayName"] = "Smithy :: Kotlin :: Serde"
 extra["moduleName"] = "software.aws.clientrt.serde"
 
 
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                api(project(":client-runtime:utils"))
+            }
+        }
+    }
+}
+
 subprojects {
     kotlin {
         sourceSets {

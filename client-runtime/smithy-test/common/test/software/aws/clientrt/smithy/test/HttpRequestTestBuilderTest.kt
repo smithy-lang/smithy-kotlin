@@ -5,7 +5,6 @@
 package software.aws.clientrt.smithy.test
 
 import io.kotest.matchers.string.shouldContain
-import io.ktor.utils.io.core.toByteArray
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.request.HttpRequestBuilder
@@ -317,7 +316,7 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     // no actual body should not make it to our assertEquals but it should still fail (invalid test setup)
                     val builder = HttpRequestBuilder().apply {
-                        body = ByteArrayContent("do not pass go".toByteArray())
+                        body = ByteArrayContent("do not pass go".encodeToByteArray())
                     }
                     mockEngine.roundTrip(builder)
                 }

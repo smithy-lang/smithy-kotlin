@@ -44,6 +44,11 @@ interface Attributes {
      */
     fun <T : Any> computeIfAbsent(key: AttributeKey<T>, block: () -> T): T
 
+    /**
+     * Get a set of all the keys
+     */
+    val keys: Set<AttributeKey<*>>
+
     companion object {
         /**
          * Create an attributes instance
@@ -74,6 +79,16 @@ fun <T : Any> Attributes.putIfAbsent(key: AttributeKey<T>, value: T) {
  */
 fun <T : Any> Attributes.takeOrNull(key: AttributeKey<T>): T? = getOrNull(key).also { remove(key) }
 
+/**
+ * Merge another attributes instance into this set of attributes favoring [other]
+ */
+fun Attributes.merge(other: Attributes) {
+    other.keys.forEach {
+        @Suppress("UNCHECKED_CAST")
+        set(it as AttributeKey<Any>, other[it])
+    }
+}
+
 private class AttributesImpl : Attributes {
     private val map: MutableMap<AttributeKey<*>, Any> = mutableMapOf()
 
@@ -98,4 +113,7 @@ private class AttributesImpl : Attributes {
         map[key] = result
         return result
     }
+
+    override val keys: Set<AttributeKey<*>>
+        get() = map.keys
 }

@@ -18,3 +18,7 @@ interface SerdeProvider {
      */
     fun deserializer(payload: ByteArray): Deserializer
 }
+
+typealias SerializationProvider = () -> Serializer
+
+typealias DeserializationProvider = (payload: ByteArray) -> Deserializer
