@@ -17,9 +17,6 @@ import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
  * Example: "Wrote generated SDK to /tmp/sdk-codegen-1606867139716"
  */
 class ApiEvolutionTest {
-    // Toggle this flag to emit generated SDKs to /tmp for interactive debugging.
-    private val copyGeneratedSdksToTmp = false
-
     // This currently failed because we do not generate model or transforms for operations without inputs or outputs, yet
     // our codegen adds import declarations for those packages anyway.
     // TODO This also fails because there is no default parameter generated for the empty input in model v2.
@@ -78,7 +75,7 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, Debug.emitSourcesToTemp).let { result ->
             assertTrue(result.compileSuccess, result.compileOutput)
         }
     }
@@ -143,7 +140,7 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, Debug.emitSourcesToTemp).let { result ->
             assertTrue(result.compileSuccess, result.compileOutput)
         }
     }
@@ -212,7 +209,7 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, Debug.emitSourcesToTemp).let { result ->
             assertTrue(result.compileSuccess, result.compileOutput)
         }
     }
@@ -278,7 +275,7 @@ class ApiEvolutionTest {
             
         """.trimIndent()
 
-        testModelChangeAgainstSource(modelV1, modelV2, customerCode, copyGeneratedSdksToTmp).let { result ->
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, Debug.emitSourcesToTemp).let { result ->
             assertTrue(result.compileSuccess, result.compileOutput)
         }
     }

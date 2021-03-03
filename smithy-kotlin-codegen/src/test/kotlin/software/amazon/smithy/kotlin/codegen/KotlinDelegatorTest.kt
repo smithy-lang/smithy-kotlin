@@ -32,8 +32,9 @@ class KotlinDelegatorTest {
 
         KotlinCodegenPlugin().execute(context)
 
-        Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/model/GetFooInput.kt"))
-        Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/model/GetFooOutput.kt"))
+        // inputs and outputs are renamed. See OperationNormalizer
+        Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/model/GetFooRequest.kt"))
+        Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/model/GetFooResponse.kt"))
         Assertions.assertTrue(manifest.hasFile("src/main/kotlin/example/ExampleClient.kt"))
     }
 
@@ -56,7 +57,7 @@ class KotlinDelegatorTest {
 
         KotlinCodegenPlugin().execute(context)
 
-        val contents = manifest.getFileString("src/main/kotlin/example/model/GetFooInput.kt").get()
+        val contents = manifest.getFileString("src/main/kotlin/example/model/GetFooRequest.kt").get()
         contents.shouldContain("import java.math.BigInteger")
         // ensure symbol wasn't imported as an alias by default
         contents.shouldNotContain("as BigInteger")

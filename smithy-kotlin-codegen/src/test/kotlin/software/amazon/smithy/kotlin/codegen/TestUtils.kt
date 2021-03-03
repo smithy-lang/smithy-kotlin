@@ -47,6 +47,8 @@ fun String.shouldSyntacticSanityCheck() {
     Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
 }
 
+// FIXME - model doesn't go through same normalization...
+
 /**
  * Load and initialize a model from a Java resource URL
  */

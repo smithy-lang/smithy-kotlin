@@ -53,7 +53,7 @@ class SyntheticClone private constructor(builder: Builder) :
     }
 
     companion object {
-        val ID = ShapeId.from("smithy.kotlin.traits#SyntheticClone")
+        val ID = ShapeId.from("smithy.kotlin.traits#syntheticClone")
 
         fun build(block: SyntheticClone.Builder.() -> Unit): SyntheticClone = Builder().apply(block).build()
     }

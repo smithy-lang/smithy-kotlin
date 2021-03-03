@@ -16,14 +16,13 @@ import java.net.URL
 class WhiteLabelSDKTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK.
     private val warningThreshold = 3
-    private val copyGeneratedSdksToTmp = false
 
     @Test
     fun `white label sdk compiles without errors`() {
         val model = javaClass.getResource("/kitchen-sink-model.smithy").asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
-        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
         assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
@@ -34,7 +33,7 @@ class WhiteLabelSDKTest {
         val model = javaClass.getResource("/kitchen-sink-model.smithy").asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
-        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
         val result = compilationResult.messages
@@ -82,7 +81,7 @@ class WhiteLabelSDKTest {
         """.asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
-        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
         assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())

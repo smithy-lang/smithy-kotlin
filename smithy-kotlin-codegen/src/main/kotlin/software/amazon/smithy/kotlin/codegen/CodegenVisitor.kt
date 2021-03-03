@@ -10,6 +10,7 @@ import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
@@ -48,7 +49,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         for (integration in integrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
-        model = resolvedModel
+
+        // normalize operations
+        model = OperationNormalizer.transform(resolvedModel)
 
         service = settings.getService(model)
         symbolProvider = integrations.fold(
