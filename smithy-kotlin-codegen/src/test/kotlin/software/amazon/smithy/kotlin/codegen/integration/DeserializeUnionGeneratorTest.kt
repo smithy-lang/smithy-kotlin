@@ -323,6 +323,6 @@ class DeserializeUnionGeneratorTest {
 
         ctx.generator.generateDeserializers(ctx.generationCtx)
         ctx.generationCtx.delegator.flushWriters()
-        return ctx.manifest.expectFileString("src/main/kotlin/test/transform/${shapeName}Deserializer.kt")
+        return ctx.manifest.expectFileString("src/main/kotlin/test/transform/${shapeName}DocumentDeserializer.kt")
     }
 }
