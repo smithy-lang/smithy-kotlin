@@ -87,8 +87,8 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFoo(input: GetFooRequest): GetFooResponse {
         val op = SdkHttpOperation.build<GetFooRequest, GetFooResponse> {
-            serializer = GetFooSerializer()
-            deserializer = GetFooDeserializer()
+            serializer = GetFooOperationSerializer()
+            deserializer = GetFooOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
@@ -111,7 +111,7 @@ class HttpProtocolClientGeneratorTest {
                     return builder
                 }
             }
-            deserializer = GetFooNoInputDeserializer()
+            deserializer = GetFooNoInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
@@ -126,7 +126,7 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
         val op = SdkHttpOperation.build<GetFooRequest, kotlin.Unit> {
-            serializer = GetFooNoOutputSerializer()
+            serializer = GetFooNoOutputOperationSerializer()
             deserializer = UnitDeserializer
             context {
                 expectedHttpStatus = 200
@@ -142,8 +142,8 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
         val op = SdkHttpOperation.build<GetFooStreamingRequest, GetFooResponse> {
-            serializer = GetFooStreamingInputSerializer()
-            deserializer = GetFooStreamingInputDeserializer()
+            serializer = GetFooStreamingInputOperationSerializer()
+            deserializer = GetFooStreamingInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
@@ -158,8 +158,8 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
         val op = SdkHttpOperation.build<GetFooRequest, GetFooStreamingResponse> {
-            serializer = GetFooStreamingOutputSerializer()
-            deserializer = GetFooStreamingOutputDeserializer()
+            serializer = GetFooStreamingOutputOperationSerializer()
+            deserializer = GetFooStreamingOutputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
@@ -182,7 +182,7 @@ class HttpProtocolClientGeneratorTest {
                     return builder
                 }
             }
-            deserializer = GetFooStreamingOutputNoInputDeserializer()
+            deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
@@ -197,7 +197,7 @@ class HttpProtocolClientGeneratorTest {
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
         val op = SdkHttpOperation.build<GetFooStreamingRequest, kotlin.Unit> {
-            serializer = GetFooStreamingInputNoOutputSerializer()
+            serializer = GetFooStreamingInputNoOutputOperationSerializer()
             deserializer = UnitDeserializer
             context {
                 expectedHttpStatus = 200
@@ -277,8 +277,8 @@ class HttpProtocolClientGeneratorTest {
         val prefix = "\${input.foo}.data."
         val expectedFragment = """
         val op = SdkHttpOperation.build<GetStatusInput, GetStatusOutput> {
-            serializer = GetStatusSerializer()
-            deserializer = GetStatusDeserializer()
+            serializer = GetStatusOperationSerializer()
+            deserializer = GetStatusOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName

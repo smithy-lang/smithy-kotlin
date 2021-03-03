@@ -110,9 +110,8 @@ abstract class HttpProtocolClientGenerator(
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
-        val rootNamespace = ctx.settings.moduleName
-        writer.addImport("$rootNamespace.model", "*")
-        writer.addImport("$rootNamespace.transform", "*")
+        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+        writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
         // http.*
         val httpRootPkg = KotlinDependency.CLIENT_RT_HTTP.namespace

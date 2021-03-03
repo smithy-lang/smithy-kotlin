@@ -198,7 +198,7 @@ class SerializeUnionGeneratorTest {
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 when (input) {
-                    is MyAggregateUnion.Nested3 -> field(NESTED3_DESCRIPTOR, NestedSerializer(input.value))
+                    is MyAggregateUnion.Nested3 -> field(NESTED3_DESCRIPTOR, NestedDocumentSerializer(input.value))
                 }
             }
         """.trimIndent()
@@ -242,13 +242,13 @@ class SerializeUnionGeneratorTest {
                 when (input) {
                     is FooUnion.StrMapVal -> {
                         mapField(STRMAPVAL_DESCRIPTOR) {
-                            input.value.forEach { (key, value) -> entry(key, BarStructSerializer(value)) }
+                            input.value.forEach { (key, value) -> entry(key, BarStructDocumentSerializer(value)) }
                         }
                     }
                     is FooUnion.StructListVal -> {
                         listField(STRUCTLISTVAL_DESCRIPTOR) {
                             for (el0 in input.value) {
-                                serializeSdkSerializable(BarStructSerializer(el0))
+                                serializeSdkSerializable(BarStructDocumentSerializer(el0))
                             }
                         }
                     }

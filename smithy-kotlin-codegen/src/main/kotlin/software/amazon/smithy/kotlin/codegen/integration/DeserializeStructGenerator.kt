@@ -521,7 +521,7 @@ open class DeserializeStructGenerator(
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 val symbol = ctx.symbolProvider.toSymbol(target)
                 writer.addImport(symbol)
-                val deserializerName = "${symbol.name}Deserializer"
+                val deserializerName = symbol.documentDeserializerName()
                 "$deserializerName().deserialize(deserializer)"
             }
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
