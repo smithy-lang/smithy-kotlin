@@ -5,7 +5,7 @@
 
 package software.aws.clientrt.io.middleware
 
-import software.aws.clientrt.io.Service
+import software.aws.clientrt.io.Handler
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -31,13 +31,13 @@ class PhaseTest {
             next.call(req)
         }
 
-        val service = object : Service<String, String> {
+        val handler = object : Handler<String, String> {
             override suspend fun call(request: String): String {
                 return request.capitalize()
             }
         }
 
-        val actual = phase.handle("foo", service)
+        val actual = phase.handle("foo", handler)
         assertEquals("Foo", actual)
         assertEquals(listOf("second", "first", "third"), order)
     }

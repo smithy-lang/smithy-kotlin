@@ -5,20 +5,20 @@
 
 package software.aws.clientrt.io.middleware
 
-import software.aws.clientrt.io.Service
+import software.aws.clientrt.io.Handler
 
 /**
- * Decorates a [Service], transforming either the request or the response
+ * Decorates a [Handler], transforming either the request or the response
  */
 interface Middleware<Request, Response> {
-    suspend fun <S> handle(request: Request, next: S): Response
-            where S : Service<Request, Response>
+    suspend fun <H> handle(request: Request, next: H): Response
+            where H : Handler<Request, Response>
 }
 
 /**
  * Alias for a lambda based [Middleware]
  */
-typealias MiddlewareFn<Request, Response> = suspend (Request, Service<Request, Response>) -> Response
+typealias MiddlewareFn<Request, Response> = suspend (Request, Handler<Request, Response>) -> Response
 
 /**
  * Adapter for [MiddlewareFn] that implements [Middleware]
@@ -26,7 +26,7 @@ typealias MiddlewareFn<Request, Response> = suspend (Request, Service<Request, R
 data class MiddlewareLambda<Request, Response>(
     private val fn: MiddlewareFn<Request, Response>
 ) : Middleware<Request, Response> {
-    override suspend fun <S : Service<Request, Response>> handle(request: Request, next: S): Response {
+    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response {
         return fn(request, next)
     }
 }
@@ -34,25 +34,25 @@ data class MiddlewareLambda<Request, Response>(
 /**
  * Service decorated with middleware
  */
-private data class DecoratedService<Request, Response>(
-    val service: Service<Request, Response>,
+private data class DecoratedHandler<Request, Response>(
+    val handler: Handler<Request, Response>,
     val with: Middleware<Request, Response>
-) : Service<Request, Response> {
+) : Handler<Request, Response> {
 
     override suspend fun call(request: Request): Response {
-        return with.handle(request, service)
+        return with.handle(request, handler)
     }
 }
 
 /**
- * decorate [service] with the given [middleware] returning a new wrapped service
+ * decorate [handler] with the given [middleware] returning a new wrapped service
  */
 fun <Request, Response> decorate(
-    service: Service<Request, Response>,
+    handler: Handler<Request, Response>,
     vararg middleware: Middleware<Request, Response>
-): Service<Request, Response> {
-    if (middleware.isEmpty()) return service
-    return middleware.dropLast(1).foldRight(DecoratedService(service, middleware.last())) { m, s ->
-        DecoratedService(service = s, with = m)
+): Handler<Request, Response> {
+    if (middleware.isEmpty()) return handler
+    return middleware.dropLast(1).foldRight(DecoratedHandler(handler, middleware.last())) { m, h ->
+        DecoratedHandler(handler = h, with = m)
     }
 }

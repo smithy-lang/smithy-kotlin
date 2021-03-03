@@ -6,13 +6,14 @@
 package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.client.ExecutionContext
-import software.aws.clientrt.http.HttpService
+import software.aws.clientrt.http.HttpHandler
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
-import software.aws.clientrt.io.Service
+import software.aws.clientrt.io.Handler
 import software.aws.clientrt.io.middleware.MapRequest
 import software.aws.clientrt.io.middleware.Phase
 import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.io.middleware.decorate as decorateHandler
 
 /**
  * Configure the execution of an operation from [Request] to [Response]
@@ -27,7 +28,7 @@ class SdkOperationExecution<Request, Response> {
     // something in "initialize" that acts on the output type though.
 
     /**
-     * Prepare the input [Request] and set any default parameters if needed
+     * Prepare the input [Request] (or finalize the [Response]) e.g. set any default parameters if needed
      */
     val initialize = Phase<OperationRequest<Request>, Response>()
 
@@ -36,7 +37,7 @@ class SdkOperationExecution<Request, Response> {
      *
      * At this phase the [Request] (operation input) has been serialized to an HTTP request.
      */
-    val state = Phase<SdkHttpRequest, Response>()
+    val mutate = Phase<SdkHttpRequest, Response>()
 
     /**
      * Last chance to intercept before requests are sent (e.g. signing, retries, etc).
@@ -51,81 +52,80 @@ class SdkOperationExecution<Request, Response> {
 }
 
 /**
- * Decorate the "raw" [HttpService] with the execution phases (middleware) of this operation and
- * return a service to be used specifically for the given operation.
+ * Decorate the "raw" [HttpHandler] with the execution phases (middleware) of this operation and
+ * return a handler to be used specifically for the given operation.
  */
 internal fun <Request, Response> SdkOperationExecution<Request, Response>.decorate(
-    service: HttpService,
+    handler: HttpHandler,
     serializer: HttpSerialize<Request>,
     deserializer: HttpDeserialize<Response>,
-): Service<OperationRequest<Request>, Response> {
-
-    val inner = MapRequest(service) { sdkRequest: SdkHttpRequest ->
+): Handler<OperationRequest<Request>, Response> {
+    val inner = MapRequest(handler) { sdkRequest: SdkHttpRequest ->
         sdkRequest.builder
     }
 
-    val receiveService = software.aws.clientrt.io.middleware.decorate(inner, receive)
-    val deserializeService = deserializer.decorate(receiveService)
-    val finalizeService = software.aws.clientrt.io.middleware.decorate(FinalizeService(deserializeService), finalize)
-    val stateService = software.aws.clientrt.io.middleware.decorate(StateService(finalizeService), state)
-    val serializeService = serializer.decorate(stateService)
-    return software.aws.clientrt.io.middleware.decorate(InitializeService(serializeService), initialize)
+    val receiveHandler = decorateHandler(inner, receive)
+    val deserializeHandler = deserializer.decorate(receiveHandler)
+    val finalizeHandler = decorateHandler(FinalizeHandler(deserializeHandler), finalize)
+    val mutateHandler = decorateHandler(MutateHandler(finalizeHandler), mutate)
+    val serializeHandler = serializer.decorate(mutateHandler)
+    return decorateHandler(InitializeHandler(serializeHandler), initialize)
 }
 
 private fun <I, O> HttpSerialize<I>.decorate(
-    inner: Service<SdkHttpRequest, O>
-): Service<OperationRequest<I>, O> {
-    return SerializeService(inner, ::serialize)
+    inner: Handler<SdkHttpRequest, O>
+): Handler<OperationRequest<I>, O> {
+    return SerializeHandler(inner, ::serialize)
 }
 
 private fun <O> HttpDeserialize<O>.decorate(
-    inner: Service<SdkHttpRequest, HttpResponse>,
-): Service<SdkHttpRequest, O> {
-    return DeserializeService(inner, ::deserialize)
+    inner: Handler<SdkHttpRequest, HttpResponse>,
+): Handler<SdkHttpRequest, O> {
+    return DeserializeHandler(inner, ::deserialize)
 }
 
 // internal glue used to marry one phase to another
 
-private class InitializeService<Input, Output>(
-    private val inner: Service<Input, Output>
-) : Service<Input, Output> {
+private class InitializeHandler<Input, Output>(
+    private val inner: Handler<Input, Output>
+) : Handler<Input, Output> {
     override suspend fun call(request: Input): Output {
         return inner.call(request)
     }
 }
 
-private class SerializeService<Input, Output> (
-    private val inner: Service<SdkHttpRequest, Output>,
+private class SerializeHandler<Input, Output> (
+    private val inner: Handler<SdkHttpRequest, Output>,
     private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder
-) : Service<OperationRequest<Input>, Output> {
+) : Handler<OperationRequest<Input>, Output> {
     override suspend fun call(request: OperationRequest<Input>): Output {
         val builder = mapRequest(request.context, request.input)
         return inner.call(SdkHttpRequest(request.context, builder))
     }
 }
 
-private class StateService<Output> (
-    private val inner: Service<SdkHttpRequest, Output>
-) : Service<SdkHttpRequest, Output> {
+private class MutateHandler<Output> (
+    private val inner: Handler<SdkHttpRequest, Output>
+) : Handler<SdkHttpRequest, Output> {
 
     override suspend fun call(request: SdkHttpRequest): Output {
         return inner.call(request)
     }
 }
 
-private class FinalizeService<Output> (
-    private val inner: Service<SdkHttpRequest, Output>
-) : Service<SdkHttpRequest, Output> {
+private class FinalizeHandler<Output> (
+    private val inner: Handler<SdkHttpRequest, Output>
+) : Handler<SdkHttpRequest, Output> {
 
     override suspend fun call(request: SdkHttpRequest): Output {
         return inner.call(request)
     }
 }
 
-private class DeserializeService<Output>(
-    private val inner: Service<SdkHttpRequest, HttpResponse>,
+private class DeserializeHandler<Output>(
+    private val inner: Handler<SdkHttpRequest, HttpResponse>,
     private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output
-) : Service<SdkHttpRequest, Output> {
+) : Handler<SdkHttpRequest, Output> {
 
     override suspend fun call(request: SdkHttpRequest): Output {
         // ensure the raw response is stashed in the context

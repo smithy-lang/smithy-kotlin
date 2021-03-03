@@ -5,7 +5,7 @@
 
 package software.aws.clientrt.io.middleware
 
-import software.aws.clientrt.io.Service
+import software.aws.clientrt.io.Handler
 
 /**
  * A specific point in the lifecycle of executing a request where the input and output type(s)
@@ -25,7 +25,7 @@ class Phase<Request, Response> : Middleware<Request, Response> {
     /**
      * Insert [interceptor] in a specific order into the set of interceptors for this phase
      */
-    fun intercept(order: Order = Order.After, interceptor: suspend (req: Request, next: Service<Request, Response>) -> Response) {
+    fun intercept(order: Order = Order.After, interceptor: suspend (req: Request, next: Handler<Request, Response>) -> Response) {
         val wrapped = MiddlewareLambda(interceptor)
         register(order, wrapped)
     }
@@ -41,7 +41,7 @@ class Phase<Request, Response> : Middleware<Request, Response> {
     }
 
     // runs all the registered interceptors for this phase
-    override suspend fun <S : Service<Request, Response>> handle(request: Request, next: S): Response {
+    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response {
         if (middlewares.isEmpty()) {
             return next.call(request)
         }

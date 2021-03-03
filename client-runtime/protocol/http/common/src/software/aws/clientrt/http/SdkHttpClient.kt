@@ -7,9 +7,9 @@ package software.aws.clientrt.http
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
-import software.aws.clientrt.io.Service
+import software.aws.clientrt.io.Handler
 
-typealias HttpService = Service<HttpRequestBuilder, HttpResponse>
+typealias HttpHandler = Handler<HttpRequestBuilder, HttpResponse>
 
 /**
  * Create an [SdkHttpClient] with the given engine, and optionally configure it
@@ -31,7 +31,7 @@ fun sdkHttpClient(
 class SdkHttpClient(
     val engine: HttpClientEngine,
     val config: HttpClientConfig
-) : HttpService {
+) : HttpHandler {
 
     override suspend fun call(request: HttpRequestBuilder): HttpResponse {
         return engine.roundTrip(request)

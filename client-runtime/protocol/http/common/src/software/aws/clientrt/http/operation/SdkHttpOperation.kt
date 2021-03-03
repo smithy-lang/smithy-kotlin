@@ -9,7 +9,7 @@ import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.Feature
 import software.aws.clientrt.http.FeatureKey
 import software.aws.clientrt.http.HttpClientFeatureFactory
-import software.aws.clientrt.http.HttpService
+import software.aws.clientrt.http.HttpHandler
 import software.aws.clientrt.util.InternalAPI
 
 /**
@@ -47,13 +47,13 @@ class SdkHttpOperation<I, O>(
 }
 
 /**
- * Round trip an operation using the given [HttpService]
+ * Round trip an operation using the given [HttpHandler]
  */
 @InternalAPI
 suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
-    httpService: HttpService,
+    httpHandler: HttpHandler,
     input: I,
-): O = execute(httpService, input) { it }
+): O = execute(httpHandler, input) { it }
 
 /**
  * Make an operation request with the given [input] and return the result of executing [block] with the output.
@@ -63,13 +63,13 @@ suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
  */
 @InternalAPI
 suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
-    httpService: HttpService,
+    httpHandler: HttpHandler,
     input: I,
     block: suspend (O) -> R
 ): R {
-    val service = execution.decorate(httpService, serializer, deserializer)
+    val handler = execution.decorate(httpHandler, serializer, deserializer)
     val request = OperationRequest(context, input)
-    val output = service.call(request)
+    val output = handler.call(request)
     try {
         return block(output)
     } finally {
