@@ -210,7 +210,7 @@ open class SerializeStructGenerator(
      */
     private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
-        val serializerTypeName = "${structureShape.defaultName()}Serializer"
+        val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
         val valueToSerializeName = valueToSerializeName(elementName)
@@ -233,7 +233,7 @@ open class SerializeStructGenerator(
         parentMemberName: String,
         isSparse: Boolean
     ) {
-        val serializerTypeName = "${structureShape.defaultName()}Serializer"
+        val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val containerName = if (nestingLevel == 0) "input." else ""
 
@@ -563,7 +563,7 @@ open class SerializeStructGenerator(
         require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $shape; target: $target" }
 
         val symbol = ctx.symbolProvider.toSymbol(target)
-        val memberSerializerName = "${symbol.name}Serializer"
+        val memberSerializerName = symbol.documentSerializerName()
         val valueToSerializeName = valueToSerializeName("it")
         // invoke the ctor of the serializer to delegate to and pass the value
         val encoded = "$memberSerializerName($valueToSerializeName)"
