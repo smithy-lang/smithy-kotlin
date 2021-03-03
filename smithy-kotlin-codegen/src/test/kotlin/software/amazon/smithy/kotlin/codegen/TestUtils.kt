@@ -23,6 +23,7 @@ import software.amazon.smithy.kotlin.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
 import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -51,7 +52,14 @@ fun String.shouldSyntacticSanityCheck() {
     Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
 }
 
-// FIXME - model doesn't go through same normalization...
+// attempt to replicate transforms that happen in CodegenVisitor such that tests
+// more closely reflect reality
+private fun Model.applyKotlinCodegenTransforms(): Model {
+    val transforms = listOf(OperationNormalizer::transform)
+    return transforms.fold(this) { m, transform ->
+        transform(m)
+    }
+}
 
 /**
  * Load and initialize a model from a Java resource URL
@@ -61,15 +69,19 @@ fun URL.asSmithy(): Model =
         .addImport(this)
         .discoverModels()
         .assemble()
-        .unwrap()
+        .unwrap().applyKotlinCodegenTransforms()
 
 /**
- * Load and initialize a model from a String (from smithy-rs)
+ * Load and initialize a model from a String
  */
-fun String.asSmithyModel(sourceLocation: String? = null): Model {
+fun String.asSmithyModel(sourceLocation: String? = null, applyDefaultTransforms: Boolean = true): Model {
     val processed = if (this.startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
-    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble()
+    val model = Model.assembler()
+        .discoverModels()
+        .addUnparsedModel(sourceLocation ?: "test.smithy", processed)
+        .assemble()
         .unwrap()
+    return if (applyDefaultTransforms) model.applyKotlinCodegenTransforms() else model
 }
 
 /**

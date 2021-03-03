@@ -26,7 +26,7 @@ class OperationNormalizerTest {
         val model = """
             namespace smithy.test
             operation Empty {}
-        """.asSmithyModel()
+        """.asSmithyModel(applyDefaultTransforms = false)
         val origOp = model.expectShape<OperationShape>("smithy.test#Empty")
         assertFalse(origOp.input.isPresent)
         assertFalse(origOp.output.isPresent)
@@ -55,7 +55,7 @@ class OperationNormalizerTest {
             structure MyInput {
                 v: String
             }
-        """.asSmithyModel()
+        """.asSmithyModel(applyDefaultTransforms = false)
         val origId = ShapeId.from("smithy.test#MyInput")
         val normalized = OperationNormalizer.transform(model)
 
@@ -84,7 +84,7 @@ class OperationNormalizerTest {
             structure MyOutput {
                 v: String
             }
-        """.asSmithyModel()
+        """.asSmithyModel(applyDefaultTransforms = false)
         val origId = ShapeId.from("smithy.test#MyOutput")
         val normalized = OperationNormalizer.transform(model)
 
@@ -114,7 +114,7 @@ class OperationNormalizerTest {
             structure Nested {
                 foo: String
             }
-        """.asSmithyModel()
+        """.asSmithyModel(applyDefaultTransforms = false)
         val normalized = OperationNormalizer.transform(model)
         val expected = ShapeId.from("smithy.test#Nested")
         normalized.expectShape<StructureShape>(expected)
@@ -139,7 +139,7 @@ class OperationNormalizerTest {
             structure FooResponse {
                 foo: String
             }
-        """.asSmithyModel()
+        """.asSmithyModel(applyDefaultTransforms = false)
 
         val ex = assertFailsWith(CodegenException::class) {
             OperationNormalizer.transform(model)

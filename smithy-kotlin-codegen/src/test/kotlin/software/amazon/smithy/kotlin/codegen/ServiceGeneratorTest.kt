@@ -51,15 +51,15 @@ class ServiceGeneratorTest {
     fun `it renders signatures correctly`() {
         val expectedSignatures = listOf(
             "suspend fun getFoo(input: GetFooRequest): GetFooResponse",
-            "suspend fun getFooNoInput(): GetFooResponse",
-            "suspend fun getFooNoOutput(input: GetFooRequest)",
-            "suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse",
-            "suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T",
-            "suspend fun <T> getFooStreamingOutputNoInput(block: suspend (GetFooStreamingResponse) -> T): T",
-            "suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest)"
+            "suspend fun getFooNoInput(input: GetFooNoInputRequest): GetFooNoInputResponse",
+            "suspend fun getFooNoOutput(input: GetFooNoOutputRequest): GetFooNoOutputResponse",
+            "suspend fun getFooStreamingInput(input: GetFooStreamingInputRequest): GetFooStreamingInputResponse",
+            "suspend fun <T> getFooStreamingOutput(input: GetFooStreamingOutputRequest, block: suspend (GetFooStreamingOutputResponse) -> T): T",
+            "suspend fun <T> getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputRequest, block: suspend (GetFooStreamingOutputNoInputResponse) -> T): T",
+            "suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputRequest): GetFooStreamingInputNoOutputResponse"
         )
         expectedSignatures.forEach {
-            commonTestContents.shouldContainOnlyOnce(it)
+            commonTestContents.shouldContainOnlyOnceWithDiff(it)
         }
     }
 
