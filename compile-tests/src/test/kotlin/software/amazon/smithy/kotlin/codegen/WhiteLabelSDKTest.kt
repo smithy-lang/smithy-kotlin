@@ -163,7 +163,7 @@ class WhiteLabelSDKTest {
         """.asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
-        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = copyGeneratedSdksToTmp)
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
         assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
