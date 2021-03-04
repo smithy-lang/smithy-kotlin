@@ -324,4 +324,24 @@ class HttpRequestTestBuilderTest {
         }
         ex.message.shouldContain("actual bytes read does not match expected")
     }
+
+    @Test
+    fun itAssertsHostWhenSet() {
+        val ex = assertFails {
+            httpRequestTest {
+                expected {
+                    method = HttpMethod.POST
+                    resolvedHost = "foo.example.com"
+                }
+                operation { mockEngine ->
+                    val builder = HttpRequestBuilder().apply {
+                        method = HttpMethod.POST
+                        url.host = "bar.example.com"
+                    }
+                    mockEngine.roundTrip(builder)
+                }
+            }
+        }
+        ex.message.shouldContain("expected host: `foo.example.com`; got: `bar.example.com`")
+    }
 }
