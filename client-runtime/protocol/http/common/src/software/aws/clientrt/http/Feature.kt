@@ -4,6 +4,8 @@
  */
 package software.aws.clientrt.http
 
+import software.aws.clientrt.http.operation.SdkHttpOperation
+
 /**
  * Used to identify a particular feature
  */
@@ -25,20 +27,15 @@ interface HttpClientFeatureFactory<TConfig, TFeature : Feature> {
 }
 
 /**
- * An SdkHttpClient feature is an interceptor/middleware component that can self configure itself
- * on an HttpClient. This allows the component to tap into whichever part of the HTTP client it needs to
- * (usually the request or response transform pipelines).
+ * A feature is an interceptor/middleware component that can self configure itself
+ * for an operation. This allows the component to tap into whichever part of the request or response
+ * lifecycle phase it needs to
  *
- * Features are registered at the [software.aws.clientrt.http.SdkHttpClient] level and are executed
- * on every request/response. The data flowing through those pipelines changes with every call though.
- *
- * [ExecutionContext] is the request and response pipeline per/operation context (metadata) that features can use
- * to drive behavior that is specific to a particular request or response.
  */
 interface Feature {
     /**
-     * Install the feature to the [SdkHttpClient]. This allows the feature to wire itself up to the underlying
-     * client (e.g. install interceptors for pipeline phases, etc).
+     * Install the feature to the [SdkHttpOperation]. This allows the feature to wire itself up to the underlying
+     * operation (e.g. install interceptors for various phases of execution, etc).
      */
-    fun install(client: SdkHttpClient)
+    fun <I, O> install(operation: SdkHttpOperation<I, O>)
 }

@@ -46,8 +46,8 @@ class DeserializeUnionGenerator(
             is ListShape,
             is SetShape -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
             is MapShape -> renderMapMemberDeserializer(memberShape, targetShape)
-            is StructureShape -> renderPrimitiveShapeDeserializer(memberShape)
-            is UnionShape -> targetShape.members().sortedBy { it.memberName }.forEach { renderMemberShape(it) }
+            is StructureShape,
+            is UnionShape -> renderShapeDeserializer(memberShape)
             is DocumentShape -> renderDocumentShapeDeserializer(memberShape)
             is BlobShape,
             is BooleanShape,
@@ -60,7 +60,7 @@ class DeserializeUnionGenerator(
             is FloatShape,
             is DoubleShape,
             is BigDecimalShape,
-            is BigIntegerShape -> renderPrimitiveShapeDeserializer(memberShape)
+            is BigIntegerShape -> renderShapeDeserializer(memberShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }
@@ -71,7 +71,7 @@ class DeserializeUnionGenerator(
      * I32_DESCRIPTOR.index -> value = deserializeInt().let { PrimitiveUnion.I32(it) }
      * ```
      */
-    override fun renderPrimitiveShapeDeserializer(memberShape: MemberShape) {
+    override fun renderShapeDeserializer(memberShape: MemberShape) {
         val unionTypeName = memberShape.unionTypeName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val deserialize = deserializerForShape(memberShape)

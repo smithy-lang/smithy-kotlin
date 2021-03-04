@@ -36,7 +36,6 @@ open class SerializeStructGenerator(
     private val writer: KotlinWriter,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
-
     /**
      * Container for serialization information for a particular shape being serialized to
      *
@@ -109,7 +108,7 @@ open class SerializeStructGenerator(
      * ```
      */
     open fun renderMapMemberSerializer(memberShape: MemberShape, targetShape: MapShape) {
-        val memberName = memberShape.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
@@ -131,7 +130,7 @@ open class SerializeStructGenerator(
      * ```
      */
     open fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
-        val memberName = memberShape.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
@@ -211,7 +210,7 @@ open class SerializeStructGenerator(
      */
     private fun renderNestedStructureElement(structureShape: Shape, nestingLevel: Int, parentMemberName: String) {
         val serializerFnName = structureShape.type.primitiveSerializerFunctionName()
-        val serializerTypeName = "${structureShape.defaultName()}Serializer"
+        val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
         val valueToSerializeName = valueToSerializeName(elementName)
@@ -234,7 +233,7 @@ open class SerializeStructGenerator(
         parentMemberName: String,
         isSparse: Boolean
     ) {
-        val serializerTypeName = "${structureShape.defaultName()}Serializer"
+        val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val containerName = if (nestingLevel == 0) "input." else ""
 
@@ -525,17 +524,18 @@ open class SerializeStructGenerator(
         val targetShape = ctx.model.expectShape(memberShape.target)
         val targetSymbol = ctx.symbolProvider.toSymbol(memberShape)
         val defaultValue = targetSymbol.defaultValue()
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
 
         if ((targetShape.isNumberShape || targetShape.isBooleanShape) && targetSymbol.isNotBoxed && defaultValue != null) {
             // unboxed primitive with a default value
-            val ident = "input.${memberShape.defaultName()}"
+            val ident = "input.$memberName"
             val check = when (memberShape.hasTrait<RequiredTrait>()) {
                 true -> "" // always serialize a required member even if it's the default
                 else -> "if ($ident != $defaultValue) "
             }
             writer.write("${check}$serializeFn(#L, $ident)", memberShape.descriptorName())
         } else {
-            writer.write("input.#L?.let { $serializeFn(#L, $encoded) }$postfix", memberShape.defaultName(), memberShape.descriptorName())
+            writer.write("input.#L?.let { $serializeFn(#L, $encoded) }$postfix", memberName, memberShape.descriptorName())
         }
     }
 
@@ -546,7 +546,8 @@ open class SerializeStructGenerator(
      */
     private fun idempotencyTokenPostfix(memberShape: MemberShape): String =
         if (memberShape.hasTrait<IdempotencyTokenTrait>()) {
-            " ?: field(${memberShape.descriptorName()}, serializationContext.idempotencyTokenProvider.generateToken())"
+            writer.addImport(RuntimeTypes.Core.IdempotencyTokenProviderExt)
+            " ?: field(${memberShape.descriptorName()}, context.idempotencyTokenProvider.generateToken())"
         } else {
             ""
         }
@@ -563,7 +564,7 @@ open class SerializeStructGenerator(
         require(target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION) { "Unexpected serializer for member: $shape; target: $target" }
 
         val symbol = ctx.symbolProvider.toSymbol(target)
-        val memberSerializerName = "${symbol.name}Serializer"
+        val memberSerializerName = symbol.documentSerializerName()
         val valueToSerializeName = valueToSerializeName("it")
         // invoke the ctor of the serializer to delegate to and pass the value
         val encoded = "$memberSerializerName($valueToSerializeName)"

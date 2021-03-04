@@ -17,7 +17,6 @@ package software.amazon.smithy.kotlin.codegen.integration
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class DeserializeUnionGeneratorTest {
 
@@ -63,9 +62,9 @@ class DeserializeUnionGeneratorTest {
                     else -> value = PrimitiveUnion.SdkUnknown.also { skipValue() }
                 }
             }
-        """.trimIndent()
+        """.formatForTest(" ".repeat(8))
 
-        val actual = getContentsForShape(model, "com.test#Foo", "PrimitiveUnion")
+        val actual = model.codegenDeserializer("PrimitiveUnion")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -101,7 +100,7 @@ class DeserializeUnionGeneratorTest {
                         deserializer.deserializeList(UNIONLIST_DESCRIPTOR) {
                             val col0 = mutableListOf<MyAggregateUnion>()
                             while (hasNextElement()) {
-                                val el0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                val el0 = if (nextHasValue()) { MyAggregateUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                 col0.add(el0)
                             }
                             MyAggregateUnion.UnionList(col0)
@@ -111,7 +110,7 @@ class DeserializeUnionGeneratorTest {
                             val map0 = mutableMapOf<String, MyAggregateUnion>()
                             while (hasNextEntry()) {
                                 val k0 = key()
-                                val v0 = if (nextHasValue()) { MyAggregateUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                val v0 = if (nextHasValue()) { MyAggregateUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                 map0[k0] = v0
                             }
                             MyAggregateUnion.UnionMap(map0)
@@ -119,9 +118,9 @@ class DeserializeUnionGeneratorTest {
                     else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                 }
             }
-        """.trimIndent()
+        """.formatForTest(" ".repeat(8))
 
-        val actual = getContentsForShape(model, "com.test#Foo", "MyAggregateUnion")
+        val actual = model.codegenDeserializer("MyAggregateUnion")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -196,7 +195,7 @@ class DeserializeUnionGeneratorTest {
                                             val map2 = mutableMapOf<String, BarUnion>()
                                             while (hasNextEntry()) {
                                                 val k2 = key()
-                                                val v2 = if (nextHasValue()) { BarUnionDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                                val v2 = if (nextHasValue()) { BarUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
                                                 map2[k2] = v2
                                             }
                                             FooUnion.StrMapVal(map2)
@@ -213,9 +212,9 @@ class DeserializeUnionGeneratorTest {
                 }
             }
 
-        """.trimIndent()
+        """.formatForTest(" ".repeat(8))
 
-        val actual = getContentsForShape(model, "com.test#Foo", "FooUnion")
+        val actual = model.codegenDeserializer("FooUnion")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -312,25 +311,18 @@ class DeserializeUnionGeneratorTest {
                     else -> value = MyAggregateUnion.SdkUnknown.also { skipValue() }
                 }
             }
-        """.trimIndent()
+        """.formatForTest(" ".repeat(8))
 
-        val actual = getContentsForShape(model, "com.test#UnionTestOperation", "MyAggregateUnion")
+        val actual = model.codegenDeserializer("MyAggregateUnion")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    private fun getContentsForShape(model: Model, shapeId: String, unionName: String): String {
-        val ctx = model.newTestContext()
-        val op = ctx.expectShape(shapeId)
+    private fun Model.codegenDeserializer(shapeName: String): String {
+        val ctx = newTestContext()
 
-        return testRender(ctx.responseMembers(op)) { members, writer ->
-            DeserializeUnionGenerator(
-                ctx.generationCtx,
-                unionName,
-                members,
-                writer,
-                TimestampFormatTrait.Format.EPOCH_SECONDS
-            ).render()
-        }
+        ctx.generator.generateDeserializers(ctx.generationCtx)
+        ctx.generationCtx.delegator.flushWriters()
+        return ctx.manifest.expectFileString("src/main/kotlin/test/transform/${shapeName}DocumentDeserializer.kt")
     }
 }

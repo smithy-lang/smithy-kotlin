@@ -25,20 +25,20 @@ fun interface IdempotencyTokenProvider {
      */
     fun generateToken(): String
 
-    /**
-     * This is the default function to generate a UUID for idempotency tokens if they are not specified
-     * in client code.
-     *
-     * TODO: Implement a real function.  See https://www.pivotaltracker.com/story/show/174214013
-     */
-    class DefaultIdempotencyTokenProvider : IdempotencyTokenProvider {
-        override fun generateToken(): String = Instant.now().epochSeconds.toString() + Random.nextInt()
-    }
-
     companion object {
         /**
          * Creates the default token provider.
          */
         val Default: IdempotencyTokenProvider = DefaultIdempotencyTokenProvider()
     }
+}
+
+/**
+ * This is the default function to generate a UUID for idempotency tokens if they are not specified
+ * in client code.
+ *
+ * TODO: Implement a real function.  See https://www.pivotaltracker.com/story/show/174214013
+ */
+private class DefaultIdempotencyTokenProvider : IdempotencyTokenProvider {
+    override fun generateToken(): String = Instant.now().epochSeconds.toString() + Random.nextInt()
 }

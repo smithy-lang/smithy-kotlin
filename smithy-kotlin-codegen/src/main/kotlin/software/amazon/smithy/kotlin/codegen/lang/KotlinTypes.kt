@@ -89,3 +89,8 @@ val Symbol.isBuiltIn: Boolean
  * Escape characters in strings to ensure they are treated as pure literals.
  */
 fun String.toEscapedLiteral(): String = replace("\$", "\\$")
+
+/**
+ * Return true if string is valid package namespace, false otherwise.
+ */
+fun String.isValidPackageName() = isNotEmpty() && !this.any { !it.isLetterOrDigit() && it != '.' }

@@ -4,8 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import io.kotest.matchers.string.shouldContain
-import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -13,7 +11,10 @@ import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.shapes.BlobShape
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.StringShape
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -64,156 +65,157 @@ class StructureGeneratorTest {
     @Test
     fun `it renders constructors`() {
         val expectedClassDecl = """
-class MyStruct private constructor(builder: BuilderImpl) {
-    /**
-     * This *is* documentation about the member.
-     */
-    val bar: Int = builder.bar
-    val baz: Int? = builder.baz
-    val byteValue: Byte? = builder.byteValue
-    val foo: String? = builder.foo
-    val quux: Qux? = builder.quux
-"""
+            class MyStruct private constructor(builder: BuilderImpl) {
+                /**
+                 * This *is* documentation about the member.
+                 */
+                val bar: Int = builder.bar
+                val baz: Int? = builder.baz
+                val byteValue: Byte? = builder.byteValue
+                val foo: String? = builder.foo
+                val quux: Qux? = builder.quux
+        """.formatForTest(indent = "")
 
-        commonTestContents.shouldContain(expectedClassDecl)
+        commonTestContents.shouldContainOnlyOnceWithDiff(expectedClassDecl)
     }
 
     @Test
     fun `it renders a companion object`() {
         val expected = """
-    companion object {
-        @JvmStatic
-        fun builder(): Builder = BuilderImpl()
+            companion object {
+                @JvmStatic
+                fun builder(): Builder = BuilderImpl()
 
-        fun dslBuilder(): DslBuilder = BuilderImpl()
+                fun dslBuilder(): DslBuilder = BuilderImpl()
 
-        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
-
-    }
-"""
-        commonTestContents.shouldContain(expected)
+                operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
+                
+            }
+        """.formatForTest()
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
     fun `it renders a toString implementation`() {
         val expected = """
-    override fun toString(): kotlin.String = buildString {
-        append("MyStruct(")
-        append("bar=${'$'}bar,")
-        append("baz=${'$'}baz,")
-        append("byteValue=${'$'}byteValue,")
-        append("foo=${'$'}foo,")
-        append("quux=${'$'}quux)")
-    }
-"""
-        commonTestContents.shouldContainOnlyOnce(expected)
+            override fun toString(): kotlin.String = buildString {
+                append("MyStruct(")
+                append("bar=${'$'}bar,")
+                append("baz=${'$'}baz,")
+                append("byteValue=${'$'}byteValue,")
+                append("foo=${'$'}foo,")
+                append("quux=${'$'}quux)")
+            }
+        """.formatForTest()
+
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
     fun `it renders a hashCode implementation`() {
         val expected = """
-    override fun hashCode(): kotlin.Int {
-        var result = bar
-        result = 31 * result + (baz ?: 0)
-        result = 31 * result + (byteValue?.toInt() ?: 0)
-        result = 31 * result + (foo?.hashCode() ?: 0)
-        result = 31 * result + (quux?.hashCode() ?: 0)
-        return result
-    }
-"""
-        commonTestContents.shouldContainOnlyOnce(expected)
+        override fun hashCode(): kotlin.Int {
+            var result = bar
+            result = 31 * result + (baz ?: 0)
+            result = 31 * result + (byteValue?.toInt() ?: 0)
+            result = 31 * result + (foo?.hashCode() ?: 0)
+            result = 31 * result + (quux?.hashCode() ?: 0)
+            return result
+        }
+        """.formatForTest()
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
     fun `it renders an equals implementation`() {
         val expected = """
-    override fun equals(other: kotlin.Any?): kotlin.Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MyStruct
-
-        if (bar != other.bar) return false
-        if (baz != other.baz) return false
-        if (byteValue != other.byteValue) return false
-        if (foo != other.foo) return false
-        if (quux != other.quux) return false
-
-        return true
-    }
-"""
-        commonTestContents.shouldContainOnlyOnce(expected)
+            override fun equals(other: kotlin.Any?): kotlin.Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+        
+                other as MyStruct
+        
+                if (bar != other.bar) return false
+                if (baz != other.baz) return false
+                if (byteValue != other.byteValue) return false
+                if (foo != other.foo) return false
+                if (quux != other.quux) return false
+        
+                return true
+            }
+        """.formatForTest()
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
     fun `it renders a copy implementation`() {
         val expected = """
-    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): MyStruct = BuilderImpl(this).apply(block).build()
-"""
-        commonTestContents.shouldContainOnlyOnce(expected)
+            fun copy(block: DslBuilder.() -> kotlin.Unit = {}): MyStruct = BuilderImpl(this).apply(block).build()
+        """.formatForTest()
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
     fun `it renders a java builder`() {
         val expected = """
-    interface Builder {
-        fun build(): MyStruct
-        fun bar(bar: Int): Builder
-        fun baz(baz: Int): Builder
-        fun byteValue(byteValue: Byte): Builder
-        fun foo(foo: String): Builder
-        fun quux(quux: Qux): Builder
-    }
-"""
-        commonTestContents.shouldContainOnlyOnce(expected)
+            interface Builder {
+                fun build(): MyStruct
+                fun bar(bar: Int): Builder
+                fun baz(baz: Int): Builder
+                fun byteValue(byteValue: Byte): Builder
+                fun foo(foo: String): Builder
+                fun quux(quux: Qux): Builder
+            }
+        """.formatForTest()
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
     fun `it renders a dsl builder`() {
         val expected = """
-    interface DslBuilder {
-        var bar: Int
-        var baz: Int?
-        var byteValue: Byte?
-        var foo: String?
-        var quux: Qux?
-
-        fun build(): MyStruct
-        fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
-            this.quux = Qux.invoke(block)
-        }
-    }
-"""
-        commonTestContents.shouldContainOnlyOnce(expected)
+            interface DslBuilder {
+                var bar: Int
+                var baz: Int?
+                var byteValue: Byte?
+                var foo: String?
+                var quux: Qux?
+        
+                fun build(): MyStruct
+                fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
+                    this.quux = Qux.invoke(block)
+                }
+            }
+        """.formatForTest()
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
     fun `it renders a builder impl`() {
         val expected = """
-    private class BuilderImpl() : Builder, DslBuilder {
-        override var bar: Int = 0
-        override var baz: Int? = null
-        override var byteValue: Byte? = null
-        override var foo: String? = null
-        override var quux: Qux? = null
-
-        constructor(x: MyStruct) : this() {
-            this.bar = x.bar
-            this.baz = x.baz
-            this.byteValue = x.byteValue
-            this.foo = x.foo
-            this.quux = x.quux
-        }
-
-        override fun build(): MyStruct = MyStruct(this)
-        override fun bar(bar: Int): Builder = apply { this.bar = bar }
-        override fun baz(baz: Int): Builder = apply { this.baz = baz }
-        override fun byteValue(byteValue: Byte): Builder = apply { this.byteValue = byteValue }
-        override fun foo(foo: String): Builder = apply { this.foo = foo }
-        override fun quux(quux: Qux): Builder = apply { this.quux = quux }
-    }
-"""
-        commonTestContents.shouldContainOnlyOnce(expected)
+            private class BuilderImpl() : Builder, DslBuilder {
+                override var bar: Int = 0
+                override var baz: Int? = null
+                override var byteValue: Byte? = null
+                override var foo: String? = null
+                override var quux: Qux? = null
+        
+                constructor(x: MyStruct) : this() {
+                    this.bar = x.bar
+                    this.baz = x.baz
+                    this.byteValue = x.byteValue
+                    this.foo = x.foo
+                    this.quux = x.quux
+                }
+        
+                override fun build(): MyStruct = MyStruct(this)
+                override fun bar(bar: Int): Builder = apply { this.bar = bar }
+                override fun baz(baz: Int): Builder = apply { this.baz = baz }
+                override fun byteValue(byteValue: Byte): Builder = apply { this.byteValue = byteValue }
+                override fun foo(foo: String): Builder = apply { this.foo = foo }
+                override fun quux(quux: Qux): Builder = apply { this.quux = quux }
+            }
+        """.formatForTest()
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -257,51 +259,51 @@ class MyStruct private constructor(builder: BuilderImpl) {
         val contents = writer.toString()
 
         val expectedDecl = """
-class MyStruct private constructor(builder: BuilderImpl) {
-    val foo: InstanceSize? = builder.foo
-"""
-        contents.shouldContainOnlyOnce(expectedDecl)
+            class MyStruct private constructor(builder: BuilderImpl) {
+                val foo: InstanceSize? = builder.foo
+        """.formatForTest(indent = "")
+        contents.shouldContainOnlyOnceWithDiff(expectedDecl)
 
         val expectedBuilderInterface = """
-    interface Builder {
-        fun build(): MyStruct
-        fun foo(foo: InstanceSize): Builder
-    }
-"""
-        contents.shouldContainOnlyOnce(expectedBuilderInterface)
+            interface Builder {
+                fun build(): MyStruct
+                fun foo(foo: InstanceSize): Builder
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedBuilderInterface)
 
         val expectedDslBuilderInterface = """
-    interface DslBuilder {
-        var foo: InstanceSize?
-
-        fun build(): MyStruct
-    }
-"""
-        contents.shouldContainOnlyOnce(expectedDslBuilderInterface)
+            interface DslBuilder {
+                var foo: InstanceSize?
+        
+                fun build(): MyStruct
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedDslBuilderInterface)
 
         val expectedBuilderImpl = """
-    private class BuilderImpl() : Builder, DslBuilder {
-        override var foo: InstanceSize? = null
-
-        constructor(x: MyStruct) : this() {
-            this.foo = x.foo
-        }
-
-        override fun build(): MyStruct = MyStruct(this)
-        override fun foo(foo: InstanceSize): Builder = apply { this.foo = foo }
-    }
-"""
-        contents.shouldContainOnlyOnce(expectedBuilderImpl)
+            private class BuilderImpl() : Builder, DslBuilder {
+                override var foo: InstanceSize? = null
+        
+                constructor(x: MyStruct) : this() {
+                    this.foo = x.foo
+                }
+        
+                override fun build(): MyStruct = MyStruct(this)
+                override fun foo(foo: InstanceSize): Builder = apply { this.foo = foo }
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedBuilderImpl)
     }
 
     @Test
     fun `it renders class docs`() {
-        commonTestContents.shouldContainOnlyOnce("This *is* documentation about the shape.")
+        commonTestContents.shouldContainOnlyOnceWithDiff("This *is* documentation about the shape.")
     }
 
     @Test
     fun `it renders member docs`() {
-        commonTestContents.shouldContainOnlyOnce("This *is* documentation about the member.")
+        commonTestContents.shouldContainOnlyOnceWithDiff("This *is* documentation about the member.")
     }
 
     @Test
@@ -352,8 +354,8 @@ class MyStruct private constructor(builder: BuilderImpl) {
         generator.render()
 
         val generated = writer.toString()
-        generated.shouldContainOnlyOnce("Shape documentation")
-        generated.shouldContainOnlyOnce("Member documentation")
+        generated.shouldContainOnlyOnceWithDiff("Shape documentation")
+        generated.shouldContainOnlyOnceWithDiff("Member documentation")
     }
 
     @Test
@@ -381,9 +383,9 @@ class MyStruct private constructor(builder: BuilderImpl) {
         generator.render()
 
         val generated = writer.toString()
-        generated.shouldContainOnlyOnce("bar=*** Sensitive Data Redacted ***")
-        generated.shouldContainOnlyOnce("baz=*** Sensitive Data Redacted ***")
-        generated.shouldContainOnlyOnce("qux=\$qux")
+        generated.shouldContainOnlyOnceWithDiff("bar=*** Sensitive Data Redacted ***")
+        generated.shouldContainOnlyOnceWithDiff("baz=*** Sensitive Data Redacted ***")
+        generated.shouldContainOnlyOnceWithDiff("qux=\$qux")
     }
 
     @Test
@@ -411,7 +413,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
         val e = assertThrows<CodegenException> {
             generator.render()
         }
-        e.message.shouldContain("Message is a reserved name for exception types and cannot be used for any other property")
+        e.message.shouldContainOnlyOnceWithDiff("Message is a reserved name for exception types and cannot be used for any other property")
     }
 
     @Test
@@ -440,31 +442,31 @@ class MyStruct private constructor(builder: BuilderImpl) {
         val contents = writer.toString()
 
         val expectedEqualsContent = """
-    override fun equals(other: kotlin.Any?): kotlin.Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as MyStruct
-
-        if (bar != other.bar) return false
-        if (foo != null) {
-            if (other.foo == null) return false
-            if (!foo.contentEquals(other.foo)) return false
-        } else if (other.foo != null) return false
-
-        return true
-    }
-"""
+            override fun equals(other: kotlin.Any?): kotlin.Boolean {
+                if (this === other) return true
+                if (javaClass != other?.javaClass) return false
+        
+                other as MyStruct
+        
+                if (bar != other.bar) return false
+                if (foo != null) {
+                    if (other.foo == null) return false
+                    if (!foo.contentEquals(other.foo)) return false
+                } else if (other.foo != null) return false
+        
+                return true
+            }
+        """.formatForTest()
 
         val expectedHashCodeContent = """
-    override fun hashCode(): kotlin.Int {
-        var result = bar?.hashCode() ?: 0
-        result = 31 * result + (foo?.contentHashCode() ?: 0)
-        return result
-    }
-"""
-        contents.shouldContainOnlyOnce(expectedEqualsContent)
-        contents.shouldContainOnlyOnce(expectedHashCodeContent)
+            override fun hashCode(): kotlin.Int {
+                var result = bar?.hashCode() ?: 0
+                result = 31 * result + (foo?.contentHashCode() ?: 0)
+                return result
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedEqualsContent)
+        contents.shouldContainOnlyOnceWithDiff(expectedHashCodeContent)
     }
 
     @Test
@@ -518,7 +520,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
             "val enumMap: Map<String, MyEnum>? = builder.enumMap",
             "override var enumMap: Map<String, MyEnum>? = null"
         ).forEach { line ->
-            contents.shouldContainOnlyOnce(line)
+            contents.shouldContainOnlyOnceWithDiff(line)
         }
     }
 
@@ -574,7 +576,7 @@ class MyStruct private constructor(builder: BuilderImpl) {
             "val enumMap: Map<String, MyEnum?>? = builder.enumMap",
             "override var enumMap: Map<String, MyEnum?>? = null"
         ).forEach { line ->
-            contents.shouldContainOnlyOnce(line)
+            contents.shouldContainOnlyOnceWithDiff(line)
         }
     }
 }

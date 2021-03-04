@@ -118,7 +118,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.addImport(sdkInterfaceSymbol)
 
         // import all the models generated for use in input/output shapes
-        writer.addImport("${ctx.rootNamespace}.model", "*")
+        writer.addImport("${ctx.settings.pkg.name}.model", "*")
     }
 
     private fun overrideServiceName() {

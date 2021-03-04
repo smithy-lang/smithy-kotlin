@@ -17,11 +17,7 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
-import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.kotlin.codegen.integration.HttpSerde
-import software.amazon.smithy.kotlin.codegen.integration.HttpTraitResolver
+import software.amazon.smithy.kotlin.codegen.integration.*
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
@@ -34,24 +30,13 @@ class HttpProtocolClientGeneratorTest {
         }
     }
 
-    class MockHttpSerde : HttpSerde("MockSerdeProvider", true) {
-        override fun addImportsAndDependencies(writer: KotlinWriter) {
-            super.addImportsAndDependencies(writer)
-            val serdeJsonSymbol = Symbol.builder()
-                .name("JsonSerdeProvider")
-                .namespace(KotlinDependency.CLIENT_RT_SERDE_JSON.namespace, ".")
-                .addDependency(KotlinDependency.CLIENT_RT_SERDE_JSON)
-                .build()
-            writer.addImport(serdeJsonSymbol)
-        }
-    }
-
     init {
         val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
         val ctx = model.newTestContext("com.test#Example")
-        val features: List<HttpFeature> = listOf(MockHttpFeature1(), MockHttpSerde())
-        val generator = HttpProtocolClientGenerator(
-            ctx.generationCtx, "test", features,
+        val features: List<HttpFeature> = listOf(MockHttpFeature1())
+        val generator = TestProtocolClientGenerator(
+            ctx.generationCtx,
+            features,
             HttpTraitResolver(ctx.generationCtx, "application/json")
         )
         generator.render(writer)
@@ -66,13 +51,12 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
 
         // test for feature imports that are added
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.feature.HttpSerde")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_SERDE_JSON.namespace}.JsonSerdeProvider")
     }
 
     @Test
     fun `it renders constructor`() {
-        commonTestContents.shouldContainOnlyOnce("class DefaultExampleClient(private val config: ExampleClient.Config) : ExampleClient {")
+        commonTestContents.shouldContainOnlyOnce("internal class DefaultExampleClient(private val config: ExampleClient.Config) : ExampleClient {")
     }
 
     @Test
@@ -80,17 +64,8 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnce("val client: SdkHttpClient")
         val expected = """
     init {
-        val engineConfig = HttpClientEngineConfig()
-        val httpClientEngine = config.httpClientEngine ?: KtorEngine(engineConfig)
-        client = sdkHttpClient(httpClientEngine) {
-            install(MockHttpFeature1) {
-                configurationField1 = "testing"
-            }
-            install(HttpSerde) {
-                serdeProvider = MockSerdeProvider()
-                idempotencyTokenProvider = config.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
-            }
-        }
+        val httpClientEngine = config.httpClientEngine ?: KtorEngine(HttpClientEngineConfig())
+        client = sdkHttpClient(httpClientEngine)
     }
 """
         commonTestContents.shouldContainOnlyOnce(expected)
@@ -111,103 +86,134 @@ class HttpProtocolClientGeneratorTest {
         val expectedBodies = listOf(
 """
     override suspend fun getFoo(input: GetFooRequest): GetFooResponse {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooSerializer(input)
-            deserializer = GetFooDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFoo"
+        val op = SdkHttpOperation.build<GetFooRequest, GetFooResponse> {
+            serializer = GetFooOperationSerializer()
+            deserializer = GetFooOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFoo"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
-        return client.roundTrip(execCtx, null)
+        registerDefaultMiddleware(op)
+        return op.roundTrip(client, input)
     }
 """,
 """
     override suspend fun getFooNoInput(): GetFooResponse {
-        val builder = HttpRequestBuilder().apply {
-            method = HttpMethod.GET
-            url.path = "/foo-no-input"
+        val op = SdkHttpOperation.build<kotlin.Unit, GetFooResponse> {
+            serializer = object : HttpSerialize<kotlin.Unit> {
+                override suspend fun serialize(context: ExecutionContext, input: kotlin.Unit): HttpRequestBuilder {
+                    val builder = HttpRequestBuilder()
+                    builder.method = HttpMethod.GET
+                    builder.url.path = "/foo-no-input"
+                    return builder
+                }
+            }
+            deserializer = GetFooNoInputOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooNoInput"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
-        val execCtx = SdkHttpOperation.build {
-            deserializer = GetFooNoInputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooNoInput"
-        }
-        return client.roundTrip(execCtx, builder)
+        registerDefaultMiddleware(op)
+        return op.roundTrip(client, kotlin.Unit)
     }
 """,
 """
     override suspend fun getFooNoOutput(input: GetFooRequest) {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooNoOutputSerializer(input)
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooNoOutput"
+        val op = SdkHttpOperation.build<GetFooRequest, kotlin.Unit> {
+            serializer = GetFooNoOutputOperationSerializer()
+            deserializer = UnitDeserializer
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooNoOutput"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
-        client.roundTrip<HttpResponse>(execCtx, null)
+        registerDefaultMiddleware(op)
+        op.roundTrip(client, input)
     }
 """,
 """
     override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooStreamingInputSerializer(input)
-            deserializer = GetFooStreamingInputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingInput"
+        val op = SdkHttpOperation.build<GetFooStreamingRequest, GetFooResponse> {
+            serializer = GetFooStreamingInputOperationSerializer()
+            deserializer = GetFooStreamingInputOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingInput"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
-        return client.roundTrip(execCtx, null)
+        registerDefaultMiddleware(op)
+        return op.roundTrip(client, input)
     }
 """,
 """
     override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooStreamingOutputSerializer(input)
-            deserializer = GetFooStreamingOutputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingOutput"
+        val op = SdkHttpOperation.build<GetFooRequest, GetFooStreamingResponse> {
+            serializer = GetFooStreamingOutputOperationSerializer()
+            deserializer = GetFooStreamingOutputOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingOutput"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
-        return client.execute(execCtx, null, block)
+        registerDefaultMiddleware(op)
+        return op.execute(client, input, block)
     }
 """,
 """
     override suspend fun <T> getFooStreamingOutputNoInput(block: suspend (GetFooStreamingResponse) -> T): T {
-        val builder = HttpRequestBuilder().apply {
-            method = HttpMethod.POST
-            url.path = "/foo-streaming-output-no-input"
+        val op = SdkHttpOperation.build<kotlin.Unit, GetFooStreamingResponse> {
+            serializer = object : HttpSerialize<kotlin.Unit> {
+                override suspend fun serialize(context: ExecutionContext, input: kotlin.Unit): HttpRequestBuilder {
+                    val builder = HttpRequestBuilder()
+                    builder.method = HttpMethod.POST
+                    builder.url.path = "/foo-streaming-output-no-input"
+                    return builder
+                }
+            }
+            deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingOutputNoInput"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
-        val execCtx = SdkHttpOperation.build {
-            deserializer = GetFooStreamingOutputNoInputDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingOutputNoInput"
-        }
-        return client.execute(execCtx, builder, block)
+        registerDefaultMiddleware(op)
+        return op.execute(client, kotlin.Unit, block)
     }
 """,
 """
     override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetFooStreamingInputNoOutputSerializer(input)
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetFooStreamingInputNoOutput"
+        val op = SdkHttpOperation.build<GetFooStreamingRequest, kotlin.Unit> {
+            serializer = GetFooStreamingInputNoOutputOperationSerializer()
+            deserializer = UnitDeserializer
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooStreamingInputNoOutput"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
-        client.roundTrip<HttpResponse>(execCtx, null)
+        registerDefaultMiddleware(op)
+        op.roundTrip(client, input)
     }
 """
         )
         expectedBodies.forEach {
-            commonTestContents.shouldContainOnlyOnce(it)
+            commonTestContents.shouldContainOnlyOnceWithDiff(it)
         }
-    }
-
-    @Test
-    fun `it registers feature dependencies`() {
-        // Serde, Http, KtorEngine, + SerdeJson (via feature)
-        val ktDependencies = writer.dependencies.map { it.properties["dependency"] as KotlinDependency }.distinct()
-        assertEquals(5, ktDependencies.size)
     }
 
     @Test
@@ -260,8 +266,9 @@ class HttpProtocolClientGeneratorTest {
 
         val ctx = model.newTestContext("com.test#Example")
         val writer = KotlinWriter("com.test")
-        val generator = HttpProtocolClientGenerator(
-            ctx.generationCtx, "test", listOf(),
+        val generator = TestProtocolClientGenerator(
+            ctx.generationCtx,
+            listOf(),
             HttpTraitResolver(ctx.generationCtx, "application/json")
         )
         generator.render(writer)
@@ -269,13 +276,16 @@ class HttpProtocolClientGeneratorTest {
 
         val prefix = "\${input.foo}.data."
         val expectedFragment = """
-        val execCtx = SdkHttpOperation.build {
-            serializer = GetStatusSerializer(input)
-            deserializer = GetStatusDeserializer()
-            expectedHttpStatus = 200
-            service = serviceName
-            operationName = "GetStatus"
-            hostPrefix = "$prefix"
+        val op = SdkHttpOperation.build<GetStatusInput, GetStatusOutput> {
+            serializer = GetStatusOperationSerializer()
+            deserializer = GetStatusOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetStatus"
+                hostPrefix = "$prefix"
+                set(SerdeAttributes.SerdeProvider, serde)
+            }
         }
         """
         contents.shouldContainOnlyOnceWithDiff(expectedFragment)

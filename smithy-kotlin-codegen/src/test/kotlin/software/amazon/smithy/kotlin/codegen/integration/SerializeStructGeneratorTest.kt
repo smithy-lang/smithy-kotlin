@@ -278,7 +278,7 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.payload?.let { field(PAYLOAD_DESCRIPTOR, NestedStructureSerializer(it)) }
+                input.payload?.let { field(PAYLOAD_DESCRIPTOR, NestedStructureDocumentSerializer(it)) }
             }
         """.trimIndent()
 
@@ -305,7 +305,7 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.payload?.let { field(PAYLOAD_DESCRIPTOR, UnionStructureSerializer(it)) }
+                input.payload?.let { field(PAYLOAD_DESCRIPTOR, UnionStructureDocumentSerializer(it)) }
             }
         """.trimIndent()
 
@@ -409,7 +409,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeSdkSerializable(FooUnionSerializer(el0))
+                            serializeSdkSerializable(FooUnionDocumentSerializer(el0))
                         }
                     }
                 }
@@ -515,7 +515,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeSdkSerializable(NestedStructureSerializer(el0))
+                            serializeSdkSerializable(NestedStructureDocumentSerializer(el0))
                         }
                     }
                 }
@@ -702,7 +702,7 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.payload?.let { field(PAYLOAD_DESCRIPTOR, FooStructSerializer(it)) }
+                input.payload?.let { field(PAYLOAD_DESCRIPTOR, FooStructDocumentSerializer(it)) }
             }
         """.trimIndent()
 
@@ -881,7 +881,7 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> entry(key, FooUnionSerializer(value)) }
+                        input.payload.forEach { (key, value) -> entry(key, FooUnionDocumentSerializer(value)) }
                     }
                 }
             }
@@ -947,7 +947,7 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> if (value != null) entry(key, FooStructSerializer(value)) else entry(key, null as String?) }
+                        input.payload.forEach { (key, value) -> if (value != null) entry(key, FooStructDocumentSerializer(value)) else entry(key, null as String?) }
                     }
                 }
             }
@@ -1064,7 +1064,7 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> entry(key, FooStructureSerializer(value)) }
+                        input.payload.forEach { (key, value) -> entry(key, FooStructureDocumentSerializer(value)) }
                     }
                 }
             }

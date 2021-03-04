@@ -88,9 +88,9 @@ open class SymbolBuilder {
 fun buildSymbol(block: SymbolBuilder.() -> Unit): Symbol =
     SymbolBuilder().apply(block).build()
 
-fun SymbolBuilder.namespace(dependency: KotlinDependency, subnamespace: String = "") {
-    namespace = if (subnamespace.isNotEmpty()) {
-        "${dependency.namespace}.${subnamespace.trimStart('.')}"
+fun SymbolBuilder.namespace(dependency: KotlinDependency, subpackage: String = "") {
+    namespace = if (subpackage.isNotEmpty()) {
+        "${dependency.namespace}.${subpackage.trimStart('.')}"
     } else {
         dependency.namespace
     }

@@ -6,8 +6,8 @@ package software.aws.clientrt.http.feature
 
 import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.http.*
+import software.aws.clientrt.http.operation.SdkHttpOperation
 import software.aws.clientrt.http.request.HttpRequest
-import software.aws.clientrt.http.response.HttpResponsePipeline
 
 /**
  * Generic HTTP service exception
@@ -59,19 +59,19 @@ class DefaultValidateResponse : Feature {
         }
     }
 
-    override fun install(client: SdkHttpClient) {
-        client.responsePipeline.intercept(HttpResponsePipeline.Receive) {
-            if (context.response.status.isSuccess()) {
-                proceed()
-                return@intercept
+    override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
+        operation.execution.receive.intercept { req, next ->
+            val response = next.call(req)
+            if (response.status.isSuccess()) {
+                return@intercept response
             }
 
-            val message = "received unsuccessful HTTP response: ${context.response.status}"
+            val message = "received unsuccessful HTTP response: ${response.status}"
             val httpException = HttpResponseException(message).apply {
-                statusCode = context.response.status
-                headers = context.response.headers
-                body = context.response.body.readAll()
-                request = context.response.request
+                statusCode = response.status
+                headers = response.headers
+                body = response.body.readAll()
+                request = response.request
             }
 
             throw httpException

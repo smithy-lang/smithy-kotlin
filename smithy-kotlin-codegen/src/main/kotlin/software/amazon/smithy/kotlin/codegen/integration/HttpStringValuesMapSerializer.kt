@@ -33,7 +33,7 @@ class HttpStringValuesMapSerializer(
         writer: KotlinWriter
     ) {
         bindings.sortedBy(HttpBindingDescriptor::memberName).forEach {
-            val memberName = it.member.defaultName()
+            val memberName = ctx.symbolProvider.toMemberName(it.member)
             val memberTarget = ctx.model.expectShape(it.member.target)
             val paramName = it.locationName
             val location = it.location
@@ -101,7 +101,7 @@ class HttpStringValuesMapSerializer(
             else -> "\"\$it\""
         }
 
-        val memberName = binding.member.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val paramName = binding.locationName
         // appendAll collection parameter 2
         val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
@@ -114,7 +114,7 @@ class HttpStringValuesMapSerializer(
     }
 
     private fun renderStringShape(binding: HttpBindingDescriptor, memberTarget: StringShape, writer: KotlinWriter) {
-        val memberName = binding.member.defaultName()
+        val memberName = ctx.symbolProvider.toMemberName(binding.member)
         val location = binding.location
         val paramName = binding.locationName
 
@@ -122,7 +122,8 @@ class HttpStringValuesMapSerializer(
         // values from serde
         if ((location == HttpBinding.Location.QUERY || location == HttpBinding.Location.HEADER) && binding.member.hasTrait<IdempotencyTokenTrait>()) {
             // Call the idempotency token function if no supplied value.
-            writer.write("append(\"#L\", (input.$memberName ?: serializationContext.idempotencyTokenProvider.generateToken()))", paramName)
+            writer.addImport(RuntimeTypes.Core.IdempotencyTokenProviderExt)
+            writer.write("append(\"#L\", (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
         } else {
             val cond =
                 if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait<EnumTrait>()) {
