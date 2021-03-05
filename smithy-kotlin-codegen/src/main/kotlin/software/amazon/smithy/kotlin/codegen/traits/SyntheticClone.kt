@@ -14,7 +14,7 @@ import software.amazon.smithy.utils.SmithyBuilder
 import software.amazon.smithy.utils.ToSmithyBuilder
 
 /**
- * The namespace synthetic shapes are cloned into
+ * The (root) namespace synthetic shapes are cloned into
  */
 const val SYNTHETIC_NAMESPACE: String = "smithy.kotlin.synthetic"
 

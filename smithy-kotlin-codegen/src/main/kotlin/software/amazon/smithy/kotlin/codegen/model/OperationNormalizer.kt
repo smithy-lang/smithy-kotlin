@@ -9,9 +9,10 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.traits.*
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.TopDownIndex
+import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.Trait
-import kotlin.streams.toList
 
 /**
  * Generate synthetic input and output shapes for a operations as needed and normalize the names.
@@ -28,10 +29,18 @@ object OperationNormalizer {
      * Add synthetic input & output shapes to every Operation in the model. The generated shapes will be marked
      * with [SyntheticClone] trait. If an operation does not have an input or output an empty one will be added.
      * Existing inputs/outputs will be modified to have uniform names.
+     *
+     * @param model The model to transform
+     * @param service The service shape ID used to determine the closure of operations to work on
      */
-    fun transform(model: Model): Model {
-        validateTransform(model)
-        val operations = model.shapes<OperationShape>()
+    fun transform(model: Model, service: ShapeId): Model {
+        // smithy implicitly loads all models found on the classpath we have to be careful to only deal with
+        // shapes in the closure of the service we care about
+        val topDownIndex = TopDownIndex.of(model)
+        val operations = topDownIndex.getContainedOperations(service)
+
+        validateTransform(model, service, operations)
+
         val builder = model.toBuilder()
         operations.forEach { operation ->
             val newInputShape: StructureShape = operation.input
@@ -54,14 +63,14 @@ object OperationNormalizer {
         return builder.build()
     }
 
-    private fun validateTransform(model: Model) {
-        val operations = model.shapes<OperationShape>()
+    private fun validateTransform(model: Model, service: ShapeId, operations: Set<OperationShape>) {
         // list of all renamed shapes
         val newNames = operations.flatMap {
             listOf(it.id.name + REQUEST_SUFFIX, it.id.name + RESPONSE_SUFFIX)
         }.toSet()
 
-        val shapesResultingInType = model.shapes().filter {
+        val shapes = Walker(model).iterateShapes(model.expectShape(service))
+        val shapesResultingInType = shapes.asSequence().filter {
             // remove trait definitions (which are also structures)
             !it.hasTrait<Trait>() && SymbolVisitor.isTypeGenerateForShape(it)
         }.toList()
@@ -88,9 +97,17 @@ object OperationNormalizer {
         }
     }
 
+    private fun syntheticShapeId(opShapeId: ShapeId, suffix: String): ShapeId {
+        // see ABNF: https://awslabs.github.io/smithy/1.0/spec/core/model.html#shape-id
+        // take the last part of the namespace and clone shapes into the synthetic namespace using the trailing
+        // part of the original namespace as a suffix. e.g. "com.foo#Bar" -> "smithy.kotlin.synthetic.foo#Bar"
+        val lastNs = opShapeId.namespace.split(".").last()
+        return ShapeId.fromParts("$SYNTHETIC_NAMESPACE.$lastNs", opShapeId.name + suffix)
+    }
+
     private fun emptyOperationIOStruct(opShapeId: ShapeId, suffix: String): StructureShape {
         return StructureShape.builder()
-            .id(ShapeId.fromParts(SYNTHETIC_NAMESPACE, opShapeId.name + suffix))
+            .id(syntheticShapeId(opShapeId, suffix))
             .addTrait(SyntheticClone.build { archetype = opShapeId })
             .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
             .build()
@@ -98,9 +115,8 @@ object OperationNormalizer {
 
     private fun cloneOperationIOShape(opShapeId: ShapeId, structure: StructureShape, suffix: String): StructureShape {
         // rename operation inputs/outputs by using the operation name
-        val cloneShapeId = ShapeId.fromParts(SYNTHETIC_NAMESPACE, opShapeId.name + suffix)
         return structure.toBuilder()
-            .id(cloneShapeId)
+            .id(syntheticShapeId(opShapeId, suffix))
             .addTrait(SyntheticClone.build { archetype = structure.id })
             .addTrait(if (suffix == REQUEST_SUFFIX) OperationInput() else OperationOutput())
             .build()

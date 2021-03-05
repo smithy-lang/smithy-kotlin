@@ -24,15 +24,19 @@ class OperationNormalizerTest {
     @Test
     fun `it adds inputs and outputs to empty operations`() {
         val model = """
-            namespace smithy.test
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [Empty]
+            }
             operation Empty {}
         """.asSmithyModel(applyDefaultTransforms = false)
-        val origOp = model.expectShape<OperationShape>("smithy.test#Empty")
+        val origOp = model.expectShape<OperationShape>("com.test#Empty")
         assertFalse(origOp.input.isPresent)
         assertFalse(origOp.output.isPresent)
-        val normalized = OperationNormalizer.transform(model)
+        val normalized = OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
 
-        val op = normalized.expectShape<OperationShape>("smithy.test#Empty")
+        val op = normalized.expectShape<OperationShape>("com.test#Empty")
         assertTrue(op.input.isPresent)
         assertTrue(op.output.isPresent)
 
@@ -47,7 +51,12 @@ class OperationNormalizerTest {
     @Test
     fun `it clones operation inputs`() {
         val model = """
-            namespace smithy.test
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [Foo]
+            }
+            
             operation Foo {
                 input: MyInput
             }
@@ -56,27 +65,32 @@ class OperationNormalizerTest {
                 v: String
             }
         """.asSmithyModel(applyDefaultTransforms = false)
-        val origId = ShapeId.from("smithy.test#MyInput")
-        val normalized = OperationNormalizer.transform(model)
+        val origId = ShapeId.from("com.test#MyInput")
+        val normalized = OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
 
-        val op = normalized.expectShape<OperationShape>("smithy.test#Foo")
+        val op = normalized.expectShape<OperationShape>("com.test#Foo")
 
         val input = normalized.expectShape<StructureShape>(op.input.get())
         normalized.expectShape<StructureShape>(op.output.get())
 
         // the normalization process leaves the cloned shape in the model
-        assertTrue(normalized.getShape(ShapeId.from("smithy.test#MyInput")).isPresent)
+        assertTrue(normalized.getShape(ShapeId.from("com.test#MyInput")).isPresent)
 
         val syntheticTrait = input.expectTrait<SyntheticClone>()
         assertEquals(origId, syntheticTrait.archetype)
-        val expected = ShapeId.from("smithy.kotlin.synthetic#FooRequest")
+        val expected = ShapeId.from("smithy.kotlin.synthetic.test#FooRequest")
         assertEquals(expected, input.id)
     }
 
     @Test
     fun `it clones operation outputs`() {
         val model = """
-            namespace smithy.test
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [Foo]
+            }
+            
             operation Foo {
                 output: MyOutput
             }
@@ -85,24 +99,29 @@ class OperationNormalizerTest {
                 v: String
             }
         """.asSmithyModel(applyDefaultTransforms = false)
-        val origId = ShapeId.from("smithy.test#MyOutput")
-        val normalized = OperationNormalizer.transform(model)
+        val origId = ShapeId.from("com.test#MyOutput")
+        val normalized = OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
 
-        val op = normalized.expectShape<OperationShape>("smithy.test#Foo")
+        val op = normalized.expectShape<OperationShape>("com.test#Foo")
 
         normalized.expectShape<StructureShape>(op.input.get())
         val output = normalized.expectShape<StructureShape>(op.output.get())
 
         val syntheticTrait = output.expectTrait<SyntheticClone>()
         assertEquals(origId, syntheticTrait.archetype)
-        val expected = ShapeId.from("smithy.kotlin.synthetic#FooResponse")
+        val expected = ShapeId.from("smithy.kotlin.synthetic.test#FooResponse")
         assertEquals(expected, output.id)
     }
 
     @Test
     fun `it does not modify non operational shapes`() {
         val model = """
-            namespace smithy.test
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [Foo]
+            }
+            
             operation Foo {
                 output: MyOutput
             }
@@ -115,11 +134,11 @@ class OperationNormalizerTest {
                 foo: String
             }
         """.asSmithyModel(applyDefaultTransforms = false)
-        val normalized = OperationNormalizer.transform(model)
-        val expected = ShapeId.from("smithy.test#Nested")
+        val normalized = OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
+        val expected = ShapeId.from("com.test#Nested")
         normalized.expectShape<StructureShape>(expected)
 
-        val op = normalized.expectShape<OperationShape>("smithy.test#Foo")
+        val op = normalized.expectShape<OperationShape>("com.test#Foo")
         val output = normalized.expectShape<StructureShape>(op.output.get())
         assertEquals(expected, output.getMember("nested").get().target)
     }
@@ -127,7 +146,12 @@ class OperationNormalizerTest {
     @Test
     fun `it fails on conflicting rename`() {
         val model = """
-            namespace smithy.test
+            namespace com.test
+            service Example {
+                version: "1.0.0",
+                operations: [Foo]
+            }
+            
             operation Foo {
                 output: MyOutput
             }
@@ -142,8 +166,8 @@ class OperationNormalizerTest {
         """.asSmithyModel(applyDefaultTransforms = false)
 
         val ex = assertFailsWith(CodegenException::class) {
-            OperationNormalizer.transform(model)
+            OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
         }
-        ex.message!!.shouldContain("smithy.test#FooResponse")
+        ex.message!!.shouldContain("com.test#FooResponse")
     }
 }

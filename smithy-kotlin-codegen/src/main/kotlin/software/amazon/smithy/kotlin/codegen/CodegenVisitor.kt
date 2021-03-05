@@ -51,9 +51,10 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         }
 
         // normalize operations
-        model = OperationNormalizer.transform(resolvedModel)
+        model = OperationNormalizer.transform(resolvedModel, settings.service)
 
         service = settings.getService(model)
+
         symbolProvider = integrations.fold(
             KotlinCodegenPlugin.createSymbolProvider(model, settings.pkg.name, settings.sdkId)
         ) { provider, integration ->
