@@ -109,7 +109,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
          * Determines if a new Kotlin type is generated for a given shape. Generally only structures, unions, and enums
          * result in a type being generated. Strings, ints, etc are mapped to builtins
          */
-        fun isTypeGenerateForShape(shape: Shape): Boolean = when {
+        fun isTypeGeneratedForShape(shape: Shape): Boolean = when {
             // pretty much anything we visit in CodegenVisitor (we don't care about service shape here though)
             shape.isEnum || shape.isStructureShape || shape.isUnionShape -> true
             else -> false

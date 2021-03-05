@@ -72,7 +72,7 @@ object OperationNormalizer {
         val shapes = Walker(model).iterateShapes(model.expectShape(service))
         val shapesResultingInType = shapes.asSequence().filter {
             // remove trait definitions (which are also structures)
-            !it.hasTrait<Trait>() && SymbolVisitor.isTypeGenerateForShape(it)
+            !it.hasTrait<Trait>() && SymbolVisitor.isTypeGeneratedForShape(it)
         }.toList()
 
         val possibleConflicts = shapesResultingInType.filter { it.id.name in newNames }

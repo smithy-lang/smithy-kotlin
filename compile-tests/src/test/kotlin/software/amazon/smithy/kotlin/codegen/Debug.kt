@@ -12,6 +12,6 @@ object Debug{
     val emitSourcesToTemp: Boolean
         get() {
             val props = System.getProperties()
-            return props.containsKey(EmitCompiledSources) && props.getProperty(EmitCompiledSources).toBoolean()
+            return props.getProperty(EmitCompiledSources)?.toBoolean() ?: false
         }
 }
