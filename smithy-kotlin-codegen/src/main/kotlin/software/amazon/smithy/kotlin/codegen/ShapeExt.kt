@@ -12,6 +12,16 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.Trait
 import kotlin.streams.toList
 
+/**
+ * Get all shapes of a particular type from the model.
+ * Equivalent to `model.shapes({ShapeType}::class.java)`.
+ *
+ * NOTE: this is usually not what you want as it will return all
+ * shapes _loaded_ (traits, models on classpath, etc). You usually
+ * want to iterate shapes within a predefined closure (the service
+ * shape's closure for example)
+ */
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
 inline fun <reified T : Shape> Model.shapes(): List<T> = shapes(T::class.java).toList()
 
 /**
