@@ -29,11 +29,16 @@ class DeserializeUnionGenerator(
         // otherwise use the one generated as part of the companion object
         val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build {}"
         writer.withBlock("deserializer.deserializeStruct($objDescriptor) {", "}") {
-            withBlock("when(findNextFieldIndex()) {", "}") {
-                members
-                    .sortedBy { it.memberName }
-                    .forEach { memberShape -> renderMemberShape(memberShape) }
-                write("else -> value = $unionName.SdkUnknown.also { skipValue() }")
+            // field iterators MUST be driven to completion so that underlying tokens are consumed
+            // and the deserializer state is maintained
+            withBlock("loop@while(true) {", "}") {
+                withBlock("when(findNextFieldIndex()) {", "}") {
+                    members
+                        .sortedBy { it.memberName }
+                        .forEach { memberShape -> renderMemberShape(memberShape) }
+                    write("null -> break@loop")
+                    write("else -> value = $unionName.SdkUnknown.also { skipValue() }")
+                }
             }
         }
     }

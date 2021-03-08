@@ -549,10 +549,13 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
     suspend fun deserialize(deserializer: Deserializer): MyUnion {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-            when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
-                STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
-                else -> value = MyUnion.SdkUnknown.also { skipValue() }
+            loop@while(true) {
+                when(findNextFieldIndex()) {
+                    I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
+                    STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
+                    null -> break@loop
+                    else -> value = MyUnion.SdkUnknown.also { skipValue() }
+                }
             }
         }
         return value ?: throw DeserializationException("Deserialized value unexpectedly null: MyUnion")
