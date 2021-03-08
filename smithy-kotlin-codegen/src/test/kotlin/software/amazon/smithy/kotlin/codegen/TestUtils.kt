@@ -23,14 +23,12 @@ import software.amazon.smithy.kotlin.codegen.integration.HttpBindingResolver
 import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
 import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.SmithyIdlModelSerializer
+import software.amazon.smithy.model.shapes.*
 import java.net.URL
 
 fun String.shouldSyntacticSanityCheck() {
@@ -51,23 +49,47 @@ fun String.shouldSyntacticSanityCheck() {
     Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
 }
 
+// attempt to replicate transforms that happen in CodegenVisitor such that tests
+// more closely reflect reality
+private fun Model.applyKotlinCodegenTransforms(serviceShapeId: String?): Model {
+    val serviceId = if (serviceShapeId != null) ShapeId.from(serviceShapeId) else {
+        // try to autodiscover the service so that tests "Just Work" (TM) without having to do anything
+        val services = this.shapes<ServiceShape>()
+        check(services.size <= 1) { "multiple services discovered in model; auto inference of service shape impossible for test. Fix by passing the service shape explicitly" }
+        if (services.isEmpty()) return this // no services defined, move along
+        services.first().id
+    }
+
+    val transforms = listOf(OperationNormalizer::transform)
+    return transforms.fold(this) { m, transform ->
+        transform(m, serviceId)
+    }
+}
+
 /**
  * Load and initialize a model from a Java resource URL
  */
-fun URL.asSmithy(): Model =
-    Model.assembler()
+fun URL.asSmithy(serviceShapeId: String? = null): Model {
+    val model = Model.assembler()
         .addImport(this)
         .discoverModels()
         .assemble()
         .unwrap()
 
+    return model.applyKotlinCodegenTransforms(serviceShapeId)
+}
+
 /**
- * Load and initialize a model from a String (from smithy-rs)
+ * Load and initialize a model from a String
  */
-fun String.asSmithyModel(sourceLocation: String? = null): Model {
+fun String.asSmithyModel(sourceLocation: String? = null, serviceShapeId: String? = null, applyDefaultTransforms: Boolean = true): Model {
     val processed = if (this.startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
-    return Model.assembler().discoverModels().addUnparsedModel(sourceLocation ?: "test.smithy", processed).assemble()
+    val model = Model.assembler()
+        .discoverModels()
+        .addUnparsedModel(sourceLocation ?: "test.smithy", processed)
+        .assemble()
         .unwrap()
+    return if (applyDefaultTransforms) model.applyKotlinCodegenTransforms(serviceShapeId) else model
 }
 
 /**

@@ -101,16 +101,9 @@ class HttpProtocolClientGeneratorTest {
     }
 """,
 """
-    override suspend fun getFooNoInput(): GetFooResponse {
-        val op = SdkHttpOperation.build<kotlin.Unit, GetFooResponse> {
-            serializer = object : HttpSerialize<kotlin.Unit> {
-                override suspend fun serialize(context: ExecutionContext, input: kotlin.Unit): HttpRequestBuilder {
-                    val builder = HttpRequestBuilder()
-                    builder.method = HttpMethod.GET
-                    builder.url.path = "/foo-no-input"
-                    return builder
-                }
-            }
+    override suspend fun getFooNoInput(input: GetFooNoInputRequest): GetFooNoInputResponse {
+        val op = SdkHttpOperation.build<GetFooNoInputRequest, GetFooNoInputResponse> {
+            serializer = GetFooNoInputOperationSerializer()
             deserializer = GetFooNoInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
@@ -120,14 +113,14 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         registerDefaultMiddleware(op)
-        return op.roundTrip(client, kotlin.Unit)
+        return op.roundTrip(client, input)
     }
 """,
 """
-    override suspend fun getFooNoOutput(input: GetFooRequest) {
-        val op = SdkHttpOperation.build<GetFooRequest, kotlin.Unit> {
+    override suspend fun getFooNoOutput(input: GetFooNoOutputRequest): GetFooNoOutputResponse {
+        val op = SdkHttpOperation.build<GetFooNoOutputRequest, GetFooNoOutputResponse> {
             serializer = GetFooNoOutputOperationSerializer()
-            deserializer = UnitDeserializer
+            deserializer = GetFooNoOutputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
@@ -136,12 +129,12 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         registerDefaultMiddleware(op)
-        op.roundTrip(client, input)
+        return op.roundTrip(client, input)
     }
 """,
 """
-    override suspend fun getFooStreamingInput(input: GetFooStreamingRequest): GetFooResponse {
-        val op = SdkHttpOperation.build<GetFooStreamingRequest, GetFooResponse> {
+    override suspend fun getFooStreamingInput(input: GetFooStreamingInputRequest): GetFooStreamingInputResponse {
+        val op = SdkHttpOperation.build<GetFooStreamingInputRequest, GetFooStreamingInputResponse> {
             serializer = GetFooStreamingInputOperationSerializer()
             deserializer = GetFooStreamingInputOperationDeserializer()
             context {
@@ -156,8 +149,8 @@ class HttpProtocolClientGeneratorTest {
     }
 """,
 """
-    override suspend fun <T> getFooStreamingOutput(input: GetFooRequest, block: suspend (GetFooStreamingResponse) -> T): T {
-        val op = SdkHttpOperation.build<GetFooRequest, GetFooStreamingResponse> {
+    override suspend fun <T> getFooStreamingOutput(input: GetFooStreamingOutputRequest, block: suspend (GetFooStreamingOutputResponse) -> T): T {
+        val op = SdkHttpOperation.build<GetFooStreamingOutputRequest, GetFooStreamingOutputResponse> {
             serializer = GetFooStreamingOutputOperationSerializer()
             deserializer = GetFooStreamingOutputOperationDeserializer()
             context {
@@ -172,16 +165,9 @@ class HttpProtocolClientGeneratorTest {
     }
 """,
 """
-    override suspend fun <T> getFooStreamingOutputNoInput(block: suspend (GetFooStreamingResponse) -> T): T {
-        val op = SdkHttpOperation.build<kotlin.Unit, GetFooStreamingResponse> {
-            serializer = object : HttpSerialize<kotlin.Unit> {
-                override suspend fun serialize(context: ExecutionContext, input: kotlin.Unit): HttpRequestBuilder {
-                    val builder = HttpRequestBuilder()
-                    builder.method = HttpMethod.POST
-                    builder.url.path = "/foo-streaming-output-no-input"
-                    return builder
-                }
-            }
+    override suspend fun <T> getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputRequest, block: suspend (GetFooStreamingOutputNoInputResponse) -> T): T {
+        val op = SdkHttpOperation.build<GetFooStreamingOutputNoInputRequest, GetFooStreamingOutputNoInputResponse> {
+            serializer = GetFooStreamingOutputNoInputOperationSerializer()
             deserializer = GetFooStreamingOutputNoInputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
@@ -191,14 +177,14 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         registerDefaultMiddleware(op)
-        return op.execute(client, kotlin.Unit, block)
+        return op.execute(client, input, block)
     }
 """,
 """
-    override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingRequest) {
-        val op = SdkHttpOperation.build<GetFooStreamingRequest, kotlin.Unit> {
+    override suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputRequest): GetFooStreamingInputNoOutputResponse {
+        val op = SdkHttpOperation.build<GetFooStreamingInputNoOutputRequest, GetFooStreamingInputNoOutputResponse> {
             serializer = GetFooStreamingInputNoOutputOperationSerializer()
-            deserializer = UnitDeserializer
+            deserializer = GetFooStreamingInputNoOutputOperationDeserializer()
             context {
                 expectedHttpStatus = 200
                 service = serviceName
@@ -207,7 +193,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         registerDefaultMiddleware(op)
-        op.roundTrip(client, input)
+        return op.roundTrip(client, input)
     }
 """
         )
@@ -276,7 +262,7 @@ class HttpProtocolClientGeneratorTest {
 
         val prefix = "\${input.foo}.data."
         val expectedFragment = """
-        val op = SdkHttpOperation.build<GetStatusInput, GetStatusOutput> {
+        val op = SdkHttpOperation.build<GetStatusRequest, GetStatusResponse> {
             serializer = GetStatusOperationSerializer()
             deserializer = GetStatusOperationDeserializer()
             context {
