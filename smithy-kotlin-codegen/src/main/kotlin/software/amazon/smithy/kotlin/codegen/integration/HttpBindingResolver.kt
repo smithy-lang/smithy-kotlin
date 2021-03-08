@@ -42,7 +42,7 @@ interface SerdeMessageFormatHandler {
      * @param namePostfix an optional postfix to the name in the case of synthetic nested members.
      * @return the serial name of field suitable for writing directly to codegen output
      */
-    fun serialNameTraitForMember(memberShape: MemberShape, namePostfix: String): String
+    fun serialNameTraitForMember(memberShape: MemberShape, namePostfix: String = ""): String
 
     /**
      * Return the format-specific trait that specifies the name of a struct (or object).

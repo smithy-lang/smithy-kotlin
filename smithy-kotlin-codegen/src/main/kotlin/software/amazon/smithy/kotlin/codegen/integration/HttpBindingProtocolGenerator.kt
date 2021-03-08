@@ -309,7 +309,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .withBlock("companion object {", "}") {
                 val sortedMembers = memberShapes.sortedBy { it.memberName }
                 for (member in sortedMembers) {
-                    val serialNameTrait = serdeHandler.serialNameTraitForMember(member, "")
+                    val serialNameTrait = serdeHandler.serialNameTraitForMember(member)
                     val serialKind = ctx.model.expectShape(member.target).serialKind()
                     val memberTarget = ctx.model.expectShape(member.target)
                     write("private val #L = SdkFieldDescriptor($serialKind, #L)", member.descriptorName(), serialNameTrait)
