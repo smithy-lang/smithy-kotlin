@@ -944,7 +944,7 @@ internal class MapInputOperationSerializer(): HttpSerialize<MapInputRequest> {
 
     companion object {
         private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, JsonSerialName("mapOfLists"))
-        private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("mapOfListsC0"))
+        private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("mapOfLists_C0"))
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MAPOFLISTS_DESCRIPTOR)
         }

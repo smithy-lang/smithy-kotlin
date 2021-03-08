@@ -1,12 +1,12 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
-import software.amazon.smithy.kotlin.codegen.expectTrait
-import software.amazon.smithy.kotlin.codegen.hasTrait
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.HttpTrait
+import software.amazon.smithy.model.traits.JsonNameTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
@@ -23,6 +23,34 @@ data class HttpBindingDescriptor(
     constructor(httpBinding: HttpBinding) : this(httpBinding.member, httpBinding.location, httpBinding.locationName)
 
     val memberName: String = member.memberName
+}
+
+/**
+ * Provides format-specific serde codegen.  Implementors of this
+ * interface are able to specify field and object descriptor codegen output
+ * for a specific message format, such as JSON or XML.
+ */
+interface SerdeMessageFormatHandler {
+    /**
+     * Add the necessary imports to the codegen file for message format specific types.
+     */
+    fun addSerdeImports(writer: KotlinWriter)
+
+    /**
+     * Return the format-specific trait that specifies the name of a field.
+     * @param memberShape shape to generate a serial name for.
+     * @param namePostfix an optional postfix to the name in the case of synthetic nested members.
+     * @return the serial name of field suitable for writing directly to codegen output
+     */
+    fun serialNameTraitForMember(memberShape: MemberShape, namePostfix: String): String
+
+    /**
+     * Return the format-specific trait that specifies the name of a struct (or object).
+     * @param objShape shape to generate a serial name for.
+     * @return the serial name of object suitable for writing directly to codegen output,
+     *          or null if nothing should be emitted to codegen.
+     */
+    fun serialNameTraitForStruct(objShape: Shape): String?
 }
 
 /**
@@ -121,4 +149,24 @@ class HttpTraitResolver(
         defaultFormat: TimestampFormatTrait.Format
     ): TimestampFormatTrait.Format =
         bindingIndex.determineTimestampFormat(member, location, defaultFormat)
+}
+
+/**
+ * A [SerdeMessageFormatHandler] for protocols utilizing JSON message formats.
+ */
+class JsonMessageFormatHandler : SerdeMessageFormatHandler {
+    override fun addSerdeImports(writer: KotlinWriter) {
+        writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+        writer.addImport(KotlinDependency.CLIENT_RT_SERDE_JSON.namespace, "JsonSerialName")
+        writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
+        writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE_JSON.dependencies)
+    }
+
+    override fun serialNameTraitForMember(memberShape: MemberShape, namePostfix: String): String {
+        val serialName = memberShape.getTrait<JsonNameTrait>()?.value ?: memberShape.memberName
+        return """JsonSerialName("$serialName$namePostfix")"""
+    }
+
+    // JSON message format does not use a name for an object
+    override fun serialNameTraitForStruct(objShape: Shape): String? = null
 }
