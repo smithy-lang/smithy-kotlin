@@ -13,7 +13,7 @@ const val CLIENT_RT_ROOT_NS = "software.aws.clientrt"
 
 // publishing info
 const val CLIENT_RT_GROUP = "software.aws.smithy.kotlin"
-const val CLIENT_RT_VERSION = "0.0.1"
+const val CLIENT_RT_VERSION = "0.1.0-SNAPSHOT"
 const val KOTLIN_VERSION = "1.4.31"
 
 // See: https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
