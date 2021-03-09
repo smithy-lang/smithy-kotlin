@@ -11,11 +11,11 @@ publishing {
     repositories {
         maven { name = "testLocal"; url = "$rootProject.buildDir/m2" }
         maven {
-            name = "githubPackages"
-            url = "https://maven.pkg.github.com/awslabs/aws-sdk-kotlin"
+            name = "awsCodeArtifact"
+            url = project.findProperty("codeartifact.url")
             credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GPR_USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("GPR_TOKEN")
+                username = "aws"
+                password = project.findProperty("codeartifact.token") ?: System.getenv("CODEARTIFACT_TOKEN")
             }
         }
     }
@@ -45,7 +45,7 @@ publishing {
     }
 }
 
-tasks.register('publishToGithub') {
-    dependsOn 'publishAllPublicationsToGithubPackagesRepository'
+tasks.register('publishToAwsCodeArtifact') {
+    dependsOn 'publishAllPublicationsToAwsCodeArtifactRepository'
     group 'publishing'
 }
