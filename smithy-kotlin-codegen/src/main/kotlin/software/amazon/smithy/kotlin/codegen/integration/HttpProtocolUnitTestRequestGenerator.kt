@@ -41,6 +41,11 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 writer
                     .write("method = HttpMethod.${test.method.toUpperCase()}")
                     .write("uri = #S", test.uri)
+                    .call {
+                        test.resolvedHost.ifPresent { expectedHost ->
+                            writer.write("resolvedHost = #S", expectedHost)
+                        }
+                    }
                     .call { renderExpectedQueryParams(test) }
                     .call { renderExpectedListOfParams("forbiddenQueryParams", test.forbidQueryParams) }
                     .call { renderExpectedListOfParams("requiredQueryParams", test.requireQueryParams) }

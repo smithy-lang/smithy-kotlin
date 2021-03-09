@@ -139,6 +139,10 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
         assertTrue(actual.headers.contains(it), "expected required header not found: `$it`")
     }
 
+    expected.resolvedHost?.let {
+        assertEquals(it, actual.url.host, "expected host: `${expected.resolvedHost}`; got: `${actual.url.host}`")
+    }
+
     val expectedBody = expected.body?.let {
         assertNotNull(expected.bodyAssert, "body assertion function is required if an expected body is defined")
         ByteArrayContent(it.encodeToByteArray())
@@ -164,6 +168,8 @@ data class ExpectedHttpRequest(
     val forbiddenHeaders: List<String> = listOf(),
     // header names that must appear but no assertion on values
     val requiredHeaders: List<String> = listOf(),
+    // the host / endpoint that the client should send to, not including the path or scheme
+    var resolvedHost: String? = null,
     // if no body is defined no assertions are made about it
     val body: String? = null,
     // actual function to use for the assertion
@@ -191,6 +197,7 @@ class ExpectedHttpRequestBuilder {
     var headers: Map<String, String> = mapOf()
     var forbiddenHeaders: List<String> = listOf()
     var requiredHeaders: List<String> = listOf()
+    var resolvedHost: String? = null
     var body: String? = null
     var bodyAssert: BodyAssertFn? = null
     var bodyMediaType: String? = null
@@ -205,6 +212,7 @@ class ExpectedHttpRequestBuilder {
             this.headers,
             this.forbiddenHeaders,
             this.requiredHeaders,
+            this.resolvedHost,
             this.body,
             this.bodyAssert,
             this.bodyMediaType
