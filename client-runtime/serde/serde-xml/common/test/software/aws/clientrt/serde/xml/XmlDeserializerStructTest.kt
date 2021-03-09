@@ -180,4 +180,113 @@ class XmlDeserializerStructTest {
         assertEquals(2, bst.y)
         assertEquals("strval", bst.z)
     }
+
+    @Test
+    fun itDeserializesFieldsWithEscapedCharacters() = runSuspendTest {
+        val payload = """
+            <CityInfo>
+                <country>USA</country>
+                <name>&lt;Lake Forest&gt;</name>
+            </CityInfo>
+        """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val cityInfo = CityInfoDocumentDeserializer().deserialize(deserializer)
+
+        assertEquals("USA", cityInfo.country)
+        assertEquals("<Lake Forest>", cityInfo.name)
+    }
+
+    class CityInfoDocumentDeserializer {
+
+        companion object {
+            private val COUNTRY_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("country"))
+            private val NAME_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("name"))
+            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                trait(XmlSerialName("CityInfo"))
+                field(COUNTRY_DESCRIPTOR)
+                field(NAME_DESCRIPTOR)
+            }
+        }
+
+        suspend fun deserialize(deserializer: Deserializer): CityInfo {
+            val builder = CityInfo.dslBuilder()
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        COUNTRY_DESCRIPTOR.index -> builder.country = deserializeString()
+                        NAME_DESCRIPTOR.index -> builder.name = deserializeString()
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+            return builder.build()
+        }
+    }
+
+    class CityInfo private constructor(builder: BuilderImpl) {
+        val country: String? = builder.country
+        val name: String? = builder.name
+
+        companion object {
+            fun builder(): Builder = BuilderImpl()
+
+            fun dslBuilder(): DslBuilder = BuilderImpl()
+
+            operator fun invoke(block: DslBuilder.() -> kotlin.Unit): CityInfo = BuilderImpl().apply(block).build()
+        }
+
+        override fun toString(): kotlin.String = buildString {
+            append("CityInfo(")
+            append("country=$country,")
+            append("name=$name)")
+        }
+
+        override fun hashCode(): kotlin.Int {
+            var result = country?.hashCode() ?: 0
+            result = 31 * result + (name?.hashCode() ?: 0)
+            return result
+        }
+
+        override fun equals(other: kotlin.Any?): kotlin.Boolean {
+            if (this === other) return true
+
+            other as CityInfo
+
+            if (country != other.country) return false
+            if (name != other.name) return false
+
+            return true
+        }
+
+        fun copy(block: DslBuilder.() -> kotlin.Unit = {}): CityInfo = BuilderImpl(this).apply(block).build()
+
+        interface Builder {
+            fun build(): CityInfo
+            fun country(country: String): Builder
+            fun name(name: String): Builder
+        }
+
+        interface DslBuilder {
+            var country: String?
+            var name: String?
+
+            fun build(): CityInfo
+        }
+
+        private class BuilderImpl() : Builder, DslBuilder {
+            override var country: String? = null
+            override var name: String? = null
+
+            constructor(x: CityInfo) : this() {
+                this.country = x.country
+                this.name = x.name
+            }
+
+            override fun build(): CityInfo = CityInfo(this)
+            override fun country(country: String): Builder = apply { this.country = country }
+            override fun name(name: String): Builder = apply { this.name = name }
+        }
+    }
 }
