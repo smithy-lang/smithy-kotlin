@@ -7,4 +7,45 @@ apply plugin: 'maven'
 apply plugin: 'maven-publish'
 
 
-// TODO - fill in publishing details including license, etc
+publishing {
+    repositories {
+        maven { name = "testLocal"; url = "$rootProject.buildDir/m2" }
+        maven {
+            name = "awsCodeArtifact"
+            url = project.findProperty("codeartifact.url")
+            credentials {
+                username = "aws"
+                password = project.findProperty("codeartifact.token") ?: System.getenv("CODEARTIFACT_TOKEN")
+            }
+        }
+    }
+
+    publications.all {
+        pom {
+            url = "https://github.com/awslabs/smithy-kotlin"
+            licenses {
+                license {
+                    name = "The Apache License, Version 2.0"
+                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                }
+            }
+            developers {
+                developer {
+                    id = "smithy-kotlin"
+                    name = "AWS SDK Kotlin Team"
+                    // TODO - team email?
+                }
+            }
+            scm {
+                connection = "scm:git:git://github.com/awslabs/smithy-kotlin.git"
+                developerConnection = "scm:git:ssh://github.com/awslabs/smith-kotlin.git"
+                url = "https://github.com/awslabs/smithy-kotlin"
+            }
+        }
+    }
+}
+
+tasks.register('publishToAwsCodeArtifact') {
+    dependsOn 'publishAllPublicationsToAwsCodeArtifactRepository'
+    group 'publishing'
+}

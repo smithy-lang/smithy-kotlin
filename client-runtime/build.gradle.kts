@@ -33,6 +33,8 @@ kotlin {
     jvm()
 }
 
+val sdkVersion: String by project
+
 subprojects {
     // FIXME - Workaround for unspecified kotlin target error after 1.4 upgrade.
     //  See https://www.pivotaltracker.com/story/show/175292052
@@ -43,7 +45,7 @@ subprojects {
 
     // TODO - the group to publish under needs negotiated still
     group = "software.aws.smithy.kotlin"
-    version = "0.0.1"
+    version = sdkVersion
 
     apply {
         plugin("org.jetbrains.kotlin.multiplatform")
