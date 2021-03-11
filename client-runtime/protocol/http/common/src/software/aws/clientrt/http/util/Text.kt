@@ -33,8 +33,18 @@ fun String.urlEncodeComponent(
 }
 
 // from 'pchar' https://tools.ietf.org/html/rfc3986#section-3.3
+//
+// note `:` is a valid pchar by the RFC but we are going to percent encode
+// it anyway (by not including it in this list). tl;dr is that implementations
+// vary and many "over percent-encode" path components since they don't distinguish
+// from other uri components. There _shouldn't_ be any harm in over percent-encoding as
+// it'll just be decoded on the other side like any other percent-encoded char.
+//
+// this can affect things like signing, see: smithy-kotlin/issues/118
+// if there are other deviations in the future and you find yourself yet again editing
+// this definition, STOP and consider just making it configurable instead and returning to sanity
 private val VALID_PATH_PART = listOf(
-    ':', '@',
+    '@',
     // sub-delims from section-2.2
     '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=',
     // unreserved section-2.3

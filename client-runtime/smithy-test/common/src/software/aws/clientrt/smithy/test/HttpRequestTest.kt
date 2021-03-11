@@ -73,7 +73,7 @@ fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runSuspendTest {
             // other SDK's and we were asked to work around it.
             // Replace any left over sub-delims with the percent encoded value so that tests can proceed
             // https://tools.ietf.org/html/rfc3986#section-3.3
-            val replacements = mapOf(":" to "%3A", "," to "%2C")
+            val replacements = mapOf("," to "%2C")
             for ((oldValue, newValue) in replacements) {
                 encodedPath = encodedPath.replace(oldValue, newValue)
             }

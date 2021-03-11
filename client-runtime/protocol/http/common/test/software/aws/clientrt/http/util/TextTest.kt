@@ -59,7 +59,7 @@ class TextTest {
     fun urlPathValuesEncodeCorrectly() {
         val urlPath = "/wikipedia/en/6/61/Purdue_University_\u2013seal.svg"
         assertEquals("/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg", urlPath.encodeUrlPath())
-        assertEquals("/kotlin/Tue,%2029%20Apr%202014%2018:30:38%20GMT", "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT".encodeUrlPath())
+        assertEquals("/kotlin/Tue,%2029%20Apr%202014%2018%3A30%3A38%20GMT", "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT".encodeUrlPath())
     }
 
     @Test

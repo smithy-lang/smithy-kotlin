@@ -14,8 +14,9 @@ description = "Generates Kotlin code from Smithy models"
 extra["displayName"] = "Smithy :: Kotlin :: Codegen"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 
+val sdkVersion: String by project
 group = "software.amazon.smithy"
-version = "0.1.0"
+version = sdkVersion
 
 val smithyVersion: String by project
 val kotlinVersion: String by project
@@ -88,18 +89,14 @@ tasks.jacocoTestReport {
 // Always run the jacoco test report after testing.
 tasks["test"].finalizedBy(tasks["jacocoTestReport"])
 
-
 publishing {
     publications {
-        create<MavenPublication>("default") {
+        create<MavenPublication>("codegen") {
             from(components["java"])
             artifact(sourcesJar)
         }
     }
-    repositories {
-        maven {
-            url = uri("$buildDir/repository")
-        }
-    }
 }
+
+apply(from = rootProject.file("gradle/publish.gradle"))
 
