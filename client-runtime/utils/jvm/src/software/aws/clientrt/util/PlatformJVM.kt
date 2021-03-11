@@ -46,9 +46,7 @@ private fun getOsInfo(): OperatingSystem {
         else -> OsFamily.Other
     }
 
-    val version = runCatching {
-        normalize(System.getProperty("os.version").replace(" ", "-"))
-    }.getOrNull()
+    val version = runCatching { System.getProperty("os.version") }.getOrNull()
 
     return OperatingSystem(family, version)
 }
