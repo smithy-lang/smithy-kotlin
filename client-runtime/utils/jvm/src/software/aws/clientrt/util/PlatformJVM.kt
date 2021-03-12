@@ -14,7 +14,7 @@ public actual object Platform {
     actual fun getenv(key: String): String? = System.getenv()[key]
 
     actual val isJvm: Boolean = true
-    actual val isAndroid: Boolean = isAndroid()
+    actual val isAndroid: Boolean by lazy { isAndroid() }
     actual val isBrowser: Boolean = false
     actual val isNode: Boolean = false
     actual val isNative: Boolean = false

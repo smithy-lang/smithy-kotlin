@@ -29,7 +29,7 @@ public enum class OsFamily {
     Windows,
     Android,
     Ios,
-    Other;
+    Unknown;
 
     override fun toString(): String = when (this) {
         Linux -> "linux"
@@ -37,6 +37,6 @@ public enum class OsFamily {
         Windows -> "windows"
         Android -> "android"
         Ios -> "ios"
-        Other -> "other"
+        Unknown -> "unknown"
     }
 }
