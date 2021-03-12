@@ -43,7 +43,7 @@ private fun getOsInfo(): OperatingSystem {
         name.contains("windows") -> OsFamily.Windows
         name.contains("linux") -> OsFamily.Linux
         name.contains("macosx") -> OsFamily.MacOs
-        else -> OsFamily.Other
+        else -> OsFamily.Unknown
     }
 
     val version = runCatching { System.getProperty("os.version") }.getOrNull()
