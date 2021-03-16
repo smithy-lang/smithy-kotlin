@@ -17,7 +17,7 @@ import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
-import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.logging.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -32,7 +32,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     }
     private val logger = Logger.getLogger<KtorEngine>()
 
-    override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): SdkHttpResponse {
+    override suspend fun roundTrip(request: HttpRequest): SdkHttpResponse {
         val callContext = coroutineContext
 
         val respChannel = Channel<SdkHttpResponse>(Channel.RENDEZVOUS)
@@ -40,7 +40,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
         // run the request in another coroutine to allow streaming body to be handled
         GlobalScope.launch(callContext + Dispatchers.IO) {
             try {
-                execute(callContext, requestBuilder, respChannel)
+                execute(callContext, request, respChannel)
             } catch (ex: Exception) {
                 // signal the HTTP response isn't coming
                 respChannel.close(ex)
@@ -61,10 +61,10 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
 
     private suspend fun execute(
         callContext: CoroutineContext,
-        sdkBuilder: HttpRequestBuilder,
+        sdkRequest: HttpRequest,
         channel: SendChannel<SdkHttpResponse>
     ) {
-        val builder = KtorRequestAdapter(sdkBuilder, callContext).toBuilder()
+        val builder = KtorRequestAdapter(sdkRequest, callContext).toBuilder()
         val waiter = Waiter()
         client.request<HttpStatement>(builder).execute { httpResp ->
             // we have a lifetime problem here...the stream (and HttpResponse instance) are only valid
@@ -83,7 +83,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
                 HttpStatusCode.fromValue(httpResp.status.value),
                 headers,
                 body,
-                sdkBuilder.build()
+                sdkRequest,
             )
 
             logger.trace("signalling response")

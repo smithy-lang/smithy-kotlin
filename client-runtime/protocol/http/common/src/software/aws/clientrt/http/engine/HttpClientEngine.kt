@@ -5,7 +5,7 @@
 package software.aws.clientrt.http.engine
 
 import software.aws.clientrt.http.SdkHttpClient
-import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.response.HttpResponse
 
 /**
@@ -15,7 +15,7 @@ interface HttpClientEngine {
     /**
      * Execute a single HTTP request and return the response.
      */
-    suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse
+    suspend fun roundTrip(request: HttpRequest): HttpResponse
 
     /**
      * Shutdown and cleanup any resources

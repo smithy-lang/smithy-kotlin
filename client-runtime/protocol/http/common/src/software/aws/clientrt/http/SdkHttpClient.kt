@@ -34,7 +34,7 @@ class SdkHttpClient(
 ) : HttpHandler {
 
     override suspend fun call(request: HttpRequestBuilder): HttpResponse {
-        return engine.roundTrip(request)
+        return engine.roundTrip(request.build())
     }
 
     /**

@@ -9,7 +9,7 @@ import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.engine.HttpClientEngine
-import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.testing.runSuspendTest
 
@@ -77,7 +77,7 @@ fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runSusp
 
     // provide the mock engine
     val mockEngine = object : HttpClientEngine {
-        override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
+        override suspend fun roundTrip(request: HttpRequest): HttpResponse {
             val headers = Headers {
                 testBuilder.expected.headers.forEach { (key, value) ->
                     append(key, value)
@@ -88,7 +88,7 @@ fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runSusp
                 ByteArrayContent(it.encodeToByteArray())
             } ?: HttpBody.Empty
 
-            return HttpResponse(testBuilder.expected.statusCode, headers, body, requestBuilder.build())
+            return HttpResponse(testBuilder.expected.statusCode, headers, body, request)
         }
     }
 

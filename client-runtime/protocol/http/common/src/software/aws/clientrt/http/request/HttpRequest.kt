@@ -17,4 +17,8 @@ data class HttpRequest(
     val url: Url,
     val headers: Headers,
     val body: HttpBody
-)
+) {
+    companion object {
+        operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest = HttpRequestBuilder().apply(block).build()
+    }
+}

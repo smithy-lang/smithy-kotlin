@@ -24,7 +24,7 @@ data class Url(
     val host: String,
     val port: Int = scheme.defaultPort,
     val path: String = "",
-    val parameters: QueryParameters? = null,
+    val parameters: QueryParameters = QueryParameters.Empty,
     val fragment: String? = null,
     val userInfo: UserInfo? = null,
     val forceQuery: Boolean = false
@@ -63,7 +63,7 @@ data class Url(
      * Get the full encoded path including query parameters and fragment
      */
     public val encodedPath: String
-        get() = encodePath(path, parameters?.entries(), fragment, forceQuery)
+        get() = encodePath(path, parameters.entries(), fragment, forceQuery)
 }
 
 // get the full encoded URL path component e.g. `/path/foo/bar?x=1&y=2#fragment`
@@ -117,7 +117,7 @@ class UrlBuilder {
         host,
         port ?: scheme.defaultPort,
         path,
-        if (parameters.isEmpty()) null else parameters.build(),
+        if (parameters.isEmpty()) QueryParameters.Empty else parameters.build(),
         fragment,
         userInfo,
         forceQuery

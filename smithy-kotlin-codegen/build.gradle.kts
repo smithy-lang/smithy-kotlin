@@ -74,9 +74,6 @@ tasks.test {
     }
 }
 
-// Always build documentation
-tasks["build"].finalizedBy(tasks["dokkaHtml"])
-
 // Configure jacoco (code coverage) to generate an HTML report
 tasks.jacocoTestReport {
     reports {

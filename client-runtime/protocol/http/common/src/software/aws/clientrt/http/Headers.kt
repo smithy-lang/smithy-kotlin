@@ -15,7 +15,21 @@ interface Headers : StringValuesMap {
     companion object {
         operator fun invoke(block: HeadersBuilder.() -> Unit): Headers = HeadersBuilder()
             .apply(block).build()
+
+        /**
+         * Empty [Headers] instance
+         */
+        val Empty: Headers = EmptyHeaders
     }
+}
+
+private object EmptyHeaders : Headers {
+    override val caseInsensitiveName: Boolean = true
+    override fun getAll(name: String): List<String> = emptyList()
+    override fun names(): Set<String> = emptySet()
+    override fun entries(): Set<Map.Entry<String, List<String>>> = emptySet()
+    override fun contains(name: String): Boolean = false
+    override fun isEmpty(): Boolean = true
 }
 
 /**

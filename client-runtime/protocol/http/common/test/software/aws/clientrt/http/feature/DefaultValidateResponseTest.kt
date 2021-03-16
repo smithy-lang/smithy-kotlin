@@ -8,6 +8,7 @@ import software.aws.clientrt.http.*
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.operation.newTestOperation
 import software.aws.clientrt.http.operation.roundTrip
+import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.testing.runSuspendTest
@@ -19,12 +20,12 @@ class DefaultValidateResponseTest {
     @Test
     fun itThrowsExceptionOnNon200Response() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
-            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
+            override suspend fun roundTrip(request: HttpRequest): HttpResponse {
                 return HttpResponse(
                     HttpStatusCode.BadRequest,
                     Headers {},
                     HttpBody.Empty,
-                    HttpRequestBuilder().build()
+                    request,
                 )
             }
         }
@@ -44,12 +45,12 @@ class DefaultValidateResponseTest {
     @Test
     fun itPassesSuccessResponses() = runSuspendTest {
         val mockEngine = object : HttpClientEngine {
-            override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): HttpResponse {
+            override suspend fun roundTrip(request: HttpRequest): HttpResponse {
                 return HttpResponse(
                     HttpStatusCode.Accepted,
                     Headers {},
                     HttpBody.Empty,
-                    HttpRequestBuilder().build()
+                    request,
                 )
             }
         }
