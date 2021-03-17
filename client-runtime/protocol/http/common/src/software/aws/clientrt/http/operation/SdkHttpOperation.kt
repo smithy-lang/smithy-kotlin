@@ -10,14 +10,14 @@ import software.aws.clientrt.http.Feature
 import software.aws.clientrt.http.FeatureKey
 import software.aws.clientrt.http.HttpClientFeatureFactory
 import software.aws.clientrt.http.HttpHandler
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * A (Smithy) HTTP based operation.
  * @property execution Phases used to execute the operation request and get a response instance
  * @property context An [ExecutionContext] instance scoped to this operation
  */
-@InternalAPI
+@InternalApi
 class SdkHttpOperation<I, O>(
     val execution: SdkOperationExecution<I, O>,
     val context: ExecutionContext,
@@ -49,7 +49,7 @@ class SdkHttpOperation<I, O>(
 /**
  * Round trip an operation using the given [HttpHandler]
  */
-@InternalAPI
+@InternalApi
 suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
     httpHandler: HttpHandler,
     input: I,
@@ -61,7 +61,7 @@ suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
  * The response and any resources will remain open until the end of the [block]. This facilitates streaming
  * output responses where the underlying raw HTTP connection needs to remain open
  */
-@InternalAPI
+@InternalApi
 suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     httpHandler: HttpHandler,
     input: I,
@@ -78,7 +78,7 @@ suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     }
 }
 
-@InternalAPI
+@InternalApi
 class SdkHttpOperationBuilder<I, O> {
     var serializer: HttpSerialize<I>? = null
     var deserializer: HttpDeserialize<O>? = null

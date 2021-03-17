@@ -5,7 +5,7 @@
 package software.aws.clientrt.http
 
 import software.aws.clientrt.http.util.encodeUrlPath
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
@@ -130,6 +130,6 @@ fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters
 // capabilities to bootstrap this
 internal expect fun platformUrlParse(url: String): Url
 
-@InternalAPI
+@InternalApi
 val UrlBuilder.encodedPath: String
     get() = encodePath(path, parameters.entries(), fragment, forceQuery)

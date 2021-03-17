@@ -12,7 +12,7 @@ import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.io.Handler
 import software.aws.clientrt.io.middleware.MapRequest
 import software.aws.clientrt.io.middleware.Phase
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 import software.aws.clientrt.io.middleware.decorate as decorateHandler
 
 typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
@@ -22,7 +22,7 @@ typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  *
  * An operation has several "phases" of it's lifecycle that can be intercepted and customized.
  */
-@InternalAPI
+@InternalApi
 class SdkOperationExecution<Request, Response> {
 
     // technically any phase can act as on the request or the response. The phases

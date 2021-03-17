@@ -10,12 +10,12 @@ import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.client.SdkClientOption
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.util.AttributeKey
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
  */
-@InternalAPI
+@InternalApi
 open class HttpOperationContext {
 
     companion object {
