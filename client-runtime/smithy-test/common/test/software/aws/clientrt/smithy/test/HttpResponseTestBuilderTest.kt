@@ -29,7 +29,9 @@ class HttpResponseTestBuilderTest {
             }
 
             test { _, mockEngine ->
-                val mockedResp = mockEngine.roundTrip(HttpRequestBuilder().build())
+                val mockedCall = mockEngine.roundTrip(HttpRequestBuilder().build())
+                val mockedResp = mockedCall.response
+
                 mockedResp.headers.contains("bar", "1")
                 val mockedBody = mockedResp.body.readAll()?.decodeToString()
                 mockedBody.shouldContain(

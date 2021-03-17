@@ -8,6 +8,7 @@ package software.aws.clientrt.http.operation
 import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.http.HttpHandler
 import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.io.Handler
 import software.aws.clientrt.io.middleware.MapRequest
@@ -50,7 +51,7 @@ class SdkOperationExecution<Request, Response> {
     /**
      * First chance to intercept before deserialization into operation output type [Response].
      */
-    val receive = Phase<SdkHttpRequest, HttpResponse>()
+    val receive = Phase<SdkHttpRequest, HttpCall>()
 }
 
 /**
@@ -65,6 +66,9 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     val inner = MapRequest(handler) { sdkRequest: SdkHttpRequest ->
         sdkRequest.subject
     }
+
+    // ensure http calls are tracked
+    receive.intercept(Phase.Order.After, ::httpCallMiddleware)
 
     val receiveHandler = decorateHandler(inner, receive)
     val deserializeHandler = deserializer.decorate(receiveHandler)
@@ -81,7 +85,7 @@ private fun <I, O> HttpSerialize<I>.decorate(
 }
 
 private fun <O> HttpDeserialize<O>.decorate(
-    inner: Handler<SdkHttpRequest, HttpResponse>,
+    inner: Handler<SdkHttpRequest, HttpCall>,
 ): Handler<SdkHttpRequest, O> {
     return DeserializeHandler(inner, ::deserialize)
 }
@@ -125,14 +129,27 @@ private class FinalizeHandler<Output> (
 }
 
 private class DeserializeHandler<Output>(
-    private val inner: Handler<SdkHttpRequest, HttpResponse>,
+    private val inner: Handler<SdkHttpRequest, HttpCall>,
     private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output
 ) : Handler<SdkHttpRequest, Output> {
 
     override suspend fun call(request: SdkHttpRequest): Output {
-        // ensure the raw response is stashed in the context
-        val rawResponse = inner.call(request)
-        request.context[HttpOperationContext.HttpResponse] = rawResponse
-        return mapResponse(request.context, rawResponse)
+        val call = inner.call(request)
+        return mapResponse(request.context, call.response)
     }
+}
+
+/**
+ * default middleware that handles managing the HTTP call list
+ */
+private suspend fun httpCallMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
+    val callList = request.context.computeIfAbsent(HttpOperationContext.HttpCalls) { mutableListOf() }
+    if (callList.isNotEmpty()) {
+        // an existing call was made and we are retrying for some reason, ensure the resources from the previous
+        // attempt are released
+        callList.last().response.complete()
+    }
+    val call = next.call(request)
+    callList.add(call)
+    return call
 }

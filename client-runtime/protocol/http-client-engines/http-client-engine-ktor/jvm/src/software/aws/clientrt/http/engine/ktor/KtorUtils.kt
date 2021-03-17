@@ -116,11 +116,10 @@ internal class KtorHttpBody(channel: ByteReadChannel, onClose: (() -> Unit)? = n
 }
 
 // convert ktor Http response to an (SDK) Http response
-fun HttpResponse.toSdkHttpResponse(originalRequest: HttpRequest): SdkHttpResponse {
+fun HttpResponse.toSdkHttpResponse(): SdkHttpResponse {
     return SdkHttpResponse(
         HttpStatusCode.fromValue(status.value),
         KtorHeaders(headers),
-        KtorHttpBody(content),
-        originalRequest
+        KtorHttpBody(content)
     )
 }

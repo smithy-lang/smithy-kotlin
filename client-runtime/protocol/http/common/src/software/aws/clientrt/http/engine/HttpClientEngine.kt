@@ -6,7 +6,7 @@ package software.aws.clientrt.http.engine
 
 import software.aws.clientrt.http.SdkHttpClient
 import software.aws.clientrt.http.request.HttpRequest
-import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.response.HttpCall
 
 /**
  * Functionality a real HTTP client must provide
@@ -15,7 +15,7 @@ interface HttpClientEngine {
     /**
      * Execute a single HTTP request and return the response.
      */
-    suspend fun roundTrip(request: HttpRequest): HttpResponse
+    suspend fun roundTrip(request: HttpRequest): HttpCall
 
     /**
      * Shutdown and cleanup any resources
