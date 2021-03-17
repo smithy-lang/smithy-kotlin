@@ -230,6 +230,7 @@ class StructureGenerator(
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
+                    writer.renderMemberDocumentation(model, member)
                     write("fun #1L(#1L: #2T): Builder", memberName, memberSymbol)
                 }
             }
@@ -247,6 +248,7 @@ class StructureGenerator(
                         targetShape.isStructureShape -> structMembers.add(member)
                     }
 
+                    writer.renderMemberDocumentation(model, member)
                     write("var #L: #P", memberName, memberSymbol)
                 }
 
@@ -254,6 +256,7 @@ class StructureGenerator(
                 write("fun build(): #class.name:L")
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
+                    writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
                     openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
                         .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")

@@ -14,6 +14,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import software.amazon.smithy.build.MockManifest
@@ -208,6 +209,14 @@ fun MockManifest.getTransformFileContents(filename: String): String {
 fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
     try {
         this.shouldContainOnlyOnce(expected)
+    } catch (originalException: AssertionError) {
+        kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
+    }
+}
+
+fun String?.shouldContainWithDiff(expected: String) {
+    try {
+        this.shouldContain(expected)
     } catch (originalException: AssertionError) {
         kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
