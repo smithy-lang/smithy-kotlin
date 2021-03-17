@@ -15,6 +15,8 @@ import software.aws.clientrt.io.middleware.Phase
 import software.aws.clientrt.util.InternalAPI
 import software.aws.clientrt.io.middleware.decorate as decorateHandler
 
+typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
+
 /**
  * Configure the execution of an operation from [Request] to [Response]
  *
@@ -61,7 +63,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     deserializer: HttpDeserialize<Response>,
 ): Handler<OperationRequest<Request>, Response> {
     val inner = MapRequest(handler) { sdkRequest: SdkHttpRequest ->
-        sdkRequest.builder
+        sdkRequest.subject
     }
 
     val receiveHandler = decorateHandler(inner, receive)
@@ -99,7 +101,7 @@ private class SerializeHandler<Input, Output> (
     private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder
 ) : Handler<OperationRequest<Input>, Output> {
     override suspend fun call(request: OperationRequest<Input>): Output {
-        val builder = mapRequest(request.context, request.input)
+        val builder = mapRequest(request.context, request.subject)
         return inner.call(SdkHttpRequest(request.context, builder))
     }
 }
