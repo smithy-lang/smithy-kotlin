@@ -5,6 +5,10 @@
 
 package software.aws.clientrt.logging
 
+/**
+ * Logger that wraps [inner] and adds key/value pairs from the log context to every
+ * logging message. This is a (very) rough MDC/structured logging abstraction
+ */
 private class ContextualLogger(
     private val inner: Logger,
     logCtx: Map<String, Any>

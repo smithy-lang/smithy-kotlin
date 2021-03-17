@@ -28,7 +28,8 @@ data class HttpCall(
     val requestTime: Instant,
 
     /**
-     * TTFH as seen by the engine
+     * The time the response was received. This is a rough estimate of Time-to-first-header (TTFH) as
+     * reported by the engine.
      */
     val responseTime: Instant
 )
