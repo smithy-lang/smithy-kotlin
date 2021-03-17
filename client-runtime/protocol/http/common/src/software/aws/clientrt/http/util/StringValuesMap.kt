@@ -4,7 +4,7 @@
  */
 package software.aws.clientrt.http.util
 
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * Mapping of String to a List of Strings values
@@ -59,7 +59,7 @@ interface StringValuesMap {
     fun isEmpty(): Boolean
 }
 
-@InternalAPI
+@InternalApi
 internal open class StringValuesMapImpl(
     override val caseInsensitiveName: Boolean = false,
     initialValues: Map<String, List<String>> = emptyMap()
@@ -81,7 +81,7 @@ internal open class StringValuesMapImpl(
     override fun isEmpty(): Boolean = values.isEmpty()
 }
 
-@InternalAPI
+@InternalApi
 open class StringValuesMapBuilder(val caseInsensitiveName: Boolean = false, size: Int = 8) {
     protected val values: MutableMap<String, MutableList<String>> =
         if (caseInsensitiveName) CaseInsensitiveMap() else LinkedHashMap(size)

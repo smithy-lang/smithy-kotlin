@@ -4,7 +4,7 @@
  */
 package software.aws.clientrt.http.util
 
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 private class CaseInsensitiveString(val s: String) {
     val hash: Int = s.toLowerCase().hashCode()
@@ -19,7 +19,7 @@ private fun String.toInsensitive(): CaseInsensitiveString =
 /**
  * Map of case-insensitive [String] to [Value]
  */
-@InternalAPI
+@InternalApi
 internal class CaseInsensitiveMap<Value>() : MutableMap<String, Value> {
     private val impl: MutableMap<CaseInsensitiveString, Value> = mutableMapOf()
 

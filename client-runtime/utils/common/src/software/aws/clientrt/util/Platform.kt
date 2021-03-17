@@ -5,7 +5,7 @@
 
 package software.aws.clientrt.util
 
-@InternalAPI
+@InternalApi
 public expect object Platform {
     /**
      * Get an environment variable or null

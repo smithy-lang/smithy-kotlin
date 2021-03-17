@@ -38,7 +38,8 @@ expect interface Source {
     suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int
 
     /**
-     * Close channel with optional cause cancellation
+     * Close channel with optional cause cancellation.
+     * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      */
     fun cancel(cause: Throwable?): Boolean
 }

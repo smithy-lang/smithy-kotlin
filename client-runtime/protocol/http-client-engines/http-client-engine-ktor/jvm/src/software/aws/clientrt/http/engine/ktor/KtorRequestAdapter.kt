@@ -16,6 +16,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import software.aws.clientrt.http.HttpBody
+import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.io.Source
 import java.nio.ByteBuffer
@@ -36,13 +37,15 @@ private const val BUFFER_SIZE = 4096
  * Adapts an SDK HTTP request to something Ktor understands
  */
 internal class KtorRequestAdapter(
-    private val sdkBuilder: HttpRequestBuilder,
+    private val sdkRequest: HttpRequest,
     private val callContext: CoroutineContext
 ) {
 
+    internal constructor(builder: HttpRequestBuilder, callContext: CoroutineContext) : this(builder.build(), callContext)
+
     fun toBuilder(): KtorRequestBuilder {
         // convert the basic request properties (minus the body)
-        val builder = sdkBuilder.toKtorRequestBuilder()
+        val builder = sdkRequest.toKtorRequestBuilder()
 
         // strip content type header which Ktor doesn't allow set this way for some reason
         val contentHeaders = builder.headers["Content-Type"]
@@ -50,7 +53,7 @@ internal class KtorRequestAdapter(
         val contentType: ContentType? = contentHeaders?.let { ContentType.parse(it) }
 
         // convert the request body
-        when (val body = sdkBuilder.body) {
+        when (val body = sdkRequest.body) {
             is HttpBody.Empty -> builder.body = EmptyContent
             is HttpBody.Bytes -> builder.body = ByteArrayContent(body.bytes(), contentType)
             is HttpBody.Streaming -> builder.body = proxyRequestStream(body, contentType)

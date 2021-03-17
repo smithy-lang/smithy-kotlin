@@ -27,4 +27,4 @@ package software.aws.clientrt.util
     AnnotationTarget.FIELD,
     AnnotationTarget.CONSTRUCTOR
 )
-annotation class InternalAPI
+annotation class InternalApi

@@ -8,7 +8,6 @@ package software.aws.clientrt.http.response
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
-import software.aws.clientrt.http.request.HttpRequestBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -22,8 +21,7 @@ class HttpResponseTest {
                 append("foo", "v2")
                 append("bar", "v3")
             },
-            HttpBody.Empty,
-            HttpRequestBuilder().build()
+            HttpBody.Empty
         )
 
         assertEquals("v1", resp.header("foo"))
