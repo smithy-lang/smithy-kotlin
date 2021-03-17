@@ -35,7 +35,7 @@ open class HttpOperationContext {
         /**
          * The HTTP calls made for this operation (this may be > 1 if for example retries are involved)
          */
-        val HttpCalls: AttributeKey<MutableList<HttpCall>> = AttributeKey("HttpCalls")
+        val HttpCallList: AttributeKey<MutableList<HttpCall>> = AttributeKey("HttpCallList")
 
         /**
          * The logging instance for a single operation. This is guaranteed to exist.

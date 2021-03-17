@@ -157,7 +157,7 @@ private class DeserializeHandler<Output>(
  * default middleware that handles managing the HTTP call list
  */
 private suspend fun httpCallMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
-    val callList = request.context.computeIfAbsent(HttpOperationContext.HttpCalls) { mutableListOf() }
+    val callList = request.context.computeIfAbsent(HttpOperationContext.HttpCallList) { mutableListOf() }
     if (callList.isNotEmpty()) {
         // an existing call was made and we are retrying for some reason, ensure the resources from the previous
         // attempt are released
