@@ -36,6 +36,7 @@ private object EmptyHeaders : Headers {
  * Build an immutable HTTP header map
  */
 class HeadersBuilder : StringValuesMapBuilder(true, 8) {
+    override fun toString(): String = "HeadersBuilder ${entries()} "
     override fun build(): Headers {
         require(!built) { "HeadersBuilder can only build a single Headers instance" }
         built = true

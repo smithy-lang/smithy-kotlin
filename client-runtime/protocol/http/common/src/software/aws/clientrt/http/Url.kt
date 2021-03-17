@@ -122,6 +122,9 @@ class UrlBuilder {
         userInfo,
         forceQuery
     )
+
+    override fun toString(): String =
+        "UrlBuilder(scheme=$scheme, host='$host', port=$port, path='$path', parameters=$parameters, fragment=$fragment, userInfo=$userInfo, forceQuery=$forceQuery)"
 }
 
 fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters.apply(block)

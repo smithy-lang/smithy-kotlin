@@ -6,11 +6,15 @@
 package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.client.ExecutionContext
+import software.aws.clientrt.client.SdkClientOption
 import software.aws.clientrt.http.Feature
 import software.aws.clientrt.http.FeatureKey
 import software.aws.clientrt.http.HttpClientFeatureFactory
 import software.aws.clientrt.http.HttpHandler
+import software.aws.clientrt.logging.Logger
+import software.aws.clientrt.logging.withContext
 import software.aws.clientrt.util.InternalApi
+import software.aws.clientrt.util.get
 
 /**
  * A (Smithy) HTTP based operation.
@@ -26,6 +30,15 @@ class SdkHttpOperation<I, O>(
 ) {
 
     private val features: MutableMap<FeatureKey<*>, Feature> = mutableMapOf()
+    private val logger: Logger = Logger.getLogger<SdkHttpOperation<I, O>>()
+
+    init {
+        // TODO - probably log our own version of a request id to easily trace calls?
+        context[HttpOperationContext.Logger] = logger.withContext(
+            "service" to context[SdkClientOption.ServiceName],
+            "operation" to context[SdkClientOption.OperationName],
+        )
+    }
 
     /**
      * Install a specific [feature] and optionally [configure] it.
@@ -69,8 +82,8 @@ suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
 ): R {
     val handler = execution.decorate(httpHandler, serializer, deserializer)
     val request = OperationRequest(context, input)
-    val output = handler.call(request)
     try {
+        val output = handler.call(request)
         return block(output)
     } finally {
         // pull the raw response(s) out of the context and cleanup any resources

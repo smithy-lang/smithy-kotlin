@@ -14,6 +14,8 @@ import software.aws.clientrt.io.Handler
 import software.aws.clientrt.io.middleware.MapRequest
 import software.aws.clientrt.io.middleware.Phase
 import software.aws.clientrt.util.InternalApi
+import kotlin.time.ExperimentalTime
+import kotlin.time.measureTimedValue
 import software.aws.clientrt.io.middleware.decorate as decorateHandler
 
 typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
@@ -69,6 +71,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
     // ensure http calls are tracked
     receive.intercept(Phase.Order.After, ::httpCallMiddleware)
+    receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(inner, receive)
     val deserializeHandler = deserializer.decorate(receiveHandler)
@@ -104,9 +107,15 @@ private class SerializeHandler<Input, Output> (
     private val inner: Handler<SdkHttpRequest, Output>,
     private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder
 ) : Handler<OperationRequest<Input>, Output> {
+
+    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: OperationRequest<Input>): Output {
-        val builder = mapRequest(request.context, request.subject)
-        return inner.call(SdkHttpRequest(request.context, builder))
+        val tv = measureTimedValue {
+            mapRequest(request.context, request.subject)
+        }
+
+        request.context.logger.trace { "request serialized in ${tv.duration}" }
+        return inner.call(SdkHttpRequest(request.context, tv.value))
     }
 }
 
@@ -133,9 +142,14 @@ private class DeserializeHandler<Output>(
     private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output
 ) : Handler<SdkHttpRequest, Output> {
 
+    @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         val call = inner.call(request)
-        return mapResponse(request.context, call.response)
+        val tv = measureTimedValue {
+            mapResponse(request.context, call.response)
+        }
+        request.context.logger.trace { "response deserialized in: ${tv.duration}" }
+        return tv.value
     }
 }
 
@@ -151,5 +165,15 @@ private suspend fun httpCallMiddleware(request: SdkHttpRequest, next: Handler<Sd
     }
     val call = next.call(request)
     callList.add(call)
+    return call
+}
+
+/**
+ * default middleware that logs requests/responses
+ */
+private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
+    request.context.logger.trace { "httpRequest: ${request.subject}" }
+    val call = next.call(request)
+    request.context.logger.trace { "httpResponse: ${call.response}" }
     return call
 }

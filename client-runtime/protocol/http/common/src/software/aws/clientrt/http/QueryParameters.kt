@@ -34,6 +34,7 @@ private object EmptyQueryParameters : QueryParameters {
 }
 
 class QueryParametersBuilder : StringValuesMapBuilder(true, 8) {
+    override fun toString(): String = "QueryParametersBuilder ${entries()} "
     override fun build(): QueryParameters {
         require(!built) { "QueryParametersBuilder can only build a single instance" }
         built = true
