@@ -12,6 +12,7 @@ import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.io.Handler
 import software.aws.clientrt.io.middleware.MapRequest
+import software.aws.clientrt.io.middleware.Middleware
 import software.aws.clientrt.io.middleware.Phase
 import software.aws.clientrt.util.InternalApi
 import kotlin.time.ExperimentalTime
@@ -70,7 +71,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     }
 
     // ensure http calls are tracked
-    receive.intercept(Phase.Order.After, ::httpCallMiddleware)
+    receive.register(Phase.Order.After, HttpCallMiddleware())
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(inner, receive)
@@ -156,16 +157,21 @@ private class DeserializeHandler<Output>(
 /**
  * default middleware that handles managing the HTTP call list
  */
-private suspend fun httpCallMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
-    val callList = request.context.computeIfAbsent(HttpOperationContext.HttpCallList) { mutableListOf() }
-    if (callList.isNotEmpty()) {
-        // an existing call was made and we are retrying for some reason, ensure the resources from the previous
-        // attempt are released
-        callList.last().response.complete()
+class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
+    private val callList: MutableList<HttpCall> = mutableListOf()
+
+    override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {
+        if (callList.isNotEmpty()) {
+            // an existing call was made and we are retrying for some reason, ensure the resources from the previous
+            // attempt are released
+            callList.last().response.complete()
+        }
+        val call = next.call(request)
+        callList.add(call)
+
+        request.context[HttpOperationContext.HttpCallList] = callList
+        return call
     }
-    val call = next.call(request)
-    callList.add(call)
-    return call
 }
 
 /**
