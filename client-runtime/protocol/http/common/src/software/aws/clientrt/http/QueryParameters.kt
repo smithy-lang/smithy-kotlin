@@ -16,10 +16,25 @@ interface QueryParameters : StringValuesMap {
     companion object {
         operator fun invoke(block: QueryParametersBuilder.() -> Unit): QueryParameters = QueryParametersBuilder()
             .apply(block).build()
+
+        /**
+         * Empty [QueryParameters] instance
+         */
+        val Empty: QueryParameters = EmptyQueryParameters
     }
 }
 
+private object EmptyQueryParameters : QueryParameters {
+    override val caseInsensitiveName: Boolean = true
+    override fun getAll(name: String): List<String> = emptyList()
+    override fun names(): Set<String> = emptySet()
+    override fun entries(): Set<Map.Entry<String, List<String>>> = emptySet()
+    override fun contains(name: String): Boolean = false
+    override fun isEmpty(): Boolean = true
+}
+
 class QueryParametersBuilder : StringValuesMapBuilder(true, 8) {
+    override fun toString(): String = "QueryParametersBuilder ${entries()} "
     override fun build(): QueryParameters {
         require(!built) { "QueryParametersBuilder can only build a single instance" }
         built = true

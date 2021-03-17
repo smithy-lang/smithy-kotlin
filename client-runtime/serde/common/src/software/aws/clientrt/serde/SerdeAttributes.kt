@@ -7,7 +7,7 @@ package software.aws.clientrt.serde
 
 import software.aws.clientrt.util.AttributeKey
 import software.aws.clientrt.util.Attributes
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 import software.aws.clientrt.util.get
 
 /**
@@ -24,11 +24,11 @@ public object SerdeAttributes {
 /**
  * Convenience function for creating a serializer by pulling the [SerdeAttributes.SerdeProvider] out of the property bag
  */
-@InternalAPI
+@InternalApi
 fun Attributes.serializer(): Serializer = get(SerdeAttributes.SerdeProvider).serializer()
 
 /**
  * Convenience function for creating a deserializer by pulling the [SerdeAttributes.SerdeProvider] out of the property bag
  */
-@InternalAPI
+@InternalApi
 fun Attributes.deserializer(payload: ByteArray): Deserializer = get(SerdeAttributes.SerdeProvider).deserializer(payload)
