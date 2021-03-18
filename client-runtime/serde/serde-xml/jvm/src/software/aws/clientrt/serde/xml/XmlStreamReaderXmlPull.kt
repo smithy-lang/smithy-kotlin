@@ -8,6 +8,7 @@ package software.aws.clientrt.serde.xml
 import org.xmlpull.mxp1.MXParser
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
+import software.aws.clientrt.serde.xml.dom.push
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 
@@ -21,6 +22,19 @@ private class XmlStreamReaderXmlPull(
 
     private var _currentToken: XmlToken = XmlToken.StartDocument
     private var peekedToken: PeekState? = null
+
+    // In the case that a text node contains escaped characters,
+    // the parser returns each of these as independent tokens however
+    // they only represent a subset of the text value of a node.  To
+    // deal with this we introduce a sub-token parsing mode in which
+    // tokens are read and concatenated such that the client is only aware of
+    // the complete Text values.
+    private val subTokenStack = mutableListOf<String>()
+
+    // In some cases a low-level token parse event may result in two high-level
+    // tokens.  The following property is used to hold that second
+    // token to be returned upon a subsequent call to nextToken().
+    private var futureToken: XmlToken? = null
 
     init {
         parser.setFeature(MXParser.FEATURE_PROCESS_NAMESPACES, true)
@@ -40,6 +54,10 @@ private class XmlStreamReaderXmlPull(
 
     override suspend fun nextToken(): XmlToken = pullToken(false)
 
+    // Use the existence of sub tokens to determine if in general
+    // parsing mode or in sub token parsing mode.
+    private val isGeneralParseMode get() = subTokenStack.isEmpty()
+
     /**
      * @param isPeek if true, the value returned will still be taken upon the next call to nextToken().
      */
@@ -53,21 +71,49 @@ private class XmlStreamReaderXmlPull(
             return rv.token
         }
 
+        // If a previous call to pullToken generated more than one token, the latter is
+        // set to `futureToken` to be returned upon next call.
+        if (futureToken != null) {
+            val t = futureToken
+            futureToken = null
+            return t!!
+        }
+
         try {
             val rv = when (val nt = parser.nextToken()) {
                 XmlPullParser.START_DOCUMENT -> pullToken(isPeek)
                 XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
                 XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes(), parser.currDeclaredNamespaces())
-                XmlPullParser.END_TAG -> XmlToken.EndElement(parser.qualifiedName())
+                XmlPullParser.END_TAG -> when {
+                    isGeneralParseMode -> XmlToken.EndElement(parser.qualifiedName())
+                    else -> {
+                        check(futureToken == null) { "Expected futureToken to be null." }
+                        futureToken = XmlToken.EndElement(parser.qualifiedName())
+                        val nodeContent = subTokenStack.joinToString(separator = "") { it }
+                        subTokenStack.clear()
+                        XmlToken.Text(nodeContent)
+                    }
+                }
                 XmlPullParser.CDSECT,
                 XmlPullParser.COMMENT,
                 XmlPullParser.DOCDECL,
                 XmlPullParser.IGNORABLE_WHITESPACE -> pullToken(isPeek)
-                XmlPullParser.TEXT -> {
-                    if (parser.text.blankToNull() == null) pullToken(isPeek)
-                    else XmlToken.Text(parser.text.blankToNull())
+                XmlPullParser.TEXT -> when {
+                    parser.text.isNullOrBlank() -> pullToken(isPeek)
+                    isGeneralParseMode -> XmlToken.Text(parser.text.blankToNull())
+                    else -> {
+                        subTokenStack.push(parser.text)
+                        pullToken(isPeek)
+                    }
                 }
-                else -> throw IllegalStateException("Unhandled tag $nt")
+                XmlPullParser.ENTITY_REF -> when (parser.text) {
+                    null -> pullToken(isPeek)
+                    else -> {
+                        subTokenStack.push(parser.text)
+                        pullToken(isPeek)
+                    }
+                }
+                else -> throw IllegalStateException("Unhandled tag $nt (${XmlPullParser.TYPES[nt]})")
             }
 
             if (!isPeek) {
