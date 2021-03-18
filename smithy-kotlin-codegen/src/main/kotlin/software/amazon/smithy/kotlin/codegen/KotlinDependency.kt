@@ -17,7 +17,7 @@ private fun getDefaultRuntimeVersion(): String {
     try {
         return object {}.javaClass.getResource("sdk-version.txt").readText()
     } catch (ex: Exception) {
-        throw CodegenException("failed to load version.txt which sets the default client-runtime version", ex)
+        throw CodegenException("failed to load sdk-version.txt which sets the default client-runtime version", ex)
     }
 }
 
