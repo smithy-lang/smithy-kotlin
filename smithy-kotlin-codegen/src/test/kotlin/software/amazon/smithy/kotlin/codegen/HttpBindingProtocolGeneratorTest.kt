@@ -438,7 +438,7 @@ internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionOutputRe
     }
 
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): UnionOutputResponse {
-        val builder = UnionOutputResponse.dslBuilder()
+        val builder = UnionOutputResponse.builder()
 
         val payload = response.body.readAll()
         if (payload != null) {
@@ -477,7 +477,7 @@ internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<Unio
     }
 
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): UnionAggregateOutputResponse {
-        val builder = UnionAggregateOutputResponse.dslBuilder()
+        val builder = UnionAggregateOutputResponse.builder()
 
         val payload = response.body.readAll()
         if (payload != null) {
@@ -779,7 +779,7 @@ internal class SmokeTestOperationDeserializer(): HttpDeserialize<SmokeTestRespon
     }
 
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): SmokeTestResponse {
-        val builder = SmokeTestResponse.dslBuilder()
+        val builder = SmokeTestResponse.builder()
 
         builder.intHeader = response.headers["X-Header2"]?.toInt()
         builder.strHeader = response.headers["X-Header1"]
@@ -906,7 +906,7 @@ internal class Nested3DocumentDeserializer {
     }
 
     suspend fun deserialize(deserializer: Deserializer): Nested3 {
-        val builder = Nested3.dslBuilder()
+        val builder = Nested3.builder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
                 when (findNextFieldIndex()) {

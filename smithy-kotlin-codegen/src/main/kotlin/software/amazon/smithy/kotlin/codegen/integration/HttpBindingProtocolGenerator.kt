@@ -575,7 +575,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             RuntimeTypes.Core.ExecutionContext,
             outputSymbol
         )
-            .write("val builder = #T.dslBuilder()", outputSymbol)
+            .write("val builder = #T.builder()", outputSymbol)
             .write("")
             .call {
                 // headers
@@ -908,7 +908,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .closeBlock("}")
                 } else {
                     writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
-                        writer.write("val builder = ${symbol.name}.dslBuilder()")
+                        writer.write("val builder = ${symbol.name}.builder()")
                         DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                         writer.write("return builder.build()")
                     }
