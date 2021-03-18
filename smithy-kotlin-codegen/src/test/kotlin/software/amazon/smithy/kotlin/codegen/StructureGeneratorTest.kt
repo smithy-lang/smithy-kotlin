@@ -160,6 +160,9 @@ class StructureGeneratorTest {
         val expected = """
             interface FluentBuilder {
                 fun build(): MyStruct
+                /**
+                 * This *is* documentation about the member.
+                 */
                 fun bar(bar: Int): FluentBuilder
                 fun baz(baz: Int): FluentBuilder
                 fun byteValue(byteValue: Byte): FluentBuilder
@@ -174,6 +177,9 @@ class StructureGeneratorTest {
     fun `it renders a dsl builder`() {
         val expected = """
             interface DslBuilder {
+                /**
+                 * This *is* documentation about the member.
+                 */
                 var bar: Int
                 var baz: Int?
                 var byteValue: Byte?
@@ -181,6 +187,9 @@ class StructureGeneratorTest {
                 var quux: Qux?
         
                 fun build(): MyStruct
+                /**
+                 * construct an [test.model.Qux] inside the given [block]
+                 */
                 fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
                     this.quux = Qux.invoke(block)
                 }
@@ -303,59 +312,45 @@ class StructureGeneratorTest {
 
     @Test
     fun `it renders member docs`() {
-        commonTestContents.shouldContainOnlyOnceWithDiff("This *is* documentation about the member.")
+        commonTestContents.shouldContainWithDiff("This *is* documentation about the member.")
     }
 
     @Test
     fun `it handles shape and member docs`() {
+        val model = """
+            namespace com.test
+            
+            structure Foo {
+                @documentation("Member documentation")
+                baz: Baz,
+
+                bar: Baz,
+
+                qux: String
+            }
+
+            @documentation("Shape documentation")
+            string Baz
+        """.asSmithyModel()
+
         /*
-        The effective documentation trait of a shape is resolved using the following process:
-        1. Use the documentation trait of the shape, if present.
-        2. If the shape is a member, then use the documentation trait of the shape targeted by the member, if present.
+            The effective documentation trait of a shape is resolved using the following process:
+            1. Use the documentation trait of the shape, if present.
+            2. If the shape is a member, then use the documentation trait of the shape targeted by the member, if present.
 
-        For example, given the following model,
-        structure Foo {
-            @documentation("Member documentation")
-            baz: Baz,
-
-            bar: Baz,
-
-            qux: String,
-        }
-
-        @documentation("Shape documentation")
-        string Baz
-        ```
-
-        the effective documentation of Foo$baz resolves to "Member documentation", Foo$bar resolves to "Shape documentation",
-        Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
-
-         */
-        val stringShape = StringShape.builder().id("com.test#Baz").addTrait(DocumentationTrait("Shape documentation")).build()
-        val member1 = MemberShape.builder().id("com.test#Foo\$bar").target("com.test#Baz").build()
-        val member2 = MemberShape.builder().id("com.test#Foo\$baz").target("com.test#Baz").addTrait(DocumentationTrait("Member documentation")).build()
-        val member3 = MemberShape.builder().id("com.test#Foo\$qux").target("smithy.api#String").build()
-
-        val struct = StructureShape.builder()
-            .id("com.test#Foo")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(struct, member1, member2, member3, stringShape)
-            .assemble()
-            .unwrap()
+            the effective documentation of Foo$baz resolves to "Member documentation", Foo$bar resolves to "Shape documentation",
+            Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
+        */
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
+        val struct = model.expectShape<StructureShape>("com.test#Foo")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
 
         val generated = writer.toString()
-        generated.shouldContainOnlyOnceWithDiff("Shape documentation")
-        generated.shouldContainOnlyOnceWithDiff("Member documentation")
+        generated.shouldContainWithDiff("Shape documentation")
+        generated.shouldContainWithDiff("Member documentation")
     }
 
     @Test
