@@ -12,10 +12,20 @@ import software.amazon.smithy.utils.StringUtils
 // root namespace for the client-runtime
 const val CLIENT_RT_ROOT_NS = "software.aws.clientrt"
 
+/**
+ * Test if a string represents a valid artifact version string
+ */
+fun isValidVersion(version: String): Boolean {
+    val re = Regex("\\d\\.\\d\\.\\d[a-z0-9A-Z.-]*\$")
+    return re.matches(version)
+}
+
 private fun getDefaultRuntimeVersion(): String {
     // generated as part of the build, see smithy-kotlin-codegen/build.gradle.kts
     try {
-        return object {}.javaClass.getResource("sdk-version.txt").readText()
+        val version = object {}.javaClass.getResource("sdk-version.txt").readText()
+        check(isValidVersion(version)) { "Version parsed from sdk-version.txt '$version' is not a valid version string" }
+        return version
     } catch (ex: Exception) {
         throw CodegenException("failed to load sdk-version.txt which sets the default client-runtime version", ex)
     }
