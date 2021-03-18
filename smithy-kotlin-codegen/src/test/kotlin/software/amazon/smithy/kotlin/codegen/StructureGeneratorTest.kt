@@ -84,9 +84,9 @@ class StructureGeneratorTest {
         val expected = """
             companion object {
                 @JvmStatic
-                fun builder(): Builder = BuilderImpl()
+                fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-                fun dslBuilder(): DslBuilder = BuilderImpl()
+                fun builder(): DslBuilder = BuilderImpl()
 
                 operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
                 
@@ -158,13 +158,13 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a java builder`() {
         val expected = """
-            interface Builder {
+            interface FluentBuilder {
                 fun build(): MyStruct
-                fun bar(bar: Int): Builder
-                fun baz(baz: Int): Builder
-                fun byteValue(byteValue: Byte): Builder
-                fun foo(foo: String): Builder
-                fun quux(quux: Qux): Builder
+                fun bar(bar: Int): FluentBuilder
+                fun baz(baz: Int): FluentBuilder
+                fun byteValue(byteValue: Byte): FluentBuilder
+                fun foo(foo: String): FluentBuilder
+                fun quux(quux: Qux): FluentBuilder
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -192,7 +192,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a builder impl`() {
         val expected = """
-            private class BuilderImpl() : Builder, DslBuilder {
+            private class BuilderImpl() : FluentBuilder, DslBuilder {
                 override var bar: Int = 0
                 override var baz: Int? = null
                 override var byteValue: Byte? = null
@@ -208,11 +208,11 @@ class StructureGeneratorTest {
                 }
         
                 override fun build(): MyStruct = MyStruct(this)
-                override fun bar(bar: Int): Builder = apply { this.bar = bar }
-                override fun baz(baz: Int): Builder = apply { this.baz = baz }
-                override fun byteValue(byteValue: Byte): Builder = apply { this.byteValue = byteValue }
-                override fun foo(foo: String): Builder = apply { this.foo = foo }
-                override fun quux(quux: Qux): Builder = apply { this.quux = quux }
+                override fun bar(bar: Int): FluentBuilder = apply { this.bar = bar }
+                override fun baz(baz: Int): FluentBuilder = apply { this.baz = baz }
+                override fun byteValue(byteValue: Byte): FluentBuilder = apply { this.byteValue = byteValue }
+                override fun foo(foo: String): FluentBuilder = apply { this.foo = foo }
+                override fun quux(quux: Qux): FluentBuilder = apply { this.quux = quux }
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -265,9 +265,9 @@ class StructureGeneratorTest {
         contents.shouldContainOnlyOnceWithDiff(expectedDecl)
 
         val expectedBuilderInterface = """
-            interface Builder {
+            interface FluentBuilder {
                 fun build(): MyStruct
-                fun foo(foo: InstanceSize): Builder
+                fun foo(foo: InstanceSize): FluentBuilder
             }
         """.formatForTest()
         contents.shouldContainOnlyOnceWithDiff(expectedBuilderInterface)
@@ -282,7 +282,7 @@ class StructureGeneratorTest {
         contents.shouldContainOnlyOnceWithDiff(expectedDslBuilderInterface)
 
         val expectedBuilderImpl = """
-            private class BuilderImpl() : Builder, DslBuilder {
+            private class BuilderImpl() : FluentBuilder, DslBuilder {
                 override var foo: InstanceSize? = null
         
                 constructor(x: MyStruct) : this() {
@@ -290,7 +290,7 @@ class StructureGeneratorTest {
                 }
         
                 override fun build(): MyStruct = MyStruct(this)
-                override fun foo(foo: InstanceSize): Builder = apply { this.foo = foo }
+                override fun foo(foo: InstanceSize): FluentBuilder = apply { this.foo = foo }
             }
         """.formatForTest()
         contents.shouldContainOnlyOnceWithDiff(expectedBuilderImpl)
