@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.utils.StringUtils
@@ -11,9 +12,18 @@ import software.amazon.smithy.utils.StringUtils
 // root namespace for the client-runtime
 const val CLIENT_RT_ROOT_NS = "software.aws.clientrt"
 
+private fun getDefaultRuntimeVersion(): String {
+    // generated as part of the build, see smithy-kotlin-codegen/build.gradle.kts
+    try {
+        return object {}.javaClass.getResource("sdk-version.txt").readText()
+    } catch (ex: Exception) {
+        throw CodegenException("failed to load version.txt which sets the default client-runtime version", ex)
+    }
+}
+
 // publishing info
 const val CLIENT_RT_GROUP: String = "software.aws.smithy.kotlin"
-val CLIENT_RT_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", "0.1.0")
+val CLIENT_RT_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
 val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.4.31")
 
 // See: https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
