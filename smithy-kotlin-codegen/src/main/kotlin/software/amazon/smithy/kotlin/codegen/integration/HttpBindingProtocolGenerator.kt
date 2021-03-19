@@ -40,6 +40,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
+    /**
+     * Returns HTTP binding resolver for protocol specified by input.
+     */
     abstract fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver
 
     /**
@@ -51,6 +54,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Get all of the features that should be installed into the `SdkHttpClient` as pipeline middleware
      */
     open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
+
+    /**
+     * Generate the set of [SdkFieldDescriptor]s for the types that require them.
+     */
+    protected abstract fun generateSdkFieldDescriptor(ctx: ProtocolGenerator.GenerationContext, memberShape: MemberShape, writer: KotlinWriter, memberTargetShape: Shape? = null, namePostfix: String = "")
+
+    /**
+     * Generate the set of traits on the [SdkObjectDescriptor] for the types that require them.
+     */
+    protected abstract fun generateSdkObjectDescriptorTraits(ctx: ProtocolGenerator.GenerationContext, objectShape: Shape, writer: KotlinWriter)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx)
@@ -219,12 +232,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         serializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
-        importSerdePackage(writer)
-
         writer.write("")
             .openBlock("internal class #T(val input: #T) : SdkSerializable {", serializerSymbol, symbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
@@ -267,7 +278,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // import all of http, http.request, and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
-            importSerdePackage(writer)
+            writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", "*")
             writer.addImport(RuntimeTypes.Http.HttpSerialize)
@@ -275,8 +286,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("")
                 .openBlock("internal class #T(): HttpSerialize<#T> {", serializerSymbol, inputSymbol)
                 .call {
+                    val objectShape = ctx.model.expectShape(op.input.get())
                     val memberShapes = requestBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.map { it.member }
-                    renderSerdeCompanionObject(ctx, memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, writer)
                 }
                 .call {
                     val contentType = resolver.determineRequestContentType(op)
@@ -291,25 +303,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun renderSerdeCompanionObject(
         ctx: ProtocolGenerator.GenerationContext,
-        members: List<MemberShape>,
+        objectShape: Shape? = null,
+        memberShapes: List<MemberShape>,
         writer: KotlinWriter
     ) {
-        if (members.isEmpty()) return
+        if (memberShapes.isEmpty()) return
         writer.write("")
             .withBlock("companion object {", "}") {
-                val sortedMembers = members.sortedBy { it.memberName }
+                val sortedMembers = memberShapes.sortedBy { it.memberName }
                 for (member in sortedMembers) {
-                    val serialName = member.getTrait<JsonNameTrait>()?.value ?: member.memberName
-                    val serialKind = ctx.model.expectShape(member.target).serialKind()
-                    val memberTarget = ctx.model.expectShape(member.target)
-                    write("private val #L = SdkFieldDescriptor($serialKind, JsonSerialName(#S))", member.descriptorName(), serialName)
+                    generateSdkFieldDescriptor(ctx, member, writer)
 
+                    val memberTarget = ctx.model.expectShape(member.target)
                     val nestedMember = memberTarget.childShape(ctx)
                     if (nestedMember?.isContainerShape() == true) {
                         renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
                     }
                 }
                 writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
+                    objectShape?.let { generateSdkObjectDescriptorTraits(ctx, it, writer) }
+
                     for (member in sortedMembers) {
                         write("field(#L)", member.descriptorName())
                     }
@@ -322,11 +335,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Generate field descriptors for nested serialization types.
      */
     private fun renderNestedFieldDescriptors(ctx: ProtocolGenerator.GenerationContext, rootShape: MemberShape, childShape: Shape, level: Int, writer: KotlinWriter) {
-        val childName = rootShape.descriptorName("_C$level")
-        val serialName = rootShape.getTrait<JsonNameTrait>()?.value ?: "${rootShape.memberName}C$level"
-        val nestedSerialKind = childShape.serialKind()
-
-        writer.write("private val #L = SdkFieldDescriptor($nestedSerialKind, JsonSerialName(#S))", childName, serialName)
+        generateSdkFieldDescriptor(ctx, rootShape, writer, childShape, "_C$level")
 
         val nestedMember = childShape.childShape(ctx)
         if (nestedMember?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMember, level + 1, writer)
@@ -583,7 +592,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
-            importSerdePackage(writer)
+            writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
             writer.addImport(RuntimeTypes.Http.HttpResponse)
             writer.addImport(RuntimeTypes.Http.HttpDeserialize)
@@ -596,10 +605,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 )
                 .write("")
                 .call {
+                    val objectShape = ctx.model.expectShape(op.output.get())
                     val memberShapes = responseBindings
                         .filter { it.location == HttpBinding.Location.DOCUMENT }
                         .map { it.member }
-                    renderSerdeCompanionObject(ctx, memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, writer)
                 }
                 .write("")
                 .call {
@@ -624,7 +634,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
-            importSerdePackage(writer)
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation", "HttpDeserialize")
@@ -638,7 +647,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         it.hasTrait<HttpHeaderTrait>() || it.hasTrait<HttpPrefixHeadersTrait>()
                     }
 
-                    renderSerdeCompanionObject(ctx, documentMembers, writer)
+                    renderSerdeCompanionObject(ctx, shape, documentMembers, writer)
                 }
                 .write("")
                 .call {
@@ -978,12 +987,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         deserializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
-        importSerdePackage(writer)
-
         writer.write("")
             .openBlock("internal class #T {", deserializerSymbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
             }
             .call {
 
@@ -1047,14 +1054,6 @@ fun formatInstant(paramName: String, tsFmt: TimestampFormatTrait.Format, forceSt
     else -> throw CodegenException("unknown timestamp format: $tsFmt")
 }
 
-// import CLIENT-RT.*
-internal fun importSerdePackage(writer: KotlinWriter) {
-    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
-    writer.addImport(KotlinDependency.CLIENT_RT_SERDE_JSON.namespace, "JsonSerialName")
-    writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
-    writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE_JSON.dependencies)
-}
-
 // import CLIENT-RT.time.TimestampFormat
 internal fun importTimestampFormat(writer: KotlinWriter) {
     writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "TimestampFormat")
@@ -1112,7 +1111,7 @@ fun Shape.serialKind(): String = when (this.type) {
     ShapeType.MAP -> "SerialKind.Map"
     ShapeType.STRUCTURE -> "SerialKind.Struct"
     ShapeType.UNION -> "SerialKind.Struct"
-    else -> throw CodegenException("unknown SerialKind for $this")
+    else -> throw CodegenException("unknown SerialKind for ${this.type} ($this)")
 }
 
 // test if the request bindings have any members bound to the HTTP payload (body)

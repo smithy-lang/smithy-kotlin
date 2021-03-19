@@ -7,9 +7,12 @@ package software.amazon.smithy.kotlin.codegen.util
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.buildSymbol
 import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.kotlin.codegen.namespace
+import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
@@ -37,6 +40,20 @@ class RestJsonTestProtocolGenerator(
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
         return MockRestJsonProtocolClientGenerator(ctx, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
     }
+
+    override fun generateSdkFieldDescriptor(
+        ctx: ProtocolGenerator.GenerationContext,
+        memberShape: MemberShape,
+        writer: KotlinWriter,
+        memberTargetShape: Shape?,
+        namePostfix: String
+    ) { }
+
+    override fun generateSdkObjectDescriptorTraits(
+        ctx: ProtocolGenerator.GenerationContext,
+        objectShape: Shape,
+        writer: KotlinWriter
+    ) { }
 }
 
 class MockRestJsonProtocolClientGenerator(

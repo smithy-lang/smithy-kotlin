@@ -95,7 +95,7 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         putFormatter('D', KotlinPropertyFormatter(setDefault = true))
     }
 
-    internal val dependencies: MutableList<SymbolDependency> = mutableListOf()
+    val dependencies: MutableList<SymbolDependency> = mutableListOf()
     private val imports = ImportDeclarations()
 
     fun addImport(symbol: Symbol, alias: String = symbol.name) {
