@@ -6,14 +6,12 @@ package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.buildSymbol
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.integration.*
-import software.amazon.smithy.kotlin.codegen.namespace
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.JsonNameTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
@@ -25,6 +23,10 @@ class CodegenTestIntegration : KotlinIntegration {
 
 /**
  * A partial ProtocolGenerator to generate minimal sdks for tests of restJson models.
+ *
+ * This class copies some sdk field and object descriptor generation from aws-sdk-kotlin in order
+ * to produce code that compiles, but lacks sufficient protocol metadata to successfully drive
+ * serde for any protocol.
  */
 class RestJsonTestProtocolGenerator(
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS,
@@ -47,13 +49,22 @@ class RestJsonTestProtocolGenerator(
         writer: KotlinWriter,
         memberTargetShape: Shape?,
         namePostfix: String
-    ) { }
+    ) {
+        val shapeForSerialKind = memberTargetShape ?: ctx.model.expectShape(memberShape.target)
+        val serialKind = shapeForSerialKind.serialKind()
+        val descriptorName = memberShape.descriptorName(namePostfix)
+
+        writer.write("private val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
+    }
 
     override fun generateSdkObjectDescriptorTraits(
         ctx: ProtocolGenerator.GenerationContext,
         objectShape: Shape,
         writer: KotlinWriter
-    ) { }
+    ) {
+        writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+        writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
+    }
 }
 
 class MockRestJsonProtocolClientGenerator(

@@ -987,6 +987,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         deserializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
+        writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+
         writer.write("")
             .openBlock("internal class #T {", deserializerSymbol)
             .call {
