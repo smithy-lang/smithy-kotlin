@@ -16,10 +16,13 @@ expect interface ByteReadChannel {
     val availableForRead: Int
 
     /**
-     * Returns true if the channel is closed and no remaining bytes are available for read. It implies that availableForRead is zero.
+     * Returns `true` if the channel is closed and no remaining bytes are available for read. It implies that availableForRead is zero.
      */
     val isClosedForRead: Boolean
 
+    /**
+     * Returns `true` if the channel is closed from the writer side. [availableForRead] may be > 0
+     */
     val isClosedForWrite: Boolean
 
     /**

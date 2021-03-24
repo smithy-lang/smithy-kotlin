@@ -10,6 +10,7 @@ extra["displayName"] = "Smithy :: Kotlin :: IO"
 extra["moduleName"] = "software.aws.clientrt.io"
 
 val ktorVersion: String by project
+val coroutinesVersion: String by project
 
 kotlin {
     sourceSets {
@@ -17,12 +18,22 @@ kotlin {
             dependencies {
                 implementation(project(":client-runtime:utils"))
                 implementation("io.ktor:ktor-io:$ktorVersion")
+
+                // Dispatchers.IO
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
         }
 
         commonTest {
             dependencies {
                 implementation(project(":client-runtime:testing"))
+            }
+        }
+
+        jvmMain {
+            dependencies {
+                // file channel utils
+                implementation("io.ktor:ktor-utils:$ktorVersion")
             }
         }
     }
