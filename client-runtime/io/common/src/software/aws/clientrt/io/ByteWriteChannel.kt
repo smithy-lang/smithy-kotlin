@@ -5,6 +5,9 @@
 
 package software.aws.clientrt.io
 
+/**
+ * A channel for writing a sequence of bytes asynchronously. This is a **single writer channel**.
+ */
 public expect interface ByteWriteChannel {
 
     /**

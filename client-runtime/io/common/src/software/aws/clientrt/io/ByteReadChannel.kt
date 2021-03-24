@@ -5,18 +5,19 @@
 package software.aws.clientrt.io
 
 /**
- * Supplies a stream of bytes. Use this interface to read data from wherever it’s located: from the network, storage, or a buffer in memory.
- *
- * This interface is functionally equivalent to an asynchronous coroutine compatible [java.io.InputStream]
+ * Supplies an asynchronous stream of bytes. Use this interface to read data from wherever it’s located:
+ * from the network, storage, or a buffer in memory. This is a **single-reader channel**.
  */
 expect interface ByteReadChannel {
     /**
-     * Returns number of bytes that can be read without suspension. Read operations do no suspend and return immediately when this number is at least the number of bytes requested for read.
+     * Returns number of bytes that can be read without suspension. Read operations do no suspend and
+     * return immediately when this number is at least the number of bytes requested for read.
      */
     val availableForRead: Int
 
     /**
-     * Returns `true` if the channel is closed and no remaining bytes are available for read. It implies that availableForRead is zero.
+     * Returns `true` if the channel is closed and no remaining bytes are available for read. It implies
+     * that availableForRead is zero.
      */
     val isClosedForRead: Boolean
 
@@ -26,12 +27,14 @@ expect interface ByteReadChannel {
     val isClosedForWrite: Boolean
 
     /**
-     * Read the entire content into a [ByteArray]. NOTE: Be careful this will read the entire byte stream into memory.
+     * Read the entire content into a [ByteArray]. NOTE: Be careful this will read the entire byte stream
+     * into memory.
      */
     suspend fun readAll(): ByteArray
 
     /**
-     * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough bytes available.
+     * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough
+     * bytes available.
      */
     suspend fun readFully(sink: ByteArray, offset: Int, length: Int)
 
