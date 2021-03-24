@@ -9,7 +9,7 @@ package software.aws.clientrt.serde.xml
  * Raw tokens produced when reading a XML document as a stream
  */
 sealed class XmlToken {
-
+    abstract val depth: Int
     /**
      * An namespace declaration (xmlns)
      */
@@ -23,42 +23,59 @@ sealed class XmlToken {
     data class QualifiedName(val local: String, val ns: Namespace? = null) {
         constructor(local: String, uri: String?, prefix: String?) : this(local, if (uri != null) Namespace(uri, prefix) else null)
         constructor(local: String, uri: String?) : this(local, uri, null)
+
+        override fun toString(): String {
+            return if (ns == null) local else "$ns:$local"
+        }
     }
 
     /**
      * The opening of an XML element
      */
     data class BeginElement(
+        override val depth: Int,
         val name: QualifiedName,
         val attributes: Map<QualifiedName, String> = emptyMap(),
         val nsDeclarations: List<Namespace> = emptyList()
     ) : XmlToken() {
         // Convenience constructor for name-only nodes.
-        constructor(name: String) : this(QualifiedName(name))
+        constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
         // Convenience constructor for name-only nodes with attributes.
-        constructor(name: String, attributes: Map<QualifiedName, String>) : this(QualifiedName(name), attributes)
+        constructor(depth: Int, name: String, attributes: Map<QualifiedName, String>) : this(depth, QualifiedName(name), attributes)
+
+        override fun toString(): String = "<${this.name} (${this.depth})>"
     }
 
     /**
      * The closing of an XML element
      */
-    data class EndElement(val name: QualifiedName) : XmlToken() {
+    data class EndElement(override val depth: Int, val name: QualifiedName) : XmlToken() {
         // Convenience constructor for name-only nodes.
-        constructor(name: String) : this(QualifiedName(name))
+        constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
+
+        override fun toString(): String = "</${this.name}> (${this.depth})"
     }
 
     /**
      * An XML element text as string
      */
-    data class Text(val value: String?) : XmlToken()
+    data class Text(override val depth: Int, val value: String?) : XmlToken() {
+        override fun toString(): String = "${this.value} (${this.depth})"
+    }
 
-    object StartDocument : XmlToken()
+    object StartDocument : XmlToken() {
+        override val depth: Int
+            get() = 0
+    }
 
     /**
      * The end of the XML stream to signal that the XML-encoded value has no more
      * tokens
      */
-    object EndDocument : XmlToken()
+    object EndDocument : XmlToken() {
+        override val depth: Int
+            get() = 0
+    }
 
     override fun toString(): String = when (this) {
         is BeginElement -> "<${this.name}>"
@@ -67,4 +84,15 @@ sealed class XmlToken {
         StartDocument -> "[StartDocument]"
         EndDocument -> "[EndDocument]"
     }
+}
+
+// Return true if the passed in node is the beginning node, false otherwise.
+fun XmlToken?.terminates(beginToken: XmlToken?): Boolean {
+    if (this == null || beginToken == null) return false
+    if (this !is XmlToken.EndElement) return false
+    if (beginToken !is XmlToken.BeginElement) return false
+    if (depth != beginToken.depth) return false
+    if (name != beginToken.name) return false
+
+    return true
 }
