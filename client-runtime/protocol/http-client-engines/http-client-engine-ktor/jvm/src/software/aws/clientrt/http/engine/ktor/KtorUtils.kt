@@ -7,15 +7,15 @@ package software.aws.clientrt.http.engine.ktor
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.core.readBytes
+import io.ktor.utils.io.core.*
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.io.Source
 import java.nio.ByteBuffer
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
+import software.aws.clientrt.io.ByteReadChannel as SdkByteReadChannel
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
 internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
@@ -61,7 +61,8 @@ internal class KtorHeaders(private val headers: Headers) : software.aws.clientrt
 }
 
 // wrapper around ByteReadChannel that implements the [Source] interface
-internal class KtorContentStream(private val channel: ByteReadChannel, private val onClose: (() -> Unit)? = null) : Source {
+internal class KtorContentStream(private val channel: ByteReadChannel, private val onClose: (() -> Unit)? = null) :
+    SdkByteReadChannel {
     override val availableForRead: Int
         get() = channel.availableForRead
 
@@ -112,7 +113,7 @@ internal class KtorContentStream(private val channel: ByteReadChannel, private v
 // wrapper around a ByteReadChannel that implements the content as an SDK (streaming) HttpBody
 internal class KtorHttpBody(channel: ByteReadChannel, onClose: (() -> Unit)? = null) : HttpBody.Streaming() {
     private val source = KtorContentStream(channel, onClose)
-    override fun readFrom(): Source = source
+    override fun readFrom(): SdkByteReadChannel = source
 }
 
 // convert ktor Http response to an (SDK) Http response
