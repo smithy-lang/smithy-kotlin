@@ -25,7 +25,7 @@ public fun File.readChannel(
     start: Long = 0,
     endInclusive: Long = -1,
     coroutineContext: CoroutineContext = Dispatchers.IO
-): ByteReadChannel = cioReadChannel(start, endInclusive, coroutineContext).toSdkChannel()
+): SdkByteReadChannel = cioReadChannel(start, endInclusive, coroutineContext).toSdkChannel()
 
 /**
  * Open a read channel for file and launch a coroutine to fill it.
@@ -33,7 +33,7 @@ public fun File.readChannel(
  * your async code
  */
 @InternalApi
-public fun Path.readChannel(start: Long, endInclusive: Long): ByteReadChannel =
+public fun Path.readChannel(start: Long, endInclusive: Long): SdkByteReadChannel =
     toFile().readChannel(start, endInclusive)
 
 /**
@@ -42,7 +42,7 @@ public fun Path.readChannel(start: Long, endInclusive: Long): ByteReadChannel =
  * your async code
  */
 @InternalApi
-public fun Path.readChannel(): ByteReadChannel = toFile().readChannel()
+public fun Path.readChannel(): SdkByteReadChannel = toFile().readChannel()
 
 // FIXME - CoroutineContext makes coroutines-core an API dependency
 
@@ -56,4 +56,4 @@ public fun Path.readChannel(): ByteReadChannel = toFile().readChannel()
 @InternalApi
 public fun File.writeChannel(
     coroutineContext: CoroutineContext = Dispatchers.IO
-): ByteWriteChannel = cioWriteChannel(coroutineContext).toSdkChannel()
+): SdkByteWriteChannel = cioWriteChannel(coroutineContext).toSdkChannel()

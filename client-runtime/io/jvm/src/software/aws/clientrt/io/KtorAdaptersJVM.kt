@@ -10,7 +10,7 @@ import io.ktor.utils.io.ByteWriteChannel as KtorByteWriteChannel
 
 internal actual class KtorReadChannelAdapter actual constructor(
     chan: KtorByteReadChannel
-) : ByteReadChannel, KtorReadChannelAdapterBase(chan) {
+) : SdkByteReadChannel, KtorReadChannelAdapterBase(chan) {
     override suspend fun readAvailable(sink: ByteBuffer): Int {
         return chan.readAvailable(sink)
     }
@@ -18,4 +18,4 @@ internal actual class KtorReadChannelAdapter actual constructor(
 
 internal actual class KtorWriteChannelAdapter actual constructor(
     chan: KtorByteWriteChannel
-) : ByteWriteChannel, KtorWriteChannelAdapterBase(chan)
+) : SdkByteWriteChannel, KtorWriteChannelAdapterBase(chan)

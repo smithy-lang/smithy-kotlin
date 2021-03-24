@@ -12,12 +12,12 @@ import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel as KtorByteWriteChannel
 
 /**
- * Wrap ktor's ByteReadChannel as our own. This implements the common API of [ByteReadChannel]. Only
+ * Wrap ktor's ByteReadChannel as our own. This implements the common API of [SdkByteReadChannel]. Only
  * platform specific differences in interfaces need be implemented in inheritors.
  */
 internal abstract class KtorReadChannelAdapterBase(
     val chan: KtorByteReadChannel
-) : ByteReadChannel {
+) : SdkByteReadChannel {
 
     override val availableForRead: Int
         get() = chan.availableForRead
@@ -46,12 +46,12 @@ internal abstract class KtorReadChannelAdapterBase(
 }
 
 /**
- * Wrap ktor's ByteWriteChannel as our own. This implements the common API of [ByteWriteChannel]. Only
+ * Wrap ktor's ByteWriteChannel as our own. This implements the common API of [SdkByteWriteChannel]. Only
  * platform specific differences in interfaces need be implemented in inheritors.
  */
 internal abstract class KtorWriteChannelAdapterBase(
     val chan: KtorByteWriteChannel
-) : ByteWriteChannel {
+) : SdkByteWriteChannel {
     override val availableForWrite: Int
         get() = chan.availableForWrite
 
@@ -82,22 +82,22 @@ internal abstract class KtorWriteChannelAdapterBase(
 }
 
 /**
- * Wrap ktor's ByteChannel as our own. This implements the common API of [ByteChannel]. Only
+ * Wrap ktor's ByteChannel as our own. This implements the common API of [SdkByteChannel]. Only
  * platform specific differences in interfaces need be implemented in inheritors.
  */
 
 internal class KtorByteChannelAdapter(
     val chan: KtorByteChannel
-) : ByteChannel,
-    ByteReadChannel by KtorReadChannelAdapter(chan),
-    ByteWriteChannel by KtorWriteChannelAdapter(chan) {
+) : SdkByteChannel,
+    SdkByteReadChannel by KtorReadChannelAdapter(chan),
+    SdkByteWriteChannel by KtorWriteChannelAdapter(chan) {
     override val isClosedForWrite: Boolean
         get() = chan.isClosedForWrite
 }
 
-internal expect class KtorReadChannelAdapter(chan: KtorByteReadChannel) : ByteReadChannel
-internal expect class KtorWriteChannelAdapter(chan: KtorByteWriteChannel) : ByteWriteChannel
+internal expect class KtorReadChannelAdapter(chan: KtorByteReadChannel) : SdkByteReadChannel
+internal expect class KtorWriteChannelAdapter(chan: KtorByteWriteChannel) : SdkByteWriteChannel
 
-internal fun KtorByteReadChannel.toSdkChannel(): ByteReadChannel = KtorReadChannelAdapter(this)
-internal fun KtorByteWriteChannel.toSdkChannel(): ByteWriteChannel = KtorWriteChannelAdapter(this)
-internal fun KtorByteChannel.toSdkChannel(): ByteChannel = KtorByteChannelAdapter(this)
+internal fun KtorByteReadChannel.toSdkChannel(): SdkByteReadChannel = KtorReadChannelAdapter(this)
+internal fun KtorByteWriteChannel.toSdkChannel(): SdkByteWriteChannel = KtorWriteChannelAdapter(this)
+internal fun KtorByteChannel.toSdkChannel(): SdkByteChannel = KtorByteChannelAdapter(this)

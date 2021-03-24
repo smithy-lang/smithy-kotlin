@@ -5,7 +5,7 @@
 package software.aws.clientrt.http
 
 import software.aws.clientrt.content.ByteStream
-import software.aws.clientrt.io.ByteReadChannel
+import software.aws.clientrt.io.SdkByteReadChannel
 
 /**
  * HTTP payload to be sent to a peer
@@ -42,9 +42,9 @@ sealed class HttpBody {
      */
     abstract class Streaming : HttpBody() {
         /**
-         * Provides [ByteReadChannel] for the content
+         * Provides [SdkByteReadChannel] for the content
          */
-        abstract fun readFrom(): ByteReadChannel
+        abstract fun readFrom(): SdkByteReadChannel
     }
 }
 
@@ -59,7 +59,7 @@ fun ByteStream.toHttpBody(): HttpBody {
         }
         is ByteStream.Reader -> object : HttpBody.Streaming() {
             override val contentLength: Long? = bytestream.contentLength
-            override fun readFrom(): ByteReadChannel = bytestream.readFrom()
+            override fun readFrom(): SdkByteReadChannel = bytestream.readFrom()
         }
     }
 }
@@ -87,7 +87,7 @@ fun HttpBody.toByteStream(): ByteStream? {
         }
         is HttpBody.Streaming -> object : ByteStream.Reader() {
             override val contentLength: Long? = body.contentLength
-            override fun readFrom(): ByteReadChannel = body.readFrom()
+            override fun readFrom(): SdkByteReadChannel = body.readFrom()
         }
     }
 }

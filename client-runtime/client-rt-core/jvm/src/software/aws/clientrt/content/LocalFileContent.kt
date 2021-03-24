@@ -5,7 +5,7 @@
 
 package software.aws.clientrt.content
 
-import software.aws.clientrt.io.ByteReadChannel
+import software.aws.clientrt.io.SdkByteReadChannel
 import software.aws.clientrt.io.readChannel
 import java.io.File
 
@@ -19,5 +19,5 @@ public class LocalFileContent(
     override val contentLength: Long
         get() = file.length()
 
-    override fun readFrom(): ByteReadChannel = file.readChannel()
+    override fun readFrom(): SdkByteReadChannel = file.readChannel()
 }

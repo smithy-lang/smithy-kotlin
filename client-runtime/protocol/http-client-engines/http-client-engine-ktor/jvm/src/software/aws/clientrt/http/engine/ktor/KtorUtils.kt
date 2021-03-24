@@ -12,10 +12,10 @@ import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.io.SdkByteReadChannel
 import java.nio.ByteBuffer
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
-import software.aws.clientrt.io.ByteReadChannel as SdkByteReadChannel
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
 internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {

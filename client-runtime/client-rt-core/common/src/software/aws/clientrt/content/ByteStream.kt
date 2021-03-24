@@ -4,7 +4,7 @@
  */
 package software.aws.clientrt.content
 
-import software.aws.clientrt.io.ByteReadChannel
+import software.aws.clientrt.io.SdkByteReadChannel
 
 /**
  * Represents an abstract stream of bytes
@@ -31,9 +31,9 @@ sealed class ByteStream {
      */
     abstract class Reader : ByteStream() {
         /**
-         * Provides [ByteReadChannel] to read from/consume
+         * Provides [SdkByteReadChannel] to read from/consume
          */
-        abstract fun readFrom(): ByteReadChannel
+        abstract fun readFrom(): SdkByteReadChannel
     }
 
     companion object {

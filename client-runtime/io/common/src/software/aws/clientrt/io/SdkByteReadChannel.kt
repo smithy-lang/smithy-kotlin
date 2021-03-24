@@ -8,7 +8,7 @@ package software.aws.clientrt.io
  * Supplies an asynchronous stream of bytes. Use this interface to read data from wherever it’s located:
  * from the network, storage, or a buffer in memory. This is a **single-reader channel**.
  */
-expect interface ByteReadChannel {
+expect interface SdkByteReadChannel {
     /**
      * Returns number of bytes that can be read without suspension. Read operations do no suspend and
      * return immediately when this number is at least the number of bytes requested for read.
