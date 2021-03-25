@@ -15,9 +15,11 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.kotlin.codegen.defaultName
+import software.amazon.smithy.kotlin.codegen.getTrait
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.protocoltests.traits.AppliesTo
 import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestsTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestsTrait
@@ -54,98 +56,91 @@ class HttpProtocolTestGenerator(
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
 
             // 1. Generate test cases for each request.
-            operation.getTrait(HttpRequestTestsTrait::class.java)
-                .ifPresent { trait: HttpRequestTestsTrait ->
-                    val testCases = filterProtocolTestCases(trait.testCases)
-                    if (testCases.isEmpty()) {
-                        return@ifPresent
-                    }
+            val requestTests = operation.getTrait<HttpRequestTestsTrait>()
+                ?.getTestCasesFor(AppliesTo.CLIENT)
+                ?.filter(::isTestCaseAllowedForRunMode)
 
-                    val testClassName = "${operation.id.name.capitalize()}RequestTest"
-                    val testFilename = "$testClassName.kt"
-                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                        LOGGER.fine("Generating request protocol test cases for ${operation.id}")
+            requestTests?.let { testCases ->
+                val testClassName = "${operation.id.name.capitalize()}RequestTest"
+                val testFilename = "$testClassName.kt"
+                ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
+                    LOGGER.fine("Generating request protocol test cases for ${operation.id}")
 
-                        // import package.models.*
-                        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                    // import package.models.*
+                    writer.addImport("${ctx.settings.pkg.name}.model", "*")
 
-                        requestTestBuilder
-                            .writer(writer)
-                            .model(ctx.model)
-                            .symbolProvider(ctx.symbolProvider)
-                            .operation(operation)
-                            .service(ctx.service)
-                            .testCases(testCases)
-                            .build()
-                            .renderTestClass(testClassName)
-                    }
+                    requestTestBuilder
+                        .writer(writer)
+                        .model(ctx.model)
+                        .symbolProvider(ctx.symbolProvider)
+                        .operation(operation)
+                        .service(ctx.service)
+                        .testCases(testCases)
+                        .build()
+                        .renderTestClass(testClassName)
                 }
+            }
 
             // 2. Generate test cases for each response.
-            operation.getTrait(HttpResponseTestsTrait::class.java)
-                .ifPresent { trait: HttpResponseTestsTrait ->
-                    val testCases = filterProtocolTestCases(trait.testCases)
-                    if (testCases.isEmpty()) {
-                        return@ifPresent
-                    }
+            val responseTests = operation.getTrait<HttpResponseTestsTrait>()
+                ?.getTestCasesFor(AppliesTo.CLIENT)
+                ?.filter(::isTestCaseAllowedForRunMode)
 
-                    val testClassName = "${operation.id.name.capitalize()}ResponseTest"
-                    val testFilename = "$testClassName.kt"
-                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                        LOGGER.fine("Generating response protocol test cases for ${operation.id}")
+            responseTests?.let { testCases ->
+                val testClassName = "${operation.id.name.capitalize()}ResponseTest"
+                val testFilename = "$testClassName.kt"
+                ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
+                    LOGGER.fine("Generating response protocol test cases for ${operation.id}")
 
-                        writer.addImport("${ctx.settings.pkg.name}.model", "*")
-                        responseTestBuilder
-                            .writer(writer)
-                            .model(ctx.model)
-                            .symbolProvider(ctx.symbolProvider)
-                            .operation(operation)
-                            .service(ctx.service)
-                            .testCases(testCases)
-                            .build()
-                            .renderTestClass(testClassName)
-                    }
+                    writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                    responseTestBuilder
+                        .writer(writer)
+                        .model(ctx.model)
+                        .symbolProvider(ctx.symbolProvider)
+                        .operation(operation)
+                        .service(ctx.service)
+                        .testCases(testCases)
+                        .build()
+                        .renderTestClass(testClassName)
                 }
+            }
 
             // 3. Generate test cases for each error on each operation.
             for (error in operationIndex.getErrors(operation).filterNot(::serverOnly)) {
-                error.getTrait(HttpResponseTestsTrait::class.java)
-                    .ifPresent { trait: HttpResponseTestsTrait ->
-                        val testCases = filterProtocolTestCases(trait.testCases)
-                        if (testCases.isEmpty()) {
-                            return@ifPresent
-                        }
-                        // use operation name as filename
-                        val opName = operation.id.name.capitalize()
-                        val testFilename = "${opName}ErrorTest.kt"
-                        // multiple error (tests) may be associated with a single operation,
-                        // use the operation name + error name as the class name
-                        val testClassName = "${opName}${error.defaultName()}Test"
-                        ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
-                            LOGGER.fine("Generating error protocol test cases for ${operation.id}")
+                val errorTests = error.getTrait<HttpResponseTestsTrait>()
+                    ?.getTestCasesFor(AppliesTo.CLIENT)
+                    ?.filter(::isTestCaseAllowedForRunMode)
 
-                            writer.addImport("${ctx.settings.pkg.name}.model", "*")
-                            errorTestBuilder
-                                .error(error)
-                                .writer(writer)
-                                .model(ctx.model)
-                                .symbolProvider(ctx.symbolProvider)
-                                .operation(operation)
-                                .service(ctx.service)
-                                .testCases(testCases)
-                                .build()
-                                .renderTestClass(testClassName)
-                        }
+                errorTests?.let { testCases ->
+                    // use operation name as filename
+                    val opName = operation.id.name.capitalize()
+                    val testFilename = "${opName}ErrorTest.kt"
+                    // multiple error (tests) may be associated with a single operation,
+                    // use the operation name + error name as the class name
+                    val testClassName = "${opName}${error.defaultName()}Test"
+                    ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
+                        LOGGER.fine("Generating error protocol test cases for ${operation.id}")
+
+                        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+                        errorTestBuilder
+                            .error(error)
+                            .writer(writer)
+                            .model(ctx.model)
+                            .symbolProvider(ctx.symbolProvider)
+                            .operation(operation)
+                            .service(ctx.service)
+                            .testCases(testCases)
+                            .build()
+                            .renderTestClass(testClassName)
                     }
+                }
             }
         }
     }
 
-    private fun <T : HttpMessageTestCase> filterProtocolTestCases(testCases: List<T>): List<T> = testCases.filter {
-        when (testDelta.runMode) {
-            TestContainmentMode.EXCLUDE_TESTS -> it.protocol == ctx.protocol && it.id !in testDelta.members
-            TestContainmentMode.RUN_TESTS -> it.protocol == ctx.protocol && it.id in testDelta.members
-        }
+    private fun <T : HttpMessageTestCase> isTestCaseAllowedForRunMode(test: T): Boolean = when (testDelta.runMode) {
+        TestContainmentMode.EXCLUDE_TESTS -> test.protocol == ctx.protocol && test.id !in testDelta.members
+        TestContainmentMode.RUN_TESTS -> test.protocol == ctx.protocol && test.id in testDelta.members
     }
 }
 

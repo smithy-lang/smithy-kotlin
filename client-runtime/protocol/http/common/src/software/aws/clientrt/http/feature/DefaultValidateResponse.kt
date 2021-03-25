@@ -61,17 +61,17 @@ class DefaultValidateResponse : Feature {
 
     override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
         operation.execution.receive.intercept { req, next ->
-            val response = next.call(req)
-            if (response.status.isSuccess()) {
-                return@intercept response
+            val call = next.call(req)
+            if (call.response.status.isSuccess()) {
+                return@intercept call
             }
 
-            val message = "received unsuccessful HTTP response: ${response.status}"
+            val message = "received unsuccessful HTTP call.response: ${call.response.status}"
             val httpException = HttpResponseException(message).apply {
-                statusCode = response.status
-                headers = response.headers
-                body = response.body.readAll()
-                request = response.request
+                statusCode = call.response.status
+                headers = call.response.headers
+                body = call.response.body.readAll()
+                request = call.request
             }
 
             throw httpException

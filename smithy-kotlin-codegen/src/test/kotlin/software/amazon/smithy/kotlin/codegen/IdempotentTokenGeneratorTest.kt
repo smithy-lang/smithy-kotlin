@@ -34,7 +34,7 @@ class IdempotentTokenGeneratorTest {
         val contents = getTransformFileContents("AllocateWidgetOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidgetInput> {
+internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidgetRequest> {
 
     companion object {
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
@@ -42,7 +42,7 @@ internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidget
         }
     }
 
-    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetInput): HttpRequestBuilder {
+    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
 
@@ -71,8 +71,8 @@ internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidget
         val contents = getTransformFileContents("AllocateWidgetQueryOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-internal class AllocateWidgetQueryOperationSerializer(): HttpSerialize<AllocateWidgetInputQuery> {
-    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetInputQuery): HttpRequestBuilder {
+internal class AllocateWidgetQueryOperationSerializer(): HttpSerialize<AllocateWidgetQueryRequest> {
+    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetQueryRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
 
@@ -95,8 +95,8 @@ internal class AllocateWidgetQueryOperationSerializer(): HttpSerialize<AllocateW
         val contents = getTransformFileContents("AllocateWidgetHeaderOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-internal class AllocateWidgetHeaderOperationSerializer(): HttpSerialize<AllocateWidgetInputHeader> {
-    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetInputHeader): HttpRequestBuilder {
+internal class AllocateWidgetHeaderOperationSerializer(): HttpSerialize<AllocateWidgetHeaderRequest> {
+    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetHeaderRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
 

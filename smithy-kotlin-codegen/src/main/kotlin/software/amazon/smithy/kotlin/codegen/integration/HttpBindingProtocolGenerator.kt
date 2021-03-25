@@ -18,10 +18,9 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.model.knowledge.HttpBinding
-import software.amazon.smithy.model.neighbor.RelationshipType
-import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import software.amazon.smithy.utils.StringUtils
@@ -67,14 +66,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx)
+        val httpOperations = resolver.bindingOperations()
         // render HttpSerialize for all operation inputs
-        for (operation in resolver.bindingOperations()) {
+        httpOperations.forEach { operation ->
             generateOperationSerializer(ctx, operation)
         }
 
         // generate serde for all shapes that appear as nested on any operation input
         // these types are `SdkSerializable` not `HttpSerialize`
-        val shapesRequiringSerializers = resolveRequiredSerializers(ctx)
+        val serdeIndex = SerdeIndex.of(ctx.model)
+        val shapesRequiringSerializers = serdeIndex.requiresDocumentSerializer(httpOperations)
         generateDocumentSerializers(ctx, shapesRequiringSerializers)
     }
 
@@ -82,7 +83,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val resolver = getProtocolHttpBindingResolver(ctx)
         // render HttpDeserialize for all operation outputs
         val httpOperations = resolver.bindingOperations()
-        for (operation in httpOperations) {
+        httpOperations.forEach { operation ->
             generateOperationDeserializer(ctx, operation)
         }
 
@@ -92,7 +93,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         // generate serde for all shapes that appear as nested on any operation output
         // these types are independent document deserializers, they do not implement `HttpDeserialize`
-        val shapesRequiringDeserializers = resolveRequiredDeserializers(ctx)
+        val serdeIndex = SerdeIndex.of(ctx.model)
+        val shapesRequiringDeserializers = serdeIndex.requiresDocumentDeserializer(httpOperations)
         generateDocumentDeserializers(ctx, shapesRequiringDeserializers)
     }
 
@@ -102,96 +104,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val clientGenerator = getHttpProtocolClientGenerator(ctx)
             clientGenerator.render(writer)
         }
-    }
-
-    /**
-     * Find and return the set of shapes that are not operation inputs but do require a serializer
-     *
-     * Operation inputs get an implementation of `HttpSerialize`, everything else gets an implementation
-     * of `SdkSerializable`.
-     *
-     * @return The set of shapes that require a serializer implementation
-     */
-    private fun resolveRequiredSerializers(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        // all top level operation inputs get an HttpSerialize
-        // any structure or union shape that shows up as a nested member (direct or indirect)
-        // as well as collections of the same requires a serializer implementation though
-        val resolver = getProtocolHttpBindingResolver(ctx)
-        val topLevelMembers = resolver.bindingOperations()
-            .filter { it.input.isPresent }
-            .flatMap {
-                val inputShape = ctx.model.expectShape(it.input.get())
-                inputShape.members()
-            }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toSet()
-
-        return walkNestedShapesRequiringSerde(ctx, topLevelMembers)
-    }
-
-    /**
-     * Find and return the set of shapes that are not operation outputs but do require a deserializer
-     *
-     * Operation outputs get an implementation of `HttpDeserialize`, everything else gets a `deserialize()`
-     * implementation
-     *
-     * @return The set of shapes that require a deserializer implementation
-     */
-    private fun resolveRequiredDeserializers(ctx: ProtocolGenerator.GenerationContext): Set<Shape> {
-        // All top level operation outputs and errors get an HttpDeserialize implementation.
-        // Any structure or union shape that shows up as a nested member, direct or indirect (of either the operation
-        // or it's errors), as well as collections of the same requires a deserializer implementation though.
-
-        // add shapes reachable from the operational output itself
-        val resolver = getProtocolHttpBindingResolver(ctx)
-        val topLevelMembers = resolver.bindingOperations()
-            .filter { it.output.isPresent }
-            .flatMap {
-                val outputShape = ctx.model.expectShape(it.output.get())
-                outputShape.members()
-            }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toMutableSet()
-
-        // add shapes reachable from operational errors
-        val modeledErrors = resolver.bindingOperations()
-            .flatMap { it.errors }
-            .flatMap { ctx.model.expectShape(it).members() }
-            .map { ctx.model.expectShape(it.target) }
-            .filter { it.isStructureShape || it.isUnionShape || it is CollectionShape || it.isMapShape }
-            .toSet()
-
-        topLevelMembers += modeledErrors
-
-        return walkNestedShapesRequiringSerde(ctx, topLevelMembers)
-    }
-
-    private fun walkNestedShapesRequiringSerde(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>): Set<Shape> {
-        val resolved = mutableSetOf<Shape>()
-        val walker = Walker(ctx.model)
-
-        // walk all the shapes in the set and find all other
-        // structs/unions (or collections thereof) in the graph from that shape
-        shapes.forEach { shape ->
-            walker.iterateShapes(shape) { relationship ->
-                when (relationship.relationshipType) {
-                    RelationshipType.MEMBER_TARGET,
-                    RelationshipType.STRUCTURE_MEMBER,
-                    RelationshipType.LIST_MEMBER,
-                    RelationshipType.SET_MEMBER,
-                    RelationshipType.MAP_VALUE,
-                    RelationshipType.UNION_MEMBER -> true
-                    else -> false
-                }
-            }.forEach { walkedShape ->
-                if (walkedShape.type == ShapeType.STRUCTURE || walkedShape.type == ShapeType.UNION) {
-                    resolved.add(walkedShape)
-                }
-            }
-        }
-        return resolved
     }
 
     /**
@@ -672,7 +584,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             RuntimeTypes.Core.ExecutionContext,
             outputSymbol
         )
-            .write("val builder = #T.dslBuilder()", outputSymbol)
+            .write("val builder = #T.builder()", outputSymbol)
             .write("")
             .call {
                 // headers
@@ -1009,7 +921,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .closeBlock("}")
                 } else {
                     writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
-                        writer.write("val builder = ${symbol.name}.dslBuilder()")
+                        writer.write("val builder = ${symbol.name}.builder()")
                         DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
                         writer.write("return builder.build()")
                     }

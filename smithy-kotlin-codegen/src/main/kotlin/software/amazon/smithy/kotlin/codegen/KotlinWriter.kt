@@ -283,3 +283,14 @@ private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
         .split('\n') // Break the doc into lines
         .filter { it.isNotBlank() } // Remove empty lines
         .joinToString(separator = lineSeparator) { it.trim() } // Trim line
+
+/**
+ * Optionally call the [Runnable] if [test] is true, otherwise do nothing and return the instance without
+ * running the block
+ */
+fun CodeWriter.callIf(test: Boolean, runnable: Runnable): CodeWriter {
+    if (test) {
+        runnable.run()
+    }
+    return this
+}

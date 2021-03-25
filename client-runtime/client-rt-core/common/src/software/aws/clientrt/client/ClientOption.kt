@@ -7,7 +7,7 @@ package software.aws.clientrt.client
 
 import software.aws.clientrt.util.AttributeKey
 import software.aws.clientrt.util.Attributes
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * A (service) client option that influences how the client behaves when executing requests
@@ -37,7 +37,7 @@ public interface ClientOptions {
 /**
  * Wrapper around [Attributes] that provides a [ClientOptions] implementation
  */
-@InternalAPI
+@InternalApi
 public class ClientOptionsImpl(private val attributes: Attributes) : ClientOptions {
     override fun <T : Any> set(option: ClientOption<T>, value: T) {
         attributes[option] = value

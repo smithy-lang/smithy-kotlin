@@ -74,16 +74,8 @@ class KtorUtilsTest {
 
     @Test
     fun itConvertsResponses() {
-        val builder = HttpRequestBuilder()
-        builder.method = software.aws.clientrt.http.HttpMethod.POST
-        builder.url {
-            host = "test.aws.com"
-            path = "/kotlin"
-        }
-        val request = builder.build()
         val response = MockHttpResponse()
-        val actual = response.toSdkHttpResponse(request)
-        assertEquals(request, actual.request)
+        val actual = response.toSdkHttpResponse()
         assertEquals("bar", actual.headers["x-foo"]!!)
         assertEquals(software.aws.clientrt.http.HttpStatusCode.OK, actual.status)
     }
