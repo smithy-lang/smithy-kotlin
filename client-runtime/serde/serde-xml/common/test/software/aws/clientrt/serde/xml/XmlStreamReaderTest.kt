@@ -15,8 +15,8 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement(1,"root"),
-            XmlToken.BeginElement(2,"x"),
+            XmlToken.BeginElement(1, "root"),
+            XmlToken.BeginElement(2, "x"),
             XmlToken.Text(2, "1"),
             XmlToken.EndElement(2, "x"),
             XmlToken.BeginElement(2, "y"),
@@ -33,7 +33,7 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement(1,"root"),
+            XmlToken.BeginElement(1, "root"),
             XmlToken.Text(1, "<string>"),
             XmlToken.EndElement(1, "root"),
         )
@@ -50,11 +50,11 @@ class XmlStreamReaderTest {
             XmlToken.BeginElement(2, "add", mapOf(XmlToken.QualifiedName("id") to "tt0484562")),
             XmlToken.BeginElement(3, "field", mapOf(XmlToken.QualifiedName("name") to "title")),
             XmlToken.Text(3, "The Seeker: The Dark Is Rising"),
-            XmlToken.EndElement(3,"field"),
+            XmlToken.EndElement(3, "field"),
             XmlToken.EndElement(2, "add"),
             XmlToken.BeginElement(2, "delete", mapOf(XmlToken.QualifiedName("id") to "tt0301199")),
-            XmlToken.EndElement(2,"delete"),
-            XmlToken.EndElement(1,"batch"),
+            XmlToken.EndElement(2, "delete"),
+            XmlToken.EndElement(1, "batch"),
         )
 
         assertEquals(expected, actual)
@@ -278,7 +278,7 @@ class XmlStreamReaderTest {
             XmlToken.BeginElement(2, XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
             XmlToken.Text(2, "yeah"),
             XmlToken.EndElement(2, XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
-            XmlToken.EndElement(1,"MyStructure"),
+            XmlToken.EndElement(1, "MyStructure"),
         )
 
         assertEquals(expected, actual)
@@ -331,7 +331,7 @@ class XmlStreamReaderTest {
             XmlToken.BeginElement(2, "a"),
             XmlToken.BeginElement(3, "n"),
             XmlToken.Text(3, "subtree 1"),
-            XmlToken.EndElement(3,"n"),
+            XmlToken.EndElement(3, "n"),
             XmlToken.EndElement(2, "a"),
             XmlToken.BeginElement(2, "b"),
             XmlToken.BeginElement(3, "n"),
@@ -430,7 +430,7 @@ class XmlStreamReaderTest {
 
         // verify no match produces null
         unit = xmlStreamReader(payload)
-        val noNode = unit.seek<XmlToken.BeginElement> { it.depth == 9}
+        val noNode = unit.seek<XmlToken.BeginElement> { it.depth == 9 }
         assertNull(noNode)
         assertNull(unit.nextToken())
     }

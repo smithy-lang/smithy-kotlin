@@ -424,16 +424,17 @@ internal class XmlMapsOperationDeserializer() {
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    MYMAP_DESCRIPTOR.index -> builder.myMap =
-                        deserializer.deserializeMap(MYMAP_DESCRIPTOR) {
-                            val map0 = mutableMapOf<String, GreetingStruct>()
-                            while (hasNextEntry()) {
-                                val k0 = key()
-                                val v0 = if (nextHasValue()) { GreetingStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
-                                map0[k0] = v0
+                    MYMAP_DESCRIPTOR.index ->
+                        builder.myMap =
+                            deserializer.deserializeMap(MYMAP_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, GreetingStruct>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { GreetingStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
                             }
-                            map0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -478,7 +479,6 @@ class XmlMapsInputOutput private constructor(builder: BuilderImpl) {
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): XmlMapsInputOutput = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -535,7 +535,6 @@ class GreetingStruct private constructor(builder: BuilderImpl) {
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): GreetingStruct = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

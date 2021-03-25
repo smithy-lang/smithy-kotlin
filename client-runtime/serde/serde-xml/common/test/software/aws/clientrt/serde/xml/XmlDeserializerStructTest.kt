@@ -283,7 +283,6 @@ internal class RecursiveShapesInputOutputNested2DocumentDeserializer {
     }
 }
 
-
 class RecursiveShapesInputOutput private constructor(builder: BuilderImpl) {
     val nested: RecursiveShapesInputOutputNested1? = builder.nested
 
@@ -293,7 +292,6 @@ class RecursiveShapesInputOutput private constructor(builder: BuilderImpl) {
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutput = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -354,7 +352,6 @@ class RecursiveShapesInputOutputNested1 private constructor(builder: BuilderImpl
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutputNested1 = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -423,7 +420,6 @@ class RecursiveShapesInputOutputNested2 private constructor(builder: BuilderImpl
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutputNested2 = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

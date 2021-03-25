@@ -76,7 +76,7 @@ internal class XmlStreamReaderXmlPull(
             false -> peekStack.removeAt(0)
         }.also { token ->
             this._lastToken = token
-            logger.trace { "${token.depth.indent()}${token}" }
+            logger.trace { "${token.depth.indent()}$token" }
         }
     }
 
@@ -192,7 +192,7 @@ private class SubTreeReader(
     private val currentReader: XmlStreamReader,
     private val depthSpecifier: XmlStreamReader.DepthSpecifier,
     private val minimumDepth: Int
-    ): XmlStreamReader {
+) : XmlStreamReader {
     override val lastToken: XmlToken?
         get() = currentReader.lastToken
 

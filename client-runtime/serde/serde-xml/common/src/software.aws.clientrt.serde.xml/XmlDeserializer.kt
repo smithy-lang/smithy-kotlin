@@ -75,13 +75,13 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 internal class XmlMapDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
-    private val primitiveDeserializer: PrimitiveDeserializer =  XmlPrimitiveDeserializer(reader, descriptor)
+    private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
 ) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.EntryIterator {
     private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.DEFAULT
 
     override suspend fun hasNextEntry(): Boolean {
         // Seek to either the entry or key token depending on the flatness of the map
-        val nextEntryToken = when(descriptor.hasTrait<Flattened>()) {
+        val nextEntryToken = when (descriptor.hasTrait<Flattened>()) {
             true -> reader.seek<XmlToken.BeginElement> { it.name.local == mapTrait.key }
             false -> reader.seek<XmlToken.BeginElement> { it.name.local == mapTrait.entry }
         }
@@ -119,7 +119,7 @@ internal class XmlMapDeserializer(
 internal class XmlListDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
-    private val primitiveDeserializer: PrimitiveDeserializer =  XmlPrimitiveDeserializer(reader, descriptor)
+    private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
 ) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.ElementIterator {
     private var firstCall = true
     private val flattened = descriptor.hasTrait<Flattened>()
@@ -186,8 +186,9 @@ internal class XmlStructDeserializer(
             val matchedFieldLocations = when (val nextToken = reader.nextToken()) {
                 null, is XmlToken.EndDocument -> return null
                 is XmlToken.EndElement -> return findNextFieldIndex()
-                is XmlToken.BeginElement -> objDescriptor.fields
-                        .filter { objDescriptor.fieldTokenMatcher(it, nextToken) }  // Filter out fields with different serialName
+                is XmlToken.BeginElement ->
+                    objDescriptor.fields
+                        .filter { objDescriptor.fieldTokenMatcher(it, nextToken) } // Filter out fields with different serialName
                         .mapNotNull { it.findLocation(nextToken, reader.peek() ?: return@mapNotNull null) }
                 else -> return findNextFieldIndex()
             }
@@ -220,7 +221,8 @@ internal class XmlStructDeserializer(
                 transform(value)
             }
             is FieldLocation.Attribute -> {
-                transform(parentToken.attributes[nextField.name]
+                transform(
+                    parentToken.attributes[nextField.name]
                         ?: throw DeserializerStateException("Expected attrib value ${nextField.name} not found in ${parentToken.name}")
                 )
             }

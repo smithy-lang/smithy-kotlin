@@ -31,14 +31,15 @@ class XmlDeserializerListTest {
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
-                            ELEMENT_LIST_FIELD_DESCRIPTOR.index -> builder.list =
-                                deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
-                                    val list = mutableListOf<Int>()
-                                    while (hasNextElement()) {
-                                        list.add(deserializeInt())
+                            ELEMENT_LIST_FIELD_DESCRIPTOR.index ->
+                                builder.list =
+                                    deserializer.deserializeList(ELEMENT_LIST_FIELD_DESCRIPTOR) {
+                                        val list = mutableListOf<Int>()
+                                        while (hasNextElement()) {
+                                            list.add(deserializeInt())
+                                        }
+                                        return@deserializeList list
                                     }
-                                    return@deserializeList list
-                                }
                             null -> break@loop
                             else -> skipValue()
                         }
@@ -267,14 +268,15 @@ class XmlDeserializerListTest {
         deserializer.deserializeStruct(objectDescriptor) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    listWrapperFieldDescriptor.index -> actual =
-                        deserializer.deserializeList(listWrapperFieldDescriptor) {
-                            val list = mutableListOf<SimpleStructOfStringsClass>()
-                            while (hasNextElement()) {
-                                list.add(SimpleStructOfStringsClass.deserialize(deserializer))
+                    listWrapperFieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeList(listWrapperFieldDescriptor) {
+                                val list = mutableListOf<SimpleStructOfStringsClass>()
+                                while (hasNextElement()) {
+                                    list.add(SimpleStructOfStringsClass.deserialize(deserializer))
+                                }
+                                return@deserializeList list
                             }
-                            return@deserializeList list
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -314,14 +316,15 @@ class XmlDeserializerListTest {
         deserializer.deserializeStruct(objectDescriptor) {
             loop@ while (true) {
                 when (findNextFieldIndex()) {
-                    listWrapperFieldDescriptor.index -> actual =
-                        deserializer.deserializeList(listWrapperFieldDescriptor) {
-                            val list = mutableListOf<SimpleStructClass>()
-                            while (hasNextElement()) {
-                                list.add(SimpleStructClass.deserialize(deserializer))
+                    listWrapperFieldDescriptor.index ->
+                        actual =
+                            deserializer.deserializeList(listWrapperFieldDescriptor) {
+                                val list = mutableListOf<SimpleStructClass>()
+                                while (hasNextElement()) {
+                                    list.add(SimpleStructClass.deserialize(deserializer))
+                                }
+                                return@deserializeList list
                             }
-                            return@deserializeList list
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -420,19 +423,19 @@ internal class FooOperationDeserializer {
     suspend fun deserialize(deserializer: Deserializer): FooResponse {
         val builder = FooResponse.dslBuilder()
 
-
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    PARENTLIST_DESCRIPTOR.index -> builder.parentList =
-                        deserializer.deserializeList(PARENTLIST_DESCRIPTOR) {
-                            val col0 = mutableListOf<PayloadStruct>()
-                            while (hasNextElement()) {
-                                val el0 = if (nextHasValue()) { PayloadStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
-                                col0.add(el0)
+                    PARENTLIST_DESCRIPTOR.index ->
+                        builder.parentList =
+                            deserializer.deserializeList(PARENTLIST_DESCRIPTOR) {
+                                val col0 = mutableListOf<PayloadStruct>()
+                                while (hasNextElement()) {
+                                    val el0 = if (nextHasValue()) { PayloadStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    col0.add(el0)
+                                }
+                                col0
                             }
-                            col0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
@@ -479,7 +482,6 @@ class FooResponse private constructor(builder: BuilderImpl) {
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): FooResponse = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -537,7 +539,6 @@ class PayloadStruct private constructor(builder: BuilderImpl) {
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): PayloadStruct = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -602,7 +603,6 @@ class NestedListResponse private constructor(builder: BuilderImpl) {
         fun dslBuilder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): NestedListResponse = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -667,22 +667,23 @@ internal class NestedListOperationOperationDeserializer {
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    PARENTLIST_DESCRIPTOR.index -> builder.parentList =
-                        deserializer.deserializeList(PARENTLIST_DESCRIPTOR) {
-                            val col0 = mutableListOf<List<PayloadStruct>>()
-                            while (hasNextElement()) {
-                                val el0 = deserializer.deserializeList(PARENTLIST_C0_DESCRIPTOR) {
-                                    val col1 = mutableListOf<PayloadStruct>()
-                                    while (hasNextElement()) {
-                                        val el1 = if (nextHasValue()) { PayloadStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
-                                        col1.add(el1)
+                    PARENTLIST_DESCRIPTOR.index ->
+                        builder.parentList =
+                            deserializer.deserializeList(PARENTLIST_DESCRIPTOR) {
+                                val col0 = mutableListOf<List<PayloadStruct>>()
+                                while (hasNextElement()) {
+                                    val el0 = deserializer.deserializeList(PARENTLIST_C0_DESCRIPTOR) {
+                                        val col1 = mutableListOf<PayloadStruct>()
+                                        while (hasNextElement()) {
+                                            val el1 = if (nextHasValue()) { PayloadStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                            col1.add(el1)
+                                        }
+                                        col1
                                     }
-                                    col1
+                                    col0.add(el0)
                                 }
-                                col0.add(el0)
+                                col0
                             }
-                            col0
-                        }
                     null -> break@loop
                     else -> skipValue()
                 }
