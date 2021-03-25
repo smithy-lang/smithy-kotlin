@@ -6,7 +6,7 @@
 package software.aws.clientrt.client
 
 import software.aws.clientrt.config.IdempotencyTokenProvider
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * Common client execution options
@@ -32,6 +32,6 @@ public object SdkClientOption {
 /**
  * Get the [IdempotencyTokenProvider] from the context. If one is not set the default will be returned.
  */
-@InternalAPI
+@InternalApi
 val ExecutionContext.idempotencyTokenProvider: IdempotencyTokenProvider
     get() = getOrNull(SdkClientOption.IdempotencyTokenProvider) ?: IdempotencyTokenProvider.Default

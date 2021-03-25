@@ -337,7 +337,7 @@ internal class Nested3DocumentSerializer(val input: Nested3) : SdkSerializable {
         val contents = getTransformFileContents("UnionInputOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-internal class UnionInputOperationSerializer(): HttpSerialize<UnionRequest> {
+internal class UnionInputOperationSerializer(): HttpSerialize<UnionInputRequest> {
 
     companion object {
         private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payloadUnion"))
@@ -346,7 +346,7 @@ internal class UnionInputOperationSerializer(): HttpSerialize<UnionRequest> {
         }
     }
 
-    override suspend fun serialize(context: ExecutionContext, input: UnionRequest): HttpRequestBuilder {
+    override suspend fun serialize(context: ExecutionContext, input: UnionInputRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
 
@@ -368,7 +368,7 @@ internal class UnionInputOperationSerializer(): HttpSerialize<UnionRequest> {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.UnionRequest")
+        contents.shouldContainOnlyOnce("import test.model.UnionInputRequest")
     }
 
     @Test
@@ -428,7 +428,7 @@ internal class UnionInputOperationSerializer(): HttpSerialize<UnionRequest> {
         val contents = getTransformFileContents("UnionOutputOperationDeserializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionRequest> {
+internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionOutputResponse> {
 
     companion object {
         private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payloadUnion"))
@@ -437,8 +437,8 @@ internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionRequest>
         }
     }
 
-    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): UnionRequest {
-        val builder = UnionRequest.dslBuilder()
+    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): UnionOutputResponse {
+        val builder = UnionOutputResponse.builder()
 
         val payload = response.body.readAll()
         if (payload != null) {
@@ -458,7 +458,7 @@ internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionRequest>
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.UnionRequest")
+        contents.shouldContainOnlyOnce("import test.model.UnionOutputResponse")
     }
 
     @Test
@@ -467,7 +467,7 @@ internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionRequest>
         val contents = getTransformFileContents("UnionAggregateOutputOperationDeserializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<UnionAggregateRequest> {
+internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<UnionAggregateOutputResponse> {
 
     companion object {
         private val PAYLOADAGGREGATEUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("payloadAggregateUnion"))
@@ -476,8 +476,8 @@ internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<Unio
         }
     }
 
-    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): UnionAggregateRequest {
-        val builder = UnionAggregateRequest.dslBuilder()
+    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): UnionAggregateOutputResponse {
+        val builder = UnionAggregateOutputResponse.builder()
 
         val payload = response.body.readAll()
         if (payload != null) {
@@ -497,7 +497,7 @@ internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<Unio
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.UnionAggregateRequest")
+        contents.shouldContainOnlyOnce("import test.model.UnionAggregateOutputResponse")
     }
 
     @Test
@@ -549,10 +549,13 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
     suspend fun deserialize(deserializer: Deserializer): MyUnion {
         var value: MyUnion? = null
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-            when(findNextFieldIndex()) {
-                I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
-                STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
-                else -> value = MyUnion.SdkUnknown.also { skipValue() }
+            loop@while(true) {
+                when(findNextFieldIndex()) {
+                    I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
+                    STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
+                    null -> break@loop
+                    else -> value = MyUnion.SdkUnknown.also { skipValue() }
+                }
             }
         }
         return value ?: throw DeserializationException("Deserialized value unexpectedly null: MyUnion")
@@ -735,8 +738,8 @@ internal class BlobInputOperationSerializer(): HttpSerialize<BlobInputRequest> {
         contents.shouldSyntacticSanityCheck()
         val label1 = "\${input.hello}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-internal class ConstantQueryStringOperationSerializer(): HttpSerialize<ConstantQueryStringInput> {
-    override suspend fun serialize(context: ExecutionContext, input: ConstantQueryStringInput): HttpRequestBuilder {
+internal class ConstantQueryStringOperationSerializer(): HttpSerialize<ConstantQueryStringRequest> {
+    override suspend fun serialize(context: ExecutionContext, input: ConstantQueryStringRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.GET
 
@@ -776,7 +779,7 @@ internal class SmokeTestOperationDeserializer(): HttpDeserialize<SmokeTestRespon
     }
 
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): SmokeTestResponse {
-        val builder = SmokeTestResponse.dslBuilder()
+        val builder = SmokeTestResponse.builder()
 
         builder.intHeader = response.headers["X-Header2"]?.toInt()
         builder.strHeader = response.headers["X-Header1"]
@@ -903,7 +906,7 @@ internal class Nested3DocumentDeserializer {
     }
 
     suspend fun deserialize(deserializer: Deserializer): Nested3 {
-        val builder = Nested3.dslBuilder()
+        val builder = Nested3.builder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
                 when (findNextFieldIndex()) {

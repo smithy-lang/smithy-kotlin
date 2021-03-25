@@ -16,6 +16,7 @@ kotlin {
                 api(project(":client-runtime:utils"))
                 // exposes: service+middleware
                 api(project(":client-runtime:io"))
+                implementation(project(":client-runtime:logging"))
             }
         }
 

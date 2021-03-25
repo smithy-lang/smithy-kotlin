@@ -8,14 +8,16 @@ package software.aws.clientrt.http.operation
 import software.aws.clientrt.client.ClientOptionsBuilder
 import software.aws.clientrt.client.ExecutionContext
 import software.aws.clientrt.client.SdkClientOption
-import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.response.HttpCall
+import software.aws.clientrt.logging.Logger
 import software.aws.clientrt.util.AttributeKey
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
+import software.aws.clientrt.util.get
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
  */
-@InternalAPI
+@InternalApi
 open class HttpOperationContext {
 
     companion object {
@@ -25,15 +27,20 @@ open class HttpOperationContext {
         val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("ExpectedHttpStatus")
 
         /**
-         * Raw HTTP response
-         */
-        val HttpResponse: AttributeKey<HttpResponse> = AttributeKey("HttpResponse")
-
-        /**
          * A prefix to prepend the resolved hostname with.
          * See: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#endpoint-trait
          */
         val HostPrefix: AttributeKey<String> = AttributeKey("HostPrefix")
+
+        /**
+         * The HTTP calls made for this operation (this may be > 1 if for example retries are involved)
+         */
+        val HttpCallList: AttributeKey<List<HttpCall>> = AttributeKey("HttpCallList")
+
+        /**
+         * The logging instance for a single operation. This is guaranteed to exist.
+         */
+        val Logger: AttributeKey<Logger> = AttributeKey("Logger")
 
         /**
          * Build this operation into an HTTP [ExecutionContext]
@@ -67,3 +74,9 @@ open class HttpOperationContext {
         var hostPrefix: String? by option(HostPrefix)
     }
 }
+
+/**
+ * Get the operation logger from the context
+ */
+val ExecutionContext.logger: Logger
+    get() = this[HttpOperationContext.Logger]

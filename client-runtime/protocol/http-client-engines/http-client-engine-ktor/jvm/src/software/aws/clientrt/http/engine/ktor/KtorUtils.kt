@@ -18,7 +18,7 @@ import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
-internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
+internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()
     builder.method = HttpMethod.parse(this.method.name)
     val sdkUrl = this.url
@@ -26,7 +26,7 @@ internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     builder.url {
         protocol = URLProtocol(sdkUrl.scheme.protocolName.toLowerCase(), sdkUrl.scheme.defaultPort)
         host = sdkUrl.host
-        port = sdkUrl.port ?: DEFAULT_PORT
+        port = sdkUrl.port
         encodedPath = sdkUrl.path.encodeURLPath()
         if (!sdkUrl.parameters.isEmpty()) {
             sdkUrl.parameters.entries().forEach { (name, values) ->
@@ -47,6 +47,8 @@ internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder {
 
     return builder
 }
+
+internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder = build().toKtorRequestBuilder()
 
 // wrapper around ktor headers that implements expected SDK interface for Headers
 internal class KtorHeaders(private val headers: Headers) : software.aws.clientrt.http.Headers {
@@ -114,12 +116,10 @@ internal class KtorHttpBody(channel: ByteReadChannel, onClose: (() -> Unit)? = n
 }
 
 // convert ktor Http response to an (SDK) Http response
-fun HttpResponse.toSdkHttpResponse(originalRequest: HttpRequest): SdkHttpResponse {
-    val response = SdkHttpResponse(
-        HttpStatusCode.fromValue(this.status.value),
-        KtorHeaders(this.headers),
-        KtorHttpBody(this.content),
-        originalRequest
+fun HttpResponse.toSdkHttpResponse(): SdkHttpResponse {
+    return SdkHttpResponse(
+        HttpStatusCode.fromValue(status.value),
+        KtorHeaders(headers),
+        KtorHttpBody(content)
     )
-    return response
 }

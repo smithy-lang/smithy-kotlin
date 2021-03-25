@@ -5,7 +5,7 @@
 package software.aws.clientrt.http
 
 import software.aws.clientrt.http.util.encodeUrlPath
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
@@ -24,7 +24,7 @@ data class Url(
     val host: String,
     val port: Int = scheme.defaultPort,
     val path: String = "",
-    val parameters: QueryParameters? = null,
+    val parameters: QueryParameters = QueryParameters.Empty,
     val fragment: String? = null,
     val userInfo: UserInfo? = null,
     val forceQuery: Boolean = false
@@ -63,7 +63,7 @@ data class Url(
      * Get the full encoded path including query parameters and fragment
      */
     public val encodedPath: String
-        get() = encodePath(path, parameters?.entries(), fragment, forceQuery)
+        get() = encodePath(path, parameters.entries(), fragment, forceQuery)
 }
 
 // get the full encoded URL path component e.g. `/path/foo/bar?x=1&y=2#fragment`
@@ -117,11 +117,14 @@ class UrlBuilder {
         host,
         port ?: scheme.defaultPort,
         path,
-        if (parameters.isEmpty()) null else parameters.build(),
+        if (parameters.isEmpty()) QueryParameters.Empty else parameters.build(),
         fragment,
         userInfo,
         forceQuery
     )
+
+    override fun toString(): String =
+        "UrlBuilder(scheme=$scheme, host='$host', port=$port, path='$path', parameters=$parameters, fragment=$fragment, userInfo=$userInfo, forceQuery=$forceQuery)"
 }
 
 fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters.apply(block)
@@ -130,6 +133,6 @@ fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters
 // capabilities to bootstrap this
 internal expect fun platformUrlParse(url: String): Url
 
-@InternalAPI
+@InternalApi
 val UrlBuilder.encodedPath: String
     get() = encodePath(path, parameters.entries(), fragment, forceQuery)

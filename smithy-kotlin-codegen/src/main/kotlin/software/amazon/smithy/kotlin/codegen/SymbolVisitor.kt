@@ -104,6 +104,16 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         // Mutable collection type
         const val MUTABLE_COLLECTION_FUNCTION: String = "mutableCollectionType"
         const val IMMUTABLE_COLLECTION_FUNCTION: String = "immutableCollectionType"
+
+        /**
+         * Determines if a new Kotlin type is generated for a given shape. Generally only structures, unions, and enums
+         * result in a type being generated. Strings, ints, etc are mapped to builtins
+         */
+        fun isTypeGeneratedForShape(shape: Shape): Boolean = when {
+            // pretty much anything we visit in CodegenVisitor (we don't care about service shape here though)
+            shape.isEnum || shape.isStructureShape || shape.isUnionShape -> true
+            else -> false
+        }
     }
 
     override fun toSymbol(shape: Shape): Symbol {
@@ -184,17 +194,20 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         if (depth > 1) return
         members.forEach {
             val memberSymbol = toSymbol(it)
-            val ref = SymbolReference.builder()
-                .symbol(memberSymbol)
-                .options(SymbolReference.ContextOption.DECLARE)
-                .build()
-            builder.addReference(ref)
+            builder.addReference(memberSymbol, SymbolReference.ContextOption.DECLARE)
 
-            val targetShape = model.expectShape(it.target)
-            if (targetShape is CollectionShape) {
-                val targetSymbol = toSymbol(targetShape)
-                targetSymbol.references.forEach { builder.addReference(it) }
+            when (model.expectShape(it.target)) {
+                // collections and maps may have a value type that needs a reference
+                is CollectionShape, is MapShape -> addSymbolReferences(memberSymbol, builder)
             }
+        }
+    }
+
+    private fun addSymbolReferences(from: Symbol, to: Symbol.Builder) {
+        if (from.references.isEmpty()) return
+        from.references.forEach {
+            addSymbolReferences(it.symbol, to)
+            to.addReference(it)
         }
     }
 

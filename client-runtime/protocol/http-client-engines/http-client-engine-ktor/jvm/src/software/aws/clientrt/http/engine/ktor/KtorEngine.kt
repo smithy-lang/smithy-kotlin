@@ -17,8 +17,10 @@ import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
-import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequest
+import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.logging.*
+import software.aws.clientrt.time.Instant
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
@@ -32,15 +34,15 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     }
     private val logger = Logger.getLogger<KtorEngine>()
 
-    override suspend fun roundTrip(requestBuilder: HttpRequestBuilder): SdkHttpResponse {
+    override suspend fun roundTrip(request: HttpRequest): HttpCall {
         val callContext = coroutineContext
 
-        val respChannel = Channel<SdkHttpResponse>(Channel.RENDEZVOUS)
+        val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 
         // run the request in another coroutine to allow streaming body to be handled
         GlobalScope.launch(callContext + Dispatchers.IO) {
             try {
-                execute(callContext, requestBuilder, respChannel)
+                execute(callContext, request, respChannel)
             } catch (ex: Exception) {
                 // signal the HTTP response isn't coming
                 respChannel.close(ex)
@@ -61,12 +63,14 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
 
     private suspend fun execute(
         callContext: CoroutineContext,
-        sdkBuilder: HttpRequestBuilder,
-        channel: SendChannel<SdkHttpResponse>
+        sdkRequest: HttpRequest,
+        channel: SendChannel<HttpCall>
     ) {
-        val builder = KtorRequestAdapter(sdkBuilder, callContext).toBuilder()
+        val builder = KtorRequestAdapter(sdkRequest, callContext).toBuilder()
         val waiter = Waiter()
+        val reqTime = Instant.now()
         client.request<HttpStatement>(builder).execute { httpResp ->
+            val respTime = Instant.now()
             // we have a lifetime problem here...the stream (and HttpResponse instance) are only valid
             // until the end of this block. We don't know if the consumer wants to read the content fully or
             // stream it. We need to wait until the entire content has been read before leaving the block and
@@ -83,11 +87,11 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
                 HttpStatusCode.fromValue(httpResp.status.value),
                 headers,
                 body,
-                sdkBuilder.build()
             )
 
             logger.trace("signalling response")
-            channel.send(resp)
+            val call = HttpCall(sdkRequest, resp, reqTime, respTime)
+            channel.send(call)
 
             logger.trace("waiting on body to be consumed")
             // wait for the receiving end to finish with the HTTP body

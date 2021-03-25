@@ -56,6 +56,10 @@ interface Deserializer {
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.
      *
+     * NOTE: A [FieldIterator] MUST be driven to completion by calling [FieldIterator.findNextFieldIndex] until
+     * `null` is returned. All field values must be consumed either by deserializing appropriately or skipping
+     * the field with [FieldIterator.skipValue].
+     *
      * @param descriptor SdkObjectDescriptor the structure descriptor
      */
     suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
@@ -64,6 +68,9 @@ interface Deserializer {
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
      * the deserialization process of the list to completion.
      *
+     * NOTE: An [ElementIterator] MUST be driven to completion by calling [ElementIterator.hasNextElement] until
+     * `false` is returned. All elements must be consumed by deserializing appropriately.
+     *
      * @param descriptor SdkFieldDescriptor the structure descriptor
      */
     suspend fun deserializeList(descriptor: SdkFieldDescriptor): ElementIterator
@@ -71,6 +78,9 @@ interface Deserializer {
     /**
      * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
      * the deserialization process of the map to completion.
+     *
+     * NOTE: An [EntryIterator] MUST be driven to completion by calling [EntryIterator.hasNextEntry] until
+     * `false` is returned. All entries must be consumed by deserializing appropriately.
      *
      * @param descriptor SdkFieldDescriptor the structure descriptor
      */
