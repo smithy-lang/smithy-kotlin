@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape

@@ -17,7 +17,6 @@ rootProject.name = "smithy-kotlin"
 enableFeaturePreview("GRADLE_METADATA")
 
 include(":smithy-kotlin-codegen")
-include(":smithy-kotlin-codegen-test")
 
 include(":client-runtime")
 include(":client-runtime:logging")
@@ -44,9 +43,4 @@ if (System.getProperties().containsKey("androidEmulatorTests")) {
     // at target API levels
     include(":android-test")
 }
-
-// for now include the POC project
-include(":example")
-project(":example").projectDir = file("./design/example")
-include(":example:mock-server")
 

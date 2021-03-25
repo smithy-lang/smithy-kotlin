@@ -96,9 +96,9 @@ class StructureGenerator(
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
             write("@JvmStatic")
-            write("fun builder(): Builder = BuilderImpl()")
+            write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
             write("")
-            write("fun dslBuilder(): DslBuilder = BuilderImpl()")
+            write("fun builder(): DslBuilder = BuilderImpl()")
             write("")
             write("operator fun invoke(block: DslBuilder.() -> #Q): #class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
             write("")
@@ -225,12 +225,13 @@ class StructureGenerator(
 
     private fun renderJavaBuilderInterface() {
         writer.write("")
-            .withBlock("interface Builder {", "}") {
+            .withBlock("interface FluentBuilder {", "}") {
                 write("fun build(): #class.name:L")
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
-                    write("fun #1L(#1L: #2T): Builder", memberName, memberSymbol)
+                    writer.renderMemberDocumentation(model, member)
+                    write("fun #1L(#1L: #2T): FluentBuilder", memberName, memberSymbol)
                 }
             }
     }
@@ -247,6 +248,7 @@ class StructureGenerator(
                         targetShape.isStructureShape -> structMembers.add(member)
                     }
 
+                    writer.renderMemberDocumentation(model, member)
                     write("var #L: #P", memberName, memberSymbol)
                 }
 
@@ -254,6 +256,7 @@ class StructureGenerator(
                 write("fun build(): #class.name:L")
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
+                    writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
                     openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
                         .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")
@@ -263,7 +266,7 @@ class StructureGenerator(
 
     private fun renderBuilderImpl() {
         writer.write("")
-            .withBlock("private class BuilderImpl() : Builder, DslBuilder {", "}") {
+            .withBlock("private class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
                 // override DSL properties
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
@@ -288,7 +291,7 @@ class StructureGenerator(
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
-                    write("override fun #1L(#1L: #2T): Builder = apply { this.#1L = #1L }", memberName, memberSymbol)
+                    write("override fun #1L(#1L: #2T): FluentBuilder = apply { this.#1L = #1L }", memberName, memberSymbol)
                 }
             }
     }

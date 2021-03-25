@@ -30,7 +30,6 @@ interface HttpClientFeatureFactory<TConfig, TFeature : Feature> {
  * A feature is an interceptor/middleware component that can self configure itself
  * for an operation. This allows the component to tap into whichever part of the request or response
  * lifecycle phase it needs to
- *
  */
 interface Feature {
     /**

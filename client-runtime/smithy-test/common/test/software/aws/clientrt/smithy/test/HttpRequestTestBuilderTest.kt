@@ -7,7 +7,7 @@ package software.aws.clientrt.smithy.test
 import io.kotest.matchers.string.shouldContain
 import software.aws.clientrt.http.HttpMethod
 import software.aws.clientrt.http.content.ByteArrayContent
-import software.aws.clientrt.http.request.HttpRequestBuilder
+import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.headers
 import kotlin.test.Test
 import kotlin.test.assertFails
@@ -22,7 +22,7 @@ class HttpRequestTestBuilderTest {
                     method = HttpMethod.POST
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val builder = HttpRequest {
                         method = HttpMethod.GET
                     }
                     mockEngine.roundTrip(builder)
@@ -41,7 +41,7 @@ class HttpRequestTestBuilderTest {
                     uri = "/foo"
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val builder = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/bar"
                     }
@@ -61,13 +61,13 @@ class HttpRequestTestBuilderTest {
                 uri = "/foo/2019-12-16T23%3A48%3A18Z"
             }
             operation { mockEngine ->
-                val builder = HttpRequestBuilder().apply {
+                val request = HttpRequest {
                     method = HttpMethod.POST
                     // serializers don't need to worry about URL encoding, that is the engines job (or the wrapper
                     // depending on the engine)
                     url.path = "/foo/2019-12-16T23:48:18Z"
                 }
-                mockEngine.roundTrip(builder)
+                mockEngine.roundTrip(request)
             }
         }
     }
@@ -82,13 +82,13 @@ class HttpRequestTestBuilderTest {
                     queryParams = listOf("baz" to "quux", "Hi" to "Hello%20there")
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/foo"
                         url.parameters.append("baz", "quux")
                         url.parameters.append("Hi", "Hello")
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -106,14 +106,14 @@ class HttpRequestTestBuilderTest {
                     forbiddenQueryParams = listOf("foobar")
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/foo"
                         url.parameters.append("baz", "quux")
                         url.parameters.append("Hi", "Hello there")
                         url.parameters.append("foobar", "i am forbidden")
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -132,14 +132,14 @@ class HttpRequestTestBuilderTest {
                     requiredQueryParams = listOf("requiredQuery")
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/foo"
                         url.parameters.append("baz", "quux")
                         url.parameters.append("Hi", "Hello there")
                         url.parameters.append("foobar2", "i am not forbidden")
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -162,7 +162,7 @@ class HttpRequestTestBuilderTest {
                     )
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/foo"
                         url.parameters.append("baz", "quux")
@@ -174,7 +174,7 @@ class HttpRequestTestBuilderTest {
                             append("k1", "v1")
                         }
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -194,7 +194,7 @@ class HttpRequestTestBuilderTest {
                     )
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/foo"
                         headers {
@@ -202,7 +202,7 @@ class HttpRequestTestBuilderTest {
                             appendAll("k2", listOf("v3", "v4"))
                         }
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -226,7 +226,7 @@ class HttpRequestTestBuilderTest {
                     forbiddenHeaders = listOf("forbiddenHeader")
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/foo"
                         url.parameters.append("baz", "quux")
@@ -240,7 +240,7 @@ class HttpRequestTestBuilderTest {
                             append("forbiddenHeader", "i am forbidden")
                         }
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -265,7 +265,7 @@ class HttpRequestTestBuilderTest {
                     requiredHeaders = listOf("requiredHeader")
                 }
                 operation { mockEngine ->
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         method = HttpMethod.POST
                         url.path = "/foo"
                         url.parameters.append("baz", "quux")
@@ -279,7 +279,7 @@ class HttpRequestTestBuilderTest {
                             append("forbiddenHeader2", "i am not forbidden")
                         }
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -295,9 +295,9 @@ class HttpRequestTestBuilderTest {
                 }
                 operation { mockEngine ->
                     // no actual body should not make it to our assertEquals but it should still fail (invalid test setup)
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -315,13 +315,33 @@ class HttpRequestTestBuilderTest {
                 }
                 operation { mockEngine ->
                     // no actual body should not make it to our assertEquals but it should still fail (invalid test setup)
-                    val builder = HttpRequestBuilder().apply {
+                    val request = HttpRequest {
                         body = ByteArrayContent("do not pass go".encodeToByteArray())
                     }
-                    mockEngine.roundTrip(builder)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
         ex.message.shouldContain("actual bytes read does not match expected")
+    }
+
+    @Test
+    fun itAssertsHostWhenSet() {
+        val ex = assertFails {
+            httpRequestTest {
+                expected {
+                    method = HttpMethod.POST
+                    resolvedHost = "foo.example.com"
+                }
+                operation { mockEngine ->
+                    val request = HttpRequest {
+                        method = HttpMethod.POST
+                        url.host = "bar.example.com"
+                    }
+                    mockEngine.roundTrip(request)
+                }
+            }
+        }
+        ex.message.shouldContain("expected host: `foo.example.com`; got: `bar.example.com`")
     }
 }

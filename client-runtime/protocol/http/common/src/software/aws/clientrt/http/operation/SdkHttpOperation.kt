@@ -6,18 +6,22 @@
 package software.aws.clientrt.http.operation
 
 import software.aws.clientrt.client.ExecutionContext
+import software.aws.clientrt.client.SdkClientOption
 import software.aws.clientrt.http.Feature
 import software.aws.clientrt.http.FeatureKey
 import software.aws.clientrt.http.HttpClientFeatureFactory
 import software.aws.clientrt.http.HttpHandler
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.logging.Logger
+import software.aws.clientrt.logging.withContext
+import software.aws.clientrt.util.InternalApi
+import software.aws.clientrt.util.get
 
 /**
  * A (Smithy) HTTP based operation.
  * @property execution Phases used to execute the operation request and get a response instance
  * @property context An [ExecutionContext] instance scoped to this operation
  */
-@InternalAPI
+@InternalApi
 class SdkHttpOperation<I, O>(
     val execution: SdkOperationExecution<I, O>,
     val context: ExecutionContext,
@@ -26,6 +30,15 @@ class SdkHttpOperation<I, O>(
 ) {
 
     private val features: MutableMap<FeatureKey<*>, Feature> = mutableMapOf()
+    private val logger: Logger = Logger.getLogger<SdkHttpOperation<I, O>>()
+
+    init {
+        // TODO - probably log our own version of a request id to easily trace calls?
+        context[HttpOperationContext.Logger] = logger.withContext(
+            "service" to context[SdkClientOption.ServiceName],
+            "operation" to context[SdkClientOption.OperationName],
+        )
+    }
 
     /**
      * Install a specific [feature] and optionally [configure] it.
@@ -49,7 +62,7 @@ class SdkHttpOperation<I, O>(
 /**
  * Round trip an operation using the given [HttpHandler]
  */
-@InternalAPI
+@InternalApi
 suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
     httpHandler: HttpHandler,
     input: I,
@@ -61,7 +74,7 @@ suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
  * The response and any resources will remain open until the end of the [block]. This facilitates streaming
  * output responses where the underlying raw HTTP connection needs to remain open
  */
-@InternalAPI
+@InternalApi
 suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     httpHandler: HttpHandler,
     input: I,
@@ -69,16 +82,16 @@ suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
 ): R {
     val handler = execution.decorate(httpHandler, serializer, deserializer)
     val request = OperationRequest(context, input)
-    val output = handler.call(request)
     try {
+        val output = handler.call(request)
         return block(output)
     } finally {
-        // pull the raw response out of the context and cleanup any resources
-        val httpResp = context.getOrNull(HttpOperationContext.HttpResponse)?.complete()
+        // pull the raw response(s) out of the context and cleanup any resources
+        val httpResp = context.getOrNull(HttpOperationContext.HttpCallList)?.forEach { it.response.complete() }
     }
 }
 
-@InternalAPI
+@InternalApi
 class SdkHttpOperationBuilder<I, O> {
     var serializer: HttpSerialize<I>? = null
     var deserializer: HttpDeserialize<O>? = null

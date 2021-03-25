@@ -4,10 +4,7 @@
  */
 package software.aws.clientrt.http.request
 
-import software.aws.clientrt.http.HeadersBuilder
-import software.aws.clientrt.http.HttpBody
-import software.aws.clientrt.http.HttpMethod
-import software.aws.clientrt.http.UrlBuilder
+import software.aws.clientrt.http.*
 
 /**
  * Used to construct an HTTP request
@@ -33,7 +30,11 @@ class HttpRequestBuilder {
      */
     var body: HttpBody = HttpBody.Empty
 
-    fun build(): HttpRequest = HttpRequest(method, url.build(), headers.build(), body)
+    fun build(): HttpRequest = HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)
+
+    override fun toString(): String = buildString {
+        append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body)")
+    }
 }
 
 // convenience extensions

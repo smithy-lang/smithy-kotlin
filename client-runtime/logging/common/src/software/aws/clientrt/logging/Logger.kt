@@ -5,12 +5,12 @@
 
 package software.aws.clientrt.logging
 
-import software.aws.clientrt.util.InternalAPI
+import software.aws.clientrt.util.InternalApi
 
 /**
  * Internal logging facade
  */
-@InternalAPI
+@InternalApi
 public interface Logger {
     companion object {
         /**

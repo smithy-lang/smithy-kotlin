@@ -84,9 +84,9 @@ class StructureGeneratorTest {
         val expected = """
             companion object {
                 @JvmStatic
-                fun builder(): Builder = BuilderImpl()
+                fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-                fun dslBuilder(): DslBuilder = BuilderImpl()
+                fun builder(): DslBuilder = BuilderImpl()
 
                 operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
                 
@@ -158,13 +158,16 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a java builder`() {
         val expected = """
-            interface Builder {
+            interface FluentBuilder {
                 fun build(): MyStruct
-                fun bar(bar: Int): Builder
-                fun baz(baz: Int): Builder
-                fun byteValue(byteValue: Byte): Builder
-                fun foo(foo: String): Builder
-                fun quux(quux: Qux): Builder
+                /**
+                 * This *is* documentation about the member.
+                 */
+                fun bar(bar: Int): FluentBuilder
+                fun baz(baz: Int): FluentBuilder
+                fun byteValue(byteValue: Byte): FluentBuilder
+                fun foo(foo: String): FluentBuilder
+                fun quux(quux: Qux): FluentBuilder
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -174,6 +177,9 @@ class StructureGeneratorTest {
     fun `it renders a dsl builder`() {
         val expected = """
             interface DslBuilder {
+                /**
+                 * This *is* documentation about the member.
+                 */
                 var bar: Int
                 var baz: Int?
                 var byteValue: Byte?
@@ -181,6 +187,9 @@ class StructureGeneratorTest {
                 var quux: Qux?
         
                 fun build(): MyStruct
+                /**
+                 * construct an [test.model.Qux] inside the given [block]
+                 */
                 fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
                     this.quux = Qux.invoke(block)
                 }
@@ -192,7 +201,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a builder impl`() {
         val expected = """
-            private class BuilderImpl() : Builder, DslBuilder {
+            private class BuilderImpl() : FluentBuilder, DslBuilder {
                 override var bar: Int = 0
                 override var baz: Int? = null
                 override var byteValue: Byte? = null
@@ -208,11 +217,11 @@ class StructureGeneratorTest {
                 }
         
                 override fun build(): MyStruct = MyStruct(this)
-                override fun bar(bar: Int): Builder = apply { this.bar = bar }
-                override fun baz(baz: Int): Builder = apply { this.baz = baz }
-                override fun byteValue(byteValue: Byte): Builder = apply { this.byteValue = byteValue }
-                override fun foo(foo: String): Builder = apply { this.foo = foo }
-                override fun quux(quux: Qux): Builder = apply { this.quux = quux }
+                override fun bar(bar: Int): FluentBuilder = apply { this.bar = bar }
+                override fun baz(baz: Int): FluentBuilder = apply { this.baz = baz }
+                override fun byteValue(byteValue: Byte): FluentBuilder = apply { this.byteValue = byteValue }
+                override fun foo(foo: String): FluentBuilder = apply { this.foo = foo }
+                override fun quux(quux: Qux): FluentBuilder = apply { this.quux = quux }
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -265,9 +274,9 @@ class StructureGeneratorTest {
         contents.shouldContainOnlyOnceWithDiff(expectedDecl)
 
         val expectedBuilderInterface = """
-            interface Builder {
+            interface FluentBuilder {
                 fun build(): MyStruct
-                fun foo(foo: InstanceSize): Builder
+                fun foo(foo: InstanceSize): FluentBuilder
             }
         """.formatForTest()
         contents.shouldContainOnlyOnceWithDiff(expectedBuilderInterface)
@@ -282,7 +291,7 @@ class StructureGeneratorTest {
         contents.shouldContainOnlyOnceWithDiff(expectedDslBuilderInterface)
 
         val expectedBuilderImpl = """
-            private class BuilderImpl() : Builder, DslBuilder {
+            private class BuilderImpl() : FluentBuilder, DslBuilder {
                 override var foo: InstanceSize? = null
         
                 constructor(x: MyStruct) : this() {
@@ -290,7 +299,7 @@ class StructureGeneratorTest {
                 }
         
                 override fun build(): MyStruct = MyStruct(this)
-                override fun foo(foo: InstanceSize): Builder = apply { this.foo = foo }
+                override fun foo(foo: InstanceSize): FluentBuilder = apply { this.foo = foo }
             }
         """.formatForTest()
         contents.shouldContainOnlyOnceWithDiff(expectedBuilderImpl)
@@ -303,59 +312,45 @@ class StructureGeneratorTest {
 
     @Test
     fun `it renders member docs`() {
-        commonTestContents.shouldContainOnlyOnceWithDiff("This *is* documentation about the member.")
+        commonTestContents.shouldContainWithDiff("This *is* documentation about the member.")
     }
 
     @Test
     fun `it handles shape and member docs`() {
+        val model = """
+            namespace com.test
+            
+            structure Foo {
+                @documentation("Member documentation")
+                baz: Baz,
+
+                bar: Baz,
+
+                qux: String
+            }
+
+            @documentation("Shape documentation")
+            string Baz
+        """.asSmithyModel()
+
         /*
-        The effective documentation trait of a shape is resolved using the following process:
-        1. Use the documentation trait of the shape, if present.
-        2. If the shape is a member, then use the documentation trait of the shape targeted by the member, if present.
+            The effective documentation trait of a shape is resolved using the following process:
+            1. Use the documentation trait of the shape, if present.
+            2. If the shape is a member, then use the documentation trait of the shape targeted by the member, if present.
 
-        For example, given the following model,
-        structure Foo {
-            @documentation("Member documentation")
-            baz: Baz,
-
-            bar: Baz,
-
-            qux: String,
-        }
-
-        @documentation("Shape documentation")
-        string Baz
-        ```
-
-        the effective documentation of Foo$baz resolves to "Member documentation", Foo$bar resolves to "Shape documentation",
-        Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
-
-         */
-        val stringShape = StringShape.builder().id("com.test#Baz").addTrait(DocumentationTrait("Shape documentation")).build()
-        val member1 = MemberShape.builder().id("com.test#Foo\$bar").target("com.test#Baz").build()
-        val member2 = MemberShape.builder().id("com.test#Foo\$baz").target("com.test#Baz").addTrait(DocumentationTrait("Member documentation")).build()
-        val member3 = MemberShape.builder().id("com.test#Foo\$qux").target("smithy.api#String").build()
-
-        val struct = StructureShape.builder()
-            .id("com.test#Foo")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(struct, member1, member2, member3, stringShape)
-            .assemble()
-            .unwrap()
+            the effective documentation of Foo$baz resolves to "Member documentation", Foo$bar resolves to "Shape documentation",
+            Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
+        */
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
+        val struct = model.expectShape<StructureShape>("com.test#Foo")
         val generator = StructureGenerator(model, provider, writer, struct)
         generator.render()
 
         val generated = writer.toString()
-        generated.shouldContainOnlyOnceWithDiff("Shape documentation")
-        generated.shouldContainOnlyOnceWithDiff("Member documentation")
+        generated.shouldContainWithDiff("Shape documentation")
+        generated.shouldContainWithDiff("Member documentation")
     }
 
     @Test
