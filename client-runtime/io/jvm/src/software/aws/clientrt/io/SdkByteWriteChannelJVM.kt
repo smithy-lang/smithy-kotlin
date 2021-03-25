@@ -6,7 +6,7 @@
 
 package software.aws.clientrt.io
 
-public actual interface SdkByteWriteChannel {
+public actual interface SdkByteWriteChannel : Closeable {
     /**
      * Returns the number of bytes that can be written without suspension. Write operations do not
      * suspend and return immediately when this number is at least the number of bytes requested for
@@ -47,11 +47,13 @@ public actual interface SdkByteWriteChannel {
      * Closes this channel with an optional exceptional [cause]. All pending bytes are flushed.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      */
-    actual suspend fun close(cause: Throwable?): Boolean
+    actual fun close(cause: Throwable?): Boolean
 
     /**
      * Flushes all pending write bytes making them available for read.
      * Thread safe and can be invoked at any time. It does nothing when invoked on a closed channel.
      */
     actual fun flush()
+
+    override fun close() { close(null) }
 }

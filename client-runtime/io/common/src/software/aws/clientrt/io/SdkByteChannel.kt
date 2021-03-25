@@ -17,7 +17,11 @@ import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
  * cannot be invoked concurrently with themselves. Exceptions are [close] and [flush] which can be invoked
  * concurrently with other operations including between themselves at any time.
  */
-public interface SdkByteChannel : SdkByteReadChannel, SdkByteWriteChannel
+public interface SdkByteChannel : SdkByteReadChannel, SdkByteWriteChannel {
+    override fun close() {
+        (this as SdkByteWriteChannel).close()
+    }
+}
 
 /**
  * Create a buffered channel for asynchronous reading and writing of bytes

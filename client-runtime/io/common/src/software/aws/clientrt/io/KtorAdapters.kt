@@ -11,13 +11,22 @@ import io.ktor.utils.io.ByteChannel as KtorByteChannel
 import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel as KtorByteWriteChannel
 
+// marker interfaces used internally for accessing the underlying ktor impl
+internal interface IsKtorReadChannel {
+    val chan: KtorByteReadChannel
+}
+
+internal interface IsKtorWriteChannel {
+    val chan: KtorByteWriteChannel
+}
+
 /**
  * Wrap ktor's ByteReadChannel as our own. This implements the common API of [SdkByteReadChannel]. Only
  * platform specific differences in interfaces need be implemented in inheritors.
  */
 internal abstract class KtorReadChannelAdapterBase(
-    val chan: KtorByteReadChannel
-) : SdkByteReadChannel {
+    override val chan: KtorByteReadChannel
+) : SdkByteReadChannel, IsKtorReadChannel {
 
     override val availableForRead: Int
         get() = chan.availableForRead
@@ -50,8 +59,8 @@ internal abstract class KtorReadChannelAdapterBase(
  * platform specific differences in interfaces need be implemented in inheritors.
  */
 internal abstract class KtorWriteChannelAdapterBase(
-    val chan: KtorByteWriteChannel
-) : SdkByteWriteChannel {
+    override val chan: KtorByteWriteChannel
+) : SdkByteWriteChannel, IsKtorWriteChannel {
     override val availableForWrite: Int
         get() = chan.availableForWrite
 
@@ -72,7 +81,7 @@ internal abstract class KtorWriteChannelAdapterBase(
         return chan.writeAvailable(src, offset, length)
     }
 
-    override suspend fun close(cause: Throwable?): Boolean {
+    override fun close(cause: Throwable?): Boolean {
         return chan.close(cause)
     }
 
@@ -82,17 +91,19 @@ internal abstract class KtorWriteChannelAdapterBase(
 }
 
 /**
- * Wrap ktor's ByteChannel as our own. This implements the common API of [SdkByteChannel]. Only
- * platform specific differences in interfaces need be implemented in inheritors.
+ * Wrap ktor's ByteChannel as our own
  */
-
 internal class KtorByteChannelAdapter(
-    val chan: KtorByteChannel
+    override val chan: KtorByteChannel
 ) : SdkByteChannel,
     SdkByteReadChannel by KtorReadChannelAdapter(chan),
-    SdkByteWriteChannel by KtorWriteChannelAdapter(chan) {
+    SdkByteWriteChannel by KtorWriteChannelAdapter(chan),
+    IsKtorWriteChannel,
+    IsKtorReadChannel {
     override val isClosedForWrite: Boolean
         get() = chan.isClosedForWrite
+
+    override fun close() { chan.close(null) }
 }
 
 internal expect class KtorReadChannelAdapter(chan: KtorByteReadChannel) : SdkByteReadChannel

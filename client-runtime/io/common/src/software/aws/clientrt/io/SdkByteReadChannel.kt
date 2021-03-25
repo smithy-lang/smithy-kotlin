@@ -4,11 +4,13 @@
  */
 package software.aws.clientrt.io
 
+import io.ktor.utils.io.*
+
 /**
  * Supplies an asynchronous stream of bytes. Use this interface to read data from wherever it’s located:
  * from the network, storage, or a buffer in memory. This is a **single-reader channel**.
  */
-expect interface SdkByteReadChannel {
+expect interface SdkByteReadChannel : Closeable {
     /**
      * Returns number of bytes that can be read without suspension. Read operations do no suspend and
      * return immediately when this number is at least the number of bytes requested for read.
@@ -48,4 +50,31 @@ expect interface SdkByteReadChannel {
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      */
     fun cancel(cause: Throwable?): Boolean
+}
+
+/**
+ * Reads up to [limit] bytes from receiver channel and writes them to [dst] channel.
+ * Closes [dst] channel if fails to read or write with cause exception.
+ * @return a number of bytes copied
+ */
+public suspend fun SdkByteReadChannel.copyTo(dst: SdkByteWriteChannel, limit: Long = Long.MAX_VALUE): Long {
+    require(this !== dst)
+    if (limit == 0L) return 0L
+
+    // delegate to ktor-io if possible which may have further optimizations based on impl
+    if (this is IsKtorReadChannel && dst is IsKtorWriteChannel) {
+        return chan.copyTo(dst.chan)
+    }
+
+    TODO("not implemented")
+}
+
+private suspend fun SdkByteReadChannel.copyToImpl(dst: SdkByteWriteChannel, limit: Long): Long {
+    try {
+    } catch (t: Throwable) {
+        dst.close(t)
+        throw t
+    } finally {
+    }
+    TODO("not implemented")
 }

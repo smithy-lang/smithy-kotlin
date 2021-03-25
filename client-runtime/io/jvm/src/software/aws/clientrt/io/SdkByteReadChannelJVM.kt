@@ -13,7 +13,7 @@ import java.nio.ByteBuffer
  *
  * This interface is functionally equivalent to an asynchronous coroutine compatible [java.io.InputStream]
  */
-actual interface SdkByteReadChannel {
+actual interface SdkByteReadChannel : Closeable {
     /**
      * Returns number of bytes that can be read without suspension. Read operations do no suspend and return immediately when this number is at least the number of bytes requested for read.
      */
@@ -47,4 +47,6 @@ actual interface SdkByteReadChannel {
      * Close channel with optional cause cancellation
      */
     actual fun cancel(cause: Throwable?): Boolean
+
+    override fun close() { cancel(null) }
 }

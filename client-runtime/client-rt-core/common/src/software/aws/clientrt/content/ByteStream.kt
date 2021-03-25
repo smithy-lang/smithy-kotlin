@@ -56,7 +56,6 @@ suspend fun ByteStream.toByteArray(): ByteArray {
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
 
 fun ByteStream.cancel() {

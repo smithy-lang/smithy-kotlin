@@ -8,7 +8,7 @@ package software.aws.clientrt.io
 /**
  * A channel for writing a sequence of bytes asynchronously. This is a **single writer channel**.
  */
-public expect interface SdkByteWriteChannel {
+public expect interface SdkByteWriteChannel : Closeable {
 
     /**
      * Returns the number of bytes that can be written without suspension. Write operations do not
@@ -50,11 +50,18 @@ public expect interface SdkByteWriteChannel {
      * Closes this channel with an optional exceptional [cause]. All pending bytes are flushed.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      */
-    suspend fun close(cause: Throwable?): Boolean
+    fun close(cause: Throwable?): Boolean
 
     /**
      * Flushes all pending write bytes making them available for read.
      * Thread safe and can be invoked at any time. It does nothing when invoked on a closed channel.
      */
     fun flush(): Unit
+}
+
+/**
+ * Write the UTF-8 bytes of [str] fully to the channel
+ */
+public suspend fun SdkByteWriteChannel.writeUtf8(str: String) {
+    writeFully(str.encodeToByteArray())
 }
