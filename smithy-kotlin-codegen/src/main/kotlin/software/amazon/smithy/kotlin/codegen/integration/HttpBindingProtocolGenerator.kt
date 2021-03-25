@@ -902,7 +902,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .closeBlock("}")
             .write("builder.$memberName = map")
-            .closeBlock("}")
+            .closeBlock("} else {")
+            .indent()
+            .write("builder.$memberName = emptyMap()")
+            .dedent()
+            .write("}")
     }
 
     private fun renderExplicitHttpPayloadDeserializer(
