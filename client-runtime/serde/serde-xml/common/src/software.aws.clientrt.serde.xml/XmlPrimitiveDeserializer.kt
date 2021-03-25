@@ -12,35 +12,20 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
 
     private suspend fun <T> deserializeValue(transform: ((String) -> T)): T {
         if (reader.peek() is XmlToken.BeginElement) {
-            // In the case of flattened lists, we "fall" into the first node as there is no wrapper.
+            // In the case of flattened lists, we "fall" into the first member as there is no wrapper.
             // this conditional checks that case for the first element of the list.
             val wrapperToken = reader.takeNextAs<XmlToken.BeginElement>()
             if (wrapperToken.name.local != fieldDescriptor.generalName()) {
-                // Depending on flat/not-flat, may need to consume multiple start nodes
+                // Depending on flat/not-flat, may need to consume multiple start tokens
                 return deserializeValue(transform)
             }
         }
 
         val token = reader.takeNextAs<XmlToken.Text>()
 
-        val returnValue = token.value?.let { transform(it) }?.also {
-            reader.takeNextAs<XmlToken.EndElement>()
-        } ?: throw DeserializationException("Node specifies no or invalid value.")
-
-        if (fieldDescriptor.hasTrait<XmlMapName>()) {
-            // Optionally consume the entry wrapper
-            val mapTrait = fieldDescriptor.findTrait() ?: XmlMapName.DEFAULT
-            val nextToken = reader.peek()
-            if (nextToken is XmlToken.EndElement) {
-                val consumeEndToken = when (fieldDescriptor.hasTrait<Flattened>()) {
-                    true -> nextToken.name.local == fieldDescriptor.expectTrait<XmlSerialName>().name
-                    false -> nextToken.name.local == mapTrait.entry
-                }
-                if (consumeEndToken) reader.takeNextAs<XmlToken.EndElement>()
-            }
-        }
-
-        return returnValue
+        return token.value
+            ?.let { transform(it) }
+            ?.also<T> { reader.takeNextAs<XmlToken.EndElement>() } ?: throw DeserializationException("$token specifies no or invalid value.")
     }
 
     override suspend fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it as Byte") }
@@ -60,7 +45,10 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
     override suspend fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
     override suspend fun deserializeNull(): Nothing? {
-        reader.takeNextAs<XmlToken.EndElement>()
+        reader.nextToken() ?: throw DeserializationException("Unexpected end of stream")
+        reader.seek<XmlToken.EndElement>()
+        reader.nextToken() ?: throw DeserializationException("Unexpected end of stream")
+
         return null
     }
 }

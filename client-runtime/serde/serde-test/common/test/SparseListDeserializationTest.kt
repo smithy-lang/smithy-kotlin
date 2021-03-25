@@ -239,17 +239,13 @@ class SparseListDeserializationTest {
         val xmlPayload = """
             <GetFoo>
                 <sparseStructList>
-                    <element>
-                        <Greeting>
-                            <saying>boo</saying>
-                        </Greeting>
-                    </element>
-                    <element />                            
-                    <element>
-                        <Greeting>
-                            <saying>hoo</saying>
-                        </Greeting>
-                    </element>
+                    <member>
+                        <saying>boo</saying>    
+                    </member>
+                    <member />                            
+                    <member>                        
+                        <saying>hoo</saying>                        
+                    </member>
                 </sparseStructList>
             </GetFoo>
         """.trimIndent().encodeToByteArray()

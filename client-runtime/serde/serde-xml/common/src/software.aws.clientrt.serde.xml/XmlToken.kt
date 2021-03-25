@@ -86,6 +86,14 @@ sealed class XmlToken {
     }
 }
 
+// Determine if a given token signals end of (sub/full) document
+internal fun XmlToken?.isTerminal(minimumDepth: Int = 0) = when (this) {
+    null, XmlToken.EndDocument -> true
+    else -> depth < minimumDepth
+}
+
+internal fun XmlToken?.isNotTerminal(minimumDepth: Int = 0) = !this.isTerminal()
+
 // Return true if the passed in node is the beginning node, false otherwise.
 fun XmlToken?.terminates(beginToken: XmlToken?): Boolean {
     if (this == null || beginToken == null) return false

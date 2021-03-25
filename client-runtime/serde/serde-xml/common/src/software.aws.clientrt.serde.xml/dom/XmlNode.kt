@@ -90,7 +90,8 @@ internal suspend fun parseDom(reader: XmlStreamReader): XmlNode {
                 val curr = nodeStack.peek()
                 curr.text = token.value
             }
-            null, is XmlToken.EndDocument -> break@loop
+            null,
+            is XmlToken.EndDocument -> break@loop
         }
     }
 

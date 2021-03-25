@@ -72,27 +72,22 @@ data class XmlNamespace(val uri: String, val prefix: String? = null) : FieldTrai
 /**
  * Specifies a namespace that a field is encoded into for Xml nodes.
  */
-data class XmlSerialName(val name: String) : FieldTrait {
-    fun toQualifiedName(xmlNamespace: XmlNamespace? = null): XmlToken.QualifiedName =
-        when {
-            xmlNamespace != null -> {
-                val (nodeName, prefix) = name.parseNodeWithPrefix()
+data class XmlSerialName(val name: String) : FieldTrait
 
-                when (prefix) {
-                    xmlNamespace.prefix -> XmlToken.QualifiedName(
-                        nodeName,
-                        xmlNamespace.uri,
-                        xmlNamespace.prefix
-                    )
-                    else -> XmlToken.QualifiedName(name)
-                }
+// Generate a qualified name from a field descriptor.  Field descriptor must have trait XmlSerialName otherwise null is returned.
+fun SdkFieldDescriptor.toQualifiedName(xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()): XmlToken.QualifiedName? {
+    val (nodeName, descriptorPrefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: return null
+
+    return when {
+        xmlNamespace != null -> {
+            when (descriptorPrefix) {
+                xmlNamespace.prefix -> XmlToken.QualifiedName(nodeName, xmlNamespace.uri, xmlNamespace.prefix)
+                else -> XmlToken.QualifiedName(nodeName) // namespace doesn't match
             }
-            name.nodeHasPrefix() -> {
-                val (nodeName, prefix) = name.parseNodeWithPrefix()
-                XmlToken.QualifiedName(nodeName, null, prefix)
-            }
-            else -> XmlToken.QualifiedName(name)
         }
+        nodeName.nodeHasPrefix() -> XmlToken.QualifiedName(nodeName, null, descriptorPrefix)
+        else -> XmlToken.QualifiedName(nodeName, descriptorPrefix)
+    }
 }
 
 /**
@@ -117,11 +112,8 @@ fun String.parseNodeWithPrefix(): Pair<String, String?> =
 /**
  * Specifies that a field is encoded into an XML attribute and describes the XML.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlattribute-trait
- *
- * @param name the name of the attribute
- * @param namespace the namespace of the attribute, or null for none.
  */
-data class XmlAttribute(val name: String, val namespace: String? = null) : FieldTrait
+object XmlAttribute : FieldTrait
 
 /**
  * Provides the serialized name of the field.
@@ -135,3 +127,7 @@ internal fun SdkFieldDescriptor.generalName() = when {
     hasTrait<XmlMapName>() -> findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
     else -> expectTrait<XmlSerialName>().name
 }
+
+// Returns true if any fields directly associated to object descriptor are attributes
+internal val SdkObjectDescriptor.hasXmlAttributes: Boolean
+    get() = fields.any { it.hasTrait<XmlAttribute>() }

@@ -11,7 +11,6 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerStructTest {
-
     @Test
     fun `it handles basic structs with attribs`() = runSuspendTest {
         val payload = """
@@ -21,10 +20,7 @@ class XmlDeserializerStructTest {
                  ~ SPDX-License-Identifier: Apache-2.0.
                  -->
                 
-               <payload>
-                    <x value="1" />
-                    <y value="2" />
-               </payload>
+               <payload x="1" y="2" />
         """.trimIndent().encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
@@ -43,8 +39,8 @@ class XmlDeserializerStructTest {
                  ~ SPDX-License-Identifier: Apache-2.0.
                  -->
                 
-               <payload>
-                    <x xval="1" yval="2">nodeval</x>
+               <payload xval="1" yval="2">
+                    <x>nodeval</x>
                </payload>
         """.trimIndent().encodeToByteArray()
 
@@ -59,9 +55,9 @@ class XmlDeserializerStructTest {
     @Test
     fun itHandlesBasicStructsWithAttribsAndText() = runSuspendTest {
         val payload = """
-            <payload>
-                <x value="1">x1</x>
-                <y value="2" />
+            <payload xa="1" ya="2">
+                <x>x1</x>
+                <y/>
                 <z>true</z>
             </payload>
         """.encodeToByteArray()
@@ -83,9 +79,9 @@ class XmlDeserializerStructTest {
         var unknownFieldCount: Int = 0
 
         companion object {
-            val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("value"))
+            val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("xa"), XmlAttribute)
             val X_VALUE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
-            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"), XmlAttribute("value"))
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("ya"), XmlAttribute)
             val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("z"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("payload"))
@@ -138,16 +134,16 @@ class XmlDeserializerStructTest {
     fun itHandlesBasicStructsWithNullValues() = runSuspendTest {
         val payload1 = """
             <payload>
-                <x>1</x>
+                <x>a</x>
                 <y></y>
             </payload>
         """.encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload1)
-        val bst = SimpleStructClass.deserialize(deserializer)
+        val bst = SimpleStructOfStringsClass.deserialize(deserializer)
 
-        assertEquals(1, bst.x)
-        assertEquals(null, bst.y)
+        assertEquals("a", bst.x)
+        assertEquals("", bst.y)
 
         val payload2 = """
             <payload>
@@ -157,18 +153,17 @@ class XmlDeserializerStructTest {
         """.encodeToByteArray()
 
         val deserializer2 = XmlDeserializer(payload2)
-        val bst2 = SimpleStructClass.deserialize(deserializer2)
+        val bst2 = SimpleStructOfStringsClass.deserialize(deserializer2)
 
-        assertEquals(null, bst2.x)
-        assertEquals(2, bst2.y)
+        assertEquals("", bst2.x)
+        assertEquals("2", bst2.y)
     }
 
     @Test
     fun itEnumeratesUnknownStructFields() = runSuspendTest {
         val payload = """
-               <payload>
+               <payload z="strval">
                    <x>1</x>
-                   <z attribval="strval">unknown field</z>
                    <y>2</y>
                </payload>
            """.encodeToByteArray()
@@ -182,111 +177,307 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itDeserializesFieldsWithEscapedCharacters() = runSuspendTest {
+    fun itHandlesNestedXmlStructures() = runSuspendTest {
         val payload = """
-            <CityInfo>
-                <country>USA</country>
-                <name>&lt;Lake Forest&gt;</name>
-            </CityInfo>
-        """.encodeToByteArray()
+            <RecursiveShapesInputOutput>
+                <nested>
+                    <foo>Foo1</foo>
+                    <nested>
+                        <bar>Bar1</bar>
+                        <recursiveMember>
+                            <foo>Foo2</foo>
+                            <nested>
+                                <bar>Bar2</bar>
+                            </nested>
+                        </recursiveMember>
+                    </nested>
+                </nested>
+            </RecursiveShapesInputOutput>
+           """.encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
-        val cityInfo = CityInfoDocumentDeserializer().deserialize(deserializer)
+        val bst = RecursiveShapesOperationDeserializer().deserialize(deserializer)
 
-        assertEquals("USA", cityInfo.country)
-        assertEquals("<Lake Forest>", cityInfo.name)
+        println(bst.nested?.nested)
+    }
+}
+
+internal class RecursiveShapesOperationDeserializer {
+
+    companion object {
+        private val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("RecursiveShapesInputOutput"))
+            field(NESTED_DESCRIPTOR)
+        }
     }
 
-    class CityInfoDocumentDeserializer {
+    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutput {
+        val builder = RecursiveShapesInputOutput.dslBuilder()
 
-        companion object {
-            private val COUNTRY_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("country"))
-            private val NAME_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("name"))
-            private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                trait(XmlSerialName("CityInfo"))
-                field(COUNTRY_DESCRIPTOR)
-                field(NAME_DESCRIPTOR)
-            }
-        }
-
-        suspend fun deserialize(deserializer: Deserializer): CityInfo {
-            val builder = CityInfo.dslBuilder()
-            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
-                loop@while (true) {
-                    when (findNextFieldIndex()) {
-                        COUNTRY_DESCRIPTOR.index -> builder.country = deserializeString()
-                        NAME_DESCRIPTOR.index -> builder.name = deserializeString()
-                        null -> break@loop
-                        else -> skipValue()
-                    }
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    NESTED_DESCRIPTOR.index -> builder.nested = RecursiveShapesInputOutputNested1DocumentDeserializer().deserialize(deserializer)
+                    null -> break@loop
+                    else -> skipValue()
                 }
             }
-            return builder.build()
+        }
+
+        return builder.build()
+    }
+}
+
+internal class RecursiveShapesInputOutputNested1DocumentDeserializer {
+
+    companion object {
+        private val FOO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("foo"))
+        private val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            field(FOO_DESCRIPTOR)
+            field(NESTED_DESCRIPTOR)
         }
     }
 
-    class CityInfo private constructor(builder: BuilderImpl) {
-        val country: String? = builder.country
-        val name: String? = builder.name
-
-        companion object {
-            fun builder(): Builder = BuilderImpl()
-
-            fun dslBuilder(): DslBuilder = BuilderImpl()
-
-            operator fun invoke(block: DslBuilder.() -> kotlin.Unit): CityInfo = BuilderImpl().apply(block).build()
-        }
-
-        override fun toString(): kotlin.String = buildString {
-            append("CityInfo(")
-            append("country=$country,")
-            append("name=$name)")
-        }
-
-        override fun hashCode(): kotlin.Int {
-            var result = country?.hashCode() ?: 0
-            result = 31 * result + (name?.hashCode() ?: 0)
-            return result
-        }
-
-        override fun equals(other: kotlin.Any?): kotlin.Boolean {
-            if (this === other) return true
-
-            other as CityInfo
-
-            if (country != other.country) return false
-            if (name != other.name) return false
-
-            return true
-        }
-
-        fun copy(block: DslBuilder.() -> kotlin.Unit = {}): CityInfo = BuilderImpl(this).apply(block).build()
-
-        interface Builder {
-            fun build(): CityInfo
-            fun country(country: String): Builder
-            fun name(name: String): Builder
-        }
-
-        interface DslBuilder {
-            var country: String?
-            var name: String?
-
-            fun build(): CityInfo
-        }
-
-        private class BuilderImpl() : Builder, DslBuilder {
-            override var country: String? = null
-            override var name: String? = null
-
-            constructor(x: CityInfo) : this() {
-                this.country = x.country
-                this.name = x.name
+    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested1 {
+        val builder = RecursiveShapesInputOutputNested1.dslBuilder()
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    FOO_DESCRIPTOR.index -> builder.foo = deserializeString()
+                    NESTED_DESCRIPTOR.index -> builder.nested = RecursiveShapesInputOutputNested2DocumentDeserializer().deserialize(deserializer)
+                    null -> break@loop
+                    else -> skipValue()
+                }
             }
-
-            override fun build(): CityInfo = CityInfo(this)
-            override fun country(country: String): Builder = apply { this.country = country }
-            override fun name(name: String): Builder = apply { this.name = name }
         }
+        return builder.build()
+    }
+}
+
+internal class RecursiveShapesInputOutputNested2DocumentDeserializer {
+
+    companion object {
+        private val BAR_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("bar"))
+        private val RECURSIVEMEMBER_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("recursiveMember"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            field(BAR_DESCRIPTOR)
+            field(RECURSIVEMEMBER_DESCRIPTOR)
+        }
+    }
+
+    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested2 {
+        val builder = RecursiveShapesInputOutputNested2.dslBuilder()
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    BAR_DESCRIPTOR.index -> builder.bar = deserializeString()
+                    RECURSIVEMEMBER_DESCRIPTOR.index -> builder.recursiveMember = RecursiveShapesInputOutputNested1DocumentDeserializer().deserialize(deserializer)
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        return builder.build()
+    }
+}
+
+
+class RecursiveShapesInputOutput private constructor(builder: BuilderImpl) {
+    val nested: RecursiveShapesInputOutputNested1? = builder.nested
+
+    companion object {
+        fun builder(): Builder = BuilderImpl()
+
+        fun dslBuilder(): DslBuilder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutput = BuilderImpl().apply(block).build()
+
+    }
+
+    override fun toString(): kotlin.String = buildString {
+        append("RecursiveShapesInputOutput(")
+        append("nested=$nested)")
+    }
+
+    override fun hashCode(): kotlin.Int {
+        var result = nested?.hashCode() ?: 0
+        return result
+    }
+
+    override fun equals(other: kotlin.Any?): kotlin.Boolean {
+        if (this === other) return true
+
+        other as RecursiveShapesInputOutput
+
+        if (nested != other.nested) return false
+
+        return true
+    }
+
+    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): RecursiveShapesInputOutput = BuilderImpl(this).apply(block).build()
+
+    interface Builder {
+        fun build(): RecursiveShapesInputOutput
+        fun nested(nested: RecursiveShapesInputOutputNested1): Builder
+    }
+
+    interface DslBuilder {
+        var nested: RecursiveShapesInputOutputNested1?
+
+        fun build(): RecursiveShapesInputOutput
+        fun nested(block: RecursiveShapesInputOutputNested1.DslBuilder.() -> kotlin.Unit) {
+            this.nested = RecursiveShapesInputOutputNested1.invoke(block)
+        }
+    }
+
+    private class BuilderImpl() : Builder, DslBuilder {
+        override var nested: RecursiveShapesInputOutputNested1? = null
+
+        constructor(x: RecursiveShapesInputOutput) : this() {
+            this.nested = x.nested
+        }
+
+        override fun build(): RecursiveShapesInputOutput = RecursiveShapesInputOutput(this)
+        override fun nested(nested: RecursiveShapesInputOutputNested1): Builder = apply { this.nested = nested }
+    }
+}
+
+class RecursiveShapesInputOutputNested1 private constructor(builder: BuilderImpl) {
+    val foo: String? = builder.foo
+    val nested: RecursiveShapesInputOutputNested2? = builder.nested
+
+    companion object {
+        fun builder(): Builder = BuilderImpl()
+
+        fun dslBuilder(): DslBuilder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutputNested1 = BuilderImpl().apply(block).build()
+
+    }
+
+    override fun toString(): kotlin.String = buildString {
+        append("RecursiveShapesInputOutputNested1(")
+        append("foo=$foo,")
+        append("nested=$nested)")
+    }
+
+    override fun hashCode(): kotlin.Int {
+        var result = foo?.hashCode() ?: 0
+        result = 31 * result + (nested?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun equals(other: kotlin.Any?): kotlin.Boolean {
+        if (this === other) return true
+
+        other as RecursiveShapesInputOutputNested1
+
+        if (foo != other.foo) return false
+        if (nested != other.nested) return false
+
+        return true
+    }
+
+    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): RecursiveShapesInputOutputNested1 = BuilderImpl(this).apply(block).build()
+
+    interface Builder {
+        fun build(): RecursiveShapesInputOutputNested1
+        fun foo(foo: String): Builder
+        fun nested(nested: RecursiveShapesInputOutputNested2): Builder
+    }
+
+    interface DslBuilder {
+        var foo: String?
+        var nested: RecursiveShapesInputOutputNested2?
+
+        fun build(): RecursiveShapesInputOutputNested1
+        fun nested(block: RecursiveShapesInputOutputNested2.DslBuilder.() -> kotlin.Unit) {
+            this.nested = RecursiveShapesInputOutputNested2.invoke(block)
+        }
+    }
+
+    private class BuilderImpl() : Builder, DslBuilder {
+        override var foo: String? = null
+        override var nested: RecursiveShapesInputOutputNested2? = null
+
+        constructor(x: RecursiveShapesInputOutputNested1) : this() {
+            this.foo = x.foo
+            this.nested = x.nested
+        }
+
+        override fun build(): RecursiveShapesInputOutputNested1 = RecursiveShapesInputOutputNested1(this)
+        override fun foo(foo: String): Builder = apply { this.foo = foo }
+        override fun nested(nested: RecursiveShapesInputOutputNested2): Builder = apply { this.nested = nested }
+    }
+}
+
+class RecursiveShapesInputOutputNested2 private constructor(builder: BuilderImpl) {
+    val bar: String? = builder.bar
+    val recursiveMember: RecursiveShapesInputOutputNested1? = builder.recursiveMember
+
+    companion object {
+        fun builder(): Builder = BuilderImpl()
+
+        fun dslBuilder(): DslBuilder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutputNested2 = BuilderImpl().apply(block).build()
+
+    }
+
+    override fun toString(): kotlin.String = buildString {
+        append("RecursiveShapesInputOutputNested2(")
+        append("bar=$bar,")
+        append("recursiveMember=$recursiveMember)")
+    }
+
+    override fun hashCode(): kotlin.Int {
+        var result = bar?.hashCode() ?: 0
+        result = 31 * result + (recursiveMember?.hashCode() ?: 0)
+        return result
+    }
+
+    override fun equals(other: kotlin.Any?): kotlin.Boolean {
+        if (this === other) return true
+
+        other as RecursiveShapesInputOutputNested2
+
+        if (bar != other.bar) return false
+        if (recursiveMember != other.recursiveMember) return false
+
+        return true
+    }
+
+    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): RecursiveShapesInputOutputNested2 = BuilderImpl(this).apply(block).build()
+
+    interface Builder {
+        fun build(): RecursiveShapesInputOutputNested2
+        fun bar(bar: String): Builder
+        fun recursiveMember(recursiveMember: RecursiveShapesInputOutputNested1): Builder
+    }
+
+    interface DslBuilder {
+        var bar: String?
+        var recursiveMember: RecursiveShapesInputOutputNested1?
+
+        fun build(): RecursiveShapesInputOutputNested2
+        fun recursiveMember(block: RecursiveShapesInputOutputNested1.DslBuilder.() -> kotlin.Unit) {
+            this.recursiveMember = RecursiveShapesInputOutputNested1.invoke(block)
+        }
+    }
+
+    private class BuilderImpl() : Builder, DslBuilder {
+        override var bar: String? = null
+        override var recursiveMember: RecursiveShapesInputOutputNested1? = null
+
+        constructor(x: RecursiveShapesInputOutputNested2) : this() {
+            this.bar = x.bar
+            this.recursiveMember = x.recursiveMember
+        }
+
+        override fun build(): RecursiveShapesInputOutputNested2 = RecursiveShapesInputOutputNested2(this)
+        override fun bar(bar: String): Builder = apply { this.bar = bar }
+        override fun recursiveMember(recursiveMember: RecursiveShapesInputOutputNested1): Builder = apply { this.recursiveMember = recursiveMember }
     }
 }

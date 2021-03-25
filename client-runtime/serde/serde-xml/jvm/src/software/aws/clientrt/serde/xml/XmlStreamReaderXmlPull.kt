@@ -108,7 +108,7 @@ internal class XmlStreamReaderXmlPull(
         val lastToken = parser.lastToken()
         val nextToken = internalPeek(1) ?: return false
 
-        return (!lastToken.isTerminal() && !nextToken.isTerminal(minimumDepth))
+        return lastToken.isNotTerminal() && nextToken.isNotTerminal(minimumDepth)
     }
 
     private tailrec suspend fun traverseNode(st: XmlToken, startDepth: Int) {
@@ -272,12 +272,6 @@ private fun XmlPullParser.currDeclaredNamespaces(): List<XmlToken.Namespace> {
         decls.add(XmlToken.Namespace(ns, prefix))
     }
     return decls
-}
-
-// Determine if a given token signals end of (sub/full) document
-private fun XmlToken?.isTerminal(minimumDepth: Int = 0) = when (this) {
-    null, XmlToken.EndDocument -> true
-    else -> depth < minimumDepth
 }
 
 private fun String?.blankToNull(): String? = if (this?.isBlank() == true) null else this
