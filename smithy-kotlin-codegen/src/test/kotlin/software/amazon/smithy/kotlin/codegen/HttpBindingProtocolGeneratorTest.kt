@@ -810,9 +810,11 @@ internal class SmokeTestOperationDeserializer(): HttpDeserialize<SmokeTestRespon
                 map[key] = el
             }
             builder.member1 = map
+        } else {
+            builder.member1 = emptyMap()
         }
 """
-        contents.shouldContainOnlyOnce(expectedContents)
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
     @Test

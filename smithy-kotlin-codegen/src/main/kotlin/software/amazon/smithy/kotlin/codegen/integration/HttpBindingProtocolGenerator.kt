@@ -56,6 +56,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     /**
      * Generate the set of [SdkFieldDescriptor]s for the types that require them.
+     * @param ctx generation context
+     * @param memberShape the shape representing the field descriptor
+     * @param writer kotlin writer
+     * @param memberTargetShape optional shape representing the type contained by a collection
+     * @param namePostfix a string to postfix to the descriptor name, used for nested synthetic fields
      */
     protected abstract fun generateSdkFieldDescriptor(ctx: ProtocolGenerator.GenerationContext, memberShape: MemberShape, writer: KotlinWriter, memberTargetShape: Shape? = null, namePostfix: String = "")
 
@@ -212,10 +217,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     /**
      * Generate the field descriptors
+     *
+     * @param ctx context
+     * @param objectShape The top-level shape for the structure, used to generate the object descriptor
+     * @param memberShapes The shapes from which to generate field descriptors
+     * @param writer kotlin writer
      */
     private fun renderSerdeCompanionObject(
         ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape? = null,
+        objectShape: Shape?,
         memberShapes: List<MemberShape>,
         writer: KotlinWriter
     ) {
