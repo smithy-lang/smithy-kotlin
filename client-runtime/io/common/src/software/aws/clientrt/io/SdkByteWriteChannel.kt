@@ -65,3 +65,14 @@ public expect interface SdkByteWriteChannel : Closeable {
 public suspend fun SdkByteWriteChannel.writeUtf8(str: String) {
     writeFully(str.encodeToByteArray())
 }
+
+/**
+ * Writes byte and suspends until written
+ */
+public suspend fun SdkByteWriteChannel.writeByte(value: Byte) {
+    if (this is IsKtorWriteChannel) {
+        chan.writeByte(value)
+        return
+    }
+    writeFully(byteArrayOf(value))
+}

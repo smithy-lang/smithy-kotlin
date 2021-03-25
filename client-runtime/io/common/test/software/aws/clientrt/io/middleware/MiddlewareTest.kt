@@ -42,4 +42,30 @@ class MiddlewareTest {
         }
         assertEquals("Foo", handler.call("foo"))
     }
+
+    @Test
+    fun testMapRequest() = runSuspendTest {
+        val handler = HandlerLambda<String, String> {
+            it
+        }
+
+        val mr = MapRequest(handler) { r1: Int ->
+            r1.toString()
+        }
+
+        assertEquals("12", mr.call(12))
+    }
+
+    @Test
+    fun testMapResponse() = runSuspendTest {
+        val handler = HandlerLambda<String, String> {
+            it
+        }
+
+        val mr = MapResponse(handler) { r: String ->
+            r.toInt()
+        }
+
+        assertEquals(22, mr.call("22"))
+    }
 }

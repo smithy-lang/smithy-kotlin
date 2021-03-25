@@ -28,6 +28,10 @@ expect interface SdkByteReadChannel : Closeable {
      */
     val isClosedForWrite: Boolean
 
+    // FIXME - replace with readRemaining(limit: Long): ByteArray
+    //  this blocks until EOF which means you can only invoke this on a closed channel currently.
+    //  Without a limit it will _always_ block when channel isn't closed
+
     /**
      * Read the entire content into a [ByteArray]. NOTE: Be careful this will read the entire byte stream
      * into memory.
@@ -38,12 +42,12 @@ expect interface SdkByteReadChannel : Closeable {
      * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough
      * bytes available.
      */
-    suspend fun readFully(sink: ByteArray, offset: Int, length: Int)
+    suspend fun readFully(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset)
 
     /**
      * Reads all available bytes to [sink] buffer and returns immediately or suspends if no bytes available
      */
-    suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int
+    suspend fun readAvailable(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset): Int
 
     /**
      * Close channel with optional cause cancellation.
@@ -77,4 +81,15 @@ private suspend fun SdkByteReadChannel.copyToImpl(dst: SdkByteWriteChannel, limi
     } finally {
     }
     TODO("not implemented")
+}
+
+/**
+ * Reads a single byte from the channel and suspends until available
+ */
+public suspend fun SdkByteReadChannel.readByte(): Byte {
+    if (this is IsKtorReadChannel) return chan.readByte()
+    // TODO - we could pool these
+    val out = ByteArray(1)
+    readFully(out)
+    return out[0]
 }
