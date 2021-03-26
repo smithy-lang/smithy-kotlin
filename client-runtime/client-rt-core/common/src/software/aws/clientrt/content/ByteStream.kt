@@ -7,7 +7,7 @@ package software.aws.clientrt.content
 import software.aws.clientrt.io.SdkByteReadChannel
 
 /**
- * Represents an abstract stream of bytes
+ * Represents an abstract read-only stream of bytes
  */
 sealed class ByteStream {
 

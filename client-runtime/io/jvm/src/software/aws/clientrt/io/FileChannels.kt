@@ -44,8 +44,6 @@ public fun Path.readChannel(start: Long, endInclusive: Long): SdkByteReadChannel
 @InternalApi
 public fun Path.readChannel(): SdkByteReadChannel = toFile().readChannel()
 
-// FIXME - CoroutineContext makes coroutines-core an API dependency
-
 /**
  * Open a write channel for the file and launch a coroutine to read from it.
  * Please note that file writing is blocking so if you are starting it on [Dispatchers.Unconfined] it may block
