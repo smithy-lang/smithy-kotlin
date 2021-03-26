@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.io
 
+import io.kotest.matchers.string.shouldContain
 import io.ktor.utils.io.core.*
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.*
@@ -93,6 +94,26 @@ open class SdkByteChannelSmokeTest {
         } catch (expected: EOFException) {
         } catch (expected: NoSuchElementException) {
         }
+    }
+
+    @Test
+    fun testReadAndWritePartial(): Unit = runSuspendTest {
+        val src = byteArrayOf(1, 2, 3, 4, 5)
+        val chan = SdkByteChannel(false)
+        chan.writeFully(src)
+        chan.flush()
+
+        val buf1 = ByteArray(3)
+        val rc1 = chan.readAvailable(buf1)
+        assertEquals(3, rc1)
+
+        chan.close()
+        // requested full read size is larger than what's left after close
+        val buf2 = ByteArray(16)
+        val ex = assertFails {
+            chan.readFully(buf2)
+        }
+        ex.message.shouldContain("expected 14 more bytes")
     }
 
     @Test

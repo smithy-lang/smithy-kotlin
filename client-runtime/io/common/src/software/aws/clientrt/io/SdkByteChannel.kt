@@ -5,6 +5,7 @@
 
 package software.aws.clientrt.io
 
+import software.aws.clientrt.util.InternalApi
 import io.ktor.utils.io.ByteChannel as KtorByteChannel
 import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
 
@@ -26,12 +27,14 @@ public interface SdkByteChannel : SdkByteReadChannel, SdkByteWriteChannel {
 /**
  * Create a buffered channel for asynchronous reading and writing of bytes
  */
+@InternalApi
 public fun SdkByteChannel(autoFlush: Boolean = true): SdkByteChannel =
     KtorByteChannel(autoFlush).toSdkChannel()
 
 /**
  * Creates a channel for reading from the given byte array.
  */
+@InternalApi
 public fun SdkByteReadChannel(
     content: ByteArray,
     offset: Int = 0,

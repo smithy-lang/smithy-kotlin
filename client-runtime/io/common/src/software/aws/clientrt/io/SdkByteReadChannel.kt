@@ -58,29 +58,59 @@ expect interface SdkByteReadChannel : Closeable {
 
 /**
  * Reads up to [limit] bytes from receiver channel and writes them to [dst] channel.
- * Closes [dst] channel if fails to read or write with cause exception.
+ *
+ * Closes [dst] channel when copy completes if [close] is `true`.
+ * NOTE: Always closes [dst] channel if fails to read or write with cause exception.
+ *
  * @return a number of bytes copied
  */
-public suspend fun SdkByteReadChannel.copyTo(dst: SdkByteWriteChannel, limit: Long = Long.MAX_VALUE): Long {
+public suspend fun SdkByteReadChannel.copyTo(
+    dst: SdkByteWriteChannel,
+    limit: Long = Long.MAX_VALUE,
+    close: Boolean = true
+): Long {
     require(this !== dst)
     if (limit == 0L) return 0L
 
     // delegate to ktor-io if possible which may have further optimizations based on impl
-    if (this is IsKtorReadChannel && dst is IsKtorWriteChannel) {
-        return chan.copyTo(dst.chan)
+    val cnt = if (this is IsKtorReadChannel && dst is IsKtorWriteChannel) {
+        chan.copyTo(dst.chan, limit)
+    } else {
+        copyToFallback(dst, limit)
     }
 
-    TODO("not implemented")
+    if (close) dst.close()
+
+    return cnt
 }
 
-private suspend fun SdkByteReadChannel.copyToImpl(dst: SdkByteWriteChannel, limit: Long): Long {
+internal suspend fun SdkByteReadChannel.copyToFallback(dst: SdkByteWriteChannel, limit: Long): Long {
+    val flushDst = !dst.autoFlush
+    val buffer = ByteArray(4096)
+
     try {
+        var copied = 0L
+
+        while (true) {
+            val remaining = limit - copied
+            if (remaining == 0L) break
+
+            val rc = readAvailable(buffer, 0, minOf(buffer.size.toLong(), remaining).toInt())
+            if (rc == -1) break
+
+            dst.writeFully(buffer, 0, rc)
+            copied += rc
+
+            if (flushDst && availableForRead == 0) {
+                dst.flush()
+            }
+        }
+
+        return copied
     } catch (t: Throwable) {
         dst.close(t)
         throw t
-    } finally {
     }
-    TODO("not implemented")
 }
 
 /**
