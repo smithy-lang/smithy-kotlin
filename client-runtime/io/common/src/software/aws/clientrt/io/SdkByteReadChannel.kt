@@ -6,6 +6,8 @@ package software.aws.clientrt.io
 
 import io.ktor.utils.io.*
 
+internal const val DEFAULT_BUFFER_SIZE: Int = 4096
+
 /**
  * Supplies an asynchronous stream of bytes. Use this interface to read data from wherever it’s located:
  * from the network, storage, or a buffer in memory. This is a **single-reader channel**.
@@ -86,7 +88,7 @@ public suspend fun SdkByteReadChannel.copyTo(
 
 internal suspend fun SdkByteReadChannel.copyToFallback(dst: SdkByteWriteChannel, limit: Long): Long {
     val flushDst = !dst.autoFlush
-    val buffer = ByteArray(4096)
+    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
 
     try {
         var copied = 0L
