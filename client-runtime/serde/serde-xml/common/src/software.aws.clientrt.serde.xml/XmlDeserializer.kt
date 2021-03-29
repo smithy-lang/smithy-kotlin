@@ -24,7 +24,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
     private var firstStructCall = true
 
     override suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        logger.debug { "Deserializing struct $descriptor under ${reader.lastToken}" }
+        logger.trace { "Deserializing struct $descriptor under ${reader.lastToken}" }
 
         if (firstStructCall) {
             if (!descriptor.hasTrait<XmlSerialName>()) throw DeserializerStateException("Top-level struct $descriptor requires a XmlSerialName trait but has none.")
@@ -48,20 +48,20 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
     }
 
     override suspend fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        logger.debug { "Deserializing list $descriptor under ${reader.lastToken}" }
+        logger.trace { "Deserializing list $descriptor under ${reader.lastToken}" }
 
         val depth = when (descriptor.hasTrait<Flattened>()) {
-            true -> XmlStreamReader.DepthSpecifier.CURRENT
-            else -> XmlStreamReader.DepthSpecifier.CHILD
+            true -> XmlStreamReader.SubtreeStartDepth.CURRENT
+            else -> XmlStreamReader.SubtreeStartDepth.CHILD
         }
 
         return XmlListDeserializer(reader.subTreeReader(depth), descriptor)
     }
 
     override suspend fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
-        logger.debug { "Deserializing map $descriptor under ${reader.lastToken}" }
+        logger.trace { "Deserializing map $descriptor under ${reader.lastToken}" }
 
-        return XmlMapDeserializer(reader.subTreeReader(XmlStreamReader.DepthSpecifier.CURRENT), descriptor)
+        return XmlMapDeserializer(reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT), descriptor)
     }
 }
 
@@ -77,7 +77,7 @@ internal class XmlMapDeserializer(
     private val descriptor: SdkFieldDescriptor,
     private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
 ) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.EntryIterator {
-    private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.DEFAULT
+    private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.Default
 
     override suspend fun hasNextEntry(): Boolean {
         // Seek to either the entry or key token depending on the flatness of the map
@@ -123,7 +123,7 @@ internal class XmlListDeserializer(
 ) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.ElementIterator {
     private var firstCall = true
     private val flattened = descriptor.hasTrait<Flattened>()
-    private val elementName = (descriptor.findTrait<XmlCollectionName>() ?: XmlCollectionName.DEFAULT).element
+    private val elementName = (descriptor.findTrait<XmlCollectionName>() ?: XmlCollectionName.Default).element
 
     override suspend fun hasNextElement(): Boolean {
         if (!flattened && firstCall) {
@@ -317,7 +317,7 @@ private val SerialKind.isContainer: Boolean
 // Matches fields and tokens with matching qualified name
 private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescriptor, beginElement: XmlToken.BeginElement): Boolean {
     if (fieldDescriptor.kind == SerialKind.List && fieldDescriptor.hasTrait<Flattened>()) {
-        val fieldName = fieldDescriptor.findTrait<XmlCollectionName>() ?: XmlCollectionName.DEFAULT
+        val fieldName = fieldDescriptor.findTrait<XmlCollectionName>() ?: XmlCollectionName.Default
         val tokenQname = beginElement.name
 
         // It may be that we are matching a flattened list element or matching a list itself.  In the latter

@@ -14,7 +14,7 @@ interface XmlStreamReader {
     /**
      * Specify the depth for which a subtree is created.
      */
-    enum class DepthSpecifier {
+    enum class SubtreeStartDepth {
         /**
          * The subtree's minimum depth is the same as the current node depth.
          */
@@ -32,9 +32,9 @@ interface XmlStreamReader {
     /**
      * Return another reader that starts and terminates at the current level (CURRENT) or the
      * current level + 1 (CHILD), starting at the next node to be read from the stream.
-     * @param depth Determines minimum depth of the subtree
+     * @param subtreeStartDepth Determines minimum depth of the subtree
      */
-    suspend fun subTreeReader(depth: DepthSpecifier = DepthSpecifier.CHILD): XmlStreamReader
+    suspend fun subTreeReader(subtreeStartDepth: SubtreeStartDepth = SubtreeStartDepth.CHILD): XmlStreamReader
 
     /**
      * Return the next actionable token or null if stream is exhausted.

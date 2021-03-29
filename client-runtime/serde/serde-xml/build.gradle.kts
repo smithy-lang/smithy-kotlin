@@ -9,6 +9,7 @@ extra["moduleName"] = "software.aws.clientrt.serde.xml"
 
 val xmlpullVersion: String by project
 val xpp3Version: String by project
+val slf4jVersion: String by project
 
 kotlin {
     sourceSets {
@@ -27,7 +28,7 @@ kotlin {
         }
         jvmTest {
             dependencies {
-                implementation("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         }
     }

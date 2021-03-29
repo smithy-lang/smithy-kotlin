@@ -48,7 +48,7 @@ internal class XmlStreamReaderXmlPull(
     override val lastToken: XmlToken?
         get() = _lastToken
 
-    override suspend fun subTreeReader(depthSpecifier: XmlStreamReader.DepthSpecifier): XmlStreamReader {
+    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader {
         val currentReader = this
         val previousToken = lastToken
         val nextToken = internalPeek(1)
@@ -58,14 +58,14 @@ internal class XmlStreamReaderXmlPull(
             return TerminalReader(currentReader)
         }
 
-        val subTreeDepth = when (depthSpecifier) {
-            XmlStreamReader.DepthSpecifier.CHILD -> _lastToken?.depth?.plus(1)
-            XmlStreamReader.DepthSpecifier.CURRENT -> _lastToken?.depth
+        val subTreeDepth = when (subtreeStartDepth) {
+            XmlStreamReader.SubtreeStartDepth.CHILD -> _lastToken?.depth?.plus(1)
+            XmlStreamReader.SubtreeStartDepth.CURRENT -> _lastToken?.depth
         } ?: throw DeserializerStateException("Unable to determine last node depth in $this")
 
-        logger.debug { "Creating subtree at $subTreeDepth next token: ${internalPeek(1)}" }
+        logger.trace { "Creating subtree at $subTreeDepth next token: ${internalPeek(1)}" }
 
-        return SubTreeReader(this, depthSpecifier, subTreeDepth)
+        return SubTreeReader(this, subtreeStartDepth, subTreeDepth)
     }
 
     override suspend fun nextToken(): XmlToken? {
@@ -185,23 +185,24 @@ internal class XmlStreamReaderXmlPull(
 /**
  * Provides access to a subset of the XmlStream based on nodedepth.
  * @param currentReader parent reader.
- * @param depthSpecifier Take from current or child node depth.
+ * @param subtreeStartDepth Take from current or child node depth.
  * @param minimumDepth minimum depth of the subtree
  */
 private class SubTreeReader(
     private val currentReader: XmlStreamReader,
-    private val depthSpecifier: XmlStreamReader.DepthSpecifier,
+    private val subtreeStartDepth: XmlStreamReader.SubtreeStartDepth,
     private val minimumDepth: Int
 ) : XmlStreamReader {
     override val lastToken: XmlToken?
         get() = currentReader.lastToken
 
-    override suspend fun subTreeReader(depth: XmlStreamReader.DepthSpecifier): XmlStreamReader = currentReader.subTreeReader()
+    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
+        currentReader.subTreeReader(subtreeStartDepth)
 
     override suspend fun nextToken(): XmlToken? {
         var peekToken = currentReader.peek(1) ?: return null
 
-        if (depthSpecifier == XmlStreamReader.DepthSpecifier.CHILD && peekToken.depth < minimumDepth) {
+        if (subtreeStartDepth == XmlStreamReader.SubtreeStartDepth.CHILD && peekToken.depth < minimumDepth) {
             // Special case when a CHILD subtree is created on an end node, the next node will be a sibling
             // and fail the depth test.  In this case check the next node and if passed depth test skip to
             // it and return.
@@ -232,7 +233,7 @@ private class TerminalReader(private val parent: XmlStreamReader) : XmlStreamRea
     override val lastToken: XmlToken?
         get() = parent.lastToken
 
-    override suspend fun subTreeReader(depth: XmlStreamReader.DepthSpecifier): XmlStreamReader = this
+    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = this
 
     override suspend fun nextToken(): XmlToken? = null
 

@@ -25,7 +25,7 @@ internal class XmlPrimitiveDeserializer(private val reader: XmlStreamReader, pri
 
         return token.value
             ?.let { transform(it) }
-            ?.also<T> { reader.takeNextAs<XmlToken.EndElement>() } ?: throw DeserializationException("$token specifies no or invalid value.")
+            ?.also<T> { reader.takeNextAs<XmlToken.EndElement>() } ?: throw DeserializationException("$token specifies nonexistent or invalid value.")
     }
 
     override suspend fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it as Byte") }

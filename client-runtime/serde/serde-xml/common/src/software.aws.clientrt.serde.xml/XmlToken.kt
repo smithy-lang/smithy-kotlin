@@ -64,8 +64,7 @@ sealed class XmlToken {
     }
 
     object StartDocument : XmlToken() {
-        override val depth: Int
-            get() = 0
+        override val depth: Int = 0
     }
 
     /**
@@ -95,7 +94,7 @@ internal fun XmlToken?.isTerminal(minimumDepth: Int = 0) = when (this) {
 internal fun XmlToken?.isNotTerminal(minimumDepth: Int = 0) = !this.isTerminal()
 
 // Return true if the passed in node is the beginning node, false otherwise.
-fun XmlToken?.terminates(beginToken: XmlToken?): Boolean {
+internal fun XmlToken?.terminates(beginToken: XmlToken?): Boolean {
     if (this == null || beginToken == null) return false
     if (this !is XmlToken.EndElement) return false
     if (beginToken !is XmlToken.BeginElement) return false
