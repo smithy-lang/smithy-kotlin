@@ -17,8 +17,7 @@ sealed class FieldLocation {
  *
  * @param reader underlying [XmlStreamReader] from which tokens are read
  */
-// TODO ~ make internal before GA
-class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
+internal class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
     constructor(input: ByteArray) : this(xmlStreamReader(input))
     private val logger = Logger.getLogger<XmlDeserializer>()
     private var firstStructCall = true

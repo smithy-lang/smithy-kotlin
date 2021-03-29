@@ -1,9 +1,9 @@
 
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.Deserializer
-import software.aws.clientrt.serde.json.JsonDeserializer
+import software.aws.clientrt.serde.json.JsonSerdeProvider
 import software.aws.clientrt.serde.json.JsonSerialName
-import software.aws.clientrt.serde.xml.XmlDeserializer
+import software.aws.clientrt.serde.xml.XmlSerdeProvider
 import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.jvm.JvmStatic
@@ -189,13 +189,18 @@ class SparseListDeserializationTest {
             return builder.build()
         }
     }
+    
+    companion object {
+        private val xmlSerdeProvider = XmlSerdeProvider()
+        private val jsonSerdeProvider = JsonSerdeProvider()
+    }
 
     @Test
     fun itDeserializesAnEmptyDocumentIntoAnEmptyStruct() = runSuspendTest {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<GetFoo />".encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
@@ -216,7 +221,7 @@ class SparseListDeserializationTest {
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
@@ -250,7 +255,7 @@ class SparseListDeserializationTest {
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
