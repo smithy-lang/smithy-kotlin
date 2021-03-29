@@ -5,10 +5,7 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.testing.runSuspendTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
@@ -18,15 +15,27 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement("root"),
-            XmlToken.BeginElement("x"),
-            XmlToken.Text("1"),
-            XmlToken.EndElement("x"),
-            XmlToken.BeginElement("y"),
-            XmlToken.Text("2"),
-            XmlToken.EndElement("y"),
-            XmlToken.EndElement("root"),
-            XmlToken.EndDocument
+            XmlToken.BeginElement(1, "root"),
+            XmlToken.BeginElement(2, "x"),
+            XmlToken.Text(2, "1"),
+            XmlToken.EndElement(2, "x"),
+            XmlToken.BeginElement(2, "y"),
+            XmlToken.Text(2, "2"),
+            XmlToken.EndElement(2, "y"),
+            XmlToken.EndElement(1, "root"),
+        )
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itDeserializesXmlWithEscapedCharacters() = runSuspendTest {
+        val payload = """<root>&lt;string&gt;</root>""".trimIndent().encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+
+        val expected = listOf(
+            XmlToken.BeginElement(1, "root"),
+            XmlToken.Text(1, "<string>"),
+            XmlToken.EndElement(1, "root"),
         )
         assertEquals(expected, actual)
     }
@@ -37,16 +46,15 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement("batch"),
-            XmlToken.BeginElement("add", mapOf(XmlToken.QualifiedName("id") to "tt0484562")),
-            XmlToken.BeginElement("field", mapOf(XmlToken.QualifiedName("name") to "title")),
-            XmlToken.Text("The Seeker: The Dark Is Rising"),
-            XmlToken.EndElement("field"),
-            XmlToken.EndElement("add"),
-            XmlToken.BeginElement("delete", mapOf(XmlToken.QualifiedName("id") to "tt0301199")),
-            XmlToken.EndElement("delete"),
-            XmlToken.EndElement("batch"),
-            XmlToken.EndDocument
+            XmlToken.BeginElement(1, "batch"),
+            XmlToken.BeginElement(2, "add", mapOf(XmlToken.QualifiedName("id") to "tt0484562")),
+            XmlToken.BeginElement(3, "field", mapOf(XmlToken.QualifiedName("name") to "title")),
+            XmlToken.Text(3, "The Seeker: The Dark Is Rising"),
+            XmlToken.EndElement(3, "field"),
+            XmlToken.EndElement(2, "add"),
+            XmlToken.BeginElement(2, "delete", mapOf(XmlToken.QualifiedName("id") to "tt0301199")),
+            XmlToken.EndElement(2, "delete"),
+            XmlToken.EndElement(1, "batch"),
         )
 
         assertEquals(expected, actual)
@@ -59,13 +67,35 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun itIgnoresXmlComments() = runSuspendTest {
+        val payload = """
+               <?xml version="1.0" encoding="UTF-8"?>
+               <!--
+                 ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+                 ~ SPDX-License-Identifier: Apache-2.0.
+                 -->
+                
+               <payload>
+                    <x value="1" />
+                    <y value="2" />
+               </payload>
+        """.trimIndent().encodeToByteArray()
+
+        val actual = xmlStreamReader(payload).allTokens()
+        println(actual)
+
+        assertEquals(actual.size, 6)
+        assertTrue(actual.first() is XmlToken.BeginElement)
+        assertTrue((actual.first() as XmlToken.BeginElement).name.local == "payload")
+    }
+
+    @Test
     fun itHandlesNilNodeValues() = runSuspendTest {
         val payload = """<null></null>""".encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
         val expected = listOf(
-            XmlToken.BeginElement("null"),
-            XmlToken.EndElement("null"),
-            XmlToken.EndDocument
+            XmlToken.BeginElement(1, "null"),
+            XmlToken.EndElement(1, "null"),
         )
 
         assertEquals(expected, actual)
@@ -96,43 +126,42 @@ class XmlStreamReaderTest {
         """.trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
         val expected = listOf(
-            XmlToken.BeginElement("root"),
-            XmlToken.BeginElement("num"),
-            XmlToken.Text("1"),
-            XmlToken.EndElement("num"),
-            XmlToken.BeginElement("str"),
-            XmlToken.Text("string"),
-            XmlToken.EndElement("str"),
-            XmlToken.BeginElement("list"),
-            XmlToken.BeginElement("value"),
-            XmlToken.Text("1"),
-            XmlToken.EndElement("value"),
-            XmlToken.BeginElement("value"),
-            XmlToken.Text("2.3456"),
-            XmlToken.EndElement("value"),
-            XmlToken.BeginElement("value"),
-            XmlToken.Text("3"),
-            XmlToken.EndElement("value"),
-            XmlToken.EndElement("list"),
-            XmlToken.BeginElement("nested"),
-            XmlToken.BeginElement("l2"),
-            XmlToken.BeginElement("list"),
-            XmlToken.BeginElement("x"),
-            XmlToken.Text("x"),
-            XmlToken.EndElement("x"),
-            XmlToken.BeginElement("value"),
-            XmlToken.Text("true"),
-            XmlToken.EndElement("value"),
-            XmlToken.EndElement("list"),
-            XmlToken.EndElement("l2"),
-            XmlToken.BeginElement("falsey"),
-            XmlToken.Text("false"),
-            XmlToken.EndElement("falsey"),
-            XmlToken.EndElement("nested"),
-            XmlToken.BeginElement("null"),
-            XmlToken.EndElement("null"),
-            XmlToken.EndElement("root"),
-            XmlToken.EndDocument
+            XmlToken.BeginElement(1, "root"),
+            XmlToken.BeginElement(2, "num"),
+            XmlToken.Text(2, "1"),
+            XmlToken.EndElement(2, "num"),
+            XmlToken.BeginElement(2, "str"),
+            XmlToken.Text(2, "string"),
+            XmlToken.EndElement(2, "str"),
+            XmlToken.BeginElement(2, "list"),
+            XmlToken.BeginElement(3, "value"),
+            XmlToken.Text(3, "1"),
+            XmlToken.EndElement(3, "value"),
+            XmlToken.BeginElement(3, "value"),
+            XmlToken.Text(3, "2.3456"),
+            XmlToken.EndElement(3, "value"),
+            XmlToken.BeginElement(3, "value"),
+            XmlToken.Text(3, "3"),
+            XmlToken.EndElement(3, "value"),
+            XmlToken.EndElement(2, "list"),
+            XmlToken.BeginElement(2, "nested"),
+            XmlToken.BeginElement(3, "l2"),
+            XmlToken.BeginElement(4, "list"),
+            XmlToken.BeginElement(5, "x"),
+            XmlToken.Text(5, "x"),
+            XmlToken.EndElement(5, "x"),
+            XmlToken.BeginElement(5, "value"),
+            XmlToken.Text(5, "true"),
+            XmlToken.EndElement(5, "value"),
+            XmlToken.EndElement(4, "list"),
+            XmlToken.EndElement(3, "l2"),
+            XmlToken.BeginElement(3, "falsey"),
+            XmlToken.Text(3, "false"),
+            XmlToken.EndElement(3, "falsey"),
+            XmlToken.EndElement(2, "nested"),
+            XmlToken.BeginElement(2, "null"),
+            XmlToken.EndElement(2, "null"),
+            XmlToken.EndElement(1, "root"),
         )
 
         assertEquals(expected, actual)
@@ -188,25 +217,26 @@ class XmlStreamReaderTest {
         val payload = """<l1><l2><l3>text</l3></l2></l1>""".trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
 
-        assertTrue(reader.currentDepth == 0, "Expected to start at level 0")
+        assertTrue(reader.lastToken?.depth == 1, "Expected to start at level 1")
         var peekedToken = reader.peek()
         assertTrue(peekedToken is XmlToken.BeginElement)
         assertTrue(peekedToken.name.local == "l1")
-        assertTrue(reader.currentDepth == 0, "Expected peek to not effect level")
+        assertTrue(reader.lastToken?.depth == 1, "Expected peek to not effect level")
+        reader.nextToken() // consumed l1
 
-        peekedToken = reader.nextToken()
-        assertTrue(reader.currentDepth == 1, "Expected level 1")
-        assertTrue(peekedToken is XmlToken.BeginElement)
-        assertTrue(peekedToken.name.local == "l1")
-        reader.peek()
-        assertTrue(reader.currentDepth == 1, "Expected peek to not effect level")
-
-        peekedToken = reader.nextToken()
-        assertTrue(reader.currentDepth == 2, "Expected level 2")
+        peekedToken = reader.nextToken() // consumed l2
+        assertTrue(reader.lastToken?.depth == 2, "Expected level 2")
         assertTrue(peekedToken is XmlToken.BeginElement)
         assertTrue(peekedToken.name.local == "l2")
         reader.peek()
-        assertTrue(reader.currentDepth == 2, "Expected peek to not effect level")
+        assertTrue(reader.lastToken?.depth == 2, "Expected peek to not effect level")
+
+        peekedToken = reader.nextToken()
+        assertTrue(reader.lastToken?.depth == 3, "Expected level 3")
+        assertTrue(peekedToken is XmlToken.BeginElement)
+        assertTrue(peekedToken.name.local == "l3")
+        reader.peek()
+        assertTrue(reader.lastToken?.depth == 3, "Expected peek to not effect level")
     }
 
     @Test
@@ -220,12 +250,11 @@ class XmlStreamReaderTest {
 
         val expected = listOf(
             // root element belongs to default namespace declared
-            XmlToken.BeginElement(XmlToken.QualifiedName("MyStructure", uri = "http://foo.com"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com"))),
-            XmlToken.BeginElement(XmlToken.QualifiedName("foo", uri = "http://foo.com")),
-            XmlToken.Text("bar"),
-            XmlToken.EndElement(XmlToken.QualifiedName("foo", uri = "http://foo.com")),
-            XmlToken.EndElement(XmlToken.QualifiedName("MyStructure", uri = "http://foo.com")),
-            XmlToken.EndDocument
+            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure", uri = "http://foo.com"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com"))),
+            XmlToken.BeginElement(2, XmlToken.QualifiedName("foo", uri = "http://foo.com")),
+            XmlToken.Text(2, "bar"),
+            XmlToken.EndElement(2, XmlToken.QualifiedName("foo", uri = "http://foo.com")),
+            XmlToken.EndElement(1, XmlToken.QualifiedName("MyStructure", uri = "http://foo.com")),
         )
 
         assertEquals(expected, actual)
@@ -242,15 +271,14 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement(XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
-            XmlToken.BeginElement("foo"),
-            XmlToken.Text("what"),
-            XmlToken.EndElement("foo"),
-            XmlToken.BeginElement(XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
-            XmlToken.Text("yeah"),
-            XmlToken.EndElement(XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
-            XmlToken.EndElement("MyStructure"),
-            XmlToken.EndDocument
+            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
+            XmlToken.BeginElement(2, "foo"),
+            XmlToken.Text(2, "what"),
+            XmlToken.EndElement(2, "foo"),
+            XmlToken.BeginElement(2, XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
+            XmlToken.Text(2, "yeah"),
+            XmlToken.EndElement(2, XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
+            XmlToken.EndElement(1, "MyStructure"),
         )
 
         assertEquals(expected, actual)
@@ -266,25 +294,155 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
-            XmlToken.BeginElement(XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
-            XmlToken.BeginElement("foo", attributes = mapOf(XmlToken.QualifiedName("k1", "http://foo.com", "baz") to "v1")),
-            XmlToken.EndElement("foo"),
-            XmlToken.EndElement("MyStructure"),
-            XmlToken.EndDocument
+            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
+            XmlToken.BeginElement(2, "foo", attributes = mapOf(XmlToken.QualifiedName("k1", "http://foo.com", "baz") to "v1")),
+            XmlToken.EndElement(2, "foo"),
+            XmlToken.EndElement(1, "MyStructure"),
         )
 
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun itSubTrees() = runSuspendTest {
+        val payload = """
+            <root>
+                <a>
+                    <n>subtree 1</n>
+                </a>
+                <b>
+                    <n>subtree 2</n>
+                </b>
+                <c>
+                    <n>subtree 3</n>
+                </c>
+            </root>
+        """.encodeToByteArray()
+        var unit = xmlStreamReader(payload)
+
+        val token = unit.nextToken()
+        assertTrue(token is XmlToken.BeginElement)
+        assertTrue(token.name.local == "root")
+
+        var subTree1 = unit.subTreeReader()
+        var subTree1Elements = subTree1.allTokens()
+
+        val expected1 = listOf(
+            XmlToken.BeginElement(2, "a"),
+            XmlToken.BeginElement(3, "n"),
+            XmlToken.Text(3, "subtree 1"),
+            XmlToken.EndElement(3, "n"),
+            XmlToken.EndElement(2, "a"),
+            XmlToken.BeginElement(2, "b"),
+            XmlToken.BeginElement(3, "n"),
+            XmlToken.Text(3, "subtree 2"),
+            XmlToken.EndElement(3, "n"),
+            XmlToken.EndElement(2, "b"),
+            XmlToken.BeginElement(2, "c"),
+            XmlToken.BeginElement(3, "n"),
+            XmlToken.Text(3, "subtree 3"),
+            XmlToken.EndElement(3, "n"),
+            XmlToken.EndElement(2, "c"),
+        )
+        assertEquals(expected1, subTree1Elements)
+
+        unit = xmlStreamReader(payload)
+        repeat(2) { unit.nextToken() }
+
+        subTree1 = unit.subTreeReader()
+        subTree1Elements = subTree1.allTokens()
+
+        val expected2 = listOf(
+            XmlToken.BeginElement(3, "n"),
+            XmlToken.Text(3, "subtree 1"),
+            XmlToken.EndElement(3, "n"),
+        )
+        assertEquals(expected2, subTree1Elements)
+
+        unit = xmlStreamReader(payload)
+        repeat(3) { unit.nextToken() }
+
+        subTree1 = unit.subTreeReader()
+        subTree1Elements = subTree1.allTokens()
+
+        val expected3 = listOf<XmlToken>()
+        assertEquals(expected3, subTree1Elements)
+    }
+
+    @Test
+    fun itHandlesPeekingMultipleLevels() = runSuspendTest {
+        val payload = """
+            <r><a><b><c/></b></a></r>
+        """.encodeToByteArray()
+        val actual = xmlStreamReader(payload)
+
+        val rTokenPeek = actual.peek(1)
+        val aToken = actual.peek(2)
+        val rTokenTake = actual.nextToken()
+
+        assertTrue(rTokenPeek is XmlToken.BeginElement)
+        assertTrue(rTokenPeek.name.local == "r")
+
+        assertTrue(aToken is XmlToken.BeginElement)
+        assertTrue(aToken.name.local == "a")
+
+        assertTrue(rTokenTake is XmlToken.BeginElement)
+        assertTrue(rTokenTake.name.local == "r")
+
+        val bToken = actual.peek(2)
+        assertTrue(bToken is XmlToken.BeginElement)
+        assertTrue(bToken.name.local == "b")
+
+        val aTokenTake = actual.nextToken()
+        assertTrue(aTokenTake is XmlToken.BeginElement)
+        assertTrue(aTokenTake.name.local == "a")
+
+        val aCloseToken = actual.peek(4)
+        assertTrue(aCloseToken is XmlToken.EndElement)
+        assertTrue(aTokenTake.name.local == "a")
+
+        val restOfTokens = actual.allTokens()
+        assertEquals(restOfTokens.size, 6)
+    }
+
+    @Test
+    fun itHandlesSeekingToNodes() = runSuspendTest {
+        val payload = """
+            <r><a a1="asdf"><b><c>some text</c></b></a></r>
+        """.encodeToByteArray()
+        var unit = xmlStreamReader(payload)
+
+        // match text node contents
+        val textNode = unit.seek<XmlToken.Text> { text -> text.value == "some text" }
+        assertTrue(textNode is XmlToken.Text)
+        assertTrue(textNode.value == "some text")
+
+        unit = xmlStreamReader(payload)
+        // match begin node of depth 2
+        val l2Node = unit.seek<XmlToken.BeginElement> { it.depth == 2 }
+        assertTrue(l2Node is XmlToken.BeginElement)
+        assertTrue(l2Node.name.local == "a")
+
+        // verify next token is correct
+        val nextNode = unit.nextToken()
+        assertTrue(nextNode is XmlToken.BeginElement)
+        assertTrue(nextNode.name.local == "b")
+
+        // verify no match produces null
+        unit = xmlStreamReader(payload)
+        val noNode = unit.seek<XmlToken.BeginElement> { it.depth == 9 }
+        assertNull(noNode)
+        assertNull(unit.nextToken())
+    }
 }
 
 suspend fun XmlStreamReader.allTokens(): List<XmlToken> {
-    val tokens = mutableListOf<XmlToken>()
-    while (true) {
-        val token = nextToken()
-        tokens.add(token)
-        if (token is XmlToken.EndDocument) {
-            break
-        }
-    }
-    return tokens
+    val tokenList = mutableListOf<XmlToken>()
+    var nextToken: XmlToken?
+    do {
+        nextToken = this.nextToken()
+        if (nextToken != null) tokenList.add(nextToken)
+    } while (nextToken != null)
+
+    return tokenList
 }

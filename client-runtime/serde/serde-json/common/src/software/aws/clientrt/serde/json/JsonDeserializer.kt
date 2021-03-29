@@ -6,7 +6,12 @@ package software.aws.clientrt.serde.json
 
 import software.aws.clientrt.serde.*
 
-class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
+/**
+ * Provides a deserialiser for JSON documents
+ *
+ * @param payload underlying document from which tokens are read
+ */
+internal class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
     private val reader = jsonStreamReader(payload)
 
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented

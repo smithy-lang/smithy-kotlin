@@ -1,7 +1,7 @@
 import software.aws.clientrt.serde.*
-import software.aws.clientrt.serde.json.JsonDeserializer
+import software.aws.clientrt.serde.json.JsonSerdeProvider
 import software.aws.clientrt.serde.json.JsonSerialName
-import software.aws.clientrt.serde.xml.XmlDeserializer
+import software.aws.clientrt.serde.xml.XmlSerdeProvider
 import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
@@ -11,6 +11,12 @@ import kotlin.test.assertNull
 fun String.toSerialNames(): Set<FieldTrait> = setOf(JsonSerialName(this), XmlSerialName(this))
 
 class NullDeserializationParityTest {
+
+    companion object {
+        private val xmlSerdeProvider = XmlSerdeProvider()
+        private val jsonSerdeProvider = JsonSerdeProvider()
+    }
+
     class AnonStruct {
         var x: Int? = null
         var y: Int? = null
@@ -103,7 +109,7 @@ class NullDeserializationParityTest {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<AnonStruct />".encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = AnonStruct.deserialize(deserializer)
 
             assertNotNull(struct)
@@ -125,7 +131,7 @@ class NullDeserializationParityTest {
             <ParentStruct />                
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = ParentStruct.deserialize(deserializer)
 
             assertNotNull(struct)
@@ -148,7 +154,7 @@ class NullDeserializationParityTest {
             </ParentStruct>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = ParentStruct.deserialize(deserializer)
 
             assertNotNull(struct)

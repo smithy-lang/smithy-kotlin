@@ -7,21 +7,35 @@ package software.aws.clientrt.serde.xml
 
 import org.xmlpull.mxp1.MXParser
 import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
+import software.aws.clientrt.logging.Logger
+import software.aws.clientrt.serde.DeserializerStateException
 import software.aws.clientrt.serde.xml.dom.push
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 
-private class XmlStreamReaderXmlPull(
-    payload: ByteArray,
-    charset: Charset = Charsets.UTF_8,
-    private val parser: XmlPullParser = xmlPullParserFactory()
+internal actual fun xmlStreamReader(payload: ByteArray): XmlStreamReader =
+    XmlStreamReaderXmlPull(XmlStreamReaderXmlPull.xmlPullParserFactory(payload))
+
+internal class XmlStreamReaderXmlPull(
+    private val parser: XmlPullParser,
+    private val minimumDepth: Int = parser.depth
 ) : XmlStreamReader {
 
-    data class PeekState(val token: XmlToken, val depth: Int)
+    companion object {
+        fun xmlPullParserFactory(payload: ByteArray, charset: Charset = Charsets.UTF_8): XmlPullParser {
+            val factory = XmlPullParserFactory.newInstance("org.xmlpull.mxp1.MXParser", null)
+            val parser = factory.newPullParser()
+            parser.setFeature(MXParser.FEATURE_PROCESS_NAMESPACES, true)
+            parser.setInput(ByteArrayInputStream(payload), charset.toString())
+            return parser
+        }
+    }
 
-    private var _currentToken: XmlToken = XmlToken.StartDocument
-    private var peekedToken: PeekState? = null
+    private val logger = Logger.getLogger<XmlStreamReaderXmlPull>()
+    private val peekStack = mutableListOf(parser.takeNextValidToken())
+    private var _lastToken = parser.lastToken()
 
     // In the case that a text node contains escaped characters,
     // the parser returns each of these as independent tokens however
@@ -31,132 +45,39 @@ private class XmlStreamReaderXmlPull(
     // the complete Text values.
     private val subTokenStack = mutableListOf<String>()
 
-    // In some cases a low-level token parse event may result in two high-level
-    // tokens.  The following property is used to hold that second
-    // token to be returned upon a subsequent call to nextToken().
-    private var futureToken: XmlToken? = null
+    override val lastToken: XmlToken?
+        get() = _lastToken
 
-    init {
-        parser.setFeature(MXParser.FEATURE_PROCESS_NAMESPACES, true)
-        parser.setInput(ByteArrayInputStream(payload), charset.toString())
-    }
+    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader {
+        val currentReader = this
+        val previousToken = lastToken
+        val nextToken = internalPeek(1)
 
-    companion object {
-        private fun xmlPullParserFactory(): XmlPullParser {
-            val factory = XmlPullParserFactory.newInstance("org.xmlpull.mxp1.MXParser", null)
-            return factory.newPullParser()
-        }
-    }
-
-    override fun toString(): String {
-        return _currentToken.toString()
-    }
-
-    override suspend fun nextToken(): XmlToken = pullToken(false)
-
-    // Use the existence of sub tokens to determine if in general
-    // parsing mode or in sub token parsing mode.
-    private val isGeneralParseMode get() = subTokenStack.isEmpty()
-
-    /**
-     * @param isPeek if true, the value returned will still be taken upon the next call to nextToken().
-     */
-    private fun pullToken(isPeek: Boolean): XmlToken {
-        if (peekedToken != null) {
-            val rv = peekedToken!!
-            peekedToken = null
-            if (!isPeek) {
-                _currentToken = rv.token
-            }
-            return rv.token
+        if (nextToken.terminates(previousToken)) { // There is nothing in the subtree to return
+            _lastToken = nextToken() // consume the subtree so parsing can continue
+            return TerminalReader(currentReader)
         }
 
-        // If a previous call to pullToken generated more than one token, the latter is
-        // set to `futureToken` to be returned upon next call.
-        if (futureToken != null) {
-            val t = futureToken
-            futureToken = null
-            return t!!
-        }
+        val subTreeDepth = when (subtreeStartDepth) {
+            XmlStreamReader.SubtreeStartDepth.CHILD -> _lastToken?.depth?.plus(1)
+            XmlStreamReader.SubtreeStartDepth.CURRENT -> _lastToken?.depth
+        } ?: throw DeserializerStateException("Unable to determine last node depth in $this")
 
-        try {
-            val rv = when (val nt = parser.nextToken()) {
-                XmlPullParser.START_DOCUMENT -> pullToken(isPeek)
-                XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
-                XmlPullParser.START_TAG -> XmlToken.BeginElement(parser.qualifiedName(), parseAttributes(), parser.currDeclaredNamespaces())
-                XmlPullParser.END_TAG -> when {
-                    isGeneralParseMode -> XmlToken.EndElement(parser.qualifiedName())
-                    else -> {
-                        check(futureToken == null) { "Expected futureToken to be null." }
-                        futureToken = XmlToken.EndElement(parser.qualifiedName())
-                        val nodeContent = subTokenStack.joinToString(separator = "") { it }
-                        subTokenStack.clear()
-                        XmlToken.Text(nodeContent)
-                    }
-                }
-                XmlPullParser.CDSECT,
-                XmlPullParser.COMMENT,
-                XmlPullParser.DOCDECL,
-                XmlPullParser.IGNORABLE_WHITESPACE -> pullToken(isPeek)
-                XmlPullParser.TEXT -> when {
-                    parser.text.isNullOrBlank() -> pullToken(isPeek)
-                    isGeneralParseMode -> XmlToken.Text(parser.text.blankToNull())
-                    else -> {
-                        subTokenStack.push(parser.text)
-                        pullToken(isPeek)
-                    }
-                }
-                XmlPullParser.ENTITY_REF -> when (parser.text) {
-                    null -> pullToken(isPeek)
-                    else -> {
-                        subTokenStack.push(parser.text)
-                        pullToken(isPeek)
-                    }
-                }
-                else -> throw IllegalStateException("Unhandled tag $nt (${XmlPullParser.TYPES[nt]})")
-            }
+        logger.trace { "Creating subtree at $subTreeDepth next token: ${internalPeek(1)}" }
 
-            if (!isPeek) {
-                _currentToken = rv
-            }
-            return rv
-        } catch (e: Exception) {
-            throw XmlGenerationException(e)
-        }
+        return SubTreeReader(this, subtreeStartDepth, subTreeDepth)
     }
 
-    // Create qualified name from current node
-    private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
-        XmlToken.QualifiedName(name, namespace.blankToNull(), prefix.blankToNull())
+    override suspend fun nextToken(): XmlToken? {
+        if (!hasNext()) return null
 
-    // get a list of all namespaces declared in this element
-    private fun XmlPullParser.currDeclaredNamespaces(): List<XmlToken.Namespace> {
-        val nsStart = getNamespaceCount(depth - 1)
-        val nsEnd = getNamespaceCount(depth)
-        if (nsStart >= nsEnd) return emptyList()
-        val decls = mutableListOf<XmlToken.Namespace>()
-        for (i in nsStart until nsEnd) {
-            val prefix = getNamespacePrefix(i)
-            val ns = getNamespaceUri(i)
-            decls.add(XmlToken.Namespace(ns, prefix))
+        return when (peekStack.isEmpty()) {
+            true -> parser.takeNextValidToken()
+            false -> peekStack.removeAt(0)
+        }.also { token ->
+            this._lastToken = token
+            logger.trace { "${token.depth.indent()}$token" }
         }
-        return decls
-    }
-
-    // Return attribute map from attributes of current node
-    private fun parseAttributes(): Map<XmlToken.QualifiedName, String> {
-        if (parser.attributeCount == 0) return emptyMap()
-
-        return (0 until parser.attributeCount)
-            .asSequence()
-            .map { attributeIndex ->
-                XmlToken.QualifiedName(
-                    parser.getAttributeName(attributeIndex),
-                    parser.getAttributeNamespace(attributeIndex).blankToNull(),
-                    parser.getAttributePrefix(attributeIndex).blankToNull()
-                ) to parser.getAttributeValue(attributeIndex)
-            }
-            .toMap()
     }
 
     // This does one of three things:
@@ -164,43 +85,197 @@ private class XmlStreamReaderXmlPull(
     // 2: if the next token is Text or EndElement, read tokens until the end of the current node is exited
     // 3: if the next token is EndDocument, NOP
     override suspend fun skipNext() {
-        val startDepth = parser.depth
+        if (internalPeek(1).isTerminal()) return
 
-        when (peek()) {
-            is XmlToken.EndDocument -> return
-            else -> traverseNode(nextToken(), startDepth)
-        }
-
-        require(startDepth == parser.depth) { "Expected to maintain parser depth after skip, but started at $startDepth and now at ${parser.depth}" }
+        traverseNode(nextToken() ?: error("nextToken() unexpectedly returned null"), parser.depth)
     }
 
-    override val currentToken: XmlToken
-        get() = _currentToken
+    override suspend fun peek(index: Int): XmlToken? {
+        val peekState = internalPeek(index)
 
-    tailrec suspend fun traverseNode(st: XmlToken, startDepth: Int) {
+        return if (peekState.isTerminal(minimumDepth)) null else peekState
+    }
+
+    private fun internalPeek(index: Int): XmlToken? {
+        while (peekStack.size < index && parser.lastToken() != XmlToken.EndDocument) {
+            peekStack.push(parser.takeNextValidToken())
+        }
+
+        return if (peekStack.size >= index) peekStack[index - 1] else null
+    }
+
+    private fun hasNext(): Boolean {
+        val lastToken = parser.lastToken()
+        val nextToken = internalPeek(1) ?: return false
+
+        return lastToken.isNotTerminal() && nextToken.isNotTerminal(minimumDepth)
+    }
+
+    private tailrec suspend fun traverseNode(st: XmlToken, startDepth: Int) {
         if (st == XmlToken.EndDocument) return
         if (st is XmlToken.EndElement && parser.depth == startDepth) return
-        val next = nextToken()
+        val next = nextToken() ?: return
         require(parser.depth >= startDepth) { "Traversal depth ${parser.depth} exceeded start node depth $startDepth" }
         return traverseNode(next, startDepth)
     }
 
-    override suspend fun peek(): XmlToken = when (peekedToken) {
-        null -> {
-            val currentDepth = parser.depth
-            peekedToken = PeekState(pullToken(true), currentDepth)
-            peekedToken!!.token
+    override fun toString(): String = "XmlStreamReader(last: $lastToken)"
+
+    private fun XmlPullParser.takeNextValidToken(): XmlToken {
+        try {
+            do {
+                this.nextToken()
+            } while (lastToken() == null)
+
+            return lastToken()
+                ?: throw XmlGenerationException(IllegalStateException("Unexpectedly unable to get next token"))
+        } catch (e: XmlPullParserException) {
+            throw XmlGenerationException(e)
         }
-        else -> peekedToken!!.token
     }
 
-    override val currentDepth: Int
-        get() = if (peekedToken != null) peekedToken!!.depth else parser.depth
+    // Use the existence of sub tokens to determine if in general
+    // parsing mode or in sub token parsing mode.
+    private val isGeneralParseMode get() = subTokenStack.isEmpty()
+
+    // Return the last valid token consumed as XmlToken, or null
+    // if last token was not of a type we care about.
+    private fun XmlPullParser.lastToken(): XmlToken? =
+        when (this.eventType) {
+            XmlPullParser.START_DOCUMENT -> null
+            XmlPullParser.END_DOCUMENT -> XmlToken.EndDocument
+            XmlPullParser.START_TAG -> XmlToken.BeginElement(
+                depth,
+                qualifiedName(),
+                attributes(),
+                currDeclaredNamespaces()
+            )
+            XmlPullParser.END_TAG -> when {
+                isGeneralParseMode -> XmlToken.EndElement(depth, parser.qualifiedName())
+                else -> {
+                    val textValue = subTokenStack.joinToString(separator = "") { it }
+                    val textToken = XmlToken.Text(depth, textValue)
+                    subTokenStack.clear()
+                    // Adding the synthetic text token to the peek stack and also returning it to the caller.
+                    // This is because the returned value is discarded by internalPeek() and the token
+                    // is read from peekStack.  However we must return a value to signal that tokens are
+                    // available.
+                    peekStack.add(0, textToken)
+                    textToken
+                }
+            }
+            XmlPullParser.CDSECT,
+            XmlPullParser.DOCDECL,
+            XmlPullParser.TEXT -> when {
+                parser.text.isNullOrBlank() -> null
+                isGeneralParseMode -> XmlToken.Text(depth, text)
+                else -> {
+                    subTokenStack.push(parser.text)
+                    null
+                }
+            }
+            XmlPullParser.ENTITY_REF -> {
+                if (parser.text.isNotBlank()) subTokenStack.push(parser.text) // Add escaped character to sub token stack
+                null
+            }
+            else -> null
+        }
 }
 
-private fun String?.blankToNull(): String? = if (this?.isBlank() != false) null else this
+/**
+ * Provides access to a subset of the XmlStream based on nodedepth.
+ * @param currentReader parent reader.
+ * @param subtreeStartDepth Take from current or child node depth.
+ * @param minimumDepth minimum depth of the subtree
+ */
+private class SubTreeReader(
+    private val currentReader: XmlStreamReader,
+    private val subtreeStartDepth: XmlStreamReader.SubtreeStartDepth,
+    private val minimumDepth: Int
+) : XmlStreamReader {
+    override val lastToken: XmlToken?
+        get() = currentReader.lastToken
 
-/*
-* Creates a [JsonStreamReader] instance
-*/
-internal actual fun xmlStreamReader(payload: ByteArray): XmlStreamReader = XmlStreamReaderXmlPull(payload)
+    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
+        currentReader.subTreeReader(subtreeStartDepth)
+
+    override suspend fun nextToken(): XmlToken? {
+        var peekToken = currentReader.peek(1) ?: return null
+
+        if (subtreeStartDepth == XmlStreamReader.SubtreeStartDepth.CHILD && peekToken.depth < minimumDepth) {
+            // Special case when a CHILD subtree is created on an end node, the next node will be a sibling
+            // and fail the depth test.  In this case check the next node and if passed depth test skip to
+            // it and return.
+            peekToken = currentReader.peek(2) ?: return null
+            if (peekToken.depth >= minimumDepth) currentReader.nextToken()
+        }
+
+        return if (peekToken.depth >= minimumDepth) currentReader.nextToken() else null
+    }
+
+    override suspend fun skipNext() {
+        currentReader.skipNext()
+    }
+
+    override suspend fun peek(index: Int): XmlToken? {
+        val peekToken = currentReader.peek(index) ?: return null
+
+        return if (peekToken.depth >= minimumDepth) peekToken else null
+    }
+
+    override fun toString(): String {
+        return "$currentReader (subTree $minimumDepth)"
+    }
+}
+
+// A reader for a subtree with no children
+private class TerminalReader(private val parent: XmlStreamReader) : XmlStreamReader {
+    override val lastToken: XmlToken?
+        get() = parent.lastToken
+
+    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = this
+
+    override suspend fun nextToken(): XmlToken? = null
+
+    override suspend fun skipNext() = Unit
+
+    override suspend fun peek(index: Int): XmlToken? = null
+}
+
+private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
+    XmlToken.QualifiedName(name, namespace.blankToNull(), prefix.blankToNull())
+
+// Return attribute map from attributes of current node
+private fun XmlPullParser.attributes(): Map<XmlToken.QualifiedName, String> =
+    when (attributeCount) {
+        0 -> emptyMap()
+        else -> (0 until attributeCount)
+            .asSequence()
+            .map { attributeIndex ->
+                XmlToken.QualifiedName(
+                    getAttributeName(attributeIndex),
+                    getAttributeNamespace(attributeIndex).blankToNull(),
+                    getAttributePrefix(attributeIndex).blankToNull()
+                ) to getAttributeValue(attributeIndex)
+            }
+            .toMap()
+    }
+
+// get a list of all namespaces declared in this element
+private fun XmlPullParser.currDeclaredNamespaces(): List<XmlToken.Namespace> {
+    val nsStart = getNamespaceCount(depth - 1)
+    val nsEnd = getNamespaceCount(depth)
+    if (nsStart >= nsEnd) return emptyList()
+    val decls = mutableListOf<XmlToken.Namespace>()
+    for (i in nsStart until nsEnd) {
+        val prefix = getNamespacePrefix(i)
+        val ns = getNamespaceUri(i)
+        decls.add(XmlToken.Namespace(ns, prefix))
+    }
+    return decls
+}
+
+private fun String?.blankToNull(): String? = if (this?.isBlank() == true) null else this
+
+// Specific string to be able to eye-ball log output to determine node depth
+private fun Int.indent(): String = ".  .".repeat(this - 1)
