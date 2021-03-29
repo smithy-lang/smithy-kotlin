@@ -189,7 +189,7 @@ class SparseListDeserializationTest {
             return builder.build()
         }
     }
-    
+
     companion object {
         private val xmlSerdeProvider = XmlSerdeProvider()
         private val jsonSerdeProvider = JsonSerdeProvider()

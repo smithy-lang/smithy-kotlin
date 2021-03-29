@@ -20,7 +20,7 @@ class SemanticParityTest {
         fun getTests(): List<CrossProtocolSerdeTest> =
             listOf(BasicStructTest(), ListTest(), MapTest(), NestedStructTest())
     }
-    
+
     @Test
     fun xmlDeserializesIntoObjectFormThenDeserializesToJsonThenSerializesToObjectFormThenDeserializesToOriginalXml() = runSuspendTest {
         for (test in getTests()) {
