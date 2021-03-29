@@ -14,29 +14,53 @@ class XmlSerializerTest {
     @Test
     fun canSerializeClassWithClassField() {
         val a = A(
-            B("2")
+            B(2)
         )
         val xml = XmlSerializer()
         a.serialize(xml)
         assertEquals("""<a><b><v>2</v></b></a>""", xml.toByteArray().decodeToString())
     }
 
-    @Test
-    fun canSerializeClassWithEscapedCharacter() {
-        val a = A(
-            B("&lt;string&gt;")
-        )
-        val xml = XmlSerializer()
-        a.serialize(xml)
-        assertEquals("""<a><b><v>&amp;lt;string&amp;gt;</v></b></a>""", xml.toByteArray().decodeToString())
+    class A(private val b: B) : SdkSerializable {
+        companion object {
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("b"))
+
+            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+                trait(XmlSerialName("a"))
+                field(descriptorB)
+            }
+        }
+
+        override fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(objectDescriptor) {
+                field(descriptorB, b)
+            }
+        }
+    }
+
+    data class B(private val value: Int) : SdkSerializable {
+        companion object {
+            val descriptorValue = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("v"))
+
+            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+                trait(XmlSerialName("b"))
+                field(descriptorValue)
+            }
+        }
+
+        override fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(objectDescriptor) {
+                field(descriptorValue, value)
+            }
+        }
     }
 
     @Test
     fun canSerializeListOfClasses() {
         val obj = listOf(
-            B("1"),
-            B("2"),
-            B("3")
+            B(1),
+            B(2),
+            B(3)
         )
         val xml = XmlSerializer()
         xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"))) {
@@ -50,9 +74,9 @@ class XmlSerializerTest {
     @Test
     fun canSerializeFlatListOfClasses() {
         val obj = listOf(
-            B("1"),
-            B("2"),
-            B("3")
+            B(1),
+            B(2),
+            B(3)
         )
         val xml = XmlSerializer()
         xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"), Flattened)) {

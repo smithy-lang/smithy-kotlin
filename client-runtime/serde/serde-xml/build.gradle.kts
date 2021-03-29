@@ -9,12 +9,14 @@ extra["moduleName"] = "software.aws.clientrt.serde.xml"
 
 val xmlpullVersion: String by project
 val xpp3Version: String by project
+val slf4jVersion: String by project
 
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
                 api(project(":client-runtime:serde"))
+                implementation(project(":client-runtime:logging"))
             }
         }
         jvmMain {
@@ -22,6 +24,11 @@ kotlin {
                 implementation("xmlpull:xmlpull:$xmlpullVersion")
                 // https://mvnrepository.com/artifact/org.ogce/xpp3
                 implementation("org.ogce:xpp3:$xpp3Version")
+            }
+        }
+        jvmTest {
+            dependencies {
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         }
     }

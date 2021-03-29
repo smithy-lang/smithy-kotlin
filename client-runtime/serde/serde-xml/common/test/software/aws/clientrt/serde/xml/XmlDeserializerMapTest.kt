@@ -378,4 +378,206 @@ class XmlDeserializerMapTest {
 
         actual.shouldContainExactly(expected)
     }
+
+    @Test
+    fun itHandlesNestedStructAsValue() = runSuspendTest {
+
+        val payload = """
+            <XmlMapsInputOutput>
+                <myMap>
+                    <entry>
+                        <key>foo</key>
+                        <value>
+                            <hi>there</hi>
+                        </value>
+                    </entry>
+                    <entry>
+                        <key>baz</key>
+                        <value>
+                            <hi>bye</hi>
+                        </value>
+                    </entry>
+                </myMap>
+            </XmlMapsInputOutput>
+        """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val resp = XmlMapsOperationDeserializer().deserialize(deserializer)
+
+        println(resp)
+    }
+}
+
+internal class XmlMapsOperationDeserializer() {
+
+    companion object {
+        private val MYMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("myMap"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("XmlMapsInputOutput"))
+            field(MYMAP_DESCRIPTOR)
+        }
+    }
+
+    suspend fun deserialize(deserializer: XmlDeserializer): XmlMapsInputOutput {
+        val builder = XmlMapsInputOutput.dslBuilder()
+
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    MYMAP_DESCRIPTOR.index ->
+                        builder.myMap =
+                            deserializer.deserializeMap(MYMAP_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, GreetingStruct>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 = if (nextHasValue()) { GreetingStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+
+        return builder.build()
+    }
+}
+
+internal class GreetingStructDocumentDeserializer {
+
+    companion object {
+        private val HI_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("hi"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("GreetingStruct"))
+            field(HI_DESCRIPTOR)
+        }
+    }
+
+    suspend fun deserialize(deserializer: Deserializer): GreetingStruct {
+        val builder = GreetingStruct.dslBuilder()
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    HI_DESCRIPTOR.index -> builder.hi = deserializeString()
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        return builder.build()
+    }
+}
+
+class XmlMapsInputOutput private constructor(builder: BuilderImpl) {
+    val myMap: Map<String, GreetingStruct>? = builder.myMap
+
+    companion object {
+        fun builder(): Builder = BuilderImpl()
+
+        fun dslBuilder(): DslBuilder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): XmlMapsInputOutput = BuilderImpl().apply(block).build()
+    }
+
+    override fun toString(): kotlin.String = buildString {
+        append("XmlMapsInputOutput(")
+        append("myMap=$myMap)")
+    }
+
+    override fun hashCode(): kotlin.Int {
+        var result = myMap?.hashCode() ?: 0
+        return result
+    }
+
+    override fun equals(other: kotlin.Any?): kotlin.Boolean {
+        if (this === other) return true
+
+        other as XmlMapsInputOutput
+
+        if (myMap != other.myMap) return false
+
+        return true
+    }
+
+    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): XmlMapsInputOutput = BuilderImpl(this).apply(block).build()
+
+    interface Builder {
+        fun build(): XmlMapsInputOutput
+        fun myMap(myMap: Map<String, GreetingStruct>): Builder
+    }
+
+    interface DslBuilder {
+        var myMap: Map<String, GreetingStruct>?
+
+        fun build(): XmlMapsInputOutput
+    }
+
+    private class BuilderImpl() : Builder, DslBuilder {
+        override var myMap: Map<String, GreetingStruct>? = null
+
+        constructor(x: XmlMapsInputOutput) : this() {
+            this.myMap = x.myMap
+        }
+
+        override fun build(): XmlMapsInputOutput = XmlMapsInputOutput(this)
+        override fun myMap(myMap: Map<String, GreetingStruct>): Builder = apply { this.myMap = myMap }
+    }
+}
+
+class GreetingStruct private constructor(builder: BuilderImpl) {
+    val hi: String? = builder.hi
+
+    companion object {
+        fun builder(): Builder = BuilderImpl()
+
+        fun dslBuilder(): DslBuilder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): GreetingStruct = BuilderImpl().apply(block).build()
+    }
+
+    override fun toString(): kotlin.String = buildString {
+        append("GreetingStruct(")
+        append("hi=$hi)")
+    }
+
+    override fun hashCode(): kotlin.Int {
+        var result = hi?.hashCode() ?: 0
+        return result
+    }
+
+    override fun equals(other: kotlin.Any?): kotlin.Boolean {
+        if (this === other) return true
+
+        other as GreetingStruct
+
+        if (hi != other.hi) return false
+
+        return true
+    }
+
+    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): GreetingStruct = BuilderImpl(this).apply(block).build()
+
+    interface Builder {
+        fun build(): GreetingStruct
+        fun hi(hi: String): Builder
+    }
+
+    interface DslBuilder {
+        var hi: String?
+
+        fun build(): GreetingStruct
+    }
+
+    private class BuilderImpl() : Builder, DslBuilder {
+        override var hi: String? = null
+
+        constructor(x: GreetingStruct) : this() {
+            this.hi = x.hi
+        }
+
+        override fun build(): GreetingStruct = GreetingStruct(this)
+        override fun hi(hi: String): Builder = apply { this.hi = hi }
+    }
 }
