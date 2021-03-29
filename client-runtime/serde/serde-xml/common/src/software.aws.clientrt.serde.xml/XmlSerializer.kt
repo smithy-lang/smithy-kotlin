@@ -177,7 +177,7 @@ private class XmlMapSerializer(
     }
 
     fun generalEntry(key: String, valueFn: () -> Unit) {
-        val mapTrait = descriptor.findTrait() ?: XmlMapName.DEFAULT
+        val mapTrait = descriptor.findTrait() ?: XmlMapName.Default
 
         if (!descriptor.hasTrait<Flattened>()) xmlWriter.startTag(mapTrait.entry!!)
         xmlWriter.startTag(mapTrait.key)
@@ -251,13 +251,13 @@ private class XmlMapSerializer(
     override fun serializeRaw(value: String) = serializeString(value)
 
     override fun serializeNull() {
-        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
+        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
         xmlWriter.startTag(nodeName)
         xmlWriter.endTag(nodeName)
     }
 
     private fun serializePrimitive(value: Any) {
-        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.DEFAULT.value
+        val nodeName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value.toString())
         xmlWriter.endTag(nodeName)
@@ -295,7 +295,7 @@ private class XmlListSerializer(
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
     override fun serializeNull() {
-        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.DEFAULT.element
+        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.Default.element
         xmlWriter.startTag(nodeName)
         xmlWriter.endTag(nodeName)
     }
@@ -303,7 +303,7 @@ private class XmlListSerializer(
     override fun serializeRaw(value: String) = serializeString(value)
 
     private fun serializePrimitive(value: Any) {
-        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.DEFAULT.element
+        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.Default.element
         xmlWriter.startTag(nodeName)
         xmlWriter.text(value.toString())
         xmlWriter.endTag(nodeName)

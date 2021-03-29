@@ -90,6 +90,7 @@ internal suspend fun parseDom(reader: XmlStreamReader): XmlNode {
                 val curr = nodeStack.peek()
                 curr.text = token.value
             }
+            null,
             is XmlToken.EndDocument -> break@loop
         }
     }
@@ -118,7 +119,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
 
         // open tag
         append("$indent<")
-        append(curr.tagName)
+        append(curr.name.tag)
         curr.namespaces.forEach {
             // namespaces declared by this node
             append(" xmlns")
@@ -131,7 +132,7 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         // attributes
         if (curr.attributes.isNotEmpty()) append(" ")
         curr.attributes.forEach {
-            append("${it.key.prefixedName}=\"${it.value}\"")
+            append("${it.key.tag}=\"${it.value}\"")
         }
         append(">")
 
@@ -152,17 +153,9 @@ internal fun formatXmlNode(curr: XmlNode, depth: Int, sb: StringBuilder, pretty:
         }
 
         append("</")
-        append(curr.tagName)
+        append(curr.name.tag)
         append(">")
 
         if (pretty && depth > 0) appendLine()
     }
 }
-
-private val XmlNode.tagName: String
-    get() = name.prefixedName
-
-private val XmlToken.QualifiedName.prefixedName: String
-    get() {
-        return if (ns?.prefix?.isNotEmpty() == true) "${ns.prefix}:$local" else local
-    }

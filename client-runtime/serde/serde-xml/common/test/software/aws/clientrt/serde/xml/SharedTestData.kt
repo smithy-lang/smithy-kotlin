@@ -18,7 +18,7 @@ class SimpleStructClass {
     companion object {
         val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
         val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"))
-        val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("z"), XmlAttribute("attribval"))
+        val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("z"), XmlAttribute)
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("payload"))
             field(X_DESCRIPTOR)
@@ -44,14 +44,47 @@ class SimpleStructClass {
     }
 }
 
+class SimpleStructOfStringsClass {
+    var x: String? = null
+    var y: String? = null
+
+    // Only for testing, not serialization
+    var unknownFieldCount: Int = 0
+
+    companion object {
+        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
+        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"))
+        val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("payload"))
+            field(X_DESCRIPTOR)
+            field(Y_DESCRIPTOR)
+        }
+
+        suspend fun deserialize(deserializer: Deserializer): SimpleStructOfStringsClass {
+            val result = SimpleStructOfStringsClass()
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@ while (true) {
+                    when (findNextFieldIndex()) {
+                        X_DESCRIPTOR.index -> result.x = deserializeString()
+                        Y_DESCRIPTOR.index -> result.y = deserializeString()
+                        null -> break@loop
+                        else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                    }
+                }
+            }
+            return result
+        }
+    }
+}
+
 class StructWithAttribsClass {
     var x: Int? = null
     var y: Int? = null
     var unknownFieldCount: Int = 0
 
     companion object {
-        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("value"))
-        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"), XmlAttribute("value"))
+        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute)
+        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("y"), XmlAttribute)
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("payload"))
             field(X_DESCRIPTOR)
@@ -86,8 +119,8 @@ class StructWithMultiAttribsAndTextValClass {
     var unknownFieldCount: Int = 0
 
     companion object {
-        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("xval"))
-        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"), XmlAttribute("yval"))
+        val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("xval"), XmlAttribute)
+        val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("yval"), XmlAttribute)
         val TXT_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("payload"))
