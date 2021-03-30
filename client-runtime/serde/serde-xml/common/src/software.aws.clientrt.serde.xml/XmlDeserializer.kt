@@ -34,7 +34,7 @@ internal class XmlDeserializer(private val reader: XmlStreamReader) : Deserializ
 
             val structToken = reader.seek<XmlToken.BeginElement>() ?: throw DeserializerStateException("Could not find a begin element for new struct")
             val objectName = descriptor.toQualifiedName()
-            if (structToken.name != objectName) throw DeserializerStateException("Expected begin element of $objectName but found ${structToken::class.qualifiedName} of ${structToken.name}")
+            if (structToken.name != objectName) throw DeserializerStateException("Expected beginning element named $objectName but found ${structToken.name}")
         }
 
         // Consume any remaining terminating tokens from previous deserialization
