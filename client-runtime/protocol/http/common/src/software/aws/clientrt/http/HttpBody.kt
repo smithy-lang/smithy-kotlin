@@ -72,7 +72,7 @@ fun ByteStream.toHttpBody(): HttpBody {
 suspend fun HttpBody.readAll(): ByteArray? = when (this) {
     is HttpBody.Empty -> null
     is HttpBody.Bytes -> this.bytes()
-    is HttpBody.Streaming -> this.readFrom().readAll()
+    is HttpBody.Streaming -> this.readFrom().readRemaining()
 }
 
 /**

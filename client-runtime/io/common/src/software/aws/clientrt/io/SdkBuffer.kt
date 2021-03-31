@@ -212,6 +212,7 @@ fun SdkBuffer.writeFully(src: SdkBuffer, length: Int = src.readRemaining) {
 /**
  * Write the bytes of [str] as UTF-8
  */
+// TODO - remove in favor of implementing Appendable in such a way as to not allocate an entire new byte array
 fun SdkBuffer.write(str: String) = writeFully(str.encodeToByteArray())
 
 /**

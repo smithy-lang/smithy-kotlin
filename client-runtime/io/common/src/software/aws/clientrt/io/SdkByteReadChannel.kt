@@ -30,15 +30,15 @@ expect interface SdkByteReadChannel : Closeable {
      */
     val isClosedForWrite: Boolean
 
-    // FIXME - replace with readRemaining(limit: Long): ByteArray
-    //  this blocks until EOF which means you can only invoke this on a closed channel currently.
-    //  Without a limit it will _always_ block when channel isn't closed
-
     /**
-     * Read the entire content into a [ByteArray]. NOTE: Be careful this will read the entire byte stream
-     * into memory.
+     * Read up to [limit] bytes into a [ByteArray] suspending until [limit] is reached or the channel
+     * is closed.
+     *
+     * NOTE: Be careful as this will potentially read the entire byte stream into memory (up to limit)
+     *
+     * Check [availableForRead] and/or [isClosedForRead] to see if there is additional data left
      */
-    suspend fun readAll(): ByteArray
+    suspend fun readRemaining(limit: Int = Int.MAX_VALUE): ByteArray
 
     /**
      * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough

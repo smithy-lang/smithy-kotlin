@@ -52,7 +52,7 @@ sealed class ByteStream {
 suspend fun ByteStream.toByteArray(): ByteArray {
     return when (val stream = this) {
         is ByteStream.Buffer -> stream.bytes()
-        is ByteStream.Reader -> stream.readFrom().readAll()
+        is ByteStream.Reader -> stream.readFrom().readRemaining()
     }
 }
 

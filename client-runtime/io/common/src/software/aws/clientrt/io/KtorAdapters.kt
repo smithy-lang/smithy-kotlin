@@ -37,8 +37,8 @@ internal abstract class KtorReadChannelAdapterBase(
     override val isClosedForWrite: Boolean
         get() = chan.isClosedForWrite
 
-    override suspend fun readAll(): ByteArray {
-        return chan.readRemaining().readBytes()
+    override suspend fun readRemaining(limit: Int): ByteArray {
+        return chan.readRemaining(limit.toLong()).readBytes()
     }
 
     override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) {

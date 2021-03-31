@@ -28,9 +28,12 @@ actual interface SdkByteReadChannel : Closeable {
     actual val isClosedForWrite: Boolean
 
     /**
-     * Read the entire content into a [ByteArray]. NOTE: Be careful this will read the entire byte stream into memory.
+     * Read up to [limit] bytes into a [ByteArray] suspending until [limit] is reached or the channel
+     * is closed.
+     *
+     * NOTE: Be careful as this will potentially read the entire byte stream into memory (up to limit)
      */
-    actual suspend fun readAll(): ByteArray
+    actual suspend fun readRemaining(limit: Int): ByteArray
 
     /**
      * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough bytes available.

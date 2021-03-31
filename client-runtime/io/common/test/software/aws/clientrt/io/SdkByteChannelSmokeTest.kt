@@ -122,7 +122,7 @@ open class SdkByteChannelSmokeTest {
         val content = "I meant what I said. And said what I meant. An elephant's faithful. One hundred percent!"
         chan.writeUtf8(content)
         chan.close()
-        val actual = chan.readAll().decodeToString()
+        val actual = chan.readRemaining().decodeToString()
         assertEquals(content, actual)
     }
 
