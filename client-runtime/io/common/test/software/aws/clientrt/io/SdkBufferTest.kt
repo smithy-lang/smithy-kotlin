@@ -179,11 +179,31 @@ class SdkBufferTest {
     fun testWriteFullyInsufficientSpace() {
         val buf = SdkBuffer(16)
         val contents = "is it morning or is it night, the software engineer doesn't know anymore"
-        assertFailsWith<IllegalArgumentException> (
-            "Insufficient space to write ${contents.length} bytes; capacity available: 16"
-        ) {
-            buf.writeFully(contents.encodeToByteArray())
-        }
+        assertEquals(16, buf.capacity)
+        buf.writeFully(contents.encodeToByteArray())
+        // content is 72 bytes. next power of 2 is greater than exp growth of current buffer
+        assertEquals(128, buf.capacity)
+
+        val buf2 = SdkBuffer(16)
+        assertEquals(16, buf2.capacity)
+        buf2.commitWritten(12)
+        val smallContent = byteArrayOf(1, 2, 3, 4, 5)
+        buf2.writeFully(smallContent)
+        // doubling the current capacity is greater
+        assertEquals(32, buf2.capacity)
+    }
+
+    @Test
+    fun testReserve() {
+        val buf = SdkBuffer(8)
+        assertEquals(8, buf.capacity)
+        buf.reserve(5)
+        assertEquals(8, buf.capacity)
+        buf.reserve(12)
+        assertEquals(16, buf.capacity)
+
+        buf.reserve(72)
+        assertEquals(128, buf.capacity)
     }
 
     @Test
@@ -236,5 +256,21 @@ class SdkBufferTest {
         assertEquals(7, sink.writePosition)
         assertEquals(7, sink.readRemaining)
         assertEquals(0, sink.readPosition)
+    }
+
+    @Test
+    fun testWriteFullySdkBuffer() {
+        val src = SdkBuffer(16)
+        src.write("buffers are fun!")
+        assertEquals(16, src.readRemaining)
+        assertEquals(16, src.capacity)
+
+        val dest = SdkBuffer(8)
+        assertEquals(8, dest.capacity)
+
+        dest.writeFully(src)
+        assertEquals(0, src.readRemaining)
+        assertEquals(16, dest.readRemaining)
+        assertEquals(16, dest.capacity)
     }
 }

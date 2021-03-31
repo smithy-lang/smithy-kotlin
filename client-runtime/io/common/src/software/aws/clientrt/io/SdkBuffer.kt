@@ -15,16 +15,23 @@ private class SdkBufferState {
 }
 
 /**
- * A buffer with read and write positions
+ * A buffer with read and write positions. Similar in spirit to `java.nio.ByteBuffer` but for use
+ * in Kotlin Multiplatform.
+ *
+ * Unlike `ByteBuffer`, this buffer will implicitly grow as needed to fulfill write requests.
+ * However, explicitly reserving the required space up-front before a series of writes will be
+ * more efficient.
  *
  * **concurrent unsafe**: Do not read/write using the same [SdkBuffer] instance from different threads.
  */
 @OptIn(ExperimentalIoApi::class)
 @InternalApi
-class SdkBuffer(
-    capacity: Int
-) {
-    internal var memory = DefaultAllocator.alloc(capacity)
+class SdkBuffer(initialCapacity: Int) {
+
+    // we make use of ktor-io's `Memory` type which already implements most of the functionality in a platform
+    // agnostic way. We just need to wrap some methods around it
+    internal var memory = DefaultAllocator.alloc(initialCapacity)
+
     private val state = SdkBufferState()
 
     /**
@@ -58,12 +65,16 @@ class SdkBuffer(
         get() = capacity - writePosition
 
     /**
-     * ensure there is enough write capacity for [minBytes]
+     * Reserve capacity for at least [count] bytes to be written.
+     *
+     * More than [count] bytes may be allocated in order to avoid frequent re-allocations.
      */
-    private fun ensureWriteCapacity(minBytes: Int) {
-        if (writeRemaining >= minBytes) return
+    fun reserve(count: Int) {
+        if (writeRemaining >= count) return
 
-        val newSize = (memory.size32 * 3 + 1) / 2
+        val minp2 = ceilp2(count)
+        val currp2 = ceilp2(memory.size32 + 1)
+        val newSize = maxOf(minp2, currp2)
         memory = DefaultAllocator.realloc(memory, newSize)
     }
 
@@ -112,12 +123,6 @@ public inline val SdkBuffer.canRead: Boolean
     get() = writePosition > readPosition
 
 /**
- * @return `true` if there is any free space to write
- */
-public inline val SdkBuffer.canWrite: Boolean
-    get() = writePosition < capacity
-
-/**
  * Read from this buffer exactly [length] bytes and write to [dest] starting at [offset]
  * @throws IllegalArgumentException if there are not enough bytes available for read or the offset/length combination is invalid
  */
@@ -149,27 +154,28 @@ fun SdkBuffer.readAvailable(dest: ByteArray, offset: Int = 0, length: Int = dest
  * @throws IllegalArgumentException if there is insufficient space or the offset/length combination is invalid
  */
 fun SdkBuffer.writeFully(src: ByteArray, offset: Int = 0, length: Int = src.size - offset) {
-    require(writeRemaining > length) { "Insufficient space to write $length bytes; capacity available: $writeRemaining" }
     require(offset >= 0) { "Invalid write offset, must be positive" }
     require(offset + length <= src.size) { "Invalid write: offset + length should be less than the source size: $offset + $length < ${src.size}" }
-    write { memory, writeStart, _ ->
+    writeSized(length) { memory, writeStart ->
         memory.storeByteArray(writeStart, src, offset, length)
         length
     }
 }
 
 /**
- * Reads [length] bytes from this buffer into the [dst] buffer
+ * Reads at most [length] bytes from this buffer into the [dst] buffer
  * @return the number of bytes read
  */
 @OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.readFully(dst: SdkBuffer, length: Int = dst.writeRemaining): Int {
     require(length >= 0)
-    require(length <= dst.writeRemaining)
+    val rc = minOf(readRemaining, length)
+    if (rc == 0) return 0
     return read { memory, readStart, _ ->
-        memory.copyTo(dst.memory, readStart, length, dst.writePosition)
-        dst.commitWritten(length)
-        length
+        dst.reserve(rc)
+        memory.copyTo(dst.memory, readStart, rc, dst.writePosition)
+        dst.commitWritten(rc)
+        rc
     }
 }
 
@@ -180,7 +186,7 @@ fun SdkBuffer.readFully(dst: SdkBuffer, length: Int = dst.writeRemaining): Int {
 @OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.readAvailable(dst: SdkBuffer, length: Int = dst.writeRemaining): Int {
     if (!canRead) return -1
-    val rc = minOf(dst.writeRemaining, readRemaining, length)
+    val rc = minOf(readRemaining, length)
     return readFully(dst, rc)
 }
 
@@ -193,11 +199,8 @@ fun SdkBuffer.writeFully(src: SdkBuffer, length: Int = src.readRemaining) {
     require(length <= src.readRemaining) {
         "not enough bytes in source buffer to read $length bytes (${src.readRemaining} remaining)"
     }
-    require(length <= writeRemaining) {
-        "Insufficient space to write $length bytes; capacity available: $writeRemaining"
-    }
 
-    write { memory, writeStart, _ ->
+    writeSized(length) { memory, writeStart ->
         src.memory.copyTo(memory, src.readPosition, length, writeStart)
         src.discard(length)
     }
@@ -211,7 +214,7 @@ fun SdkBuffer.write(str: String) = writeFully(str.encodeToByteArray())
 /**
  * Read the available (unread) contents as a UTF-8 string
  */
-fun SdkBuffer.decodeToString() = bytes().decodeToString()
+fun SdkBuffer.decodeToString() = bytes().decodeToString(0, readRemaining)
 
 /**
  * Get the available (unread) contents as a ByteArray.
@@ -235,4 +238,10 @@ private inline fun SdkBuffer.write(block: (memory: Memory, writeStart: Int, endE
     return wc
 }
 
-// FIXME - are we allowing this buffer to grow on it's own?
+@OptIn(ExperimentalIoApi::class)
+private inline fun SdkBuffer.writeSized(count: Int, block: (memory: Memory, writeStart: Int) -> Int): Int {
+    reserve(count)
+    return write { memory, writeStart, _ ->
+        block(memory, writeStart)
+    }
+}
