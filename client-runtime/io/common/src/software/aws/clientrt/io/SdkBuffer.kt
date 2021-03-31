@@ -6,6 +6,7 @@
 package software.aws.clientrt.io
 
 import io.ktor.utils.io.bits.*
+import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import software.aws.clientrt.util.InternalApi
 
@@ -27,6 +28,8 @@ private class SdkBufferState {
 @OptIn(ExperimentalIoApi::class)
 @InternalApi
 class SdkBuffer(initialCapacity: Int) {
+    // TODO - we could implement Appendable but we would need to deal with Char as UTF-16 character
+    //  (e.g. convert code points to number of bytes and write the correct utf bytes 1..4)
 
     // we make use of ktor-io's `Memory` type which already implements most of the functionality in a platform
     // agnostic way. We just need to wrap some methods around it
@@ -72,9 +75,9 @@ class SdkBuffer(initialCapacity: Int) {
     fun reserve(count: Int) {
         if (writeRemaining >= count) return
 
-        val minp2 = ceilp2(count)
-        val currp2 = ceilp2(memory.size32 + 1)
-        val newSize = maxOf(minp2, currp2)
+        val minP2 = ceilp2(count)
+        val currP2 = ceilp2(memory.size32 + 1)
+        val newSize = maxOf(minP2, currP2)
         memory = DefaultAllocator.realloc(memory, newSize)
     }
 
