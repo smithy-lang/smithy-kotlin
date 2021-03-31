@@ -72,8 +72,8 @@ internal class KtorContentStream(private val channel: ByteReadChannel, private v
     override val isClosedForWrite: Boolean
         get() = channel.isClosedForWrite
 
-    override suspend fun readAll(): ByteArray {
-        val packet = channel.readRemaining()
+    override suspend fun readRemaining(limit: Int): ByteArray {
+        val packet = channel.readRemaining(limit.toLong())
         notifyIfExhausted()
         return packet.readBytes()
     }
