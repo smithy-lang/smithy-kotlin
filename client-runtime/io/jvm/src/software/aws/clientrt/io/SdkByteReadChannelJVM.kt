@@ -7,6 +7,7 @@
 package software.aws.clientrt.io
 
 import java.nio.ByteBuffer
+import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
 
 /**
  * Supplies a stream of bytes. Use this interface to read data from wherever it’s located: from the network, storage, or a buffer in memory.
@@ -50,3 +51,8 @@ actual interface SdkByteReadChannel : Closeable {
 
     override fun close() { cancel(null) }
 }
+
+/**
+ * Creates a channel for reading from the given buffer
+ */
+fun SdkByteReadChannel(content: ByteBuffer): SdkByteReadChannel = KtorByteReadChannel(content).toSdkChannel()

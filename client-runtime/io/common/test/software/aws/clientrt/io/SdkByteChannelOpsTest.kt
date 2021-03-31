@@ -66,4 +66,16 @@ class SdkByteChannelOpsTest {
         val dst = SdkByteChannel(false)
         assertEquals(0, chan.copyTo(dst, limit = 0))
     }
+
+    @Test
+    fun testReadFromClosedChannel() = runSuspendTest {
+        val chan = SdkByteReadChannel(byteArrayOf(1, 2, 3, 4, 5))
+        val buffer = ByteArray(3)
+        var rc = chan.readAvailable(buffer)
+        assertEquals(3, rc)
+        chan.close()
+
+        rc = chan.readAvailable(buffer)
+        assertEquals(2, rc)
+    }
 }

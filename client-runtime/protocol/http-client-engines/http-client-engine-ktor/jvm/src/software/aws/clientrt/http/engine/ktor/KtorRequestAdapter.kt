@@ -66,6 +66,7 @@ internal class KtorRequestAdapter(
         return object : OutgoingContent.ReadChannelContent() {
             override val contentType: ContentType? = contentType
             override val contentLength: Long? = body.contentLength
+            // FIXME - ensure the `source` is closed?
 
             override fun readFrom(): ByteReadChannel {
                 // FIXME - instead of reading and writing bytes we could probably proxy the underlying channel
