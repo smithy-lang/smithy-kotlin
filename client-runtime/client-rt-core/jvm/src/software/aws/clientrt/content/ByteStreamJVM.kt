@@ -34,8 +34,9 @@ fun Path.asByteStream(): ByteStream {
 
 /**
  * Write the contents of this ByteStream to file and close it
+ * @return the number of bytes written
  */
-suspend fun ByteStream.toFile(file: File): Long {
+suspend fun ByteStream.writeToFile(file: File): Long {
     require(file.isFile) { "cannot write contents of ByteStream to a directory: ${file.absolutePath}" }
     val writer = file.writeChannel()
     val src = when (this) {
@@ -53,5 +54,6 @@ suspend fun ByteStream.toFile(file: File): Long {
 
 /**
  * Write the contents of this ByteStream to file at the given path
+ * @return the number of bytes written
  */
-suspend fun ByteStream.toFile(path: Path): Long = toFile(path.toFile())
+suspend fun ByteStream.writeToFile(path: Path): Long = writeToFile(path.toFile())
