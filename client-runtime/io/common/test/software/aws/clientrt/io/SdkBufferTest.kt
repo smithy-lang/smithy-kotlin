@@ -273,4 +273,12 @@ class SdkBufferTest {
         assertEquals(16, dest.readRemaining)
         assertEquals(16, dest.capacity)
     }
+
+    @Test
+    fun testBytes() {
+        val buf = SdkBuffer(32)
+        buf.commitWritten(16)
+        val bytes = buf.bytes()
+        assertEquals(16, bytes.size)
+    }
 }

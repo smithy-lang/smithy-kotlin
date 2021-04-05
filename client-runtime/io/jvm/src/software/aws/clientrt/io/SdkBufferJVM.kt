@@ -9,7 +9,7 @@ internal fun SdkBuffer.hasArray() = memory.buffer.hasArray() && !memory.buffer.i
 
 actual fun SdkBuffer.bytes(): ByteArray {
     return when (hasArray()) {
-        true -> memory.buffer.array()
+        true -> memory.buffer.array().sliceArray(readPosition until readRemaining)
         false -> ByteArray(readRemaining).apply { readFully(this) }
     }
 }
