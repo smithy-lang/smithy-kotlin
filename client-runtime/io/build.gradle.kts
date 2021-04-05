@@ -18,9 +18,7 @@ kotlin {
             dependencies {
                 implementation(project(":client-runtime:utils"))
                 implementation("io.ktor:ktor-io:$ktorVersion")
-
-                // Dispatchers.IO
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
         }
 
