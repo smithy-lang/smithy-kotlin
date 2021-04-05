@@ -12,11 +12,11 @@ import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
 import io.ktor.utils.io.ByteWriteChannel as KtorByteWriteChannel
 
 // marker interfaces used internally for accessing the underlying ktor impl
-internal interface IsKtorReadChannel {
+internal interface KtorReadChannel {
     val chan: KtorByteReadChannel
 }
 
-internal interface IsKtorWriteChannel {
+internal interface KtorWriteChannel {
     val chan: KtorByteWriteChannel
 }
 
@@ -26,7 +26,7 @@ internal interface IsKtorWriteChannel {
  */
 internal abstract class KtorReadChannelAdapterBase(
     override val chan: KtorByteReadChannel
-) : SdkByteReadChannel, IsKtorReadChannel {
+) : SdkByteReadChannel, KtorReadChannel {
 
     override val availableForRead: Int
         get() = chan.availableForRead
@@ -60,7 +60,7 @@ internal abstract class KtorReadChannelAdapterBase(
  */
 internal abstract class KtorWriteChannelAdapterBase(
     override val chan: KtorByteWriteChannel
-) : SdkByteWriteChannel, IsKtorWriteChannel {
+) : SdkByteWriteChannel, KtorWriteChannel {
     override val availableForWrite: Int
         get() = chan.availableForWrite
 
@@ -98,8 +98,8 @@ internal class KtorByteChannelAdapter(
 ) : SdkByteChannel,
     SdkByteReadChannel by KtorReadChannelAdapter(chan),
     SdkByteWriteChannel by KtorWriteChannelAdapter(chan),
-    IsKtorWriteChannel,
-    IsKtorReadChannel {
+    KtorWriteChannel,
+    KtorReadChannel {
     override val isClosedForWrite: Boolean
         get() = chan.isClosedForWrite
 

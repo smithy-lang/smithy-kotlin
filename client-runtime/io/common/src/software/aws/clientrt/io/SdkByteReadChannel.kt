@@ -75,7 +75,7 @@ public suspend fun SdkByteReadChannel.copyTo(
     if (limit == 0L) return 0L
 
     // delegate to ktor-io if possible which may have further optimizations based on impl
-    val cnt = if (this is IsKtorReadChannel && dst is IsKtorWriteChannel) {
+    val cnt = if (this is KtorReadChannel && dst is KtorWriteChannel) {
         chan.copyTo(dst.chan, limit)
     } else {
         copyToFallback(dst, limit)
@@ -119,7 +119,7 @@ internal suspend fun SdkByteReadChannel.copyToFallback(dst: SdkByteWriteChannel,
  * Reads a single byte from the channel and suspends until available
  */
 public suspend fun SdkByteReadChannel.readByte(): Byte {
-    if (this is IsKtorReadChannel) return chan.readByte()
+    if (this is KtorReadChannel) return chan.readByte()
     // TODO - we could pool these
     val out = ByteArray(1)
     readFully(out)

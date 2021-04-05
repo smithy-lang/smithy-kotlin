@@ -70,7 +70,7 @@ public suspend fun SdkByteWriteChannel.writeUtf8(str: String) {
  * Writes byte and suspends until written
  */
 public suspend fun SdkByteWriteChannel.writeByte(value: Byte) {
-    if (this is IsKtorWriteChannel) {
+    if (this is KtorWriteChannel) {
         chan.writeByte(value)
         return
     }
