@@ -21,7 +21,7 @@ fun ByteStream.Companion.fromFile(file: File): ByteStream = file.asByteStream()
 /**
  * Create a [ByteStream] from a file
  */
-fun File.asByteStream(): ByteStream = LocalFileContent(this)
+fun File.asByteStream(): ByteStream = FileContent(this)
 
 /**
  * Create a [ByteStream] from a path

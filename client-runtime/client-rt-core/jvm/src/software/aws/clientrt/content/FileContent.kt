@@ -12,7 +12,7 @@ import java.io.File
 /**
  * ByteStream backed by a local [file]
  */
-public class LocalFileContent(
+public class FileContent(
     public val file: File,
 ) : ByteStream.Reader() {
 
