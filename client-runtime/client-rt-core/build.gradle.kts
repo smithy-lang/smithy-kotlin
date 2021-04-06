@@ -11,7 +11,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":client-runtime:io"))
+                // io types are exposed as part of content/*
+                api(project(":client-runtime:io"))
                 // Attributes property bag is exposed as client options
                 api(project(":client-runtime:utils"))
             }

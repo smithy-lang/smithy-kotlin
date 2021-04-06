@@ -8,6 +8,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
+// FIXME - this can go away if/when this lands: https://github.com/Kotlin/kotlinx.coroutines/issues/1996
+
 /**
  * MPP compatible runBlocking to run suspend tests in common modules
  */

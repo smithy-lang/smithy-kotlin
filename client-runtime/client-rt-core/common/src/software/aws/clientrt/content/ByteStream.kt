@@ -4,10 +4,10 @@
  */
 package software.aws.clientrt.content
 
-import software.aws.clientrt.io.Source
+import software.aws.clientrt.io.SdkByteReadChannel
 
 /**
- * Represents an abstract stream of bytes
+ * Represents an abstract read-only stream of bytes
  */
 sealed class ByteStream {
 
@@ -31,9 +31,9 @@ sealed class ByteStream {
      */
     abstract class Reader : ByteStream() {
         /**
-         * Provides [Source] to read from/consume
+         * Provides [SdkByteReadChannel] to read from/consume
          */
-        abstract fun readFrom(): Source
+        abstract fun readFrom(): SdkByteReadChannel
     }
 
     companion object {
@@ -52,11 +52,10 @@ sealed class ByteStream {
 suspend fun ByteStream.toByteArray(): ByteArray {
     return when (val stream = this) {
         is ByteStream.Buffer -> stream.bytes()
-        is ByteStream.Reader -> stream.readFrom().readAll()
+        is ByteStream.Reader -> stream.readFrom().readRemaining()
     }
 }
 
-@OptIn(ExperimentalStdlibApi::class)
 suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
 
 fun ByteStream.cancel() {

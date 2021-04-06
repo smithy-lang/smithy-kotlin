@@ -7,13 +7,14 @@
 package software.aws.clientrt.io
 
 import java.nio.ByteBuffer
+import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
 
 /**
  * Supplies a stream of bytes. Use this interface to read data from wherever it’s located: from the network, storage, or a buffer in memory.
  *
  * This interface is functionally equivalent to an asynchronous coroutine compatible [java.io.InputStream]
  */
-actual interface Source {
+actual interface SdkByteReadChannel : Closeable {
     /**
      * Returns number of bytes that can be read without suspension. Read operations do no suspend and return immediately when this number is at least the number of bytes requested for read.
      */
@@ -27,9 +28,12 @@ actual interface Source {
     actual val isClosedForWrite: Boolean
 
     /**
-     * Read the entire content into a [ByteArray]. NOTE: Be careful this will read the entire byte stream into memory.
+     * Read up to [limit] bytes into a [ByteArray] suspending until [limit] is reached or the channel
+     * is closed.
+     *
+     * NOTE: Be careful as this will potentially read the entire byte stream into memory (up to limit)
      */
-    actual suspend fun readAll(): ByteArray
+    actual suspend fun readRemaining(limit: Int): ByteArray
 
     /**
      * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough bytes available.
@@ -47,4 +51,11 @@ actual interface Source {
      * Close channel with optional cause cancellation
      */
     actual fun cancel(cause: Throwable?): Boolean
+
+    override fun close() { cancel(null) }
 }
+
+/**
+ * Creates a channel for reading from the given buffer
+ */
+fun SdkByteReadChannel(content: ByteBuffer): SdkByteReadChannel = KtorByteReadChannel(content).toSdkChannel()

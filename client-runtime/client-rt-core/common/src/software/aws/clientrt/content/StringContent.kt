@@ -11,7 +11,7 @@ class StringContent(str: String) : ByteStream.Buffer() {
     @OptIn(ExperimentalStdlibApi::class)
     private val asBytes: ByteArray = str.encodeToByteArray()
 
-    override val contentLength: Long? = asBytes.size.toLong()
+    override val contentLength: Long = asBytes.size.toLong()
 
     override fun bytes(): ByteArray = asBytes
 }

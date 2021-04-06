@@ -8,9 +8,7 @@ import io.ktor.client.utils.EmptyContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
-import io.ktor.utils.io.ByteChannel
-import io.ktor.utils.io.ByteReadChannel
-import io.ktor.utils.io.close
+import io.ktor.utils.io.*
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -18,7 +16,7 @@ import kotlinx.coroutines.launch
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.HttpRequestBuilder
-import software.aws.clientrt.io.Source
+import software.aws.clientrt.io.SdkByteReadChannel
 import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 import io.ktor.client.request.HttpRequestBuilder as KtorRequestBuilder
@@ -68,8 +66,11 @@ internal class KtorRequestAdapter(
         return object : OutgoingContent.ReadChannelContent() {
             override val contentType: ContentType? = contentType
             override val contentLength: Long? = body.contentLength
+            // FIXME - ensure the `source` is closed?
 
             override fun readFrom(): ByteReadChannel {
+                // FIXME - instead of reading and writing bytes we could probably proxy the underlying channel
+                // and/or since we use ktor under the hood if we could access the underlying channel that would be best
                 // we want to read values off the incoming source and write them to this channel
                 val channel = ByteChannel()
 
@@ -87,8 +88,7 @@ internal class KtorRequestAdapter(
                 return channel
             }
 
-            private suspend fun forwardSource(dst: ByteChannel, source: Source) {
-                // TODO - consider a buffer pool here
+            private suspend fun forwardSource(dst: ByteChannel, source: SdkByteReadChannel) {
                 val buffer = ByteBuffer.allocate(BUFFER_SIZE)
                 while (!source.isClosedForRead) {
                     // fill the buffer by reading chunks from the underlying source
