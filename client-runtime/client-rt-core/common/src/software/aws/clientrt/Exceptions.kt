@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt
 
+import software.aws.clientrt.client.SdkClientOption
 import software.aws.clientrt.util.AttributeKey
 import software.aws.clientrt.util.Attributes
 import software.aws.clientrt.util.InternalApi
@@ -13,7 +14,7 @@ import software.aws.clientrt.util.InternalApi
  */
 open class ErrorMetadata {
     @InternalApi
-    val attributes: Attributes = Attributes() // PropertyBag
+    val attributes: Attributes = Attributes()
 
     companion object {
         /**
@@ -70,7 +71,6 @@ open class ServiceErrorMetadata : ErrorMetadata() {
 
     companion object {
         val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
-        val ServiceName: AttributeKey<String> = AttributeKey("ServiceName")
         val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
     }
 
@@ -78,7 +78,7 @@ open class ServiceErrorMetadata : ErrorMetadata() {
      * The name of the service that sent this error response
      */
     val serviceName: String
-        get() = attributes.getOrNull(ServiceName) ?: ""
+        get() = attributes.getOrNull(SdkClientOption.ServiceName) ?: ""
 
     /**
      * Indicates who is responsible for this exception (caller, service, or unknown)
