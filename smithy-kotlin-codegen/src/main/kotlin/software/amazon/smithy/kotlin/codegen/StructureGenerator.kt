@@ -297,6 +297,8 @@ class StructureGenerator(
         val errorTrait: ErrorTrait = shape.expectTrait()
         val isRetryable = shape.hasTrait<RetryableTrait>()
 
+        checkForConflictsInHierarchy()
+
         val exceptionBaseClass = protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
         writer.addImport(exceptionBaseClass)
 
@@ -340,5 +342,16 @@ class StructureGenerator(
         writer.write("sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = $errorType")
         writer.addImport(RuntimeTypes.Core.ErrorMetadata)
         writer.addImport(RuntimeTypes.Core.ServiceErrorMetadata)
+    }
+
+    // throw an exception if there are conflicting property names between the error structure and properties inherited
+    // from the base class
+    private fun checkForConflictsInHierarchy() {
+        val baseExceptionProperties = setOf("sdkErrorMetadata")
+        val hasConflictWithBaseClass = sortedMembers.map {
+            symbolProvider.toMemberName(it)
+        }.any { it in baseExceptionProperties }
+
+        if (hasConflictWithBaseClass) throw CodegenException("`sdkErrorMetadata` conflicts with property of same name inherited from SdkBaseException. Apply a rename customization/projection to fix.")
     }
 }
