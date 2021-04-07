@@ -81,11 +81,11 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
 
     @Test
     fun `error generator sets error type correctly`() {
-        val expectedClientClassDecl = "override val errorType = ErrorType.Client"
+        val expectedClientClassDecl = "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client"
 
         clientErrorTestContents.shouldContain(expectedClientClassDecl)
 
-        val expectedServerClassDecl = "override val errorType = ErrorType.Server"
+        val expectedServerClassDecl = "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Server"
         serverErrorTestContents.shouldContain(expectedServerClassDecl)
     }
 
@@ -98,21 +98,18 @@ class InternalServerException private constructor(builder: BuilderImpl) : Servic
 
     @Test
     fun `error generator renders override with message member`() {
-        val expectedConstr = """
-    override val message: String = builder.message!!
+        val expected = """
+    override val message: String? = builder.message
 """
 
-        serverErrorTestContents.shouldContain(expectedConstr)
-        clientErrorTestContents.shouldNotContain(expectedConstr)
+        serverErrorTestContents.shouldContain(expected)
+        clientErrorTestContents.shouldNotContain(expected)
     }
 
     @Test
     fun `error generator renders isRetryable`() {
-        val expectedConstr = """
-        override val isRetryable = true
-"""
-
-        serverErrorTestContents.shouldContain(expectedConstr)
-        clientErrorTestContents.shouldNotContain(expectedConstr)
+        val expected = "sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true"
+        serverErrorTestContents.shouldContain(expected)
+        clientErrorTestContents.shouldNotContain(expected)
     }
 }
