@@ -21,7 +21,6 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
     constructor(input: ByteArray) : this(xmlStreamReader(input))
     private val logger = Logger.getLogger<XmlDeserializer>()
     private var firstStructCall = true
-    private val restXmlErrorName = XmlToken.QualifiedName("Error")
 
     override suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         logger.trace { "Deserializing struct $descriptor under ${reader.lastToken}" }
@@ -34,7 +33,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
             reader.nextToken() // Matching field descriptors to children tags so consume the start element of top-level struct
 
             val structToken = if (descriptor.hasTrait<XmlError>()) {
-                reader.seek<XmlToken.BeginElement> { it.name == restXmlErrorName }
+                reader.seek<XmlToken.BeginElement> { it.name == descriptor.expectTrait<XmlError>().errorTag }
             } else {
                 reader.seek<XmlToken.BeginElement>()
             } ?: throw DeserializerStateException("Could not find a begin element for new struct")
@@ -48,10 +47,11 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
 
         // Because attributes set on the root node of the struct, we must read the values before creating the subtree
         val attribFields = reader.tokenAttributesToFieldLocations(descriptor)
-        val parentToken = if (reader.lastToken is XmlToken.BeginElement)
+        val parentToken = if (reader.lastToken is XmlToken.BeginElement) {
             reader.lastToken as XmlToken.BeginElement
-        else
+        } else {
             throw DeserializerStateException("Expected last parsed token to be ${XmlToken.BeginElement::class} but was ${reader.lastToken}")
+        }
 
         return XmlStructDeserializer(descriptor, reader.subTreeReader(), parentToken, attribFields)
     }
@@ -190,15 +190,16 @@ internal class XmlStructDeserializer(
             // tokens so clear them here to avoid processing stale state
             parsedFieldLocations.clear()
         }
-        // there is a problem w the test where one field is deserialized (nested) but another isnt (toplevel).  figure it out.
+
         if (parsedFieldLocations.isEmpty()) {
-            val matchedFieldLocations = when (val nextToken = reader.nextToken()) {
+            val matchedFieldLocations = when (val token = reader.nextToken()) {
                 null, is XmlToken.EndDocument -> return null
                 is XmlToken.EndElement -> return findNextFieldIndex()
                 is XmlToken.BeginElement -> {
+                    val nextToken = reader.peek() ?: return null
                     val objectFields = objDescriptor.fields
-                    val memberFields = objectFields.filter { objDescriptor.fieldTokenMatcher(it, nextToken) }
-                    val matchingFields = memberFields.mapNotNull { it.findFieldLocation(nextToken, reader.peek() ?: return@mapNotNull null) }
+                    val memberFields = objectFields.filter { field -> objDescriptor.fieldTokenMatcher(field, token) }
+                    val matchingFields = memberFields.mapNotNull { it.findFieldLocation(token, nextToken) }
                     matchingFields
                 }
                 else -> return findNextFieldIndex()

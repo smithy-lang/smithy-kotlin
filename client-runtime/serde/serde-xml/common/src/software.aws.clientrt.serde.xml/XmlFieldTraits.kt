@@ -67,8 +67,13 @@ object Flattened : FieldTrait
  * deserialize error response data into types.
  *
  * See https://awslabs.github.io/smithy/1.0/spec/aws/aws-restxml-protocol.html#operation-error-serialization
+ *
+ * NOTE/FIXME: This type was written to handle the restXml protocol handling but could be refactored to be more
+ *       general purpose if/when necessary to support other XML-based protocols.
  */
-object XmlError : FieldTrait
+object XmlError : FieldTrait {
+    val errorTag: XmlToken.QualifiedName = XmlToken.QualifiedName("Error")
+}
 
 /**
  * Describes the namespace associated with a field.
