@@ -3,7 +3,7 @@ package software.amazon.smithy.kotlin.codegen
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
-class SymbolVisitorTest {
+class UtilsTest {
 
     @Test
     fun `it produces the correct string transformation for client names`() {
