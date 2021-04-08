@@ -6,10 +6,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -23,15 +20,15 @@ import software.amazon.smithy.model.traits.StreamingTrait
  * Renders Smithy structure shapes
  */
 class StructureGenerator(
-    val model: Model,
-    private val symbolProvider: SymbolProvider,
-    private val writer: KotlinWriter,
-    private val shape: StructureShape,
-    private val protocolGenerator: ProtocolGenerator? = null
+    private val ctx: RenderingContext<StructureShape>
 ) {
+    private val shape = requireNotNull(ctx.shape)
+    private val writer = ctx.writer
+    private val symbolProvider = ctx.symbolProvider
+    private val model = ctx.model
 
     fun render() {
-        val symbol = symbolProvider.toSymbol(shape)
+        val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
         // push context to be used throughout generation of the class
         writer.putContext("class.name", symbol.name)
 
@@ -299,7 +296,7 @@ class StructureGenerator(
 
         checkForConflictsInHierarchy()
 
-        val exceptionBaseClass = protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
+        val exceptionBaseClass = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
         writer.addImport(exceptionBaseClass)
 
         writer.openBlock("class #class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
@@ -340,7 +337,6 @@ class StructureGenerator(
             }
         }
         writer.write("sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = $errorType")
-        writer.addImport(RuntimeTypes.Core.ErrorMetadata)
         writer.addImport(RuntimeTypes.Core.ServiceErrorMetadata)
     }
 

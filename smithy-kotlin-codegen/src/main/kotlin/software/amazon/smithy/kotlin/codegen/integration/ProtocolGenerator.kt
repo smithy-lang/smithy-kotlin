@@ -16,10 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.ApplicationProtocol
-import software.amazon.smithy.kotlin.codegen.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -44,11 +41,10 @@ interface ProtocolGenerator {
             return CaseUtils.toCamelCase(s1, true, '_')
         }
 
-        val DefaultServiceExceptionSymbol: Symbol = Symbol.builder()
-            .name("ServiceException")
-            .namespace(KotlinDependency.CLIENT_RT_CORE.namespace, ".")
-            .addDependency(KotlinDependency.CLIENT_RT_CORE)
-            .build()
+        val DefaultServiceExceptionSymbol: Symbol = buildSymbol {
+            name = "ServiceException"
+            namespace(KotlinDependency.CLIENT_RT_CORE)
+        }
     }
 
     /**

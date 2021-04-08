@@ -7,13 +7,7 @@ package software.amazon.smithy.kotlin.codegen
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.assertThrows
-import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.BlobShape
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.*
 
@@ -45,7 +39,8 @@ class StructureGeneratorTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
-        val generator = StructureGenerator(model, provider, writer, struct)
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        val generator = StructureGenerator(renderingCtx)
         generator.render()
 
         commonTestContents = writer.toString()
@@ -228,84 +223,6 @@ class StructureGeneratorTest {
     }
 
     @Test
-    fun `it handles enum overloads`() {
-        val trait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("t2.nano").name("T2_NANO").build())
-            .addEnum(EnumDefinition.builder().value("t2.micro").name("T2_MICRO").build())
-            .build()
-
-        val enumShape = StringShape.builder()
-            .id("com.test#InstanceSize")
-            .addTrait(trait)
-            .build()
-
-        val member1 = MemberShape.builder().id("com.test#MyStruct\$foo").target(enumShape).build()
-
-        val struct = StructureShape.builder()
-            .id("com.test#MyStruct")
-            .addMember(member1)
-            .build()
-
-        /*
-        namespace com.test
-
-        @enum("t2.nano": {name: "T2_NANO"}, "t2.micro": {name: "T2_MICRO"})
-        String InstanceSize
-
-        structure MyStruct {
-            foo: InstanceSize,
-        }
-        */
-        val model = Model.assembler()
-            .addShapes(struct, member1, enumShape)
-            .assemble()
-            .unwrap()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
-        StructureGenerator(model, provider, writer, struct).render()
-
-        val contents = writer.toString()
-
-        val expectedDecl = """
-            class MyStruct private constructor(builder: BuilderImpl) {
-                val foo: InstanceSize? = builder.foo
-        """.formatForTest(indent = "")
-        contents.shouldContainOnlyOnceWithDiff(expectedDecl)
-
-        val expectedBuilderInterface = """
-            interface FluentBuilder {
-                fun build(): MyStruct
-                fun foo(foo: InstanceSize): FluentBuilder
-            }
-        """.formatForTest()
-        contents.shouldContainOnlyOnceWithDiff(expectedBuilderInterface)
-
-        val expectedDslBuilderInterface = """
-            interface DslBuilder {
-                var foo: InstanceSize?
-        
-                fun build(): MyStruct
-            }
-        """.formatForTest()
-        contents.shouldContainOnlyOnceWithDiff(expectedDslBuilderInterface)
-
-        val expectedBuilderImpl = """
-            private class BuilderImpl() : FluentBuilder, DslBuilder {
-                override var foo: InstanceSize? = null
-        
-                constructor(x: MyStruct) : this() {
-                    this.foo = x.foo
-                }
-        
-                override fun build(): MyStruct = MyStruct(this)
-                override fun foo(foo: InstanceSize): FluentBuilder = apply { this.foo = foo }
-            }
-        """.formatForTest()
-        contents.shouldContainOnlyOnceWithDiff(expectedBuilderImpl)
-    }
-
-    @Test
     fun `it renders class docs`() {
         commonTestContents.shouldContainOnlyOnceWithDiff("This *is* documentation about the shape.")
     }
@@ -345,8 +262,8 @@ class StructureGeneratorTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
         val struct = model.expectShape<StructureShape>("com.test#Foo")
-        val generator = StructureGenerator(model, provider, writer, struct)
-        generator.render()
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
 
         val generated = writer.toString()
         generated.shouldContainWithDiff("Shape documentation")
@@ -355,27 +272,26 @@ class StructureGeneratorTest {
 
     @Test
     fun `it handles the sensitive trait in toString`() {
-        val stringShape = StringShape.builder().id("com.test#Baz").addTrait(SensitiveTrait()).build()
-        val member1 = MemberShape.builder().id("com.test#Foo\$bar").target("com.test#Baz").build()
-        val member2 = MemberShape.builder().id("com.test#Foo\$baz").target("com.test#Baz").addTrait(DocumentationTrait("Member documentation")).build()
-        val member3 = MemberShape.builder().id("com.test#Foo\$qux").target("smithy.api#String").build()
-
-        val struct = StructureShape.builder()
-            .id("com.test#Foo")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(struct, member1, member2, member3, stringShape)
-            .assemble()
-            .unwrap()
+        val model = """
+            namespace com.test
+            
+            @sensitive
+            string Baz
+            
+            structure Foo {
+                bar: Baz,
+                @documentation("Member documentation")
+                baz: Baz,
+                qux: String
+            }
+            
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
-        val generator = StructureGenerator(model, provider, writer, struct)
-        generator.render()
+        val struct = model.expectShape<StructureShape>("com.test#Foo")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
 
         val generated = writer.toString()
         generated.shouldContainOnlyOnceWithDiff("bar=*** Sensitive Data Redacted ***")
@@ -384,56 +300,26 @@ class StructureGeneratorTest {
     }
 
     @Test
-    fun `error generator throws if message property is of wrong type`() {
-        val errorMessageMember =
-            MemberShape.builder().id("com.test#InternalServerException\$message").target("smithy.api#Integer").build()
-        val serverErrorShape = StructureShape.builder()
-            .id("com.test#InternalServerException")
-            .addMember(errorMessageMember)
-            .addTrait(ErrorTrait("server"))
-            .addTrait(RetryableTrait.builder().throttling(false).build())
-            .addTrait(HttpErrorTrait(500))
-            .addTrait(DocumentationTrait("Internal server error"))
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(serverErrorShape, errorMessageMember)
-            .assemble()
-            .unwrap()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
-        val generator = StructureGenerator(model, provider, writer, serverErrorShape)
-
-        val e = assertThrows<CodegenException> {
-            generator.render()
-        }
-        e.message.shouldContainOnlyOnceWithDiff("Message is a reserved name for exception types and cannot be used for any other property")
-    }
-
-    @Test
     fun `it handles blob shapes`() {
         // blobs (with and without streaming) require special attention in equals() and hashCode() implementations
-        val member1 = MemberShape.builder().id("com.test#MyStruct\$foo").target("smithy.api#Blob").build()
-        val member2 = MemberShape.builder().id("com.test#MyStruct\$bar").target("com.test#BlobStream").build()
-
-        val blobStream = BlobShape.builder().id("com.test#BlobStream").addTrait(StreamingTrait()).build()
-
-        val struct = StructureShape.builder()
-            .id("com.test#MyStruct")
-            .addMember(member1)
-            .addMember(member2)
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(struct, member1, member2, blobStream)
-            .assemble()
-            .unwrap()
+        val model = """
+            namespace com.test
+            
+            @streaming
+            blob BlobStream
+            
+            structure MyStruct {
+                foo: Blob,
+                bar: BlobStream
+            }
+            
+        """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
-        val generator = StructureGenerator(model, provider, writer, struct)
-        generator.render()
+        val struct = model.expectShape<StructureShape>("com.test#MyStruct")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
 
         val expectedEqualsContent = """
@@ -507,8 +393,8 @@ class StructureGeneratorTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
-        val generator = StructureGenerator(model, provider, writer, struct)
-        generator.render()
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
 
         listOf(
@@ -563,8 +449,8 @@ class StructureGeneratorTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
         val writer = KotlinWriter("com.test")
-        val generator = StructureGenerator(model, provider, writer, struct)
-        generator.render()
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
 
         listOf(

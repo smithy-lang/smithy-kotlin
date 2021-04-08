@@ -130,11 +130,13 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         writers.flushWriters()
     }
 
-    override fun getDefault(shape: Shape?) {
-    }
+    override fun getDefault(shape: Shape?) { }
 
     override fun structureShape(shape: StructureShape) {
-        writers.useShapeWriter(shape) { StructureGenerator(model, symbolProvider, it, shape, protocolGenerator).render() }
+        writers.useShapeWriter(shape) {
+            val renderingContext = baseGenerationContext.toRenderingContext(it, shape)
+            StructureGenerator(renderingContext).render()
+        }
     }
 
     override fun stringShape(shape: StringShape) {
@@ -156,6 +158,12 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         writers.useShapeWriter(shape) {
             val renderingCtx = baseGenerationContext.toRenderingContext(it, shape)
             ServiceGenerator(renderingCtx).render()
+        }
+
+        // render the service (client) base exception type
+        val baseExceptionSymbol = ExceptionBaseClassGenerator.baseExceptionSymbol(baseGenerationContext.settings)
+        writers.useFileWriter("${baseExceptionSymbol.name}.kt", baseExceptionSymbol.namespace) {
+            ExceptionBaseClassGenerator.render(baseGenerationContext, it)
         }
     }
 }
