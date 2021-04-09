@@ -25,9 +25,8 @@ private class FormUrlSerializer(
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer =
         FormUrlListSerializer(this, descriptor)
 
-    override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer {
-        TODO("Not yet implemented")
-    }
+    override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer =
+        FormUrlMapSerializer(this, descriptor)
 
     override fun toByteArray(): ByteArray = buffer.bytes()
 
@@ -265,10 +264,14 @@ private class FormUrlMapSerializer(
         value.serialize(FormUrlSerializer(buffer, nestedFn))
     }
 
+    override fun rawEntry(key: String, value: String) = writeEntry(key) {
+        serializeRaw(value)
+    }
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeKey(key)
 
-        // FIXME - we should probably make list serializer take a prefix function rather than abusing descriptors...
+        // FIXME - we should probably make list/map serializers take a prefix function rather than abusing descriptors...
         val childDescriptor = SdkFieldDescriptor("$commonPrefix.value", SerialKind.List)
         FormUrlListSerializer(parent, childDescriptor).apply(block)
     }
@@ -278,10 +281,6 @@ private class FormUrlMapSerializer(
 
         val childDescriptor = SdkFieldDescriptor("$commonPrefix.value", SerialKind.Map)
         FormUrlMapSerializer(parent, childDescriptor).apply(block)
-    }
-
-    override fun rawEntry(key: String, value: String) {
-        TODO("Not yet implemented")
     }
 
     override fun endMap() {}
