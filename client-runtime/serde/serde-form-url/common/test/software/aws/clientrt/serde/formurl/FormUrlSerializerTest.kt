@@ -346,4 +346,10 @@ class FormUrlSerializerTest {
         // map with xmlName key/value overrides
         TODO("not implemented")
     }
+
+    @Test
+    fun itSerializesQueryLiterals() {
+        // test SdkObjectDescriptor with query literals trait
+        TODO("not implemented")
+    }
 }

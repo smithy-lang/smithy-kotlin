@@ -20,7 +20,7 @@ private class FormUrlSerializer(
 ) : Serializer {
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer =
-        FormUrlStructSerializer(this, prefixFn)
+        FormUrlStructSerializer(this, descriptor, prefixFn)
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer =
         FormUrlListSerializer(this, descriptor)
@@ -59,11 +59,22 @@ private class FormUrlSerializer(
 
 private class FormUrlStructSerializer(
     private val parent: FormUrlSerializer,
+    private val descriptor: SdkFieldDescriptor,
     // field prefix generator function (e.g. nested structures, list elements, etc)
     private val prefixFn: PrefixFn? = null
 ) : StructSerializer, PrimitiveSerializer by parent {
     private val buffer
         get() = parent.buffer
+
+    init {
+        // FIXME - this should be `traits`
+        descriptor.trait.mapNotNull { it as? QueryLiteral }
+            .forEach { literal ->
+                writeField(literal.asDescriptor()) {
+                    serializeString(literal.value)
+                }
+            }
+    }
 
     private fun writeField(descriptor: SdkFieldDescriptor, block: () -> Unit) {
         if (buffer.writePosition> 0) {
@@ -300,3 +311,5 @@ private inline fun <T : Any> checkNotSparse(value: T?): T {
     if (value == null) throw SerializationException("sparse collections are not supported by form-url encoding")
     return value
 }
+
+private fun QueryLiteral.asDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor(key, SerialKind.String)
