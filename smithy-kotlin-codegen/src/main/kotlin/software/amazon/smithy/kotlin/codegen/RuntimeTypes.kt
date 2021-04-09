@@ -25,6 +25,8 @@ object RuntimeTypes {
     object Core {
         val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CLIENT_RT_CORE, "client")
         val ExecutionContext = runtimeSymbol("ExecutionContext", KotlinDependency.CLIENT_RT_CORE, "client")
+        val ErrorMetadata = runtimeSymbol("ErrorMetadata", KotlinDependency.CLIENT_RT_CORE)
+        val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CLIENT_RT_CORE)
     }
 
     object Serde {

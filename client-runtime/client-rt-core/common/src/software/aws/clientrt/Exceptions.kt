@@ -4,6 +4,29 @@
  */
 package software.aws.clientrt
 
+import software.aws.clientrt.client.SdkClientOption
+import software.aws.clientrt.util.AttributeKey
+import software.aws.clientrt.util.Attributes
+import software.aws.clientrt.util.InternalApi
+
+/**
+ * Additional metadata about an error
+ */
+open class ErrorMetadata {
+    @InternalApi
+    val attributes: Attributes = Attributes()
+
+    companion object {
+        /**
+         * Set if an error is retryable
+         */
+        val Retryable: AttributeKey<Boolean> = AttributeKey("Retryable")
+    }
+
+    val isRetryable: Boolean
+        get() = attributes.getOrNull(Retryable) ?: false
+}
+
 /**
  * Base exception class for all exceptions thrown by the SDK. Exception may be a client side exception or a service exception
  */
@@ -17,7 +40,10 @@ open class SdkBaseException : RuntimeException {
 
     constructor(cause: Throwable?) : super(cause)
 
-    open val isRetryable: Boolean = false
+    /**
+     * Additional metadata about the error
+     */
+    open val sdkErrorMetadata: ErrorMetadata = ErrorMetadata()
 }
 
 /**
@@ -38,6 +64,34 @@ open class ClientException : SdkBaseException {
  * protocol specific details.
  */
 interface ProtocolResponse
+
+private object EmptyProtocolResponse : ProtocolResponse
+
+open class ServiceErrorMetadata : ErrorMetadata() {
+
+    companion object {
+        val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
+        val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
+    }
+
+    /**
+     * The name of the service that sent this error response
+     */
+    val serviceName: String
+        get() = attributes.getOrNull(SdkClientOption.ServiceName) ?: ""
+
+    /**
+     * Indicates who is responsible for this exception (caller, service, or unknown)
+     */
+    val errorType: ServiceException.ErrorType
+        get() = attributes.getOrNull(ErrorType) ?: ServiceException.ErrorType.Unknown
+
+    /**
+     * The protocol response if available (this will differ depending on the underlying protocol e.g. HTTP, MQTT, etc)
+     */
+    val protocolResponse: ProtocolResponse
+        get() = attributes.getOrNull(ProtocolResponse) ?: EmptyProtocolResponse
+}
 
 /**
  * ServiceException - Base exception class for any error response returned by a service. Receiving an exception of this
@@ -63,23 +117,5 @@ open class ServiceException : SdkBaseException {
 
     constructor(cause: Throwable?) : super(cause)
 
-    /**
-     * The name of the service that sent this error response
-     */
-    open val serviceName: String = ""
-
-    /**
-     * Indicates who is responsible for this exception (caller, service, or unknown)
-     */
-    open val errorType: ErrorType = ErrorType.Unknown
-
-    /**
-     * The human-readable error message provided by the service
-     */
-    open var errorMessage: String = ""
-
-    /**
-     * The protocol response if available (this will differ depending on the underlying protocol e.g. HTTP, MQTT, etc)
-     */
-    open var protocolResponse: ProtocolResponse? = null
+    override val sdkErrorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
 }

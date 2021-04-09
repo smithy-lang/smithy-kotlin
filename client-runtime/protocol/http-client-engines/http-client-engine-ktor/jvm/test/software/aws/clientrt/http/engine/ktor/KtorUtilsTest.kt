@@ -130,7 +130,7 @@ class KtorUtilsTest {
         channel.close()
 
         val content = KtorContentStream(channel, notify)
-        val actual = content.readAll()
+        val actual = content.readRemaining()
         assertEquals(bytes.size, actual.size)
         called.shouldBeTrue()
     }

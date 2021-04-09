@@ -31,11 +31,17 @@ class StructureGenerator(
 ) {
 
     fun render() {
+        val symbol = symbolProvider.toSymbol(shape)
+        // push context to be used throughout generation of the class
+        writer.putContext("class.name", symbol.name)
+
+        writer.renderDocumentation(shape)
         if (!shape.hasTrait<ErrorTrait>()) {
             renderStructure()
         } else {
             renderError()
         }
+        writer.removeContext("class.name")
     }
 
     private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
@@ -48,20 +54,7 @@ class StructureGenerator(
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
-        startGenericStructureBlock("class #class.name:L private constructor(builder: BuilderImpl) {")
-        writer.closeBlock("}").write("")
-
-        writer.removeContext("class.name")
-    }
-
-    private fun startGenericStructureBlock(start: String) {
-        val symbol = symbolProvider.toSymbol(shape)
-        // push context to be used throughout generation of the class
-        writer.putContext("class.name", symbol.name)
-
-        writer.renderDocumentation(shape)
-        // constructor
-        writer.openBlock(start)
+        writer.openBlock("class #class.name:L private constructor(builder: BuilderImpl) {")
             .call { renderImmutableProperties() }
             .write("")
             .call { renderCompanionObject() }
@@ -72,6 +65,8 @@ class StructureGenerator(
             .call { renderJavaBuilderInterface() }
             .call { renderDslBuilderInterface() }
             .call { renderBuilderImpl() }
+            .closeBlock("}")
+            .write("")
     }
 
     private fun renderImmutableProperties() {
@@ -80,13 +75,12 @@ class StructureGenerator(
             val (memberName, memberSymbol) = memberNameSymbolIndex[it]!!
             writer.renderMemberDocumentation(model, it)
             if (shape.hasTrait<ErrorTrait>() && "message" == memberName) {
-                // TODO: Have to handle the case where "cause" is a property in the Smithy model
-                val targetShape = model.getShape(it.target).get()
+                val targetShape = model.expectShape(it.target)
                 if (!targetShape.isStringShape) {
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
                 }
-                // Override Throwable's message property
-                writer.write("override val #1L: #2L = builder.#1L!!", memberName, memberSymbol.name)
+                // override Throwable's message property
+                writer.write("override val #1L: #2P = builder.#1L", memberName, memberSymbol)
             } else {
                 writer.write("val #1L: #2P = builder.#1L", memberName, memberSymbol)
             }
@@ -303,38 +297,61 @@ class StructureGenerator(
         val errorTrait: ErrorTrait = shape.expectTrait()
         val isRetryable = shape.hasTrait<RetryableTrait>()
 
+        checkForConflictsInHierarchy()
+
         val exceptionBaseClass = protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
         writer.addImport(exceptionBaseClass)
 
-        startGenericStructureBlock("class #class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
-        writer.withBlock("", "}") {
-            write("")
-            if (isRetryable) {
-                call { renderRetryable() }
+        writer.openBlock("class #class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
+            .write("")
+            .call { renderImmutableProperties() }
+            .write("")
+            .withBlock("init {", "}") {
+                // initialize error metadata
+                if (isRetryable) {
+                    call { renderRetryable() }
+                }
+                call { renderErrorType(errorTrait) }
             }
-            call { renderErrorType(errorTrait) }
-        }
-        writer.write("")
-        writer.removeContext("class.name")
+            .write("")
+            .call { renderCompanionObject() }
+            .call { renderToString() }
+            .call { renderHashCode() }
+            .call { renderEquals() }
+            .call { renderCopy() }
+            .call { renderJavaBuilderInterface() }
+            .call { renderDslBuilderInterface() }
+            .call { renderBuilderImpl() }
+            .closeBlock("}")
+            .write("")
     }
 
     private fun renderRetryable() {
-        writer.write("")
-        writer.write("override val isRetryable = true")
+        writer.write("sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true")
+        writer.addImport(RuntimeTypes.Core.ErrorMetadata)
     }
 
     private fun renderErrorType(errorTrait: ErrorTrait) {
-        writer.write("")
-        when {
-            errorTrait.isClientError -> {
-                writer.write("override val errorType = ErrorType.Client")
-            }
-            errorTrait.isServerError -> {
-                writer.write("override val errorType = ErrorType.Server")
-            }
+        val errorType = when {
+            errorTrait.isClientError -> "ErrorType.Client"
+            errorTrait.isServerError -> "ErrorType.Server"
             else -> {
                 throw CodegenException("Errors must be either of client or server type")
             }
         }
+        writer.write("sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = $errorType")
+        writer.addImport(RuntimeTypes.Core.ErrorMetadata)
+        writer.addImport(RuntimeTypes.Core.ServiceErrorMetadata)
+    }
+
+    // throw an exception if there are conflicting property names between the error structure and properties inherited
+    // from the base class
+    private fun checkForConflictsInHierarchy() {
+        val baseExceptionProperties = setOf("sdkErrorMetadata")
+        val hasConflictWithBaseClass = sortedMembers.map {
+            symbolProvider.toMemberName(it)
+        }.any { it in baseExceptionProperties }
+
+        if (hasConflictWithBaseClass) throw CodegenException("`sdkErrorMetadata` conflicts with property of same name inherited from SdkBaseException. Apply a rename customization/projection to fix.")
     }
 }

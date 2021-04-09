@@ -631,6 +631,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .map { it.member }
 
                     if (documentMembers.isNotEmpty()) {
+                        // FIXME - we should not be slurping the entire contents into memory, instead our deserializers
+                        // should work off of an SdkByteReadChannel
                         writer.write("val payload = response.body.readAll()")
                         writer.withBlock("if (payload != null) {", "}") {
                             writer.write("val deserializer = context.deserializer(payload)")
