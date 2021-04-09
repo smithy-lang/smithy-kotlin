@@ -58,6 +58,40 @@ class FormUrlSerializerTest {
         }
     }
 
+    class A(private val b: B) : SdkSerializable {
+        companion object {
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
+
+            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+                serialName = "a"
+                field(descriptorB)
+            }
+        }
+
+        override fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(objectDescriptor) {
+                field(descriptorB, b)
+            }
+        }
+    }
+
+    data class B(private val value: Int) : SdkSerializable {
+        companion object {
+            val descriptorValue = SdkFieldDescriptor("v", SerialKind.Integer)
+
+            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+                serialName = "b"
+                field(descriptorValue)
+            }
+        }
+
+        override fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(objectDescriptor) {
+                field(descriptorValue, value)
+            }
+        }
+    }
+
     @Test
     fun itSerializesStructs() {
         val struct = PrimitiveStructTest()
@@ -145,7 +179,7 @@ class FormUrlSerializerTest {
     }
 
     @Test
-    fun canSerializeClassWithNestedClassField() {
+    fun itSerializesClassWithNestedClassField() {
         val a = A(
             B(2)
         )
@@ -154,37 +188,162 @@ class FormUrlSerializerTest {
         assertEquals("""b.v=2""", serializer.toByteArray().decodeToString())
     }
 
-    class A(private val b: B) : SdkSerializable {
+    data class MapInput(
+        val primitiveMap: Map<String, String>? = null,
+        val structMap: Map<String, B>? = null,
+        val mapOfLists: Map<String, List<String>>? = null,
+    ) {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
+            val PRIMITIVE_MAP_DESCRIPTOR = SdkFieldDescriptor("PrimitiveMap", SerialKind.Map)
+            val STRUCT_MAP_DESCRIPTOR = SdkFieldDescriptor("StructMap", SerialKind.Map)
+            val MAP_OF_LISTS_DESCRIPTOR = SdkFieldDescriptor("MapOfLists", SerialKind.Map)
+            // serialName of this nested descriptor should be ignored?
+            val MAP_OF_LISTS_CO_DESCRIPTOR = SdkFieldDescriptor("ChildStringList", SerialKind.List)
 
-            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName = "a"
-                field(descriptorB)
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                field(PRIMITIVE_MAP_DESCRIPTOR)
+                field(STRUCT_MAP_DESCRIPTOR)
+                field(MAP_OF_LISTS_DESCRIPTOR)
             }
         }
 
-        override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(objectDescriptor) {
-                field(descriptorB, b)
+        fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (primitiveMap != null) {
+                    mapField(PRIMITIVE_MAP_DESCRIPTOR) {
+                        primitiveMap.forEach { (key, value) ->
+                            entry(key, value)
+                        }
+                    }
+                }
+                if (structMap != null) {
+                    mapField(STRUCT_MAP_DESCRIPTOR) {
+                        structMap.forEach { (key, value) ->
+                            entry(key, value)
+                        }
+                    }
+                }
+                if (mapOfLists != null) {
+                    mapField(MAP_OF_LISTS_DESCRIPTOR) {
+                        mapOfLists.forEach { (key, value) ->
+                            listEntry(key, MAP_OF_LISTS_CO_DESCRIPTOR) {
+                                for (el1 in value) {
+                                    serializeString(el1)
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
-    data class B(private val value: Int) : SdkSerializable {
+    @Test
+    fun itSerializesMaps() {
+        val input = MapInput(
+            primitiveMap = mapOf(
+                "k1" to "v1",
+                "k2" to "v2",
+            ),
+            structMap = mapOf(
+                "b1" to B(7),
+                "b2" to B(8),
+                "b3" to B(9),
+            )
+        )
+
+        val expected = """
+            PrimitiveMap.entry.1.key=k1
+            &PrimitiveMap.entry.1.value=v1
+            &PrimitiveMap.entry.2.key=k2
+            &PrimitiveMap.entry.2.value=v2
+            &StructMap.entry.1.key=b1
+            &StructMap.entry.1.value.v=7
+            &StructMap.entry.2.key=b2
+            &StructMap.entry.2.value.v=8
+            &StructMap.entry.3.key=b3
+            &StructMap.entry.3.value.v=9
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itSerializesMapOfLists() {
+        val input = MapInput(
+            mapOfLists = mapOf(
+                "foo" to listOf("A", "B"),
+                "bar" to listOf("C", "D")
+            )
+        )
+
+        val expected = """
+            MapOfLists.entry.1.key=foo
+            &MapOfLists.entry.1.value.member.1=A
+            &MapOfLists.entry.1.value.member.2=B
+            &MapOfLists.entry.2.key=bar
+            &MapOfLists.entry.2.value.member.1=C
+            &MapOfLists.entry.2.value.member.2=D
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
+    data class MapOfMapsInput(val input: Map<String, Map<String, String>>) {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("v", SerialKind.Integer)
+            val MAP_OF_MAP_DESCRIPTOR = SdkFieldDescriptor("MapOfMaps", SerialKind.Map)
+            val MAP_OF_MAP_C0_DESCRIPTOR = SdkFieldDescriptor("ChildMapOfMaps", SerialKind.Map)
 
-            val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName = "b"
-                field(descriptorValue)
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                field(MAP_OF_MAP_DESCRIPTOR)
+                field(MAP_OF_MAP_C0_DESCRIPTOR)
             }
         }
 
-        override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(objectDescriptor) {
-                field(descriptorValue, value)
+        fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                mapField(MAP_OF_MAP_DESCRIPTOR) {
+                    input.forEach { (key, value) ->
+                        mapEntry(key, MAP_OF_MAP_C0_DESCRIPTOR) {
+                            value.forEach { (key1, value1) -> entry(key1, value1) }
+                        }
+                    }
+                }
             }
         }
+    }
+
+    @Test
+    fun itSerializesMapOfMapOfPrimitive() {
+
+        val expected = """
+            MapOfMaps.entry.1.key=foo
+            &MapOfMaps.entry.1.value.entry.1.key=k1
+            &MapOfMaps.entry.1.value.entry.1.value=v1
+            &MapOfMaps.entry.1.value.entry.2.key=k2
+            &MapOfMaps.entry.1.value.entry.2.value=v2
+        """.trimIndent().replace("\n", "")
+
+        val input = MapOfMapsInput(
+            mapOf(
+                "foo" to mapOf("k1" to "v1", "k2" to "v2")
+            )
+        )
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itSerializesRenamedMaps() {
+        // map with xmlName key/value overrides
+        TODO("not implemented")
     }
 }

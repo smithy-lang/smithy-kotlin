@@ -9,6 +9,8 @@ import software.aws.clientrt.io.SdkBuffer
 import software.aws.clientrt.io.bytes
 import software.aws.clientrt.io.write
 import software.aws.clientrt.serde.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer(256))
 
@@ -126,7 +128,7 @@ private class FormUrlStructSerializer(
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        TODO("Not yet implemented")
+        FormUrlMapSerializer(parent, descriptor).apply(block)
     }
 
     override fun rawField(descriptor: SdkFieldDescriptor, value: String) = writeField(descriptor) {
@@ -185,6 +187,117 @@ private class FormUrlListSerializer(
     override fun serializeNull() {}
 }
 
+private class FormUrlMapSerializer(
+    private val parent: FormUrlSerializer,
+    private val descriptor: SdkFieldDescriptor
+) : MapSerializer, PrimitiveSerializer by parent {
+    private val buffer = parent.buffer
+    private var cnt = 0
+
+    private val commonPrefix: String
+        get() = "${descriptor.serialName}.entry.$cnt"
+
+    private fun writeKey(key: String) {
+        cnt++
+        if (buffer.writePosition > 0) buffer.write("&")
+        buffer.write("$commonPrefix.key=$key")
+    }
+
+    private fun writeEntry(key: String, block: () -> Unit) {
+        writeKey(key)
+        buffer.write("&")
+        buffer.write("$commonPrefix.value=")
+        block()
+    }
+
+    override fun entry(key: String, value: Boolean?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeBoolean(value)
+    }
+
+    override fun entry(key: String, value: Byte?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeByte(value)
+    }
+
+    override fun entry(key: String, value: Short?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeShort(value)
+    }
+
+    override fun entry(key: String, value: Char?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeChar(value)
+    }
+
+    override fun entry(key: String, value: Int?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeInt(value)
+    }
+
+    override fun entry(key: String, value: Long?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeLong(value)
+    }
+
+    override fun entry(key: String, value: Float?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeFloat(value)
+    }
+
+    override fun entry(key: String, value: Double?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeDouble(value)
+    }
+
+    override fun entry(key: String, value: String?) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeString(value)
+    }
+
+    override fun entry(key: String, value: SdkSerializable?) {
+        checkNotSparse(value)
+        writeKey(key)
+
+        val nestedFn: PrefixFn = {
+            "$commonPrefix.value."
+        }
+        value.serialize(FormUrlSerializer(buffer, nestedFn))
+    }
+
+    override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
+        writeKey(key)
+
+        // FIXME - we should probably make list serializer take a prefix function rather than abusing descriptors...
+        val childDescriptor = SdkFieldDescriptor("$commonPrefix.value", SerialKind.List)
+        FormUrlListSerializer(parent, childDescriptor).apply(block)
+    }
+
+    override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
+        writeKey(key)
+
+        val childDescriptor = SdkFieldDescriptor("$commonPrefix.value", SerialKind.Map)
+        FormUrlMapSerializer(parent, childDescriptor).apply(block)
+    }
+
+    override fun rawEntry(key: String, value: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun endMap() {}
+}
+
 private fun SdkBuffer.commonWriteNumber(value: Number): Unit = write(value.toString())
 
 private typealias PrefixFn = () -> String
+
+// like checkNotNull() but throws the correct serialization exception
+@OptIn(ExperimentalContracts::class)
+@Suppress("NOTHING_TO_INLINE")
+private inline fun <T : Any> checkNotSparse(value: T?): T {
+    contract {
+        returns() implies (value != null)
+    }
+    if (value == null) throw SerializationException("sparse collections are not supported by form-url encoding")
+    return value
+}

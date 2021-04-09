@@ -4,6 +4,8 @@
  */
 package software.aws.clientrt.serde
 
+// FIXME - these exceptions should likely inherit from `client-rt-core:ClientException`
+
 /**
  * Base exception class for all serialization errors
  */
