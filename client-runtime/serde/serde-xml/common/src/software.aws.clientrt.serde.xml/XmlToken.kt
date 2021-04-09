@@ -18,14 +18,16 @@ sealed class XmlToken {
     /**
      * Defines the name and namespace of an element
      * @property local The localized name of an element
-     * @property ns The namespace this element belongs to
+     * @property prefix The namespace this element belongs to
      */
-    data class QualifiedName(val local: String, val ns: Namespace? = null) {
-        constructor(local: String, uri: String?, prefix: String?) : this(local, if (uri != null) Namespace(uri, prefix) else null)
-        constructor(local: String, uri: String?) : this(local, uri, null)
-
+    data class QualifiedName(val local: String, val prefix: String? = null) {
         override fun toString(): String {
-            return if (ns == null) local else "$ns:$local"
+            return tag
+        }
+
+        val tag: String get() = when (prefix) {
+            null -> local
+            else -> "$prefix:$local"
         }
     }
 

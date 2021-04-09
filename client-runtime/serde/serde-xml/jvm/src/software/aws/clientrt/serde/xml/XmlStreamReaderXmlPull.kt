@@ -243,7 +243,7 @@ private class TerminalReader(private val parent: XmlStreamReader) : XmlStreamRea
 }
 
 private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
-    XmlToken.QualifiedName(name, namespace.blankToNull(), prefix.blankToNull())
+    XmlToken.QualifiedName(name, prefix.blankToNull())
 
 // Return attribute map from attributes of current node
 private fun XmlPullParser.attributes(): Map<XmlToken.QualifiedName, String> =
@@ -254,7 +254,6 @@ private fun XmlPullParser.attributes(): Map<XmlToken.QualifiedName, String> =
             .map { attributeIndex ->
                 XmlToken.QualifiedName(
                     getAttributeName(attributeIndex),
-                    getAttributeNamespace(attributeIndex).blankToNull(),
                     getAttributePrefix(attributeIndex).blankToNull()
                 ) to getAttributeValue(attributeIndex)
             }

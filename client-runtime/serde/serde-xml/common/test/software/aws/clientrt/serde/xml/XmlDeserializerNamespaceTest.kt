@@ -14,10 +14,10 @@ import kotlin.test.assertEquals
 class XmlDeserializerNamespaceTest {
 
     @Test
-    fun `it handles struct with namespace`() = runSuspendTest {
+    fun `it handles struct with namespace declarations but default tags`() = runSuspendTest {
         val payload = """
            <MyStructure xmlns="http://foo.com">
-                <foo>example1</foo>
+                <foo xmlns:bar="http://foo2.com">example1</foo>
                 <bar>example2</bar>
             </MyStructure>
         """.trimIndent().encodeToByteArray()

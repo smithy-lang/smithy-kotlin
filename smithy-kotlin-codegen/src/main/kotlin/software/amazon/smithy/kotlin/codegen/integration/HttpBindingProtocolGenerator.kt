@@ -149,6 +149,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         serializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
+        importSerdePackage(writer)
+
         writer.write("")
             .openBlock("internal class #T(val input: #T) : SdkSerializable {", serializerSymbol, symbol)
             .call {
@@ -195,7 +197,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // import all of http, http.request, and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
-            writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+            importSerdePackage(writer)
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", "*")
             writer.addImport(RuntimeTypes.Http.HttpSerialize)
@@ -514,7 +516,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
-            writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+            importSerdePackage(writer)
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
             writer.addImport(RuntimeTypes.Http.HttpResponse)
             writer.addImport(RuntimeTypes.Http.HttpDeserialize)
@@ -556,6 +558,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
+            importSerdePackage(writer)
             writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse")
             writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation", "HttpDeserialize")
@@ -913,7 +916,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         deserializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
-        writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+        importSerdePackage(writer)
 
         writer.write("")
             .openBlock("internal class #T {", deserializerSymbol)
@@ -980,6 +983,12 @@ fun formatInstant(paramName: String, tsFmt: TimestampFormatTrait.Format, forceSt
     TimestampFormatTrait.Format.DATE_TIME -> "$paramName.format(TimestampFormat.ISO_8601)"
     TimestampFormatTrait.Format.HTTP_DATE -> "$paramName.format(TimestampFormat.RFC_5322)"
     else -> throw CodegenException("unknown timestamp format: $tsFmt")
+}
+
+// import CLIENT-RT.*
+internal fun importSerdePackage(writer: KotlinWriter) {
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+    writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
 }
 
 // import CLIENT-RT.time.TimestampFormat

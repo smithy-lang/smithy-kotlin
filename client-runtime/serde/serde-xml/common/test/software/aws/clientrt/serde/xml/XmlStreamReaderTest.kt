@@ -250,11 +250,11 @@ class XmlStreamReaderTest {
 
         val expected = listOf(
             // root element belongs to default namespace declared
-            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure", uri = "http://foo.com"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com"))),
-            XmlToken.BeginElement(2, XmlToken.QualifiedName("foo", uri = "http://foo.com")),
+            XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com"))),
+            XmlToken.BeginElement(2, XmlToken.QualifiedName("foo")),
             XmlToken.Text(2, "bar"),
-            XmlToken.EndElement(2, XmlToken.QualifiedName("foo", uri = "http://foo.com")),
-            XmlToken.EndElement(1, XmlToken.QualifiedName("MyStructure", uri = "http://foo.com")),
+            XmlToken.EndElement(2, XmlToken.QualifiedName("foo")),
+            XmlToken.EndElement(1, XmlToken.QualifiedName("MyStructure")),
         )
 
         assertEquals(expected, actual)
@@ -275,9 +275,9 @@ class XmlStreamReaderTest {
             XmlToken.BeginElement(2, "foo"),
             XmlToken.Text(2, "what"),
             XmlToken.EndElement(2, "foo"),
-            XmlToken.BeginElement(2, XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
+            XmlToken.BeginElement(2, XmlToken.QualifiedName("bar", prefix = "baz")),
             XmlToken.Text(2, "yeah"),
-            XmlToken.EndElement(2, XmlToken.QualifiedName("bar", uri = "http://foo.com", prefix = "baz")),
+            XmlToken.EndElement(2, XmlToken.QualifiedName("bar", prefix = "baz")),
             XmlToken.EndElement(1, "MyStructure"),
         )
 
@@ -295,7 +295,7 @@ class XmlStreamReaderTest {
 
         val expected = listOf(
             XmlToken.BeginElement(1, XmlToken.QualifiedName("MyStructure"), nsDeclarations = listOf(XmlToken.Namespace("http://foo.com", "baz"))),
-            XmlToken.BeginElement(2, "foo", attributes = mapOf(XmlToken.QualifiedName("k1", "http://foo.com", "baz") to "v1")),
+            XmlToken.BeginElement(2, "foo", attributes = mapOf(XmlToken.QualifiedName("k1", "baz") to "v1")),
             XmlToken.EndElement(2, "foo"),
             XmlToken.EndElement(1, "MyStructure"),
         )

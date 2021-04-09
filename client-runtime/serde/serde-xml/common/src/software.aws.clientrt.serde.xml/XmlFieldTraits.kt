@@ -61,6 +61,20 @@ data class XmlCollectionName(
  */
 object Flattened : FieldTrait
 
+/*
+ * Denotes a structure that represents an error.  There are special rules for error deserialization
+ * in various XML-based protocols. This trait provides necessary context to the deserializer to properly
+ * deserialize error response data into types.
+ *
+ * See https://awslabs.github.io/smithy/1.0/spec/aws/aws-restxml-protocol.html#operation-error-serialization
+ *
+ * NOTE/FIXME: This type was written to handle the restXml protocol handling but could be refactored to be more
+ *       general purpose if/when necessary to support other XML-based protocols.
+ */
+object XmlError : FieldTrait {
+    val errorTag: XmlToken.QualifiedName = XmlToken.QualifiedName("Error")
+}
+
 /**
  * Describes the namespace associated with a field.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
@@ -77,17 +91,12 @@ data class XmlSerialName(val name: String) : FieldTrait
 
 // Generate a qualified name from a field descriptor.  Field descriptor must have trait XmlSerialName otherwise null is returned.
 internal fun SdkFieldDescriptor.toQualifiedName(xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()): XmlToken.QualifiedName? {
-    val (nodeName, descriptorPrefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: return null
+    val (localName, prefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: return null
 
     return when {
-        xmlNamespace != null -> {
-            when (descriptorPrefix) {
-                xmlNamespace.prefix -> XmlToken.QualifiedName(nodeName, xmlNamespace.uri, xmlNamespace.prefix)
-                else -> XmlToken.QualifiedName(nodeName) // namespace doesn't match
-            }
-        }
-        nodeName.nodeHasPrefix() -> XmlToken.QualifiedName(nodeName, null, descriptorPrefix)
-        else -> XmlToken.QualifiedName(nodeName, descriptorPrefix)
+        xmlNamespace != null -> XmlToken.QualifiedName(localName, if (prefix == xmlNamespace.prefix) prefix else null)
+        prefix != null -> XmlToken.QualifiedName(localName, prefix)
+        else -> XmlToken.QualifiedName(localName)
     }
 }
 

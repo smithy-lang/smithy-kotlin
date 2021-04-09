@@ -68,7 +68,7 @@ class XmlDeserializerStructTest {
         assertEquals(1, bst.xa)
         assertEquals("x1", bst.xt)
         assertEquals(2, bst.y)
-        assertEquals(0, bst.unknownFieldCount)
+        assertEquals(1, bst.unknownFieldCount)
     }
 
     class BasicAttribTextStructTest {

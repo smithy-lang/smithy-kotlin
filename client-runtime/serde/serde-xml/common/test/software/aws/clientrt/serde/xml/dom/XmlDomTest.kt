@@ -89,7 +89,7 @@ class XmlDomTest {
 
         val dom = XmlNode.parse(payload.encodeToByteArray())
 
-        assertEquals(XmlToken.QualifiedName("Foo", "http://foo.com"), dom.name)
+        assertEquals(XmlToken.QualifiedName("Foo"), dom.name)
         assertEquals(0, dom.attributes.size)
 
         assertEquals(payload, dom.toXmlString(true))
