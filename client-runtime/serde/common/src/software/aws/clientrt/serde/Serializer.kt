@@ -166,7 +166,7 @@ interface StructSerializer : PrimitiveSerializer {
     /**
      * Ends the struct that was started (i.e. in JSON this would be a '}').
      */
-    fun endStruct()
+    fun endStruct(descriptor: SdkFieldDescriptor)
 }
 
 /**
@@ -399,7 +399,7 @@ interface PrimitiveSerializer {
 inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: StructSerializer.() -> Unit) {
     val struct = beginStruct(sdkFieldDescriptor)
     struct.block()
-    struct.endStruct()
+    struct.endStruct(sdkFieldDescriptor)
 }
 
 /**
