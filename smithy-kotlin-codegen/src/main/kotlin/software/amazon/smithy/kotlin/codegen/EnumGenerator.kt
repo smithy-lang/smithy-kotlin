@@ -11,7 +11,6 @@ import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.utils.CaseUtils
 
 /**
  * Generates a Kotlin sealed class from a Smithy enum string
@@ -90,7 +89,9 @@ import software.amazon.smithy.utils.CaseUtils
  */
 class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: KotlinWriter) {
 
-    // generated enum names must be unique, keep track of what we generate to ensure this (necessary due to prefixing)
+    // generated enum names must be unique, keep track of what we generate to ensure this.
+    // Necessary due to prefixing and other name manipulation to create either valid identifiers
+    // and idiomatic names
     private val generatedNames = mutableSetOf<String>()
 
     init {
@@ -172,16 +173,14 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     }
 
     private fun getVariantName(definition: EnumDefinition): String {
-        val raw = definition.name.orElseGet {
-            CaseUtils.toSnakeCase(definition.value).replace(".", "_")
+        val identifierName = definition.variantName()
+
+        if (!isValidKotlinIdentifier(identifierName)) {
+            // prefixing didn't fix to fix it, this must be a value since EnumDefinition.name MUST be a valid identifier
+            // already, see: https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
+            throw CodegenException("$identifierName is not a valid Kotlin identifier and cannot be automatically fixed with a prefix. Fix by customizing the model for $shape or giving the enum definition a name.")
         }
 
-        val identifierName = CaseUtils.toCamelCase(raw, true, '_')
-
-        return if (!isValidKotlinIdentifier(identifierName)) {
-            "_$identifierName"
-        } else {
-            identifierName
-        }
+        return identifierName
     }
 }
