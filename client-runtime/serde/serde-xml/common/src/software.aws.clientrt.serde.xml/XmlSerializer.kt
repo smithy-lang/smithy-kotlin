@@ -15,6 +15,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     private var nodeStack = mutableListOf<XmlSerialName>()
     private var topLevel = true
+    private var nestedDescriptor = false // tracks calls from field(descriptor: SdkFieldDescriptor, value: SdkSerializable)
 
     override fun toByteArray(): ByteArray {
         return xmlWriter.bytes
@@ -30,8 +31,14 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         topLevel = false
 
         if (descriptor.hasTrait<XmlSerialName>()) {
-            xmlWriter.startTag(descriptor.serialName.name)
-            nodeStack.add(descriptor.serialName)
+            if (nestedDescriptor) {
+                val descriptor = nodeStack.last()
+                xmlWriter.startTag(descriptor.name)
+                nestedDescriptor = false
+            } else {
+                xmlWriter.startTag(descriptor.serialName.name)
+                nodeStack.add(descriptor.serialName)
+            }
         }
 
         return this
@@ -56,7 +63,15 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         }
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
+    override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
+        // To ensure proper serialization, the descriptor instance here must be used in the call value.serialize()
+        // In order to make this happen we set a boolean flag signaling this mode, and put the desired
+        // field descriptor on the stack so it will be handled upon next call to beginStruct().
+        nodeStack.add(descriptor.serialName)
+        nestedDescriptor = true
+
+        value.serialize(this)
+    }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
         xmlWriter.startTag(descriptor.serialName.name)
