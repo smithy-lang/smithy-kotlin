@@ -22,7 +22,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
-        //Serialize top-level ns declarations and non-default declarations.
+        // Serialize top-level ns declarations and non-default declarations.
         if (emitNamespaceDeclaration(descriptor, topLevel)) {
             descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
                 xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)

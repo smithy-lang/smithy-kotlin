@@ -42,7 +42,7 @@ class SerdeIndex(private val model: Model) : KnowledgeIndex {
                 val inputShape = model.expectShape(it.input.get())
                 inputShape.members()
             }
-            .map {  ReferencedShape(it, model.expectShape(it.target)) }
+            .map { ReferencedShape(it, model.expectShape(it.target)) }
             .filter { it.shape.isStructureShape || it.shape.isUnionShape || it.shape is CollectionShape || it.shape.isMapShape }
             .toSet()
 
