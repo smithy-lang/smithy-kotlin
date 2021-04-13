@@ -176,7 +176,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
         val identifierName = definition.variantName()
 
         if (!isValidKotlinIdentifier(identifierName)) {
-            // prefixing didn't fix to fix it, this must be a value since EnumDefinition.name MUST be a valid identifier
+            // prefixing didn't fix it, this must be a value since EnumDefinition.name MUST be a valid identifier
             // already, see: https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
             throw CodegenException("$identifierName is not a valid Kotlin identifier and cannot be automatically fixed with a prefix. Fix by customizing the model for $shape or giving the enum definition a name.")
         }
