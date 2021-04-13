@@ -114,7 +114,7 @@ class XmlSerializerTest {
         )
         val xml = XmlSerializer()
         bar.serialize(xml)
-        val expected = """<Bar><key>example-key1</key><value>example1</value><key>example-key2</key><value>example2</value><key>example-key3</key><value>example3</value></Bar>"""
+        val expected = """<Bar><flatMap><key>example-key1</key><value>example1</value></flatMap><flatMap><key>example-key2</key><value>example2</value></flatMap><flatMap><key>example-key3</key><value>example3</value></flatMap></Bar>"""
 
         assertEquals(expected, xml.toByteArray().decodeToString())
     }

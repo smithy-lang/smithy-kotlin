@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.integration.*
+import software.amazon.smithy.kotlin.codegen.knowledge.ReferencedShape
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -48,7 +49,7 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
     override fun generateSdkObjectDescriptorTraits(
         ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape,
+        objectShape: ReferencedShape,
         writer: KotlinWriter
     ) { }
 }

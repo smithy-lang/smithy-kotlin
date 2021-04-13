@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.kotlin.codegen.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.buildSymbol
+import software.amazon.smithy.kotlin.codegen.knowledge.ReferencedShape
 import software.amazon.smithy.kotlin.codegen.namespace
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
@@ -63,7 +64,7 @@ class RestJsonTestProtocolGenerator(
 
     override fun generateSdkObjectDescriptorTraits(
         ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape,
+        objectShape: ReferencedShape,
         writer: KotlinWriter
     ) {
         writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
