@@ -8,8 +8,7 @@ package software.aws.clientrt.smithy.test
 import software.aws.clientrt.serde.xml.dom.XmlNode
 import software.aws.clientrt.serde.xml.dom.toXmlString
 import software.aws.clientrt.testing.runSuspendTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import kotlin.test.*
 
 class XmlAssertionsTest {
 
@@ -296,5 +295,24 @@ class XmlAssertionsTest {
         """.trimIndent()
 
         assertXmlStringsEqual(expected, actual)
+    }
+
+    @Test
+    fun itFailsUnequalXml() = runSuspendTest {
+        val expected = """
+        <Foo>
+            <String>v1</String>            
+        </Foo>
+        """.trimIndent()
+
+        val actual = """
+        <Foo>
+            <Bool>true</Bool>            
+        </Foo>
+        """.trimIndent()
+
+        assertFails {
+            assertXmlStringsEqual(expected, actual)
+        }
     }
 }

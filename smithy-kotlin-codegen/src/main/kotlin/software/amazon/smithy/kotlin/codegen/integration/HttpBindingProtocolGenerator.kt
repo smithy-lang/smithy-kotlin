@@ -19,6 +19,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.knowledge.SerdeIndex
+import software.amazon.smithy.kotlin.codegen.knowledge.ReferencedShape
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
@@ -67,7 +68,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Generate the set of traits on the [SdkObjectDescriptor] for the types that require them.
      */
-    protected abstract fun generateSdkObjectDescriptorTraits(ctx: ProtocolGenerator.GenerationContext, objectShape: Shape, writer: KotlinWriter)
+    protected abstract fun generateSdkObjectDescriptorTraits(ctx: ProtocolGenerator.GenerationContext, objectShape: ReferencedShape, writer: KotlinWriter)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx)
@@ -114,9 +115,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Generate `SdkSerializable` serializer for all shapes in the set
      */
-    private fun generateDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, shapes: Set<Shape>) {
-        for (shape in shapes) {
-            val symbol = ctx.symbolProvider.toSymbol(shape)
+    private fun generateDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, referencedShapes: Set<ReferencedShape>) {
+        for (referencedShape in referencedShapes) {
+            val symbol = ctx.symbolProvider.toSymbol(referencedShape.shape)
 
             val serializerSymbol = buildSymbol {
                 definitionFile = "${symbol.documentSerializerName()}.kt"
@@ -129,7 +130,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
 
             ctx.delegator.useShapeWriter(serializerSymbol) { writer ->
-                renderDocumentSerializer(ctx, symbol, shape, serializerSymbol, writer)
+                renderDocumentSerializer(ctx, symbol, referencedShape, serializerSymbol, writer)
             }
         }
     }
@@ -138,14 +139,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Actually renders the `SdkSerializable` implementation for the given symbol/shape
      * @param ctx The codegen context
      * @param symbol The symbol to generate a serializer implementation for
-     * @param shape The corresponding shape
+     * @param referencedShape The corresponding shape
      * @param serializerSymbol The symbol for the serializer class that wraps the [symbol]
      * @param writer The codegen writer to render to
      */
     private fun renderDocumentSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         symbol: Symbol,
-        shape: Shape,
+        referencedShape: ReferencedShape,
         serializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
@@ -154,14 +155,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("internal class #T(val input: #T) : SdkSerializable {", serializerSymbol, symbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, referencedShape, referencedShape.shape.members().toList(), writer)
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
-                    if (shape.isUnionShape) {
-                        SerializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                    if (referencedShape.shape.isUnionShape) {
+                        SerializeUnionGenerator(ctx, referencedShape.shape.members().toList(), writer, defaultTimestampFormat).render()
                     } else {
-                        SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeStructGenerator(ctx, referencedShape.shape.members().toList(), writer, defaultTimestampFormat).render()
                     }
                 }
             }
@@ -205,7 +206,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("")
                 .openBlock("internal class #T(): HttpSerialize<#T> {", serializerSymbol, inputSymbol)
                 .call {
-                    val objectShape = ctx.model.expectShape(op.input.get())
+                    val objectShape = ReferencedShape(null, ctx.model.expectShape(op.input.get()))
                     val memberShapes = requestBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.map { it.member }
                     renderSerdeCompanionObject(ctx, objectShape, memberShapes, writer)
                 }
@@ -227,7 +228,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun renderSerdeCompanionObject(
         ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape?,
+        objectShape: ReferencedShape?,
         memberShapes: List<MemberShape>,
         writer: KotlinWriter
     ) {
@@ -529,7 +530,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 )
                 .write("")
                 .call {
-                    val objectShape = ctx.model.expectShape(op.output.get())
+                    val objectShape = ReferencedShape(null, ctx.model.expectShape(op.output.get()))
                     val memberShapes = responseBindings
                         .filter { it.location == HttpBinding.Location.DOCUMENT }
                         .map { it.member }
@@ -572,7 +573,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         it.hasTrait<HttpHeaderTrait>() || it.hasTrait<HttpPrefixHeadersTrait>()
                     }
 
-                    renderSerdeCompanionObject(ctx, shape, documentMembers, writer)
+                    renderSerdeCompanionObject(ctx, ReferencedShape(null, shape), documentMembers, writer)
                 }
                 .write("")
                 .call {
@@ -923,7 +924,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("internal class #T {", deserializerSymbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, ReferencedShape(null, shape), shape.members().toList(), writer)
             }
             .call {
 

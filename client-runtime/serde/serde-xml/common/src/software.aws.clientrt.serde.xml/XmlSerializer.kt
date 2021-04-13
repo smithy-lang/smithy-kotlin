@@ -14,19 +14,24 @@ import software.aws.clientrt.serde.*
 class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
     private var nodeStack = mutableListOf<XmlSerialName>()
+    private var topLevel = true
 
     override fun toByteArray(): ByteArray {
         return xmlWriter.bytes
     }
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
-        descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
-            xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
+        if (descriptor.hasTrait<XmlNamespace>() && (!descriptor.expectTrait<XmlNamespace>().isDefault() || topLevel)) {
+            descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
+                xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
+            }
+            topLevel = false
         }
 
-        xmlWriter.startTag(descriptor.serialName)
-
-        nodeStack.add(descriptor.serialName)
+        if (descriptor.hasTrait<XmlSerialName>()) {
+            xmlWriter.startTag(descriptor.serialName)
+            nodeStack.add(descriptor.serialName)
+        }
 
         return this
     }
@@ -43,9 +48,10 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         return XmlMapSerializer(descriptor, xmlWriter, this)
     }
 
-    override fun endStruct() {
-        check(nodeStack.isNotEmpty()) { "Expected nodeStack to have a value, but was empty." }
-        xmlWriter.endTag(nodeStack.removeAt(nodeStack.size - 1))
+    override fun endStruct(descriptor: SdkFieldDescriptor) {
+        if (nodeStack.isNotEmpty() && descriptor.hasTrait<XmlSerialName>() && nodeStack.last().name == descriptor.serialName.name) {
+            xmlWriter.endTag(nodeStack.removeAt(nodeStack.size - 1))
+        }
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
@@ -69,9 +75,30 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: String) {
-        xmlWriter.startTag(descriptor.serialName)
-        serializeString(value)
-        xmlWriter.endTag(descriptor.serialName)
+        if (descriptor.hasTrait<XmlAttribute>()) {
+            xmlWriter.attribute(descriptor.serialName.name, value)
+        } else {
+            if (descriptor.hasTrait<XmlNamespace>()) {
+                val ns = descriptor.expectTrait<XmlNamespace>()
+                xmlWriter.namespacePrefix(ns.uri, ns.prefix)
+                val qualifiedName = descriptor.toQualifiedName(ns) ?: error("WTF")
+
+                xmlWriter.startTag(qualifiedName.local, qualifiedName.prefix)
+            } else {
+                xmlWriter.startTag(descriptor.serialName)
+            }
+
+            serializeString(value)
+
+            if (descriptor.hasTrait<XmlNamespace>()) {
+                val ns = descriptor.expectTrait<XmlNamespace>()
+                val qualifiedName = descriptor.toQualifiedName(ns) ?: error("WTF")
+
+                xmlWriter.endTag(qualifiedName.local, qualifiedName.prefix)
+            } else {
+                xmlWriter.endTag(descriptor.serialName)
+            }
+        }
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Double) {
@@ -117,10 +144,32 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        xmlWriter.startTag(descriptor.serialName)
+        if (!descriptor.hasTrait<Flattened>()) {
+            if (descriptor.hasTrait<XmlNamespace>()) {
+                val ns = descriptor.expectTrait<XmlNamespace>()
+                xmlWriter.namespacePrefix(ns.uri, ns.prefix)
+                val qualifiedName = descriptor.toQualifiedName(ns) ?: error("WTF")
+
+                xmlWriter.startTag(qualifiedName.local, qualifiedName.prefix)
+            } else {
+                xmlWriter.startTag(descriptor.serialName)
+            }
+        }
+
         val s = XmlListSerializer(descriptor, xmlWriter, this)
         block(s)
-        xmlWriter.endTag(descriptor.serialName)
+
+        if (!descriptor.hasTrait<Flattened>()) {
+            if (descriptor.hasTrait<XmlNamespace>()) {
+                val ns = descriptor.expectTrait<XmlNamespace>()
+                xmlWriter.namespacePrefix(ns.uri, ns.prefix)
+                val qualifiedName = descriptor.toQualifiedName(ns) ?: error("WTF")
+
+                xmlWriter.endTag(qualifiedName.local, qualifiedName.prefix)
+            } else {
+                xmlWriter.endTag(descriptor.serialName)
+            }
+        }
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
@@ -128,7 +177,6 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun serializeNull() {
-        // FIXME This might  be represented w/ attrib 'xsi:nil="true"'
         // NOP
     }
 
@@ -179,14 +227,23 @@ private class XmlMapSerializer(
     fun generalEntry(key: String, valueFn: () -> Unit) {
         val mapTrait = descriptor.findTrait() ?: XmlMapName.Default
 
-        if (!descriptor.hasTrait<Flattened>()) xmlWriter.startTag(mapTrait.entry!!)
+        if (!descriptor.hasTrait<Flattened>()) {
+            xmlWriter.startTag(mapTrait.entry!!)
+        } else {
+            xmlWriter.startTag(descriptor.serialName)
+        }
         xmlWriter.startTag(mapTrait.key)
         xmlWriter.text(key)
         xmlWriter.endTag(mapTrait.key)
         xmlWriter.startTag(mapTrait.value)
         valueFn()
         xmlWriter.endTag(mapTrait.value)
-        if (!descriptor.hasTrait<Flattened>()) xmlWriter.endTag(mapTrait.entry!!)
+
+        if (!descriptor.hasTrait<Flattened>()) {
+            xmlWriter.endTag(mapTrait.entry!!)
+        } else {
+            xmlWriter.endTag(descriptor.serialName)
+        }
     }
 
     override fun entry(key: String, value: Int?) = generalEntry(key) { xmlWriter.text(value.toString()) }
@@ -295,7 +352,12 @@ private class XmlListSerializer(
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
     override fun serializeNull() {
-        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.Default.element
+        val nodeName = when {
+            descriptor.hasTrait<Flattened>() -> descriptor.serialName.name
+            descriptor.hasTrait<XmlCollectionName>() -> descriptor.expectTrait<XmlCollectionName>().element
+            else -> XmlCollectionName.Default.element
+        }
+
         xmlWriter.startTag(nodeName)
         xmlWriter.endTag(nodeName)
     }
@@ -303,9 +365,27 @@ private class XmlListSerializer(
     override fun serializeRaw(value: String) = serializeString(value)
 
     private fun serializePrimitive(value: Any) {
-        val nodeName = descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.Default.element
-        xmlWriter.startTag(nodeName)
+        val nodeName = when {
+            descriptor.hasTrait<Flattened>() -> descriptor.serialName.name
+            descriptor.hasTrait<XmlCollectionName>() -> descriptor.expectTrait<XmlCollectionName>().element
+            else -> XmlCollectionName.Default.element
+        }
+        if (descriptor.hasTrait<XmlCollectionNamespace>()) {
+            val ns = descriptor.expectTrait<XmlCollectionNamespace>()
+            xmlWriter.namespacePrefix(ns.uri, ns.prefix)
+            xmlWriter.startTag(nodeName)
+        } else {
+            xmlWriter.startTag(nodeName)
+        }
+
         xmlWriter.text(value.toString())
-        xmlWriter.endTag(nodeName)
+
+        if (descriptor.hasTrait<XmlCollectionNamespace>()) {
+            val ns = descriptor.expectTrait<XmlCollectionNamespace>()
+            xmlWriter.namespacePrefix(ns.uri, ns.prefix)
+            xmlWriter.endTag(nodeName)
+        } else {
+            xmlWriter.endTag(nodeName)
+        }
     }
 }

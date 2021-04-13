@@ -84,6 +84,11 @@ data class XmlNamespace(val uri: String, val prefix: String? = null) : FieldTrai
 }
 
 /**
+ * Specifies namespace overrides for collection elements that are separate from the member containing the collection
+ */
+data class XmlCollectionNamespace(val uri: String, val prefix: String? = null) : FieldTrait
+
+/**
  * Specifies the name that a field is encoded into for Xml nodes.
  * See https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html?highlight=xmlname#xmlname-trait
  */
