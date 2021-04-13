@@ -98,6 +98,9 @@ class NamingTest {
         )
 
         tests.forEach { (input, expected) ->
+            // NOTE: a lot of these are not valid names according to the Smithy spec but since
+            // we still allow deriving a name from the enum value we want to verify what _would_ happen
+            // should we encounter these inputs
             val definition = EnumDefinition.builder().name(input).value(input).build()
             val actual = definition.variantName()
             assertEquals(expected, actual, "input: $input")
