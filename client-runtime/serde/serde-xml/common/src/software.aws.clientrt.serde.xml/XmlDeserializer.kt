@@ -281,7 +281,7 @@ private suspend fun XmlStreamReader.tokenAttributesToFieldLocations(descriptor: 
     if (descriptor.hasXmlAttributes && lastToken is XmlToken.BeginElement) {
         val attribFields = descriptor.fields.filter { it.hasTrait<XmlAttribute>() }
         val matchedAttribFields = attribFields.filter { it.findFieldLocation(lastToken as XmlToken.BeginElement, peek() ?: throw DeserializerStateException("Unexpected end of tokens")) != null }
-        matchedAttribFields.map { FieldLocation.Attribute(it.index, it.toQualifiedName() ?: throw DeserializerStateException("Unable to parse qualified name from $it")) }
+        matchedAttribFields.map { FieldLocation.Attribute(it.index, it.toQualifiedName()) }
             .toMutableList()
     } else {
         mutableListOf()
@@ -309,9 +309,9 @@ private fun SdkFieldDescriptor.findFieldLocation(currentToken: XmlToken.BeginEle
 // Produce a [FieldLocation] type based on presence of traits of field
 // A field without an attribute trait is assumed to be a text token
 private fun SdkFieldDescriptor.toFieldLocation(): FieldLocation =
-    when (val attributeTrait = findTrait<XmlAttribute>()) {
+    when (findTrait<XmlAttribute>()) {
         null -> FieldLocation.Text(index) // Assume a text value if no attributes defined.
-        else -> FieldLocation.Attribute(index, toQualifiedName() ?: throw DeserializerStateException("Unable to parse qualified name from $attributeTrait"))
+        else -> FieldLocation.Attribute(index, toQualifiedName())
     }
 
 // Matches fields and tokens with matching qualified name

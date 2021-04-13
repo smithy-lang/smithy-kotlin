@@ -12,7 +12,7 @@ import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 
 /**
- * Optionally provides a reference to the referring shape of a given shape.
+ * Optionally provides a reference to the referring member of a given shape.
  */
 data class ReferencedShape(val referringMember: Shape?, val shape: Shape)
 
