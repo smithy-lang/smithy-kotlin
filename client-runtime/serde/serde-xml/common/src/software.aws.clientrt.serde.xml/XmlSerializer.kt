@@ -76,59 +76,37 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         parentDescriptorStack.pop()
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Int) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeInt(value)
+    // serialize something as either an attribute of the current tag or create a new tag with the given value
+    private fun <T : Any> tagOrAttribute(descriptor: SdkFieldDescriptor, value: T, serdeFn: (T) -> Unit) {
+        when {
+            descriptor.hasTrait<XmlAttribute>() -> xmlWriter.attribute(descriptor.serialName.name, value.toString())
+            else -> xmlWriter.writeTag(descriptor.tagName) { serdeFn(value) }
         }
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Long) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeLong(value)
-        }
-    }
+    private fun numberField(descriptor: SdkFieldDescriptor, value: Number) =
+        tagOrAttribute(descriptor, value, ::serializeNumber)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Float) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeFloat(value)
-        }
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Boolean) =
+        tagOrAttribute(descriptor, value, ::serializeBoolean)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: String) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeString(value)
-        }
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Byte) = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Double) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeDouble(value)
-        }
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Char) =
+        tagOrAttribute(descriptor, value, ::serializeChar)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Boolean) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeBoolean(value)
-        }
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Short) = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Byte) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeByte(value)
-        }
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Int) = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Short) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeShort(value)
-        }
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Long) = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Char) {
-        xmlWriter.writeTag(descriptor.serialName.name) {
-            serializeChar(value)
-        }
-    }
+    override fun field(descriptor: SdkFieldDescriptor, value: Float) = numberField(descriptor, value)
+
+    override fun field(descriptor: SdkFieldDescriptor, value: Double) = numberField(descriptor, value)
+
+    override fun field(descriptor: SdkFieldDescriptor, value: String) =
+        tagOrAttribute(descriptor, value, ::serializeString)
 
     override fun rawField(descriptor: SdkFieldDescriptor, value: String) = field(descriptor, value)
 
@@ -159,19 +137,21 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun serializeBoolean(value: Boolean) { xmlWriter.text(value.toString()) }
 
-    override fun serializeByte(value: Byte) = xmlWriter.text(value)
-
-    override fun serializeShort(value: Short) = xmlWriter.text(value)
+    override fun serializeByte(value: Byte) = serializeNumber(value)
 
     override fun serializeChar(value: Char) { xmlWriter.text(value.toString()) }
 
-    override fun serializeInt(value: Int) = xmlWriter.text(value)
+    override fun serializeShort(value: Short) = serializeNumber(value)
 
-    override fun serializeLong(value: Long) = xmlWriter.text(value)
+    override fun serializeInt(value: Int) = serializeNumber(value)
 
-    override fun serializeFloat(value: Float) = xmlWriter.text(value)
+    override fun serializeLong(value: Long) = serializeNumber(value)
 
-    override fun serializeDouble(value: Double) = xmlWriter.text(value)
+    override fun serializeFloat(value: Float) = serializeNumber(value)
+
+    override fun serializeDouble(value: Double) = serializeNumber(value)
+
+    private fun serializeNumber(value: Number) = xmlWriter.text(value)
 
     override fun serializeString(value: String) {
         xmlWriter.text(value)
@@ -347,6 +327,7 @@ private class XmlListSerializer(
     }
 }
 
+// FIXME - cleanup take a descriptor
 /**
  * Write start tag, call [block] to fill contents, writes end tag
  */

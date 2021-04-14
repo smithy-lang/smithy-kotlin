@@ -697,6 +697,35 @@ class XmlSerializerTest {
         println(actual)
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun itCanSerializeAttributes() {
+        val boolDescriptor = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("bool"), XmlAttribute)
+        val strDescriptor = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("str"), XmlAttribute)
+        val intDescriptor = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("number"), XmlAttribute)
+        // timestamps are ignored as they aren't special cased (as of right now) but rather serialized through string/raw
+
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("Foo"))
+            field(boolDescriptor)
+            field(strDescriptor)
+            field(intDescriptor)
+        }
+
+        // NOTE: attribute fields MUST be generated as the first fields after serializeStruct() to work properly
+        val serializer = XmlSerializer()
+        serializer.serializeStruct(objDescriptor) {
+            field(boolDescriptor, true)
+            field(strDescriptor, "bar")
+            field(intDescriptor, 2)
+        }
+
+        val expected = """
+            <Foo bool="true" str="bar" number="2" />
+        """.toXmlCompactString()
+
+        assertEquals(expected, serializer.toByteArray().decodeToString())
+    }
 }
 
 data class Primitives(
