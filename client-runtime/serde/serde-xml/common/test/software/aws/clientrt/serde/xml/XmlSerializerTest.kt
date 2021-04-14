@@ -309,6 +309,47 @@ class XmlSerializerTest {
             }
         }
     }
+
+    @Test
+    fun itSerializesRecursiveShapes() {
+        val expected = """
+        <RecursiveShapesInputOutput>
+            <nested>
+                <foo>Foo1</foo>
+                <nested>
+                    <bar>Bar1</bar>
+                    <recursiveMember>
+                        <foo>Foo2</foo>
+                        <nested>
+                            <bar>Bar2</bar>
+                        </nested>
+                    </recursiveMember>
+                </nested>
+            </nested>
+        </RecursiveShapesInputOutput>
+        """.trimIndent().replace("\n", "").replace(" ", "")
+
+        val input = RecursiveShapesInputOutput {
+            nested = RecursiveShapesInputOutputNested1 {
+                foo = "Foo1"
+                nested = RecursiveShapesInputOutputNested2 {
+                    bar = "Bar1"
+                    recursiveMember = RecursiveShapesInputOutputNested1 {
+                        foo = "Foo2"
+                        nested = RecursiveShapesInputOutputNested2 {
+                            bar = "Bar2"
+                        }
+                    }
+                }
+            }
+        }
+
+        val serializer = XmlSerializer()
+        RecursiveShapesInputOutputSerializer().serialize(serializer, input)
+        val actual = serializer.toByteArray().decodeToString()
+        println(actual)
+        assertEquals(expected, actual)
+    }
 }
 
 data class Primitives(
@@ -361,36 +402,71 @@ data class Primitives(
     }
 }
 
-class A(private val b: B) : SdkSerializable {
+// structure RecursiveShapesInputOutput {
+//     nested: RecursiveShapesInputOutputNested1
+// }
+//
+// structure RecursiveShapesInputOutputNested1 {
+//     foo: String,
+//     nested: RecursiveShapesInputOutputNested2
+// }
+//
+// structure RecursiveShapesInputOutputNested2 {
+//     bar: String,
+//     recursiveMember: RecursiveShapesInputOutputNested1,
+// }
+internal class RecursiveShapesInputOutputSerializer {
     companion object {
-        val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("b"))
-
-        val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-            trait(XmlSerialName("a"))
-            field(descriptorB)
+        private val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("RecursiveShapesInputOutput"))
+            field(NESTED_DESCRIPTOR)
         }
     }
 
-    override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct(objectDescriptor) {
-            field(descriptorB, b)
+    fun serialize(serializer: Serializer, input: RecursiveShapesInputOutput) {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            input.nested?.let { field(NESTED_DESCRIPTOR, RecursiveShapesInputOutputNested1DocumentSerializer(it)) }
         }
     }
 }
 
-data class B(private val value: String) : SdkSerializable {
-    companion object {
-        val descriptorValue = SdkFieldDescriptor(SerialKind.String, XmlSerialName("v"))
+internal class RecursiveShapesInputOutputNested1DocumentSerializer(val input: RecursiveShapesInputOutputNested1) : SdkSerializable {
 
-        val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-            trait(XmlSerialName("b"))
-            field(descriptorValue)
+    companion object {
+        private val FOO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("foo"))
+        private val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("RecursiveShapesInputOutputNested1"))
+            field(FOO_DESCRIPTOR)
+            field(NESTED_DESCRIPTOR)
         }
     }
 
     override fun serialize(serializer: Serializer) {
-        serializer.serializeStruct(objectDescriptor) {
-            field(descriptorValue, value)
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            input.foo?.let { field(FOO_DESCRIPTOR, it) }
+            input.nested?.let { field(NESTED_DESCRIPTOR, RecursiveShapesInputOutputNested2DocumentSerializer(it)) }
+        }
+    }
+}
+
+internal class RecursiveShapesInputOutputNested2DocumentSerializer(val input: RecursiveShapesInputOutputNested2) : SdkSerializable {
+
+    companion object {
+        private val BAR_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("bar"))
+        private val RECURSIVEMEMBER_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("recursiveMember"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("RecursiveShapesInputOutputNested2"))
+            field(BAR_DESCRIPTOR)
+            field(RECURSIVEMEMBER_DESCRIPTOR)
+        }
+    }
+
+    override fun serialize(serializer: Serializer) {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            input.bar?.let { field(BAR_DESCRIPTOR, it) }
+            input.recursiveMember?.let { field(RECURSIVEMEMBER_DESCRIPTOR, RecursiveShapesInputOutputNested1DocumentSerializer(it)) }
         }
     }
 }

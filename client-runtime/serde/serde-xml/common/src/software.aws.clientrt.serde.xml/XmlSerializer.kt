@@ -5,6 +5,10 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.serde.xml.dom.Stack
+import software.aws.clientrt.serde.xml.dom.peekOrNull
+import software.aws.clientrt.serde.xml.dom.pop
+import software.aws.clientrt.serde.xml.dom.push
 
 /**
  * Provides serialization for the XML message format.
@@ -14,19 +18,23 @@ import software.aws.clientrt.serde.*
 class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
     private var nodeStack = mutableListOf<XmlSerialName>()
+    private var memberDescriptorStack: Stack<SdkFieldDescriptor> = mutableListOf()
 
     override fun toByteArray(): ByteArray {
         return xmlWriter.bytes
     }
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
-        descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
+        // if we are serializing a nested structure field, use the member descriptor instead of the object descriptor
+        val structDescriptor = memberDescriptorStack.peekOrNull() ?: descriptor
+
+        structDescriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
             xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
         }
 
-        xmlWriter.startTag(descriptor.serialName)
+        xmlWriter.startTag(structDescriptor.serialName)
 
-        nodeStack.add(descriptor.serialName)
+        nodeStack.add(structDescriptor.serialName)
 
         return this
     }
@@ -48,7 +56,11 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.endTag(nodeStack.removeAt(nodeStack.size - 1))
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) = value.serialize(this)
+    override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
+        memberDescriptorStack.push(descriptor)
+        value.serialize(this)
+        memberDescriptorStack.pop()
+    }
 
     override fun field(descriptor: SdkFieldDescriptor, value: Int) {
         xmlWriter.startTag(descriptor.serialName)
