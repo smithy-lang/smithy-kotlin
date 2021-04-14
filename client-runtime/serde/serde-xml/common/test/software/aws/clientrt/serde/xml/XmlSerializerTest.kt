@@ -8,6 +8,22 @@ import software.aws.clientrt.serde.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+/*
+Remove all whitespace and newline chars from XML string and return the compact formo
+e.g.
+
+```
+<Root>
+    <nested>
+        <bar>1</bar>
+    </nested>
+</Root>
+```
+
+becomes: `<Root><nested><bar>1</bar></nested></Root>`
+ */
+private fun String.toXmlCompactString(): String = trimIndent().replace("\n", "").replace(" ", "")
+
 @OptIn(ExperimentalStdlibApi::class)
 class XmlSerializerTest {
 
@@ -102,9 +118,9 @@ class XmlSerializerTest {
         assertEquals("""<Foo><values><entry><key>example-key1</key><value>example1</value></entry><entry><key>example-key2</key><value>example2</value></entry></values></Foo>""", xml.toByteArray().decodeToString())
     }
 
-    // See https://awslabs.github.io/smithy/spec/xml.html#flattened-map-serialization
     @Test
     fun canSerializeFlattenedMap() {
+        // See https://awslabs.github.io/smithy/spec/xml.html#flattened-map-serialization
         val bar = Bar(
             mapOf(
                 "example-key1" to "example1",
@@ -112,11 +128,29 @@ class XmlSerializerTest {
                 "example-key3" to "example3"
             )
         )
-        val xml = XmlSerializer()
-        bar.serialize(xml)
-        val expected = """<Bar><key>example-key1</key><value>example1</value><key>example-key2</key><value>example2</value><key>example-key3</key><value>example3</value></Bar>"""
+        val serializer = XmlSerializer()
+        bar.serialize(serializer)
 
-        assertEquals(expected, xml.toByteArray().decodeToString())
+        val expected = """
+        <Bar>
+            <flatMap>
+                <key>example-key1</key>
+                <value>example1</value>
+            </flatMap>
+            
+            <flatMap>
+                <key>example-key2</key>
+                <value>example2</value>
+            </flatMap>
+            
+            <flatMap>
+                <key>example-key3</key>
+                <value>example3</value>
+            </flatMap>
+        </Bar>
+        """.toXmlCompactString()
+
+        assertEquals(expected, serializer.toByteArray().decodeToString())
     }
 
     @Test
@@ -201,8 +235,6 @@ class XmlSerializerTest {
 
     class Bar(var flatMap: Map<String, String>? = null) : SdkSerializable {
         companion object {
-            // Setting the map to be flattened removes two levels of nesting
-            //                                                      *- ignored                                *- ignored
             val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMapName(entry = "flatMap"), Flattened)
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 trait(XmlSerialName("Bar"))
@@ -327,7 +359,7 @@ class XmlSerializerTest {
                 </nested>
             </nested>
         </RecursiveShapesInputOutput>
-        """.trimIndent().replace("\n", "").replace(" ", "")
+        """.toXmlCompactString()
 
         val input = RecursiveShapesInputOutput {
             nested = RecursiveShapesInputOutputNested1 {

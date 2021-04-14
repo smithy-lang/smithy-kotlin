@@ -140,7 +140,6 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     }
 
     override fun serializeNull() {
-        // FIXME This might  be represented w/ attrib 'xsi:nil="true"'
         // NOP
     }
 
@@ -191,14 +190,16 @@ private class XmlMapSerializer(
     fun generalEntry(key: String, valueFn: () -> Unit) {
         val mapTrait = descriptor.findTrait() ?: XmlMapName.Default
 
-        if (!descriptor.hasTrait<Flattened>()) xmlWriter.startTag(mapTrait.entry!!)
-        xmlWriter.startTag(mapTrait.key)
-        xmlWriter.text(key)
-        xmlWriter.endTag(mapTrait.key)
-        xmlWriter.startTag(mapTrait.value)
-        valueFn()
-        xmlWriter.endTag(mapTrait.value)
-        if (!descriptor.hasTrait<Flattened>()) xmlWriter.endTag(mapTrait.entry!!)
+        val tagName = if (descriptor.hasTrait<Flattened>()) {
+            descriptor.serialName.name
+        } else {
+            checkNotNull(mapTrait.entry)
+        }
+
+        xmlWriter.writeTag(tagName) {
+            writeTag(mapTrait.key) { text(key) }
+            writeTag(mapTrait.value) { valueFn() }
+        }
     }
 
     override fun entry(key: String, value: Int?) = generalEntry(key) { xmlWriter.text(value.toString()) }
@@ -320,4 +321,13 @@ private class XmlListSerializer(
         xmlWriter.text(value.toString())
         xmlWriter.endTag(nodeName)
     }
+}
+
+/**
+ * Write start tag, call [block] to fill contents, writes end tag
+ */
+private fun XmlStreamWriter.writeTag(name: String, block: XmlStreamWriter.() -> Unit) {
+    startTag(name)
+    apply(block)
+    endTag(name)
 }
