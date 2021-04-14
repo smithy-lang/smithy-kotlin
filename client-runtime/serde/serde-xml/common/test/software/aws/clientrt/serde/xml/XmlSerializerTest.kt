@@ -504,6 +504,38 @@ class XmlSerializerTest {
         assertEquals(expected, serializer.toByteArray().decodeToString())
     }
 
+    @Test
+    fun canSerializeMapOfStructs() {
+        val objs = mapOf(
+            "foo" to B(1),
+            "bar" to B(2),
+        )
+
+        val serializer = XmlSerializer()
+
+        serializer.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("myMap"))) {
+            objs.entries.forEach { (key, value) -> entry(key, value) }
+        }
+
+        val expected = """
+            <myMap>
+                <entry>
+                    <key>foo</key>
+                    <value>
+                        <v>1</v>
+                    </value>
+                </entry>
+                <entry>
+                    <key>bar</key>
+                    <value>
+                        <v>2</v>
+                    </value>
+                </entry>
+            </myMap>
+            """.toXmlCompactString()
+        assertEquals(expected, serializer.toByteArray().decodeToString())
+    }
+
     class Bar(var flatMap: Map<String, String>? = null) : SdkSerializable {
         companion object {
             val FLAT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, XmlSerialName("flatMap"), XmlMapName(entry = "flatMap"), Flattened)

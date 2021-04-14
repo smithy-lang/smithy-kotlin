@@ -5,10 +5,7 @@
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.serde.*
-import software.aws.clientrt.serde.xml.dom.Stack
-import software.aws.clientrt.serde.xml.dom.peekOrNull
-import software.aws.clientrt.serde.xml.dom.pop
-import software.aws.clientrt.serde.xml.dom.push
+import software.aws.clientrt.serde.xml.dom.*
 
 /**
  * Provides serialization for the XML message format.
@@ -28,14 +25,24 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         // if we are serializing a nested structure field
         // either through `field(.., SdkSerializable)` or as part of a list member/map entry
-        // use the parent descriptor instead of the object descriptor passed to us
+        // use the parent descriptor instead of the object descriptor passed to us.
+        // The object descriptor is for root nodes, nested structures have their own field descriptor
+        // that describes the referred to struct
         val structDescriptor = parentDescriptorStack.peekOrNull() ?: descriptor
 
         structDescriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
             xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
         }
 
-        xmlWriter.startTag(structDescriptor.tagName)
+        // if the parent descriptor is from a map we omit the root level node
+        // e.g. Map<String, GreetingStruct> goes to:
+        // `<value><hi>foo</hi></value>`
+        // instead of
+        // `<value><GreetingStruct><hi>foo</hi></GreetingStruct></value>`
+        //
+        if (structDescriptor.kind != SerialKind.Map) {
+            xmlWriter.startTag(structDescriptor.tagName)
+        }
 
         nodeStack.push(structDescriptor.tagName)
 
@@ -56,7 +63,11 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun endStruct() {
         check(nodeStack.isNotEmpty()) { "Expected nodeStack to have a value, but was empty." }
-        xmlWriter.endTag(nodeStack.pop())
+        val tagName = nodeStack.pop()
+
+        if (parentDescriptorStack.isNotEmpty() && parentDescriptorStack.peek().kind != SerialKind.Map) {
+            xmlWriter.endTag(tagName)
+        }
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
@@ -179,7 +190,7 @@ private fun XmlStreamWriter.endTag(serialName: XmlSerialName) = endTag(serialNam
 private class XmlMapSerializer(
     private val descriptor: SdkFieldDescriptor,
     private val xmlWriter: XmlStreamWriter,
-    private val xmlSerializer: Serializer
+    private val xmlSerializer: XmlSerializer
 ) : MapSerializer {
 
     override fun endMap() {
@@ -211,7 +222,16 @@ private class XmlMapSerializer(
 
     override fun entry(key: String, value: String?) = generalEntry(key) { xmlWriter.text(value ?: "") }
 
-    override fun entry(key: String, value: SdkSerializable?) = generalEntry(key) { value?.serialize(xmlSerializer) ?: xmlWriter.text("") }
+    override fun entry(key: String, value: SdkSerializable?) = generalEntry(key) {
+        if (value == null) {
+            xmlWriter.text("")
+            return@generalEntry
+        }
+
+        xmlSerializer.parentDescriptorStack.push(descriptor)
+        value.serialize(xmlSerializer)
+        xmlSerializer.parentDescriptorStack.pop()
+    }
 
     override fun entry(key: String, value: Double?) = generalEntry(key) { xmlWriter.text(value.toString()) }
 
