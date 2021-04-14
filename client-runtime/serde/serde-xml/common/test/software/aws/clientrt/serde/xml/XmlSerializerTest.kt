@@ -75,6 +75,96 @@ class XmlSerializerTest {
     }
 
     @Test
+    fun canSerializePrimitiveList() {
+        // https://awslabs.github.io/smithy/spec/xml.html#wrapped-list-serialization
+        val list = listOf("example1", "example2", "example3")
+        val xml = XmlSerializer()
+        val listDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("values"))
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("Foo"))
+            field(listDescriptor)
+        }
+
+        xml.serializeStruct(objDescriptor) {
+            listField(listDescriptor) {
+                for (value in list) {
+                    serializeString(value)
+                }
+            }
+        }
+
+        val expected = """
+            <Foo>
+                <values>
+                    <member>example1</member>
+                    <member>example2</member>
+                    <member>example3</member>
+                </values>               
+            </Foo>
+            """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun canSerializeRenamedList() {
+        val list = listOf("example1", "example2", "example3")
+        val xml = XmlSerializer()
+        val listDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("values"), XmlCollectionName("Item"))
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("Foo"))
+            field(listDescriptor)
+        }
+
+        xml.serializeStruct(objDescriptor) {
+            listField(listDescriptor) {
+                for (value in list) {
+                    serializeString(value)
+                }
+            }
+        }
+
+        val expected = """
+            <Foo>
+                <values>
+                    <Item>example1</Item>
+                    <Item>example2</Item>
+                    <Item>example3</Item>
+                </values>               
+            </Foo>
+            """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun canSerializeFlattenedList() {
+        // https://awslabs.github.io/smithy/spec/xml.html#flattened-list-serialization
+        val list = listOf("example1", "example2", "example3")
+        val xml = XmlSerializer()
+        val listDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("flat"), Flattened)
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("Foo"))
+            field(listDescriptor)
+        }
+
+        xml.serializeStruct(objDescriptor) {
+            listField(listDescriptor) {
+                for (value in list) {
+                    serializeString(value)
+                }
+            }
+        }
+
+        val expected = """
+            <Foo>
+                <flat>example1</flat>
+                <flat>example2</flat>
+                <flat>example3</flat>
+            </Foo>
+            """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
+    }
+
+    @Test
     fun canSerializeListOfClasses() {
         val obj = listOf(
             B(1),
@@ -82,23 +172,23 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"))) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"))) {
             for (value in obj) {
-                value.serialize(xml)
+                serializeSdkSerializable(value)
             }
         }
 
         val expected = """
             <list>
-                <b>
+                <member>
                     <v>1</v>
-                </b>
-                <b>
+                </member>
+                <member>
                     <v>2</v>
-                </b>
-                <b>
+                </member>
+                <member>
                     <v>3</v>
-                </b>
+                </member>
             </list>               
             """.toXmlCompactString()
         assertEquals(expected, xml.toByteArray().decodeToString())
@@ -112,21 +202,21 @@ class XmlSerializerTest {
             B(3)
         )
         val xml = XmlSerializer()
-        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), XmlCollectionName("b"), Flattened)) {
+        xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), Flattened)) {
             for (value in obj) {
-                value.serialize(xml)
+                serializeSdkSerializable(value)
             }
         }
         val expected = """
-            <b>
+            <list>
                 <v>1</v>
-            </b>
-            <b>
+            </list>
+            <list>
                 <v>2</v>
-            </b>
-            <b>
+            </list>
+            <list>
                 <v>3</v>
-            </b>
+            </list>
         """.toXmlCompactString()
         assertEquals(expected, xml.toByteArray().decodeToString())
     }
