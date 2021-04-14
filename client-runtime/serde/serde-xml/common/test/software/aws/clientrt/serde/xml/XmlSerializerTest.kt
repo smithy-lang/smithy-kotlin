@@ -22,7 +22,10 @@ e.g.
 
 becomes: `<Root><nested><bar>1</bar></nested></Root>`
  */
-private fun String.toXmlCompactString(): String = trimIndent().replace("\n", "").replace(" ", "")
+private fun String.toXmlCompactString(): String =
+    trimIndent()
+        .replace("\n", "")
+        .replace(Regex(">\\s+"), ">")
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlSerializerTest {
@@ -84,7 +87,21 @@ class XmlSerializerTest {
                 value.serialize(xml)
             }
         }
-        assertEquals("""<list><b><v>1</v></b><b><v>2</v></b><b><v>3</v></b></list>""", xml.toByteArray().decodeToString())
+
+        val expected = """
+            <list>
+                <b>
+                    <v>1</v>
+                </b>
+                <b>
+                    <v>2</v>
+                </b>
+                <b>
+                    <v>3</v>
+                </b>
+            </list>               
+            """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -100,12 +117,23 @@ class XmlSerializerTest {
                 value.serialize(xml)
             }
         }
-        assertEquals("""<b><v>1</v></b><b><v>2</v></b><b><v>3</v></b>""", xml.toByteArray().decodeToString())
+        val expected = """
+            <b>
+                <v>1</v>
+            </b>
+            <b>
+                <v>2</v>
+            </b>
+            <b>
+                <v>3</v>
+            </b>
+        """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
     }
 
-    // See https://awslabs.github.io/smithy/spec/xml.html#wrapped-map-serialization
     @Test
     fun canSerializeMap() {
+        // See https://awslabs.github.io/smithy/spec/xml.html#wrapped-map-serialization
         val foo = Foo(
             mapOf(
                 "example-key1" to "example1",
@@ -115,7 +143,22 @@ class XmlSerializerTest {
         val xml = XmlSerializer()
         foo.serialize(xml)
 
-        assertEquals("""<Foo><values><entry><key>example-key1</key><value>example1</value></entry><entry><key>example-key2</key><value>example2</value></entry></values></Foo>""", xml.toByteArray().decodeToString())
+        val expected = """
+            <Foo>
+                <values>
+                    <entry>
+                        <key>example-key1</key>
+                        <value>example1</value>
+                    </entry>
+                    <entry>
+                        <key>example-key2</key>
+                        <value>example2</value>
+                    </entry>
+                </values>
+            </Foo>
+        """.toXmlCompactString()
+
+        assertEquals(expected, xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -170,7 +213,42 @@ class XmlSerializerTest {
                 }
             }
         }
-        assertEquals("""<objs><entry><key>A1</key><value><elements><member>a</member><member>b</member><member>c</member></elements></value></entry><entry><key>A2</key><value><elements><member>d</member><member>e</member><member>f</member></elements></value></entry><entry><key>A3</key><value><elements><member>g</member><member>h</member><member>i</member></elements></value></entry></objs>""", xml.toByteArray().decodeToString())
+
+        val expected = """
+            <objs>
+                <entry>
+                    <key>A1</key>
+                    <value>
+                        <elements>
+                            <member>a</member>
+                            <member>b</member>
+                            <member>c</member>
+                        </elements>
+                    </value>
+                </entry>
+                <entry>
+                    <key>A2</key>
+                    <value>
+                        <elements>
+                            <member>d</member>
+                            <member>e</member>
+                            <member>f</member>
+                        </elements>
+                    </value>
+                </entry>
+                <entry>
+                    <key>A3</key>
+                    <value>
+                        <elements>
+                            <member>g</member>
+                            <member>h</member>
+                            <member>i</member>
+                        </elements>
+                    </value>
+                </entry>
+            </objs>
+        """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -190,7 +268,27 @@ class XmlSerializerTest {
                 }
             }
         }
-        assertEquals("""<objs><elements><member>a</member><member>b</member><member>c</member></elements><elements><member>d</member><member>e</member><member>f</member></elements><elements><member>g</member><member>h</member><member>i</member></elements></objs>""", xml.toByteArray().decodeToString())
+
+        val expected = """
+            <objs>
+                <elements>
+                    <member>a</member>
+                    <member>b</member>
+                    <member>c</member>
+                </elements>
+                <elements>
+                    <member>d</member>
+                    <member>e</member>
+                    <member>f</member>
+                </elements>
+                <elements>
+                    <member>g</member>
+                    <member>h</member>
+                    <member>i</member>
+                </elements>
+            </objs>
+        """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -210,7 +308,41 @@ class XmlSerializerTest {
                 }
             }
         }
-        assertEquals("""<elements><entries><entry><key>a</key><value>b</value></entry><entry><key>c</key><value>d</value></entry></entries><entries><entry><key>e</key><value>f</value></entry><entry><key>g</key><value>h</value></entry></entries><entries><entry><key>i</key><value>j</value></entry><entry><key>k</key><value>l</value></entry></entries></elements>""", xml.toByteArray().decodeToString())
+        val expected = """
+            <elements>
+                <entries>
+                    <entry>
+                        <key>a</key>
+                        <value>b</value>
+                    </entry>
+                    <entry>
+                        <key>c</key>
+                        <value>d</value>
+                    </entry>
+                </entries>
+                <entries>
+                    <entry>
+                        <key>e</key>
+                        <value>f</value>
+                    </entry>
+                    <entry>
+                        <key>g</key>
+                        <value>h</value>
+                    </entry>
+                </entries>
+                <entries>
+                    <entry>
+                        <key>i</key>
+                        <value>j</value>
+                    </entry>
+                    <entry>
+                        <key>k</key>
+                        <value>l</value>
+                    </entry>
+                </entries>
+            </elements>
+        """.toXmlCompactString()
+        assertEquals(expected, xml.toByteArray().decodeToString())
     }
 
     @Test
@@ -220,8 +352,8 @@ class XmlSerializerTest {
             "A2" to mapOf("e" to "f", "g" to "h"),
             "A3" to mapOf("i" to "j", "k" to "l"),
         )
-        val json = XmlSerializer()
-        json.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objs"))) {
+        val serializer = XmlSerializer()
+        serializer.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objs"))) {
             for (obj in objs) {
                 mapEntry(obj.key, SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objvals"))) {
                     for (v in obj.value) {
@@ -230,7 +362,56 @@ class XmlSerializerTest {
                 }
             }
         }
-        assertEquals("""<objs><entry><key>A1</key><value><objvals><entry><key>a</key><value>b</value></entry><entry><key>c</key><value>d</value></entry></objvals></value></entry><entry><key>A2</key><value><objvals><entry><key>e</key><value>f</value></entry><entry><key>g</key><value>h</value></entry></objvals></value></entry><entry><key>A3</key><value><objvals><entry><key>i</key><value>j</value></entry><entry><key>k</key><value>l</value></entry></objvals></value></entry></objs>""", json.toByteArray().decodeToString())
+        val expected = """
+            <objs>
+                <entry>
+                    <key>A1</key>
+                    <value>
+                        <objvals>
+                            <entry>
+                                <key>a</key>
+                                <value>b</value>
+                            </entry>
+                            <entry>
+                                <key>c</key>
+                                <value>d</value>
+                            </entry>
+                        </objvals>
+                    </value>
+                </entry>
+                <entry>
+                    <key>A2</key>
+                    <value>
+                        <objvals>
+                            <entry>
+                                <key>e</key>
+                                <value>f</value>
+                            </entry>
+                            <entry>
+                                <key>g</key>
+                                <value>h</value>
+                            </entry>
+                        </objvals>
+                    </value>
+                </entry>
+                <entry>
+                    <key>A3</key>
+                    <value>
+                        <objvals>
+                            <entry>
+                                <key>i</key>
+                                <value>j</value>
+                            </entry>
+                            <entry>
+                                <key>k</key>
+                                <value>l</value>
+                            </entry>
+                        </objvals>
+                    </value>
+                </entry>
+            </objs>
+            """.toXmlCompactString()
+        assertEquals(expected, serializer.toByteArray().decodeToString())
     }
 
     class Bar(var flatMap: Map<String, String>? = null) : SdkSerializable {
@@ -291,12 +472,24 @@ class XmlSerializerTest {
         val myStructure = MyStructure1("example", "example")
         val xml = XmlSerializer()
         myStructure.serialize(xml)
-        assertEquals("""<MyStructure xmlns="http://foo.com"><foo>example</foo><bar>example</bar></MyStructure>""", xml.toByteArray().decodeToString())
+        val expected1 = """
+            <MyStructure xmlns="http://foo.com">
+                <foo>example</foo>
+                <bar>example</bar>
+            </MyStructure>
+        """.toXmlCompactString()
+        assertEquals(expected1, xml.toByteArray().decodeToString())
 
         val myStructure2 = MyStructure2("example", "example")
         val xml2 = XmlSerializer()
         myStructure2.serialize(xml2)
-        assertEquals("""<MyStructure xmlns:baz="http://foo.com"><foo>example</foo><baz:bar>example</baz:bar></MyStructure>""", xml2.toByteArray().decodeToString())
+        val expected2 = """
+            <MyStructure xmlns:baz="http://foo.com">
+                <foo>example</foo>
+                <baz:bar>example</baz:bar>
+            </MyStructure>
+        """.toXmlCompactString()
+        assertEquals(expected2, xml2.toByteArray().decodeToString())
     }
 
     class MyStructure1(private val foo: String, private val bar: String) : SdkSerializable {
