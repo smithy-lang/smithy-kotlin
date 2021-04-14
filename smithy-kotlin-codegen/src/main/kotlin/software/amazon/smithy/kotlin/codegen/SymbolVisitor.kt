@@ -335,10 +335,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 }
 
-// See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-fun String.clientName(): String =
-    split(" ").map { it.toLowerCase().capitalize() }.joinToString(separator = "") { it }
-
 /**
  * Mark a symbol as being boxed (nullable) i.e. `T?`
  */
