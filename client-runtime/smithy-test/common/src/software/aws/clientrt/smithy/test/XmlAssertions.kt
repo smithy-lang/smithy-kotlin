@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 suspend fun assertXmlStringsEqual(expected: String, actual: String) {
     // parse into a dom representation and sort the dom into a canonical form for comparison
     val expectedNode = XmlNode.parse(expected.encodeToByteArray()).apply { toCanonicalForm() }
-    val actualNode = XmlNode.parse(expected.encodeToByteArray()).apply { toCanonicalForm() }
+    val actualNode = XmlNode.parse(actual.encodeToByteArray()).apply { toCanonicalForm() }
 
     val expectedCanonical = expectedNode.toXmlString(true)
     val actualCanonical = actualNode.toXmlString(true)
