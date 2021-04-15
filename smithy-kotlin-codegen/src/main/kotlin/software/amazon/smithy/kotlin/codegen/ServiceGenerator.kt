@@ -125,7 +125,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.write("")
             .write("override val serviceName: String")
             .indent()
-            .write("get() = \"#L\"", ctx.settings.sdkId)
+            .write("get() = #S", ctx.settings.sdkId)
             .dedent()
     }
 
