@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
@@ -67,4 +68,12 @@ fun EnumDefinition.variantName(): String {
         // attempt to prefix it (e.g. `0` -> `_0`)
         false -> "_$identifier"
     }
+}
+
+/**
+ * Generate the union variant name from a union member shape
+ * e.g. `VariantName`
+ */
+fun MemberShape.unionVariantName(symbolProvider: SymbolProvider): String {
+    return symbolProvider.toMemberName(this).capitalize()
 }

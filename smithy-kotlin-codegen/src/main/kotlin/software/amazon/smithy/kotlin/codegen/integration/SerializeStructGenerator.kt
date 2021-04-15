@@ -31,10 +31,10 @@ import software.amazon.smithy.model.traits.*
  * This class is open to extension for variations of member serialization; specifically Unions.
  */
 open class SerializeStructGenerator(
-    private val ctx: ProtocolGenerator.GenerationContext,
-    private val members: List<MemberShape>,
-    private val writer: KotlinWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    protected val ctx: ProtocolGenerator.GenerationContext,
+    protected val members: List<MemberShape>,
+    protected val writer: KotlinWriter,
+    protected val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
     /**
      * Container for serialization information for a particular shape being serialized to

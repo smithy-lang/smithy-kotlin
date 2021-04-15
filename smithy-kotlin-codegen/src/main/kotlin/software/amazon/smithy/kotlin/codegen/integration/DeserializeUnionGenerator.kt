@@ -11,13 +11,12 @@ import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.utils.StringUtils
 
 class DeserializeUnionGenerator(
-    private val ctx: ProtocolGenerator.GenerationContext,
+    ctx: ProtocolGenerator.GenerationContext,
     private val unionName: String,
-    private val members: List<MemberShape>,
-    private val writer: KotlinWriter,
+    members: List<MemberShape>,
+    writer: KotlinWriter,
     defaultTimestampFormat: TimestampFormatTrait.Format
 ) : DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
 
@@ -77,7 +76,7 @@ class DeserializeUnionGenerator(
      * ```
      */
     override fun renderShapeDeserializer(memberShape: MemberShape) {
-        val unionTypeName = memberShape.unionTypeName(memberShape)
+        val unionTypeName = memberShape.unionTypeName(ctx)
         val descriptorName = memberShape.descriptorName()
         val deserialize = deserializerForShape(memberShape)
 
@@ -89,12 +88,7 @@ class DeserializeUnionGenerator(
 
     // Return the type that deserializes the incoming value.  Example: `MyAggregateUnion.IntList`
     override fun collectionReturnExpression(memberShape: MemberShape, defaultCollectionName: String): String {
-        val unionTypeName = memberShape.unionTypeName(memberShape)
+        val unionTypeName = memberShape.unionTypeName(ctx)
         return "$unionTypeName($defaultCollectionName)"
     }
-
-    /**
-     * Generate the fully qualified type name of Union variant
-     */
-    private fun Shape.unionTypeName(unionVariant: MemberShape): String = "${this.id.name}.${StringUtils.capitalize(unionVariant.memberName)}"
 }

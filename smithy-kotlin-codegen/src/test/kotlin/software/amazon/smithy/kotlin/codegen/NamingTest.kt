@@ -27,7 +27,9 @@ class NamingTest {
             "FooBar" to "fooBar",
             "ACL" to "acl",
             "ACLList" to "aclList",
-            "fooey" to "fooey"
+            "fooey" to "fooey",
+            "stringA" to "stringa",
+            "StringA" to "stringa"
         )
 
         tests.forEach { (input, expected) ->
@@ -35,7 +37,7 @@ class NamingTest {
                 .id("com.test#TestStruct\$$input")
                 .target("smithy.api#Integer")
                 .build()
-            assertEquals(expected, shape.defaultName())
+            assertEquals(expected, shape.defaultName(), "input: $input")
         }
     }
 
