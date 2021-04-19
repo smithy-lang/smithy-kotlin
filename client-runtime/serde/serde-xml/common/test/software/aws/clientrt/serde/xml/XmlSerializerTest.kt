@@ -685,6 +685,59 @@ class XmlSerializerTest {
     }
 
     @Test
+    fun canIgnoresNestedStructNamespaces() {
+        /*
+            @xmlNamespace(uri: "http://foo.com")
+            structure Foo {
+                nested: Bar,
+            }
+
+            // Ignored - not at top level
+            // TODO - nothing in the spec defines this...only the protocol tests
+            @xmlNamespace(uri: "http://bar.com")
+            structure Bar {
+                x: String
+            }
+        */
+
+        val serializer = XmlSerializer()
+        val nestedDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("Foo"))
+            trait(XmlNamespace("http://foo.com"))
+            field(nestedDescriptor)
+        }
+
+        val nested = object : SdkSerializable {
+            override fun serialize(serializer: Serializer) {
+                val xDescriptor = SdkFieldDescriptor(SerialKind.String, XmlSerialName("x"))
+                val obj2Descriptor = SdkObjectDescriptor.build {
+                    trait(XmlSerialName("Bar"))
+                    trait(XmlNamespace("http://bar.com"))
+                    field(xDescriptor)
+                }
+                serializer.serializeStruct(obj2Descriptor) {
+                    field(xDescriptor, "blerg")
+                }
+            }
+        }
+
+        serializer.serializeStruct(objDescriptor) {
+            field(nestedDescriptor, nested)
+        }
+
+        val expected = """
+            <Foo xmlns="http://foo.com">
+                <nested>
+                    <x>blerg</x>
+                </nested>
+            </Foo>
+        """.toXmlCompactString()
+
+        assertEquals(expected, serializer.toByteArray().decodeToString())
+    }
+
+    @Test
     fun itSerializesRecursiveShapes() {
         val expected = """
         <RecursiveShapesInputOutput>
@@ -749,6 +802,44 @@ class XmlSerializerTest {
 
         val expected = """
             <Foo bool="true" str="bar" number="2" />
+        """.toXmlCompactString()
+
+        assertEquals(expected, serializer.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun itCanSerializeAttributesWithNamespaces() {
+        val nestedDescriptor = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nestedField"), XmlNamespace("https://example.com", "xsi"))
+
+        val objDescriptor = SdkObjectDescriptor.build {
+            trait(XmlSerialName("Foo"))
+            field(nestedDescriptor)
+        }
+
+        val nestedSerializer = object : SdkSerializable {
+            override fun serialize(serializer: Serializer) {
+                val attrDescriptor = SdkFieldDescriptor(SerialKind.String, XmlSerialName("xsi:myAttr"), XmlAttribute)
+                val nestedObjDescriptor = SdkObjectDescriptor.build {
+                    trait(XmlSerialName("Nested"))
+                    field(attrDescriptor)
+                }
+                serializer.serializeStruct(nestedObjDescriptor) {
+                    field(attrDescriptor, "nestedAttrValue")
+                }
+            }
+        }
+
+        // NOTE: attribute fields MUST be generated as the first fields after serializeStruct() to work properly
+        val serializer = XmlSerializer()
+        serializer.serializeStruct(objDescriptor) {
+            field(nestedDescriptor, nestedSerializer)
+        }
+
+        // ... the order these attributes come out w.r.t namespaces is not well defined
+        val expected = """
+            <Foo>
+                <nestedField xsi:myAttr="nestedAttrValue" xmlns:xsi="https://example.com" />
+            </Foo>
         """.toXmlCompactString()
 
         assertEquals(expected, serializer.toByteArray().decodeToString())

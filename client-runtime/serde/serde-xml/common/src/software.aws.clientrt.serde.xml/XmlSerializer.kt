@@ -32,11 +32,16 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
         // Serialize top-level (root node) ns declarations and non-default declarations.
         val isRoot = nodeStack.isEmpty()
-        if (emitNamespaceDeclaration(descriptor, isRoot)) {
-            descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
-                xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
-            }
+        val ns = structDescriptor.findTrait<XmlNamespace>()
+        if (ns != null && (isRoot || ns.prefix != null)) {
+            xmlWriter.namespacePrefix(ns.uri, ns.prefix)
         }
+
+        // if (emitNamespaceDeclaration(descriptor, isRoot)) {
+        //     descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
+        //         xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
+        //     }
+        // }
 
         val tagName = structDescriptor.serialName.name
         // if the parent descriptor is from a list or map we omit the root level node
@@ -46,7 +51,6 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         // `<value><GreetingStruct><hi>foo</hi></GreetingStruct></value>`
         //
         if (!structDescriptor.isMapOrList) {
-            // val ns = descriptor.findTrait<XmlNamespace>()
             xmlWriter.startTag(tagName)
         }
 
@@ -363,20 +367,12 @@ private fun XmlStreamWriter.writeTag(
 private fun XmlStreamWriter.startTag(tagName: String, ns: AbstractXmlNamespaceTrait?) {
     if (ns != null) {
         namespacePrefix(ns.uri, ns.prefix)
-        val (local, prefix) = tagName.toQualifiedName(ns)
-        startTag(local, prefix)
-    } else {
-        startTag(tagName)
     }
+    startTag(tagName)
 }
 
 private fun XmlStreamWriter.endTag(tagName: String, ns: AbstractXmlNamespaceTrait?) {
-    if (ns != null) {
-        val (local, prefix) = tagName.toQualifiedName(ns)
-        endTag(local, prefix)
-    } else {
-        endTag(tagName)
-    }
+    endTag(tagName)
 }
 
 private fun String.toQualifiedName(ns: AbstractXmlNamespaceTrait? = null): XmlToken.QualifiedName {

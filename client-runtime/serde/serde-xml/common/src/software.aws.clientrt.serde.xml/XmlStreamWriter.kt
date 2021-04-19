@@ -28,7 +28,7 @@ interface XmlStreamWriter {
      * Writes a start tag with the given namespace and name.
      * If there is no prefix defined for the given namespace,
      * a prefix will be defined automatically.
-     * The explicit prefixes for namespaces can be established by calling setPrefix()
+     * The explicit prefixes for namespaces can be established by calling [namespacePrefix]
      * immediately before this method.
      * If namespace is null no namespace prefix is printed but just name.
      * If namespace is empty string then serializer will make sure that

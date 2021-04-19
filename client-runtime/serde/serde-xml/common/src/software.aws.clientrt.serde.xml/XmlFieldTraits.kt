@@ -80,6 +80,9 @@ object XmlError : FieldTrait {
  */
 open class AbstractXmlNamespaceTrait(val uri: String, val prefix: String? = null) {
     fun isDefault() = prefix == null
+    override fun toString(): String {
+        return "AbstractXmlNamespace(uri=$uri, prefix=$prefix)"
+    }
 }
 
 /**
