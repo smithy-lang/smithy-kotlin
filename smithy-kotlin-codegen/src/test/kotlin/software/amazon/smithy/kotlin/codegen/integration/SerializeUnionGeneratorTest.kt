@@ -49,10 +49,10 @@ class SerializeUnionGeneratorTest {
                 val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
                 val requestBindings = bindingIndex.getRequestBindings(shape)
                 val unionShape = ctx.generationCtx.model.expectShape(requestBindings.values.first().member.target)
-                unionShape.members().toList()
+                unionShape.members().toList().sortedBy { it.memberName }
             }
             is StructureShape -> {
-                shape.members().toList()
+                shape.members().toList().sortedBy { it.memberName }
             }
             else -> throw RuntimeException("unknown conversion for $shapeId")
         }

@@ -69,6 +69,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected abstract fun generateSdkObjectDescriptorTraits(ctx: ProtocolGenerator.GenerationContext, objectShape: Shape, writer: KotlinWriter)
 
+    /**
+     * Sort and return [members] in the order they should be serialized in (sort order may not matter in all protocols)
+     * By default they are sorted by the member name
+     */
+    protected open fun sortMembersForSerialization(ctx: ProtocolGenerator.GenerationContext, members: List<MemberShape>): List<MemberShape> {
+        return members.sortedBy { it.memberName }
+    }
+
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx)
         val httpOperations = resolver.bindingOperations()
@@ -158,10 +166,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
+                    val sortedMembers = sortMembersForSerialization(ctx, shape.members().toList())
                     if (shape.isUnionShape) {
-                        SerializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeUnionGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
                     } else {
-                        SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
                     }
                 }
             }
@@ -428,7 +437,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.addImport(RuntimeTypes.Http.ByteArrayContent)
         writer.write("val serializer = context.serializer()")
             .call {
-                val renderForMembers = members.map { it.member }
+                val renderForMembers = sortMembersForSerialization(ctx, members.map { it.member })
                 SerializeStructGenerator(ctx, renderForMembers, writer, defaultTimestampFormat).render()
             }
             .write("")
