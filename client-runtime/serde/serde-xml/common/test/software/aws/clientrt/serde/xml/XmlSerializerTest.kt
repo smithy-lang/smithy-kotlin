@@ -588,9 +588,9 @@ class XmlSerializerTest {
         assertEquals("""<struct><boolean>true</boolean><byte>10</byte><short>20</short><int>30</int><long>40</long><float>50.0</float><double>60.0</double><char>A</char><string>Str0</string><listInt><number>1</number><number>2</number><number>3</number></listInt></struct>""", xml.toByteArray().decodeToString())
     }
 
-    // See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
     @Test
     fun canSerializeNamespaces() {
+        // See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
         val myStructure = MyStructure1("example", "example")
         val xml = XmlSerializer()
         myStructure.serialize(xml)
@@ -612,6 +612,33 @@ class XmlSerializerTest {
             </MyStructure>
         """.toXmlCompactString()
         assertEquals(expected2, xml2.toByteArray().decodeToString())
+    }
+
+    @Test
+    fun canSerializeNestedNamespaces() {
+        val input = XmlNamespacesRequest(
+            nested = XmlNamespaceNested(
+                foo = "Foo",
+                values = listOf("Bar", "Baz")
+            )
+        )
+
+        val serializer = XmlSerializer()
+        input.serialize(serializer)
+
+        val expected = """
+            <XmlNamespacesInputOutput xmlns="http://foo.com">
+                <nested>
+                    <foo xmlns:baz="http://baz.com">Foo</foo>
+                    <values xmlns="http://qux.com">
+                        <member xmlns="http://bux.com">Bar</member>
+                        <member xmlns="http://bux.com">Baz</member>
+                    </values>
+                </nested>
+            </XmlNamespacesInputOutput>
+        """.toXmlCompactString()
+
+        assertEquals(expected, serializer.toByteArray().decodeToString())
     }
 
     class MyStructure1(private val foo: String, private val bar: String) : SdkSerializable {

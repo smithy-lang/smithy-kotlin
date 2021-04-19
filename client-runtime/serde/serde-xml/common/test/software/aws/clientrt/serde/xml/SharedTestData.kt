@@ -345,3 +345,73 @@ class RecursiveShapesInputOutputNested2 private constructor(builder: BuilderImpl
         override fun recursiveMember(recursiveMember: RecursiveShapesInputOutputNested1): Builder = apply { this.recursiveMember = recursiveMember }
     }
 }
+
+/*
+    @xmlNamespace(uri: "http://foo.com")
+    structure XmlNamespacesInputOutput {
+        nested: XmlNamespaceNested
+    }
+
+    // Ignored since it's not at the top-level
+    @xmlNamespace(uri: "http://foo.com")
+    structure XmlNamespaceNested {
+        @xmlNamespace(uri: "http://baz.com", prefix: "baz")
+        foo: String,
+
+        @xmlNamespace(uri: "http://qux.com")
+        values: XmlNamespacedList
+    }
+
+    list XmlNamespacedList {
+        @xmlNamespace(uri: "http://bux.com")
+        member: String,
+    }
+*/
+class XmlNamespacesRequest(val nested: XmlNamespaceNested?) {
+    companion object {
+        private val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("XmlNamespacesInputOutput"))
+            trait(XmlNamespace("http://foo.com"))
+            field(NESTED_DESCRIPTOR)
+        }
+    }
+
+    fun serialize(serializer: Serializer) {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            nested?.let { field(NESTED_DESCRIPTOR, XmlNamespaceNestedDocumentSerializer(it)) }
+        }
+    }
+}
+
+data class XmlNamespaceNested(
+    val foo: String? = null,
+    val values: List<String>? = null,
+)
+
+internal class XmlNamespaceNestedDocumentSerializer(val input: XmlNamespaceNested) : SdkSerializable {
+
+    companion object {
+        private val FOO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("foo"), XmlNamespace("http://baz.com", "baz"))
+        private val VALUES_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("values"), XmlNamespace("http://qux.com"), XmlCollectionValueNamespace("http://bux.com"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("XmlNamespaceNested"))
+            trait(XmlNamespace("http://foo.com"))
+            field(FOO_DESCRIPTOR)
+            field(VALUES_DESCRIPTOR)
+        }
+    }
+
+    override fun serialize(serializer: Serializer) {
+        serializer.serializeStruct(OBJ_DESCRIPTOR) {
+            input.foo?.let { field(FOO_DESCRIPTOR, it) }
+            if (input.values != null) {
+                listField(VALUES_DESCRIPTOR) {
+                    for (el0 in input.values) {
+                        serializeString(el0)
+                    }
+                }
+            }
+        }
+    }
+}
