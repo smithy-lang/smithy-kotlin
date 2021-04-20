@@ -16,6 +16,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import java.util.Optional
 
+// FIXME - move this it's not a utility and only used in serde generation
 /**
  * Specifies the type of value the identifier represents
  */
@@ -74,10 +75,11 @@ fun String.splitOnWordBoundaries(): List<String> {
 }
 
 /**
- * Get the generated SDK service client name to use. The target should be a string that represents the `sdkId`
- * of the service.
- *
- * See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
+ * Convert a string to `PascalCase` (uppercase start with upper case word boundaries)
  */
-fun String.clientName(): String =
-    splitOnWordBoundaries().joinToString(separator = "") { it.toLowerCase().capitalize() }
+fun String.toPascalCase(): String = splitOnWordBoundaries().joinToString(separator = "") { it.toLowerCase().capitalize() }
+
+/**
+ * Convert a string to `camelCase` (lowercase start with upper case word boundaries)
+ */
+fun String.toCamelCase(): String = toPascalCase().decapitalize()

@@ -9,10 +9,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.StringShape
-import software.amazon.smithy.model.traits.EnumDefinition
-import software.amazon.smithy.model.traits.EnumTrait
 
 class EnumGeneratorTest {
 
@@ -181,33 +178,23 @@ sealed class Baz {
         // when an enum is unnamed we convert the value to the name. This test ensures those names are escaped
         // appropriately when the value itself would constitute an invalid kotlin identifier name
 
-        val trait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("0").build())
-            .addEnum(EnumDefinition.builder().value("foo").build())
-            .build()
-        /*
-        @enum([
-            {
-                value: "0"
-            },
-            {
-                value: "foo"
-            }
-        ])
-        string Baz
-        */
-
-        val shape = StringShape.builder()
-            .id("com.test#Baz")
-            .addTrait(trait)
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(shape)
-            .assemble()
-            .unwrap()
+        val model = """
+            namespace com.test
+            
+            @enum([
+                {
+                    value: "0"
+                },
+                {
+                    value: "foo"
+                }
+            ])
+            string Baz
+            
+        """.asSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
+        val shape = model.expectShape<StringShape>("com.test#Baz")
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter("com.test")
         EnumGenerator(shape, symbol, writer).render()
@@ -221,31 +208,22 @@ sealed class Baz {
         // names and values are required to be unique, prefixing invalid identifiers with '_' could potentially
         // (albeit unlikely) cause a conflict with an existing name
 
-        val trait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("0").build())
-            .addEnum(EnumDefinition.builder().value("_0").build())
-            .build()
-        /*
-        @enum([
-            {
-                value: "0"
-            },
-            {
-                value: "_0"
-            }
-        ])
-        string Baz
-        */
+        val model = """
+            namespace com.test
+            
+            @enum([
+                {
+                    value: "0"
+                },
+                {
+                    value: "_0"
+                }
+            ])
+            string Baz
+            
+        """.asSmithyModel()
 
-        val shape = StringShape.builder()
-            .id("com.test#Baz")
-            .addTrait(trait)
-            .build()
-
-        val model = Model.assembler()
-            .addShapes(shape)
-            .assemble()
-            .unwrap()
+        val shape = model.expectShape<StringShape>("com.test#Baz")
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val symbol = provider.toSymbol(shape)

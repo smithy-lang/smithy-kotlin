@@ -521,7 +521,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
         serializer.serializeStruct(OBJ_DESCRIPTOR) {
             when (input) {
                 is MyUnion.I32 -> field(I32_DESCRIPTOR, input.value)
-                is MyUnion.StringA -> field(STRINGA_DESCRIPTOR, input.value)
+                is MyUnion.Stringa -> field(STRINGA_DESCRIPTOR, input.value)
             }
         }
     }
@@ -552,7 +552,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
             loop@while(true) {
                 when(findNextFieldIndex()) {
                     I32_DESCRIPTOR.index -> value = MyUnion.I32(deserializeInt())
-                    STRINGA_DESCRIPTOR.index -> value = MyUnion.StringA(deserializeString())
+                    STRINGA_DESCRIPTOR.index -> value = MyUnion.Stringa(deserializeString())
                     null -> break@loop
                     else -> value = MyUnion.SdkUnknown.also { skipValue() }
                 }
