@@ -37,13 +37,8 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
             xmlWriter.namespacePrefix(ns.uri, ns.prefix)
         }
 
-        // if (emitNamespaceDeclaration(descriptor, isRoot)) {
-        //     descriptor.findTrait<XmlNamespace>()?.let { xmlNamespace ->
-        //         xmlWriter.namespacePrefix(xmlNamespace.uri, xmlNamespace.prefix)
-        //     }
-        // }
-
         val tagName = structDescriptor.serialName.name
+
         // if the parent descriptor is from a list or map we omit the root level node
         // e.g. Map<String, GreetingStruct> goes to:
         // `<value><hi>foo</hi></value>`
@@ -374,20 +369,6 @@ private fun XmlStreamWriter.startTag(tagName: String, ns: AbstractXmlNamespaceTr
 private fun XmlStreamWriter.endTag(tagName: String, ns: AbstractXmlNamespaceTrait?) {
     endTag(tagName)
 }
-
-private fun String.toQualifiedName(ns: AbstractXmlNamespaceTrait? = null): XmlToken.QualifiedName {
-    val (localName, prefix) = parseNodeWithPrefix()
-
-    return when {
-        ns != null -> XmlToken.QualifiedName(localName, if (prefix == ns.prefix) prefix else null)
-        prefix != null -> XmlToken.QualifiedName(localName, prefix)
-        else -> XmlToken.QualifiedName(localName)
-    }
-}
-
-// Determines if a namespace declaration should emitted on a specific tag
-private fun emitNamespaceDeclaration(descriptor: SdkFieldDescriptor, isRoot: Boolean): Boolean =
-    descriptor.hasTrait<XmlNamespace>() && (!descriptor.expectTrait<XmlNamespace>().isDefault() || isRoot)
 
 /**
  * Return true if the descriptor represents a list or map type, false otherwise
