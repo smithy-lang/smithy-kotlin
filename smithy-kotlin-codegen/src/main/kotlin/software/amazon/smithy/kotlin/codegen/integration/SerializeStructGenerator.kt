@@ -12,6 +12,8 @@ import software.amazon.smithy.model.traits.*
 /**
  * Generate serialization for members bound to the payload.
  *
+ * NOTE: If the serialization order is important then [members] MUST already be sorted correctly
+ *
  * There are some proper names Smithy models use which can lead to confusion in codegen.
  * In this file, `member` refers to the lhs of a child of a structure (known as a member). It can
  * be thought of as the root node from which serialization of a field begins.
@@ -62,7 +64,7 @@ open class SerializeStructGenerator(
         // otherwise use the one generated as part of the companion object
         val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
         writer.withBlock("serializer.serializeStruct($objDescriptor) {", "}") {
-            members.sortedBy { it.memberName }.forEach { memberShape ->
+            members.forEach { memberShape ->
                 renderMemberShape(memberShape)
             }
         }

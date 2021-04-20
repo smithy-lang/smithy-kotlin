@@ -26,7 +26,6 @@ fun assertJsonStringsEqual(expected: String, actual: String) {
 /**
  * Assert HTTP bodies are equal as JSON documents
  */
-@OptIn(ExperimentalStdlibApi::class)
 suspend fun assertJsonBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
     val expectedStr = expected?.readAll()?.decodeToString()
     val actualStr = actual?.readAll()?.decodeToString()

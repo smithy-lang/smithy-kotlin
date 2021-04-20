@@ -14,6 +14,12 @@ package software.aws.clientrt.serde
 interface FieldTrait
 
 /**
+ * Denotes that a Map or List may contain null values
+ * Details at https://awslabs.github.io/smithy/1.0/spec/core/type-refinement-traits.html#sparse-trait
+ */
+object SparseValues : FieldTrait
+
+/**
  * A protocol-agnostic type description of a field.
  */
 sealed class SerialKind {
@@ -42,32 +48,33 @@ sealed class SerialKind {
 
 /**
  * Metadata to describe how a given member property maps to serialization.
- *
- * @property serialName name to use when serializing/deserializing this field (e.g. in JSON, this is the property name)
  */
-open class SdkFieldDescriptor(val serialName: String, val kind: SerialKind, var index: Int = 0, vararg val trait: FieldTrait) {
+open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val traits: Set<FieldTrait> = emptySet()) {
+    constructor(kind: SerialKind, vararg trait: FieldTrait) : this(kind, 0, trait.toSet())
+    constructor(kind: SerialKind, traits: Set<FieldTrait>) : this(kind, 0, traits)
 
-    companion object {
-        // For use in formats which provide ways of encoding nameless entities.  Value is disregarded.
-        val ANONYMOUS_DESCRIPTOR = SdkFieldDescriptor("ANONYMOUS_FIELD", SerialKind.Struct)
-    }
-    /**
-     * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
-     */
-    inline fun <reified TExpected : FieldTrait> expectTrait(): TExpected {
-        val x = trait.find { it::class == TExpected::class }
-        requireNotNull(x) { "Expected to find trait ${TExpected::class} in $this but was not present." }
-
-        return x as TExpected
-    }
-
-    inline fun <reified TExpected : FieldTrait> findTrait(): TExpected? {
-        val x = trait.find { it::class == TExpected::class }
-
-        return x as TExpected?
-    }
+    // Reserved for format-specific companion extension functions
+    companion object;
 
     override fun toString(): String {
-        return "$serialName($kind, ${trait.joinToString(separator = ",") }})"
+        return "SdkFieldDescriptor.$kind(traits=${traits.joinToString(separator = ",") })"
     }
 }
+
+/**
+ * Returns the singleton instance of required Trait, or IllegalArgumentException if does not exist.
+ */
+inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.expectTrait(): TExpected {
+    val x = traits.find { it::class == TExpected::class }
+    requireNotNull(x) { "Expected to find trait ${TExpected::class} in $this but was not present." }
+
+    return x as TExpected
+}
+
+inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.findTrait(): TExpected? {
+    val x = traits.find { it::class == TExpected::class }
+
+    return x as? TExpected
+}
+
+inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.hasTrait() = traits.any { it is TExpected }

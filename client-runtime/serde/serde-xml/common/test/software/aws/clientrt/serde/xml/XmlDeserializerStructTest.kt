@@ -8,19 +8,20 @@ import software.aws.clientrt.serde.*
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerStructTest {
-
     @Test
-    fun itHandlesBasicStructsWithAttribs() = runSuspendTest {
+    fun `it handles basic structs with attribs`() = runSuspendTest {
         val payload = """
-            <payload>
-                <x value="1" />
-                <y value="2" />
-            </payload>
-        """.encodeToByteArray()
+               <?xml version="1.0" encoding="UTF-8"?>
+               <!--
+                 ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+                 ~ SPDX-License-Identifier: Apache-2.0.
+                 -->
+                
+               <payload x="1" y="2" />
+        """.trimIndent().encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload)
         val bst = StructWithAttribsClass.deserialize(deserializer)
@@ -30,11 +31,33 @@ class XmlDeserializerStructTest {
     }
 
     @Test
+    fun `it handles basic structs with multi attribs and text`() = runSuspendTest {
+        val payload = """
+               <?xml version="1.0" encoding="UTF-8"?>
+               <!--
+                 ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+                 ~ SPDX-License-Identifier: Apache-2.0.
+                 -->
+                
+               <payload xval="1" yval="2">
+                    <x>nodeval</x>
+               </payload>
+        """.trimIndent().encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val bst = StructWithMultiAttribsAndTextValClass.deserialize(deserializer)
+
+        assertEquals(1, bst.x)
+        assertEquals(2, bst.y)
+        assertEquals("nodeval", bst.txt)
+    }
+
+    @Test
     fun itHandlesBasicStructsWithAttribsAndText() = runSuspendTest {
         val payload = """
-            <payload>
-                <x value="1">x1</x>
-                <y value="2" />
+            <payload xa="1" ya="2">
+                <x>x1</x>
+                <y/>
                 <z>true</z>
             </payload>
         """.encodeToByteArray()
@@ -45,7 +68,7 @@ class XmlDeserializerStructTest {
         assertEquals(1, bst.xa)
         assertEquals("x1", bst.xt)
         assertEquals(2, bst.y)
-        assertEquals(0, bst.unknownFieldCount)
+        assertEquals(1, bst.unknownFieldCount)
     }
 
     class BasicAttribTextStructTest {
@@ -56,12 +79,12 @@ class XmlDeserializerStructTest {
         var unknownFieldCount: Int = 0
 
         companion object {
-            val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0, XmlAttribute("value"))
-            val X_VALUE_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer, 0)
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer, 0, XmlAttribute("value"))
-            val Z_DESCRIPTOR = SdkFieldDescriptor("z", SerialKind.Boolean)
+            val X_ATTRIB_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("xa"), XmlAttribute)
+            val X_VALUE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("x"))
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("ya"), XmlAttribute)
+            val Z_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("z"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "payload"
+                trait(XmlSerialName("payload"))
                 field(X_ATTRIB_DESCRIPTOR)
                 field(X_VALUE_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
@@ -111,16 +134,16 @@ class XmlDeserializerStructTest {
     fun itHandlesBasicStructsWithNullValues() = runSuspendTest {
         val payload1 = """
             <payload>
-                <x>1</x>
+                <x>a</x>
                 <y></y>
             </payload>
         """.encodeToByteArray()
 
         val deserializer = XmlDeserializer(payload1)
-        val bst = SimpleStructClass.deserialize(deserializer)
+        val bst = SimpleStructOfStringsClass.deserialize(deserializer)
 
-        assertEquals(1, bst.x)
-        assertEquals(null, bst.y)
+        assertEquals("a", bst.x)
+        assertEquals("", bst.y)
 
         val payload2 = """
             <payload>
@@ -130,18 +153,17 @@ class XmlDeserializerStructTest {
         """.encodeToByteArray()
 
         val deserializer2 = XmlDeserializer(payload2)
-        val bst2 = SimpleStructClass.deserialize(deserializer2)
+        val bst2 = SimpleStructOfStringsClass.deserialize(deserializer2)
 
-        assertEquals(null, bst2.x)
-        assertEquals(2, bst2.y)
+        assertEquals("", bst2.x)
+        assertEquals("2", bst2.y)
     }
 
     @Test
     fun itEnumeratesUnknownStructFields() = runSuspendTest {
         val payload = """
-               <payload>
+               <payload z="strval">
                    <x>1</x>
-                   <z>unknown field</z>
                    <y>2</y>
                </payload>
            """.encodeToByteArray()
@@ -149,6 +171,114 @@ class XmlDeserializerStructTest {
         val deserializer = XmlDeserializer(payload)
         val bst = SimpleStructClass.deserialize(deserializer)
 
-        assertTrue(bst.unknownFieldCount == 1, "unknown field not enumerated")
+        assertEquals(1, bst.x)
+        assertEquals(2, bst.y)
+        assertEquals("strval", bst.z)
+    }
+
+    @Test
+    fun itHandlesNestedXmlStructures() = runSuspendTest {
+        val payload = """
+            <RecursiveShapesInputOutput>
+                <nested>
+                    <foo>Foo1</foo>
+                    <nested>
+                        <bar>Bar1</bar>
+                        <recursiveMember>
+                            <foo>Foo2</foo>
+                            <nested>
+                                <bar>Bar2</bar>
+                            </nested>
+                        </recursiveMember>
+                    </nested>
+                </nested>
+            </RecursiveShapesInputOutput>
+           """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val bst = RecursiveShapesOperationDeserializer().deserialize(deserializer)
+
+        println(bst.nested?.nested)
+    }
+}
+
+internal class RecursiveShapesOperationDeserializer {
+
+    companion object {
+        private val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            trait(XmlSerialName("RecursiveShapesInputOutput"))
+            field(NESTED_DESCRIPTOR)
+        }
+    }
+
+    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutput {
+        val builder = RecursiveShapesInputOutput.dslBuilder()
+
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    NESTED_DESCRIPTOR.index -> builder.nested = RecursiveShapesInputOutputNested1DocumentDeserializer().deserialize(deserializer)
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+
+        return builder.build()
+    }
+}
+
+internal class RecursiveShapesInputOutputNested1DocumentDeserializer {
+
+    companion object {
+        private val FOO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("foo"))
+        private val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("nested"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            field(FOO_DESCRIPTOR)
+            field(NESTED_DESCRIPTOR)
+        }
+    }
+
+    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested1 {
+        val builder = RecursiveShapesInputOutputNested1.dslBuilder()
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    FOO_DESCRIPTOR.index -> builder.foo = deserializeString()
+                    NESTED_DESCRIPTOR.index -> builder.nested = RecursiveShapesInputOutputNested2DocumentDeserializer().deserialize(deserializer)
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        return builder.build()
+    }
+}
+
+internal class RecursiveShapesInputOutputNested2DocumentDeserializer {
+
+    companion object {
+        private val BAR_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, XmlSerialName("bar"))
+        private val RECURSIVEMEMBER_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, XmlSerialName("recursiveMember"))
+        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+            field(BAR_DESCRIPTOR)
+            field(RECURSIVEMEMBER_DESCRIPTOR)
+        }
+    }
+
+    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested2 {
+        val builder = RecursiveShapesInputOutputNested2.dslBuilder()
+        deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+            loop@while (true) {
+                when (findNextFieldIndex()) {
+                    BAR_DESCRIPTOR.index -> builder.bar = deserializeString()
+                    RECURSIVEMEMBER_DESCRIPTOR.index -> builder.recursiveMember = RecursiveShapesInputOutputNested1DocumentDeserializer().deserialize(deserializer)
+                    null -> break@loop
+                    else -> skipValue()
+                }
+            }
+        }
+        return builder.build()
     }
 }

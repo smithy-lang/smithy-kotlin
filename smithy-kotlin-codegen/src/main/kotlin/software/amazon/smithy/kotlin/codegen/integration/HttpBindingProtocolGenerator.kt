@@ -39,6 +39,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
+    /**
+     * Returns HTTP binding resolver for protocol specified by input.
+     */
     abstract fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver
 
     /**
@@ -50,6 +53,29 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Get all of the features that should be installed into the `SdkHttpClient` as pipeline middleware
      */
     open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
+
+    /**
+     * Generate the set of [SdkFieldDescriptor]s for the types that require them.
+     * @param ctx generation context
+     * @param memberShape the shape representing the field descriptor
+     * @param writer kotlin writer
+     * @param memberTargetShape optional shape representing the type contained by a collection
+     * @param namePostfix a string to postfix to the descriptor name, used for nested synthetic fields
+     */
+    protected abstract fun generateSdkFieldDescriptor(ctx: ProtocolGenerator.GenerationContext, memberShape: MemberShape, writer: KotlinWriter, memberTargetShape: Shape? = null, namePostfix: String = "")
+
+    /**
+     * Generate the set of traits on the [SdkObjectDescriptor] for the types that require them.
+     */
+    protected abstract fun generateSdkObjectDescriptorTraits(ctx: ProtocolGenerator.GenerationContext, objectShape: Shape, writer: KotlinWriter)
+
+    /**
+     * Sort and return [members] in the order they should be serialized in (sort order may not matter in all protocols)
+     * By default they are sorted by the member name
+     */
+    protected open fun sortMembersForSerialization(ctx: ProtocolGenerator.GenerationContext, members: List<MemberShape>): List<MemberShape> {
+        return members.sortedBy { it.memberName }
+    }
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx)
@@ -136,14 +162,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("internal class #T(val input: #T) : SdkSerializable {", serializerSymbol, symbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
+                    val sortedMembers = sortMembersForSerialization(ctx, shape.members().toList())
                     if (shape.isUnionShape) {
-                        SerializeUnionGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeUnionGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
                     } else {
-                        SerializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
                     }
                 }
             }
@@ -187,8 +214,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.write("")
                 .openBlock("internal class #T(): HttpSerialize<#T> {", serializerSymbol, inputSymbol)
                 .call {
+                    val objectShape = ctx.model.expectShape(op.input.get())
                     val memberShapes = requestBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.map { it.member }
-                    renderSerdeCompanionObject(ctx, memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, writer)
                 }
                 .call {
                     val contentType = resolver.determineRequestContentType(op)
@@ -200,28 +228,34 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     /**
      * Generate the field descriptors
+     *
+     * @param ctx context
+     * @param objectShape The top-level shape for the structure, used to generate the object descriptor
+     * @param memberShapes The shapes from which to generate field descriptors
+     * @param writer kotlin writer
      */
     private fun renderSerdeCompanionObject(
         ctx: ProtocolGenerator.GenerationContext,
-        members: List<MemberShape>,
+        objectShape: Shape?,
+        memberShapes: List<MemberShape>,
         writer: KotlinWriter
     ) {
-        if (members.isEmpty()) return
+        if (memberShapes.isEmpty()) return
         writer.write("")
             .withBlock("companion object {", "}") {
-                val sortedMembers = members.sortedBy { it.memberName }
+                val sortedMembers = memberShapes.sortedBy { it.memberName }
                 for (member in sortedMembers) {
-                    val serialName = member.getTrait<JsonNameTrait>()?.value ?: member.memberName
-                    val serialKind = ctx.model.expectShape(member.target).serialKind()
-                    val memberTarget = ctx.model.expectShape(member.target)
-                    write("private val #L = SdkFieldDescriptor(#S, $serialKind)", member.descriptorName(), serialName)
+                    generateSdkFieldDescriptor(ctx, member, writer)
 
+                    val memberTarget = ctx.model.expectShape(member.target)
                     val nestedMember = memberTarget.childShape(ctx)
                     if (nestedMember?.isContainerShape() == true) {
                         renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
                     }
                 }
                 writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
+                    objectShape?.let { generateSdkObjectDescriptorTraits(ctx, it, writer) }
+
                     for (member in sortedMembers) {
                         write("field(#L)", member.descriptorName())
                     }
@@ -234,11 +268,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Generate field descriptors for nested serialization types.
      */
     private fun renderNestedFieldDescriptors(ctx: ProtocolGenerator.GenerationContext, rootShape: MemberShape, childShape: Shape, level: Int, writer: KotlinWriter) {
-        val childName = rootShape.descriptorName("_C$level")
-        val serialName = rootShape.getTrait<JsonNameTrait>()?.value ?: "${rootShape.memberName}C$level"
-        val nestedSerialKind = childShape.serialKind()
-
-        writer.write("private val #L = SdkFieldDescriptor(#S, $nestedSerialKind)", childName, serialName)
+        generateSdkFieldDescriptor(ctx, rootShape, writer, childShape, "_C$level")
 
         val nestedMember = childShape.childShape(ctx)
         if (nestedMember?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMember, level + 1, writer)
@@ -407,7 +437,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.addImport(RuntimeTypes.Http.ByteArrayContent)
         writer.write("val serializer = context.serializer()")
             .call {
-                val renderForMembers = members.map { it.member }
+                val renderForMembers = sortMembersForSerialization(ctx, members.map { it.member })
                 SerializeStructGenerator(ctx, renderForMembers, writer, defaultTimestampFormat).render()
             }
             .write("")
@@ -508,10 +538,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 )
                 .write("")
                 .call {
+                    val objectShape = ctx.model.expectShape(op.output.get())
                     val memberShapes = responseBindings
                         .filter { it.location == HttpBinding.Location.DOCUMENT }
                         .map { it.member }
-                    renderSerdeCompanionObject(ctx, memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, writer)
                 }
                 .write("")
                 .call {
@@ -550,7 +581,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         it.hasTrait<HttpHeaderTrait>() || it.hasTrait<HttpPrefixHeadersTrait>()
                     }
 
-                    renderSerdeCompanionObject(ctx, documentMembers, writer)
+                    renderSerdeCompanionObject(ctx, shape, documentMembers, writer)
                 }
                 .write("")
                 .call {
@@ -807,7 +838,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .closeBlock("}")
             .write("builder.$memberName = map")
-            .closeBlock("}")
+            .closeBlock("} else {")
+            .indent()
+            .write("builder.$memberName = emptyMap()")
+            .dedent()
+            .write("}")
     }
 
     private fun renderExplicitHttpPayloadDeserializer(
@@ -897,7 +932,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("internal class #T {", deserializerSymbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
             }
             .call {
 
@@ -1024,7 +1059,7 @@ fun Shape.serialKind(): String = when (this.type) {
     ShapeType.MAP -> "SerialKind.Map"
     ShapeType.STRUCTURE -> "SerialKind.Struct"
     ShapeType.UNION -> "SerialKind.Struct"
-    else -> throw CodegenException("unknown SerialKind for $this")
+    else -> throw CodegenException("unknown SerialKind for ${this.type} ($this)")
 }
 
 // test if the request bindings have any members bound to the HTTP payload (body)

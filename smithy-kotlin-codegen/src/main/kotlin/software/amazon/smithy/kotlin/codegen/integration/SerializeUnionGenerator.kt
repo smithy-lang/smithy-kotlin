@@ -17,6 +17,8 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  *
  * Refer to [SerializeStructGenerator] for more details.
  *
+ * NOTE: If the serialization order is important then [members] MUST already be sorted correctly
+ *
  * Example output this class generates:
  * ```
  * serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -59,7 +61,7 @@ class SerializeUnionGenerator(
         val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
         writer.withBlock("serializer.serializeStruct($objDescriptor) {", "}") {
             writer.withBlock("when (input) {", "}") {
-                members.sortedBy { it.memberName }.forEach { memberShape ->
+                members.forEach { memberShape ->
                     renderMemberShape(memberShape)
                 }
             }

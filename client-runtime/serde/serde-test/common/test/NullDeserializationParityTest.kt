@@ -1,21 +1,30 @@
 import software.aws.clientrt.serde.*
-import software.aws.clientrt.serde.json.JsonDeserializer
-import software.aws.clientrt.serde.xml.XmlDeserializer
+import software.aws.clientrt.serde.json.JsonSerdeProvider
+import software.aws.clientrt.serde.json.JsonSerialName
+import software.aws.clientrt.serde.xml.XmlSerdeProvider
+import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
+fun String.toSerialNames(): Set<FieldTrait> = setOf(JsonSerialName(this), XmlSerialName(this))
+
 class NullDeserializationParityTest {
+
+    companion object {
+        private val xmlSerdeProvider = XmlSerdeProvider()
+        private val jsonSerdeProvider = JsonSerdeProvider()
+    }
 
     class AnonStruct {
         var x: Int? = null
         var y: Int? = null
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "x".toSerialNames())
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "y".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "AnonStruct"
+                trait(XmlSerialName("AnonStruct"))
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
             }
@@ -41,8 +50,9 @@ class NullDeserializationParityTest {
         var childStruct: ChildStruct? = null
 
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("ChildStruct", SerialKind.Map)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, JsonSerialName("ChildStruct"), XmlSerialName("ChildStruct"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                trait(XmlSerialName("ParentStruct"))
                 field(X_DESCRIPTOR)
             }
 
@@ -66,10 +76,10 @@ class NullDeserializationParityTest {
         var x: Int? = null
         var y: Int? = null
         companion object {
-            val X_DESCRIPTOR = SdkFieldDescriptor("x", SerialKind.Integer)
-            val Y_DESCRIPTOR = SdkFieldDescriptor("y", SerialKind.Integer)
+            val X_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "x".toSerialNames())
+            val Y_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, "y".toSerialNames())
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-                serialName = "ChildStruct"
+                trait(XmlSerialName("ChildStruct"))
                 field(X_DESCRIPTOR)
                 field(Y_DESCRIPTOR)
             }
@@ -99,7 +109,7 @@ class NullDeserializationParityTest {
         val jsonPayload = "{}".encodeToByteArray()
         val xmlPayload = "<AnonStruct />".encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = AnonStruct.deserialize(deserializer)
 
             assertNotNull(struct)
@@ -121,7 +131,7 @@ class NullDeserializationParityTest {
             <ParentStruct />                
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = ParentStruct.deserialize(deserializer)
 
             assertNotNull(struct)
@@ -144,7 +154,7 @@ class NullDeserializationParityTest {
             </ParentStruct>
         """.trimIndent().encodeToByteArray()
 
-        for (deserializer in listOf(JsonDeserializer(jsonPayload), XmlDeserializer(xmlPayload))) {
+        for (deserializer in listOf(jsonSerdeProvider.deserializer(jsonPayload), xmlSerdeProvider.deserializer(xmlPayload))) {
             val struct = ParentStruct.deserialize(deserializer)
 
             assertNotNull(struct)

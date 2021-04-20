@@ -16,14 +16,18 @@ kotlin {
             dependencies {
                 api(project(":client-runtime:protocol:http"))
 
-                // FIXME - we likely want to replicate the runBlocking and not depend on this or else we would
-                // have to publish this which was intended to be internal
                 implementation(project(":client-runtime:testing"))
+                implementation(project(":client-runtime:serde:serde-xml"))
 
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
 
                 // kotlinx-serialization::JsonElement allows comparing arbitrary JSON docs for equality
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
+            }
+        }
+        commonTest {
+            dependencies {
+                implementation(project(":client-runtime:testing"))
             }
         }
 

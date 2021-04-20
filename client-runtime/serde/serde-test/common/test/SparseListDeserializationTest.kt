@@ -1,51 +1,21 @@
 
-import io.kotest.matchers.maps.shouldContainKeys
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.serde.Deserializer
 import software.aws.clientrt.serde.json.JsonSerdeProvider
+import software.aws.clientrt.serde.json.JsonSerialName
 import software.aws.clientrt.serde.xml.XmlSerdeProvider
 import software.aws.clientrt.serde.xml.XmlSerialName
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.jvm.JvmStatic
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
-/**
- * This test uses codegen snapshots generated from the following model:
- * namespace com.test
- *
- * use aws.protocols#restJson1
- *
- * @restJson1
- * service Example {
- *      version: "1.0.0",
- *      operations: [GetFoo]
- * }
- *
- * @http(method: "POST", uri: "/input/list")
- *      operation GetFoo {
- *      output: GetFooOutput
- * }
- *
- * structure Greeting {
- *      saying: String
- * }
- *
- * @sparse
- * map SparseStructMap {
- *      key: String,
- *      value: Greeting
- * }
- *
- * structure GetFooOutput {
- *      sparseStructMap: SparseStructMap
- * }
- */
-// TODO - this test can be moved into integration test and the test model can be applied directly
-//        to generated deserializers rather than copied and adapted in-line.
-//        https://www.pivotaltracker.com/story/show/176162626
-class SparseMapDeserializationTest {
+class SparseListDeserializationTest {
 
     class GetFooOutput private constructor(builder: BuilderImpl) {
-        val sparseStructMap: Map<String, Greeting?>? = builder.sparseStructMap
+        val sparseStructList: List<Greeting?>? = builder.sparseStructList
 
         companion object {
             @JvmStatic
@@ -58,11 +28,11 @@ class SparseMapDeserializationTest {
 
         override fun toString() = buildString {
             append("GetFooOutput(")
-            append("sparseStructMap=$sparseStructMap)")
+            append("sparseStructList=$sparseStructList)")
         }
 
         override fun hashCode(): Int {
-            var result = sparseStructMap?.hashCode() ?: 0
+            var result = sparseStructList?.hashCode() ?: 0
             return result
         }
 
@@ -71,7 +41,7 @@ class SparseMapDeserializationTest {
 
             other as GetFooOutput
 
-            if (sparseStructMap != other.sparseStructMap) return false
+            if (sparseStructList != other.sparseStructList) return false
 
             return true
         }
@@ -80,24 +50,24 @@ class SparseMapDeserializationTest {
 
         interface Builder {
             fun build(): GetFooOutput
-            fun sparseStructMap(sparseStructMap: Map<String, Greeting?>): Builder
+            fun sparseStructList(sparseStructList: List<Greeting?>): Builder
         }
 
         interface DslBuilder {
-            var sparseStructMap: Map<String, Greeting?>?
+            var sparseStructList: List<Greeting?>?
 
             fun build(): GetFooOutput
         }
 
         private class BuilderImpl() : Builder, DslBuilder {
-            override var sparseStructMap: Map<String, Greeting?>? = null
+            override var sparseStructList: List<Greeting?>? = null
 
             constructor(x: GetFooOutput) : this() {
-                this.sparseStructMap = x.sparseStructMap
+                this.sparseStructList = x.sparseStructList
             }
 
             override fun build(): GetFooOutput = GetFooOutput(this)
-            override fun sparseStructMap(sparseStructMap: Map<String, Greeting?>): Builder = apply { this.sparseStructMap = sparseStructMap }
+            override fun sparseStructList(sparseStructList: List<Greeting?>): Builder = apply { this.sparseStructList = sparseStructList }
         }
     }
 
@@ -161,10 +131,10 @@ class SparseMapDeserializationTest {
     class GetFooDeserializer {
 
         companion object {
-            private val SPARSESTRUCTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, "sparseStructMap".toSerialNames())
+            private val SPARSESTRUCTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, "sparseStructList".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 trait(XmlSerialName("GetFoo"))
-                field(SPARSESTRUCTMAP_DESCRIPTOR)
+                field(SPARSESTRUCTLIST_DESCRIPTOR)
             }
         }
 
@@ -174,19 +144,15 @@ class SparseMapDeserializationTest {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        SPARSESTRUCTMAP_DESCRIPTOR.index ->
-                            builder.sparseStructMap =
-                                deserializer.deserializeMap(SPARSESTRUCTMAP_DESCRIPTOR) {
-                                    val map0 = mutableMapOf<String, Greeting?>()
-                                    while (hasNextEntry()) {
-                                        val k0 = key()
-                                        val el0 = when (nextHasValue()) {
-                                            true -> GreetingDeserializer().deserialize(deserializer)
-                                            false -> deserializeNull()
-                                        }
-                                        map0[k0] = el0
+                        SPARSESTRUCTLIST_DESCRIPTOR.index ->
+                            builder.sparseStructList =
+                                deserializer.deserializeList(SPARSESTRUCTLIST_DESCRIPTOR) {
+                                    val col0 = mutableListOf<Greeting?>()
+                                    while (hasNextElement()) {
+                                        val el0 = if (nextHasValue()) { GreetingDeserializer().deserialize(deserializer) } else { deserializeNull() }
+                                        col0.add(el0)
                                     }
-                                    map0
+                                    col0
                                 }
                         null -> break@loop
                         else -> skipValue()
@@ -204,6 +170,7 @@ class SparseMapDeserializationTest {
             private val SAYING_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, "saying".toSerialNames())
             private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build() {
                 trait(XmlSerialName("Greeting"))
+                trait(JsonSerialName("Greeting"))
                 field(SAYING_DESCRIPTOR)
             }
         }
@@ -237,7 +204,7 @@ class SparseMapDeserializationTest {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
-            assertNull(struct.sparseStructMap)
+            assertNull(struct.sparseStructList)
         }
     }
 
@@ -245,12 +212,12 @@ class SparseMapDeserializationTest {
     fun itDeserializesAnEmptyMapIntoAnStructWithEmptyMap() = runSuspendTest {
         val jsonPayload = """
             {
-                "sparseStructMap": {}
+                "sparseStructList": []
             }
         """.trimIndent().encodeToByteArray()
         val xmlPayload = """
             <GetFoo>
-                <sparseStructMap />
+                <sparseStructList />
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
@@ -258,8 +225,8 @@ class SparseMapDeserializationTest {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
-            assertNotNull(struct.sparseStructMap)
-            assertTrue(struct.sparseStructMap.isEmpty())
+            assertNotNull(struct.sparseStructList)
+            assertTrue(struct.sparseStructList.isEmpty())
         }
     }
 
@@ -267,41 +234,24 @@ class SparseMapDeserializationTest {
     fun itDeserializesAMapWithNullValuesIntoAnStructWithMapContainingKeysWithNullValues() = runSuspendTest {
         val jsonPayload = """
             {
-            	"sparseStructMap": {
-            		"greeting1": {
-            			"saying": "boo"
-            		},
-            		"greeting2": null,
-            		"greeting3": {
-            			"saying": "hoo"
-            		}
-            	}
+                "sparseStructList": [
+                    {"saying": "boo"},
+                    null,
+                    {"saying": "hoo"}
+                ]
             }
         """.trimIndent().encodeToByteArray()
         val xmlPayload = """
             <GetFoo>
-                <sparseStructMap>
-                    <entry>
-                        <key>greeting1</key>
-                        <value>
-                            <Greeting>
-                                <saying>boo</saying>
-                            </Greeting>
-                        </value>
-                    </entry>
-                    <entry>
-                        <key>greeting2</key>
-                        <value />                            
-                    </entry>
-                    <entry>
-                        <key>greeting3</key>
-                        <value>
-                            <Greeting>
-                                <saying>hoo</saying>
-                            </Greeting>
-                        </value>
-                    </entry>
-                </sparseStructMap>
+                <sparseStructList>
+                    <member>
+                        <saying>boo</saying>    
+                    </member>
+                    <member />                            
+                    <member>                        
+                        <saying>hoo</saying>                        
+                    </member>
+                </sparseStructList>
             </GetFoo>
         """.trimIndent().encodeToByteArray()
 
@@ -309,10 +259,11 @@ class SparseMapDeserializationTest {
             val struct = GetFooDeserializer().deserialize(deserializer)
 
             assertNotNull(struct)
-            assertNotNull(struct.sparseStructMap)
-            assertEquals(3, struct.sparseStructMap.size)
-            struct.sparseStructMap.shouldContainKeys("greeting1", "greeting2", "greeting3")
-            assertNull(struct.sparseStructMap["greeting2"])
+            assertNotNull(struct.sparseStructList)
+            assertTrue(struct.sparseStructList.size == 3)
+            assertNotNull(struct.sparseStructList[0])
+            assertNull(struct.sparseStructList[1])
+            assertNotNull(struct.sparseStructList[2])
         }
     }
 }

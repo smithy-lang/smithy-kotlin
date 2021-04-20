@@ -37,7 +37,7 @@ internal fun Int.variableNameFor(type: NestedIdentifierType): String = "${type.p
 /**
  * Generate an identifier for a given nesting level
  */
-internal fun Int.nestedDescriptorName(): String = "_c$this"
+internal fun Int.nestedDescriptorName(): String = "_C$this"
 
 /**
  * Get the value if present otherwise return null
