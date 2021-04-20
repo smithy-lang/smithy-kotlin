@@ -74,7 +74,7 @@ inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.expectTrait(): TE
 inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.findTrait(): TExpected? {
     val x = traits.find { it::class == TExpected::class }
 
-    return x as TExpected?
+    return x as? TExpected
 }
 
 inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.hasTrait() = traits.any { it is TExpected }

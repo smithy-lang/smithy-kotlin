@@ -61,7 +61,7 @@ data class XmlCollectionName(
  */
 object Flattened : FieldTrait
 
-/*
+/**
  * Denotes a structure that represents an error.  There are special rules for error deserialization
  * in various XML-based protocols. This trait provides necessary context to the deserializer to properly
  * deserialize error response data into types.
@@ -76,12 +76,32 @@ object XmlError : FieldTrait {
 }
 
 /**
+ * Base class for more specific XML namespace traits
+ */
+open class AbstractXmlNamespaceTrait(val uri: String, val prefix: String? = null) {
+    fun isDefault() = prefix == null
+    override fun toString(): String {
+        return "AbstractXmlNamespace(uri=$uri, prefix=$prefix)"
+    }
+}
+
+/**
  * Describes the namespace associated with a field.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
  */
-data class XmlNamespace(val uri: String, val prefix: String? = null) : FieldTrait {
-    fun isDefault() = prefix == null
-}
+class XmlNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+
+/**
+ * Describes the namespace of a list or map's value element
+ * Applies to [SerialKind.List] or [SerialKind.Map]
+ */
+class XmlCollectionValueNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+
+/**
+ * Describes the namespace associated with a map's key element
+ * Applies to [SerialKind.Map]
+ */
+class XmlMapKeyNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
 
 /**
  * Specifies the name that a field is encoded into for Xml nodes.
@@ -90,8 +110,9 @@ data class XmlNamespace(val uri: String, val prefix: String? = null) : FieldTrai
 data class XmlSerialName(val name: String) : FieldTrait
 
 // Generate a qualified name from a field descriptor.  Field descriptor must have trait XmlSerialName otherwise null is returned.
-internal fun SdkFieldDescriptor.toQualifiedName(xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()): XmlToken.QualifiedName? {
-    val (localName, prefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: return null
+
+internal fun SdkFieldDescriptor.toQualifiedName(xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()): XmlToken.QualifiedName {
+    val (localName, prefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: throw DeserializerStateException("Unable to parse qualified name from $this")
 
     return when {
         xmlNamespace != null -> XmlToken.QualifiedName(localName, if (prefix == xmlNamespace.prefix) prefix else null)
@@ -128,7 +149,7 @@ object XmlAttribute : FieldTrait
 /**
  * Provides the serialized name of the field.
  */
-val SdkFieldDescriptor.serialName: XmlSerialName
+internal val SdkFieldDescriptor.serialName: XmlSerialName
     get() = expectTrait()
 
 // Return the name based on most specific type

@@ -9,7 +9,9 @@ package software.aws.clientrt.serde.xml
  * Raw tokens produced when reading a XML document as a stream
  */
 sealed class XmlToken {
+
     abstract val depth: Int
+
     /**
      * An namespace declaration (xmlns)
      */
