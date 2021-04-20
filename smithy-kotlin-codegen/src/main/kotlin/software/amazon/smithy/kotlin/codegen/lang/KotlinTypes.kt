@@ -69,14 +69,19 @@ private fun builtInSymbol(symbol: String): Symbol = buildSymbol {
 }
 
 /**
- * Test if a string is a valid Kotlin identifier name
+ * Test if a string is a valid Kotlin identifier
+ *
+ * https://kotlinlang.org/spec/syntax-and-grammar.html#grammar-rule-Identifier
  */
 fun isValidKotlinIdentifier(s: String): Boolean {
-    val c = s.firstOrNull() ?: return false
-    return when (c) {
-        in 'a'..'z', in 'A'..'Z', '_' -> true
-        else -> false
+    s.forEachIndexed { idx, chr ->
+        val isLetterOrUnderscore = chr.isLetter() || chr == '_'
+        when (idx) {
+            0 -> if (!isLetterOrUnderscore) return false
+            else -> if (!isLetterOrUnderscore && !chr.isDigit()) return false
+        }
     }
+    return true
 }
 
 /**
@@ -93,4 +98,4 @@ fun String.toEscapedLiteral(): String = replace("\$", "\\$")
 /**
  * Return true if string is valid package namespace, false otherwise.
  */
-fun String.isValidPackageName() = isNotEmpty() && !this.any { !it.isLetterOrDigit() && it != '.' }
+fun String.isValidPackageName() = isNotEmpty() && all { it.isLetterOrDigit() || it == '.' }

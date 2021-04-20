@@ -5,12 +5,12 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.unionVariantName
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
-import software.amazon.smithy.utils.StringUtils
 
 /**
  * Generate serialization for members of unions to the payload.
@@ -32,8 +32,8 @@ import software.amazon.smithy.utils.StringUtils
  */
 class SerializeUnionGenerator(
     ctx: ProtocolGenerator.GenerationContext,
-    private val members: List<MemberShape>,
-    private val writer: KotlinWriter,
+    members: List<MemberShape>,
+    writer: KotlinWriter,
     defaultTimestampFormat: TimestampFormatTrait.Format
 ) : SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
 
@@ -79,7 +79,7 @@ class SerializeUnionGenerator(
      * ```
      */
     override fun renderMapMemberSerializer(memberShape: MemberShape, targetShape: MapShape) {
-        val unionMemberName = memberShape.unionTypeName()
+        val unionMemberName = memberShape.unionTypeName(ctx)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
@@ -101,7 +101,7 @@ class SerializeUnionGenerator(
      * ```
      */
     override fun renderListMemberSerializer(memberShape: MemberShape, targetShape: CollectionShape) {
-        val unionMemberName = memberShape.unionTypeName()
+        val unionMemberName = memberShape.unionTypeName(ctx)
         val descriptorName = memberShape.descriptorName()
         val nestingLevel = 0
 
@@ -127,11 +127,20 @@ class SerializeUnionGenerator(
     ) {
         val (serializeFn, encoded) = serializerNameFn(memberShape)
         // FIXME - this doesn't account for unboxed primitives
-        val unionTypeName = memberShape.unionTypeName()
+        val unionTypeName = memberShape.unionTypeName(ctx)
         val descriptorName = memberShape.descriptorName()
 
         writer.write("is $unionTypeName -> $serializeFn($descriptorName, $encoded)")
     }
+}
 
-    private fun MemberShape.unionTypeName(): String = "${id.name}.${StringUtils.capitalize(memberName)}"
+/**
+ * Generate the fully qualified type name of Union variant
+ * e.g. `FooUnion.VariantName`
+ */
+internal fun MemberShape.unionTypeName(ctx: ProtocolGenerator.GenerationContext): String {
+    val unionShape = ctx.model.expectShape(id.withoutMember())
+    val unionSymbol = ctx.symbolProvider.toSymbol(unionShape)
+    val variantName = unionVariantName(ctx.symbolProvider)
+    return "${unionSymbol.name}.$variantName"
 }

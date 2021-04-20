@@ -12,7 +12,6 @@ import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.utils.StringUtils
 import java.util.logging.Logger
 
 // PropertyBag keys
@@ -56,21 +55,6 @@ fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
     val default = getProperty(DEFAULT_VALUE_KEY, String::class.java)
     return if (default.isPresent) default.get() else null
 }
-
-/**
- * Get the default name for a shape (for code generation)
- */
-fun Shape.defaultName(): String = StringUtils.capitalize(this.id.name)
-
-/**
- * Get the default name for a member shape (for code generation)
- */
-fun MemberShape.defaultName(): String = StringUtils.uncapitalize(this.memberName)
-
-/**
- * Get the default name for an operation shape
- */
-fun OperationShape.defaultName(): String = StringUtils.uncapitalize(this.id.name)
 
 /**
  * Convert shapes to Kotlin types
@@ -334,10 +318,6 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
             .namespace(namespace, ".")
     }
 }
-
-// See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-fun String.clientName(): String =
-    split(" ").map { it.toLowerCase().capitalize() }.joinToString(separator = "") { it }
 
 /**
  * Mark a symbol as being boxed (nullable) i.e. `T?`

@@ -59,7 +59,7 @@ class DeserializeUnionGeneratorTest {
                 loop@while(true) {
                     when(findNextFieldIndex()) {
                         I32_DESCRIPTOR.index -> value = PrimitiveUnion.I32(deserializeInt())
-                        STRINGA_DESCRIPTOR.index -> value = PrimitiveUnion.StringA(deserializeString())
+                        STRINGA_DESCRIPTOR.index -> value = PrimitiveUnion.Stringa(deserializeString())
                         null -> break@loop
                         else -> value = PrimitiveUnion.SdkUnknown.also { skipValue() }
                     }

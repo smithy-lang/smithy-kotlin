@@ -39,10 +39,10 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * ```
  */
 open class DeserializeStructGenerator(
-    private val ctx: ProtocolGenerator.GenerationContext,
-    private val members: List<MemberShape>,
-    private val writer: KotlinWriter,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    protected val ctx: ProtocolGenerator.GenerationContext,
+    protected val members: List<MemberShape>,
+    protected val writer: KotlinWriter,
+    protected val defaultTimestampFormat: TimestampFormatTrait.Format
 ) {
     /**
      * Enables overriding the codegen output of the final value resulting
