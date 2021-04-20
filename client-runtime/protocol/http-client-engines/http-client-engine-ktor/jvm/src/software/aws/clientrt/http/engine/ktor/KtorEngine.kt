@@ -31,6 +31,9 @@ import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     val client: HttpClient = HttpClient(OkHttp) {
         // TODO - propagate applicable client engine config to OkHttp engine
+
+        // do not throw exceptions if status code < 300, error handling is expected by generated clients
+        expectSuccess = false
     }
     private val logger = Logger.getLogger<KtorEngine>()
 
