@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 
 class KotlinWriterTest {
 

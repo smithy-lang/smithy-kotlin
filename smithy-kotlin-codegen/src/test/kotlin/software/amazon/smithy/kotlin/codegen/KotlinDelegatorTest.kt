@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
+import software.amazon.smithy.kotlin.codegen.test.asSmithy
 import software.amazon.smithy.model.node.Node
 
 class KotlinDelegatorTest {

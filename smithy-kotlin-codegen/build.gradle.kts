@@ -29,10 +29,13 @@ dependencies {
     api("software.amazon.smithy:smithy-waiters:$smithyVersion")
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
+
+    // Test dependencies
+    // These are not set as test dependencies so they can be shared with other modules
+    implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    implementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
 val generateSdkRuntimeVersion by tasks.registering {

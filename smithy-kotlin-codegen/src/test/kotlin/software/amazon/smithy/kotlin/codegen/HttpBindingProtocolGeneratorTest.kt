@@ -18,40 +18,9 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.kotlin.codegen.integration.*
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.TimestampFormatTrait
-
-class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
-    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = HttpTraitResolver(ctx, "application/json")
-
-    override val protocol: ShapeId = RestJson1Trait.ID
-
-    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
-
-    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        TestProtocolClientGenerator(ctx, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
-
-    override fun generateSdkFieldDescriptor(
-        ctx: ProtocolGenerator.GenerationContext,
-        memberShape: MemberShape,
-        writer: KotlinWriter,
-        memberTargetShape: Shape?,
-        namePostfix: String
-    ) { }
-
-    override fun generateSdkObjectDescriptorTraits(
-        ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape,
-        writer: KotlinWriter
-    ) { }
-}
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTest {

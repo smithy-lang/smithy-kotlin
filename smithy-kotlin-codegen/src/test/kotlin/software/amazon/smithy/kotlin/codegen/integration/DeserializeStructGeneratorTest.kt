@@ -10,7 +10,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 

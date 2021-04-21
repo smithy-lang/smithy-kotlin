@@ -17,6 +17,9 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.asSmithy
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.shouldSyntacticSanityCheck
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 

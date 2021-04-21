@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite

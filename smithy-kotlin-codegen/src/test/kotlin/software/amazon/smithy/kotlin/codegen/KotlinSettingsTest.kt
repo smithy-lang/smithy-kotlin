@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.test.asSmithy
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 

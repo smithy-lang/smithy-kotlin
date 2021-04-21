@@ -15,7 +15,10 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
+import software.amazon.smithy.kotlin.codegen.test.newTestContext
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.testRender
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*

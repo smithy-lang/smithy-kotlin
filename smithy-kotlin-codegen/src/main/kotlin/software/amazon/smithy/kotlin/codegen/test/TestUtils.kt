@@ -12,24 +12,24 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.test
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
+import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.integration.HttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.integration.HttpFeature
-import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 import java.net.URL
 
 fun String.shouldSyntacticSanityCheck() {
@@ -245,4 +245,128 @@ class TestProtocolClientGenerator(
         name = "JsonSerdeProvider"
         namespace(KotlinDependency.CLIENT_RT_SERDE_JSON)
     }
+}
+
+class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
+    override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
+    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = HttpTraitResolver(ctx, "application/json")
+
+    override val protocol: ShapeId = RestJson1Trait.ID
+
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
+
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
+        TestProtocolClientGenerator(ctx, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
+
+    override fun generateSdkFieldDescriptor(
+        ctx: ProtocolGenerator.GenerationContext,
+        memberShape: MemberShape,
+        writer: KotlinWriter,
+        memberTargetShape: Shape?,
+        namePostfix: String
+    ) { }
+
+    override fun generateSdkObjectDescriptorTraits(
+        ctx: ProtocolGenerator.GenerationContext,
+        objectShape: Shape,
+        writer: KotlinWriter
+    ) { }
+}
+
+// Create and use a writer to drive codegen from a function taking a writer.
+// Strip off comment and package preamble.
+fun generateCode(generator: (KotlinWriter) -> Unit): String {
+    val packageDeclaration = "some-unique-thing-that-will-never-be-codegened"
+    val writer = KotlinWriter(packageDeclaration)
+    generator.invoke(writer)
+    val rawCodegen = writer.toString()
+    return rawCodegen.substring(rawCodegen.indexOf(packageDeclaration) + packageDeclaration.length).trim()
+}
+
+fun String.generateTestModel(
+    protocol: String,
+    namespace: String = "com.test",
+    serviceName: String = "Example",
+    operations: List<String> = listOf("Foo")
+): Model {
+    val completeModel = """
+        namespace $namespace
+
+        use aws.protocols#$protocol
+
+        @$protocol
+        service $serviceName {
+            version: "1.0.0",
+            operations: [
+                ${operations.joinToString(separator = ", ")}
+            ]
+        }
+        
+        $this
+    """.trimIndent()
+
+    return completeModel.asSmithyModel()
+}
+
+fun codegenTestHarnessForModelSnippet(
+    generator: ProtocolGenerator,
+    namespace: String = "com.test",
+    serviceName: String = "Example",
+    operations: List<String> = listOf("Foo"),
+    snippet: () -> String
+): CodegenTestHarness {
+    val protocol = generator.protocol.name
+    val model = snippet().generateTestModel(protocol, namespace, serviceName, operations)
+    val ctx = model.generateTestContext(namespace, serviceName)
+    val manifest = ctx.delegator.fileManifest as MockManifest
+
+    return CodegenTestHarness(ctx, manifest, generator, namespace, serviceName, protocol)
+}
+
+/**
+ * Contains references to all types necessary to drive and validate codegen.
+ */
+data class CodegenTestHarness(
+    val generationCtx: ProtocolGenerator.GenerationContext,
+    val manifest: MockManifest,
+    val generator: ProtocolGenerator,
+    val namespace: String,
+    val serviceName: String,
+    val protocol: String
+)
+
+// Drive de/serializer codegen and return results in map indexed by filename.
+fun CodegenTestHarness.generateDeSerializers(): Map<String, String> {
+    generator.generateSerializers(generationCtx)
+    generator.generateDeserializers(generationCtx)
+    generationCtx.delegator.flushWriters()
+    return manifest.files.map { path -> path.fileName.toString() to manifest.expectFileString(path) }.toMap()
+}
+
+// Produce a GenerationContext given a model, it's expected namespace and service name.
+fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolGenerator.GenerationContext {
+    val packageNode = Node.objectNode().withMember("name", Node.from("test"))
+        .withMember("version", Node.from("1.0.0"))
+
+    val settings = KotlinSettings.from(
+        this,
+        Node.objectNodeBuilder()
+            .withMember("package", packageNode)
+            .build()
+    )
+    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, namespace, serviceName)
+    val service = this.expectShape<ServiceShape>("$namespace#$serviceName")
+    val generator: ProtocolGenerator = MockHttpProtocolGenerator()
+    val manifest = MockManifest()
+    val delegator = KotlinDelegator(settings, this, manifest, provider)
+
+    return ProtocolGenerator.GenerationContext(
+        settings,
+        this,
+        service,
+        provider,
+        listOf(),
+        generator.protocol,
+        delegator
+    )
 }

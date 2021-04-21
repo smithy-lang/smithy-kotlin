@@ -13,6 +13,10 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
+import software.amazon.smithy.kotlin.codegen.test.defaultSettings
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.shouldSyntacticSanityCheck
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.assertFailsWith
 

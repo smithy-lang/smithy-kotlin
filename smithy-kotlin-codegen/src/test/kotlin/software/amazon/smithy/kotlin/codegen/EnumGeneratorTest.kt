@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
 import software.amazon.smithy.model.shapes.StringShape
 
 class EnumGeneratorTest {

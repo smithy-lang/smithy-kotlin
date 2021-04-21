@@ -8,8 +8,8 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.StructureShape
-import software.amazon.smithy.model.traits.*
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StructureGeneratorTest {
