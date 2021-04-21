@@ -15,10 +15,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
-import software.amazon.smithy.kotlin.codegen.test.newTestContext
-import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
-import software.amazon.smithy.kotlin.codegen.test.testRender
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
@@ -43,32 +40,6 @@ class SerializeUnionGeneratorTest {
                 input: FooRequest
             }        
     """.trimIndent()
-
-    private fun getContentsForShape(model: Model, shapeId: String): String {
-        val ctx = model.newTestContext()
-
-        val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
-            is OperationShape -> {
-                val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-                val requestBindings = bindingIndex.getRequestBindings(shape)
-                val unionShape = ctx.generationCtx.model.expectShape(requestBindings.values.first().member.target)
-                unionShape.members().toList().sortedBy { it.memberName }
-            }
-            is StructureShape -> {
-                shape.members().toList().sortedBy { it.memberName }
-            }
-            else -> throw RuntimeException("unknown conversion for $shapeId")
-        }
-
-        return testRender(testMembers) { members, writer ->
-            SerializeUnionGenerator(
-                ctx.generationCtx,
-                members,
-                writer,
-                TimestampFormatTrait.Format.EPOCH_SECONDS
-            ).render()
-        }
-    }
 
     @Test
     fun `it serializes a structure containing a union of primitive types`() {
@@ -97,7 +68,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -174,7 +145,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -206,7 +177,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -259,7 +230,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }

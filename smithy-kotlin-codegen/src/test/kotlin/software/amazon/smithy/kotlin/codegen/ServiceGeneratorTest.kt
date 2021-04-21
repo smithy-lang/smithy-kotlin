@@ -18,6 +18,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.test.asSmithy
+import software.amazon.smithy.kotlin.codegen.test.formatForTest
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import software.amazon.smithy.kotlin.codegen.test.shouldSyntacticSanityCheck
 import software.amazon.smithy.model.Model
@@ -69,13 +70,13 @@ class ServiceGeneratorTest {
     @Test
     fun `it renders a companion object`() {
         val expected = """
-    companion object {
-        operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ExampleClient {
-            val config = Config.BuilderImpl().apply(block).build()
-            return DefaultExampleClient(config)
-        }
-    }
-"""
+            companion object {
+                operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ExampleClient {
+                    val config = Config.BuilderImpl().apply(block).build()
+                    return DefaultExampleClient(config)
+                }
+            }
+        """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
@@ -121,17 +122,17 @@ class ServiceGeneratorTest {
         val contents = writer.toString()
 
         val expectedCompanionOverride = """
-    companion object {
-        fun foo(): Int = 1
-    }
-"""
+            companion object {
+                fun foo(): Int = 1
+            }
+        """.formatForTest()
         contents.shouldContainOnlyOnce(expectedCompanionOverride)
 
         val expectedConfigOverride = """
-    class Config {
-        var bar: Int = 2
-    }
-"""
+            class Config {
+                var bar: Int = 2
+            }
+        """.formatForTest()
         contents.shouldContainOnlyOnce(expectedConfigOverride)
     }
 

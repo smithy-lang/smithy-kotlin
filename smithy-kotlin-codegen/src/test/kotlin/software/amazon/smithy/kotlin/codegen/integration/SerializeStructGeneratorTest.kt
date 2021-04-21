@@ -45,7 +45,7 @@ class SerializeStructGeneratorTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
-    // TODO ~ Support BigInteger and BigDecimal Types
+    // TODO ~ Support BigInteger and BigDecimal Types - https://github.com/awslabs/smithy-kotlin/issues/213
     fun `it serializes a structure with a simple fields`(memberType: String) {
         val model = (
             modelPrefix + """            
@@ -61,7 +61,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -91,7 +91,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -113,7 +113,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -134,7 +134,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -156,7 +156,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
@@ -186,7 +186,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -219,7 +219,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -255,7 +255,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -282,7 +282,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -309,7 +309,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = getRequestContentsForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -340,7 +340,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -379,7 +379,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -416,7 +416,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -448,7 +448,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -487,7 +487,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -522,7 +522,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -569,7 +569,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -600,7 +600,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -638,7 +638,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -677,7 +677,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -706,7 +706,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -745,7 +745,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -783,7 +783,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -821,7 +821,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -851,7 +851,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -887,7 +887,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -918,7 +918,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -953,7 +953,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -991,7 +991,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1036,7 +1036,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1070,7 +1070,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1107,7 +1107,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1136,7 +1136,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1170,7 +1170,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1203,7 +1203,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1224,7 +1224,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1254,7 +1254,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1285,7 +1285,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1317,7 +1317,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1347,7 +1347,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1379,7 +1379,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1412,29 +1412,8 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = getRequestContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
-
-    private fun getContentsForShape(model: Model, shapeId: String): String {
-        val ctx = model.newTestContext()
-
-        val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
-        return testRender(ctx.requestMembers(op)) { members, writer ->
-            SerializeStructGenerator(
-                ctx.generationCtx,
-                members,
-                writer,
-                TimestampFormatTrait.Format.EPOCH_SECONDS
-            ).render()
-        }
-    }
 }
-
-/**
- * // Code generated by smithy-kotlin-codegen. DO NOT EDIT!
- * package test
- */
-private fun String.stripCodegenPrefix() =
-    this.substring(this.indexOf("package test") + "package test".length).trim()
