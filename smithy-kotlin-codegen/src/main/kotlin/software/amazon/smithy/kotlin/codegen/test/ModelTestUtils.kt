@@ -19,6 +19,22 @@ import java.net.URL
  * by smithy-codegen.
  */
 
+/**
+ * Unless necessary to deviate for test reasons, the following literals should be used in test models:
+ *  smithy version: "1"
+ *  model version: "1.0.0"
+ *  namespace: TestDefault.NAMESPACE
+ *  service name: "Test"
+ */
+object TestDefault {
+    const val SMITHY_IDL_VERSION = "1"
+    const val MODEL_VERSION = "1.0.0"
+    const val NAMESPACE = "com.test"
+    const val SERVICE_NAME = "Test"
+    const val SDK_ID = "Test"
+    const val SERVICE_SHAPE_ID = "com.test#Test"
+}
+
 // attempt to replicate transforms that happen in CodegenVisitor such that tests
 // more closely reflect reality
 private fun Model.applyKotlinCodegenTransforms(serviceShapeId: String?): Model {
@@ -53,7 +69,7 @@ fun URL.asSmithy(serviceShapeId: String? = null): Model {
  * Load and initialize a model from a String
  */
 fun String.asSmithyModel(sourceLocation: String? = null, serviceShapeId: String? = null, applyDefaultTransforms: Boolean = true): Model {
-    val processed = if (this.startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
+    val processed = if (this.trimStart().startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
     val model = Model.assembler()
         .discoverModels()
         .addUnparsedModel(sourceLocation ?: "test.smithy", processed)
@@ -81,14 +97,14 @@ fun Model.toSmithyIDL(): String {
  * @param serviceShapeId the smithy Id for the service to codegen, defaults to "com.test#Example"
  */
 fun Model.newTestContext(
-    serviceShapeId: String = "com.test#Example",
-    settings: KotlinSettings = this.defaultSettings(),
+    serviceName: String = TestDefault.SERVICE_NAME,
+    packageName: String = TestDefault.NAMESPACE,
+    settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
     generator: ProtocolGenerator = MockHttpProtocolGenerator()
 ): TestContext {
     val manifest = MockManifest()
-    val serviceShapeName = serviceShapeId.split("#")[1]
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, "test", serviceShapeName)
-    val service = this.getShape(ShapeId.from(serviceShapeId)).get().asServiceShape().get()
+    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, packageName, serviceName)
+    val service = this.getShape(ShapeId.from("$packageName#$serviceName")).get().asServiceShape().get()
     val delegator = KotlinDelegator(settings, this, manifest, provider)
 
     val ctx = ProtocolGenerator.GenerationContext(
@@ -105,8 +121,8 @@ fun Model.newTestContext(
 
 /**
  * Generate a KotlinSettings instance from a model.
- * @param packageName name of module or "test" if unspecified
- * @param packageVersion version of module or "1.0.0" if unspecified
+ * @param packageName name of module or DEFAULT_SERVICE_NAME if unspecified
+ * @param packageVersion version of module or DEFAULT_MODEL_VERSION if unspecified
  *
  * Example:
  *  {
@@ -123,32 +139,42 @@ fun Model.newTestContext(
  *  }
  */
 internal fun Model.defaultSettings(
-    serviceName: String = "test#service",
-    packageName: String = "test",
-    packageVersion: String = "1.0.0",
-    sdkId: String = "Test",
+    serviceName: String? = null,
+    packageName: String = TestDefault.NAMESPACE,
+    packageVersion: String = TestDefault.MODEL_VERSION,
+    sdkId: String = TestDefault.SDK_ID,
     generateDefaultBuildFiles: Boolean = false
-): KotlinSettings = KotlinSettings.from(
-    this,
-    Node.objectNodeBuilder()
-        .withMember("service", Node.from(serviceName))
-        .withMember(
-            "package",
-            Node.objectNode()
-                .withMember("name", Node.from(packageName))
-                .withMember("version", Node.from(packageVersion))
-        )
-        .withMember("sdkId", Node.from(sdkId))
-        .withMember(
-            "build",
-            Node.objectNode()
-                .withMember("generateDefaultBuildFiles", Node.from(generateDefaultBuildFiles)))
-        .build()
-)
+): KotlinSettings {
+    val serviceId = if (serviceName == null) {
+        KotlinSettings.inferService(this)
+    } else {
+        this.getShape(ShapeId.from("$packageName#$serviceName")).getOrNull()?.id
+            ?: error("Unable to find service '$serviceName' in:\n ${toSmithyIDL()}")
+    }
 
+    return KotlinSettings.from(
+        this,
+        Node.objectNodeBuilder()
+            .withMember("service", Node.from(serviceId.toString()))
+            .withMember(
+                "package",
+                Node.objectNode()
+                    .withMember("name", Node.from(packageName))
+                    .withMember("version", Node.from(packageVersion))
+            )
+            .withMember("sdkId", Node.from(sdkId))
+            .withMember(
+                "build",
+                Node.objectNode()
+                    .withMember("generateDefaultBuildFiles", Node.from(generateDefaultBuildFiles)))
+            .build()
+    )
+}
+
+// KGFIXME
 fun String.generateTestModel(
     protocol: String,
-    namespace: String = "com.test",
+    namespace: String = TestDefault.NAMESPACE,
     serviceName: String = "Example",
     operations: List<String> = listOf("Foo")
 ): Model {
@@ -159,7 +185,7 @@ fun String.generateTestModel(
 
         @$protocol
         service $serviceName {
-            version: "1.0.0",
+            version: "${TestDefault.MODEL_VERSION}",
             operations: [
                 ${operations.joinToString(separator = ", ")}
             ]
@@ -174,7 +200,7 @@ fun String.generateTestModel(
 // Produce a GenerationContext given a model, it's expected namespace and service name.
 fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolGenerator.GenerationContext {
     val packageNode = Node.objectNode().withMember("name", Node.from("test"))
-        .withMember("version", Node.from("1.0.0"))
+        .withMember("version", Node.from(TestDefault.MODEL_VERSION))
 
     val settings = KotlinSettings.from(
         this,
@@ -197,4 +223,41 @@ fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolG
         generator.protocol,
         delegator
     )
+}
+
+enum class AwsProtocol(val annotation: String, val import: String) {
+    RestJson("@restJson1", "aws.protocols#restJson1"),
+    AwsJson1_1("@awsJson1_1", "aws.protocols#awsJson1_1")
+}
+
+// Generates the model header which by default conforms to the conventions defined for test models.
+fun String.prependNamespaceAndService(
+    version: String = TestDefault.SMITHY_IDL_VERSION,
+    namespace: String = TestDefault.NAMESPACE,
+    imports: List<String> = emptyList(),
+    serviceName: String = TestDefault.SERVICE_NAME,
+    protocol: AwsProtocol? = null,
+    operations: List<String> = emptyList()
+): String {
+    val version = "\$version: \"$version\""
+    val (modelProtocol, modelImports) = if (protocol == null) {
+        "" to imports
+    } else {
+        protocol.annotation to imports + listOf(protocol.import)
+    }
+
+    val importExpr = modelImports.map { "use $it" }.joinToString(separator = "\n") { it }
+
+    return ("""
+        $version
+        namespace $namespace
+        $importExpr
+        $modelProtocol
+        service $serviceName { 
+            version: "${TestDefault.MODEL_VERSION}",
+            operations: $operations
+        }
+        
+
+    """.trimIndent() + this.trimIndent()).also { println(it) }
 }

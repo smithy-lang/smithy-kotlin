@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.test.TestDefault
 import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
 import software.amazon.smithy.model.shapes.StringShape
 
@@ -36,7 +37,7 @@ class EnumGeneratorTest {
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val shape = model.expectShape<StringShape>("com.test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -118,7 +119,7 @@ sealed class Baz {
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val shape = model.expectShape<StringShape>("com.test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -197,7 +198,7 @@ sealed class Baz {
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val shape = model.expectShape<StringShape>("com.test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -228,7 +229,7 @@ sealed class Baz {
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val ex = assertThrows<CodegenException> {
             EnumGenerator(shape, symbol, writer).render()
         }

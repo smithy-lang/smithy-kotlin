@@ -4,7 +4,7 @@ namespace com.test
 use aws.protocols#awsJson1_1
 
 @awsJson1_1
-service Example {
+service Test {
     version: "1.0.0",
     operations: [
         UnboxedPrimitivesTest

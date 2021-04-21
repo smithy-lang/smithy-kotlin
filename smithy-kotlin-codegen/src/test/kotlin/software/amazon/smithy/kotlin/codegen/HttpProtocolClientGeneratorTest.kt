@@ -22,7 +22,7 @@ import software.amazon.smithy.kotlin.codegen.test.*
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
-    private val writer: KotlinWriter = KotlinWriter("com.test")
+    private val writer: KotlinWriter = KotlinWriter(TestDefault.NAMESPACE)
 
     class MockHttpFeature1 : HttpFeature {
         override val name: String = "MockHttpFeature1"
@@ -33,7 +33,7 @@ class HttpProtocolClientGeneratorTest {
 
     init {
         val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
-        val ctx = model.newTestContext("com.test#Example")
+        val ctx = model.newTestContext()
         val features: List<HttpFeature> = listOf(MockHttpFeature1())
         val generator = TestProtocolClientGenerator(
             ctx.generationCtx,
@@ -46,8 +46,8 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it imports external symbols`() {
-        commonTestContents.shouldContainOnlyOnce("import test.model.*")
-        commonTestContents.shouldContainOnlyOnce("import test.transform.*")
+        commonTestContents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.*")
+        commonTestContents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.transform.*")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.*")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
 
@@ -57,7 +57,7 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it renders constructor`() {
-        commonTestContents.shouldContainOnlyOnce("internal class DefaultExampleClient(private val config: ExampleClient.Config) : ExampleClient {")
+        commonTestContents.shouldContainOnlyOnce("internal class DefaultTestClient(private val config: TestClient.Config) : TestClient {")
     }
 
     @Test
@@ -225,15 +225,6 @@ class HttpProtocolClientGeneratorTest {
     @Test
     fun `it handles endpointTrait hostPrefix with label`() {
         val model = """
-            namespace com.test
-            use aws.protocols#awsJson1_1
-
-            @awsJson1_1
-            service Example {
-                version: "1.0.0",
-                operations: [ GetStatus ]
-            }
-
             @readonly
             @endpoint(hostPrefix: "{foo}.data.")
             @http(method: "POST", uri: "/status")
@@ -249,10 +240,11 @@ class HttpProtocolClientGeneratorTest {
             }
             
             structure GetStatusOutput {}
-        """.asSmithyModel()
+        """.prependNamespaceAndService(protocol = AwsProtocol.AwsJson1_1, operations = listOf("GetStatus"))
+            .asSmithyModel()
 
-        val ctx = model.newTestContext("com.test#Example")
-        val writer = KotlinWriter("com.test")
+        val ctx = model.newTestContext()
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val generator = TestProtocolClientGenerator(
             ctx.generationCtx,
             listOf(),

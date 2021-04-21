@@ -33,7 +33,7 @@ fun testRender(
     members: List<MemberShape>,
     renderFn: (List<MemberShape>, KotlinWriter) -> Unit
 ): String {
-    val writer = KotlinWriter("test")
+    val writer = KotlinWriter(TestDefault.NAMESPACE)
     renderFn(members, writer)
     return writer.toString()
 }
@@ -114,8 +114,10 @@ fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
         .map { it.member }
 }
 
-fun MockManifest.getTransformFileContents(filename: String): String {
-    return expectFileString("src/main/kotlin/test/transform/$filename")
+// Assume a specific file path to retrieve a file from the manifest
+fun MockManifest.getTransformFileContents(filename: String, packageNamespace: String = TestDefault.NAMESPACE): String {
+    val packageNamespaceExpr = packageNamespace.replace('.', '/')
+    return expectFileString("src/main/kotlin/$packageNamespaceExpr/transform/$filename")
 }
 
 fun TestContext.toGenerationContext(): GenerationContext =
@@ -164,8 +166,8 @@ class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
 fun codegenTestHarnessForModelSnippet(
     generator: ProtocolGenerator,
-    namespace: String = "com.test",
-    serviceName: String = "Example",
+    namespace: String = TestDefault.NAMESPACE,
+    serviceName: String = TestDefault.SERVICE_NAME,
     operations: List<String> = listOf("Foo"),
     snippet: () -> String
 ): CodegenTestHarness {
@@ -196,3 +198,6 @@ fun CodegenTestHarness.generateDeSerializers(): Map<String, String> {
     generationCtx.delegator.flushWriters()
     return manifest.files.map { path -> path.fileName.toString() to manifest.expectFileString(path) }.toMap()
 }
+
+fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestDefault.NAMESPACE, sdkId: String = "Test") =
+    KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace, sdkId)

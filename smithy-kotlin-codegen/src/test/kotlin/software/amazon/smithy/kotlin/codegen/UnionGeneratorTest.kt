@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.TestDefault
 import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
 import software.amazon.smithy.kotlin.codegen.test.formatForTest
 import software.amazon.smithy.kotlin.codegen.test.shouldContainWithDiff
@@ -38,7 +39,7 @@ class UnionGeneratorTest {
         """.asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val union = model.expectShape<UnionShape>("com.test#MyUnion")
         val generator = UnionGenerator(model, provider, writer, union)
         generator.render()
@@ -98,7 +99,7 @@ class UnionGeneratorTest {
         val union = model.expectShape<UnionShape>("com.test#MyUnion")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val generator = UnionGenerator(model, provider, writer, union)
 
         Assertions.assertThrows(IllegalStateException::class.java) {

@@ -23,23 +23,11 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class SerializeUnionGeneratorTest {
     private val modelPrefix = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [
-                    Foo,
-                ]
-            }
-
             @http(method: "POST", uri: "/foo-no-input")
             operation Foo {
                 input: FooRequest
             }        
-    """.trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocol.RestJson, operations = listOf("Foo")).trimIndent()
 
     @Test
     fun `it serializes a structure containing a union of primitive types`() {

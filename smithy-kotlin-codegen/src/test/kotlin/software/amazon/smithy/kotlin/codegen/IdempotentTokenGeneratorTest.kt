@@ -35,35 +35,35 @@ class IdempotentTokenGeneratorTest {
         val contents = getTransformFileContents("AllocateWidgetOperationSerializer.kt")
         contents.shouldSyntacticSanityCheck()
         val expectedContents = """
-internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidgetRequest> {
-
-    companion object {
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
-            field(CLIENTTOKEN_DESCRIPTOR)
-        }
-    }
-
-    override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetRequest): HttpRequestBuilder {
-        val builder = HttpRequestBuilder()
-        builder.method = HttpMethod.POST
-
-        builder.url {
-            path = "/input/AllocateWidget"
-        }
-
-        val serializer = context.serializer()
-        serializer.serializeStruct(OBJ_DESCRIPTOR) {
-            input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
-        }
-
-        builder.body = ByteArrayContent(serializer.toByteArray())
-        if (builder.body !is HttpBody.Empty) {
-            builder.headers["Content-Type"] = "application/json"
-        }
-        return builder
-    }
-}
-"""
+            internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidgetRequest> {
+            
+                companion object {
+                    private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                        field(CLIENTTOKEN_DESCRIPTOR)
+                    }
+                }
+            
+                override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetRequest): HttpRequestBuilder {
+                    val builder = HttpRequestBuilder()
+                    builder.method = HttpMethod.POST
+            
+                    builder.url {
+                        path = "/input/AllocateWidget"
+                    }
+            
+                    val serializer = context.serializer()
+                    serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                        input.clientToken?.let { field(CLIENTTOKEN_DESCRIPTOR, it) } ?: field(CLIENTTOKEN_DESCRIPTOR, context.idempotencyTokenProvider.generateToken())
+                    }
+            
+                    builder.body = ByteArrayContent(serializer.toByteArray())
+                    if (builder.body !is HttpBody.Empty) {
+                        builder.headers["Content-Type"] = "application/json"
+                    }
+                    return builder
+                }
+            }
+            """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 

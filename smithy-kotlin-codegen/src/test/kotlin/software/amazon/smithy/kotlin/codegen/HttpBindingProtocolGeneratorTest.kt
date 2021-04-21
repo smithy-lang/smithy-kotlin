@@ -26,23 +26,11 @@ import software.amazon.smithy.model.Model
 class HttpBindingProtocolGeneratorTest {
     private val defaultModel = javaClass.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
     private val modelPrefix = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [
-                    Foo,
-                ]
-            }
-
             @http(method: "POST", uri: "/foo-no-input")
             operation Foo {
                 input: FooRequest
             }        
-    """.trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocol.RestJson, operations = listOf("Foo")) .trimIndent()
 
     private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
         val (ctx, manifest, generator) = testModel.newTestContext()
@@ -53,7 +41,7 @@ class HttpBindingProtocolGeneratorTest {
     }
 
     private fun getTransformFileContents(manifest: MockManifest, filename: String): String {
-        return manifest.expectFileString("src/main/kotlin/test/transform/$filename")
+        return manifest.expectFileString("src/main/kotlin/com/test/transform/$filename")
     }
 
     @Test
@@ -61,7 +49,7 @@ class HttpBindingProtocolGeneratorTest {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/SmokeTestOperationSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/SmokeTestOperationSerializer.kt"))
     }
 
     @Test
@@ -70,11 +58,11 @@ class HttpBindingProtocolGeneratorTest {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/NestedDocumentSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/NestedDocumentSerializer.kt"))
         // these are non-top level shapes reachable from an operation input and thus require a serializer
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/Nested2DocumentSerializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/Nested3DocumentSerializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/Nested4DocumentSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/Nested2DocumentSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/Nested3DocumentSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/Nested4DocumentSerializer.kt"))
     }
 
     @Test
@@ -275,7 +263,7 @@ internal class Nested4DocumentSerializer(val input: Nested4) : SdkSerializable {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.Nested4")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.Nested4")
     }
 
     @Test
@@ -304,7 +292,7 @@ internal class Nested3DocumentSerializer(val input: Nested3) : SdkSerializable {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.Nested3")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.Nested3")
     }
 
     @Test
@@ -343,7 +331,7 @@ internal class UnionInputOperationSerializer(): HttpSerialize<UnionInputRequest>
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.UnionInputRequest")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.UnionInputRequest")
     }
 
     @Test
@@ -431,7 +419,7 @@ internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionOutputRe
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.UnionOutputResponse")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.UnionOutputResponse")
     }
 
     @Test
@@ -469,7 +457,7 @@ internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<Unio
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.UnionAggregateOutputResponse")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.UnionAggregateOutputResponse")
     }
 
     @Test
@@ -498,7 +486,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.MyUnion")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.MyUnion")
     }
 
     @Test
@@ -530,7 +518,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
     }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.MyUnion")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.MyUnion")
     }
 
     @Test
@@ -539,9 +527,9 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
         generator.generateSerializers(ctx)
         ctx.delegator.flushWriters()
         // serializer should exist for the map value `ReachableOnlyThroughMap`
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/ReachableOnlyThroughMapDocumentSerializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/ReachableOnlyThroughMapDocumentSerializer.kt"))
         val contents = getTransformFileContents(manifest, "MapInputOperationSerializer.kt")
-        contents.shouldContainOnlyOnce("import test.model.MapInputRequest")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.MapInputRequest")
     }
 
     @Test
@@ -879,7 +867,7 @@ internal class Nested3DocumentDeserializer {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import test.model.Nested3")
+        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.Nested3")
     }
 
     @Test
@@ -888,8 +876,8 @@ internal class Nested3DocumentDeserializer {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateDeserializers(ctx)
         ctx.delegator.flushWriters()
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/SmokeTestErrorDeserializer.kt"))
-        assertTrue(manifest.hasFile("src/main/kotlin/test/transform/NestedErrorDataDocumentDeserializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/SmokeTestErrorDeserializer.kt"))
+        assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/NestedErrorDataDocumentDeserializer.kt"))
     }
 
     @Test

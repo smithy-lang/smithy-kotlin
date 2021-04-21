@@ -19,25 +19,22 @@ class StructureGeneratorTest {
 
     init {
 
-        val model = """
-        namespace com.test
-        
-        structure Qux { }
-        
-        @documentation("This *is* documentation about the shape.")
-        structure MyStruct {
-            foo: String,
-            @documentation("This *is* documentation about the member.")
-            bar: PrimitiveInteger,
-            baz: Integer,
-            Quux: Qux,
-            byteValue: Byte
-        }
-        
-        """.asSmithyModel()
+        val model = """        
+            structure Qux { }
+            
+            @documentation("This *is* documentation about the shape.")
+            structure MyStruct {
+                foo: String,
+                @documentation("This *is* documentation about the member.")
+                bar: PrimitiveInteger,
+                baz: Integer,
+                Quux: Qux,
+                byteValue: Byte
+            }
+        """.prependNamespaceAndService().asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         val generator = StructureGenerator(renderingCtx)
@@ -183,7 +180,7 @@ class StructureGeneratorTest {
         
                 fun build(): MyStruct
                 /**
-                 * construct an [test.model.Qux] inside the given [block]
+                 * construct an [com.test.model.Qux] inside the given [block]
                  */
                 fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
                     this.quux = Qux.invoke(block)
@@ -235,8 +232,6 @@ class StructureGeneratorTest {
     @Test
     fun `it handles shape and member docs`() {
         val model = """
-            namespace com.test
-            
             structure Foo {
                 @documentation("Member documentation")
                 baz: Baz,
@@ -248,7 +243,7 @@ class StructureGeneratorTest {
 
             @documentation("Shape documentation")
             string Baz
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
         /*
             The effective documentation trait of a shape is resolved using the following process:
@@ -259,8 +254,10 @@ class StructureGeneratorTest {
             Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
         */
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        println(model.toSmithyIDL())
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#Foo")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
@@ -272,9 +269,7 @@ class StructureGeneratorTest {
 
     @Test
     fun `it handles the sensitive trait in toString`() {
-        val model = """
-            namespace com.test
-            
+        val model = """           
             @sensitive
             string Baz
             
@@ -285,10 +280,10 @@ class StructureGeneratorTest {
                 qux: String
             }
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#Foo")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
@@ -303,8 +298,6 @@ class StructureGeneratorTest {
     fun `it handles blob shapes`() {
         // blobs (with and without streaming) require special attention in equals() and hashCode() implementations
         val model = """
-            namespace com.test
-            
             @streaming
             blob BlobStream
             
@@ -313,10 +306,10 @@ class StructureGeneratorTest {
                 bar: BlobStream
             }
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
@@ -392,7 +385,7 @@ class StructureGeneratorTest {
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
@@ -448,7 +441,7 @@ class StructureGeneratorTest {
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
