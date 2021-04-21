@@ -282,7 +282,7 @@ class StructureGeneratorTest {
             
         """.prependNamespaceAndService().asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#Foo")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
@@ -308,7 +308,7 @@ class StructureGeneratorTest {
             
         """.prependNamespaceAndService().asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
@@ -384,7 +384,7 @@ class StructureGeneratorTest {
         """.asSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
@@ -440,7 +440,7 @@ class StructureGeneratorTest {
         """.asSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()

@@ -124,23 +124,18 @@ class ExceptionGeneratorTest {
 
     @Test
     fun `it fails on conflicting property names`() {
-        val pkg = "com.error.test"
-        val svc = "Test"
         val model = """
-        namespace $pkg       
-        service $svc { version: "1.0.0" }
-        
         @httpError(500)
         @error("server")
         structure ConflictingException {
             SdkErrorMetadata: String
         }
-        """.asSmithyModel()
+        """.prependNamespaceAndService(namespace = "com.error.test").asSmithyModel()
 
-        val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, pkg, svc)
-        val writer = KotlinWriter(pkg)
+        val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "com.error.test")
+        val writer = KotlinWriter("com.error.test")
         val errorShape = model.expectShape<StructureShape>("com.error.test#ConflictingException")
-        val renderingCtx = RenderingContext(writer, errorShape, model, symbolProvider, model.defaultSettings(serviceName = svc, packageName = pkg))
+        val renderingCtx = RenderingContext(writer, errorShape, model, symbolProvider, model.defaultSettings())
         val ex = assertFailsWith<CodegenException> {
             StructureGenerator(renderingCtx).render()
         }

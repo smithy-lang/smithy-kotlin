@@ -11,7 +11,10 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.TestDefault
 import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
+import software.amazon.smithy.kotlin.codegen.test.createSymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumDefinition
@@ -22,14 +25,12 @@ class SymbolProviderTest {
     @Test
     fun `escapes reserved member names`() {
         val model = """
-        namespace com.test
-        
         structure MyStruct {
             class: String
         }
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$class")
         val actual = provider.toMemberName(member)
         assertEquals("`class`", actual)
@@ -38,20 +39,18 @@ class SymbolProviderTest {
     @Test
     fun `creates symbols in correct namespace`() {
         val model = """
-        namespace com.test
-        
         structure MyStruct {
             quux: String
         }
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
         val structSymbol = provider.toSymbol(struct)
         val memberSymbol = provider.toSymbol(member)
-        assertEquals("test.model", structSymbol.namespace)
+        assertEquals("com.test.model", structSymbol.namespace)
         assertEquals(".", structSymbol.namespaceDelimiter)
         assertEquals("kotlin", memberSymbol.namespace)
     }
@@ -86,7 +85,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
         assertEquals(expectedDefault, memberSymbol.defaultValue())
@@ -105,13 +104,12 @@ class SymbolProviderTest {
     @Test
     fun `creates blobs`() {
         val model = """
-        namespace com.test
         structure MyStruct {
             quux: Blob
         }
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
         val memberSymbol = provider.toSymbol(member)
         assertEquals("kotlin", memberSymbol.namespace)
@@ -135,7 +133,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val memberSymbol = provider.toSymbol(member)
 
         assertEquals("software.aws.clientrt.content", memberSymbol.namespace)
@@ -149,8 +147,6 @@ class SymbolProviderTest {
     @Test
     fun `creates lists`() {
         val model = """
-            namespace foo.bar
-
             structure Record {}
 
             list Records {
@@ -161,9 +157,9 @@ class SymbolProviderTest {
             list SparseRecords {
                 member: Record,
             }
-        """.asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
 
         assertEquals("List<Record>", listSymbol.name)
@@ -196,7 +192,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val setSymbol = provider.toSymbol(set)
 
         assertEquals("Set<Record>", setSymbol.name)
@@ -210,8 +206,6 @@ class SymbolProviderTest {
     @Test
     fun `creates maps`() {
         val model = """
-            namespace foo.bar
-
             structure Record {}
 
             map MyMap {
@@ -224,11 +218,11 @@ class SymbolProviderTest {
                 key: String,
                 value: Record,
             }
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
 
-        val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("foo.bar#MyMap"))
+        val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestDefault.NAMESPACE}#MyMap"))
 
         assertEquals("Map<String, Record>", mapSymbol.name)
         assertEquals(true, mapSymbol.isBoxed)
@@ -237,7 +231,7 @@ class SymbolProviderTest {
         // collections should contain a reference to the member type
         assertEquals("Record", mapSymbol.references[0].symbol.name)
 
-        val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("foo.bar#MySparseMap"))
+        val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestDefault.NAMESPACE}#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
         assertEquals(true, sparseMapSymbol.isBoxed)
@@ -261,7 +255,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val bigSymbol = provider.toSymbol(member)
         assertEquals("java.math", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
@@ -286,10 +280,10 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model)
         val symbol = provider.toSymbol(shape)
 
-        assertEquals("test.model", symbol.namespace)
+        assertEquals("com.test.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
         assertEquals(true, symbol.isBoxed)
         assertEquals("Baz", symbol.name)
@@ -313,7 +307,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val symbol = provider.toSymbol(union)
 
         assertEquals("test.model", symbol.namespace)
@@ -335,9 +329,9 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val structSymbol = provider.toSymbol(struct)
-        assertEquals("test.model", structSymbol.namespace)
+        assertEquals("com.test.model", structSymbol.namespace)
         assertEquals("MyStruct", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
         assertEquals(true, structSymbol.isBoxed)
@@ -353,7 +347,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val documentSymbol = provider.toSymbol(document)
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
@@ -404,7 +398,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val structSymbol = provider.toSymbol(struct)
         // should get reference to List and Instant
         assertEquals(2, structSymbol.references.size)
@@ -419,7 +413,7 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val timestampSymbol = provider.toSymbol(tsShape)
         assertEquals("software.aws.clientrt.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
@@ -461,10 +455,10 @@ class SymbolProviderTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
 
         val structSymbol = provider.toSymbol(struct1)
-        assertEquals("test.model", structSymbol.namespace)
+        assertEquals("com.test.model", structSymbol.namespace)
         assertEquals("MyStruct1", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
         assertEquals(true, structSymbol.isBoxed)

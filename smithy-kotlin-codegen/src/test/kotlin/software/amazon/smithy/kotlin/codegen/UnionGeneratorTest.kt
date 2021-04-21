@@ -9,10 +9,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.test.TestDefault
-import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
-import software.amazon.smithy.kotlin.codegen.test.formatForTest
-import software.amazon.smithy.kotlin.codegen.test.shouldContainWithDiff
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.UnionShape
 import java.lang.IllegalStateException
 
@@ -20,8 +17,6 @@ class UnionGeneratorTest {
     @Test
     fun `it renders unions`() {
         val model = """
-        namespace com.test
-        
         @documentation("Documentation for MyUnion")
         union MyUnion {
             @documentation("Documentation for foo")
@@ -36,16 +31,16 @@ class UnionGeneratorTest {
             qux: String
         }
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService(namespace = "test").asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
-        val union = model.expectShape<UnionShape>("com.test#MyUnion")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
+        val writer = KotlinWriter("test")
+        val union = model.expectShape<UnionShape>("test#MyUnion")
         val generator = UnionGenerator(model, provider, writer, union)
         generator.render()
 
         val contents = writer.toString()
-        assertTrue(contents.contains("package com.test"))
+        contents.shouldContainOnlyOnceWithDiff("package test")
 
         val expectedClassDecl = """
             /**
@@ -86,8 +81,6 @@ class UnionGeneratorTest {
     @Test
     fun `it fails to generate unions with colliding member names`() {
         val model = """
-            namespace com.test
-
             structure MyStruct {
                 qux: String,
             }
@@ -95,10 +88,10 @@ class UnionGeneratorTest {
             union MyUnion {                
                 sdkUnknown: String
             }
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
         val union = model.expectShape<UnionShape>("com.test#MyUnion")
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
         val generator = UnionGenerator(model, provider, writer, union)
 

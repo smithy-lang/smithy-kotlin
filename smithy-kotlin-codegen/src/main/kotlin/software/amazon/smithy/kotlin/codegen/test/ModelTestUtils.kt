@@ -171,12 +171,11 @@ internal fun Model.defaultSettings(
     )
 }
 
-// KGFIXME
 fun String.generateTestModel(
     protocol: String,
     namespace: String = TestDefault.NAMESPACE,
-    serviceName: String = "Example",
-    operations: List<String> = listOf("Foo")
+    serviceName: String = TestDefault.SERVICE_NAME,
+    operations: List<String>
 ): Model {
     val completeModel = """
         namespace $namespace
@@ -199,7 +198,7 @@ fun String.generateTestModel(
 
 // Produce a GenerationContext given a model, it's expected namespace and service name.
 fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolGenerator.GenerationContext {
-    val packageNode = Node.objectNode().withMember("name", Node.from("test"))
+    val packageNode = Node.objectNode().withMember("name", Node.from(namespace))
         .withMember("version", Node.from(TestDefault.MODEL_VERSION))
 
     val settings = KotlinSettings.from(
@@ -208,7 +207,7 @@ fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolG
             .withMember("package", packageNode)
             .build()
     )
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, namespace, serviceName)
+    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, rootNamespace = namespace, sdkId = serviceName)
     val service = this.expectShape<ServiceShape>("$namespace#$serviceName")
     val generator: ProtocolGenerator = MockHttpProtocolGenerator()
     val manifest = MockManifest()

@@ -168,7 +168,7 @@ fun codegenTestHarnessForModelSnippet(
     generator: ProtocolGenerator,
     namespace: String = TestDefault.NAMESPACE,
     serviceName: String = TestDefault.SERVICE_NAME,
-    operations: List<String> = listOf("Foo"),
+    operations: List<String>,
     snippet: () -> String
 ): CodegenTestHarness {
     val protocol = generator.protocol.name
@@ -199,5 +199,5 @@ fun CodegenTestHarness.generateDeSerializers(): Map<String, String> {
     return manifest.files.map { path -> path.fileName.toString() to manifest.expectFileString(path) }.toMap()
 }
 
-fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestDefault.NAMESPACE, sdkId: String = "Test") =
+fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestDefault.NAMESPACE, sdkId: String = TestDefault.SERVICE_NAME) =
     KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace, sdkId)

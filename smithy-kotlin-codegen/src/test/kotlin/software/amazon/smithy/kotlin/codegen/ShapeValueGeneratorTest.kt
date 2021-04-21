@@ -17,12 +17,12 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.createSymbolProvider
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
-import java.util.*
 
 class ShapeValueGeneratorTest {
 
@@ -40,7 +40,7 @@ class ShapeValueGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyMap")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
         val writer = KotlinWriter("test")
 
@@ -77,7 +77,7 @@ mapOf<String, Int>(
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyList")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
         val writer = KotlinWriter("test")
 
@@ -146,7 +146,7 @@ listOf<String>(
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyStruct")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
 
         val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
         val writer = KotlinWriter("test")
@@ -237,7 +237,7 @@ MyStruct {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "MyUnion")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
 
         val unionShape = model.expectShape(ShapeId.from("foo.bar#MyUnion"))
         val writer = KotlinWriter("test")
