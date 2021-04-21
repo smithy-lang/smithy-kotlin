@@ -50,9 +50,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     abstract fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator
 
     /**
-     * Get all of the features that should be installed into the `SdkHttpClient` as pipeline middleware
+     * Get all of the middleware that should be installed into the operation's middleware stack (`SdkOperationExecution`)
      */
-    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
+    open fun getHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<HttpMiddleware> = listOf()
 
     /**
      * Generate the set of [SdkFieldDescriptor]s for the types that require them.

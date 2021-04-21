@@ -23,9 +23,9 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 
 /**
- * HttpFeature interface that allows pipeline middleware to be registered and configured with the protocol generator
+ * Interface that allows middleware to be registered and configured with the [HttpProtocolClientGenerator]
  */
-interface HttpFeature {
+interface HttpMiddleware {
     // the name of the feature to install
     val name: String
 
@@ -63,7 +63,7 @@ interface HttpFeature {
  */
 abstract class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
-    protected val features: List<HttpFeature>,
+    protected val middleware: List<HttpMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
 
@@ -104,7 +104,7 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
         writer.write("private val serde: SerdeProvider = #T()", serdeProviderSymbol)
-        features.forEach {
+        middleware.forEach {
             it.renderProperties(writer)
         }
     }
@@ -136,8 +136,7 @@ abstract class HttpProtocolClientGenerator(
     }
 
     /**
-     * Render the class initialization block. By default this configures the HTTP client and installs all the
-     * registered features
+     * Render the class initialization block. By default this configures the HTTP client
      */
     protected open fun renderInit(writer: KotlinWriter) {
         writer.openBlock("init {", "}") {
@@ -181,7 +180,7 @@ abstract class HttpProtocolClientGenerator(
             } else {
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
-                // FIXME - this goes away when we implement model evolution and generate input/output types regardless of whether the model has them
+                // NOTE: this will never be triggered for AWS models where we preprocess operations to always have inputs/outputs
                 writer.addImport(RuntimeTypes.Http.HttpRequestBuilder)
                 writer.addImport(RuntimeTypes.Core.ExecutionContext)
                 writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
@@ -257,7 +256,7 @@ abstract class HttpProtocolClientGenerator(
         writer.openBlock("private fun <I, O>  registerDefaultMiddleware(op: SdkHttpOperation<I,O>){")
             .openBlock("op.apply {")
             .call {
-                features.forEach { feat ->
+                middleware.forEach { feat ->
                     feat.addImportsAndDependencies(writer)
                     if (feat.needsConfiguration) {
                         writer.openBlock("install(#L) {", feat.name)
