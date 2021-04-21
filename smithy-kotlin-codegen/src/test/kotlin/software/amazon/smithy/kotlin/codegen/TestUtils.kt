@@ -21,9 +21,9 @@ import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.HttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.integration.HttpMiddleware
 import software.amazon.smithy.kotlin.codegen.integration.HttpProtocolClientGenerator
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.integration.ProtocolMiddleware
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -238,7 +238,7 @@ fun String.formatForTest(indent: String = "    ") =
 
 class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
-    middlewares: List<HttpMiddleware>,
+    middlewares: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver
 ) : HttpProtocolClientGenerator(ctx, middlewares, httpBindingResolver) {
     override val serdeProviderSymbol: Symbol = buildSymbol {

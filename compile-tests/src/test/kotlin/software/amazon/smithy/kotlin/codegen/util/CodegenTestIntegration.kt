@@ -71,9 +71,9 @@ class RestJsonTestProtocolGenerator(
 
 class MockRestJsonProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
-    middlewares: List<HttpMiddleware>,
+    middleware: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver
-) : HttpProtocolClientGenerator(ctx, middlewares, httpBindingResolver) {
+) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver) {
 
     override val serdeProviderSymbol: Symbol
         get() = buildSymbol {

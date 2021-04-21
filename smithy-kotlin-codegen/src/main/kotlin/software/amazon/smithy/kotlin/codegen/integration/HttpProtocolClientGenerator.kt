@@ -23,47 +23,11 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
 
 /**
- * Interface that allows middleware to be registered and configured with the [HttpProtocolClientGenerator]
- */
-interface HttpMiddleware {
-    // the name of the feature to install
-    val name: String
-
-    // flag that controls whether renderConfigure() needs called
-    val needsConfiguration: Boolean
-        get() = true
-
-    /**
-     * Register any imports or dependencies that will be needed to use this feature at runtime
-     */
-    fun addImportsAndDependencies(writer: KotlinWriter) {}
-
-    /**
-     * Render the body of the install step which configures this feature. Implementations do not need to open
-     * the surrounding block.
-     *
-     * Example
-     * ```
-     * install(MyFeature) {
-     *     // this is the renderConfigure() entry point
-     * }
-     * ```
-     */
-    fun renderConfigure(writer: KotlinWriter) {}
-
-    /**
-     * Render any instance properties (e.g. add private properties that exist for the lifetime of the client
-     * that are re-used by the feature)
-     */
-    fun renderProperties(writer: KotlinWriter) {}
-}
-
-/**
  * Renders an implementation of a service interface for HTTP protocol
  */
 abstract class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
-    protected val middleware: List<HttpMiddleware>,
+    protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
 

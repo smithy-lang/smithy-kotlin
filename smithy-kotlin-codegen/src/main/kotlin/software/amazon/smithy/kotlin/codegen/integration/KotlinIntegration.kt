@@ -121,4 +121,22 @@ interface KotlinIntegration {
     ) {
         // pass
     }
+
+    /**
+     * Customize the middleware to use when generating a protocol client/service implementation. By default
+     * the [resolved] is returned unmodified. Integrations are allowed to add/remove/re-order the middleware.
+     *
+     * NOTE: Protocol generators should only allow integrations to customize AFTER they have resolved the default set
+     * of middleware for the protocol (if any).
+     *
+     * @param ctx The codegen generation context
+     * @param resolved The middleware resolved by the protocol generator
+     */
+    fun customizeMiddleware(
+        // ctx: CodegenContext,
+        ctx: ProtocolGenerator.GenerationContext,
+        resolved: List<ProtocolMiddleware>
+    ): List<ProtocolMiddleware> {
+        return resolved
+    }
 }
