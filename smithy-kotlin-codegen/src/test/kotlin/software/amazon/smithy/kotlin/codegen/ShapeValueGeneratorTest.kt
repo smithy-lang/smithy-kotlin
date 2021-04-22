@@ -190,7 +190,7 @@ MyStruct {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
 
         val unionShape = model.expectShape(ShapeId.from("foo.bar#MyUnion"))
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
 
         val params = Node.objectNodeBuilder()
             .withMember("stringMember", "v1")

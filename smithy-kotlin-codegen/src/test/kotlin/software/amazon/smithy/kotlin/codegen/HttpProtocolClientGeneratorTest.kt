@@ -22,7 +22,7 @@ import software.amazon.smithy.kotlin.codegen.test.*
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
-    private val writer: KotlinWriter = KotlinWriter(TestDefault.NAMESPACE)
+    private val writer: KotlinWriter = KotlinWriter(TestModelDefault.NAMESPACE)
 
     class MockHttpFeature1 : HttpFeature {
         override val name: String = "MockHttpFeature1"
@@ -46,8 +46,8 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it imports external symbols`() {
-        commonTestContents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.*")
-        commonTestContents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.transform.*")
+        commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
+        commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.transform.*")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.*")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
 
@@ -244,7 +244,7 @@ class HttpProtocolClientGeneratorTest {
             .toSmithyModel()
 
         val ctx = model.newTestContext()
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val generator = TestProtocolClientGenerator(
             ctx.generationCtx,
             listOf(),

@@ -6,7 +6,7 @@ package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.test.TestDefault
+import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 
 class ImportDeclarationsTest {
     @Test
@@ -14,11 +14,11 @@ class ImportDeclarationsTest {
 
         val decls = ImportDeclarations()
 
-        decls.addImport(TestDefault.NAMESPACE, "Foo")
+        decls.addImport(TestModelDefault.NAMESPACE, "Foo")
         decls.addImport("foo.bar", "Baz", alias = "Quux")
 
         val statements = decls.toString()
-        val expected = "import ${TestDefault.NAMESPACE}.Foo\nimport foo.bar.Baz as Quux"
+        val expected = "import ${TestModelDefault.NAMESPACE}.Foo\nimport foo.bar.Baz as Quux"
         assertEquals(expected, statements)
     }
 
@@ -26,11 +26,11 @@ class ImportDeclarationsTest {
     fun `it filters duplicates`() {
         val decls = ImportDeclarations()
 
-        decls.addImport(TestDefault.NAMESPACE, "Foo")
-        decls.addImport(TestDefault.NAMESPACE, "Foo", "Foo")
+        decls.addImport(TestModelDefault.NAMESPACE, "Foo")
+        decls.addImport(TestModelDefault.NAMESPACE, "Foo", "Foo")
 
         val statements = decls.toString()
-        val expected = "import ${TestDefault.NAMESPACE}.Foo"
+        val expected = "import ${TestModelDefault.NAMESPACE}.Foo"
         assertEquals(expected, statements)
     }
 
@@ -38,10 +38,10 @@ class ImportDeclarationsTest {
     fun `it renders without alias when symbol matches`() {
         val decls = ImportDeclarations()
 
-        decls.addImport(TestDefault.NAMESPACE, "Foo", "Foo")
+        decls.addImport(TestModelDefault.NAMESPACE, "Foo", "Foo")
 
         val statements = decls.toString()
-        val expected = "import ${TestDefault.NAMESPACE}.Foo"
+        val expected = "import ${TestModelDefault.NAMESPACE}.Foo"
         assertEquals(expected, statements)
     }
 }

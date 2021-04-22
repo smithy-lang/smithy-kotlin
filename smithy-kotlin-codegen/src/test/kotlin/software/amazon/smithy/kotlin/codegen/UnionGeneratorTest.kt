@@ -90,7 +90,7 @@ class UnionGeneratorTest {
         val union = model.expectShape<UnionShape>("com.test#MyUnion")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val generator = UnionGenerator(model, provider, writer, union)
 
         Assertions.assertThrows(IllegalStateException::class.java) {

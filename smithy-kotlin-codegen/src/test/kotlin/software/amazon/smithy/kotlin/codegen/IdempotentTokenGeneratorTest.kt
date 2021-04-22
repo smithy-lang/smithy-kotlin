@@ -32,7 +32,7 @@ class IdempotentTokenGeneratorTest {
     }
 
     // Assume a specific file path to retrieve a file from the manifest
-    private fun MockManifest.getTransformFileContents(filename: String, packageNamespace: String = TestDefault.NAMESPACE): String {
+    private fun MockManifest.getTransformFileContents(filename: String, packageNamespace: String = TestModelDefault.NAMESPACE): String {
         val packageNamespaceExpr = packageNamespace.replace('.', '/')
         return expectFileString("src/main/kotlin/$packageNamespaceExpr/transform/$filename")
     }

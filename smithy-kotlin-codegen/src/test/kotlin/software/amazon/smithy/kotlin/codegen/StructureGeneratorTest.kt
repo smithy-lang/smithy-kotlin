@@ -34,7 +34,7 @@ class StructureGeneratorTest {
         """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         val generator = StructureGenerator(renderingCtx)
@@ -257,7 +257,7 @@ class StructureGeneratorTest {
         println(model.toSmithyIDL())
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#Foo")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
@@ -283,7 +283,7 @@ class StructureGeneratorTest {
         """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#Foo")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
@@ -309,7 +309,7 @@ class StructureGeneratorTest {
         """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
@@ -385,7 +385,7 @@ class StructureGeneratorTest {
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
@@ -441,7 +441,7 @@ class StructureGeneratorTest {
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
         StructureGenerator(renderingCtx).render()
         val contents = writer.toString()

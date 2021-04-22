@@ -10,16 +10,15 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.ShapeId
 
 class ClientConfigGeneratorTest {
     @Test
     fun `it detects default properties`() {
         val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
-        val serviceShape = model.expectShape(ShapeId.from(TestDefault.SERVICE_SHAPE_ID), ServiceShape::class.java)
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         ClientConfigGenerator(renderingCtx).render()
@@ -92,10 +91,10 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
     fun `it handles additional props`() {
         val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
 
-        val serviceShape = model.expectShape(ShapeId.from(TestDefault.SERVICE_SHAPE_ID), ServiceShape::class.java)
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(
@@ -134,10 +133,10 @@ class Config private constructor(builder: BuilderImpl) {
     @Test
     fun `it registers integration props`() {
         val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
-        val serviceShape = model.expectShape(ShapeId.from(TestDefault.SERVICE_SHAPE_ID), ServiceShape::class.java)
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val customIntegration = object : KotlinIntegration {
 
             override fun additionalServiceConfigProps(ctx: CodegenContext): List<ClientConfigProperty> =

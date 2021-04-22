@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
-import software.amazon.smithy.kotlin.codegen.test.TestDefault
+import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 
@@ -24,12 +24,12 @@ class KotlinDelegatorTest {
             .fileManifest(manifest)
             .settings(
                 Node.objectNodeBuilder()
-                    .withMember("service", Node.from(TestDefault.SERVICE_SHAPE_ID))
+                    .withMember("service", Node.from(TestModelDefault.SERVICE_SHAPE_ID))
                     .withMember(
                         "package",
                         Node.objectNode()
-                            .withMember("name", Node.from(TestDefault.NAMESPACE))
-                            .withMember("version", Node.from(TestDefault.MODEL_VERSION))
+                            .withMember("name", Node.from(TestModelDefault.NAMESPACE))
+                            .withMember("version", Node.from(TestModelDefault.MODEL_VERSION))
                     )
                     .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
                     .build()
@@ -53,12 +53,12 @@ class KotlinDelegatorTest {
             .fileManifest(manifest)
             .settings(
                 Node.objectNodeBuilder()
-                    .withMember("service", Node.from(TestDefault.SERVICE_SHAPE_ID))
+                    .withMember("service", Node.from(TestModelDefault.SERVICE_SHAPE_ID))
                     .withMember(
                         "package",
                         Node.objectNode()
-                            .withMember("name", Node.from(TestDefault.NAMESPACE))
-                            .withMember("version", Node.from(TestDefault.MODEL_VERSION))
+                            .withMember("name", Node.from(TestModelDefault.NAMESPACE))
+                            .withMember("version", Node.from(TestModelDefault.MODEL_VERSION))
                     )
                     .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
                     .build()

@@ -31,7 +31,7 @@ class ServiceGeneratorTest {
 
     @Test
     fun `it imports external symbols`() {
-        commonTestContents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.*")
+        commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
         commonTestContents.shouldContainOnlyOnce("import $CLIENT_RT_ROOT_NS.SdkClient")
     }
 
@@ -99,8 +99,8 @@ class ServiceGeneratorTest {
             .unwrap()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
-        val service = model.expectShape<ServiceShape>(TestDefault.SERVICE_SHAPE_ID)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val service = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
         writer.onSection(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) {
             writer.openBlock("companion object {")
                 .write("fun foo(): Int = 1")
@@ -139,9 +139,9 @@ class ServiceGeneratorTest {
         val model = javaClass.getResource(modelResourceName).toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
-        val service = model.getShape(ShapeId.from(TestDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
-        val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestDefault.NAMESPACE, TestDefault.MODEL_VERSION), sdkId = service.id.name)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val service = model.getShape(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
+        val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestModelDefault.NAMESPACE, TestModelDefault.MODEL_VERSION), sdkId = service.id.name)
         val renderingCtx = RenderingContext(writer, service, model, provider, settings)
         val generator = ServiceGenerator(renderingCtx)
 

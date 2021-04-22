@@ -263,7 +263,7 @@ internal class Nested4DocumentSerializer(val input: Nested4) : SdkSerializable {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.Nested4")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.Nested4")
     }
 
     @Test
@@ -292,7 +292,7 @@ internal class Nested3DocumentSerializer(val input: Nested3) : SdkSerializable {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.Nested3")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.Nested3")
     }
 
     @Test
@@ -331,7 +331,7 @@ internal class UnionInputOperationSerializer(): HttpSerialize<UnionInputRequest>
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.UnionInputRequest")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.UnionInputRequest")
     }
 
     @Test
@@ -419,7 +419,7 @@ internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionOutputRe
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.UnionOutputResponse")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.UnionOutputResponse")
     }
 
     @Test
@@ -457,7 +457,7 @@ internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<Unio
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.UnionAggregateOutputResponse")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.UnionAggregateOutputResponse")
     }
 
     @Test
@@ -486,7 +486,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.MyUnion")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.MyUnion")
     }
 
     @Test
@@ -518,7 +518,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
     }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.MyUnion")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.MyUnion")
     }
 
     @Test
@@ -529,7 +529,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
         // serializer should exist for the map value `ReachableOnlyThroughMap`
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/ReachableOnlyThroughMapDocumentSerializer.kt"))
         val contents = getTransformFileContents(manifest, "MapInputOperationSerializer.kt")
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.MapInputRequest")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.MapInputRequest")
     }
 
     @Test
@@ -867,7 +867,7 @@ internal class Nested3DocumentDeserializer {
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import ${TestDefault.NAMESPACE}.model.Nested3")
+        contents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.Nested3")
     }
 
     @Test

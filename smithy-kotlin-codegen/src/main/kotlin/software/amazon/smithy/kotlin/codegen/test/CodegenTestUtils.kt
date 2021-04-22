@@ -32,7 +32,7 @@ internal fun testRender(
     members: List<MemberShape>,
     renderFn: (List<MemberShape>, KotlinWriter) -> Unit
 ): String {
-    val writer = KotlinWriter(TestDefault.NAMESPACE)
+    val writer = KotlinWriter(TestModelDefault.NAMESPACE)
     renderFn(members, writer)
     return writer.toString()
 }
@@ -167,8 +167,8 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 // Create a test harness with all necessary codegen types
 fun codegenTestHarnessForModelSnippet(
     generator: ProtocolGenerator,
-    namespace: String = TestDefault.NAMESPACE,
-    serviceName: String = TestDefault.SERVICE_NAME,
+    namespace: String = TestModelDefault.NAMESPACE,
+    serviceName: String = TestModelDefault.SERVICE_NAME,
     operations: List<String>,
     snippet: () -> String
 ): CodegenTestHarness {
@@ -200,7 +200,7 @@ fun CodegenTestHarness.generateDeSerializers(): Map<String, String> {
     return manifest.files.associate { path -> path.fileName.toString() to manifest.expectFileString(path) }
 }
 
-internal fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestDefault.NAMESPACE, sdkId: String = TestDefault.SERVICE_NAME) =
+internal fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestModelDefault.NAMESPACE, sdkId: String = TestModelDefault.SERVICE_NAME) =
     createSymbolProvider(model, rootNamespace, sdkId)
 
 // Create and use a writer to drive codegen from a function taking a writer.

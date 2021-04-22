@@ -158,7 +158,7 @@ class ExceptionGeneratorTest {
         """.toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, pkg, svc)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
 
         val struct = model.expectShape<StructureShape>("com.error.test#InternalServerException")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
@@ -175,7 +175,7 @@ class ExceptionGeneratorTest {
         fun itGeneratesAnExceptionBaseClass() {
             val model = "".prependNamespaceAndService().toSmithyModel()
             val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-            val writer = KotlinWriter(TestDefault.NAMESPACE)
+            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
 
             val ctx = GenerationContext(model, provider, model.defaultSettings())
             ExceptionBaseClassGenerator.render(ctx, writer)
@@ -197,7 +197,7 @@ class ExceptionGeneratorTest {
         fun itExtendsProtocolGeneratorBaseClass() {
             val model = "".prependNamespaceAndService().toSmithyModel()
             val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-            val writer = KotlinWriter(TestDefault.NAMESPACE)
+            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
 
             val protocolGenerator = object : ProtocolGenerator {
                 override val protocol: ShapeId

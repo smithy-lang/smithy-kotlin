@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.kotlin.codegen.test.TestDefault
+import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
@@ -35,7 +35,7 @@ class KotlinSettingsTest {
             Node.parse(contents).expectObjectNode()
         )
 
-        assertEquals(ShapeId.from(TestDefault.SERVICE_SHAPE_ID), settings.service)
+        assertEquals(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID), settings.service)
         assertEquals("example", settings.pkg.name)
         assertEquals("1.0.0", settings.pkg.version)
     }

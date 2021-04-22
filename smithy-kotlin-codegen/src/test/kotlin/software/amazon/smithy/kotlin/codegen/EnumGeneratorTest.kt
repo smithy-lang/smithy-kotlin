@@ -34,7 +34,7 @@ class EnumGeneratorTest {
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val shape = model.expectShape<StringShape>("test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -114,7 +114,7 @@ sealed class Baz {
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val shape = model.expectShape<StringShape>("test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -191,7 +191,7 @@ sealed class Baz {
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val shape = model.expectShape<StringShape>("test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -220,7 +220,7 @@ sealed class Baz {
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model)
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter(TestDefault.NAMESPACE)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val ex = assertThrows<CodegenException> {
             EnumGenerator(shape, symbol, writer).render()
         }

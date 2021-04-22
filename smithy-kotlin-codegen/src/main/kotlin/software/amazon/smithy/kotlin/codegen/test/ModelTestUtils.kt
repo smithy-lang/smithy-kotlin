@@ -26,7 +26,7 @@ import java.net.URL
  *  namespace: TestDefault.NAMESPACE
  *  service name: "Test"
  */
-internal object TestDefault {
+internal object TestModelDefault {
     const val SMITHY_IDL_VERSION = "1"
     const val MODEL_VERSION = "1.0.0"
     const val NAMESPACE = "com.test"
@@ -100,8 +100,8 @@ internal fun Model.toSmithyIDL(): String {
  * @param generator [ProtocolGenerator] associated w/ test context
  */
 internal fun Model.newTestContext(
-    serviceName: String = TestDefault.SERVICE_NAME,
-    packageName: String = TestDefault.NAMESPACE,
+    serviceName: String = TestModelDefault.SERVICE_NAME,
+    packageName: String = TestModelDefault.NAMESPACE,
     settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
     generator: ProtocolGenerator = MockHttpProtocolGenerator()
 ): TestContext {
@@ -146,9 +146,9 @@ internal fun Model.newTestContext(
  */
 internal fun Model.defaultSettings(
     serviceName: String? = null,
-    packageName: String = TestDefault.NAMESPACE,
-    packageVersion: String = TestDefault.MODEL_VERSION,
-    sdkId: String = TestDefault.SDK_ID,
+    packageName: String = TestModelDefault.NAMESPACE,
+    packageVersion: String = TestModelDefault.MODEL_VERSION,
+    sdkId: String = TestModelDefault.SDK_ID,
     generateDefaultBuildFiles: Boolean = false
 ): KotlinSettings {
     val serviceId = if (serviceName == null) {
@@ -181,8 +181,8 @@ internal fun Model.defaultSettings(
 // Generate a Smithy IDL model based on input parameters and source string
 internal fun String.generateTestModel(
     protocol: String,
-    namespace: String = TestDefault.NAMESPACE,
-    serviceName: String = TestDefault.SERVICE_NAME,
+    namespace: String = TestModelDefault.NAMESPACE,
+    serviceName: String = TestModelDefault.SERVICE_NAME,
     operations: List<String>
 ): Model {
     val completeModel = """
@@ -192,7 +192,7 @@ internal fun String.generateTestModel(
 
         @$protocol
         service $serviceName {
-            version: "${TestDefault.MODEL_VERSION}",
+            version: "${TestModelDefault.MODEL_VERSION}",
             operations: [
                 ${operations.joinToString(separator = ", ")}
             ]
@@ -207,7 +207,7 @@ internal fun String.generateTestModel(
 // Produce a GenerationContext given a model, it's expected namespace and service name.
 fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolGenerator.GenerationContext {
     val packageNode = Node.objectNode().withMember("name", Node.from(namespace))
-        .withMember("version", Node.from(TestDefault.MODEL_VERSION))
+        .withMember("version", Node.from(TestModelDefault.MODEL_VERSION))
 
     val settings = KotlinSettings.from(
         this,
@@ -240,10 +240,10 @@ internal enum class AwsProtocolModelDeclaration(val annotation: String, val impo
 
 // Generates the model header which by default conforms to the conventions defined for test models.
 internal fun String.prependNamespaceAndService(
-    version: String = TestDefault.SMITHY_IDL_VERSION,
-    namespace: String = TestDefault.NAMESPACE,
+    version: String = TestModelDefault.SMITHY_IDL_VERSION,
+    namespace: String = TestModelDefault.NAMESPACE,
     imports: List<String> = emptyList(),
-    serviceName: String = TestDefault.SERVICE_NAME,
+    serviceName: String = TestModelDefault.SERVICE_NAME,
     protocol: AwsProtocolModelDeclaration? = null,
     operations: List<String> = emptyList()
 ): String {
@@ -263,11 +263,11 @@ internal fun String.prependNamespaceAndService(
         $importExpr
         $modelProtocol
         service $serviceName { 
-            version: "${TestDefault.MODEL_VERSION}",
+            version: "${TestModelDefault.MODEL_VERSION}",
             operations: $operations
         }
         
 
         """.trimIndent() + this.trimIndent()
-        ).also { println(it) }
+        )
 }

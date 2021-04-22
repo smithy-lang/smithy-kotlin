@@ -221,7 +221,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
 
-        val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestDefault.NAMESPACE}#MyMap"))
+        val mapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MyMap"))
 
         assertEquals("Map<String, Record>", mapSymbol.name)
         assertEquals(true, mapSymbol.isBoxed)
@@ -230,7 +230,7 @@ class SymbolProviderTest {
         // collections should contain a reference to the member type
         assertEquals("Record", mapSymbol.references[0].symbol.name)
 
-        val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestDefault.NAMESPACE}#MySparseMap"))
+        val sparseMapSymbol = provider.toSymbol(model.expectShape<MapShape>("${TestModelDefault.NAMESPACE}#MySparseMap"))
 
         assertEquals("Map<String, Record?>", sparseMapSymbol.name)
         assertEquals(true, sparseMapSymbol.isBoxed)
