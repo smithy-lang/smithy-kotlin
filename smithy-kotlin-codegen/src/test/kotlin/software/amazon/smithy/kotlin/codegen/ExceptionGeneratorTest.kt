@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

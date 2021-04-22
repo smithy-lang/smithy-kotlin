@@ -203,9 +203,7 @@ sealed class Baz {
         // names and values are required to be unique, prefixing invalid identifiers with '_' could potentially
         // (albeit unlikely) cause a conflict with an existing name
 
-        val model = """
-            namespace com.test
-            
+        val model = """           
             @enum([
                 {
                     value: "0"
@@ -216,7 +214,7 @@ sealed class Baz {
             ])
             string Baz
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService().asSmithyModel()
 
         val shape = model.expectShape<StringShape>("com.test#Baz")
 

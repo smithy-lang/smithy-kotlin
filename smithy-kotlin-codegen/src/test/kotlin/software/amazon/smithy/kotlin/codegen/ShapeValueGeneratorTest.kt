@@ -17,30 +17,22 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.test.createSymbolProvider
-import software.amazon.smithy.model.Model
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumDefinition
-import software.amazon.smithy.model.traits.EnumTrait
 
 class ShapeValueGeneratorTest {
 
     @Test
     fun `it renders maps`() {
-        val keyMember = MemberShape.builder().id("foo.bar#MyMap\$key").target("smithy.api#String").build()
-        val valueMember = MemberShape.builder().id("foo.bar#MyMap\$value").target("smithy.api#Integer").build()
-        val map = MapShape.builder()
-            .id("foo.bar#MyMap")
-            .key(keyMember)
-            .value(valueMember)
-            .build()
-        val model = Model.assembler()
-            .addShapes(map, keyMember, valueMember)
-            .assemble()
-            .unwrap()
+        val model = """
+            map MyMap {
+                key: String,
+                value: Integer,
+            }
+        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
         val writer = KotlinWriter("test")
 
@@ -67,17 +59,15 @@ mapOf<String, Int>(
 
     @Test
     fun `it renders lists`() {
-        val valueMember = MemberShape.builder().id("foo.bar#MyList\$member").target("smithy.api#String").build()
-        val map = ListShape.builder()
-            .id("foo.bar#MyList")
-            .member(valueMember)
-            .build()
-        val model = Model.assembler()
-            .addShapes(map, valueMember)
-            .assemble()
-            .unwrap()
+        val model = """
+            list MyList {
+                member: String,
+            }
+        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        println(model.toSmithyIDL())
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
         val writer = KotlinWriter("test")
 
@@ -100,53 +90,32 @@ listOf<String>(
 
     @Test
     fun `it renders structs`() {
-        val member1 = MemberShape.builder().id("foo.bar#MyStruct\$stringMember").target("smithy.api#String").build()
-        val member2 = MemberShape.builder().id("foo.bar#MyStruct\$boolMember").target("smithy.api#Boolean").build()
-        val member3 = MemberShape.builder().id("foo.bar#MyStruct\$intMember").target("smithy.api#Integer").build()
+        val model = """
+            structure MyStruct {
+                stringMember: String,
+                boolMember: Boolean,
+                intMember: Integer,
+                structMember: Nested,
+                enumMember: MyEnum,
+                floatMember: Float,
+                doubleMember: Double,
+                nullMember: String,
+            }
 
-        val nestedMember1 = MemberShape.builder().id("foo.bar#Nested\$tsMember").target("smithy.api#Timestamp").build()
-        val nested = StructureShape.builder()
-            .id("foo.bar#Nested")
-            .addMember(nestedMember1)
-            .build()
+            structure Nested {
+                tsMember: Timestamp,
+            }
 
-        val member4 = MemberShape.builder().id("foo.bar#MyStruct\$structMember").target("foo.bar#Nested").build()
+            @enum([
+                {
+                    value: "fooey",
+                    name: "FOO",
+                },
+            ])
+            string MyEnum
+        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
 
-        val enumTrait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("fooey").name("FOO").build())
-            .build()
-
-        val enumShape = StringShape.builder()
-            .id("foo.bar#MyEnum")
-            .addTrait(enumTrait)
-            .build()
-        val member5 = MemberShape.builder().id("foo.bar#MyStruct\$enumMember").target("foo.bar#MyEnum").build()
-
-        val member6 = MemberShape.builder().id("foo.bar#MyStruct\$floatMember").target("smithy.api#Float").build()
-        val member7 = MemberShape.builder().id("foo.bar#MyStruct\$doubleMember").target("smithy.api#Double").build()
-
-        val member8 = MemberShape.builder().id("foo.bar#MyStruct\$nullMember").target("smithy.api#String").build()
-
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .addMember(member4)
-            .addMember(member5)
-            .addMember(member6)
-            .addMember(member7)
-            .addMember(member8)
-            .build()
-        val model = Model.assembler()
-            .addShapes(struct, member1, member2, member3)
-            .addShapes(member4, nested, nestedMember1)
-            .addShapes(member5, enumShape)
-            .addShapes(member6, member7, member8)
-            .assemble()
-            .unwrap()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
 
         val structShape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
         val writer = KotlinWriter("test")
@@ -191,56 +160,37 @@ MyStruct {
 
     @Test
     fun `it renders unions`() {
-        val member1 = MemberShape.builder().id("foo.bar#MyUnion\$stringMember").target("smithy.api#String").build()
-        val member2 = MemberShape.builder().id("foo.bar#MyUnion\$boolMember").target("smithy.api#Boolean").build()
-        val member3 = MemberShape.builder().id("foo.bar#MyUnion\$intMember").target("smithy.api#Integer").build()
+        val model = """
+            structure Nested {
+                tsMember: Timestamp,
+            }
 
-        val nestedMember1 = MemberShape.builder().id("foo.bar#Nested\$tsMember").target("smithy.api#Timestamp").build()
-        val nested = StructureShape.builder()
-            .id("foo.bar#Nested")
-            .addMember(nestedMember1)
-            .build()
+            union MyUnion {
+                stringMember: String,
+                boolMember: Boolean,
+                intMember: Integer,
+                structMember: Nested,
+                enumMember: MyEnum,
+                floatMember: Float,
+                doubleMember: Double,
+                nullMember: String,
+            }
 
-        val member4 = MemberShape.builder().id("foo.bar#MyUnion\$structMember").target("foo.bar#Nested").build()
+            @enum([
+                {
+                    value: "fooey",
+                    name: "FOO",
+                },
+            ])
+            string MyEnum
+        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
 
-        val enumTrait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("fooey").name("FOO").build())
-            .build()
+        println(model.toSmithyIDL())
 
-        val enumShape = StringShape.builder()
-            .id("foo.bar#MyEnum")
-            .addTrait(enumTrait)
-            .build()
-        val member5 = MemberShape.builder().id("foo.bar#MyUnion\$enumMember").target("foo.bar#MyEnum").build()
-
-        val member6 = MemberShape.builder().id("foo.bar#MyUnion\$floatMember").target("smithy.api#Float").build()
-        val member7 = MemberShape.builder().id("foo.bar#MyUnion\$doubleMember").target("smithy.api#Double").build()
-
-        val member8 = MemberShape.builder().id("foo.bar#MyUnion\$nullMember").target("smithy.api#String").build()
-
-        val union = UnionShape.builder()
-            .id("foo.bar#MyUnion")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .addMember(member4)
-            .addMember(member5)
-            .addMember(member6)
-            .addMember(member7)
-            .addMember(member8)
-            .build()
-        val model = Model.assembler()
-            .addShapes(union, member1, member2, member3)
-            .addShapes(member4, nested, nestedMember1)
-            .addShapes(member5, enumShape)
-            .addShapes(member6, member7, member8)
-            .assemble()
-            .unwrap()
-
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
 
         val unionShape = model.expectShape(ShapeId.from("foo.bar#MyUnion"))
-        val writer = KotlinWriter("test")
+        val writer = KotlinWriter(TestDefault.NAMESPACE)
 
         val params = Node.objectNodeBuilder()
             .withMember("stringMember", "v1")

@@ -4,9 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.test.*
