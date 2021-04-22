@@ -32,7 +32,7 @@ fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
 }
 
 // Will generate an IDE diff in the case of a test assertion failure.
-fun String?.shouldContainWithDiff(expected: String) {
+internal fun String?.shouldContainWithDiff(expected: String) {
     try {
         this.shouldContain(expected)
     } catch (originalException: AssertionError) {
@@ -48,5 +48,5 @@ fun String.formatForTest(indent: String = "    ") =
         .map { if (it.isBlank()) "" else it }
         .joinToString(separator = "\n") { it }
 
-fun String.stripCodegenPrefix() =
+internal fun String.stripCodegenPrefix() =
     this.substring(this.indexOf("package test") + "package test".length).trim()

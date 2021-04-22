@@ -240,7 +240,7 @@ class HttpProtocolClientGeneratorTest {
             }
             
             structure GetStatusOutput {}
-        """.prependNamespaceAndService(protocol = AwsProtocol.AwsJson1_1, operations = listOf("GetStatus"))
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.AwsJson1_1, operations = listOf("GetStatus"))
             .toSmithyModel()
 
         val ctx = model.newTestContext()

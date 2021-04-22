@@ -2,7 +2,7 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import org.junit.jupiter.api.Assertions
 
-fun String.assertBalancedBracesAndParens() {
+internal fun String.assertBalancedBracesAndParens() {
     // sanity check since we are testing fragments
     var openBraces = 0
     var closedBraces = 0

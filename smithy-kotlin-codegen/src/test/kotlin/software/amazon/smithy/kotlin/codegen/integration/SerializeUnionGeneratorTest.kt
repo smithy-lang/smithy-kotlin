@@ -23,7 +23,7 @@ class SerializeUnionGeneratorTest {
             operation Foo {
                 input: FooRequest
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocol.RestJson, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
 
     @Test
     fun `it serializes a structure containing a union of primitive types`() {

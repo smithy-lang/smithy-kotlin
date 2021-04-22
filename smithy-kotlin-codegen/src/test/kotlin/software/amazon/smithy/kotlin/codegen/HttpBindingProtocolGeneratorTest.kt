@@ -30,7 +30,7 @@ class HttpBindingProtocolGeneratorTest {
             operation Foo {
                 input: FooRequest
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocol.RestJson, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
 
     private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
         val (ctx, manifest, generator) = testModel.newTestContext()

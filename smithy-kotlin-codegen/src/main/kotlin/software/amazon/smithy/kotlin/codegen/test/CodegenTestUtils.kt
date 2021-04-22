@@ -21,14 +21,14 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 /**
  * Container for type instances necessary for tests
  */
-data class TestContext(
+internal data class TestContext(
     val generationCtx: ProtocolGenerator.GenerationContext,
     val manifest: MockManifest,
     val generator: ProtocolGenerator
 )
 
 // Execute the codegen and return the generated output
-fun testRender(
+internal fun testRender(
     members: List<MemberShape>,
     renderFn: (List<MemberShape>, KotlinWriter) -> Unit
 ): String {
@@ -37,7 +37,7 @@ fun testRender(
     return writer.toString()
 }
 
-fun getRequestContentsForShape(model: Model, shapeId: String): String {
+internal fun getRequestContentsForShape(model: Model, shapeId: String): String {
     val ctx = model.newTestContext()
 
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
@@ -51,7 +51,7 @@ fun getRequestContentsForShape(model: Model, shapeId: String): String {
     }
 }
 
-fun getResponseContentsForShape(model: Model, shapeId: String): String {
+internal fun getResponseContentsForShape(model: Model, shapeId: String): String {
     val ctx = model.newTestContext()
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
 
@@ -65,7 +65,7 @@ fun getResponseContentsForShape(model: Model, shapeId: String): String {
     }
 }
 
-fun getOperationStructRequestContentsForShape(model: Model, shapeId: String): String {
+internal fun getOperationStructRequestContentsForShape(model: Model, shapeId: String): String {
     val ctx = model.newTestContext()
 
     val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
@@ -92,7 +92,7 @@ fun getOperationStructRequestContentsForShape(model: Model, shapeId: String): St
 }
 
 // Retrieves Response Document members for HttpTrait-enabled protocols
-fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
+internal fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getResponseBindings(shape)
 
@@ -103,7 +103,7 @@ fun TestContext.responseMembers(shape: Shape): List<MemberShape> {
 }
 
 // Retrieves Request Document members for HttpTrait-enabled protocols
-fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
+internal fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getRequestBindings(shape)
 
@@ -114,18 +114,18 @@ fun TestContext.requestMembers(shape: Shape): List<MemberShape> {
 }
 
 // Assume a specific file path to retrieve a file from the manifest
-fun MockManifest.getTransformFileContents(filename: String, packageNamespace: String = TestDefault.NAMESPACE): String {
+internal fun MockManifest.getTransformFileContents(filename: String, packageNamespace: String = TestDefault.NAMESPACE): String {
     val packageNamespaceExpr = packageNamespace.replace('.', '/')
     return expectFileString("src/main/kotlin/$packageNamespaceExpr/transform/$filename")
 }
 
-fun TestContext.toGenerationContext(): GenerationContext =
+internal fun TestContext.toGenerationContext(): GenerationContext =
     GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)
 
-fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
+internal fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
     toGenerationContext().toRenderingContext(writer, forShape)
 
-class TestProtocolClientGenerator(
+internal class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     features: List<HttpFeature>,
     httpBindingResolver: HttpBindingResolver
@@ -136,7 +136,7 @@ class TestProtocolClientGenerator(
     }
 }
 
-class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
+internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
         HttpTraitResolver(ctx, "application/json")
@@ -198,7 +198,7 @@ fun CodegenTestHarness.generateDeSerializers(): Map<String, String> {
     return manifest.files.associate { path -> path.fileName.toString() to manifest.expectFileString(path) }
 }
 
-fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestDefault.NAMESPACE, sdkId: String = TestDefault.SERVICE_NAME) =
+internal fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestDefault.NAMESPACE, sdkId: String = TestDefault.SERVICE_NAME) =
     KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace, sdkId)
 
 // Create and use a writer to drive codegen from a function taking a writer.

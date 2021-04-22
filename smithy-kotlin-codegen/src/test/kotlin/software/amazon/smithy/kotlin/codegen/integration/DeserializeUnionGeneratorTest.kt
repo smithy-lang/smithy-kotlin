@@ -25,7 +25,7 @@ class DeserializeUnionGeneratorTest {
             operation Foo {
                 output: FooResponse
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocol.RestJson, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
 
     @Test
     fun `it deserializes a structure with primitive values`() {
@@ -247,7 +247,7 @@ class DeserializeUnionGeneratorTest {
                 listOfIntList: ListOfIntList,
                 mapOfLists: MapOfLists
             }  
-        """.prependNamespaceAndService(protocol = AwsProtocol.AwsJson1_1, operations = listOf("UnionTestOperation")).toSmithyModel()
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.AwsJson1_1, operations = listOf("UnionTestOperation")).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

@@ -55,7 +55,7 @@ private fun Model.applyKotlinCodegenTransforms(serviceShapeId: String?): Model {
 /**
  * Load and initialize a model from a Java resource URL
  */
-fun URL.toSmithyModel(serviceShapeId: String? = null): Model {
+internal fun URL.toSmithyModel(serviceShapeId: String? = null): Model {
     val model = Model.assembler()
         .addImport(this)
         .discoverModels()
@@ -83,7 +83,7 @@ fun String.toSmithyModel(sourceLocation: String? = null, serviceShapeId: String?
  *
  * NOTE: this is used for debugging / unit test generation, please don't remove.
  */
-fun Model.toSmithyIDL(): String {
+internal fun Model.toSmithyIDL(): String {
     val builtInModelIds = setOf("smithy.test.smithy", "aws.auth.smithy", "aws.protocols.smithy", "aws.api.smithy")
     val ms: SmithyIdlModelSerializer = SmithyIdlModelSerializer.builder().build()
     val node = ms.serialize(this)
@@ -99,7 +99,7 @@ fun Model.toSmithyIDL(): String {
  * @param settings [KotlinSettings] associated w/ test context
  * @param generator [ProtocolGenerator] associated w/ test context
  */
-fun Model.newTestContext(
+internal fun Model.newTestContext(
     serviceName: String = TestDefault.SERVICE_NAME,
     packageName: String = TestDefault.NAMESPACE,
     settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
@@ -178,7 +178,8 @@ internal fun Model.defaultSettings(
     )
 }
 
-fun String.generateTestModel(
+// Generate a Smithy IDL model based on input parameters and source string
+internal fun String.generateTestModel(
     protocol: String,
     namespace: String = TestDefault.NAMESPACE,
     serviceName: String = TestDefault.SERVICE_NAME,
@@ -231,18 +232,19 @@ fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolG
     )
 }
 
-enum class AwsProtocol(val annotation: String, val import: String) {
+// Specifies AWS protocols that can be set on test models.
+internal enum class AwsProtocolModelDeclaration(val annotation: String, val import: String) {
     RestJson("@restJson1", "aws.protocols#restJson1"),
     AwsJson1_1("@awsJson1_1", "aws.protocols#awsJson1_1")
 }
 
 // Generates the model header which by default conforms to the conventions defined for test models.
-fun String.prependNamespaceAndService(
+internal fun String.prependNamespaceAndService(
     version: String = TestDefault.SMITHY_IDL_VERSION,
     namespace: String = TestDefault.NAMESPACE,
     imports: List<String> = emptyList(),
     serviceName: String = TestDefault.SERVICE_NAME,
-    protocol: AwsProtocol? = null,
+    protocol: AwsProtocolModelDeclaration? = null,
     operations: List<String> = emptyList()
 ): String {
     val version = "\$version: \"$version\""
