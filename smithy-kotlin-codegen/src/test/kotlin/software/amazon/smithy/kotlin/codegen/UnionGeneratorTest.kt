@@ -71,7 +71,7 @@ class UnionGeneratorTest {
                 data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
                 object SdkUnknown : test.model.MyUnion()
             }
-            """.trimIndent()
+        """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
     }

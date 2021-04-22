@@ -166,7 +166,8 @@ internal fun Model.defaultSettings(
             .withMember(
                 "build",
                 Node.objectNode()
-                    .withMember("generateDefaultBuildFiles", Node.from(generateDefaultBuildFiles)))
+                    .withMember("generateDefaultBuildFiles", Node.from(generateDefaultBuildFiles))
+            )
             .build()
     )
 }
@@ -247,7 +248,8 @@ fun String.prependNamespaceAndService(
 
     val importExpr = modelImports.map { "use $it" }.joinToString(separator = "\n") { it }
 
-    return ("""
+    return (
+        """
         $version
         namespace $namespace
         $importExpr
@@ -258,5 +260,6 @@ fun String.prependNamespaceAndService(
         }
         
 
-    """.trimIndent() + this.trimIndent()).also { println(it) }
+        """.trimIndent() + this.trimIndent()
+        ).also { println(it) }
 }

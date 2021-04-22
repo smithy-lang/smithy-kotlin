@@ -9,8 +9,8 @@ import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.expectShape
-import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
 import software.amazon.smithy.kotlin.codegen.expectTrait
+import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
 import software.amazon.smithy.kotlin.codegen.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.traits.OperationOutput
 import software.amazon.smithy.kotlin.codegen.traits.SyntheticClone

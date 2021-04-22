@@ -16,10 +16,7 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.test.*
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class SerializeUnionGeneratorTest {
     private val modelPrefix = """

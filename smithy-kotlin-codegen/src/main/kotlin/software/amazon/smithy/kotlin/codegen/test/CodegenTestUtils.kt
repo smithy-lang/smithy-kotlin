@@ -18,7 +18,6 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  * anything else necessary for test functionality.
  */
 
-
 /**
  * Container for type instances necessary for tests
  */

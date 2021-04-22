@@ -380,7 +380,6 @@ class SymbolProviderTest {
             .addMember(member)
             .build()
 
-
         val model = """
             structure MyStruct {
                 quux: Records,
@@ -423,7 +422,6 @@ class SymbolProviderTest {
             .addMember(memberQuux)
             .addMember(nestedMember)
             .build()
-
 
         val model = """
             structure MyStruct1 {

@@ -25,7 +25,7 @@ class DeserializeUnionGeneratorTest {
             operation Foo {
                 output: FooResponse
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocol.RestJson, operations = listOf("Foo")) .trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocol.RestJson, operations = listOf("Foo")).trimIndent()
 
     @Test
     fun `it deserializes a structure with primitive values`() {

@@ -63,7 +63,7 @@ class IdempotentTokenGeneratorTest {
                     return builder
                 }
             }
-            """.trimIndent()
+        """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }
 
