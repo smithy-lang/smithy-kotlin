@@ -15,6 +15,7 @@
 package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 
@@ -28,6 +29,12 @@ class IdempotentTokenGeneratorTest {
         generator.generateDeserializers(ctx)
         ctx.delegator.flushWriters()
         return manifest.getTransformFileContents(filename)
+    }
+
+    // Assume a specific file path to retrieve a file from the manifest
+    private fun MockManifest.getTransformFileContents(filename: String, packageNamespace: String = TestDefault.NAMESPACE): String {
+        val packageNamespaceExpr = packageNamespace.replace('.', '/')
+        return expectFileString("src/main/kotlin/$packageNamespaceExpr/transform/$filename")
     }
 
     @Test

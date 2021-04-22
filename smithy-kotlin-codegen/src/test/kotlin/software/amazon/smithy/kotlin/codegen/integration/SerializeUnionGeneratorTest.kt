@@ -52,7 +52,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
+        val actual = codegenUnionSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -129,7 +129,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
+        val actual = codegenUnionSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -161,7 +161,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
+        val actual = codegenUnionSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -214,7 +214,7 @@ class SerializeUnionGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getOperationStructRequestContentsForShape(model, "com.test#Foo")
+        val actual = codegenUnionSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }

@@ -2,6 +2,10 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import org.junit.jupiter.api.Assertions
 
+/**
+ * This file houses test functions specific to Kotlin language particulars.
+ */
+
 internal fun String.assertBalancedBracesAndParens() {
     // sanity check since we are testing fragments
     var openBraces = 0

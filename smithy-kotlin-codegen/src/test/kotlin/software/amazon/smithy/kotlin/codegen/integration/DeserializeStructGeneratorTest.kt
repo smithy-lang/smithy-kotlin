@@ -49,7 +49,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -76,7 +76,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -115,7 +115,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -146,7 +146,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -179,7 +179,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -218,7 +218,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -259,7 +259,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -304,7 +304,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -344,7 +344,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -388,7 +388,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -438,7 +438,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -481,7 +481,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -542,7 +542,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -581,7 +581,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -633,7 +633,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -683,7 +683,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -718,7 +718,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -768,7 +768,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -820,7 +820,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -872,7 +872,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -913,7 +913,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -960,7 +960,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1002,7 +1002,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1048,7 +1048,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1100,7 +1100,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1165,7 +1165,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1210,7 +1210,7 @@ class DeserializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1264,7 +1264,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
 }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1299,7 +1299,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1341,7 +1341,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1385,7 +1385,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1412,7 +1412,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1444,7 +1444,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1485,7 +1485,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1524,7 +1524,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1551,7 +1551,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1592,7 +1592,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             }
         """.trimIndent()
 
-        val actual = getResponseContentsForShape(model, "com.test#Foo")
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
