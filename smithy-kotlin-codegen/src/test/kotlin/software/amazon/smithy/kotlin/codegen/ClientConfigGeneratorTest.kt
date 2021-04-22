@@ -15,7 +15,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 class ClientConfigGeneratorTest {
     @Test
     fun `it detects default properties`() {
-        val model = javaClass.getResource("idempotent-token-test-model.smithy").asSmithy()
+        val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
         val serviceShape = model.expectShape(ShapeId.from(TestDefault.SERVICE_SHAPE_ID), ServiceShape::class.java)
 
         val testCtx = model.newTestContext()
@@ -25,7 +25,7 @@ class ClientConfigGeneratorTest {
         ClientConfigGenerator(renderingCtx).render()
         val contents = writer.toString()
 
-        contents.shouldSyntacticSanityCheck()
+        contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
 class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig {
@@ -90,7 +90,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
     @Test
     fun `it handles additional props`() {
-        val model = javaClass.getResource("idempotent-token-test-model.smithy").asSmithy()
+        val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
 
         val serviceShape = model.expectShape(ShapeId.from(TestDefault.SERVICE_SHAPE_ID), ServiceShape::class.java)
 
@@ -133,7 +133,7 @@ class Config private constructor(builder: BuilderImpl) {
 
     @Test
     fun `it registers integration props`() {
-        val model = javaClass.getResource("idempotent-token-test-model.smithy").asSmithy()
+        val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
         val serviceShape = model.expectShape(ShapeId.from(TestDefault.SERVICE_SHAPE_ID), ServiceShape::class.java)
 
         val testCtx = model.newTestContext()

@@ -24,7 +24,7 @@ class SymbolProviderTest {
         structure MyStruct {
             class: String
         }
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$class")
@@ -39,7 +39,7 @@ class SymbolProviderTest {
             quux: String
         }
             
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val struct = model.expectShape<StructureShape>("com.test#MyStruct")
@@ -80,7 +80,7 @@ class SymbolProviderTest {
             structure MyStruct {
                 quux: $primitiveType,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val memberSymbol = provider.toSymbol(member)
@@ -104,7 +104,7 @@ class SymbolProviderTest {
         structure MyStruct {
             quux: Blob
         }
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val member = model.expectShape<MemberShape>("com.test#MyStruct\$quux")
@@ -127,7 +127,7 @@ class SymbolProviderTest {
 
             @streaming
             blob BodyStream
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val memberSymbol = provider.toSymbol(member)
@@ -153,7 +153,7 @@ class SymbolProviderTest {
             list SparseRecords {
                 member: Record,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val listSymbol = provider.toSymbol(model.expectShape<ListShape>("foo.bar#Records"))
@@ -189,7 +189,7 @@ class SymbolProviderTest {
             set Records {
                 member: Record,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val setSymbol = provider.toSymbol(set)
@@ -217,7 +217,7 @@ class SymbolProviderTest {
                 key: String,
                 value: Record,
             }
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
 
@@ -249,7 +249,7 @@ class SymbolProviderTest {
             structure MyStruct {
                 quux: $type,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val bigSymbol = provider.toSymbol(member)
@@ -281,7 +281,7 @@ class SymbolProviderTest {
                 },
             ])
             string Baz
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val symbol = provider.toSymbol(shape)
@@ -311,7 +311,7 @@ class SymbolProviderTest {
                 bar: PrimitiveInteger,
                 baz: Integer,
             }
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model)
         val symbol = provider.toSymbol(union)
@@ -334,7 +334,7 @@ class SymbolProviderTest {
             structure MyStruct {
                 quux: String,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val structSymbol = provider.toSymbol(struct)
@@ -351,7 +351,7 @@ class SymbolProviderTest {
         val document = DocumentShape.builder().id("foo.bar#MyDocument").build()
         val model = """
             document MyDocument
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val documentSymbol = provider.toSymbol(document)
@@ -390,7 +390,7 @@ class SymbolProviderTest {
             }
 
             timestamp MyTimestamp
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val structSymbol = provider.toSymbol(struct)
@@ -402,7 +402,7 @@ class SymbolProviderTest {
     fun `creates timestamps`() {
         val tsShape = TimestampShape.builder().id("foo.bar#MyTimestamp").build()
 
-        val model = "timestamp MyTimestamp".prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        val model = "timestamp MyTimestamp".prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val timestampSymbol = provider.toSymbol(tsShape)
@@ -433,7 +433,7 @@ class SymbolProviderTest {
                 bar: String,
                 recursiveMember: MyStruct1,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
 

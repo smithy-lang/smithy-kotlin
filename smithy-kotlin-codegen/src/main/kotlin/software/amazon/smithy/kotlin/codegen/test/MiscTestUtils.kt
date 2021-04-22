@@ -16,7 +16,6 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import software.amazon.smithy.kotlin.codegen.*
 
 /**
  * This file houses miscellaneous test functions that do not fall under other
@@ -48,16 +47,6 @@ fun String.formatForTest(indent: String = "    ") =
         .split('\n')
         .map { if (it.isBlank()) "" else it }
         .joinToString(separator = "\n") { it }
-
-// Create and use a writer to drive codegen from a function taking a writer.
-// Strip off comment and package preamble.
-fun generateCode(generator: (KotlinWriter) -> Unit): String {
-    val packageDeclaration = "some-unique-thing-that-will-never-be-codegened"
-    val writer = KotlinWriter(packageDeclaration)
-    generator.invoke(writer)
-    val rawCodegen = writer.toString()
-    return rawCodegen.substring(rawCodegen.indexOf(packageDeclaration) + packageDeclaration.length).trim()
-}
 
 fun String.stripCodegenPrefix() =
     this.substring(this.indexOf("package test") + "package test".length).trim()

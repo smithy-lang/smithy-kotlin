@@ -11,12 +11,12 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.kotlin.codegen.test.TestDefault
-import software.amazon.smithy.kotlin.codegen.test.asSmithy
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 
 class KotlinDelegatorTest {
     @Test fun `it renders files into namespace`() {
-        val model = javaClass.getResource("simple-service-with-operation.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service-with-operation.smithy").toSmithyModel()
 
         val manifest = MockManifest()
         val context = PluginContext.builder()
@@ -45,7 +45,7 @@ class KotlinDelegatorTest {
     }
 
     @Test fun `it adds imports`() {
-        val model = javaClass.getResource("simple-service-with-operation.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service-with-operation.smithy").toSmithyModel()
 
         val manifest = MockManifest()
         val context = PluginContext.builder()

@@ -14,7 +14,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class HttpStringValuesMapSerializerTest {
-    private val defaultModel = HttpBindingProtocolGeneratorTest::class.java.getResource("http-binding-protocol-generator-test.smithy").asSmithy()
+    private val defaultModel = HttpBindingProtocolGeneratorTest::class.java.getResource("http-binding-protocol-generator-test.smithy").toSmithyModel()
 
     private fun getTestContents(model: Model, operationId: String, location: HttpBinding.Location): String {
         val testCtx = model.newTestContext()
@@ -33,7 +33,7 @@ class HttpStringValuesMapSerializerTest {
     @Test
     fun `it handles primitive header shapes`() {
         val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.HEADER)
-        contents.shouldSyntacticSanityCheck()
+        contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
             if (input.hBool != false) append("X-d", "${'$'}{input.hBool}")
@@ -48,7 +48,7 @@ class HttpStringValuesMapSerializerTest {
     @Test
     fun `it handles primitive query shapes`() {
         val contents = getTestContents(defaultModel, "com.test#PrimitiveShapesOperation", HttpBinding.Location.QUERY)
-        contents.shouldSyntacticSanityCheck()
+        contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
             if (input.qInt != 0) append("q-int", "${'$'}{input.qInt}")
@@ -59,7 +59,7 @@ class HttpStringValuesMapSerializerTest {
     @Test
     fun `it handles enum shapes`() {
         val contents = getTestContents(defaultModel, "com.test#EnumInput", HttpBinding.Location.HEADER)
-        contents.shouldSyntacticSanityCheck()
+        contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
@@ -70,7 +70,7 @@ class HttpStringValuesMapSerializerTest {
     @Test
     fun `it handles string shapes`() {
         val contents = getTestContents(defaultModel, "com.test#SmokeTest", HttpBinding.Location.HEADER)
-        contents.shouldSyntacticSanityCheck()
+        contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
             if (input.header1?.isNotEmpty() == true) append("X-Header1", input.header1)
@@ -82,7 +82,7 @@ class HttpStringValuesMapSerializerTest {
     @Test
     fun `it handles blob and media type trait`() {
         val contents = getTestContents(defaultModel, "com.test#BlobInput", HttpBinding.Location.HEADER)
-        contents.shouldSyntacticSanityCheck()
+        contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
             if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
@@ -93,7 +93,7 @@ class HttpStringValuesMapSerializerTest {
     @Test
     fun `it handles collections`() {
         val contents = getTestContents(defaultModel, "com.test#HeaderListInput", HttpBinding.Location.HEADER)
-        contents.shouldSyntacticSanityCheck()
+        contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
             if (input.enumList?.isNotEmpty() == true) appendAll("x-enumList", input.enumList.map { it.value })
@@ -106,7 +106,7 @@ class HttpStringValuesMapSerializerTest {
     @Test
     fun `it handles timestamps`() {
         val headerContents = getTestContents(defaultModel, "com.test#TimestampInput", HttpBinding.Location.HEADER)
-        headerContents.shouldSyntacticSanityCheck()
+        headerContents.assertBalancedBracesAndParens()
         val expectedHeaderContents = """
             if (input.headerDateTime != null) append("X-DateTime", input.headerDateTime.format(TimestampFormat.ISO_8601))
             if (input.headerEpoch != null) append("X-Epoch", input.headerEpoch.format(TimestampFormat.EPOCH_SECONDS))

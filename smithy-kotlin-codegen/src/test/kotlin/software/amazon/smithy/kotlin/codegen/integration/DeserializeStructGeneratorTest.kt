@@ -30,7 +30,7 @@ class DeserializeStructGeneratorTest {
                 payload: $memberType
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val kotlinTypeFromSmithyType = when (memberType) {
             "Integer" -> "Int"
@@ -62,7 +62,7 @@ class DeserializeStructGeneratorTest {
                 payload: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -93,7 +93,7 @@ class DeserializeStructGeneratorTest {
                 member: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -132,7 +132,7 @@ class DeserializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -165,7 +165,7 @@ class DeserializeStructGeneratorTest {
                     booleanValue: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -196,7 +196,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -236,7 +236,7 @@ class DeserializeStructGeneratorTest {
                 value: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -282,7 +282,7 @@ class DeserializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -322,7 +322,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -366,7 +366,7 @@ class DeserializeStructGeneratorTest {
                 bar: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -409,7 +409,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -459,7 +459,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -506,7 +506,7 @@ class DeserializeStructGeneratorTest {
                 member: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -559,7 +559,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }            
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -603,7 +603,7 @@ class DeserializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -654,7 +654,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -704,7 +704,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -739,7 +739,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -790,7 +790,7 @@ class DeserializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -842,7 +842,7 @@ class DeserializeStructGeneratorTest {
                 value: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -890,7 +890,7 @@ class DeserializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -937,7 +937,7 @@ class DeserializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -979,7 +979,7 @@ class DeserializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1025,7 +1025,7 @@ class DeserializeStructGeneratorTest {
                 fooValue: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1070,7 +1070,7 @@ class DeserializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1127,7 +1127,7 @@ class DeserializeStructGeneratorTest {
                 value: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1187,7 +1187,7 @@ class DeserializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1233,7 +1233,7 @@ class DeserializeStructGeneratorTest {
                 value: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1284,7 +1284,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             @enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
             string TypedYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1319,7 +1319,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1362,7 +1362,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1398,7 +1398,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 fooBlob: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1430,7 +1430,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 strVal: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1462,7 +1462,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 value: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1502,7 +1502,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 member: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1537,7 +1537,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 fooTime: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -1569,7 +1569,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 value: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

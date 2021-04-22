@@ -26,7 +26,7 @@ import java.net.URL
  *  namespace: TestDefault.NAMESPACE
  *  service name: "Test"
  */
-object TestDefault {
+internal object TestDefault {
     const val SMITHY_IDL_VERSION = "1"
     const val MODEL_VERSION = "1.0.0"
     const val NAMESPACE = "com.test"
@@ -55,7 +55,7 @@ private fun Model.applyKotlinCodegenTransforms(serviceShapeId: String?): Model {
 /**
  * Load and initialize a model from a Java resource URL
  */
-fun URL.asSmithy(serviceShapeId: String? = null): Model {
+fun URL.toSmithyModel(serviceShapeId: String? = null): Model {
     val model = Model.assembler()
         .addImport(this)
         .discoverModels()
@@ -68,7 +68,7 @@ fun URL.asSmithy(serviceShapeId: String? = null): Model {
 /**
  * Load and initialize a model from a String
  */
-fun String.asSmithyModel(sourceLocation: String? = null, serviceShapeId: String? = null, applyDefaultTransforms: Boolean = true): Model {
+fun String.toSmithyModel(sourceLocation: String? = null, serviceShapeId: String? = null, applyDefaultTransforms: Boolean = true): Model {
     val processed = if (this.trimStart().startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
     val model = Model.assembler()
         .discoverModels()
@@ -94,7 +94,10 @@ fun Model.toSmithyIDL(): String {
 /**
  * Initiate codegen for the model and produce a [TestContext].
  *
- * @param serviceShapeId the smithy Id for the service to codegen, defaults to "com.test#Example"
+ * @param serviceName name of service without namespace
+ * @param packageName root namespace of model
+ * @param settings [KotlinSettings] associated w/ test context
+ * @param generator [ProtocolGenerator] associated w/ test context
  */
 fun Model.newTestContext(
     serviceName: String = TestDefault.SERVICE_NAME,
@@ -121,8 +124,11 @@ fun Model.newTestContext(
 
 /**
  * Generate a KotlinSettings instance from a model.
+ * @param serviceName name of service without namespace or null to attempt to discover from model
  * @param packageName name of module or DEFAULT_SERVICE_NAME if unspecified
  * @param packageVersion version of module or DEFAULT_MODEL_VERSION if unspecified
+ * @param sdkId sdk id of settings
+ * @param generateDefaultBuildFiles flag used to determine what build files to generate
  *
  * Example:
  *  {
@@ -194,7 +200,7 @@ fun String.generateTestModel(
         $this
     """.trimIndent()
 
-    return completeModel.asSmithyModel()
+    return completeModel.toSmithyModel()
 }
 
 // Produce a GenerationContext given a model, it's expected namespace and service name.

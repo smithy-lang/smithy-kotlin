@@ -31,7 +31,7 @@ class StructureGeneratorTest {
                 Quux: Qux,
                 byteValue: Byte
             }
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
@@ -51,7 +51,7 @@ class StructureGeneratorTest {
     @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        commonTestContents.shouldSyntacticSanityCheck()
+        commonTestContents.assertBalancedBracesAndParens()
     }
 
     @Test
@@ -243,7 +243,7 @@ class StructureGeneratorTest {
 
             @documentation("Shape documentation")
             string Baz
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         /*
             The effective documentation trait of a shape is resolved using the following process:
@@ -280,7 +280,7 @@ class StructureGeneratorTest {
                 qux: String
             }
             
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
@@ -306,7 +306,7 @@ class StructureGeneratorTest {
                 bar: BlobStream
             }
             
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
@@ -381,7 +381,7 @@ class StructureGeneratorTest {
             structure GetFooInput {
                 enumMap: EnumMap
             }
-        """.asSmithyModel()
+        """.toSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
@@ -437,7 +437,7 @@ class StructureGeneratorTest {
             structure GetFooInput {
                 enumMap: EnumMap
             }
-        """.asSmithyModel()
+        """.toSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)

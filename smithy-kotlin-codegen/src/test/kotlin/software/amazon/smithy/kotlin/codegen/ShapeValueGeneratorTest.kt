@@ -30,7 +30,7 @@ class ShapeValueGeneratorTest {
                 key: String,
                 value: Integer,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyMap"))
@@ -63,7 +63,7 @@ mapOf<String, Int>(
             list MyList {
                 member: String,
             }
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         println(model.toSmithyIDL())
 
@@ -113,7 +113,7 @@ listOf<String>(
                 },
             ])
             string MyEnum
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
 
@@ -183,7 +183,7 @@ MyStruct {
                 },
             ])
             string MyEnum
-        """.prependNamespaceAndService(namespace = "foo.bar").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         println(model.toSmithyIDL())
 

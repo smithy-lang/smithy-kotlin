@@ -32,7 +32,7 @@ class HttpProtocolClientGeneratorTest {
     }
 
     init {
-        val model = javaClass.getResource("service-generator-test-operations.smithy").asSmithy()
+        val model = javaClass.getResource("service-generator-test-operations.smithy").toSmithyModel()
         val ctx = model.newTestContext()
         val features: List<HttpFeature> = listOf(MockHttpFeature1())
         val generator = TestProtocolClientGenerator(
@@ -241,7 +241,7 @@ class HttpProtocolClientGeneratorTest {
             
             structure GetStatusOutput {}
         """.prependNamespaceAndService(protocol = AwsProtocol.AwsJson1_1, operations = listOf("GetStatus"))
-            .asSmithyModel()
+            .toSmithyModel()
 
         val ctx = model.newTestContext()
         val writer = KotlinWriter(TestDefault.NAMESPACE)

@@ -16,7 +16,6 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.test.*
-import software.amazon.smithy.model.shapes.*
 
 class SerializeUnionGeneratorTest {
     private val modelPrefix = """
@@ -41,7 +40,7 @@ class SerializeUnionGeneratorTest {
                 timestamp4: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -91,7 +90,7 @@ class SerializeUnionGeneratorTest {
                         value: StringMap
                     }
                 """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -152,7 +151,7 @@ class SerializeUnionGeneratorTest {
                         member2: String
                     }
                 """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -194,7 +193,7 @@ class SerializeUnionGeneratorTest {
                         bar: Integer
                     }
                 """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {

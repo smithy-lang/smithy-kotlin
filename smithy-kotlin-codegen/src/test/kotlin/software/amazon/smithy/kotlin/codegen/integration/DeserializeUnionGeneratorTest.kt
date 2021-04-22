@@ -40,7 +40,7 @@ class DeserializeUnionGeneratorTest {
                 stringA: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -82,7 +82,7 @@ class DeserializeUnionGeneratorTest {
                 value: MyAggregateUnion
             }                
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -163,7 +163,7 @@ class DeserializeUnionGeneratorTest {
                         member: Integer
                     }
                 """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -247,7 +247,7 @@ class DeserializeUnionGeneratorTest {
                 listOfIntList: ListOfIntList,
                 mapOfLists: MapOfLists
             }  
-        """.prependNamespaceAndService(protocol = AwsProtocol.AwsJson1_1, operations = listOf("UnionTestOperation")).asSmithyModel()
+        """.prependNamespaceAndService(protocol = AwsProtocol.AwsJson1_1, operations = listOf("UnionTestOperation")).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

@@ -29,7 +29,7 @@ class UnionGeneratorTest {
             qux: String
         }
             
-        """.prependNamespaceAndService(namespace = "test").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val writer = KotlinWriter("test")
@@ -86,7 +86,7 @@ class UnionGeneratorTest {
             union MyUnion {                
                 sdkUnknown: String
             }
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
         val union = model.expectShape<UnionShape>("com.test#MyUnion")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)

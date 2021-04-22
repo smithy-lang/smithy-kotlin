@@ -87,7 +87,7 @@ class ServiceGeneratorTest {
     @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        commonTestContents.shouldSyntacticSanityCheck()
+        commonTestContents.assertBalancedBracesAndParens()
     }
 
     @Test
@@ -136,7 +136,7 @@ class ServiceGeneratorTest {
 
     // Produce the generated service code given model inputs.
     private fun generateService(modelResourceName: String): String {
-        val model = javaClass.getResource(modelResourceName).asSmithy()
+        val model = javaClass.getResource(modelResourceName).toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestDefault.NAMESPACE)

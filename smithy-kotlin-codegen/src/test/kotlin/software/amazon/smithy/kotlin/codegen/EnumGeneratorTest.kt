@@ -29,7 +29,7 @@ class EnumGeneratorTest {
             @documentation("Documentation for this enum")
             string Baz
             
-        """.prependNamespaceAndService(namespace = "test").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val shape = model.expectShape<StringShape>("test#Baz")
@@ -109,7 +109,7 @@ sealed class Baz {
             @documentation("Documentation for this enum")
             string Baz            
         """.prependNamespaceAndService(namespace = "test")
-            .asSmithyModel()
+            .toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val shape = model.expectShape<StringShape>("test#Baz")
@@ -186,7 +186,7 @@ sealed class Baz {
             ])
             string Baz
             
-        """.prependNamespaceAndService(namespace = "test").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
         val shape = model.expectShape<StringShape>("test#Baz")
@@ -214,7 +214,7 @@ sealed class Baz {
             ])
             string Baz
             
-        """.prependNamespaceAndService().asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val shape = model.expectShape<StringShape>("com.test#Baz")
 

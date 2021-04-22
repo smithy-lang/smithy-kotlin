@@ -12,14 +12,14 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestDefault
-import software.amazon.smithy.kotlin.codegen.test.asSmithy
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
 
 class KotlinSettingsTest {
     @Test
     fun `infers default service`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val contents = """
             {
@@ -42,7 +42,7 @@ class KotlinSettingsTest {
 
     @Test
     fun `correctly reads rootProject var from build settings`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val contents = """
             {
@@ -67,7 +67,7 @@ class KotlinSettingsTest {
 
     @Test
     fun `correctly reads generateBuildFiles var from build settings`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val contents = """
             {
@@ -92,7 +92,7 @@ class KotlinSettingsTest {
 
     @Test
     fun `correctly reads optin annotations from build settings`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val contents = """
             {
@@ -117,7 +117,7 @@ class KotlinSettingsTest {
 
     @Test
     fun `throws exception with empty package name`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val contents = """
             {
@@ -141,7 +141,7 @@ class KotlinSettingsTest {
 
     @Test
     fun `throws exception with invalid package name`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val contents = """
             {
@@ -165,7 +165,7 @@ class KotlinSettingsTest {
 
     @Test
     fun `allows valid package name`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val contents = """
             {

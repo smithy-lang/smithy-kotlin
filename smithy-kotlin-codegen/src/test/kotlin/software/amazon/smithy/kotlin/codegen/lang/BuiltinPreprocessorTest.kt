@@ -10,7 +10,7 @@ import io.kotest.matchers.collections.shouldNotContainAll
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.expectShape
-import software.amazon.smithy.kotlin.codegen.test.asSmithyModel
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeId
 
@@ -38,7 +38,7 @@ class BuiltinPreprocessorTest {
             String: String,
             Unit: Unit
         }
-        """.asSmithyModel()
+        """.toSmithyModel()
 
         val settings = KotlinSettings(
             ShapeId.from("com.test#FooService"),

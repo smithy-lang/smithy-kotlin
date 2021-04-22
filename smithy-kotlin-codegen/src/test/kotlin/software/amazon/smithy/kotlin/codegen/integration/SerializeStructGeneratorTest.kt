@@ -38,7 +38,7 @@ class SerializeStructGeneratorTest {
                 payload: $memberType
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -68,7 +68,7 @@ class SerializeStructGeneratorTest {
                 payload: $memberType
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -90,7 +90,7 @@ class SerializeStructGeneratorTest {
                 payload: PrimitiveInteger
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -111,7 +111,7 @@ class SerializeStructGeneratorTest {
                 payload: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -133,7 +133,7 @@ class SerializeStructGeneratorTest {
                 payload: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -157,7 +157,7 @@ class SerializeStructGeneratorTest {
                 member: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -190,7 +190,7 @@ class SerializeStructGeneratorTest {
                 member: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -226,7 +226,7 @@ class SerializeStructGeneratorTest {
                 member: CustomTimestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -259,7 +259,7 @@ class SerializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -286,7 +286,7 @@ class SerializeStructGeneratorTest {
                     booleanValue: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -311,7 +311,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -346,7 +346,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -387,7 +387,7 @@ class SerializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -419,7 +419,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -454,7 +454,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -493,7 +493,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -532,7 +532,7 @@ class SerializeStructGeneratorTest {
                 member: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -571,7 +571,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }            
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -607,7 +607,7 @@ class SerializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -644,7 +644,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -683,7 +683,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -712,7 +712,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -752,7 +752,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -790,7 +790,7 @@ class SerializeStructGeneratorTest {
                 value: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -824,7 +824,7 @@ class SerializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -860,7 +860,7 @@ class SerializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -891,7 +891,7 @@ class SerializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -926,7 +926,7 @@ class SerializeStructGeneratorTest {
                 fooValue: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -960,7 +960,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1003,7 +1003,7 @@ class SerializeStructGeneratorTest {
                 value: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1043,7 +1043,7 @@ class SerializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1078,7 +1078,7 @@ class SerializeStructGeneratorTest {
                 value: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1112,7 +1112,7 @@ class SerializeStructGeneratorTest {
             @enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
             string TypedYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1141,7 +1141,7 @@ class SerializeStructGeneratorTest {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1176,7 +1176,7 @@ class SerializeStructGeneratorTest {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1201,7 +1201,7 @@ class SerializeStructGeneratorTest {
                 fooBlob: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1227,7 +1227,7 @@ class SerializeStructGeneratorTest {
                 value: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1256,7 +1256,7 @@ class SerializeStructGeneratorTest {
                 member: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1292,7 +1292,7 @@ class SerializeStructGeneratorTest {
                 member3: CustomTimestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1320,7 +1320,7 @@ class SerializeStructGeneratorTest {
                 value: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1352,7 +1352,7 @@ class SerializeStructGeneratorTest {
                 value: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1385,7 +1385,7 @@ class SerializeStructGeneratorTest {
                 value: CustomTimestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {

@@ -54,7 +54,7 @@ class ExceptionGeneratorTest {
             @required
             message: String
         }
-        """.asSmithyModel()
+        """.toSmithyModel()
 
         val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "com.error.test")
         val errorWriter = KotlinWriter("com.error.test")
@@ -100,8 +100,8 @@ class ExceptionGeneratorTest {
     @Test
     fun `error generator syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        clientErrorTestContents.shouldSyntacticSanityCheck()
-        serverErrorTestContents.shouldSyntacticSanityCheck()
+        clientErrorTestContents.assertBalancedBracesAndParens()
+        serverErrorTestContents.assertBalancedBracesAndParens()
     }
 
     @Test
@@ -129,7 +129,7 @@ class ExceptionGeneratorTest {
         structure ConflictingException {
             SdkErrorMetadata: String
         }
-        """.prependNamespaceAndService(namespace = "com.error.test").asSmithyModel()
+        """.prependNamespaceAndService(namespace = "com.error.test").toSmithyModel()
 
         val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "com.error.test")
         val writer = KotlinWriter("com.error.test")
@@ -155,7 +155,7 @@ class ExceptionGeneratorTest {
             structure InternalServerException {
                 message: Integer
             }
-        """.asSmithyModel()
+        """.toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, pkg, svc)
         val writer = KotlinWriter(TestDefault.NAMESPACE)
@@ -173,7 +173,7 @@ class ExceptionGeneratorTest {
 
         @Test
         fun itGeneratesAnExceptionBaseClass() {
-            val model = "".prependNamespaceAndService().asSmithyModel()
+            val model = "".prependNamespaceAndService().toSmithyModel()
             val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
             val writer = KotlinWriter(TestDefault.NAMESPACE)
 
@@ -195,7 +195,7 @@ class ExceptionGeneratorTest {
 
         @Test
         fun itExtendsProtocolGeneratorBaseClass() {
-            val model = "".prependNamespaceAndService().asSmithyModel()
+            val model = "".prependNamespaceAndService().toSmithyModel()
             val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
             val writer = KotlinWriter(TestDefault.NAMESPACE)
 
