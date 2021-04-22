@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.EnumDefinition
 import java.util.logging.Logger
@@ -16,9 +17,10 @@ import java.util.logging.Logger
 // (somewhat) centralized naming rules
 
 /**
- * Get the default name for a shape (for code generation)
+ * Get the default name for a shape (for code generation).  Delegates to
+ * Smithy to rename shapes when configured to do so in the model.
  */
-fun Shape.defaultName(): String = id.name.toPascalCase()
+fun Shape.defaultName(serviceShape: ServiceShape): String = id.getName(serviceShape).toPascalCase()
 
 /**
  * Get the default name for a member shape (for code generation)

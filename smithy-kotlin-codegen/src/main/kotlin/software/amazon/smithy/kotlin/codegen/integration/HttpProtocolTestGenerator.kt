@@ -117,7 +117,7 @@ class HttpProtocolTestGenerator(
                     val testFilename = "${opName}ErrorTest.kt"
                     // multiple error (tests) may be associated with a single operation,
                     // use the operation name + error name as the class name
-                    val testClassName = "${opName}${error.defaultName()}Test"
+                    val testClassName = "${opName}${error.defaultName(ctx.service)}Test"
                     ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
                         LOGGER.fine("Generating error protocol test cases for ${operation.id}")
 

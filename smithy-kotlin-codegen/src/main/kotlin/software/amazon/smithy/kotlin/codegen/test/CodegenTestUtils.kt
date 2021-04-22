@@ -3,6 +3,7 @@ package software.amazon.smithy.kotlin.codegen.test
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.model.Model
@@ -200,9 +201,6 @@ fun CodegenTestHarness.generateDeSerializers(): Map<String, String> {
     return manifest.files.associate { path -> path.fileName.toString() to manifest.expectFileString(path) }
 }
 
-internal fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestModelDefault.NAMESPACE, sdkId: String = TestModelDefault.SERVICE_NAME) =
-    createSymbolProvider(model, rootNamespace, sdkId)
-
 // Create and use a writer to drive codegen from a function taking a writer.
 // Strip off comment and package preamble.
 fun generateCode(generator: (KotlinWriter) -> Unit): String {
@@ -211,4 +209,9 @@ fun generateCode(generator: (KotlinWriter) -> Unit): String {
     generator.invoke(writer)
     val rawCodegen = writer.toString()
     return rawCodegen.substring(rawCodegen.indexOf(packageDeclaration) + packageDeclaration.length).trim()
+}
+
+fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespace: String = TestModelDefault.NAMESPACE, sdkId: String = TestModelDefault.SDK_ID, serviceName: String = TestModelDefault.SERVICE_NAME): SymbolProvider {
+    val settings = model.defaultSettings(serviceName = serviceName, packageName = rootNamespace, sdkId = sdkId)
+    return createSymbolProvider(model, settings)
 }
