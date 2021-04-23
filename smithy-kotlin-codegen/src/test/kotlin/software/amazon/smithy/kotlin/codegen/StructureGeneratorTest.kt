@@ -346,16 +346,6 @@ class StructureGeneratorTest {
     @Test
     fun `it generates collection types for maps with enum values`() {
         val model = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [GetFoo]
-            }
-
             @http(method: "POST", uri: "/input/list")
             operation GetFoo {
                 input: GetFooInput
@@ -381,12 +371,13 @@ class StructureGeneratorTest {
             structure GetFooInput {
                 enumMap: EnumMap
             }
-        """.toSmithyModel()
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("GetFoo"), serviceName = "Example")
+            .toSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, serviceName = "Example")
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings(serviceName = "Example"))
         StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
 
@@ -401,16 +392,6 @@ class StructureGeneratorTest {
     @Test
     fun `it generates collection types for sparse maps with enum values`() {
         val model = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [GetFoo]
-            }
-
             @http(method: "POST", uri: "/input/list")
             operation GetFoo {
                 input: GetFooInput
@@ -437,12 +418,13 @@ class StructureGeneratorTest {
             structure GetFooInput {
                 enumMap: EnumMap
             }
-        """.toSmithyModel()
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("GetFoo"), serviceName = "Example")
+            .toSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, serviceName = "Example")
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings(serviceName = "Example"))
         StructureGenerator(renderingCtx).render()
         val contents = writer.toString()
 
