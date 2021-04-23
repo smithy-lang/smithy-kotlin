@@ -133,7 +133,6 @@ interface KotlinIntegration {
      * @param resolved The middleware resolved by the protocol generator
      */
     fun customizeMiddleware(
-        // ctx: CodegenContext,
         ctx: ProtocolGenerator.GenerationContext,
         resolved: List<ProtocolMiddleware>
     ): List<ProtocolMiddleware> {
