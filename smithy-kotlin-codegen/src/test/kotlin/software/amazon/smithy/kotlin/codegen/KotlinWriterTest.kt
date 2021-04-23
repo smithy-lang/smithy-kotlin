@@ -7,12 +7,14 @@ package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 
 class KotlinWriterTest {
 
     @Test
     fun `writes doc strings`() {
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         writer.dokka("These are the docs.\nMore.")
         val result = writer.toString()
         Assertions.assertTrue(result.contains("/**\n * These are the docs.\n * More.\n */\n"))
@@ -20,7 +22,7 @@ class KotlinWriterTest {
 
     @Test
     fun `escapes $ in doc strings`() {
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val docs = "This is $ valid documentation."
         writer.dokka(docs)
         val result = writer.toString()
@@ -32,7 +34,7 @@ class KotlinWriterTest {
      */
     @Test
     fun `escapes comment tokens in doc strings`() {
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val docs = "This is */ valid /* documentation."
         writer.dokka(docs)
         val actual = writer.toString()
@@ -42,7 +44,7 @@ class KotlinWriterTest {
 
     @Test
     fun `it strips html tags from doc strings`() {
-        val unit = KotlinWriter("com.test")
+        val unit = KotlinWriter(TestModelDefault.NAMESPACE)
         val docs = "<p>here is <b>some</b> sweet <i>sweet</i> <a>html</a></p>"
         unit.dokka(docs)
         val actual = unit.toString()

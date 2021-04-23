@@ -8,9 +8,9 @@ package software.amazon.smithy.kotlin.codegen.model
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.kotlin.codegen.asSmithyModel
 import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.kotlin.codegen.expectTrait
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.kotlin.codegen.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.traits.OperationOutput
 import software.amazon.smithy.kotlin.codegen.traits.SyntheticClone
@@ -30,7 +30,7 @@ class OperationNormalizerTest {
                 operations: [Empty]
             }
             operation Empty {}
-        """.asSmithyModel(applyDefaultTransforms = false)
+        """.toSmithyModel(applyDefaultTransforms = false)
         val origOp = model.expectShape<OperationShape>("com.test#Empty")
         assertFalse(origOp.input.isPresent)
         assertFalse(origOp.output.isPresent)
@@ -64,7 +64,7 @@ class OperationNormalizerTest {
             structure MyInput {
                 v: String
             }
-        """.asSmithyModel(applyDefaultTransforms = false)
+        """.toSmithyModel(applyDefaultTransforms = false)
         val origId = ShapeId.from("com.test#MyInput")
         val normalized = OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
 
@@ -98,7 +98,7 @@ class OperationNormalizerTest {
             structure MyOutput {
                 v: String
             }
-        """.asSmithyModel(applyDefaultTransforms = false)
+        """.toSmithyModel(applyDefaultTransforms = false)
         val origId = ShapeId.from("com.test#MyOutput")
         val normalized = OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
 
@@ -133,7 +133,7 @@ class OperationNormalizerTest {
             structure Nested {
                 foo: String
             }
-        """.asSmithyModel(applyDefaultTransforms = false)
+        """.toSmithyModel(applyDefaultTransforms = false)
         val normalized = OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
         val expected = ShapeId.from("com.test#Nested")
         normalized.expectShape<StructureShape>(expected)
@@ -163,7 +163,7 @@ class OperationNormalizerTest {
             structure FooResponse {
                 foo: String
             }
-        """.asSmithyModel(applyDefaultTransforms = false)
+        """.toSmithyModel(applyDefaultTransforms = false)
 
         val ex = assertFailsWith(CodegenException::class) {
             OperationNormalizer.transform(model, ShapeId.from("com.test#Example"))
