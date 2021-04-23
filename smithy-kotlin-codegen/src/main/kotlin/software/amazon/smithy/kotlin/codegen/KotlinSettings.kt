@@ -90,7 +90,7 @@ class KotlinSettings(
         }
 
         // infer the service to generate from a model
-        private fun inferService(model: Model): ShapeId {
+        internal fun inferService(model: Model): ShapeId {
             val services = model.shapes(ServiceShape::class.java)
                 .map(Shape::getId)
                 .sorted()

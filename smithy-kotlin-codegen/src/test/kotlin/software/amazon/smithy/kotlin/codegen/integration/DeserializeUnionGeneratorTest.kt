@@ -15,29 +15,17 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 
 class DeserializeUnionGeneratorTest {
 
     private val modelPrefix = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [
-                    Foo,
-                ]
-            }
-
             @http(method: "POST", uri: "/foo-no-input")
             operation Foo {
                 output: FooResponse
             }        
-    """.trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
 
     @Test
     fun `it deserializes a structure with primitive values`() {
@@ -52,7 +40,7 @@ class DeserializeUnionGeneratorTest {
                 stringA: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -94,7 +82,7 @@ class DeserializeUnionGeneratorTest {
                 value: MyAggregateUnion
             }                
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -175,7 +163,7 @@ class DeserializeUnionGeneratorTest {
                         member: Integer
                     }
                 """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -230,17 +218,7 @@ class DeserializeUnionGeneratorTest {
 
     @Test
     fun `it deserializes a structure with nested collection types`() {
-        val model = """            
-            namespace com.test
-
-            use aws.protocols#awsJson1_1
-            
-            @awsJson1_1
-            service Example {
-                version: "1.0.0",
-                operations: [UnionTestOperation]
-            }
-            
+        val model = """                       
             @http(method: "GET", uri: "/input/union2")
             operation UnionTestOperation {
                 output: NestedListResponse
@@ -269,7 +247,7 @@ class DeserializeUnionGeneratorTest {
                 listOfIntList: ListOfIntList,
                 mapOfLists: MapOfLists
             }  
-        """.asSmithyModel()
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.AwsJson1_1, operations = listOf("UnionTestOperation")).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -335,6 +313,6 @@ class DeserializeUnionGeneratorTest {
 
         ctx.generator.generateDeserializers(ctx.generationCtx)
         ctx.generationCtx.delegator.flushWriters()
-        return ctx.manifest.expectFileString("src/main/kotlin/test/transform/${shapeName}DocumentDeserializer.kt")
+        return ctx.manifest.expectFileString("src/main/kotlin/com/test/transform/${shapeName}DocumentDeserializer.kt")
     }
 }
