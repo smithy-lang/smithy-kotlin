@@ -16,9 +16,17 @@ internal sealed class FieldLocation {
  * Provides a deserializer for XML documents
  *
  * @param reader underlying [XmlStreamReader] from which tokens are read
+ * @param validateRootElement Flag indicating if the root XML document [XmlToken.BeginElement] should be validated against
+ * the descriptor passed to [deserializeStruct]. This only affects the root element, not nested struct elements. Some
+ * restXml based services DO NOT always send documents with a root element name that matches the shape ID name
+ * (S3 in particular). This means there is nothing in the model that gives you enough information to validate the tag.
  */
-class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
+class XmlDeserializer(
+    private val reader: XmlStreamReader,
+    private val validateRootElement: Boolean = false
+) : Deserializer {
     constructor(input: ByteArray) : this(xmlStreamReader(input))
+
     private val logger = Logger.getLogger<XmlDeserializer>()
     private var firstStructCall = true
 
@@ -39,7 +47,7 @@ class XmlDeserializer(private val reader: XmlStreamReader) : Deserializer {
             } ?: throw DeserializerStateException("Could not find a begin element for new struct")
 
             val objectName = descriptor.toQualifiedName()
-            if (structToken.name.tag != objectName?.tag) throw DeserializerStateException("Expected beginning element named $objectName but found ${structToken.name}")
+            if (validateRootElement && structToken.name.tag != objectName.tag) throw DeserializerStateException("Expected beginning element named $objectName but found ${structToken.name}")
         }
 
         // Consume any remaining terminating tokens from previous deserialization
@@ -148,11 +156,27 @@ internal class XmlListDeserializer(
             firstCall = false
         }
 
-        if (flattened && descriptor.hasTrait<XmlSerialName>()) {
-            // This is a special case in which a flattened list is passed in a nested struct.
+        if (flattened) {
             // Because our subtree is not CHILD, we cannot rely on the subtree boundary to determine end of collection.
-            // Rather, we search for either the next begin token matching the list member name, or the terminal token of the list struct.
-            val tokens = listOfNotNull(reader.lastToken, reader.peek())
+            // Rather, we search for either the next begin token matching the (flat) list member name which should
+            // be immediately after the current token
+
+            // peek at the next token if there is one, in the case of a list of structs, the next token is actually
+            // the end of the current flat list element in which case we need to peek twice
+            val next = when (val peeked = reader.peek()) {
+                is XmlToken.EndElement -> {
+                    if (peeked.name.local == descriptor.serialName.name) {
+                        // consume the end token
+                        reader.nextToken()
+                        reader.peek()
+                    } else {
+                        peeked
+                    }
+                }
+                else -> peeked
+            }
+
+            val tokens = listOfNotNull(reader.lastToken, next)
 
             // Iterate over the token stream until begin token matching name is found or end element matching list is found.
             return tokens
