@@ -50,9 +50,22 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     abstract fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator
 
     /**
-     * Get all of the features that should be installed into the `SdkHttpClient` as pipeline middleware
+     * Get all of the middleware that should be installed into the operation's middleware stack (`SdkOperationExecution`)
+     * This is the function that protocol client generators should invoke to get the fully resolved set of middleware
+     * to be rendered (i.e. after integrations have had a chance to intercept). The default set of middleware for
+     * a protocol can be overridden by [getDefaultHttpMiddleware].
      */
-    open fun getHttpFeatures(ctx: ProtocolGenerator.GenerationContext): List<HttpFeature> = listOf()
+    fun getHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
+        val defaultMiddleware = getDefaultHttpMiddleware(ctx)
+        return ctx.integrations.fold(defaultMiddleware) { middleware, integration ->
+            integration.customizeMiddleware(ctx, middleware)
+        }
+    }
+
+    /**
+     * Template method function that generators can override to return the _default_ set of middleware for the protocol
+     */
+    protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> = listOf()
 
     /**
      * Generate the set of [SdkFieldDescriptor]s for the types that require them.
@@ -574,7 +587,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addImport("DeserializationProvider", KotlinDependency.CLIENT_RT_SERDE)
 
             writer.write("")
-                .openBlock("class #T() : HttpDeserialize<#L> {", deserializerSymbol, outputSymbol.name)
+                .openBlock("internal class #T() : HttpDeserialize<#L> {", deserializerSymbol, outputSymbol.name)
                 .write("")
                 .call {
                     val documentMembers = shape.members().filterNot {

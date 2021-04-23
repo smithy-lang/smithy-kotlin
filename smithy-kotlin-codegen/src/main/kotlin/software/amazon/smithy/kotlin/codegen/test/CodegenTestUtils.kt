@@ -130,7 +130,7 @@ internal fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, fo
 // A HttpProtocolClientGenerator for testing
 internal class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
-    features: List<HttpFeature>,
+    features: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver
 ) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver) {
     // This type assumes a JSON based protocol, but can be changed to pass
@@ -152,7 +152,7 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
 
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        TestProtocolClientGenerator(ctx, getHttpFeatures(ctx), getProtocolHttpBindingResolver(ctx))
+        TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx))
 
     override fun generateSdkFieldDescriptor(
         ctx: ProtocolGenerator.GenerationContext,

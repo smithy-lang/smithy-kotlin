@@ -24,8 +24,8 @@ class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
     private val writer: KotlinWriter = KotlinWriter(TestModelDefault.NAMESPACE)
 
-    class MockHttpFeature1 : HttpFeature {
-        override val name: String = "MockHttpFeature1"
+    class MockProtocolMiddleware1 : ProtocolMiddleware {
+        override val name: String = "MockProtocolMiddleware1"
         override fun renderConfigure(writer: KotlinWriter) {
             writer.write("configurationField1 = \"testing\"")
         }
@@ -34,7 +34,7 @@ class HttpProtocolClientGeneratorTest {
     init {
         val model = javaClass.getResource("service-generator-test-operations.smithy").toSmithyModel()
         val ctx = model.newTestContext()
-        val features: List<HttpFeature> = listOf(MockHttpFeature1())
+        val features: List<ProtocolMiddleware> = listOf(MockProtocolMiddleware1())
         val generator = TestProtocolClientGenerator(
             ctx.generationCtx,
             features,
