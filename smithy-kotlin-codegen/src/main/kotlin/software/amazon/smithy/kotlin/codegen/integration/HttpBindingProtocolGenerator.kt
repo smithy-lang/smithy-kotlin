@@ -587,7 +587,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer.addImport("DeserializationProvider", KotlinDependency.CLIENT_RT_SERDE)
 
             writer.write("")
-                .openBlock("class #T() : HttpDeserialize<#L> {", deserializerSymbol, outputSymbol.name)
+                .openBlock("internal class #T() : HttpDeserialize<#L> {", deserializerSymbol, outputSymbol.name)
                 .write("")
                 .call {
                     val documentMembers = shape.members().filterNot {
