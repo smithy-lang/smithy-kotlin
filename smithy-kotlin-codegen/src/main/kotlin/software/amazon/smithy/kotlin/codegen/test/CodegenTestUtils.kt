@@ -1,10 +1,7 @@
-<<<<<<< HEAD
-=======
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
->>>>>>> main
 package software.amazon.smithy.kotlin.codegen.test
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
