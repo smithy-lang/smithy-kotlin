@@ -155,7 +155,7 @@ internal fun Model.defaultSettings(
         KotlinSettings.inferService(this)
     } else {
         this.getShape(ShapeId.from("$packageName#$serviceName")).getOrNull()?.id
-            ?: error("Unable to find service '$serviceName' in:\n ${toSmithyIDL()}")
+            ?: error("Unable to find service '$serviceName' in model.")
     }
 
     return KotlinSettings.from(
