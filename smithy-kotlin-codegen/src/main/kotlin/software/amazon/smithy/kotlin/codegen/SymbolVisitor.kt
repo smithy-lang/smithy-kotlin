@@ -59,13 +59,13 @@ fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
 /**
  * Convert shapes to Kotlin types
  * @param model The smithy model to generate for
- * @param rootNamespace All symbols will be created under this namespace (package) or as a direct child of it.
- * e.g. `com.foo` would create symbols under the `com.foo` package or `com.foo.model` package, etc.
- * @param sdkId name to use to represent client type.  e.g. an sdkId of "foo" would produce a client type "FooClient".
+ * @param settings [KotlinSettings] associated with this codegen
  */
-class SymbolVisitor(private val model: Model, private val rootNamespace: String = "", private val sdkId: String) :
+class SymbolVisitor(private val model: Model, private val settings: KotlinSettings) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
+    private val rootNamespace = settings.pkg.name
+    private val service = model.expectShape<ServiceShape>(settings.service)
     private val logger = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
 
@@ -148,8 +148,8 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
 
     fun createEnumSymbol(shape: StringShape): Symbol {
         val namespace = "$rootNamespace.model"
-        return createSymbolBuilder(shape, shape.defaultName(), namespace, boxed = true)
-            .definitionFile("${shape.defaultName()}.kt")
+        return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = true)
+            .definitionFile("${shape.defaultName(service)}.kt")
             .build()
     }
 
@@ -157,10 +157,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
         createSymbolBuilder(shape, "Boolean", namespace = "kotlin").defaultValue("false").build()
 
     override fun structureShape(shape: StructureShape): Symbol {
-        val name = shape.defaultName()
+        val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
         val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
-            .definitionFile("${shape.defaultName()}.kt")
+            .definitionFile("$name.kt")
 
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
@@ -261,10 +261,10 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun unionShape(shape: UnionShape): Symbol {
-        val name = shape.defaultName()
+        val name = shape.defaultName(service)
         val namespace = "$rootNamespace.model"
         val builder = createSymbolBuilder(shape, name, namespace, boxed = true)
-            .definitionFile("${shape.id.name}.kt")
+            .definitionFile("$name.kt")
 
         // add a reference to each member symbol
         addDeclareMemberReferences(builder, shape.allMembers.values)
@@ -282,7 +282,7 @@ class SymbolVisitor(private val model: Model, private val rootNamespace: String 
     }
 
     override fun serviceShape(shape: ServiceShape): Symbol {
-        val serviceName = sdkId.clientName()
+        val serviceName = settings.sdkId.clientName()
         return createSymbolBuilder(shape, "${serviceName}Client")
             .namespace(rootNamespace, ".")
             .definitionFile("${serviceName}Client.kt").build()

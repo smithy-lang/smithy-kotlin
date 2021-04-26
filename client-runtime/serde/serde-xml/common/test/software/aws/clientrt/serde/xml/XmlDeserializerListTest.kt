@@ -9,6 +9,7 @@ import software.aws.clientrt.serde.*
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalStdlibApi::class)
@@ -228,7 +229,7 @@ class XmlDeserializerListTest {
                 <element>3</element>
             </object>
         """.encodeToByteArray()
-        val elementFieldDescriptor = SdkFieldDescriptor(SerialKind.List, XmlCollectionName("element"), Flattened)
+        val elementFieldDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("element"), Flattened)
         val objectDescriptor = SdkObjectDescriptor.build {
             trait(XmlSerialName("object"))
             field(elementFieldDescriptor)
@@ -403,32 +404,64 @@ class XmlDeserializerListTest {
             </FooResponse>
         """.encodeToByteArray()
 
+        val listDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("parentList"))
         val deserializer = XmlDeserializer(payload)
-        val actual = FooOperationDeserializer().deserialize(deserializer)
+        val actual = FooOperationDeserializer().deserialize(deserializer, listDescriptor)
 
         assertTrue(actual.parentList?.size == 3)
+    }
+
+    @Test
+    fun itHandlesFlatListsOfStructs() = runSuspendTest {
+        val payload = """
+            <FooResponse>
+                <flatList>
+                    <fooMember>a</fooMember>
+                    <someInt>3</someInt>
+                </flatList>
+                <flatList>
+                    <fooMember>b</fooMember>
+                    <someInt>4</someInt>
+                </flatList>
+                <flatList>
+                    <fooMember>c</fooMember>
+                    <someInt>6</someInt>
+                </flatList>
+            </FooResponse>
+        """.encodeToByteArray()
+
+        val deserializer = XmlDeserializer(payload)
+        val listDescriptor = SdkFieldDescriptor(SerialKind.List, XmlSerialName("flatList"), Flattened)
+        val actual = FooOperationDeserializer().deserialize(deserializer, listDescriptor)
+
+        val parentList = assertNotNull(actual.parentList)
+        assertEquals(3, parentList.size)
+        assertEquals(parentList[0].fooMember, "a")
+        assertEquals(parentList[0].someInt, 3)
+        assertEquals(parentList[2].fooMember, "c")
+        assertEquals(parentList[2].someInt, 6)
     }
 }
 
 internal class FooOperationDeserializer {
 
-    companion object {
-        private val PARENTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, XmlSerialName("parentList"))
-        private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+    suspend fun deserialize(
+        deserializer: Deserializer,
+        LIST_DESCRIPTOR: SdkFieldDescriptor
+    ): FooResponse {
+        val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("FooResponse"))
-            field(PARENTLIST_DESCRIPTOR)
+            field(LIST_DESCRIPTOR)
         }
-    }
 
-    suspend fun deserialize(deserializer: Deserializer): FooResponse {
         val builder = FooResponse.dslBuilder()
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
                 when (findNextFieldIndex()) {
-                    PARENTLIST_DESCRIPTOR.index ->
+                    LIST_DESCRIPTOR.index ->
                         builder.parentList =
-                            deserializer.deserializeList(PARENTLIST_DESCRIPTOR) {
+                            deserializer.deserializeList(LIST_DESCRIPTOR) {
                                 val col0 = mutableListOf<PayloadStruct>()
                                 while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { PayloadStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }

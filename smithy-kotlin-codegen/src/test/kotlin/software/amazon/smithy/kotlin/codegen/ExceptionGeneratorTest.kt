@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -13,6 +12,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.assertFailsWith
 
@@ -24,6 +24,7 @@ class ExceptionGeneratorTest {
 
         val model = """
         namespace com.error.test
+        service Test { version: "1.0.0" }
         
         @enum([ { value: "Reason1", name: "REASON1" }, { value: "Reason2", name: "REASON2" } ])
         string ValidationExceptionReason
@@ -53,12 +54,12 @@ class ExceptionGeneratorTest {
             @required
             message: String
         }
-        """.asSmithyModel()
+        """.toSmithyModel()
 
-        val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "error.test", "Test")
+        val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "com.error.test")
         val errorWriter = KotlinWriter("com.error.test")
         val clientErrorShape = model.expectShape<StructureShape>("com.error.test#ValidationException")
-        val settings = model.defaultSettings(serviceName = "com.test.error#Foo")
+        val settings = model.defaultSettings(serviceName = "Test", packageName = "com.error.test")
         val clientErrorRenderingCtx = RenderingContext(errorWriter, clientErrorShape, model, symbolProvider, settings)
         StructureGenerator(clientErrorRenderingCtx).render()
 
@@ -74,33 +75,33 @@ class ExceptionGeneratorTest {
     @Test
     fun `error generator extends correctly`() {
         val expectedClientClassDecl = """
-class ValidationException private constructor(builder: BuilderImpl) : FooException() {
-"""
+            class ValidationException private constructor(builder: BuilderImpl) : TestException() {
+        """.trimIndent()
 
-        clientErrorTestContents.shouldContain(expectedClientClassDecl)
+        clientErrorTestContents.shouldContainWithDiff(expectedClientClassDecl)
 
         val expectedServerClassDecl = """
-class InternalServerException private constructor(builder: BuilderImpl) : FooException() {
-"""
+            class InternalServerException private constructor(builder: BuilderImpl) : TestException() {
+        """.trimIndent()
 
-        serverErrorTestContents.shouldContain(expectedServerClassDecl)
+        serverErrorTestContents.shouldContainWithDiff(expectedServerClassDecl)
     }
 
     @Test
     fun `error generator sets error type correctly`() {
         val expectedClientClassDecl = "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client"
 
-        clientErrorTestContents.shouldContain(expectedClientClassDecl)
+        clientErrorTestContents.shouldContainWithDiff(expectedClientClassDecl)
 
         val expectedServerClassDecl = "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Server"
-        serverErrorTestContents.shouldContain(expectedServerClassDecl)
+        serverErrorTestContents.shouldContainWithDiff(expectedServerClassDecl)
     }
 
     @Test
     fun `error generator syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        clientErrorTestContents.shouldSyntacticSanityCheck()
-        serverErrorTestContents.shouldSyntacticSanityCheck()
+        clientErrorTestContents.assertBalancedBracesAndParens()
+        serverErrorTestContents.assertBalancedBracesAndParens()
     }
 
     @Test
@@ -109,30 +110,28 @@ class InternalServerException private constructor(builder: BuilderImpl) : FooExc
     override val message: String? = builder.message
 """
 
-        serverErrorTestContents.shouldContain(expected)
+        serverErrorTestContents.shouldContainWithDiff(expected)
         clientErrorTestContents.shouldNotContain(expected)
     }
 
     @Test
     fun `error generator renders isRetryable`() {
         val expected = "sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true"
-        serverErrorTestContents.shouldContain(expected)
+        serverErrorTestContents.shouldContainWithDiff(expected)
         clientErrorTestContents.shouldNotContain(expected)
     }
 
     @Test
     fun `it fails on conflicting property names`() {
         val model = """
-        namespace com.error.test
-        
         @httpError(500)
         @error("server")
         structure ConflictingException {
             SdkErrorMetadata: String
         }
-        """.asSmithyModel()
+        """.prependNamespaceAndService(namespace = "com.error.test").toSmithyModel()
 
-        val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "error.test", "Test")
+        val symbolProvider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "com.error.test")
         val writer = KotlinWriter("com.error.test")
         val errorShape = model.expectShape<StructureShape>("com.error.test#ConflictingException")
         val renderingCtx = RenderingContext(writer, errorShape, model, symbolProvider, model.defaultSettings())
@@ -140,23 +139,26 @@ class InternalServerException private constructor(builder: BuilderImpl) : FooExc
             StructureGenerator(renderingCtx).render()
         }
 
-        ex.message!!.shouldContain("`sdkErrorMetadata` conflicts with property of same name inherited from SdkBaseException. Apply a rename customization/projection to fix.")
+        ex.message!!.shouldContainWithDiff("`sdkErrorMetadata` conflicts with property of same name inherited from SdkBaseException. Apply a rename customization/projection to fix.")
     }
 
     @Test
     fun `it fails if message property is of wrong type`() {
+        val pkg = "com.error.test"
+        val svc = "Test"
         val model = """
-            namespace com.error.test
+            namespace $pkg       
+            service $svc { version: "1.0.0" }
             
             @httpError(500)
             @error("server")
             structure InternalServerException {
                 message: Integer
             }
-        """.asSmithyModel()
+        """.toSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-        val writer = KotlinWriter("com.test")
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, pkg, svc)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
 
         val struct = model.expectShape<StructureShape>("com.error.test#InternalServerException")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
@@ -171,18 +173,16 @@ class InternalServerException private constructor(builder: BuilderImpl) : FooExc
 
         @Test
         fun itGeneratesAnExceptionBaseClass() {
-            val model = """
-                namespace com.error.test
-            """.asSmithyModel()
-            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-            val writer = KotlinWriter("com.test")
+            val model = "".prependNamespaceAndService().toSmithyModel()
+            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
 
-            val ctx = GenerationContext(model, provider, model.defaultSettings(serviceName = "com.error.test#Foo"))
+            val ctx = GenerationContext(model, provider, model.defaultSettings())
             ExceptionBaseClassGenerator.render(ctx, writer)
             val contents = writer.toString()
 
             val expected = """
-                open class FooException : ServiceException {
+                open class TestException : ServiceException {
                     constructor() : super()
                     constructor(message: String?) : super(message)
                     constructor(message: String?, cause: Throwable?) : super(message, cause)
@@ -195,11 +195,9 @@ class InternalServerException private constructor(builder: BuilderImpl) : FooExc
 
         @Test
         fun itExtendsProtocolGeneratorBaseClass() {
-            val model = """
-                namespace com.error.test
-            """.asSmithyModel()
-            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Test")
-            val writer = KotlinWriter("com.test")
+            val model = "".prependNamespaceAndService().toSmithyModel()
+            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
 
             val protocolGenerator = object : ProtocolGenerator {
                 override val protocol: ShapeId
@@ -219,12 +217,12 @@ class InternalServerException private constructor(builder: BuilderImpl) : FooExc
                 }
             }
 
-            val ctx = GenerationContext(model, provider, model.defaultSettings(serviceName = "com.error.test#Foo"), protocolGenerator)
+            val ctx = GenerationContext(model, provider, model.defaultSettings(), protocolGenerator)
             ExceptionBaseClassGenerator.render(ctx, writer)
             val contents = writer.toString()
 
             val expected = """
-                open class FooException : QuxException {
+                open class TestException : QuxException {
                     constructor() : super()
                     constructor(message: String?) : super(message)
                     constructor(message: String?, cause: Throwable?) : super(message, cause)

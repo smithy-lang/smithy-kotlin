@@ -17,7 +17,9 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 
 class ServiceGeneratorTest {
@@ -29,21 +31,21 @@ class ServiceGeneratorTest {
 
     @Test
     fun `it imports external symbols`() {
-        commonTestContents.shouldContainOnlyOnce("import test.model.*")
+        commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
         commonTestContents.shouldContainOnlyOnce("import $CLIENT_RT_ROOT_NS.SdkClient")
     }
 
     @Test
     fun `it renders interface`() {
-        commonTestContents.shouldContainOnlyOnce("interface ExampleClient : SdkClient {")
+        commonTestContents.shouldContainOnlyOnce("interface TestClient : SdkClient {")
     }
 
     @Test
     fun `it overrides SdkClient serviceName`() {
         val expected = """
-    override val serviceName: String
-        get() = "Example"
-"""
+            override val serviceName: String
+                get() = "Test"
+        """.formatForTest()
         commonTestContents.shouldContainOnlyOnce(expected)
     }
 
@@ -66,13 +68,13 @@ class ServiceGeneratorTest {
     @Test
     fun `it renders a companion object`() {
         val expected = """
-    companion object {
-        operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ExampleClient {
-            val config = Config.BuilderImpl().apply(block).build()
-            return DefaultExampleClient(config)
-        }
-    }
-"""
+            companion object {
+                operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): TestClient {
+                    val config = Config.BuilderImpl().apply(block).build()
+                    return DefaultTestClient(config)
+                }
+            }
+        """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
@@ -85,7 +87,7 @@ class ServiceGeneratorTest {
     @Test
     fun `it syntactic sanity checks`() {
         // sanity check since we are testing fragments
-        commonTestContents.shouldSyntacticSanityCheck()
+        commonTestContents.assertBalancedBracesAndParens()
     }
 
     @Test
@@ -96,9 +98,9 @@ class ServiceGeneratorTest {
             .assemble()
             .unwrap()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Example")
-        val writer = KotlinWriter("com.test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val service = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
         writer.onSection(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) {
             writer.openBlock("companion object {")
                 .write("fun foo(): Int = 1")
@@ -118,28 +120,28 @@ class ServiceGeneratorTest {
         val contents = writer.toString()
 
         val expectedCompanionOverride = """
-    companion object {
-        fun foo(): Int = 1
-    }
-"""
+            companion object {
+                fun foo(): Int = 1
+            }
+        """.formatForTest()
         contents.shouldContainOnlyOnce(expectedCompanionOverride)
 
         val expectedConfigOverride = """
-    class Config {
-        var bar: Int = 2
-    }
-"""
+            class Config {
+                var bar: Int = 2
+            }
+        """.formatForTest()
         contents.shouldContainOnlyOnce(expectedConfigOverride)
     }
 
     // Produce the generated service code given model inputs.
     private fun generateService(modelResourceName: String): String {
-        val model = javaClass.getResource(modelResourceName).asSmithy()
+        val model = javaClass.getResource(modelResourceName).toSmithyModel()
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Example")
-        val writer = KotlinWriter("test")
-        val service = model.getShape(ShapeId.from("com.test#Example")).get().asServiceShape().get()
-        val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings("test", "0.0"), sdkId = service.id.name)
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val service = model.getShape(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
+        val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestModelDefault.NAMESPACE, TestModelDefault.MODEL_VERSION), sdkId = service.id.name)
         val renderingCtx = RenderingContext(writer, service, model, provider, settings)
         val generator = ServiceGenerator(renderingCtx)
 

@@ -17,12 +17,13 @@ package software.amazon.smithy.kotlin.codegen
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 
 class GradleGeneratorTest {
     @Test
     fun `it writes dependencies`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val settings = KotlinSettings.from(
             model,
@@ -50,7 +51,7 @@ class GradleGeneratorTest {
 
     @Test
     fun `it writes full project`() {
-        val model = javaClass.getResource("simple-service.smithy").asSmithy()
+        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
 
         val settings = KotlinSettings.from(
             model,

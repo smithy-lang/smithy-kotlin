@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.StringShape
 
 class EnumGeneratorTest {
@@ -16,8 +17,6 @@ class EnumGeneratorTest {
     @Test
     fun `it generates unnamed enums`() {
         val model = """
-            namespace com.test
-            
             @enum([
                 {
                     value: "FOO"
@@ -30,12 +29,12 @@ class EnumGeneratorTest {
             @documentation("Documentation for this enum")
             string Baz
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
-        val shape = model.expectShape<StringShape>("com.test#Baz")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
+        val shape = model.expectShape<StringShape>("test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -85,7 +84,7 @@ sealed class Baz {
 }
 """
 
-        contents.shouldContainOnlyOnce(expectedEnumDecl)
+        contents.shouldContainOnlyOnceWithDiff(expectedEnumDecl)
     }
 
     @Test
@@ -95,9 +94,7 @@ sealed class Baz {
             "performance with the ability to burst above the\n" +
             "baseline."
 
-        val model = """
-            namespace com.test
-            
+        val model = """            
             @enum([
                 {
                     value: "t2.nano",
@@ -110,14 +107,14 @@ sealed class Baz {
                 }
             ])
             @documentation("Documentation for this enum")
-            string Baz
-            
-        """.asSmithyModel()
+            string Baz            
+        """.prependNamespaceAndService(namespace = "test")
+            .toSmithyModel()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
-        val shape = model.expectShape<StringShape>("com.test#Baz")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
+        val shape = model.expectShape<StringShape>("test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -169,7 +166,7 @@ sealed class Baz {
     }
 }
 """
-        contents.shouldContainOnlyOnce(expectedEnumDecl)
+        contents.shouldContainOnlyOnceWithDiff(expectedEnumDecl)
     }
 
     @Test
@@ -179,8 +176,6 @@ sealed class Baz {
         // appropriately when the value itself would constitute an invalid kotlin identifier name
 
         val model = """
-            namespace com.test
-            
             @enum([
                 {
                     value: "0"
@@ -191,12 +186,12 @@ sealed class Baz {
             ])
             string Baz
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
-        val shape = model.expectShape<StringShape>("com.test#Baz")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
+        val shape = model.expectShape<StringShape>("test#Baz")
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
@@ -208,9 +203,7 @@ sealed class Baz {
         // names and values are required to be unique, prefixing invalid identifiers with '_' could potentially
         // (albeit unlikely) cause a conflict with an existing name
 
-        val model = """
-            namespace com.test
-            
+        val model = """           
             @enum([
                 {
                     value: "0"
@@ -221,13 +214,13 @@ sealed class Baz {
             ])
             string Baz
             
-        """.asSmithyModel()
+        """.prependNamespaceAndService().toSmithyModel()
 
         val shape = model.expectShape<StringShape>("com.test#Baz")
 
-        val provider = KotlinCodegenPlugin.createSymbolProvider(model, "test", "Baz")
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model)
         val symbol = provider.toSymbol(shape)
-        val writer = KotlinWriter("com.test")
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val ex = assertThrows<CodegenException> {
             EnumGenerator(shape, symbol, writer).render()
         }

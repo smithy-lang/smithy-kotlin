@@ -18,34 +18,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
-import software.amazon.smithy.kotlin.codegen.*
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.kotlin.codegen.test.*
 
 class SerializeStructGeneratorTest {
     private val modelPrefix = """
-            namespace com.test
-
-            use aws.protocols#restJson1
-
-            @restJson1
-            service Example {
-                version: "1.0.0",
-                operations: [
-                    Foo,
-                ]
-            }
-
             @http(method: "POST", uri: "/foo-no-input")
             operation Foo {
                 input: FooRequest
             }        
-    """.trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
 
     @ParameterizedTest
     @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
-    // TODO ~ Support BigInteger and BigDecimal Types
+    // TODO ~ Support BigInteger and BigDecimal Types - https://github.com/awslabs/smithy-kotlin/issues/213
     fun `it serializes a structure with a simple fields`(memberType: String) {
         val model = (
             modelPrefix + """            
@@ -53,7 +38,7 @@ class SerializeStructGeneratorTest {
                 payload: $memberType
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -61,7 +46,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -83,7 +68,7 @@ class SerializeStructGeneratorTest {
                 payload: $memberType
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -91,7 +76,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -105,7 +90,7 @@ class SerializeStructGeneratorTest {
                 payload: PrimitiveInteger
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -113,7 +98,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -126,7 +111,7 @@ class SerializeStructGeneratorTest {
                 payload: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -134,7 +119,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -148,7 +133,7 @@ class SerializeStructGeneratorTest {
                 payload: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -156,7 +141,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
@@ -172,7 +157,7 @@ class SerializeStructGeneratorTest {
                 member: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -186,7 +171,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -205,7 +190,7 @@ class SerializeStructGeneratorTest {
                 member: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -219,7 +204,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -241,7 +226,7 @@ class SerializeStructGeneratorTest {
                 member: CustomTimestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -255,7 +240,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -274,7 +259,7 @@ class SerializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -282,7 +267,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -301,7 +286,7 @@ class SerializeStructGeneratorTest {
                     booleanValue: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -309,7 +294,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo")
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -326,7 +311,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -340,7 +325,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -361,7 +346,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -379,7 +364,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -402,7 +387,7 @@ class SerializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -416,7 +401,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -434,7 +419,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -448,7 +433,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -469,7 +454,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -487,7 +472,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -508,7 +493,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -522,7 +507,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -547,7 +532,7 @@ class SerializeStructGeneratorTest {
                 member: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -569,7 +554,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -586,7 +571,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }            
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -600,7 +585,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -622,7 +607,7 @@ class SerializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -638,7 +623,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -659,7 +644,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -677,7 +662,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -698,7 +683,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -706,7 +691,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -727,7 +712,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -745,7 +730,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -767,7 +752,7 @@ class SerializeStructGeneratorTest {
                 member: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -783,7 +768,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -805,7 +790,7 @@ class SerializeStructGeneratorTest {
                 value: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -821,7 +806,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -839,7 +824,7 @@ class SerializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -851,7 +836,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -875,7 +860,7 @@ class SerializeStructGeneratorTest {
                 boolval: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -887,7 +872,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -906,7 +891,7 @@ class SerializeStructGeneratorTest {
                 value: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -918,7 +903,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -941,7 +926,7 @@ class SerializeStructGeneratorTest {
                 fooValue: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -953,7 +938,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -975,7 +960,7 @@ class SerializeStructGeneratorTest {
                 member: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -991,7 +976,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1018,7 +1003,7 @@ class SerializeStructGeneratorTest {
                 value: Boolean
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1036,7 +1021,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1058,7 +1043,7 @@ class SerializeStructGeneratorTest {
                 nestedPayload: String
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1070,7 +1055,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1093,7 +1078,7 @@ class SerializeStructGeneratorTest {
                 value: Integer
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1107,7 +1092,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1127,7 +1112,7 @@ class SerializeStructGeneratorTest {
             @enum([{value: "Yes", name: "YES"}, {value: "No", name: "NO"}])
             string TypedYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1136,7 +1121,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1156,7 +1141,7 @@ class SerializeStructGeneratorTest {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1170,7 +1155,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1191,7 +1176,7 @@ class SerializeStructGeneratorTest {
             @enum([{value: "YES"}, {value: "NO"}])
             string SimpleYesNo
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1203,7 +1188,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1216,7 +1201,7 @@ class SerializeStructGeneratorTest {
                 fooBlob: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1224,7 +1209,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1242,7 +1227,7 @@ class SerializeStructGeneratorTest {
                 value: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1254,7 +1239,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1271,7 +1256,7 @@ class SerializeStructGeneratorTest {
                 member: Blob
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1285,7 +1270,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1307,7 +1292,7 @@ class SerializeStructGeneratorTest {
                 member3: CustomTimestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1317,7 +1302,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1335,7 +1320,7 @@ class SerializeStructGeneratorTest {
                 value: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1347,7 +1332,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1367,7 +1352,7 @@ class SerializeStructGeneratorTest {
                 value: Timestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1379,7 +1364,7 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -1400,7 +1385,7 @@ class SerializeStructGeneratorTest {
                 value: CustomTimestamp
             }
         """
-            ).asSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
@@ -1412,29 +1397,8 @@ class SerializeStructGeneratorTest {
             }
         """.trimIndent()
 
-        val actual = getContentsForShape(model, "com.test#Foo").stripCodegenPrefix()
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
-
-    private fun getContentsForShape(model: Model, shapeId: String): String {
-        val ctx = model.newTestContext()
-
-        val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
-        return testRender(ctx.requestMembers(op)) { members, writer ->
-            SerializeStructGenerator(
-                ctx.generationCtx,
-                members,
-                writer,
-                TimestampFormatTrait.Format.EPOCH_SECONDS
-            ).render()
-        }
-    }
 }
-
-/**
- * // Code generated by smithy-kotlin-codegen. DO NOT EDIT!
- * package test
- */
-private fun String.stripCodegenPrefix() =
-    this.substring(this.indexOf("package test") + "package test".length).trim()
