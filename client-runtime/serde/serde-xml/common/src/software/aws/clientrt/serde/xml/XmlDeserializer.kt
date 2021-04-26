@@ -25,7 +25,8 @@ class XmlDeserializer(
     private val reader: XmlStreamReader,
     private val validateRootElement: Boolean = false
 ) : Deserializer {
-    constructor(input: ByteArray) : this(xmlStreamReader(input))
+
+    constructor(input: ByteArray, validateRootElement: Boolean = false) : this(xmlStreamReader(input), validateRootElement)
 
     private val logger = Logger.getLogger<XmlDeserializer>()
     private var firstStructCall = true
