@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.model.ext.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.ext.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -523,9 +524,9 @@ open class DeserializeStructGenerator(
 
     // Return the function to generate a mutable instance of collection type of input shape.
     private fun MapShape.mutableCollectionType(): String =
-        ctx.symbolProvider.toSymbol(this).getProperty(KotlinSymbolProvider.MUTABLE_COLLECTION_FUNCTION).get() as String
+        ctx.symbolProvider.toSymbol(this).getProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION).get() as String
 
     // Return the function to generate a mutable instance of collection type of input shape.
     private fun CollectionShape.mutableCollectionType(): String =
-        ctx.symbolProvider.toSymbol(this).getProperty(KotlinSymbolProvider.MUTABLE_COLLECTION_FUNCTION).get() as String
+        ctx.symbolProvider.toSymbol(this).getProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION).get() as String
 }

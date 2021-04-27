@@ -8,8 +8,8 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.boxed
-import software.amazon.smithy.kotlin.codegen.core.defaultValue
+import software.amazon.smithy.kotlin.codegen.model.ext.boxed
+import software.amazon.smithy.kotlin.codegen.model.ext.defaultValue
 
 @DslMarker
 annotation class SymbolDsl

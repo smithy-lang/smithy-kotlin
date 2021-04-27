@@ -7,6 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.ext.boxed
+import software.amazon.smithy.kotlin.codegen.model.ext.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.namespace
 
 /**
