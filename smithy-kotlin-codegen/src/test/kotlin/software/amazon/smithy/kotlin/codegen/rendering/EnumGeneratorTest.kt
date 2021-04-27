@@ -2,13 +2,16 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
+import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.StringShape
 

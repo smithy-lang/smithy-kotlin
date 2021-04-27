@@ -17,6 +17,8 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
+import software.amazon.smithy.kotlin.codegen.rendering.hasStreamingMember
+import software.amazon.smithy.kotlin.codegen.rendering.operationSignature
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape

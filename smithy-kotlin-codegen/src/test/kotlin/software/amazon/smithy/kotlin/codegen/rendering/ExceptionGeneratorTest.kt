@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Test
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*

@@ -3,18 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.CodegenContext
+import software.amazon.smithy.kotlin.codegen.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 
 class ClientConfigGeneratorTest {
+    private fun getModel(): Model {
+        return javaClass
+            .classLoader
+            .getResource("software/amazon/smithy/kotlin/codegen/idempotent-token-test-model.smithy")!!
+            .toSmithyModel()
+    }
+
     @Test
     fun `it detects default properties`() {
-        val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
+        val model = getModel()
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
@@ -89,7 +101,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
     @Test
     fun `it handles additional props`() {
-        val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
+        val model = getModel()
 
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
@@ -132,7 +144,7 @@ class Config private constructor(builder: BuilderImpl) {
 
     @Test
     fun `it registers integration props`() {
-        val model = javaClass.getResource("idempotent-token-test-model.smithy").toSmithyModel()
+        val model = getModel()
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()

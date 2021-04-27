@@ -1,29 +1,29 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 
 class GradleGeneratorTest {
+
+    private fun getModel(): Model {
+        return javaClass
+            .classLoader
+            .getResource("software/amazon/smithy/kotlin/codegen/simple-service.smithy")!!
+            .toSmithyModel()
+    }
+
     @Test
     fun `it writes dependencies`() {
-        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
+        val model = getModel()
 
         val settings = KotlinSettings.from(
             model,
@@ -51,7 +51,7 @@ class GradleGeneratorTest {
 
     @Test
     fun `it writes full project`() {
-        val model = javaClass.getResource("simple-service.smithy").toSmithyModel()
+        val model = getModel()
 
         val settings = KotlinSettings.from(
             model,

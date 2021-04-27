@@ -16,6 +16,8 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.hasStreamingMember
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
