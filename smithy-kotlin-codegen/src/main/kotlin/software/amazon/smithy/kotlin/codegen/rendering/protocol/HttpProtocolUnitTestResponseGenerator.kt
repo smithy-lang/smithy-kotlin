@@ -5,7 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.ext.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator

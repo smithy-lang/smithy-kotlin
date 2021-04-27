@@ -7,8 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.test.*
 
 class HttpProtocolClientGeneratorTest {

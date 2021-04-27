@@ -7,7 +7,9 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.model.node.Node
 
 class GradleGeneratorTest {

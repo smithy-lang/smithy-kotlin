@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.core
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
@@ -10,13 +10,14 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
+import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
-import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 
 class KotlinDelegatorTest {
     @Test fun `it renders files into namespace`() {
-        val model = javaClass.getResource("simple-service-with-operation.smithy").toSmithyModel()
+        val model = loadModelFromResource("simple-service-with-operation.smithy")
 
         val manifest = MockManifest()
         val context = PluginContext.builder()
@@ -45,7 +46,7 @@ class KotlinDelegatorTest {
     }
 
     @Test fun `it adds imports`() {
-        val model = javaClass.getResource("simple-service-with-operation.smithy").toSmithyModel()
+        val model = loadModelFromResource("simple-service-with-operation.smithy")
 
         val manifest = MockManifest()
         val context = PluginContext.builder()

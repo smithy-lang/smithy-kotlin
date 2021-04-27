@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.build.SmithyBuildPlugin
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.core.KotlinSymbolProvider
 import software.amazon.smithy.model.Model
 
 /**

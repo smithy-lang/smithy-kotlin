@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.core
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test

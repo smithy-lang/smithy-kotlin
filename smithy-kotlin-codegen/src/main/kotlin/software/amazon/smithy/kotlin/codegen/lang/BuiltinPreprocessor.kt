@@ -6,9 +6,9 @@
 package software.amazon.smithy.kotlin.codegen.lang
 
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
-import software.amazon.smithy.kotlin.codegen.clientName
+import software.amazon.smithy.kotlin.codegen.core.clientName
+import software.amazon.smithy.kotlin.codegen.core.isEnum
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.isEnum
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.transform.ModelTransformer

@@ -2,7 +2,9 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
 import software.amazon.smithy.kotlin.codegen.model.ext.shapes

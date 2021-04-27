@@ -1,4 +1,9 @@
-package software.amazon.smithy.kotlin.codegen
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
+package software.amazon.smithy.kotlin.codegen.core
 
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.model.shapes.MemberShape

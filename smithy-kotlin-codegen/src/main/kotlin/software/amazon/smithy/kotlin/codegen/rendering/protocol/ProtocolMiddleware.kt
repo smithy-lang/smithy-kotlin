@@ -5,7 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 
 /**
  * Interface that allows middleware to be registered and configured with the generated protocol client
