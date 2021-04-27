@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.kotlin.codegen.RenderingContext
+import software.amazon.smithy.kotlin.codegen.model.ext.hasIdempotentTokenMember
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.ServiceShape
 
