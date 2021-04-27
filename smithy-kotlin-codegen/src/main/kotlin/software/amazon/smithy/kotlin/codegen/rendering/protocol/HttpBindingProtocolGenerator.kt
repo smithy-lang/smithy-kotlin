@@ -1,18 +1,8 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen.integration
+package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
@@ -22,10 +12,10 @@ import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
+import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
-import software.amazon.smithy.utils.StringUtils
 import java.util.logging.Logger
 
 /**
@@ -310,7 +300,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // shape must be string, number, boolean, or timestamp
                     val targetShape = ctx.model.expectShape(binding.member.target)
                     if (targetShape.isTimestampShape) {
-                        importTimestampFormat(writer)
+                        writer.addImport(RuntimeTypes.Core.TimestampFormat)
                         val resolver = getProtocolHttpBindingResolver(ctx)
                         val tsFormat = resolver.determineTimestampFormat(
                             binding.member,
@@ -722,7 +712,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     )
                 }
                 is BlobShape -> {
-                    importBase64Utils(writer)
+                    writer.addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
                     writer.write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
                 }
                 is StringShape -> {
@@ -738,7 +728,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             )
                         }
                         memberTarget.hasTrait<MediaTypeTrait>() -> {
-                            importBase64Utils(writer)
+                            writer.addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
                             writer.write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
                         }
                         else -> {
@@ -752,7 +742,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         HttpBinding.Location.HEADER,
                         defaultTimestampFormat
                     )
-                    importInstant(writer)
+                    writer.addImport(RuntimeTypes.Core.Instant)
 
                     writer.write(
                         "builder.#L = response.headers[#S]?.let { #L }",
@@ -778,7 +768,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             if (tsFormat == TimestampFormatTrait.Format.HTTP_DATE) {
                                 splitFn = "splitHttpDateHeaderListValues"
                             }
-                            importInstant(writer)
+                            writer.addImport(RuntimeTypes.Core.Instant)
                             parseInstant("it", tsFormat)
                         }
                         is StringShape -> {
@@ -789,7 +779,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                     "${enumSymbol.name}.fromValue(it)"
                                 }
                                 collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
-                                    importBase64Utils(writer)
+                                    writer.addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
                                     "it.decodeBase64()"
                                 }
                                 else -> ""
@@ -970,68 +960,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 }
 
-/**
- * Get the field descriptor name for a member shape
- */
-fun MemberShape.descriptorName(childName: String = ""): String = "${this.defaultName()}${childName}_DESCRIPTOR".toUpperCase()
-
-/**
- * Get the serializer class name for an operation. Operation inputs can be serialized to the protocol (e.g. HTTP)
- * and/or to the document/payload. Distinguishing from generic
- */
-fun OperationShape.serializerName(): String = StringUtils.capitalize(this.id.name) + "OperationSerializer"
-
-/**
- * Get the deserializer class name for an operation. Operation outputs can be deserialized from the protocol (e.g. HTTP)
- * and/or the document/payload.
- */
-fun OperationShape.deserializerName(): String = StringUtils.capitalize(this.id.name) + "OperationDeserializer"
-
-/**
- * Get the serializer class name for a shape bound to the document/payload
- */
-fun Symbol.documentSerializerName(): String = StringUtils.capitalize(this.name) + "DocumentSerializer"
-
-/**
- * Get the deserializer class name for a shape bound to the document/payload
- */
-fun Symbol.documentDeserializerName(): String = StringUtils.capitalize(this.name) + "DocumentDeserializer"
-
-fun formatInstant(paramName: String, tsFmt: TimestampFormatTrait.Format, forceString: Boolean = false): String = when (tsFmt) {
-    TimestampFormatTrait.Format.EPOCH_SECONDS -> {
-        // default to epoch seconds as a double
-        if (forceString) {
-            "$paramName.format(TimestampFormat.EPOCH_SECONDS)"
-        } else {
-            "$paramName.toEpochDouble()"
-        }
-    }
-    TimestampFormatTrait.Format.DATE_TIME -> "$paramName.format(TimestampFormat.ISO_8601)"
-    TimestampFormatTrait.Format.HTTP_DATE -> "$paramName.format(TimestampFormat.RFC_5322)"
-    else -> throw CodegenException("unknown timestamp format: $tsFmt")
-}
-
 // import CLIENT-RT.*
 internal fun importSerdePackage(writer: KotlinWriter) {
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
     writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
-}
-
-// import CLIENT-RT.time.TimestampFormat
-internal fun importTimestampFormat(writer: KotlinWriter) {
-    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "TimestampFormat")
-}
-
-// import CLIENT-RT.time.Instant
-internal fun importInstant(writer: KotlinWriter) {
-    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "Instant")
-}
-
-// import CLIENT-RT-UTILS.*
-internal fun importBase64Utils(writer: KotlinWriter) {
-    // these are extensions on string/bytearray. For now import everything so we don't have to distinguish
-    writer.addImport(KotlinDependency.CLIENT_RT_UTILS.namespace, "*")
-    writer.dependencies.addAll(KotlinDependency.CLIENT_RT_UTILS.dependencies)
 }
 
 // return the conversion function to use to convert a Kotlin string to a given number shape
@@ -1043,38 +975,6 @@ internal fun stringToNumber(shape: NumberShape): String = when (shape.type) {
     ShapeType.FLOAT -> "toFloat()"
     ShapeType.DOUBLE -> "toDouble()"
     else -> throw CodegenException("unknown number shape: $shape")
-}
-
-// return the conversion function `Instant.fromXYZ(paramName)` for the given format
-internal fun parseInstant(paramName: String, tsFmt: TimestampFormatTrait.Format): String = when (tsFmt) {
-    TimestampFormatTrait.Format.EPOCH_SECONDS -> "Instant.fromEpochSeconds($paramName)"
-    TimestampFormatTrait.Format.DATE_TIME -> "Instant.fromIso8601($paramName)"
-    TimestampFormatTrait.Format.HTTP_DATE -> "Instant.fromRfc5322($paramName)"
-    else -> throw CodegenException("unknown timestamp format: $tsFmt")
-}
-
-/**
- * Get the serde SerialKind for a shape
- */
-fun Shape.serialKind(): String = when (this.type) {
-    ShapeType.BOOLEAN -> "SerialKind.Boolean"
-    ShapeType.BYTE -> "SerialKind.Byte"
-    ShapeType.SHORT -> "SerialKind.Short"
-    ShapeType.INTEGER -> "SerialKind.Integer"
-    ShapeType.LONG -> "SerialKind.Long"
-    ShapeType.FLOAT -> "SerialKind.Float"
-    ShapeType.DOUBLE -> "SerialKind.Double"
-    ShapeType.STRING -> "SerialKind.String"
-    ShapeType.BLOB -> "SerialKind.Blob"
-    ShapeType.TIMESTAMP -> "SerialKind.Timestamp"
-    ShapeType.DOCUMENT -> "SerialKind.Document"
-    ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> "SerialKind.BigNumber"
-    ShapeType.LIST -> "SerialKind.List"
-    ShapeType.SET -> "SerialKind.List"
-    ShapeType.MAP -> "SerialKind.Map"
-    ShapeType.STRUCTURE -> "SerialKind.Struct"
-    ShapeType.UNION -> "SerialKind.Struct"
-    else -> throw CodegenException("unknown SerialKind for ${this.type} ($this)")
 }
 
 // test if the request bindings have any members bound to the HTTP payload (body)

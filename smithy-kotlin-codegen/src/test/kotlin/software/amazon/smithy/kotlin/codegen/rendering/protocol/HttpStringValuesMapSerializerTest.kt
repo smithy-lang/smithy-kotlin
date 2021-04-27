@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen.integration
+package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.*
@@ -15,7 +15,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class HttpStringValuesMapSerializerTest {
-    private val defaultModel = HttpBindingProtocolGeneratorTest::class.java.getResource("http-binding-protocol-generator-test.smithy").toSmithyModel()
+    private val defaultModel = loadModelFromResource("http-binding-protocol-generator-test.smithy")
 
     private fun getTestContents(model: Model, operationId: String, location: HttpBinding.Location): String {
         val testCtx = model.newTestContext()

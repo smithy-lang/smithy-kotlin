@@ -1,13 +1,12 @@
 /*
- *
- *  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *  * SPDX-License-Identifier: Apache-2.0.
- *
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen.integration
+package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.withBlock
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait

@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen.integration
+package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
+import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
@@ -46,10 +47,10 @@ class HttpStringValuesMapSerializer(
                     // headers/query params need to be a string
                     val formatted = formatInstant("input.$memberName", tsFormat, forceString = true)
                     writer.write("if (input.#1L != null) append(\"#2L\", #3L)", memberName, paramName, formatted)
-                    importTimestampFormat(writer)
+                    writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 }
                 is BlobShape -> {
-                    importBase64Utils(writer)
+                    writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
                     writer.write(
                         "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.encodeBase64String())",
                         memberName,
@@ -85,7 +86,7 @@ class HttpStringValuesMapSerializer(
             ShapeType.TIMESTAMP -> {
                 // special case of timestamp list
                 val tsFormat = resolver.determineTimestampFormat(binding.member, binding.location, defaultTimestampFormat)
-                importTimestampFormat(writer)
+                writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 // headers/query params need to be a string
                 formatInstant("it", tsFormat, forceString = true)
             }
@@ -138,7 +139,7 @@ class HttpStringValuesMapSerializer(
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {
-                    importBase64Utils(writer)
+                    writer.addImport("encodeBase64", KotlinDependency.CLIENT_RT_UTILS)
                     ".encodeBase64()"
                 }
                 else -> ""

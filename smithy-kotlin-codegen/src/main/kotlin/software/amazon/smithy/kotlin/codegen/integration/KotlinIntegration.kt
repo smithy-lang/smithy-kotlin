@@ -17,6 +17,8 @@ package software.amazon.smithy.kotlin.codegen.integration
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.rendering.ClientConfigProperty
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
 

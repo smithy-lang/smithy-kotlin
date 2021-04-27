@@ -2,15 +2,13 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen.integration
+package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.ext.targetOrSelf
-import software.amazon.smithy.kotlin.codegen.utils.NestedIdentifierType
-import software.amazon.smithy.kotlin.codegen.utils.nestedDescriptorName
-import software.amazon.smithy.kotlin.codegen.utils.variableNameFor
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 
@@ -38,6 +36,7 @@ import software.amazon.smithy.model.traits.*
  * This class is open to extension for variations of member serialization; specifically Unions.
  */
 open class SerializeStructGenerator(
+    // FIXME - refactor to just take a CodegenContext rather than the more specific protocol generator context. Serde should be protocol agnostic (ideally)
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val members: List<MemberShape>,
     protected val writer: KotlinWriter,
@@ -380,7 +379,7 @@ open class SerializeStructGenerator(
      * ```
      */
     private fun renderBlobEntry(nestingLevel: Int, listMemberName: String) {
-        importBase64Utils(writer)
+        writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
 
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
@@ -396,7 +395,7 @@ open class SerializeStructGenerator(
      * ```
      */
     private fun renderTimestampEntry(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
-        importTimestampFormat(writer)
+        writer.addImport(RuntimeTypes.Core.TimestampFormat)
 
         // favor the member shape if it overrides the value shape trait
         val shape = if (memberShape.hasTrait<TimestampFormatTrait>()) {
@@ -464,7 +463,7 @@ open class SerializeStructGenerator(
      * }
      */
     private fun renderBlobElement(nestingLevel: Int, listMemberName: String) {
-        importBase64Utils(writer)
+        writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
 
@@ -483,7 +482,7 @@ open class SerializeStructGenerator(
      */
     private fun renderTimestampElement(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         // :test(timestamp, member > timestamp)
-        importTimestampFormat(writer)
+        writer.addImport(RuntimeTypes.Core.TimestampFormat)
 
         // favor the member shape if it overrides the value shape trait
         val shape = if (memberShape.hasTrait<TimestampFormatTrait>()) {
@@ -599,11 +598,11 @@ open class SerializeStructGenerator(
             ShapeType.FLOAT,
             ShapeType.DOUBLE -> defaultIdentifier
             ShapeType.BLOB -> {
-                importBase64Utils(writer)
+                writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
                 "$defaultIdentifier.encodeBase64String()"
             }
             ShapeType.TIMESTAMP -> {
-                importTimestampFormat(writer)
+                writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 val tsFormat = shape
                     .getTrait(TimestampFormatTrait::class.java)
                     .map { it.format }

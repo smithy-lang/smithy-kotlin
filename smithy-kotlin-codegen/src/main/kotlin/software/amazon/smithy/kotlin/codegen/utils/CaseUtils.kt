@@ -4,29 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.utils
 
-// FIXME - move this it's not a utility and only used in serde generation
-/**
- * Specifies the type of value the identifier represents
- */
-internal enum class NestedIdentifierType(val prefix: String) {
-    KEY("k"), // Generated variable names for map keys
-    VALUE("v"), // Generated variable names for map values
-    ELEMENT("el"), // Generated variable name for list elements
-    COLLECTION("col"), // Generated variable name for collection types (list, set)
-    MAP("map"); // Generated variable name for map type
-}
-
-/**
- * Generate an identifier for a given nesting level
- * @param type intended type of value
- */
-internal fun Int.variableNameFor(type: NestedIdentifierType): String = "${type.prefix}$this"
-
-/**
- * Generate an identifier for a given nesting level
- */
-internal fun Int.nestedDescriptorName(): String = "_C$this"
-
 /**
  * Split a string on word boundaries
  */

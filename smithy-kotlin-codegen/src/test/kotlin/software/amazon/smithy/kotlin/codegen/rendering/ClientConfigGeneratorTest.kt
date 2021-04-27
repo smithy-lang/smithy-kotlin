@@ -11,18 +11,14 @@ import software.amazon.smithy.kotlin.codegen.CodegenContext
 import software.amazon.smithy.kotlin.codegen.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 
 class ClientConfigGeneratorTest {
-    private fun getModel(): Model {
-        return javaClass
-            .classLoader
-            .getResource("software/amazon/smithy/kotlin/codegen/idempotent-token-test-model.smithy")!!
-            .toSmithyModel()
-    }
+    private fun getModel(): Model = loadModelFromResource("idempotent-token-test-model.smithy")
 
     @Test
     fun `it detects default properties`() {

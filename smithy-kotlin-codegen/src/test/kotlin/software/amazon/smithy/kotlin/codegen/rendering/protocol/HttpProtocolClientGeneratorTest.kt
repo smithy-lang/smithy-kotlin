@@ -1,23 +1,14 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.integration.*
+import software.amazon.smithy.kotlin.codegen.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.test.*
 
 class HttpProtocolClientGeneratorTest {
@@ -32,7 +23,11 @@ class HttpProtocolClientGeneratorTest {
     }
 
     init {
-        val model = javaClass.getResource("service-generator-test-operations.smithy").toSmithyModel()
+        val model = javaClass
+            .classLoader
+            .getResource("software/amazon/smithy/kotlin/codegen/service-generator-test-operations.smithy")!!
+            .toSmithyModel()
+
         val ctx = model.newTestContext()
         val features: List<ProtocolMiddleware> = listOf(MockProtocolMiddleware1())
         val generator = TestProtocolClientGenerator(

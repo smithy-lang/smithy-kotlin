@@ -12,9 +12,10 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.*
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.assertFailsWith

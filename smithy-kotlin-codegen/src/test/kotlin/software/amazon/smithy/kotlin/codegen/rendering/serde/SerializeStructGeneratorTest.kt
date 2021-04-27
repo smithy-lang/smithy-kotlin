@@ -12,7 +12,7 @@
  * express or implied. See the License for the specific language governing
  * permissions and limitations under the License.
  */
-package software.amazon.smithy.kotlin.codegen.integration
+package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest

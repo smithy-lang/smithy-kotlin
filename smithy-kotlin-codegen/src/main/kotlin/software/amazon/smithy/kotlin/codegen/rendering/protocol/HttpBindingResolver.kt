@@ -1,4 +1,9 @@
-package software.amazon.smithy.kotlin.codegen.integration
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
+package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.model.ext.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait

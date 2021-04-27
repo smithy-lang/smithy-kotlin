@@ -10,7 +10,9 @@ import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.kotlin.codegen.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.buildSymbol
-import software.amazon.smithy.kotlin.codegen.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
