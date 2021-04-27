@@ -10,10 +10,10 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.expectShape
 import software.amazon.smithy.kotlin.codegen.expectTrait
+import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
+import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
+import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
-import software.amazon.smithy.kotlin.codegen.traits.OperationInput
-import software.amazon.smithy.kotlin.codegen.traits.OperationOutput
-import software.amazon.smithy.kotlin.codegen.traits.SyntheticClone
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.StructureShape

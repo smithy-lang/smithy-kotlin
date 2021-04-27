@@ -7,7 +7,7 @@ package software.amazon.smithy.kotlin.codegen.model
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
-import software.amazon.smithy.kotlin.codegen.traits.*
+import software.amazon.smithy.kotlin.codegen.model.traits.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.neighbor.Walker
