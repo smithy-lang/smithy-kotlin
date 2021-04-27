@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.ext.isEnum
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.knowledge.HttpBinding

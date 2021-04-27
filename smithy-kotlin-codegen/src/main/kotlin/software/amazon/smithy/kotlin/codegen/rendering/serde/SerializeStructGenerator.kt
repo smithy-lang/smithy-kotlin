@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.ext.isNumberShape
 import software.amazon.smithy.kotlin.codegen.model.ext.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*

@@ -12,7 +12,6 @@ import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
-import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
@@ -386,16 +385,3 @@ fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextO
  */
 val Symbol.shape: Shape?
     get() = getProperty(SHAPE_KEY, Shape::class.java).getOrNull()
-
-/**
- * Test if a shape represents an enumeration
- * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
- */
-val Shape.isEnum: Boolean
-    get() = isStringShape && hasTrait<EnumTrait>()
-
-/**
- * Test if a shape represents an Kotlin number type
- */
-val Shape.isNumberShape: Boolean
-    get() = this is NumberShape
