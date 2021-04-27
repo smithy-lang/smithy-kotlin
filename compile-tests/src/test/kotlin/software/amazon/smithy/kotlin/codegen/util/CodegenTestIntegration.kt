@@ -6,13 +6,14 @@ package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.integration.*
-import software.amazon.smithy.kotlin.codegen.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.buildSymbol
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.descriptorName
+import software.amazon.smithy.kotlin.codegen.rendering.serde.serialKind
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
