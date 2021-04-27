@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*

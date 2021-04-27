@@ -2,10 +2,11 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen
+package software.amazon.smithy.kotlin.codegen.model
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.KotlinDependency
 
 class SymbolBuilderTest {
 

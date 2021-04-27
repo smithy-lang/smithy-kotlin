@@ -1,7 +1,7 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
-import software.amazon.smithy.kotlin.codegen.expectTrait
-import software.amazon.smithy.kotlin.codegen.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.ext.expectTrait
+import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex

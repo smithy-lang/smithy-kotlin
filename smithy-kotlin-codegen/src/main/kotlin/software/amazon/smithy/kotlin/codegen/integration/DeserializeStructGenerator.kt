@@ -16,6 +16,11 @@ package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.ext.targetOrSelf
+import software.amazon.smithy.kotlin.codegen.utils.NestedIdentifierType
+import software.amazon.smithy.kotlin.codegen.utils.nestedDescriptorName
+import software.amazon.smithy.kotlin.codegen.utils.variableNameFor
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait

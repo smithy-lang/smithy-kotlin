@@ -1,20 +1,8 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0.
  */
-package software.amazon.smithy.kotlin.codegen
-
-import java.util.Optional
+package software.amazon.smithy.kotlin.codegen.utils
 
 // FIXME - move this it's not a utility and only used in serde generation
 /**
@@ -38,11 +26,6 @@ internal fun Int.variableNameFor(type: NestedIdentifierType): String = "${type.p
  * Generate an identifier for a given nesting level
  */
 internal fun Int.nestedDescriptorName(): String = "_C$this"
-
-/**
- * Get the value if present otherwise return null
- */
-fun <T> Optional<T>.getOrNull(): T? = if (isPresent) get() else null
 
 /**
  * Split a string on word boundaries

@@ -7,6 +7,9 @@ package software.amazon.smithy.kotlin.codegen
 
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
+import software.amazon.smithy.kotlin.codegen.utils.splitOnWordBoundaries
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import software.amazon.smithy.kotlin.codegen.utils.toPascalCase
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
