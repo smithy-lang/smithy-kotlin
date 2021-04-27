@@ -535,9 +535,9 @@ open class DeserializeStructGenerator(
 
     // Return the function to generate a mutable instance of collection type of input shape.
     private fun MapShape.mutableCollectionType(): String =
-        ctx.symbolProvider.toSymbol(this).getProperty(SymbolVisitor.MUTABLE_COLLECTION_FUNCTION).get() as String
+        ctx.symbolProvider.toSymbol(this).getProperty(KotlinSymbolProvider.MUTABLE_COLLECTION_FUNCTION).get() as String
 
     // Return the function to generate a mutable instance of collection type of input shape.
     private fun CollectionShape.mutableCollectionType(): String =
-        ctx.symbolProvider.toSymbol(this).getProperty(SymbolVisitor.MUTABLE_COLLECTION_FUNCTION).get() as String
+        ctx.symbolProvider.toSymbol(this).getProperty(KotlinSymbolProvider.MUTABLE_COLLECTION_FUNCTION).get() as String
 }

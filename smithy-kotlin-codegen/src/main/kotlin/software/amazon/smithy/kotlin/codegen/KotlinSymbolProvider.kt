@@ -63,7 +63,7 @@ fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
  * @param model The smithy model to generate for
  * @param settings [KotlinSettings] associated with this codegen
  */
-class SymbolVisitor(private val model: Model, private val settings: KotlinSettings) :
+class KotlinSymbolProvider(private val model: Model, private val settings: KotlinSettings) :
     SymbolProvider,
     ShapeVisitor<Symbol> {
     private val rootNamespace = settings.pkg.name

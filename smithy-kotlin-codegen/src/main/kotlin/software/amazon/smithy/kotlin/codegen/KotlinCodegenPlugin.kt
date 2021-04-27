@@ -29,6 +29,6 @@ class KotlinCodegenPlugin : SmithyBuildPlugin {
          * @return Returns the created provider
          */
         fun createSymbolProvider(model: Model, settings: KotlinSettings): SymbolProvider =
-            SymbolVisitor(model, settings)
+            KotlinSymbolProvider(model, settings)
     }
 }

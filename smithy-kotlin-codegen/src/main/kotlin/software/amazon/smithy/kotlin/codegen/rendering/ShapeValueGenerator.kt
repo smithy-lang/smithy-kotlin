@@ -7,8 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.KotlinSymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.SymbolVisitor
 import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
@@ -64,7 +64,7 @@ class ShapeValueGenerator(
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
-        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolVisitor.IMMUTABLE_COLLECTION_FUNCTION)
+        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(KotlinSymbolProvider.IMMUTABLE_COLLECTION_FUNCTION)
 
         writer.writeInline("$collectionGeneratorFunction(\n")
             .indent()
@@ -80,7 +80,7 @@ class ShapeValueGenerator(
         writer.pushState()
         writer.trimTrailingSpaces(false)
 
-        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(SymbolVisitor.IMMUTABLE_COLLECTION_FUNCTION)
+        val collectionGeneratorFunction = symbolProvider.toSymbol(shape).expectProperty(KotlinSymbolProvider.IMMUTABLE_COLLECTION_FUNCTION)
 
         writer.writeInline("$collectionGeneratorFunction(\n")
             .indent()
