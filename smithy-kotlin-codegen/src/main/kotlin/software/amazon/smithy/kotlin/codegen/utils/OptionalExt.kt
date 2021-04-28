@@ -10,4 +10,4 @@ import java.util.*
 /**
  * Get the value if present otherwise return null
  */
-fun <T> Optional<T>.getOrNull(): T? = if (isPresent) get() else null
+fun <T> Optional<T>.getOrNull(): T? = orElse(null)
