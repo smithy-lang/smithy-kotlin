@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 package software.aws.clientrt.time
 
 import kotlin.test.*
@@ -6,7 +10,7 @@ class ConvertersTest {
     @Test
     fun convertInstantFromJvmToAwsSdk() {
         val jvmInstant = java.time.Instant.now()!!
-        val awsSdkInstant = jvmInstant.toAwsSdkInstant()
+        val awsSdkInstant = jvmInstant.toSdkInstant()
         assertEquals(jvmInstant.epochSecond, awsSdkInstant.epochSeconds)
     }
 

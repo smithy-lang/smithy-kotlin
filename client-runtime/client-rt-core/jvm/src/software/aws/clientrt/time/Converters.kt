@@ -12,4 +12,4 @@ fun Instant.toJvmInstant(): java.time.Instant = value
 /**
  * Converts this [java.time.Instant] to a [software.aws.clientrt.time.Instant].
  */
-fun java.time.Instant.toAwsSdkInstant(): Instant = Instant(this)
+fun java.time.Instant.toSdkInstant(): Instant = Instant(this)
