@@ -28,8 +28,8 @@ fun File.asByteStream(): ByteStream = FileContent(this)
  */
 fun Path.asByteStream(): ByteStream {
     val f = toFile()
-    require(f.isFile) { "cannot create a ByteStream from a directory: $this" }
     require(f.exists()) { "cannot create ByteStream, invalid file: $this" }
+    require(f.isFile) { "cannot create a ByteStream from a directory: $this" }
     return f.asByteStream()
 }
 
@@ -38,7 +38,6 @@ fun Path.asByteStream(): ByteStream {
  * @return the number of bytes written
  */
 suspend fun ByteStream.writeToFile(file: File): Long {
-    require(file.isFile) { "cannot write contents of ByteStream to a directory: ${file.absolutePath}" }
     val writer = file.writeChannel()
     val src = when (this) {
         is ByteStream.Buffer -> SdkByteReadChannel(bytes())
