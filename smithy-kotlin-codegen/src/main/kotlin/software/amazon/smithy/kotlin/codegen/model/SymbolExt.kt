@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package software.amazon.smithy.kotlin.codegen.model.ext
+package software.amazon.smithy.kotlin.codegen.model
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference

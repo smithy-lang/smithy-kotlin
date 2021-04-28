@@ -7,7 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.defaultName
-import software.amazon.smithy.kotlin.codegen.model.ext.hasStreamingMember
+import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 

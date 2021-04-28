@@ -6,9 +6,9 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.ext.SymbolProperty
-import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.ext.targetOrSelf
+import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumTrait

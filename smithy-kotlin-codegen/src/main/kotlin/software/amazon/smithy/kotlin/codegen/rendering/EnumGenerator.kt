@@ -9,8 +9,8 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
-import software.amazon.smithy.kotlin.codegen.model.ext.expectTrait
-import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.expectTrait
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait

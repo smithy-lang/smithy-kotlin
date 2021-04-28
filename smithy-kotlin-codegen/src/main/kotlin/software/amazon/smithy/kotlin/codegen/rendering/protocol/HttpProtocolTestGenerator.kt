@@ -5,7 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.core.defaultName
-import software.amazon.smithy.kotlin.codegen.model.ext.getTrait
+import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.Shape

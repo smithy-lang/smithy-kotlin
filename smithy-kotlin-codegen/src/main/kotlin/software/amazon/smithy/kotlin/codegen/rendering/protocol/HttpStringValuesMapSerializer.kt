@@ -6,7 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.ext.*
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*

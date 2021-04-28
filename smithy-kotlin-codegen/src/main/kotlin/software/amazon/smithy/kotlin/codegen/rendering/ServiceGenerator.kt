@@ -6,7 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.ext.operationSignature
+import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape

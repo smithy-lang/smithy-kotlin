@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
-import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
+import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape

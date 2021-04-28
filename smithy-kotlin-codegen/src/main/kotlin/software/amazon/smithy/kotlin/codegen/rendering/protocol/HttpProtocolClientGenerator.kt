@@ -7,9 +7,9 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.ext.getTrait
-import software.amazon.smithy.kotlin.codegen.model.ext.hasStreamingMember
-import software.amazon.smithy.kotlin.codegen.model.ext.operationSignature
+import software.amazon.smithy.kotlin.codegen.model.getTrait
+import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
+import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull

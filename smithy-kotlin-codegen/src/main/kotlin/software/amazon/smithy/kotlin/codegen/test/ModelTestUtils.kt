@@ -6,8 +6,8 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
-import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
-import software.amazon.smithy.kotlin.codegen.model.ext.shapes
+import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.model.shapes
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model

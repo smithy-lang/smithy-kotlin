@@ -7,7 +7,7 @@ package software.amazon.smithy.kotlin.codegen.core
 import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
-import software.amazon.smithy.kotlin.codegen.model.ext.*
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait

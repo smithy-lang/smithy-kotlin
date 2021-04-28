@@ -7,8 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.ext.SymbolProperty
-import software.amazon.smithy.kotlin.codegen.model.ext.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*

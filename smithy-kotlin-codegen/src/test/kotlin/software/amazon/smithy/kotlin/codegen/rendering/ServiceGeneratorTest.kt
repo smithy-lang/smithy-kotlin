@@ -11,7 +11,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
-import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
+import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId

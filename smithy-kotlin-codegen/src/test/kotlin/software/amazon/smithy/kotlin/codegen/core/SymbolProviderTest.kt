@@ -12,9 +12,9 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.model.ext.defaultValue
-import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
-import software.amazon.smithy.kotlin.codegen.model.ext.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.defaultValue
+import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.model.isBoxed
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumDefinition
