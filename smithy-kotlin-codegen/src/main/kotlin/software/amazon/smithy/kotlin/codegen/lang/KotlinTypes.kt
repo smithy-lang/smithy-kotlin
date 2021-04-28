@@ -6,7 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.lang
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 
 /**
  * Builtin kotlin types
