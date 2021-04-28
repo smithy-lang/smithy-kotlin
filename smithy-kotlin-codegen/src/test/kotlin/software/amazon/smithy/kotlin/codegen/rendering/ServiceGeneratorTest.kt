@@ -10,6 +10,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.ext.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -85,10 +86,7 @@ class ServiceGeneratorTest {
 
     @Test
     fun `it allows overriding defined sections`() {
-        val model = javaClass
-            .classLoader
-            .getResource("software/amazon/smithy/kotlin/codegen/service-generator-test-operations.smithy")!!
-            .toSmithyModel()
+        val model = loadModelFromResource("service-generator-test-operations.smithy")
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
@@ -128,10 +126,7 @@ class ServiceGeneratorTest {
 
     // Produce the generated service code given model inputs.
     private fun generateService(modelResourceName: String): String {
-        val model = javaClass
-            .classLoader
-            .getResource("software/amazon/smithy/kotlin/codegen/$modelResourceName")!!
-            .toSmithyModel()
+        val model = loadModelFromResource(modelResourceName)
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
