@@ -8,8 +8,15 @@ import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.*
+import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.*
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.DeserializeStructGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.SerializeStructGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.SerializeUnionGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex

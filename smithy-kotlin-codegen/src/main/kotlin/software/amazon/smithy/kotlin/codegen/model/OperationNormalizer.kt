@@ -7,7 +7,9 @@ package software.amazon.smithy.kotlin.codegen.model
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.*
-import software.amazon.smithy.kotlin.codegen.traits.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinSymbolProvider
+import software.amazon.smithy.kotlin.codegen.model.traits.*
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.neighbor.Walker
@@ -72,7 +74,7 @@ object OperationNormalizer {
         val shapes = Walker(model).iterateShapes(model.expectShape(service))
         val shapesResultingInType = shapes.asSequence().filter {
             // remove trait definitions (which are also structures)
-            !it.hasTrait<Trait>() && SymbolVisitor.isTypeGeneratedForShape(it)
+            !it.hasTrait<Trait>() && KotlinSymbolProvider.isTypeGeneratedForShape(it)
         }.toList()
 
         val possibleConflicts = shapesResultingInType.filter { it.id.name in newNames }
