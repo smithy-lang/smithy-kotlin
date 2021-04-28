@@ -8,9 +8,16 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.core.GenerationContext
+import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.integration.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.rendering.*
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
