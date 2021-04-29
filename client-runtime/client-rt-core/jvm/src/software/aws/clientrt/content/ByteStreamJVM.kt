@@ -28,7 +28,7 @@ fun File.asByteStream(): ByteStream = FileContent(this)
  */
 fun Path.asByteStream(): ByteStream {
     val f = toFile()
-    require(f.exists()) { "cannot create ByteStream, invalid file: $this" }
+    require(f.exists()) { "cannot create ByteStream, file does not exist: $this" }
     require(f.isFile) { "cannot create a ByteStream from a directory: $this" }
     return f.asByteStream()
 }
