@@ -47,9 +47,7 @@ class SyntheticClone private constructor(builder: Builder) :
     class Builder internal constructor() : AbstractTraitBuilder<SyntheticClone, Builder>() {
         var archetype: ShapeId? = null
 
-        override fun build(): SyntheticClone {
-            return SyntheticClone(this)
-        }
+        override fun build(): SyntheticClone = SyntheticClone(this)
     }
 
     companion object {

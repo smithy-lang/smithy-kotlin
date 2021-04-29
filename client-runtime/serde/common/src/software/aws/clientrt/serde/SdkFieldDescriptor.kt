@@ -41,9 +41,7 @@ sealed class SerialKind {
     object Document : SerialKind()
     object BigNumber : SerialKind()
 
-    override fun toString(): kotlin.String {
-        return this::class.simpleName ?: "SerialKind"
-    }
+    override fun toString(): kotlin.String = this::class.simpleName ?: "SerialKind"
 }
 
 /**
@@ -56,9 +54,7 @@ open class SdkFieldDescriptor(val kind: SerialKind, var index: Int = 0, val trai
     // Reserved for format-specific companion extension functions
     companion object;
 
-    override fun toString(): String {
-        return "SdkFieldDescriptor.$kind(traits=${traits.joinToString(separator = ",") })"
-    }
+    override fun toString(): String = "SdkFieldDescriptor.$kind(traits=${traits.joinToString(separator = ",") })"
 }
 
 /**

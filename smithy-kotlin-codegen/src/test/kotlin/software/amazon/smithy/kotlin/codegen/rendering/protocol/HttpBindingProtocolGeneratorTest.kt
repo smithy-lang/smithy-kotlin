@@ -31,9 +31,8 @@ class HttpBindingProtocolGeneratorTest {
         return getTransformFileContents(manifest, filename)
     }
 
-    private fun getTransformFileContents(manifest: MockManifest, filename: String): String {
-        return manifest.expectFileString("src/main/kotlin/com/test/transform/$filename")
-    }
+    private fun getTransformFileContents(manifest: MockManifest, filename: String): String = manifest
+        .expectFileString("src/main/kotlin/com/test/transform/$filename")
 
     @Test
     fun `it creates serialize transforms in correct package`() {

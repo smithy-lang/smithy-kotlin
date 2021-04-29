@@ -19,10 +19,7 @@ private val BASE64_DECODE_TABLE = IntArray(256) {
 }
 
 // returns the padded base64 encoded size of [length]
-private fun base64EncodedLen(srcLen: Int): Int {
-    // 4n/3 is the un-padded size
-    return 4 * ((srcLen + 2) / 3)
-}
+private fun base64EncodedLen(srcLen: Int): Int = 4 * ((srcLen + 2) / 3) // 4n/3 is the un-padded size
 
 private fun base64DecodedLen(encoded: ByteArray): Int {
     if (encoded.isEmpty()) return 0
@@ -152,17 +149,16 @@ fun ByteArray.decodeBase64(): ByteArray {
 }
 
 private fun Int.toBase64(): Byte = BASE64_ENCODE_TABLE[this].toByte()
-private fun ByteArray.getOrZero(index: Int, mask: Int? = null): Int {
-    return if (index >= size) {
-        0
-    } else {
-        var tmp = this[index].toInt()
-        if (mask != null) {
-            tmp = tmp and mask
-        }
-        tmp
+private fun ByteArray.getOrZero(index: Int, mask: Int? = null): Int = if (index >= size) {
+    0
+} else {
+    var tmp = this[index].toInt()
+    if (mask != null) {
+        tmp = tmp and mask
     }
+    tmp
 }
+
 private fun Byte.fromBase64(): Int {
     val decoded = BASE64_DECODE_TABLE[this.toInt()]
     if (decoded == -1) throw IllegalArgumentException("decode base64: invalid input byte: $this")

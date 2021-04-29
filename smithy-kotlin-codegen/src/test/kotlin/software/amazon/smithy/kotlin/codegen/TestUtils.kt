@@ -14,9 +14,8 @@ import software.amazon.smithy.model.Model
 fun loadModelFromResource(
     modelName: String,
     path: String = "software/amazon/smithy/kotlin/codegen"
-): Model {
-    return object {}.javaClass
-        .classLoader
-        .getResource("$path/$modelName")!!
-        .toSmithyModel()
-}
+): Model = object {}
+    .javaClass
+    .classLoader
+    .getResource("$path/$modelName")!!
+    .toSmithyModel()

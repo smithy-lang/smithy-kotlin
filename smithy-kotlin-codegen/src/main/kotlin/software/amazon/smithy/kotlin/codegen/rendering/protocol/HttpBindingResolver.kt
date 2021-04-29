@@ -97,28 +97,27 @@ class HttpTraitResolver(
     private val topDownIndex: TopDownIndex = TopDownIndex.of(generationContext.model)
 ) : HttpBindingResolver {
 
-    override fun bindingOperations(): List<OperationShape> {
-        return topDownIndex.getContainedOperations(generationContext.service)
-            .filter { op -> op.hasTrait<HttpTrait>() }.toList<OperationShape>()
-    }
+    override fun bindingOperations(): List<OperationShape> = topDownIndex
+        .getContainedOperations(generationContext.service)
+        .filter { op -> op.hasTrait<HttpTrait>() }
+        .toList<OperationShape>()
 
     override fun httpTrait(operationShape: OperationShape): HttpTrait = operationShape.expectTrait()
 
-    override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> {
-        return bindingIndex.getRequestBindings(operationShape).values.map { HttpBindingDescriptor(it) }
+    override fun requestBindings(operationShape: OperationShape): List<HttpBindingDescriptor> = bindingIndex
+        .getRequestBindings(operationShape)
+        .values
+        .map { HttpBindingDescriptor(it) }
+
+    override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> = when (shape) {
+        is OperationShape,
+        is StructureShape -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
+        else -> error { "Unimplemented resolving bindings for ${shape.javaClass.canonicalName}" }
     }
 
-    override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> {
-        return when (shape) {
-            is OperationShape,
-            is StructureShape -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
-            else -> error { "Unimplemented resolving bindings for ${shape.javaClass.canonicalName}" }
-        }
-    }
-
-    override fun determineRequestContentType(operationShape: OperationShape): String {
-        return bindingIndex.determineRequestContentType(operationShape, defaultContentType).orElse(defaultContentType)
-    }
+    override fun determineRequestContentType(operationShape: OperationShape): String = bindingIndex
+        .determineRequestContentType(operationShape, defaultContentType)
+        .orElse(defaultContentType)
 
     override fun determineTimestampFormat(
         member: ToShapeId,

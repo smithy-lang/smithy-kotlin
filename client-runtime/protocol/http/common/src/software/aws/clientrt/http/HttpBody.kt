@@ -51,16 +51,14 @@ sealed class HttpBody {
 /**
  * Convert a [ByteStream] to the equivalent [HttpBody] variant
  */
-fun ByteStream.toHttpBody(): HttpBody {
-    return when (val bytestream = this) {
-        is ByteStream.Buffer -> object : HttpBody.Bytes() {
-            override val contentLength: Long? = bytestream.contentLength
-            override fun bytes(): ByteArray = bytestream.bytes()
-        }
-        is ByteStream.Reader -> object : HttpBody.Streaming() {
-            override val contentLength: Long? = bytestream.contentLength
-            override fun readFrom(): SdkByteReadChannel = bytestream.readFrom()
-        }
+fun ByteStream.toHttpBody(): HttpBody = when (val bytestream = this) {
+    is ByteStream.Buffer -> object : HttpBody.Bytes() {
+        override val contentLength: Long? = bytestream.contentLength
+        override fun bytes(): ByteArray = bytestream.bytes()
+    }
+    is ByteStream.Reader -> object : HttpBody.Streaming() {
+        override val contentLength: Long? = bytestream.contentLength
+        override fun readFrom(): SdkByteReadChannel = bytestream.readFrom()
     }
 }
 
@@ -87,16 +85,14 @@ suspend fun HttpBody.readAll(): ByteArray? = when (this) {
 /**
  * Convert an [HttpBody] variant to the corresponding [ByteStream] variant or null if empty.
  */
-fun HttpBody.toByteStream(): ByteStream? {
-    return when (val body = this) {
-        is HttpBody.Empty -> null
-        is HttpBody.Bytes -> object : ByteStream.Buffer() {
-            override val contentLength: Long? = body.contentLength
-            override fun bytes(): ByteArray = body.bytes()
-        }
-        is HttpBody.Streaming -> object : ByteStream.Reader() {
-            override val contentLength: Long? = body.contentLength
-            override fun readFrom(): SdkByteReadChannel = body.readFrom()
-        }
+fun HttpBody.toByteStream(): ByteStream? = when (val body = this) {
+    is HttpBody.Empty -> null
+    is HttpBody.Bytes -> object : ByteStream.Buffer() {
+        override val contentLength: Long? = body.contentLength
+        override fun bytes(): ByteArray = body.bytes()
+    }
+    is HttpBody.Streaming -> object : ByteStream.Reader() {
+        override val contentLength: Long? = body.contentLength
+        override fun readFrom(): SdkByteReadChannel = body.readFrom()
     }
 }

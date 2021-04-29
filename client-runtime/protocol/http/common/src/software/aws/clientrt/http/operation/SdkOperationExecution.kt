@@ -84,24 +84,18 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 
 private fun <I, O> HttpSerialize<I>.decorate(
     inner: Handler<SdkHttpRequest, O>
-): Handler<OperationRequest<I>, O> {
-    return SerializeHandler(inner, ::serialize)
-}
+): Handler<OperationRequest<I>, O> = SerializeHandler(inner, ::serialize)
 
 private fun <O> HttpDeserialize<O>.decorate(
     inner: Handler<SdkHttpRequest, HttpCall>,
-): Handler<SdkHttpRequest, O> {
-    return DeserializeHandler(inner, ::deserialize)
-}
+): Handler<SdkHttpRequest, O> = DeserializeHandler(inner, ::deserialize)
 
 // internal glue used to marry one phase to another
 
 private class InitializeHandler<Input, Output>(
     private val inner: Handler<Input, Output>
 ) : Handler<Input, Output> {
-    override suspend fun call(request: Input): Output {
-        return inner.call(request)
-    }
+    override suspend fun call(request: Input): Output = inner.call(request)
 }
 
 private class SerializeHandler<Input, Output> (
@@ -123,19 +117,13 @@ private class SerializeHandler<Input, Output> (
 private class MutateHandler<Output> (
     private val inner: Handler<SdkHttpRequest, Output>
 ) : Handler<SdkHttpRequest, Output> {
-
-    override suspend fun call(request: SdkHttpRequest): Output {
-        return inner.call(request)
-    }
+    override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
 private class FinalizeHandler<Output> (
     private val inner: Handler<SdkHttpRequest, Output>
 ) : Handler<SdkHttpRequest, Output> {
-
-    override suspend fun call(request: SdkHttpRequest): Output {
-        return inner.call(request)
-    }
+    override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
 private class DeserializeHandler<Output>(

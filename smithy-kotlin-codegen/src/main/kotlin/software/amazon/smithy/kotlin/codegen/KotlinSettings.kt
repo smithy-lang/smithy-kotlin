@@ -48,13 +48,11 @@ class KotlinSettings(
      * @return Returns the found `Service`
      * @throws CodegenException if the service is invalid or not found
      */
-    fun getService(model: Model): ServiceShape {
-        return model
-            .getShape(service)
-            .orElseThrow { CodegenException("Service shape not found: $service") }
-            .asServiceShape()
-            .orElseThrow { CodegenException("Shape is not a service: $service") }
-    }
+    fun getService(model: Model): ServiceShape = model
+        .getShape(service)
+        .orElseThrow { CodegenException("Service shape not found: $service") }
+        .asServiceShape()
+        .orElseThrow { CodegenException("Shape is not a service: $service") }
 
     companion object {
         private val LOGGER: Logger = Logger.getLogger(KotlinSettings::class.java.name)
@@ -165,20 +163,18 @@ data class BuildSettings(
         private const val GENERATE_DEFAULT_BUILD_FILES = "generateDefaultBuildFiles"
         private const val ANNOTATIONS = "optInAnnotations"
 
-        fun fromNode(node: Optional<ObjectNode>): BuildSettings {
-            return if (node.isPresent) {
-                val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
-                val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
-                val annotations = node.get().getArrayMember(ANNOTATIONS).map {
-                    it.elements.mapNotNull {
-                        it.asStringNode().map { it.value }.orNull()
-                    }
-                }.orNull()
+        fun fromNode(node: Optional<ObjectNode>): BuildSettings = if (node.isPresent) {
+            val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
+            val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
+            val annotations = node.get().getArrayMember(ANNOTATIONS).map {
+                it.elements.mapNotNull {
+                    it.asStringNode().map { it.value }.orNull()
+                }
+            }.orNull()
 
-                BuildSettings(generateFullProject, generateBuildFiles, annotations)
-            } else {
-                Default
-            }
+            BuildSettings(generateFullProject, generateBuildFiles, annotations)
+        } else {
+            Default
         }
 
         /**

@@ -37,9 +37,7 @@ data class SmithyBool(val value: Boolean) : Document() {
  * Class representing document `string` type
  */
 data class SmithyString(val value: String) : Document() {
-    override fun toString(): String {
-        return "\"$value\""
-    }
+    override fun toString(): String = "\"$value\""
 }
 
 /**
@@ -151,14 +149,14 @@ data class SmithyMap(val content: Map<String, Document>) : Document(), Map<Strin
      */
     fun getMap(key: String): SmithyMap? = getValue(key) as? SmithyMap
 
-    override fun toString(): String {
-        return content.entries.joinToString(
+    override fun toString(): String = content
+        .entries
+        .joinToString(
             separator = ",",
             prefix = "{",
             postfix = "}",
             transform = { (k, v) -> """"$k":$v""" }
         )
-    }
 }
 
 fun Boolean.toDocument() = SmithyBool(this)

@@ -67,9 +67,7 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
         serializer.setPrefix(prefix ?: "", uri)
     }
 
-    override fun toString(): String {
-        return String(bytes)
-    }
+    override fun toString(): String = String(bytes)
 
     override val bytes: ByteArray
         get() {
