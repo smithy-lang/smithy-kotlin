@@ -8,5 +8,6 @@ class CustomRuleSetProvider : RuleSetProvider {
         "custom-ktlint-rules",
         CopyrightHeaderRule(),
         ExpressionBodyRule(),
+        MultilineIfElseBlockRule(),
     )
 }

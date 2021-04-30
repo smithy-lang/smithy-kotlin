@@ -75,8 +75,9 @@ class KotlinSettings(
             val packageNode = config.expectObjectMember(PACKAGE_SETTINGS)
 
             val packageName = packageNode.expectStringMember(PACKAGE_NAME).value
-            if (!packageName.isValidPackageName())
+            if (!packageName.isValidPackageName()) {
                 throw CodegenException("Invalid package name, is empty or has invalid characters: '$packageName'")
+            }
 
             val version = packageNode.expectStringMember(PACKAGE_VERSION).value
             val desc = packageNode.getStringMemberOrDefault(PACKAGE_DESCRIPTION, "$packageName client")
