@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-description = "Custom rules for ktlint"
+description = "Lint rules for the AWS SDK for Kotlin"
 
 plugins {
     kotlin("jvm")
@@ -24,10 +24,5 @@ kotlin {
                 implementation("com.pinterest.ktlint:ktlint-test:$ktlintVersion")
             }
         }
-    }
-
-    sourceSets.all {
-        kotlin.srcDir("src/$name/kotlin")
-        resources.srcDir("src/$name/resources")
     }
 }

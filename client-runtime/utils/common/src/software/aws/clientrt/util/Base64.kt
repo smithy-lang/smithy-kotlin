@@ -18,8 +18,9 @@ private val BASE64_DECODE_TABLE = IntArray(256) {
     }
 }
 
-// returns the padded base64 encoded size of [length]
-private fun base64EncodedLen(srcLen: Int): Int = 4 * ((srcLen + 2) / 3) // 4n/3 is the un-padded size
+// returns the padded base64 encoded size of [length]. The un-padded size is 4n/3.
+private fun base64EncodedLen(srcLen: Int): Int =
+    4 * ((srcLen + 2) / 3)
 
 private fun base64DecodedLen(encoded: ByteArray): Int {
     if (encoded.isEmpty()) return 0
