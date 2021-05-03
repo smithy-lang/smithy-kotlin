@@ -63,9 +63,7 @@ class ApplicationProtocol(
             )
     }
 
-    override fun hashCode(): Int {
-        return Objects.hash(requestType, responseType)
-    }
+    override fun hashCode(): Int = Objects.hash(requestType, responseType)
 
     companion object {
         /**
@@ -73,20 +71,17 @@ class ApplicationProtocol(
          *
          * @return Returns the created application protocol.
          */
-        fun createDefaultHttpApplicationProtocol(): ApplicationProtocol {
-            return ApplicationProtocol(
-                "http",
-                createHttpSymbol("HttpRequestBuilder", "request"),
-                createHttpSymbol("HttpResponse", "response")
-            )
-        }
+        fun createDefaultHttpApplicationProtocol(): ApplicationProtocol = ApplicationProtocol(
+            "http",
+            createHttpSymbol("HttpRequestBuilder", "request"),
+            createHttpSymbol("HttpResponse", "response")
+        )
 
-        private fun createHttpSymbol(symbolName: String, subnamespace: String): Symbol {
-            return Symbol.builder()
-                .name(symbolName)
-                .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.$subnamespace", ".")
-                .addDependency(KotlinDependency.CLIENT_RT_HTTP)
-                .build()
-        }
+        private fun createHttpSymbol(symbolName: String, subnamespace: String): Symbol = Symbol
+            .builder()
+            .name(symbolName)
+            .namespace("${KotlinDependency.CLIENT_RT_HTTP.namespace}.$subnamespace", ".")
+            .addDependency(KotlinDependency.CLIENT_RT_HTTP)
+            .build()
     }
 }

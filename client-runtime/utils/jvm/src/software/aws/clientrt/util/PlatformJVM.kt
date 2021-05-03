@@ -22,18 +22,14 @@ public actual object Platform {
     actual fun osInfo(): OperatingSystem = getOsInfo()
 }
 
-private fun isAndroid(): Boolean {
-    return try {
-        Class.forName("android.os.Build")
-        true
-    } catch (ex: ClassNotFoundException) {
-        false
-    }
+private fun isAndroid(): Boolean = try {
+    Class.forName("android.os.Build")
+    true
+} catch (ex: ClassNotFoundException) {
+    false
 }
 
-private fun normalize(value: String): String {
-    return value.toLowerCase(Locale.US).replace(Regex("[^a-z0-9+]"), "")
-}
+private fun normalize(value: String): String = value.toLowerCase(Locale.US).replace(Regex("[^a-z0-9+]"), "")
 
 private fun getOsInfo(): OperatingSystem {
     val name = normalize(System.getProperty("os.name"))

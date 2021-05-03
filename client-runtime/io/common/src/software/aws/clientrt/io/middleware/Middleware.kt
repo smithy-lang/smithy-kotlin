@@ -26,9 +26,8 @@ typealias MiddlewareFn<Request, Response> = suspend (Request, Handler<Request, R
 data class MiddlewareLambda<Request, Response>(
     private val fn: MiddlewareFn<Request, Response>
 ) : Middleware<Request, Response> {
-    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response {
-        return fn(request, next)
-    }
+    override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response =
+        fn(request, next)
 }
 
 /**
@@ -38,10 +37,7 @@ private data class DecoratedHandler<Request, Response>(
     val handler: Handler<Request, Response>,
     val with: Middleware<Request, Response>
 ) : Handler<Request, Response> {
-
-    override suspend fun call(request: Request): Response {
-        return with.handle(request, handler)
-    }
+    override suspend fun call(request: Request): Response = with.handle(request, handler)
 }
 
 /**

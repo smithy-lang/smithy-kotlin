@@ -49,11 +49,9 @@ sealed class ByteStream {
     }
 }
 
-suspend fun ByteStream.toByteArray(): ByteArray {
-    return when (val stream = this) {
-        is ByteStream.Buffer -> stream.bytes()
-        is ByteStream.Reader -> stream.readFrom().readRemaining()
-    }
+suspend fun ByteStream.toByteArray(): ByteArray = when (val stream = this) {
+    is ByteStream.Buffer -> stream.bytes()
+    is ByteStream.Reader -> stream.readFrom().readRemaining()
 }
 
 suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()

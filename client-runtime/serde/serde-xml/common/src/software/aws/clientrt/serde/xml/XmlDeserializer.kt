@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 package software.aws.clientrt.serde.xml
 
 import software.aws.clientrt.logging.Logger
@@ -293,11 +298,9 @@ internal class XmlStructDeserializer(
     // it is determined that the nested mode was used and any existing state should be cleared.
     // if the state is not cleared, deserialization goes into an infinite loop because the deserializer sees pending fields to pull from the stream
     // which are never consumed by the (missing) call to deserialize<SomePrimitiveType>()
-    private fun inNestedMode(): Boolean {
-        return when (reentryFlag) {
-            true -> true
-            false -> { reentryFlag = true; false }
-        }
+    private fun inNestedMode(): Boolean = when (reentryFlag) {
+        true -> true
+        false -> { reentryFlag = true; false }
     }
 }
 
@@ -313,21 +316,22 @@ private suspend fun XmlStreamReader.tokenAttributesToFieldLocations(descriptor: 
     }
 
 // Returns a [FieldLocation] if the field maps to the current token
-private fun SdkFieldDescriptor.findFieldLocation(currentToken: XmlToken.BeginElement, nextToken: XmlToken): FieldLocation? {
-    return when (val property = toFieldLocation()) {
-        is FieldLocation.Text -> {
-            when {
-                nextToken is XmlToken.Text -> property
-                nextToken is XmlToken.BeginElement -> property
-                // The following allows for struct primitives to remain unvisited if no value
-                // but causes nested deserializers to be called even if they contain no value
-                nextToken is XmlToken.EndElement && currentToken.name == nextToken.name -> property
-                else -> null
-            }
+private fun SdkFieldDescriptor.findFieldLocation(
+    currentToken: XmlToken.BeginElement,
+    nextToken: XmlToken,
+): FieldLocation? = when (val property = toFieldLocation()) {
+    is FieldLocation.Text -> {
+        when {
+            nextToken is XmlToken.Text -> property
+            nextToken is XmlToken.BeginElement -> property
+            // The following allows for struct primitives to remain unvisited if no value
+            // but causes nested deserializers to be called even if they contain no value
+            nextToken is XmlToken.EndElement && currentToken.name == nextToken.name -> property
+            else -> null
         }
-        is FieldLocation.Attribute -> {
-            if (currentToken.attributes[property.name]?.isNotBlank() == true) property else null
-        }
+    }
+    is FieldLocation.Attribute -> {
+        if (currentToken.attributes[property.name]?.isNotBlank() == true) property else null
     }
 }
 

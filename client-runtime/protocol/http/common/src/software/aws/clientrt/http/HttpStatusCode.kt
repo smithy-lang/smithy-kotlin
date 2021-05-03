@@ -102,9 +102,7 @@ data class HttpStatusCode(val value: Int, val description: String) {
         /**
          * Convert a raw status code integer to an [HttpStatusCode] instance
          */
-        fun fromValue(status: Int): HttpStatusCode {
-            return byValue[status] ?: HttpStatusCode(status, "Unknown HttpStatusCode")
-        }
+        fun fromValue(status: Int): HttpStatusCode = byValue[status] ?: HttpStatusCode(status, "Unknown HttpStatusCode")
     }
 }
 

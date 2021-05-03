@@ -62,9 +62,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         return escaper.escapeSymbol(shape, symbol)
     }
 
-    override fun toMemberName(shape: MemberShape): String {
-        return escaper.escapeMemberName(shape.defaultName())
-    }
+    override fun toMemberName(shape: MemberShape): String = escaper.escapeMemberName(shape.defaultName())
 
     override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Byte")
 
@@ -78,26 +76,22 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun doubleShape(shape: DoubleShape): Symbol = numberShape(shape, "Double", "0.0")
 
-    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol {
-        return createSymbolBuilder(shape, typeName, namespace = "kotlin")
+    private fun numberShape(shape: Shape, typeName: String, defaultValue: String = "0"): Symbol =
+        createSymbolBuilder(shape, typeName, namespace = "kotlin")
             .defaultValue(defaultValue)
             .build()
-    }
 
     override fun bigIntegerShape(shape: BigIntegerShape?): Symbol = createBigSymbol(shape, "BigInteger")
 
     override fun bigDecimalShape(shape: BigDecimalShape?): Symbol = createBigSymbol(shape, "BigDecimal")
 
-    private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol {
-        return createSymbolBuilder(shape, symbolName, namespace = "java.math", boxed = true).build()
-    }
+    private fun createBigSymbol(shape: Shape?, symbolName: String): Symbol =
+        createSymbolBuilder(shape, symbolName, namespace = "java.math", boxed = true).build()
 
-    override fun stringShape(shape: StringShape): Symbol {
-        return if (shape.isEnum) {
-            createEnumSymbol(shape)
-        } else {
-            createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
-        }
+    override fun stringShape(shape: StringShape): Symbol = if (shape.isEnum) {
+        createEnumSymbol(shape)
+    } else {
+        createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
     }
 
     fun createEnumSymbol(shape: StringShape): Symbol {
@@ -194,16 +188,14 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .build()
     }
 
-    override fun blobShape(shape: BlobShape): Symbol {
-        return if (shape.hasTrait<StreamingTrait>()) {
-            val dependency = KotlinDependency.CLIENT_RT_CORE
-            createSymbolBuilder(shape, "ByteStream", boxed = true)
-                .namespace("${dependency.namespace}.content", ".")
-                .addDependency(dependency)
-                .build()
-        } else {
-            createSymbolBuilder(shape, "ByteArray", boxed = true, namespace = "kotlin").build()
-        }
+    override fun blobShape(shape: BlobShape): Symbol = if (shape.hasTrait<StreamingTrait>()) {
+        val dependency = KotlinDependency.CLIENT_RT_CORE
+        createSymbolBuilder(shape, "ByteStream", boxed = true)
+            .namespace("${dependency.namespace}.content", ".")
+            .addDependency(dependency)
+            .build()
+    } else {
+        createSymbolBuilder(shape, "ByteArray", boxed = true, namespace = "kotlin").build()
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol {
@@ -226,9 +218,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         return builder.build()
     }
 
-    override fun resourceShape(shape: ResourceShape?): Symbol {
-        return createSymbolBuilder(shape, "Resource").build()
-    }
+    override fun resourceShape(shape: ResourceShape?): Symbol = createSymbolBuilder(shape, "Resource").build()
 
     override fun operationShape(shape: OperationShape?): Symbol {
         // The Kotlin SDK does not produce code explicitly based on Operations
@@ -267,8 +257,5 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         typeName: String,
         namespace: String,
         boxed: Boolean = false
-    ): Symbol.Builder {
-        return createSymbolBuilder(shape, typeName, boxed)
-            .namespace(namespace, ".")
-    }
+    ): Symbol.Builder = createSymbolBuilder(shape, typeName, boxed).namespace(namespace, ".")
 }

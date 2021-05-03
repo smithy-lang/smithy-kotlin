@@ -81,9 +81,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Sort and return [members] in the order they should be serialized in (sort order may not matter in all protocols)
      * By default they are sorted by the member name
      */
-    protected open fun sortMembersForSerialization(ctx: ProtocolGenerator.GenerationContext, members: List<MemberShape>): List<MemberShape> {
-        return members.sortedBy { it.memberName }
-    }
+    protected open fun sortMembersForSerialization(
+        ctx: ProtocolGenerator.GenerationContext,
+        members: List<MemberShape>,
+    ): List<MemberShape> = members.sortedBy { it.memberName }
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx)
@@ -288,40 +289,38 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         httpTrait: HttpTrait,
         pathBindings: List<HttpBindingDescriptor>,
         writer: KotlinWriter
-    ): String {
-        return httpTrait.uri.segments.joinToString(
-            separator = "/",
-            prefix = "/",
-            postfix = "",
-            transform = { segment ->
-                if (segment.isLabel) {
-                    // spec dictates member name and label name MUST be the same
-                    val binding = pathBindings.find { binding ->
-                        binding.memberName == segment.content
-                    } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
+    ): String = httpTrait.uri.segments.joinToString(
+        separator = "/",
+        prefix = "/",
+        postfix = "",
+        transform = { segment ->
+            if (segment.isLabel) {
+                // spec dictates member name and label name MUST be the same
+                val binding = pathBindings.find { binding ->
+                    binding.memberName == segment.content
+                } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
 
-                    // shape must be string, number, boolean, or timestamp
-                    val targetShape = ctx.model.expectShape(binding.member.target)
-                    if (targetShape.isTimestampShape) {
-                        writer.addImport(RuntimeTypes.Core.TimestampFormat)
-                        val resolver = getProtocolHttpBindingResolver(ctx)
-                        val tsFormat = resolver.determineTimestampFormat(
-                            binding.member,
-                            HttpBinding.Location.LABEL,
-                            defaultTimestampFormat
-                        )
-                        val tsLabel = formatInstant("input.${binding.member.defaultName()}?", tsFormat, forceString = true)
-                        "\${$tsLabel}"
-                    } else {
-                        "\${input.${binding.member.defaultName()}}"
-                    }
+                // shape must be string, number, boolean, or timestamp
+                val targetShape = ctx.model.expectShape(binding.member.target)
+                if (targetShape.isTimestampShape) {
+                    writer.addImport(RuntimeTypes.Core.TimestampFormat)
+                    val resolver = getProtocolHttpBindingResolver(ctx)
+                    val tsFormat = resolver.determineTimestampFormat(
+                        binding.member,
+                        HttpBinding.Location.LABEL,
+                        defaultTimestampFormat
+                    )
+                    val tsLabel = formatInstant("input.${binding.member.defaultName()}?", tsFormat, forceString = true)
+                    "\${$tsLabel}"
                 } else {
-                    // literal
-                    segment.content.toEscapedLiteral()
+                    "\${input.${binding.member.defaultName()}}"
                 }
+            } else {
+                // literal
+                segment.content.toEscapedLiteral()
             }
-        )
-    }
+        }
+    )
 
     private fun renderHttpSerialize(
         ctx: ProtocolGenerator.GenerationContext,

@@ -161,8 +161,9 @@ open class StringValuesMapBuilder(val caseInsensitiveName: Boolean = false, size
     }
 
     private fun ensureListForKey(name: String, size: Int): MutableList<String> {
-        if (built)
+        if (built) {
             throw IllegalStateException("Cannot modify a builder when final structure has already been built")
+        }
         return values[name] ?: ArrayList<String>(size).also { values[name] = it }
     }
 }

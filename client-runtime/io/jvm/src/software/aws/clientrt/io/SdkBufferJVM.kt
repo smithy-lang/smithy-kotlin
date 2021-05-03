@@ -7,9 +7,7 @@ package software.aws.clientrt.io
 
 internal fun SdkBuffer.hasArray() = memory.buffer.hasArray() && !memory.buffer.isReadOnly
 
-actual fun SdkBuffer.bytes(): ByteArray {
-    return when (hasArray()) {
-        true -> memory.buffer.array().sliceArray(readPosition until readRemaining)
-        false -> ByteArray(readRemaining).apply { readFully(this) }
-    }
+actual fun SdkBuffer.bytes(): ByteArray = when (hasArray()) {
+    true -> memory.buffer.array().sliceArray(readPosition until readRemaining)
+    false -> ByteArray(readRemaining).apply { readFully(this) }
 }

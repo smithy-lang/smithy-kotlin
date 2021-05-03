@@ -33,9 +33,7 @@ class SdkHttpClient(
     val config: HttpClientConfig
 ) : HttpHandler {
 
-    override suspend fun call(request: HttpRequestBuilder): HttpCall {
-        return engine.roundTrip(request.build())
-    }
+    override suspend fun call(request: HttpRequestBuilder): HttpCall = engine.roundTrip(request.build())
 
     /**
      * Shutdown this HTTP client and close any resources. The client will no longer be capable of making requests.

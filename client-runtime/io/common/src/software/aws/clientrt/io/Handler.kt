@@ -21,7 +21,5 @@ typealias HandlerFn<Request, Response> = suspend (Request) -> Response
  * Adapter for [HandlerFn] that implements [Handler]
  */
 data class HandlerLambda<Request, Response>(private val fn: HandlerFn<Request, Response>) : Handler<Request, Response> {
-    override suspend fun call(request: Request): Response {
-        return fn(request)
-    }
+    override suspend fun call(request: Request): Response = fn(request)
 }

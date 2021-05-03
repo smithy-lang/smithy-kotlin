@@ -37,21 +37,15 @@ internal abstract class KtorReadChannelAdapterBase(
     override val isClosedForWrite: Boolean
         get() = chan.isClosedForWrite
 
-    override suspend fun readRemaining(limit: Int): ByteArray {
-        return chan.readRemaining(limit.toLong()).readBytes()
-    }
+    override suspend fun readRemaining(limit: Int): ByteArray = chan.readRemaining(limit.toLong()).readBytes()
 
-    override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) {
-        chan.readFully(sink, offset, length)
-    }
+    override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) = chan
+        .readFully(sink, offset, length)
 
-    override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int {
-        return chan.readAvailable(sink, offset, length)
-    }
+    override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int = chan
+        .readAvailable(sink, offset, length)
 
-    override fun cancel(cause: Throwable?): Boolean {
-        return chan.cancel(cause)
-    }
+    override fun cancel(cause: Throwable?): Boolean = chan.cancel(cause)
 }
 
 /**
@@ -77,13 +71,10 @@ internal abstract class KtorWriteChannelAdapterBase(
         chan.writeFully(src, offset, length)
     }
 
-    override suspend fun writeAvailable(src: ByteArray, offset: Int, length: Int): Int {
-        return chan.writeAvailable(src, offset, length)
-    }
+    override suspend fun writeAvailable(src: ByteArray, offset: Int, length: Int): Int = chan
+        .writeAvailable(src, offset, length)
 
-    override fun close(cause: Throwable?): Boolean {
-        return chan.close(cause)
-    }
+    override fun close(cause: Throwable?): Boolean = chan.close(cause)
 
     override fun flush() {
         chan.flush()
