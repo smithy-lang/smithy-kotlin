@@ -16,7 +16,7 @@ import kotlin.test.assertTrue
 class XmlDeserializerPrimitiveTest {
     @Test
     fun itHandlesDoubles() = runSuspendTest {
-        val deserializer = XmlPrimitiveDeserializer("<node>1.2</node>".wrapInStruct(), SdkFieldDescriptor(SerialKind.Double, XmlSerialName("node"))) // XmlPrimitiveDeserializer("<node>1.2</node>".wrapInStruct())
+        val deserializer = XmlPrimitiveDeserializer("<node>1.2</node>".wrapInStruct(), SdkFieldDescriptor(SerialKind.Double, XmlSerialName("node")))
         val actual = deserializer.deserializeDouble()
         val expected = 1.2
         assertTrue(abs(actual - expected) <= 0.0001)
