@@ -226,7 +226,22 @@ class FormUrlSerializerTest {
     @Test
     fun itSerializesListsWithRenamedMember() {
         // xmlName() trait on list member
-        TODO("not implemented")
+        val input = ListInput(
+            primitiveList = listOf("foo", "bar"),
+            structList = null
+        )
+
+        val expected = """
+            PrimitiveList.item.1=foo
+            &PrimitiveList.item.2=bar
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+
+        val primitiveListDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("PrimitiveList"), FormUrlCollectionName("item"))
+        input.serialize(serializer, primitiveListDescriptor)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
     }
 
     @Test
@@ -417,7 +432,38 @@ class FormUrlSerializerTest {
     @Test
     fun itSerializesRenamedMaps() {
         // map with xmlName key/value overrides
-        TODO("not implemented")
+        val input = MapInput(
+            primitiveMap = mapOf(
+                "k1" to "v1",
+                "k2" to "v2",
+            ),
+            structMap = mapOf(
+                "b1" to B(7),
+                "b2" to B(8),
+                "b3" to B(9),
+            )
+        )
+
+        val expected = """
+            PrimitiveMap.entry.1.foo=k1
+            &PrimitiveMap.entry.1.bar=v1
+            &PrimitiveMap.entry.2.foo=k2
+            &PrimitiveMap.entry.2.bar=v2
+            &StructMap.entry.1.key=b1
+            &StructMap.entry.1.baz.v=7
+            &StructMap.entry.2.key=b2
+            &StructMap.entry.2.baz.v=8
+            &StructMap.entry.3.key=b3
+            &StructMap.entry.3.baz.v=9
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+
+        val primitiveMapDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("PrimitiveMap"), FormUrlMapName("foo", "bar"))
+        val structMapDescriptor: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("StructMap"), FormUrlMapName(value = "baz"))
+        input.serialize(serializer, primitiveMapDescriptor, structMapDescriptor)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
     }
 
     @Test

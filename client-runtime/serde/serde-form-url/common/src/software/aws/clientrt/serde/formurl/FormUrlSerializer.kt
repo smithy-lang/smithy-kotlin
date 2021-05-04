@@ -162,7 +162,10 @@ private class FormUrlListSerializer(
 
     private fun prefix(): String = when {
         descriptor.hasTrait<FormUrlFlattened>() -> "${descriptor.serialName}.$cnt"
-        else -> "${descriptor.serialName}.member.$cnt"
+        else -> {
+            val memberName = descriptor.findTrait<FormUrlCollectionName>() ?: FormUrlCollectionName.Default
+            "${descriptor.serialName}.${memberName.member}.$cnt"
+        }
     }
 
     private fun writePrefixed(block: SdkBuffer.() -> Unit) {
@@ -203,6 +206,7 @@ private class FormUrlMapSerializer(
 ) : MapSerializer, PrimitiveSerializer by parent {
     private val buffer = parent.buffer
     private var cnt = 0
+    private val mapName = descriptor.findTrait<FormUrlMapName>() ?: FormUrlMapName.Default
 
     private val commonPrefix: String
         get() = when {
@@ -213,13 +217,14 @@ private class FormUrlMapSerializer(
     private fun writeKey(key: String) {
         cnt++
         if (buffer.writePosition > 0) buffer.write("&")
-        buffer.write("$commonPrefix.key=$key")
+
+        buffer.write("$commonPrefix.${mapName.key}=$key")
     }
 
     private fun writeEntry(key: String, block: () -> Unit) {
         writeKey(key)
         buffer.write("&")
-        buffer.write("$commonPrefix.value=")
+        buffer.write("$commonPrefix.${mapName.value}=")
         block()
     }
 
@@ -273,7 +278,7 @@ private class FormUrlMapSerializer(
         writeKey(key)
 
         val nestedFn: PrefixFn = {
-            "$commonPrefix.value."
+            "$commonPrefix.${mapName.value}."
         }
         value.serialize(FormUrlSerializer(buffer, nestedFn))
     }
