@@ -11,9 +11,9 @@ import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.response.HttpCall
-import software.aws.clientrt.http.util.encodeUrlPath
-import software.aws.clientrt.http.util.urlEncodeComponent
 import software.aws.clientrt.testing.runSuspendTest
+import software.aws.clientrt.util.text.encodeUrlPath
+import software.aws.clientrt.util.text.urlEncodeComponent
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull

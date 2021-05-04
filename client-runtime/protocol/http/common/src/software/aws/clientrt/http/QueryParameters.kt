@@ -7,7 +7,7 @@ package software.aws.clientrt.http
 import software.aws.clientrt.http.util.StringValuesMap
 import software.aws.clientrt.http.util.StringValuesMapBuilder
 import software.aws.clientrt.http.util.StringValuesMapImpl
-import software.aws.clientrt.http.util.urlEncodeComponent
+import software.aws.clientrt.util.text.urlEncodeComponent
 
 /**
  * Container for HTTP query parameters

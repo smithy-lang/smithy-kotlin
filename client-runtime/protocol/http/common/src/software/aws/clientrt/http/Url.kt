@@ -4,8 +4,8 @@
  */
 package software.aws.clientrt.http
 
-import software.aws.clientrt.http.util.encodeUrlPath
 import software.aws.clientrt.util.InternalApi
+import software.aws.clientrt.util.text.encodeUrlPath
 
 /**
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
