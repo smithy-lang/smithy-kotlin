@@ -9,6 +9,7 @@ import software.aws.clientrt.io.SdkBuffer
 import software.aws.clientrt.io.bytes
 import software.aws.clientrt.io.write
 import software.aws.clientrt.serde.*
+import software.aws.clientrt.util.text.urlEncodeComponent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -34,7 +35,7 @@ private class FormUrlSerializer(
         buffer.apply(block)
     }
 
-    private fun write(value: String) = write { write(value) }
+    private fun write(value: String) = write { write(value.urlEncodeComponent()) }
 
     override fun serializeBoolean(value: Boolean) = write("$value")
     override fun serializeByte(value: Byte) = write { commonWriteNumber(value) }
@@ -185,7 +186,7 @@ private class FormUrlListSerializer(
     override fun serializeLong(value: Long) = writePrefixed { commonWriteNumber(value) }
     override fun serializeFloat(value: Float) = writePrefixed { commonWriteNumber(value) }
     override fun serializeDouble(value: Double) = writePrefixed { commonWriteNumber(value) }
-    override fun serializeString(value: String) = writePrefixed { write(value) }
+    override fun serializeString(value: String) = writePrefixed { write(value.urlEncodeComponent()) }
     override fun serializeRaw(value: String) = writePrefixed { write(value) }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
@@ -218,7 +219,8 @@ private class FormUrlMapSerializer(
         cnt++
         if (buffer.writePosition > 0) buffer.write("&")
 
-        buffer.write("$commonPrefix.${mapName.key}=$key")
+        val encodedKey = key.urlEncodeComponent()
+        buffer.write("$commonPrefix.${mapName.key}=$encodedKey")
     }
 
     private fun writeEntry(key: String, block: () -> Unit) {

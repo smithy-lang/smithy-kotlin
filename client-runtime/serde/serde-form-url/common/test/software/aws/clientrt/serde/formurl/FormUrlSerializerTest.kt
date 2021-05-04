@@ -496,4 +496,28 @@ class FormUrlSerializerTest {
         val actual = serializer.toByteArray().decodeToString()
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun itEncodesWhitespace() {
+        val input = MapInput(
+            mapOfLists = mapOf(
+                "foo  " to listOf("A ", " B"),
+                "bar" to listOf("C", "Hello World")
+            )
+        )
+
+        val expected = """
+            MapOfLists.entry.1.key=foo%20%20
+            &MapOfLists.entry.1.value.member.1=A%20
+            &MapOfLists.entry.1.value.member.2=%20B
+            &MapOfLists.entry.2.key=bar
+            &MapOfLists.entry.2.value.member.1=C
+            &MapOfLists.entry.2.value.member.2=Hello%20World
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
 }
