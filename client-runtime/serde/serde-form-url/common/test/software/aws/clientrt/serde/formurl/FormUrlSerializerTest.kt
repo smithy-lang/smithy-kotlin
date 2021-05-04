@@ -146,17 +146,19 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
-    data class ListInput(val primitiveList: List<String>?, val structList: List<B>?) {
-        companion object {
-            val PRIMITIVE_LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("PrimitiveList"))
-            val STRUCT_LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("StructList"))
+    data class ListInput(
+        val primitiveList: List<String>?,
+        val structList: List<B>?
+    ) {
+        fun serialize(
+            serializer: Serializer,
+            PRIMITIVE_LIST_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("PrimitiveList")),
+            STRUCT_LIST_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("StructList"))
+        ) {
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(PRIMITIVE_LIST_DESCRIPTOR)
                 field(STRUCT_LIST_DESCRIPTOR)
             }
-        }
-
-        fun serialize(serializer: Serializer) {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (primitiveList != null) {
                     listField(PRIMITIVE_LIST_DESCRIPTOR) {
@@ -200,12 +202,30 @@ class FormUrlSerializerTest {
     @Test
     fun itSerializesFlattenedLists() {
         // xmlFlattened() lists
-        TODO("not implemented")
+        val input = ListInput(
+            primitiveList = listOf("foo", "bar"),
+            structList = listOf(B(5), B(6), B(7))
+        )
+
+        val expected = """
+            PrimitiveList.1=foo
+            &PrimitiveList.2=bar
+            &StructList.member.1.v=5
+            &StructList.member.2.v=6
+            &StructList.member.3.v=7
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+
+        val primitiveListDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlFlattened, FormUrlSerialName("PrimitiveList"))
+        input.serialize(serializer, primitiveListDescriptor)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
     }
 
     @Test
-    fun itSerializesRenamedLists() {
-        // xmlName() trait lists
+    fun itSerializesListsWithRenamedMember() {
+        // xmlName() trait on list member
         TODO("not implemented")
     }
 
@@ -224,21 +244,20 @@ class FormUrlSerializerTest {
         val structMap: Map<String, B>? = null,
         val mapOfLists: Map<String, List<String>>? = null,
     ) {
-        companion object {
-            val PRIMITIVE_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("PrimitiveMap"))
-            val STRUCT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("StructMap"))
-            val MAP_OF_LISTS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("MapOfLists"))
-            // serialName of this nested descriptor should be ignored?
-            val MAP_OF_LISTS_CO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("ChildStringList"))
 
+        fun serialize(
+            serializer: Serializer,
+            PRIMITIVE_MAP_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("PrimitiveMap")),
+            STRUCT_MAP_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("StructMap")),
+            MAP_OF_LISTS_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("MapOfLists")),
+            // serialName of this nested descriptor should be ignored
+            MAP_OF_LISTS_CO_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("ChildStringList")),
+        ) {
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(PRIMITIVE_MAP_DESCRIPTOR)
                 field(STRUCT_MAP_DESCRIPTOR)
                 field(MAP_OF_LISTS_DESCRIPTOR)
             }
-        }
-
-        fun serialize(serializer: Serializer) {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (primitiveMap != null) {
                     mapField(PRIMITIVE_MAP_DESCRIPTOR) {
@@ -368,6 +387,29 @@ class FormUrlSerializerTest {
         )
         val serializer = FormUrlSerializer()
         input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itSerializesFlattenedMaps() {
+        val input = MapInput(
+            primitiveMap = mapOf(
+                "k1" to "v1",
+                "k2" to "v2",
+            )
+        )
+
+        val expected = """
+            PrimitiveMap.1.key=k1
+            &PrimitiveMap.1.value=v1
+            &PrimitiveMap.2.key=k2
+            &PrimitiveMap.2.value=v2
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        val primitiveMapDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("PrimitiveMap"), FormUrlFlattened)
+        input.serialize(serializer, primitiveMapDescriptor)
         val actual = serializer.toByteArray().decodeToString()
         assertEquals(expected, actual)
     }

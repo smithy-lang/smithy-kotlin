@@ -160,7 +160,10 @@ private class FormUrlListSerializer(
     private val buffer = parent.buffer
     private var cnt = 0
 
-    private fun prefix(): String = "${descriptor.serialName}.member.$cnt"
+    private fun prefix(): String = when {
+        descriptor.hasTrait<FormUrlFlattened>() -> "${descriptor.serialName}.$cnt"
+        else -> "${descriptor.serialName}.member.$cnt"
+    }
 
     private fun writePrefixed(block: SdkBuffer.() -> Unit) {
         cnt++
@@ -202,7 +205,10 @@ private class FormUrlMapSerializer(
     private var cnt = 0
 
     private val commonPrefix: String
-        get() = "${descriptor.serialName}.entry.$cnt"
+        get() = when {
+            descriptor.hasTrait<FormUrlFlattened>() -> "${descriptor.serialName}.$cnt"
+            else -> "${descriptor.serialName}.entry.$cnt"
+        }
 
     private fun writeKey(key: String) {
         cnt++
