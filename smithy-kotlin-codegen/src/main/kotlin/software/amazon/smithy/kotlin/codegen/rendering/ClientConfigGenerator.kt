@@ -92,10 +92,10 @@ class ClientConfigGenerator(
 
     private fun renderJavaBuilderInterface() {
         ctx.writer.write("")
-            .withBlock("interface Builder {", "}") {
+            .withBlock("interface FluentBuilder {", "}") {
                 props.forEach { prop ->
                     // we want the type names sans nullability (?) for arguments
-                    write("fun #1L(#1L: #2L): Builder", prop.propertyName, prop.symbol.name)
+                    write("fun #1L(#1L: #2L): FluentBuilder", prop.propertyName, prop.symbol.name)
                 }
                 write("fun build(): #configClass.name:L")
             }
@@ -116,7 +116,7 @@ class ClientConfigGenerator(
 
     private fun renderBuilderImpl() {
         ctx.writer.write("")
-            .withBlock("internal class BuilderImpl() : Builder, DslBuilder {", "}") {
+            .withBlock("internal class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
                 // override DSL properties
                 props.forEach { prop ->
                     write("override var #L: #D", prop.propertyName, prop.symbol)
@@ -127,7 +127,7 @@ class ClientConfigGenerator(
                 write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
                 props.forEach { prop ->
                     // we want the type names sans nullability (?) for arguments
-                    write("override fun #1L(#1L: #2L): Builder = apply { this.#1L = #1L }", prop.propertyName, prop.symbol.name)
+                    write("override fun #1L(#1L: #2L): FluentBuilder = apply { this.#1L = #1L }", prop.propertyName, prop.symbol.name)
                 }
             }
     }
