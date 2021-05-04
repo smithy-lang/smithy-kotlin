@@ -161,9 +161,7 @@ private class FormUrlListSerializer(
     private val buffer = parent.buffer
     private var cnt = 0
 
-    private fun prefix(): String {
-        return "${descriptor.serialName}.member.$cnt"
-    }
+    private fun prefix(): String = "${descriptor.serialName}.member.$cnt"
 
     private fun writePrefixed(block: SdkBuffer.() -> Unit) {
         cnt++
