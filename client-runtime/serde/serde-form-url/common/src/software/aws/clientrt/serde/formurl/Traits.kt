@@ -27,3 +27,9 @@ data class FormUrlSerialName(val name: String) : FieldTrait
  * ```
  */
 data class QueryLiteral(val key: String, val value: String) : FieldTrait
+
+/**
+ * Indicates that the container should be serialized in "flattened" form.
+ * See: https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#collections
+ */
+object FormUrlFlattened : FieldTrait

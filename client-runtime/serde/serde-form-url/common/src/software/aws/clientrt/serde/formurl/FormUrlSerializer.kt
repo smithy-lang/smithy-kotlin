@@ -67,7 +67,6 @@ private class FormUrlStructSerializer(
         get() = parent.buffer
 
     init {
-        // FIXME - this should be `traits`
         descriptor.traits.mapNotNull { it as? QueryLiteral }
             .forEach { literal ->
                 writeField(literal.asDescriptor()) {

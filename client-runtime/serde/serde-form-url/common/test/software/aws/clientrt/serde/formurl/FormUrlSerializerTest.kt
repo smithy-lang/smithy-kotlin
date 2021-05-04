@@ -116,6 +116,36 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
+    @Test
+    fun itSerializesEmptyStrings() {
+        // see `string` from https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#x-www-form-urlencoded-shape-serialization
+        val intValue = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName("i"))
+        val str1Value = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName("s1"))
+        val str2Value = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName("s2"))
+
+        val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+            FormUrlSerialName("b")
+            field(intValue)
+            field(str1Value)
+            field(str2Value)
+        }
+
+        val serializer = FormUrlSerializer()
+        serializer.serializeStruct(objectDescriptor) {
+            field(intValue, 2)
+            field(str1Value, "")
+            field(str2Value, "foo")
+        }
+
+        val expected = """
+            i=2
+            &s1=
+            &s2=foo
+        """.trimIndent().replace("\n", "")
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
     data class ListInput(val primitiveList: List<String>?, val structList: List<B>?) {
         companion object {
             val PRIMITIVE_LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("PrimitiveList"))
@@ -351,6 +381,31 @@ class FormUrlSerializerTest {
     @Test
     fun itSerializesQueryLiterals() {
         // test SdkObjectDescriptor with query literals trait
-        TODO("not implemented")
+
+        val intValue = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName("i"))
+        val str1Value = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName("s1"))
+
+        val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
+            FormUrlSerialName("b")
+            trait(QueryLiteral("lit1", "v1"))
+            trait(QueryLiteral("lit2", "v2"))
+            field(intValue)
+            field(str1Value)
+        }
+
+        val serializer = FormUrlSerializer()
+        serializer.serializeStruct(objectDescriptor) {
+            field(intValue, 2)
+            field(str1Value, "foo")
+        }
+
+        val expected = """
+            lit1=v1
+            &lit2=v2
+            &i=2
+            &s1=foo
+        """.trimIndent().replace("\n", "")
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
     }
 }
