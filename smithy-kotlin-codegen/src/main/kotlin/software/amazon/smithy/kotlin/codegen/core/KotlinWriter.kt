@@ -262,15 +262,13 @@ private val commonHtmlTags = setOf(
 //       and remove them.  A better solution would be to generally convert from HTML to "pure"
 //       markdown such that formatting is preserved.
 // TODO: https://www.pivotaltracker.com/story/show/177053427
-private fun sanitizeDocumentation(doc: String): String {
-    return doc
-        .stripAll(commonHtmlTags)
-        // Docs can have valid $ characters that shouldn't run through formatters.
-        .replace("#", "##")
-        // Services may have comment string literals embedded in documentation.
-        .replace("/*", "&##47;*")
-        .replace("*/", "*&##47;")
-}
+private fun sanitizeDocumentation(doc: String): String = doc
+    .stripAll(commonHtmlTags)
+    // Docs can have valid $ characters that shouldn't run through formatters.
+    .replace("#", "##")
+    // Services may have comment string literals embedded in documentation.
+    .replace("/*", "&##47;*")
+    .replace("*/", "*&##47;")
 
 // Remove all strings from source string and return the result
 private fun String.stripAll(stripList: List<String>): String {

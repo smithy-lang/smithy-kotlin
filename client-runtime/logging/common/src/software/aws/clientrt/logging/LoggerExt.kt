@@ -27,13 +27,8 @@ private class ContextualLogger(
     override fun error(msg: () -> Any?) { inner.error { "$formattedCtx - ${msg.invoke()}" } }
     override fun error(t: Throwable?, msg: () -> Any?) { inner.error(t) { "$formattedCtx - ${msg.invoke()}" } }
 
-    override fun <T : Throwable> throwing(throwable: T): T {
-        return inner.throwing(throwable)
-    }
-
-    override fun <T : Throwable> catching(throwable: T) {
-        return inner.catching(throwable)
-    }
+    override fun <T : Throwable> throwing(throwable: T): T = inner.throwing(throwable)
+    override fun <T : Throwable> catching(throwable: T) = inner.catching(throwable)
 }
 
 // we should probably map this to MDC on JVM but we don't really have equivalents on other platforms anyway

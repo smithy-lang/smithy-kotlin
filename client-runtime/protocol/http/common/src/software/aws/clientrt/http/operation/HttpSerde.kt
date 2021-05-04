@@ -43,7 +43,5 @@ object UnitSerializer : HttpSerialize<Unit> {
  * Convenience deserialize implementation that returns the response without modification
  */
 object IdentityDeserializer : HttpDeserialize<HttpResponse> {
-    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): HttpResponse {
-        return response
-    }
+    override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): HttpResponse = response
 }

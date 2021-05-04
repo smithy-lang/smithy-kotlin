@@ -38,11 +38,9 @@ class XmlNode {
             return parseDom(reader)
         }
 
-        internal fun fromToken(token: XmlToken.BeginElement): XmlNode {
-            return XmlNode(token.name).apply {
-                attributes.putAll(token.attributes)
-                namespaces.addAll(token.nsDeclarations)
-            }
+        internal fun fromToken(token: XmlToken.BeginElement): XmlNode = XmlNode(token.name).apply {
+            attributes.putAll(token.attributes)
+            namespaces.addAll(token.nsDeclarations)
         }
     }
 

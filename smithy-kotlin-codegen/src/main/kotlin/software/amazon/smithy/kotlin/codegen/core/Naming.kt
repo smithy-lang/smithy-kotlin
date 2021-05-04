@@ -79,6 +79,6 @@ fun EnumDefinition.variantName(): String {
  * Generate the union variant name from a union member shape
  * e.g. `VariantName`
  */
-fun MemberShape.unionVariantName(symbolProvider: SymbolProvider): String {
-    return symbolProvider.toMemberName(this).capitalize()
-}
+fun MemberShape.unionVariantName(symbolProvider: SymbolProvider): String = symbolProvider
+    .toMemberName(this)
+    .capitalize()

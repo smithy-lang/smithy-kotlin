@@ -22,9 +22,7 @@ public abstract class ClientOptionsBuilder(protected val options: Attributes = A
     /**
      * Delegate a property to be set as an attribute using the given Key
      */
-    protected fun <T : Any> option(key: ClientOption<T>): DelegatedClientOption<T> {
-        return DelegatedClientOption(key, options)
-    }
+    protected fun <T : Any> option(key: ClientOption<T>): DelegatedClientOption<T> = DelegatedClientOption(key, options)
 
     /**
      * Like [option] but mark the key as required which is validated when [build] is called
