@@ -25,20 +25,21 @@ class FormUrlSerializerTest {
 
     ) : SdkSerializable {
         companion object {
-            val descriptorBoolean = SdkFieldDescriptor("boolean", SerialKind.Boolean)
-            val descriptorByte = SdkFieldDescriptor("byte", SerialKind.Byte)
-            val descriptorShort = SdkFieldDescriptor("short", SerialKind.Short)
-            val descriptorInt = SdkFieldDescriptor("int", SerialKind.Integer)
-            val descriptorLong = SdkFieldDescriptor("long", SerialKind.Long)
-            val descriptorFloat = SdkFieldDescriptor("float", SerialKind.Float)
-            val descriptorDouble = SdkFieldDescriptor("double", SerialKind.Double)
-            val descriptorChar = SdkFieldDescriptor("char", SerialKind.Char)
-            val descriptorString = SdkFieldDescriptor("string", SerialKind.String)
-            val descriptorListInt = SdkFieldDescriptor("listInt", SerialKind.List)
+            val descriptorBoolean = SdkFieldDescriptor(SerialKind.Boolean, FormUrlSerialName("boolean"))
+            val descriptorByte = SdkFieldDescriptor(SerialKind.Byte, FormUrlSerialName("byte"))
+            val descriptorShort = SdkFieldDescriptor(SerialKind.Short, FormUrlSerialName("short"))
+            val descriptorInt = SdkFieldDescriptor(SerialKind.Integer, FormUrlSerialName("int"))
+            val descriptorLong = SdkFieldDescriptor(SerialKind.Long, FormUrlSerialName("long"))
+            val descriptorFloat = SdkFieldDescriptor(SerialKind.Float, FormUrlSerialName("float"))
+            val descriptorDouble = SdkFieldDescriptor(SerialKind.Double, FormUrlSerialName("double"))
+            val descriptorChar = SdkFieldDescriptor(SerialKind.Char, FormUrlSerialName("char"))
+            val descriptorString = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName("string"))
+            val descriptorListInt = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("listInt"))
         }
 
         override fun serialize(serializer: Serializer) {
-            serializer.serializeStruct(SdkFieldDescriptor.ANONYMOUS_DESCRIPTOR) {
+            val objDescriptor = SdkObjectDescriptor.build {}
+            serializer.serializeStruct(objDescriptor) {
                 field(descriptorBoolean, boolean)
                 nullField(descriptorBoolean)
                 field(descriptorByte, byte)
@@ -60,10 +61,10 @@ class FormUrlSerializerTest {
 
     class A(private val b: B) : SdkSerializable {
         companion object {
-            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor("b", SerialKind.Struct)
+            val descriptorB: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.Struct, FormUrlSerialName("b"))
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName = "a"
+                FormUrlSerialName("a")
                 field(descriptorB)
             }
         }
@@ -77,10 +78,10 @@ class FormUrlSerializerTest {
 
     data class B(private val value: Int) : SdkSerializable {
         companion object {
-            val descriptorValue = SdkFieldDescriptor("v", SerialKind.Integer)
+            val descriptorValue = SdkFieldDescriptor(SerialKind.Integer, FormUrlSerialName("v"))
 
             val objectDescriptor: SdkObjectDescriptor = SdkObjectDescriptor.build {
-                serialName = "b"
+                FormUrlSerialName("b")
                 field(descriptorValue)
             }
         }
@@ -117,8 +118,8 @@ class FormUrlSerializerTest {
 
     data class ListInput(val primitiveList: List<String>?, val structList: List<B>?) {
         companion object {
-            val PRIMITIVE_LIST_DESCRIPTOR = SdkFieldDescriptor("PrimitiveList", SerialKind.List)
-            val STRUCT_LIST_DESCRIPTOR = SdkFieldDescriptor("StructList", SerialKind.List)
+            val PRIMITIVE_LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("PrimitiveList"))
+            val STRUCT_LIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("StructList"))
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(PRIMITIVE_LIST_DESCRIPTOR)
                 field(STRUCT_LIST_DESCRIPTOR)
@@ -194,11 +195,11 @@ class FormUrlSerializerTest {
         val mapOfLists: Map<String, List<String>>? = null,
     ) {
         companion object {
-            val PRIMITIVE_MAP_DESCRIPTOR = SdkFieldDescriptor("PrimitiveMap", SerialKind.Map)
-            val STRUCT_MAP_DESCRIPTOR = SdkFieldDescriptor("StructMap", SerialKind.Map)
-            val MAP_OF_LISTS_DESCRIPTOR = SdkFieldDescriptor("MapOfLists", SerialKind.Map)
+            val PRIMITIVE_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("PrimitiveMap"))
+            val STRUCT_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("StructMap"))
+            val MAP_OF_LISTS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("MapOfLists"))
             // serialName of this nested descriptor should be ignored?
-            val MAP_OF_LISTS_CO_DESCRIPTOR = SdkFieldDescriptor("ChildStringList", SerialKind.List)
+            val MAP_OF_LISTS_CO_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("ChildStringList"))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(PRIMITIVE_MAP_DESCRIPTOR)
@@ -297,8 +298,8 @@ class FormUrlSerializerTest {
 
     data class MapOfMapsInput(val input: Map<String, Map<String, String>>) {
         companion object {
-            val MAP_OF_MAP_DESCRIPTOR = SdkFieldDescriptor("MapOfMaps", SerialKind.Map)
-            val MAP_OF_MAP_C0_DESCRIPTOR = SdkFieldDescriptor("ChildMapOfMaps", SerialKind.Map)
+            val MAP_OF_MAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("MapOfMaps"))
+            val MAP_OF_MAP_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("ChildMapOfMaps"))
 
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(MAP_OF_MAP_DESCRIPTOR)

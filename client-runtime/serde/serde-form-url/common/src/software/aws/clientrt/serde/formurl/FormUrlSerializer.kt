@@ -68,7 +68,7 @@ private class FormUrlStructSerializer(
 
     init {
         // FIXME - this should be `traits`
-        descriptor.trait.mapNotNull { it as? QueryLiteral }
+        descriptor.traits.mapNotNull { it as? QueryLiteral }
             .forEach { literal ->
                 writeField(literal.asDescriptor()) {
                     serializeString(literal.value)
@@ -281,14 +281,14 @@ private class FormUrlMapSerializer(
         writeKey(key)
 
         // FIXME - we should probably make list/map serializers take a prefix function rather than abusing descriptors...
-        val childDescriptor = SdkFieldDescriptor("$commonPrefix.value", SerialKind.List)
+        val childDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("$commonPrefix.value"))
         FormUrlListSerializer(parent, childDescriptor).apply(block)
     }
 
     override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
         writeKey(key)
 
-        val childDescriptor = SdkFieldDescriptor("$commonPrefix.value", SerialKind.Map)
+        val childDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("$commonPrefix.value"))
         FormUrlMapSerializer(parent, childDescriptor).apply(block)
     }
 
@@ -310,4 +310,7 @@ private inline fun <T : Any> checkNotSparse(value: T?): T {
     return value
 }
 
-private fun QueryLiteral.asDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor(key, SerialKind.String)
+private fun QueryLiteral.asDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName(key))
+
+private val SdkFieldDescriptor.serialName: String
+    get() = expectTrait<FormUrlSerialName>().name

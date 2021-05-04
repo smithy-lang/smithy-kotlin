@@ -8,6 +8,11 @@ package software.aws.clientrt.serde.formurl
 import software.aws.clientrt.serde.FieldTrait
 
 /**
+ * Specifies a name that a field is encoded into for form-url elements.
+ */
+data class FormUrlSerialName(val name: String) : FieldTrait
+
+/**
  * Trait that adds a static `key=value` pair to a form-url encoded object
  *
  * ## Example
