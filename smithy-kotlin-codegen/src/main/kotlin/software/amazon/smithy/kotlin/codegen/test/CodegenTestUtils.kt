@@ -33,7 +33,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 /**
  * Container for type instances necessary for tests
  */
-internal data class TestContext(
+data class TestContext(
     val generationCtx: ProtocolGenerator.GenerationContext,
     val manifest: MockManifest,
     val generator: ProtocolGenerator
@@ -186,8 +186,7 @@ fun codegenTestHarnessForModelSnippet(
 ): CodegenTestHarness {
     val protocol = generator.protocol.name
     val model = snippet().generateTestModel(protocol, namespace, serviceName, operations)
-    val ctx = model.generateTestContext(namespace, serviceName)
-    val manifest = ctx.delegator.fileManifest as MockManifest
+    val (ctx, manifest, _) = model.newTestContext(serviceName = serviceName, packageName = namespace, generator = generator)
 
     return CodegenTestHarness(ctx, manifest, generator, namespace, serviceName, protocol)
 }

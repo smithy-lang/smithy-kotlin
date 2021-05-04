@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+
 import software.aws.clientrt.serde.*
 import software.aws.clientrt.serde.json.JsonSerdeProvider
 import software.aws.clientrt.serde.json.JsonSerialName

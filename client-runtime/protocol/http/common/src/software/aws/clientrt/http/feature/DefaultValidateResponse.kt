@@ -54,9 +54,8 @@ class HttpResponseException : SdkBaseException {
 class DefaultValidateResponse : Feature {
     companion object Feature : HttpClientFeatureFactory<DefaultValidateResponse, DefaultValidateResponse> {
         override val key: FeatureKey<DefaultValidateResponse> = FeatureKey("DefaultValidateResponse")
-        override fun create(block: DefaultValidateResponse.() -> Unit): DefaultValidateResponse {
-            return DefaultValidateResponse().apply(block)
-        }
+        override fun create(block: DefaultValidateResponse.() -> Unit): DefaultValidateResponse =
+            DefaultValidateResponse().apply(block)
     }
 
     override fun <I, O> install(operation: SdkHttpOperation<I, O>) {

@@ -23,9 +23,7 @@ sealed class XmlToken {
      * @property prefix The namespace this element belongs to
      */
     data class QualifiedName(val local: String, val prefix: String? = null) {
-        override fun toString(): String {
-            return tag
-        }
+        override fun toString(): String = tag
 
         val tag: String get() = when (prefix) {
             null -> local

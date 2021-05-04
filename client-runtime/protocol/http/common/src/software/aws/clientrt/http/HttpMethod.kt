@@ -22,17 +22,15 @@ enum class HttpMethod {
          * @return [HttpMethod] for the given string
          * @throws IllegalArgumentException if the method is unknown
          */
-        fun parse(method: String): HttpMethod {
-            return when (method.toUpperCase()) {
-                GET.name -> GET
-                POST.name -> POST
-                PUT.name -> PUT
-                PATCH.name -> PATCH
-                DELETE.name -> DELETE
-                HEAD.name -> HEAD
-                OPTIONS.name -> OPTIONS
-                else -> throw IllegalArgumentException("unknown HTTP method: $method")
-            }
+        fun parse(method: String): HttpMethod = when (method.toUpperCase()) {
+            GET.name -> GET
+            POST.name -> POST
+            PUT.name -> PUT
+            PATCH.name -> PATCH
+            DELETE.name -> DELETE
+            HEAD.name -> HEAD
+            OPTIONS.name -> OPTIONS
+            else -> throw IllegalArgumentException("unknown HTTP method: $method")
         }
     }
 }

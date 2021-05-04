@@ -223,9 +223,7 @@ private class SubTreeReader(
         return if (peekToken.depth >= minimumDepth) peekToken else null
     }
 
-    override fun toString(): String {
-        return "$currentReader (subTree $minimumDepth)"
-    }
+    override fun toString(): String = "$currentReader (subTree $minimumDepth)"
 }
 
 // A reader for a subtree with no children

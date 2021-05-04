@@ -15,7 +15,5 @@ class MapRequest<R1, R2, Response, H>(
     private val fn: suspend (R1) -> R2
 ) : Handler<R1, Response>
         where H : Handler<R2, Response> {
-    override suspend fun call(request: R1): Response {
-        return inner.call(fn(request))
-    }
+    override suspend fun call(request: R1): Response = inner.call(fn(request))
 }

@@ -20,10 +20,10 @@ interface HttpClientEngine {
     /**
      * Shutdown and cleanup any resources
      */
-    fun close() { return }
+    fun close() { /* Pass */ }
 
     /**
      * Install the [SdkHttpClient] into the engine
      */
-    fun install(client: SdkHttpClient) { return }
+    fun install(client: SdkHttpClient) { /* Pass */ }
 }

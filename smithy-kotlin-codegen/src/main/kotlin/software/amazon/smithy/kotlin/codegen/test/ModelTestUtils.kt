@@ -1,3 +1,7 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
 package software.amazon.smithy.kotlin.codegen.test
 
 import software.amazon.smithy.build.MockManifest
@@ -6,7 +10,6 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
-import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.shapes
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -104,14 +107,14 @@ internal fun Model.toSmithyIDL(): String {
  * @param settings [KotlinSettings] associated w/ test context
  * @param generator [ProtocolGenerator] associated w/ test context
  */
-internal fun Model.newTestContext(
+fun Model.newTestContext(
     serviceName: String = TestModelDefault.SERVICE_NAME,
     packageName: String = TestModelDefault.NAMESPACE,
     settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
     generator: ProtocolGenerator = MockHttpProtocolGenerator()
 ): TestContext {
     val manifest = MockManifest()
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, packageName, serviceName)
+    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = this, rootNamespace = packageName, serviceName = serviceName)
     val service = this.getShape(ShapeId.from("$packageName#$serviceName")).get().asServiceShape().get()
     val delegator = KotlinDelegator(settings, this, manifest, provider)
 
@@ -209,42 +212,14 @@ internal fun String.generateTestModel(
     return completeModel.toSmithyModel()
 }
 
-// Produce a GenerationContext given a model, it's expected namespace and service name.
-fun Model.generateTestContext(namespace: String, serviceName: String): ProtocolGenerator.GenerationContext {
-    val packageNode = Node.objectNode().withMember("name", Node.from(namespace))
-        .withMember("version", Node.from(TestModelDefault.MODEL_VERSION))
-
-    val settings = KotlinSettings.from(
-        this,
-        Node.objectNodeBuilder()
-            .withMember("package", packageNode)
-            .build()
-    )
-    val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(this, rootNamespace = namespace, serviceName = serviceName)
-    val service = this.expectShape<ServiceShape>("$namespace#$serviceName")
-    val generator: ProtocolGenerator = MockHttpProtocolGenerator()
-    val manifest = MockManifest()
-    val delegator = KotlinDelegator(settings, this, manifest, provider)
-
-    return ProtocolGenerator.GenerationContext(
-        settings,
-        this,
-        service,
-        provider,
-        listOf(),
-        generator.protocol,
-        delegator
-    )
-}
-
 // Specifies AWS protocols that can be set on test models.
-internal enum class AwsProtocolModelDeclaration(val annotation: String, val import: String) {
+enum class AwsProtocolModelDeclaration(val annotation: String, val import: String) {
     RestJson("@restJson1", "aws.protocols#restJson1"),
     AwsJson1_1("@awsJson1_1", "aws.protocols#awsJson1_1")
 }
 
 // Generates the model header which by default conforms to the conventions defined for test models.
-internal fun String.prependNamespaceAndService(
+fun String.prependNamespaceAndService(
     version: String = TestModelDefault.SMITHY_IDL_VERSION,
     namespace: String = TestModelDefault.NAMESPACE,
     imports: List<String> = emptyList(),

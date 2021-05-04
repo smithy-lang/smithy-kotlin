@@ -16,9 +16,7 @@ class MiddlewareTest {
     @Test
     fun testDecorate() = runSuspendTest {
         val handler = object : Handler<String, String> {
-            override suspend fun call(request: String): String {
-                return request.capitalize()
-            }
+            override suspend fun call(request: String): String = request.capitalize()
         }
 
         val m1: MiddlewareFn<String, String> = { req, next ->

@@ -98,7 +98,9 @@ class ShapeValueGenerator(
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("#L.fromValue(", symbol.name)
                     ")"
-                } else ""
+                } else {
+                    ""
+                }
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {

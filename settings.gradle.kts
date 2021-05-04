@@ -45,3 +45,4 @@ if (System.getProperties().containsKey("androidEmulatorTests")) {
     include(":android-test")
 }
 
+include(":ktlint-rules")

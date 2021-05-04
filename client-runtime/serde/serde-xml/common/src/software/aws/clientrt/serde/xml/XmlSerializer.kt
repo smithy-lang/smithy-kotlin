@@ -18,9 +18,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     private var nodeStack: Stack<String> = mutableListOf()
     internal var parentDescriptorStack: Stack<SdkFieldDescriptor> = mutableListOf()
 
-    override fun toByteArray(): ByteArray {
-        return xmlWriter.bytes
-    }
+    override fun toByteArray(): ByteArray = xmlWriter.bytes
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer {
         // if we are serializing a nested structure field

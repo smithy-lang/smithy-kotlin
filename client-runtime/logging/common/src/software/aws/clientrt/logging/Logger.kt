@@ -16,16 +16,13 @@ public interface Logger {
         /**
          * Get the logger for the class [T]
          */
-        inline fun <reified T> getLogger(): Logger {
-            return getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })
-        }
+        inline fun <reified T> getLogger(): Logger =
+            getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })
 
         /**
          * Get the logger for the given [name]
          */
-        fun getLogger(name: String): Logger {
-            return KotlinLoggingAdapter(name)
-        }
+        fun getLogger(name: String): Logger = KotlinLoggingAdapter(name)
     }
 
     /**

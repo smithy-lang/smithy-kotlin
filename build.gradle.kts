@@ -36,6 +36,7 @@ val ktlintVersion: String by project
 
 dependencies {
     ktlint("com.pinterest:ktlint:$ktlintVersion")
+    ktlint(project(":ktlint-rules"))
 }
 
 val lintPaths = listOf(
