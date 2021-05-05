@@ -25,32 +25,36 @@ class StructureGeneratorTest {
     private val deprecatedTestContents: String
 
     init {
-        commonTestContents = generateStructure("""
-            structure Qux { }
+        commonTestContents = generateStructure(
+            """
+                structure Qux { }
 
-            @documentation("This *is* documentation about the shape.")
-            structure MyStruct {
-                foo: String,
-                @documentation("This *is* documentation about the member.")
-                bar: PrimitiveInteger,
-                baz: Integer,
-                Quux: Qux,
-                byteValue: Byte
-            }
-        """)
+                @documentation("This *is* documentation about the shape.")
+                structure MyStruct {
+                    foo: String,
+                    @documentation("This *is* documentation about the member.")
+                    bar: PrimitiveInteger,
+                    baz: Integer,
+                    Quux: Qux,
+                    byteValue: Byte
+                }
+            """
+        )
 
-        deprecatedTestContents = generateStructure("""
-            structure Qux { }
-
-            @deprecated
-            structure MyStruct {
-                foo: String,
-                bar: String,
+        deprecatedTestContents = generateStructure(
+            """
+                structure Qux { }
 
                 @deprecated
-                baz: Qux,
-            }
-        """)
+                structure MyStruct {
+                    foo: String,
+                    bar: String,
+
+                    @deprecated
+                    baz: Qux,
+                }
+            """
+        )
     }
 
     @Test
@@ -448,42 +452,52 @@ class StructureGeneratorTest {
 
     @Test
     fun `it annotates deprecated structures`() {
-        deprecatedTestContents.shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            class MyStruct private constructor(builder: BuilderImpl) {
-        """.trimIndent())
+        deprecatedTestContents.shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                class MyStruct private constructor(builder: BuilderImpl) {
+            """.trimIndent()
+        )
     }
 
     @Test
     fun `it annotates deprecated members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            val baz: Qux? = builder.baz
-        """.trimIndent())
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                val baz: Qux? = builder.baz
+            """.trimIndent()
+        )
     }
 
     @Test
     fun `it annotates deprecated Java builder members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            fun baz(baz: Qux): FluentBuilder
-        """.trimIndent())
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                fun baz(baz: Qux): FluentBuilder
+            """.trimIndent()
+        )
     }
 
     @Test
     fun `it annotates deprecated DSL builder members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            var baz: Qux?
-        """.trimIndent())
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                var baz: Qux?
+            """.trimIndent()
+        )
     }
 
     @Test
     fun `it annotates deprecated DSL builder member struct functions`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            fun baz(block: Qux.DslBuilder.() -> kotlin.Unit) {
-        """.trimIndent())
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                fun baz(block: Qux.DslBuilder.() -> kotlin.Unit) {
+            """.trimIndent()
+        )
     }
 
     private fun generateStructure(model: String): String {

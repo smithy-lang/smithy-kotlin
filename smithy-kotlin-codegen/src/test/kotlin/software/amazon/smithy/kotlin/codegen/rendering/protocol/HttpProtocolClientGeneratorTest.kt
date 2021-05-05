@@ -258,10 +258,12 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it annotates deprecated operation functions`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            override suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse {
-        """.trimIndent())
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                override suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse {
+            """.trimIndent()
+        )
     }
 
     private fun generateService(modelResourceName: String): String {

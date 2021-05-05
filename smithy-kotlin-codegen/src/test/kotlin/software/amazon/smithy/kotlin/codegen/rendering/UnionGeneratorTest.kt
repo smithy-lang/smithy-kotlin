@@ -19,22 +19,23 @@ import java.lang.IllegalStateException
 class UnionGeneratorTest {
     @Test
     fun `it renders unions`() {
-        val contents = generateUnion("""
-        @documentation("Documentation for MyUnion")
-        union MyUnion {
-            @documentation("Documentation for foo")
-            foo: String,
-            bar: PrimitiveInteger,
-            baz: Integer,
-            blz: Blob,
-            myStruct: MyStruct
-        }
-        
-        structure MyStruct {
-            qux: String
-        }
-            
-        """)
+        val contents = generateUnion(
+            """
+                @documentation("Documentation for MyUnion")
+                union MyUnion {
+                    @documentation("Documentation for foo")
+                    foo: String,
+                    bar: PrimitiveInteger,
+                    baz: Integer,
+                    blz: Blob,
+                    myStruct: MyStruct
+                }
+
+                structure MyStruct {
+                    qux: String
+                }
+            """
+        )
         contents.shouldContainOnlyOnceWithDiff("package test")
 
         val expectedClassDecl = """
@@ -97,35 +98,43 @@ class UnionGeneratorTest {
 
     @Test
     fun `it annotates deprecated unions`() {
-        val contents = generateUnion("""
-        @deprecated
-        union MyUnion {
-            foo: String,
-            bar: Integer,
-        }
-        """)
+        val contents = generateUnion(
+            """
+                @deprecated
+                union MyUnion {
+                    foo: String,
+                    bar: Integer,
+                }
+            """
+        )
 
-        contents.shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            sealed class MyUnion {
-        """.trimIndent())
+        contents.shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                sealed class MyUnion {
+            """.trimIndent()
+        )
     }
 
     @Test
     fun `it annotates deprecated union members`() {
-        val contents = generateUnion("""
-        union MyUnion {
-            foo: String,
+        val contents = generateUnion(
+            """
+                union MyUnion {
+                    foo: String,
 
-            @deprecated
-            bar: Integer,
-        }
-        """)
+                    @deprecated
+                    bar: Integer,
+                }
+            """
+        )
 
-        contents.trimEveryLine().shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            data class Bar(val value: kotlin.Int) : test.model.MyUnion()
-        """.trimIndent())
+        contents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                data class Bar(val value: kotlin.Int) : test.model.MyUnion()
+            """.trimIndent()
+        )
     }
 
     private fun generateUnion(model: String): String {

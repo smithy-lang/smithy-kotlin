@@ -129,18 +129,22 @@ class ServiceGeneratorTest {
 
     @Test
     fun `it annotates deprecated service interfaces`() {
-        deprecatedTestContents.shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            interface TestClient : SdkClient {
-        """.trimIndent())
+        deprecatedTestContents.shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                interface TestClient : SdkClient {
+            """.trimIndent()
+        )
     }
 
     @Test
     fun `it annotates deprecated operation functions`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse
-        """.trimIndent())
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse
+            """.trimIndent()
+        )
     }
 
     // Produce the generated service code given model inputs.

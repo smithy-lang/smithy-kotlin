@@ -223,10 +223,12 @@ sealed class Baz {
         EnumGenerator(shape, symbol, writer).render()
         val contents = writer.toString()
 
-        contents.shouldContainOnlyOnce("""
-            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-            sealed class Fruit {
-        """.trimIndent())
+        contents.shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                sealed class Fruit {
+            """.trimIndent()
+        )
     }
 
     @Test
