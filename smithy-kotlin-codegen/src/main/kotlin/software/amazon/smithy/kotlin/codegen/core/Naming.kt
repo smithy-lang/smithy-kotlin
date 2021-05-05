@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
+import software.amazon.smithy.kotlin.codegen.model.isError
 import software.amazon.smithy.kotlin.codegen.utils.splitOnWordBoundaries
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.kotlin.codegen.utils.toPascalCase
@@ -19,11 +20,26 @@ import java.util.logging.Logger
 
 // (somewhat) centralized naming rules
 
+private const val defaultErrorSuffix = "Exception"
+private val allowableErrorSuffixes = listOf(
+    defaultErrorSuffix,
+    "Fault",
+    "Error",
+)
+
 /**
  * Get the default name for a shape (for code generation).  Delegates to
  * Smithy to rename shapes when configured to do so in the model.
  */
-fun Shape.defaultName(serviceShape: ServiceShape): String = id.getName(serviceShape).toPascalCase()
+fun Shape.defaultName(serviceShape: ServiceShape): String {
+    val name = id.getName(serviceShape).toPascalCase()
+
+    return if (this.isError && allowableErrorSuffixes.none(name::endsWith)) {
+        name + defaultErrorSuffix
+    } else {
+        name
+    }
+}
 
 /**
  * Get the default name for a member shape (for code generation)
