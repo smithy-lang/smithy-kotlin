@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.isError
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -38,7 +39,7 @@ class StructureGenerator(
 
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
-        if (!shape.hasTrait<ErrorTrait>()) {
+        if (!shape.isError) {
             renderStructure()
         } else {
             renderError()
@@ -77,7 +78,7 @@ class StructureGenerator(
             val (memberName, memberSymbol) = memberNameSymbolIndex[it]!!
             writer.renderMemberDocumentation(model, it)
             writer.renderAnnotations(it)
-            if (shape.hasTrait<ErrorTrait>() && "message" == memberName) {
+            if (shape.isError && "message" == memberName) {
                 val targetShape = model.expectShape(it.target)
                 if (!targetShape.isStringShape) {
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")

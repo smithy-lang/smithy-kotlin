@@ -347,6 +347,39 @@ class SymbolProviderTest {
     }
 
     @Test
+    fun `suffixes error shape names when necessary`() {
+        assertEquals("SomethingWentWrongException", getExceptionName("SomethingWentWrong"))
+    }
+
+    @Test
+    fun `does not suffix error shape names that already end in "Exception"`() {
+        assertEquals("ThereCanBeNoException", getExceptionName("ThereCanBeNoException"))
+    }
+
+    @Test
+    fun `does not suffix error shape names that already end in "Error"`() {
+        assertEquals("HumanError", getExceptionName("HumanError"))
+    }
+
+    @Test
+    fun `does not suffix error shape names that already end in "Fault"`() {
+        assertEquals("SanAndreasFault", getExceptionName("SanAndreasFault"))
+    }
+
+    private fun getExceptionName(forShapeName: String): String {
+        val model = """
+            @error("client")
+            structure $forShapeName {
+                message: String
+            }
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<StructureShape>("com.test#$forShapeName")
+        return provider.toSymbol(member).name
+    }
+
+    @Test
     fun `creates documents`() {
         val document = DocumentShape.builder().id("foo.bar#MyDocument").build()
         val model = """

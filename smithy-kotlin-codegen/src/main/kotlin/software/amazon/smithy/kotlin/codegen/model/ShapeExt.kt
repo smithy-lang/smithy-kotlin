@@ -113,6 +113,12 @@ val Shape.isEnum: Boolean
     get() = isStringShape && hasTrait<EnumTrait>()
 
 /**
+ * Test if a shape is an error.
+ */
+val Shape.isError: Boolean
+    get() = hasTrait<ErrorTrait>()
+
+/**
  * Test if a shape represents an Kotlin number type
  */
 val Shape.isNumberShape: Boolean
