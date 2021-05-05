@@ -202,6 +202,34 @@ sealed class Baz {
     }
 
     @Test
+    fun `it annotates deprecated shapes`() {
+        val model = """
+            @deprecated
+            @enum([
+                {
+                    value: "apple"
+                },
+                {
+                    value: "banana"
+                }
+            ])
+            string Fruit
+        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
+
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
+        val shape = model.expectShape<StringShape>("test#Fruit")
+        val symbol = provider.toSymbol(shape)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        EnumGenerator(shape, symbol, writer).render()
+        val contents = writer.toString()
+
+        contents.shouldContainOnlyOnce("""
+            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+            sealed class Fruit {
+        """.trimIndent())
+    }
+
+    @Test
     fun `it fails if prefixing causes a conflict`() {
         // names and values are required to be unique, prefixing invalid identifiers with '_' could potentially
         // (albeit unlikely) cause a conflict with an existing name

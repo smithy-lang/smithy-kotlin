@@ -13,14 +13,17 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 
 class ServiceGeneratorTest {
     private val commonTestContents: String
+    private val deprecatedTestContents: String
 
     init {
         commonTestContents = generateService("service-generator-test-operations.smithy")
+        deprecatedTestContents = generateService("service-generator-deprecated.smithy")
     }
 
     @Test
@@ -122,6 +125,22 @@ class ServiceGeneratorTest {
             }
         """.formatForTest()
         contents.shouldContainOnlyOnce(expectedConfigOverride)
+    }
+
+    @Test
+    fun `it annotates deprecated service interfaces`() {
+        deprecatedTestContents.shouldContainOnlyOnce("""
+            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+            interface TestClient : SdkClient {
+        """.trimIndent())
+    }
+
+    @Test
+    fun `it annotates deprecated operation functions`() {
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
+            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+            suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse
+        """.trimIndent())
     }
 
     // Produce the generated service code given model inputs.

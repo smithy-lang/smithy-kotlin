@@ -9,10 +9,13 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.kotlin.codegen.trimEveryLine
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
+    private val deprecatedTestContents: String
     private val writer: KotlinWriter = KotlinWriter(TestModelDefault.NAMESPACE)
 
     class MockProtocolMiddleware1 : ProtocolMiddleware {
@@ -23,20 +26,8 @@ class HttpProtocolClientGeneratorTest {
     }
 
     init {
-        val model = javaClass
-            .classLoader
-            .getResource("software/amazon/smithy/kotlin/codegen/service-generator-test-operations.smithy")!!
-            .toSmithyModel()
-
-        val ctx = model.newTestContext()
-        val features: List<ProtocolMiddleware> = listOf(MockProtocolMiddleware1())
-        val generator = TestProtocolClientGenerator(
-            ctx.generationCtx,
-            features,
-            HttpTraitResolver(ctx.generationCtx, "application/json")
-        )
-        generator.render(writer)
-        commonTestContents = writer.toString()
+        commonTestContents = generateService("service-generator-test-operations.smithy")
+        deprecatedTestContents = generateService("service-generator-deprecated.smithy")
     }
 
     @Test
@@ -263,5 +254,27 @@ class HttpProtocolClientGeneratorTest {
         }
         """
         contents.shouldContainOnlyOnceWithDiff(expectedFragment)
+    }
+
+    @Test
+    fun `it annotates deprecated operation functions`() {
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce("""
+            @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+            override suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse {
+        """.trimIndent())
+    }
+
+    private fun generateService(modelResourceName: String): String {
+        val model = loadModelFromResource(modelResourceName)
+
+        val ctx = model.newTestContext()
+        val features: List<ProtocolMiddleware> = listOf(MockProtocolMiddleware1())
+        val generator = TestProtocolClientGenerator(
+            ctx.generationCtx,
+            features,
+            HttpTraitResolver(ctx.generationCtx, "application/json")
+        )
+        generator.render(writer)
+        return writer.toString()
     }
 }

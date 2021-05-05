@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.lang.isBuiltIn
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.isDeprecated
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
@@ -175,6 +176,22 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
                     sanitizeDocumentation(docs)
                 )
             )
+        }
+    }
+
+    /**
+     * Adds appropriate annotations to generated declarations.
+     */
+    fun renderAnnotations(shape: Shape) {
+        renderDeprecatedAnnotation(shape)
+    }
+
+    /**
+     * Adds the `@Deprecated` annotation if appropriate.
+     */
+    private fun renderDeprecatedAnnotation(shape: Shape) {
+        if (shape.isDeprecated) {
+            write("""@Deprecated("No longer recommended for use. See AWS API documentation for more details.")""")
         }
     }
 
