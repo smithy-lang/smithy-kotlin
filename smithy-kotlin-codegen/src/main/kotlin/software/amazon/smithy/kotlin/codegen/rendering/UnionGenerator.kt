@@ -31,9 +31,11 @@ class UnionGenerator(
         check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) }) { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
         val symbol = symbolProvider.toSymbol(shape)
         writer.renderDocumentation(shape)
+        writer.renderAnnotations(shape)
         writer.openBlock("sealed class #T {", symbol)
         shape.allMembers.values.sortedBy { it.memberName }.forEach {
             writer.renderMemberDocumentation(model, it)
+            writer.renderAnnotations(it)
             val variantName = it.unionVariantName(symbolProvider)
             val targetType = model.expectShape(it.target).type
             writer.writeInline("data class #L(val value: #Q) : #Q()", variantName, symbolProvider.toSymbol(it), symbol)

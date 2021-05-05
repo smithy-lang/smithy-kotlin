@@ -11,10 +11,7 @@ import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
-import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.model.traits.*
 import kotlin.streams.toList
 
 /**
@@ -101,6 +98,12 @@ fun OperationIndex.operationSignature(model: Model, symbolProvider: SymbolProvid
         "suspend fun <T> $operationName(${inputSignature}block: suspend ($outputName) -> T): T"
     }
 }
+
+/**
+ * Test if a shape is deprecated.
+ */
+val Shape.isDeprecated: Boolean
+    get() = hasTrait<DeprecatedTrait>()
 
 /**
  * Test if a shape represents an enumeration

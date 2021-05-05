@@ -45,7 +45,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         val operationsIndex = OperationIndex.of(ctx.model)
 
         writer.renderDocumentation(service)
-
+        writer.renderAnnotations(service)
         writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
             .call { overrideServiceName() }
             .call {
@@ -119,6 +119,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private fun renderOperation(opIndex: OperationIndex, op: OperationShape) {
         writer.write("")
         writer.renderDocumentation(op)
+        writer.renderAnnotations(op)
         writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op))
     }
 }

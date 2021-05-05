@@ -111,6 +111,7 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderOperationBody(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
         writer.write("")
         writer.renderDocumentation(op)
+        writer.renderAnnotations(op)
         val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op)
         writer.openBlock("override #L {", signature)
             .call { renderOperationSetup(writer, opIndex, op) }

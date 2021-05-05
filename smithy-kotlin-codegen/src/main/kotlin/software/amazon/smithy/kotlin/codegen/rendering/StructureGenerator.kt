@@ -37,6 +37,7 @@ class StructureGenerator(
         writer.putContext("class.name", symbol.name)
 
         writer.renderDocumentation(shape)
+        writer.renderAnnotations(shape)
         if (!shape.hasTrait<ErrorTrait>()) {
             renderStructure()
         } else {
@@ -75,6 +76,7 @@ class StructureGenerator(
         sortedMembers.forEach {
             val (memberName, memberSymbol) = memberNameSymbolIndex[it]!!
             writer.renderMemberDocumentation(model, it)
+            writer.renderAnnotations(it)
             if (shape.hasTrait<ErrorTrait>() && "message" == memberName) {
                 val targetShape = model.expectShape(it.target)
                 if (!targetShape.isStringShape) {
@@ -226,6 +228,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
                     writer.renderMemberDocumentation(model, member)
+                    writer.renderAnnotations(member)
                     write("fun #1L(#1L: #2T): FluentBuilder", memberName, memberSymbol)
                 }
             }
@@ -244,6 +247,7 @@ class StructureGenerator(
                     }
 
                     writer.renderMemberDocumentation(model, member)
+                    writer.renderAnnotations(member)
                     write("var #L: #P", memberName, memberSymbol)
                 }
 
@@ -252,6 +256,7 @@ class StructureGenerator(
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
+                    writer.renderAnnotations(member)
                     openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
                         .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")

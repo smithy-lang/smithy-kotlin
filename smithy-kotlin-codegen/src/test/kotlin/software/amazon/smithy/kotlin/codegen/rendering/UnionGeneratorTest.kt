@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -11,36 +12,30 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.UnionShape
 import java.lang.IllegalStateException
 
 class UnionGeneratorTest {
     @Test
     fun `it renders unions`() {
-        val model = """
-        @documentation("Documentation for MyUnion")
-        union MyUnion {
-            @documentation("Documentation for foo")
-            foo: String,
-            bar: PrimitiveInteger,
-            baz: Integer,
-            blz: Blob,
-            myStruct: MyStruct
-        }
-        
-        structure MyStruct {
-            qux: String
-        }
-            
-        """.prependNamespaceAndService(namespace = "test").toSmithyModel()
+        val contents = generateUnion(
+            """
+                @documentation("Documentation for MyUnion")
+                union MyUnion {
+                    @documentation("Documentation for foo")
+                    foo: String,
+                    bar: PrimitiveInteger,
+                    baz: Integer,
+                    blz: Blob,
+                    myStruct: MyStruct
+                }
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "test")
-        val writer = KotlinWriter("test")
-        val union = model.expectShape<UnionShape>("test#MyUnion")
-        val generator = UnionGenerator(model, provider, writer, union)
-        generator.render()
-
-        val contents = writer.toString()
+                structure MyStruct {
+                    qux: String
+                }
+            """
+        )
         contents.shouldContainOnlyOnceWithDiff("package test")
 
         val expectedClassDecl = """
@@ -99,5 +94,58 @@ class UnionGeneratorTest {
         Assertions.assertThrows(IllegalStateException::class.java) {
             generator.render()
         }
+    }
+
+    @Test
+    fun `it annotates deprecated unions`() {
+        val contents = generateUnion(
+            """
+                @deprecated
+                union MyUnion {
+                    foo: String,
+                    bar: Integer,
+                }
+            """
+        )
+
+        contents.shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                sealed class MyUnion {
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `it annotates deprecated union members`() {
+        val contents = generateUnion(
+            """
+                union MyUnion {
+                    foo: String,
+
+                    @deprecated
+                    bar: Integer,
+                }
+            """
+        )
+
+        contents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                data class Bar(val value: kotlin.Int) : test.model.MyUnion()
+            """.trimIndent()
+        )
+    }
+
+    private fun generateUnion(model: String): String {
+        val fullModel = model.prependNamespaceAndService(namespace = "test").toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(fullModel, rootNamespace = "test")
+        val writer = KotlinWriter("test")
+        val union = fullModel.expectShape<UnionShape>("test#MyUnion")
+        val generator = UnionGenerator(fullModel, provider, writer, union)
+        generator.render()
+
+        return writer.toString()
     }
 }
