@@ -20,7 +20,7 @@ class ExceptionParityTest {
     }
 
     private fun parityTest(json: String, xml: String, expected: Any) = runSuspendTest {
-        suspend fun subtest(value: String, provider: SerdeProvider) = when(expected) {
+        suspend fun subtest(value: String, provider: SerdeProvider) = when (expected) {
             is KClass<*> -> {
                 val ex = assertFails { value.deserialize(provider) }
                 assertEquals(expected, ex::class, "Found exception $ex")
