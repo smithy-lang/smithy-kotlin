@@ -9,11 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.defaultValue
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.isEnum
-import software.amazon.smithy.kotlin.codegen.model.isNotBoxed
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.knowledge.HttpBinding
@@ -65,7 +61,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Generate the set of [SdkFieldDescriptor]s for the types that require them.
      * @param ctx generation context
-     * @param memberShape the shape representing the field descriptor
+     * @param memberShape the (member) shape the field descriptor represents
      * @param writer kotlin writer
      * @param memberTargetShape optional shape representing the type contained by a collection
      * @param namePostfix a string to postfix to the descriptor name, used for nested synthetic fields
@@ -76,6 +72,57 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Generate the set of traits on the [SdkObjectDescriptor] for the types that require them.
      */
     protected abstract fun generateSdkObjectDescriptorTraits(ctx: ProtocolGenerator.GenerationContext, objectShape: Shape, writer: KotlinWriter)
+
+    /**
+     * Render serialization code for [shape]. This function is invoked inside the body of the serializer function.
+     *
+     * By default this uses one of the base classes [SerializeStructGenerator] / [SerializeUnionGenerator] to render.
+     *
+     * @param ctx the protocol generator context
+     * @param shape the shape to render serialization for
+     * @param writer the writer to render to
+     * @param members the members to serialize (pre-sorted)
+     * @param targetUse the target serializer use
+     */
+    protected open fun renderSerializerBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: KotlinWriter,
+        shape: Shape,
+        members: List<MemberShape>,
+        targetUse: SerdeTargetUse
+    ) {
+        if (shape.isUnionShape) {
+            SerializeUnionGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        } else {
+            SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        }
+    }
+
+    /**
+     * Render deserialization code for [shape]. This function is invoked inside the body of the deserializer function.
+     *
+     * By default this uses one of the base classes [DeserializeStructGenerator] / [DeserializeUnionGenerator] to render.
+     *
+     * @param ctx the protocol generator context
+     * @param writer the writer to render to
+     * @param shape the shape to render deserialization for
+     * @param members the members to deserialize (pre-sorted)
+     * @param targetUse the target deserializer use
+     */
+    protected open fun renderDeserializerBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        writer: KotlinWriter,
+        shape: Shape,
+        members: List<MemberShape>,
+        targetUse: SerdeTargetUse,
+    ) {
+        if (shape.isUnionShape) {
+            val name = ctx.symbolProvider.toSymbol(shape).name
+            DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
+        } else {
+            DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        }
+    }
 
     /**
      * Sort and return [members] in the order they should be serialized in (sort order may not matter in all protocols)
@@ -176,11 +223,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
                     val sortedMembers = sortMembersForSerialization(ctx, shape.members().toList())
-                    if (shape.isUnionShape) {
-                        SerializeUnionGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
-                    } else {
-                        SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
-                    }
+                    renderSerializerBody(ctx, writer, shape, sortedMembers, SerdeTargetUse.DocumentSerializer)
                 }
             }
             .closeBlock("}")
@@ -257,7 +300,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     generateSdkFieldDescriptor(ctx, member, writer)
 
                     val memberTarget = ctx.model.expectShape(member.target)
-                    val nestedMember = memberTarget.childShape(ctx)
+                    val nestedMember = memberTarget.childShape(ctx.model)
                     if (nestedMember?.isContainerShape() == true) {
                         renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
                     }
@@ -276,10 +319,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Generate field descriptors for nested serialization types.
      */
-    private fun renderNestedFieldDescriptors(ctx: ProtocolGenerator.GenerationContext, rootShape: MemberShape, childShape: Shape, level: Int, writer: KotlinWriter) {
+    private fun renderNestedFieldDescriptors(
+        ctx: ProtocolGenerator.GenerationContext,
+        rootShape: MemberShape,
+        childShape: Shape,
+        level: Int,
+        writer: KotlinWriter
+    ) {
         generateSdkFieldDescriptor(ctx, rootShape, writer, childShape, "_C$level")
 
-        val nestedMember = childShape.childShape(ctx)
+        val nestedMember = childShape.childShape(ctx.model)
         if (nestedMember?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMember, level + 1, writer)
     }
 
@@ -445,7 +494,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("val serializer = context.serializer()")
             .call {
                 val renderForMembers = sortMembersForSerialization(ctx, members.map { it.member })
-                SerializeStructGenerator(ctx, renderForMembers, writer, defaultTimestampFormat).render()
+                val shape = ctx.model.expectShape(renderForMembers.first().container)
+                renderSerializerBody(ctx, writer, shape, renderForMembers, SerdeTargetUse.OperationSerializer)
             }
             .write("")
             .write("builder.body = ByteArrayContent(serializer.toByteArray())")
@@ -652,7 +702,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("val payload = response.body.readAll()")
                         writer.withBlock("if (payload != null) {", "}") {
                             writer.write("val deserializer = context.deserializer(payload)")
-                            DeserializeStructGenerator(ctx, documentMembers, writer, defaultTimestampFormat).render()
+                            val shape = requireNotNull(outputSymbol.shape) { "output symbol must have a corresponding shape set in it's properties" }
+                            val use = when (shape.hasTrait<ErrorTrait>()) {
+                                true -> SerdeTargetUse.ExceptionDeserializer
+                                false -> SerdeTargetUse.OperationDeserializer
+                            }
+                            renderDeserializerBody(ctx, writer, shape, documentMembers, use)
                         }
                     }
                 }
@@ -946,14 +1001,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 if (shape.isUnionShape) {
                     writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
                         writer.write("var value: ${symbol.name}? = null")
-                        DeserializeUnionGenerator(ctx, symbol.name, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        renderDeserializerBody(ctx, writer, shape, shape.members().toList(), SerdeTargetUse.DocumentDeserializer)
                         writer.write("return value ?: throw DeserializationException(\"Deserialized value unexpectedly null: ${symbol.name}\")")
                     }
                         .closeBlock("}")
                 } else {
                     writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
                         writer.write("val builder = ${symbol.name}.builder()")
-                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        renderDeserializerBody(ctx, writer, shape, shape.members().toList(), SerdeTargetUse.DocumentDeserializer)
                         writer.write("return builder.build()")
                     }
                         .closeBlock("}")
@@ -982,17 +1037,3 @@ internal fun stringToNumber(shape: NumberShape): String = when (shape.type) {
 // test if the request bindings have any members bound to the HTTP payload (body)
 private fun hasHttpBody(requestBindings: List<HttpBindingDescriptor>): Boolean =
     requestBindings.any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
-
-// Returns [true] if the shape can contain other shapes.
-private fun Shape.isContainerShape() = when (this) {
-    is CollectionShape,
-    is MapShape -> true
-    else -> false
-}
-
-// Returns [Shape] of the child member of the passed Shape is a collection type or null if not collection type.
-private fun Shape.childShape(ctx: ProtocolGenerator.GenerationContext): Shape? = when (this) {
-    is CollectionShape -> ctx.model.expectShape(this.member.target)
-    is MapShape -> ctx.model.expectShape(this.value.target)
-    else -> null
-}
