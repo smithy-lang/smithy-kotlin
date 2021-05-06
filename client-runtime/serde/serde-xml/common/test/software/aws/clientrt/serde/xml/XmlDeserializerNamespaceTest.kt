@@ -51,7 +51,7 @@ class XmlDeserializerNamespaceTest {
                             FOO_DESCRIPTOR.index -> result.foo = deserializeString()
                             BAR_DESCRIPTOR.index -> result.bar = deserializeString()
                             null -> break@loop
-                            else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                            else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                         }
                     }
                 }
@@ -98,7 +98,7 @@ class XmlDeserializerNamespaceTest {
                             FOO_DESCRIPTOR.index -> result.foo = deserializeString()
                             BAR_DESCRIPTOR.index -> result.bar = deserializeString()
                             null -> break@loop
-                            else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                            else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                         }
                     }
                 }

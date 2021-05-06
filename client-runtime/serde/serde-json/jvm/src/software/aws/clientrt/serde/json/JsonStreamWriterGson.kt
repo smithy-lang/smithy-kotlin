@@ -5,6 +5,7 @@
 package software.aws.clientrt.serde.json
 
 import com.google.gson.stream.JsonWriter
+import software.aws.clientrt.serde.SerializationException
 import java.io.BufferedWriter
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -32,7 +33,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
             }
             jsonStreamWriter = jsonWriter
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -44,7 +45,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.close()
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -65,7 +66,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.beginArray()
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -73,7 +74,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.endArray()
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -81,7 +82,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.nullValue()
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -89,7 +90,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.beginObject()
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -97,7 +98,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.endObject()
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -105,7 +106,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.name(name)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -113,7 +114,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(value)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -121,7 +122,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(bool)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -129,7 +130,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(value)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -137,7 +138,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(value)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -145,7 +146,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(value)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -153,7 +154,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(value)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -161,7 +162,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(value)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -169,7 +170,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.value(value.toLong())
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 
@@ -177,7 +178,7 @@ private class JsonStreamWriterGson(pretty: Boolean) : JsonStreamWriter {
         try {
             jsonStreamWriter.jsonValue(value)
         } catch (e: IOException) {
-            throw JsonGenerationException(e)
+            throw SerializationException(e)
         }
     }
 }

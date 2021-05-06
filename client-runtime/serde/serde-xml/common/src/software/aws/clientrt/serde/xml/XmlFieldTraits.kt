@@ -110,7 +110,7 @@ data class XmlSerialName(val name: String) : FieldTrait
 // Generate a qualified name from a field descriptor.  Field descriptor must have trait XmlSerialName otherwise null is returned.
 
 internal fun SdkFieldDescriptor.toQualifiedName(xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()): XmlToken.QualifiedName {
-    val (localName, prefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: throw DeserializerStateException("Unable to parse qualified name from $this")
+    val (localName, prefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: throw DeserializationException("Unable to parse qualified name from $this")
 
     return when {
         xmlNamespace != null -> XmlToken.QualifiedName(localName, if (prefix == xmlNamespace.prefix) prefix else null)

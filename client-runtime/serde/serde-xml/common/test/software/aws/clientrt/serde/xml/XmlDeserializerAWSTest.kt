@@ -33,7 +33,7 @@ class XmlDeserializerAWSTest {
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> {
                             }
-                            else -> throw XmlGenerationException(IllegalStateException("unexpected field index in HostedZoneConfig deserializer"))
+                            else -> throw DeserializationException(IllegalStateException("unexpected field index in HostedZoneConfig deserializer"))
                         }
                     }
                 }
@@ -88,7 +88,7 @@ class XmlDeserializerAWSTest {
                                 builder.hostedZoneConfig = HostedZoneConfig.deserialize(deserializer)
                             null -> break@loop
                             Deserializer.FieldIterator.UNKNOWN_FIELD -> skipValue()
-                            else -> throw XmlGenerationException(IllegalStateException("unexpected field index in CreateHostedZoneRequest deserializer"))
+                            else -> throw DeserializationException(IllegalStateException("unexpected field index in CreateHostedZoneRequest deserializer"))
                         }
                     }
                 }
