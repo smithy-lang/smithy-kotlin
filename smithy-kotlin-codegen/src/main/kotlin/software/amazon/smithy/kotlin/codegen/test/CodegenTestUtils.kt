@@ -225,3 +225,8 @@ fun KotlinCodegenPlugin.Companion.createSymbolProvider(model: Model, rootNamespa
     val settings = model.defaultSettings(serviceName = serviceName, packageName = rootNamespace, sdkId = sdkId)
     return createSymbolProvider(model, settings)
 }
+
+/**
+ * create a new [KotlinWriter] using the test context package name
+ */
+fun TestContext.newWriter(): KotlinWriter = KotlinWriter(generationCtx.settings.pkg.name)
