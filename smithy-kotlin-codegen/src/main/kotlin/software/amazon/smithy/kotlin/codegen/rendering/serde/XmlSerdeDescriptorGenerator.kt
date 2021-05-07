@@ -129,7 +129,7 @@ private fun XmlNamespaceTrait.toSdkTrait(namespaceTraitSymbol: Symbol = SerdeXml
     if (prefix.isPresent) {
         SdkFieldDescriptorTrait(namespaceTraitSymbol, uri.dq(), prefix.get().dq())
     } else {
-        SdkFieldDescriptorTrait(namespaceTraitSymbol, uri)
+        SdkFieldDescriptorTrait(namespaceTraitSymbol, uri.dq())
     }
 
 private fun XmlAttributeTrait.toSdkTrait(): SdkFieldDescriptorTrait = SdkFieldDescriptorTrait(SerdeXml.XmlAttribute)
