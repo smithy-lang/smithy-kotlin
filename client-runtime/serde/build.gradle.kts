@@ -12,6 +12,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                api(project(":client-runtime:client-rt-core"))
                 api(project(":client-runtime:utils"))
             }
         }

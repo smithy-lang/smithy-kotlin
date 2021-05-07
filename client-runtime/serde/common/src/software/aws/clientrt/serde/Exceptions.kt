@@ -4,10 +4,12 @@
  */
 package software.aws.clientrt.serde
 
+import software.aws.clientrt.ClientException
+
 /**
- * Base exception class for all serialization errors
+ * Exception class for all serialization errors
  */
-open class SerializationException : RuntimeException {
+class SerializationException : ClientException {
 
     constructor() : super()
 
@@ -19,25 +21,10 @@ open class SerializationException : RuntimeException {
 }
 
 /**
- * Base exception class for all deserialization errors
+ * Exception class for all deserialization errors
  */
-open class DeserializationException : RuntimeException {
+class DeserializationException : ClientException {
 
-    constructor() : super()
-
-    constructor(message: String?) : super(message)
-
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    constructor(cause: Throwable?) : super(cause)
-}
-
-/**
- * Exception thrown when the deserializer state does not meet the expected
- * state for the last operation requested (e.g. attempting to deserialize a struct
- * when the next token is a property name or number).
- */
-class DeserializerStateException : DeserializationException {
     constructor() : super()
 
     constructor(message: String?) : super(message)

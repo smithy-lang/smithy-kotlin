@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.serde.xml
 
+import software.aws.clientrt.serde.DeserializationException
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.*
 
@@ -75,7 +76,7 @@ class XmlStreamReaderTest {
     @Test
     fun garbageInGarbageOut() = runSuspendTest {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
-        assertFailsWith(XmlGenerationException::class) { xmlStreamReader(payload).allTokens() }
+        assertFailsWith(DeserializationException::class) { xmlStreamReader(payload).allTokens() }
     }
 
     @Test

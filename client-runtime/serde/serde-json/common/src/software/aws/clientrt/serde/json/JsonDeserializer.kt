@@ -63,7 +63,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
                 JsonFieldIterator(reader, descriptor, this)
             }
             RawJsonToken.Null -> JsonNullFieldIterator(this)
-            else -> throw DeserializerStateException("Unexpected token type ${reader.peek()}")
+            else -> throw DeserializationException("Unexpected token type ${reader.peek()}")
         }
 
     override suspend fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
@@ -112,7 +112,7 @@ private class JsonNullFieldIterator(deserializer: JsonDeserializer) : Deserializ
     override suspend fun findNextFieldIndex(): Int? = null
 
     override suspend fun skipValue() {
-        throw DeserializerStateException("This should not be called during deserialization.")
+        throw DeserializationException("This should not be called during deserialization.")
     }
 }
 
@@ -170,6 +170,6 @@ private suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.next
 // require that the given token be of type [TExpected] or else throw an exception
 private inline fun <reified TExpected> requireToken(token: JsonToken) {
     if (token::class != TExpected::class) {
-        throw DeserializerStateException("expected ${TExpected::class}; found ${token::class}")
+        throw DeserializationException("expected ${TExpected::class}; found ${token::class}")
     }
 }

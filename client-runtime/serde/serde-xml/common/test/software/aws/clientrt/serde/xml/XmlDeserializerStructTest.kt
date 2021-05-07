@@ -105,7 +105,7 @@ class XmlDeserializerStructTest {
                                 result.unknownFieldCount++
                                 skipValue()
                             }
-                            else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                            else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                         }
                     }
                 }
