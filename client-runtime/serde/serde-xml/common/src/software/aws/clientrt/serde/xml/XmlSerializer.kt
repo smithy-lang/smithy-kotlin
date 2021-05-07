@@ -28,7 +28,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         // that describes the referred to struct
         val structDescriptor = parentDescriptorStack.peekOrNull() ?: descriptor
 
-        // Serialize top-level (root node) ns declarations and non-default declarations.
+        // Serialize ns declarations
         val ns = structDescriptor.findTrait<XmlNamespace>()
         if (ns != null) {
             xmlWriter.namespacePrefix(ns.uri, ns.prefix)
