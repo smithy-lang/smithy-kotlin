@@ -14,9 +14,7 @@ import software.amazon.smithy.kotlin.codegen.integration.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.DeserializeStructGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.SerializeStructGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.serde.SerializeUnionGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -148,6 +146,9 @@ internal class TestProtocolClientGenerator(
     }
 }
 
+// by default the abstract serde descriptor generator will not add any traits, it just does the sensible thing and converts target shape -> serial kind
+private class SerialKindOnlyDescriptorGenerator(ctx: RenderingContext<Shape>, members: List<MemberShape>) : AbstractSerdeDescriptorGenerator(ctx, members)
+
 // A HttpBindingProtocolGenerator for testing
 internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
@@ -161,19 +162,13 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
         TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx))
 
-    override fun generateSdkFieldDescriptor(
-        ctx: ProtocolGenerator.GenerationContext,
-        memberShape: MemberShape,
-        writer: KotlinWriter,
-        memberTargetShape: Shape?,
-        namePostfix: String
-    ) { }
-
-    override fun generateSdkObjectDescriptorTraits(
+    override fun getSerdeDescriptorGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         objectShape: Shape,
+        members: List<MemberShape>,
+        targetUse: SerdeTargetUse,
         writer: KotlinWriter
-    ) { }
+    ): SerdeDescriptorGenerator = SerialKindOnlyDescriptorGenerator(ctx.toRenderingContext(this, objectShape, writer), members)
 }
 
 // Create a test harness with all necessary codegen types

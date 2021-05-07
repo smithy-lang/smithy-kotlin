@@ -13,7 +13,6 @@ enum class SerdeTargetUse {
     OperationSerializer,
     DocumentDeserializer,
     OperationDeserializer,
-    ExceptionSerializer,
     ExceptionDeserializer;
 
     /**
@@ -22,8 +21,7 @@ enum class SerdeTargetUse {
     val isSerializer: Boolean
         get() = when (this) {
             DocumentSerializer,
-            OperationSerializer,
-            ExceptionSerializer -> true
+            OperationSerializer -> true
             else -> false
         }
 
