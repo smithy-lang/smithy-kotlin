@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.core
 
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
 import software.amazon.smithy.kotlin.codegen.model.isError
 import software.amazon.smithy.kotlin.codegen.utils.splitOnWordBoundaries
@@ -95,4 +94,4 @@ fun EnumDefinition.variantName(): String {
  * Generate the union variant name from a union member shape
  * e.g. `VariantName`
  */
-fun MemberShape.unionVariantName(symbolProvider: SymbolProvider): String = this.memberName.toPascalCase()
+fun MemberShape.unionVariantName(): String = this.memberName.toPascalCase()

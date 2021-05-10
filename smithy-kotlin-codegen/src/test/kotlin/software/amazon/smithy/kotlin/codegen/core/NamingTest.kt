@@ -7,7 +7,6 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.test.defaultSettings
 import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.MemberShape
@@ -135,9 +134,8 @@ class NamingTest {
                 }
             """.prependNamespaceAndService().toSmithyModel()
 
-            val symbolProvider = KotlinSymbolProvider(model, model.defaultSettings())
             val shape = model.expectShape<MemberShape>("com.test#TestStruct\$$input")
-            assertEquals(expected, shape.unionVariantName(symbolProvider), "input: $input")
+            assertEquals(expected, shape.unionVariantName(), "input: $input")
         }
     }
 }
