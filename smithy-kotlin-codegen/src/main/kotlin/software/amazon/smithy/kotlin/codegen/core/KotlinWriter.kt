@@ -54,34 +54,6 @@ fun <T : CodeWriter> T.withBlock(
 }
 
 /**
- * Closes a block and opens a new block on the same line. Useful for things like:
- *
- * ```
- * if (someCond) { // openBlock
- *     foo()
- * } else {        // closeAndOpenBlock
- *     bar()
- * }               // closeBlock
- * ```
- *
- * Equivalent to:
- * ```
- * writer.dedent()
- * writer.write("...")
- * writer.indent()
- * ```
- */
-fun <T : CodeWriter> T.closeAndOpenBlock(
-    textBetweenBlocks: String,
-    vararg args: Any,
-): T {
-    dedent()
-    write(textBetweenBlocks, *args)
-    indent()
-    return this
-}
-
-/**
  * Similar to `CodeWriter.withBlock()` but using `pushState()`.
  */
 fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {

@@ -147,6 +147,20 @@ class ServiceGeneratorTest {
         )
     }
 
+    @Test
+    fun `it adds DSL overloads for operations`() {
+        val expectedSignatures = listOf(
+            "suspend fun TestClient.getFoo(block: GetFooRequest.DslBuilder.() -> Unit) = getFoo(GetFooRequest.builder().apply(block).build())",
+            "suspend fun TestClient.getFooNoInput(block: GetFooNoInputRequest.DslBuilder.() -> Unit) = getFooNoInput(GetFooNoInputRequest.builder().apply(block).build())",
+            "suspend fun TestClient.getFooNoOutput(block: GetFooNoOutputRequest.DslBuilder.() -> Unit) = getFooNoOutput(GetFooNoOutputRequest.builder().apply(block).build())",
+            "suspend fun TestClient.getFooStreamingInput(block: GetFooStreamingInputRequest.DslBuilder.() -> Unit) = getFooStreamingInput(GetFooStreamingInputRequest.builder().apply(block).build())",
+            "suspend fun TestClient.getFooStreamingInputNoOutput(block: GetFooStreamingInputNoOutputRequest.DslBuilder.() -> Unit) = getFooStreamingInputNoOutput(GetFooStreamingInputNoOutputRequest.builder().apply(block).build())",
+        )
+        expectedSignatures.forEach {
+            commonTestContents.shouldContainOnlyOnceWithDiff(it)
+        }
+    }
+
     // Produce the generated service code given model inputs.
     private fun generateService(modelResourceName: String): String {
         val model = loadModelFromResource(modelResourceName)
