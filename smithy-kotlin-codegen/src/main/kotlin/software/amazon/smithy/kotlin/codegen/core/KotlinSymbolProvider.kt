@@ -62,7 +62,11 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         return escaper.escapeSymbol(shape, symbol)
     }
 
-    override fun toMemberName(shape: MemberShape): String = escaper.escapeMemberName(shape.defaultName())
+    override fun toMemberName(shape: MemberShape): String = if (shape.defaultName().toUpperCase() == "NULL") {
+        "Null"
+    } else {
+        escaper.escapeMemberName(shape.defaultName())
+    }
 
     override fun byteShape(shape: ByteShape): Symbol = numberShape(shape, "Byte")
 
