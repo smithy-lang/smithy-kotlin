@@ -36,7 +36,7 @@ class UnionGenerator(
         shape.allMembers.values.sortedBy { it.memberName }.forEach {
             writer.renderMemberDocumentation(model, it)
             writer.renderAnnotations(it)
-            val variantName = it.unionVariantName(symbolProvider)
+            val variantName = it.unionVariantName()
             val targetType = model.expectShape(it.target).type
             writer.writeInline("data class #L(val value: #Q) : #Q()", variantName, symbolProvider.toSymbol(it), symbol)
             when (targetType) {
