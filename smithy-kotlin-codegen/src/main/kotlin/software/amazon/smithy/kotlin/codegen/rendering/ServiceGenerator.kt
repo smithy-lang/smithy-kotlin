@@ -129,7 +129,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private fun renderOperationExtFunctions(serviceSymbolName: String, opIndex: OperationIndex, op: OperationShape) =
         opIndex.getInput(op).ifPresent { inputShape ->
             val outputShape = opIndex.getOutput(op)
-            val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) } .orElse(false)
+            val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
 
             if (!hasOutputStream) {
                 val input = ctx.symbolProvider.toSymbol(inputShape).name

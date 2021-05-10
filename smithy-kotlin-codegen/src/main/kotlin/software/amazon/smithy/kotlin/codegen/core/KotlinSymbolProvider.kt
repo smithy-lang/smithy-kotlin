@@ -167,7 +167,6 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
-
         return createSymbolBuilder(shape, "Set<${reference.name}>", boxed = true)
             .addReference(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableSetOf<${reference.name}>")
