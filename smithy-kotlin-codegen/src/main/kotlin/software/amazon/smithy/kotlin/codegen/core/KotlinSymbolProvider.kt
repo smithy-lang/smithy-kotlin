@@ -146,31 +146,37 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
+        val nestedValueType = if (shape.hasTrait<SparseTrait>()) "${reference.nestedFullName}?" else reference.nestedFullName
 
         return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
             .addReference(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
+            .putProperty(SymbolProperty.NESTED_SYMBOL_NAMESPACE, "kotlin.collections.List<$nestedValueType>")
             .build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {
         val reference = toSymbol(shape.value)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
+        val nestedValueType = if (shape.hasTrait<SparseTrait>()) "${reference.nestedFullName}?" else reference.nestedFullName
 
         return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
             .addReference(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
+            .putProperty(SymbolProperty.NESTED_SYMBOL_NAMESPACE, "kotlin.collections.Map<kotlin.String, $nestedValueType>")
             .build()
     }
 
     override fun setShape(shape: SetShape): Symbol {
         val reference = toSymbol(shape.member)
+
         return createSymbolBuilder(shape, "Set<${reference.name}>", boxed = true)
             .addReference(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableSetOf<${reference.name}>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "setOf<${reference.name}>")
+            .putProperty(SymbolProperty.NESTED_SYMBOL_NAMESPACE, "kotlin.collections.Set<${reference.nestedFullName}>")
             .build()
     }
 

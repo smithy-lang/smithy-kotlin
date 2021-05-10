@@ -6,6 +6,8 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
+import software.amazon.smithy.kotlin.codegen.model.nestedFullName
 import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -64,6 +66,8 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
             }
             .closeBlock("}")
             .write("")
+
+        operations.forEach { renderOperationExtFunctions(serviceSymbol.name, operationsIndex, it) }
     }
 
     private fun renderServiceConfig() {
@@ -122,4 +126,52 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.renderAnnotations(op)
         writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op))
     }
+
+    private fun renderOperationExtFunctions(serviceSymbolName: String, opIndex: OperationIndex, op: OperationShape) =
+        opIndex.getInput(op).ifPresent { inputShape ->
+            val input = ctx.symbolProvider.toSymbol(inputShape).name
+            val inputMembers = inputShape.allMembers.values.map {
+                ctx.symbolProvider.toMemberName(it) to ctx.symbolProvider.toSymbol(it).nestedFullName
+            }.toMap()
+
+            val outputShape = opIndex.getOutput(op)
+            val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) } .orElse(false)
+            val output = outputShape.map { ctx.symbolProvider.toSymbol(it).name }
+            val outputParam = if (hasOutputStream) ": T" else output.map { ": $it" } .orElse("")
+
+            val operationName = op.defaultName()
+            val typeParam = if (hasOutputStream) "<T> " else ""
+
+            writer.renderDocumentation(op)
+            writer.renderAnnotations(op)
+            writer.openBlock("suspend fun$typeParam $serviceSymbolName.$operationName(")
+
+            inputMembers.forEach { (name, type) ->
+                writer.write("$name: $type? = null,")
+            }
+
+            if (hasOutputStream) {
+                writer.write("block: suspend (${output.get()}) -> T,")
+            }
+
+            writer.closeAndOpenBlock(")$outputParam = $operationName($input {")
+
+            inputMembers.forEach { (name, _) ->
+                writer.write("this.$name = $name")
+            }
+
+            val blockArg = if (hasOutputStream) ", block" else ""
+            writer.closeBlock("}$blockArg)")
+            writer.write("")
+
+            if (!hasOutputStream) {
+                writer.renderDocumentation(op)
+                writer.renderAnnotations(op)
+
+                val signature = "suspend fun $serviceSymbolName.$operationName(block: $input.DslBuilder.() -> Unit)"
+                val impl = "$operationName($input.builder().apply(block).build())"
+                writer.write("$signature = $impl")
+                writer.write("")
+            }
+        }
 }

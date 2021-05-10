@@ -29,6 +29,9 @@ object SymbolProperty {
 
     // Immutable collection type
     const val IMMUTABLE_COLLECTION_FUNCTION: String = "immutableCollectionType"
+
+    // The namespace of the symbol inside this symbol. (e.g., the "d.e.f" in "a.b.c.Foo<d.e.f.Bar>")
+    const val NESTED_SYMBOL_NAMESPACE: String = "nestedSymbolNamespace"
 }
 
 /**
@@ -126,3 +129,9 @@ fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextO
  */
 val Symbol.shape: Shape?
     get() = getProperty(SymbolProperty.SHAPE_KEY, Shape::class.java).getOrNull()
+
+val Symbol.nestedFullName: String
+    get() {
+        val p = getProperty(SymbolProperty.NESTED_SYMBOL_NAMESPACE, String::class.java)
+        return p.orElse(fullName)
+    }
