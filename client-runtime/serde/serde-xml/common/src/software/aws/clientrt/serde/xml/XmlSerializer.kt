@@ -29,7 +29,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         val structDescriptor = parentDescriptorStack.peekOrNull() ?: descriptor
 
         // Serialize ns declarations
-        val ns = structDescriptor.findTrait<XmlNamespace>()
+        val ns = descriptor.findTrait<XmlNamespace>()
         if (ns != null) {
             xmlWriter.namespacePrefix(ns.uri, ns.prefix)
         }
