@@ -9,7 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /*
-Remove all whitespace and newline chars from XML string and return the compact formo
+Remove all whitespace and newline chars from XML string and return the compact form
 e.g.
 
 ```

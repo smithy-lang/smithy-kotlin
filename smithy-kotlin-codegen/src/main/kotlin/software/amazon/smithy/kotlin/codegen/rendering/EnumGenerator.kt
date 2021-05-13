@@ -107,6 +107,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
 
     fun render() {
         writer.renderDocumentation(shape)
+        writer.renderAnnotations(shape)
         // NOTE: The smithy spec only allows string shapes to apply to a string shape at the moment
         writer.withBlock("sealed class ${symbol.name} {", "}") {
             write("\nabstract val value: #Q\n", KotlinTypes.String)

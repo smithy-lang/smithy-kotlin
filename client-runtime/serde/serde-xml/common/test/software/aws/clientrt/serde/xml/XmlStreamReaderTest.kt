@@ -4,6 +4,7 @@
  */
 package software.aws.clientrt.serde.xml
 
+import software.aws.clientrt.serde.DeserializationException
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.*
 
@@ -11,7 +12,12 @@ import kotlin.test.*
 class XmlStreamReaderTest {
     @Test
     fun itDeserializesXml() = runSuspendTest {
-        val payload = """<root><x>1</x><y>2</y></root>""".trimIndent().encodeToByteArray()
+        val payload = """
+            <root>
+                <x>1</x>
+                <y>2</y>
+            </root>
+        """.encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
@@ -42,7 +48,14 @@ class XmlStreamReaderTest {
 
     @Test
     fun itDeserializesXmlWithAttributes() = runSuspendTest {
-        val payload = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>""".trimIndent().encodeToByteArray()
+        val payload = """
+            <batch>
+                <add id="tt0484562">
+                    <field name="title">The Seeker: The Dark Is Rising</field>
+                </add>
+                <delete id="tt0301199" />
+            </batch>
+        """.encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
         val expected = listOf(
@@ -63,7 +76,7 @@ class XmlStreamReaderTest {
     @Test
     fun garbageInGarbageOut() = runSuspendTest {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
-        assertFailsWith(XmlGenerationException::class) { xmlStreamReader(payload).allTokens() }
+        assertFailsWith(DeserializationException::class) { xmlStreamReader(payload).allTokens() }
     }
 
     @Test
@@ -170,8 +183,26 @@ class XmlStreamReaderTest {
     @Test
     fun itSkipsValuesRecursively() = runSuspendTest {
         val payload = """
-            <payload><x>1></x><unknown><a>a</a><b>b</b><c><list><element>d</element><element>e</element><element>f</element></list></c><g><h>h</h><i>i</i></g></unknown><y>2></y></payload>
-        """.trimIndent().encodeToByteArray()
+            <payload>
+                <x>1></x>
+                <unknown>
+                    <a>a</a>
+                    <b>b</b>
+                    <c>
+                        <list>
+                            <element>d</element>
+                            <element>e</element>
+                            <element>f</element>
+                        </list>
+                    </c>
+                    <g>
+                        <h>h</h>
+                        <i>i</i>
+                    </g>
+                </unknown>
+                <y>2></y>
+            </payload>
+        """.encodeToByteArray()
         val reader = xmlStreamReader(payload)
         // skip x
         reader.apply {
@@ -193,7 +224,13 @@ class XmlStreamReaderTest {
 
     @Test
     fun itSkipsSimpleValues() = runSuspendTest {
-        val payload = """<payload><x>1</x><z>unknown</z><y>2</y></payload>""".trimIndent().encodeToByteArray()
+        val payload = """
+            <payload>
+                <x>1</x>
+                <z>unknown</z>
+                <y>2</y>
+            </payload>
+        """.trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
         // skip x
         reader.apply {
@@ -213,8 +250,36 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun itHandlesNestedNodesOfSameName() = runSuspendTest {
+        val payload = """
+            <Response>
+               <Response>abc</Response>
+               <A/>
+            </Response>
+        """.trimIndent().encodeToByteArray()
+
+        val actual = xmlStreamReader(payload).allTokens()
+        val expected = listOf(
+            XmlToken.BeginElement(1, "Response"),
+            XmlToken.BeginElement(2, "Response"),
+            XmlToken.Text(2, "abc"),
+            XmlToken.EndElement(2, "Response"),
+            XmlToken.BeginElement(2, "A"),
+            XmlToken.EndElement(2, "A"),
+            XmlToken.EndElement(1, "Response"),
+        )
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun itPeeksWithoutImpactingNestingLevel() = runSuspendTest {
-        val payload = """<l1><l2><l3>text</l3></l2></l1>""".trimIndent().encodeToByteArray()
+        val payload = """
+           <l1>
+               <l2>
+                   <l3>text</l3>
+               </l2>
+           </l1>
+        """.trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
 
         assertTrue(reader.lastToken?.depth == 1, "Expected to start at level 1")
@@ -372,7 +437,13 @@ class XmlStreamReaderTest {
     @Test
     fun itHandlesPeekingMultipleLevels() = runSuspendTest {
         val payload = """
-            <r><a><b><c/></b></a></r>
+            <r>
+                <a>
+                    <b>
+                        <c/>
+                    </b>
+                </a>
+            </r>
         """.encodeToByteArray()
         val actual = xmlStreamReader(payload)
 
@@ -408,7 +479,13 @@ class XmlStreamReaderTest {
     @Test
     fun itHandlesSeekingToNodes() = runSuspendTest {
         val payload = """
-            <r><a a1="asdf"><b><c>some text</c></b></a></r>
+            <r>
+                <a a1="asdf">
+                    <b>
+                        <c>some text</c>
+                    </b>
+                </a>
+            </r>
         """.encodeToByteArray()
         var unit = xmlStreamReader(payload)
 

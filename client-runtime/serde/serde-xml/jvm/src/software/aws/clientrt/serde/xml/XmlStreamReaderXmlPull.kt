@@ -10,7 +10,7 @@ import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
 import org.xmlpull.v1.XmlPullParserFactory
 import software.aws.clientrt.logging.Logger
-import software.aws.clientrt.serde.DeserializerStateException
+import software.aws.clientrt.serde.DeserializationException
 import software.aws.clientrt.serde.xml.dom.push
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
@@ -61,7 +61,7 @@ internal class XmlStreamReaderXmlPull(
         val subTreeDepth = when (subtreeStartDepth) {
             XmlStreamReader.SubtreeStartDepth.CHILD -> _lastToken?.depth?.plus(1)
             XmlStreamReader.SubtreeStartDepth.CURRENT -> _lastToken?.depth
-        } ?: throw DeserializerStateException("Unable to determine last node depth in $this")
+        } ?: throw DeserializationException("Unable to determine last node depth in $this")
 
         logger.trace { "Creating subtree at $subTreeDepth next token: ${internalPeek(1)}" }
 
@@ -128,9 +128,9 @@ internal class XmlStreamReaderXmlPull(
             } while (lastToken() == null)
 
             return lastToken()
-                ?: throw XmlGenerationException(IllegalStateException("Unexpectedly unable to get next token"))
+                ?: throw DeserializationException(IllegalStateException("Unexpectedly unable to get next token"))
         } catch (e: XmlPullParserException) {
-            throw XmlGenerationException(e)
+            throw DeserializationException(e)
         }
     }
 

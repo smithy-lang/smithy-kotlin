@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -45,7 +46,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         val operationsIndex = OperationIndex.of(ctx.model)
 
         writer.renderDocumentation(service)
-
+        writer.renderAnnotations(service)
         writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
             .call { overrideServiceName() }
             .call {
@@ -119,6 +120,25 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private fun renderOperation(opIndex: OperationIndex, op: OperationShape) {
         writer.write("")
         writer.renderDocumentation(op)
+        writer.renderAnnotations(op)
         writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op))
+
+        // Add DSL overload (if appropriate)
+        opIndex.getInput(op).ifPresent { inputShape ->
+            val outputShape = opIndex.getOutput(op)
+            val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
+
+            if (!hasOutputStream) {
+                val input = ctx.symbolProvider.toSymbol(inputShape).name
+                val operationName = op.defaultName()
+
+                writer.write("")
+                writer.renderDocumentation(op)
+                writer.renderAnnotations(op)
+                val signature = "suspend fun $operationName(block: $input.DslBuilder.() -> Unit)"
+                val impl = "$operationName($input.builder().apply(block).build())"
+                writer.write("$signature = $impl")
+            }
+        }
     }
 }

@@ -11,10 +11,7 @@ import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.IdempotencyTokenTrait
-import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.model.traits.Trait
+import software.amazon.smithy.model.traits.*
 import kotlin.streams.toList
 
 /**
@@ -103,11 +100,23 @@ fun OperationIndex.operationSignature(model: Model, symbolProvider: SymbolProvid
 }
 
 /**
+ * Test if a shape is deprecated.
+ */
+val Shape.isDeprecated: Boolean
+    get() = hasTrait<DeprecatedTrait>()
+
+/**
  * Test if a shape represents an enumeration
  * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
  */
 val Shape.isEnum: Boolean
     get() = isStringShape && hasTrait<EnumTrait>()
+
+/**
+ * Test if a shape is an error.
+ */
+val Shape.isError: Boolean
+    get() = hasTrait<ErrorTrait>()
 
 /**
  * Test if a shape represents an Kotlin number type

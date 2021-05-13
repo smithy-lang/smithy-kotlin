@@ -40,7 +40,7 @@ class XmlDeserializer(
         logger.trace { "Deserializing struct $descriptor under ${reader.lastToken}" }
 
         if (firstStructCall) {
-            if (!descriptor.hasTrait<XmlSerialName>()) throw DeserializerStateException("Top-level struct $descriptor requires a XmlSerialName trait but has none.")
+            if (!descriptor.hasTrait<XmlSerialName>()) throw DeserializationException("Top-level struct $descriptor requires a XmlSerialName trait but has none.")
 
             firstStructCall = false
 
@@ -50,10 +50,10 @@ class XmlDeserializer(
                 reader.seek<XmlToken.BeginElement> { it.name == descriptor.expectTrait<XmlError>().errorTag }
             } else {
                 reader.seek<XmlToken.BeginElement>()
-            } ?: throw DeserializerStateException("Could not find a begin element for new struct")
+            } ?: throw DeserializationException("Could not find a begin element for new struct")
 
             val objectName = descriptor.toQualifiedName()
-            if (validateRootElement && structToken.name.tag != objectName.tag) throw DeserializerStateException("Expected beginning element named $objectName but found ${structToken.name}")
+            if (validateRootElement && structToken.name.tag != objectName.tag) throw DeserializationException("Expected beginning element named $objectName but found ${structToken.name}")
         }
 
         // Consume any remaining terminating tokens from previous deserialization
@@ -64,7 +64,7 @@ class XmlDeserializer(
         val parentToken = if (reader.lastToken is XmlToken.BeginElement) {
             reader.lastToken as XmlToken.BeginElement
         } else {
-            throw DeserializerStateException("Expected last parsed token to be ${XmlToken.BeginElement::class} but was ${reader.lastToken}")
+            throw DeserializationException("Expected last parsed token to be ${XmlToken.BeginElement::class} but was ${reader.lastToken}")
         }
 
         return XmlStructDeserializer(descriptor, reader.subTreeReader(), parentToken, attribFields)
@@ -120,13 +120,13 @@ internal class XmlMapDeserializer(
         val keyValueToken = reader.takeNextAs<XmlToken.Text>()
         reader.nextToken() // Consume the end wrapper
 
-        return keyValueToken.value ?: throw DeserializerStateException("Key unspecified in $descriptor")
+        return keyValueToken.value ?: throw DeserializationException("Key unspecified in $descriptor")
     }
 
     override suspend fun nextHasValue(): Boolean {
         // Expect a begin and value (or another begin) token if Map entry has a value
-        val peekBeginToken = reader.peek(1) ?: throw DeserializerStateException("Unexpected termination of token stream in $descriptor")
-        val peekValueToken = reader.peek(2) ?: throw DeserializerStateException("Unexpected termination of token stream in $descriptor")
+        val peekBeginToken = reader.peek(1) ?: throw DeserializationException("Unexpected termination of token stream in $descriptor")
+        val peekValueToken = reader.peek(2) ?: throw DeserializationException("Unexpected termination of token stream in $descriptor")
 
         return peekBeginToken !is XmlToken.EndElement && peekValueToken !is XmlToken.EndElement
     }
@@ -253,14 +253,14 @@ internal class XmlStructDeserializer(
                 val value = when (val peekToken = reader.peek()) {
                     is XmlToken.Text -> reader.takeNextAs<XmlToken.Text>().value ?: ""
                     is XmlToken.EndElement -> ""
-                    else -> throw DeserializerStateException("Unexpected token $peekToken")
+                    else -> throw DeserializationException("Unexpected token $peekToken")
                 }
                 transform(value)
             }
             is FieldLocation.Attribute -> {
                 transform(
                     parentToken.attributes[nextField.name]
-                        ?: throw DeserializerStateException("Expected attrib value ${nextField.name} not found in ${parentToken.name}")
+                        ?: throw DeserializationException("Expected attrib value ${nextField.name} not found in ${parentToken.name}")
                 )
             }
         }
@@ -308,7 +308,7 @@ internal class XmlStructDeserializer(
 private suspend fun XmlStreamReader.tokenAttributesToFieldLocations(descriptor: SdkObjectDescriptor): MutableList<FieldLocation> =
     if (descriptor.hasXmlAttributes && lastToken is XmlToken.BeginElement) {
         val attribFields = descriptor.fields.filter { it.hasTrait<XmlAttribute>() }
-        val matchedAttribFields = attribFields.filter { it.findFieldLocation(lastToken as XmlToken.BeginElement, peek() ?: throw DeserializerStateException("Unexpected end of tokens")) != null }
+        val matchedAttribFields = attribFields.filter { it.findFieldLocation(lastToken as XmlToken.BeginElement, peek() ?: throw DeserializationException("Unexpected end of tokens")) != null }
         matchedAttribFields.map { FieldLocation.Attribute(it.index, it.toQualifiedName()) }
             .toMutableList()
     } else {
@@ -363,7 +363,7 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
 
 // Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
 internal suspend inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
-    val token = this.nextToken() ?: throw DeserializerStateException("Expected ${TExpected::class} but instead found null")
+    val token = this.nextToken() ?: throw DeserializationException("Expected ${TExpected::class} but instead found null")
     requireToken<TExpected>(token)
     return token as TExpected
 }
@@ -371,6 +371,6 @@ internal suspend inline fun <reified TExpected : XmlToken> XmlStreamReader.takeN
 // require that the given token be of type [TExpected] or else throw an exception
 internal inline fun <reified TExpected> requireToken(token: XmlToken) {
     if (token::class != TExpected::class) {
-        throw DeserializerStateException("expected ${TExpected::class}; found ${token::class} ($token)")
+        throw DeserializationException("expected ${TExpected::class}; found ${token::class} ($token)")
     }
 }

@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -13,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.StructureShape
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -20,31 +22,39 @@ class StructureGeneratorTest {
     // Structure generation is rather involved, instead of one giant substr search to see that everything is right we
     // look for parts of the whole as individual tests
     private val commonTestContents: String
+    private val deprecatedTestContents: String
 
     init {
+        commonTestContents = generateStructure(
+            """
+                structure Qux { }
 
-        val model = """        
-            structure Qux { }
-            
-            @documentation("This *is* documentation about the shape.")
-            structure MyStruct {
-                foo: String,
-                @documentation("This *is* documentation about the member.")
-                bar: PrimitiveInteger,
-                baz: Integer,
-                Quux: Qux,
-                byteValue: Byte
-            }
-        """.prependNamespaceAndService().toSmithyModel()
+                @documentation("This *is* documentation about the shape.")
+                structure MyStruct {
+                    foo: String,
+                    @documentation("This *is* documentation about the member.")
+                    bar: PrimitiveInteger,
+                    baz: Integer,
+                    Quux: Qux,
+                    byteValue: Byte
+                }
+            """
+        )
 
-        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val struct = model.expectShape<StructureShape>("com.test#MyStruct")
-        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
-        val generator = StructureGenerator(renderingCtx)
-        generator.render()
+        deprecatedTestContents = generateStructure(
+            """
+                structure Qux { }
 
-        commonTestContents = writer.toString()
+                @deprecated
+                structure MyStruct {
+                    foo: String,
+                    bar: String,
+
+                    @deprecated
+                    baz: Qux,
+                }
+            """
+        )
     }
 
     @Test
@@ -438,5 +448,68 @@ class StructureGeneratorTest {
         ).forEach { line ->
             contents.shouldContainOnlyOnceWithDiff(line)
         }
+    }
+
+    @Test
+    fun `it annotates deprecated structures`() {
+        deprecatedTestContents.shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                class MyStruct private constructor(builder: BuilderImpl) {
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `it annotates deprecated members`() {
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                val baz: Qux? = builder.baz
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `it annotates deprecated Java builder members`() {
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                fun baz(baz: Qux): FluentBuilder
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `it annotates deprecated DSL builder members`() {
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                var baz: Qux?
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun `it annotates deprecated DSL builder member struct functions`() {
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+            """
+                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
+                fun baz(block: Qux.DslBuilder.() -> kotlin.Unit) {
+            """.trimIndent()
+        )
+    }
+
+    private fun generateStructure(model: String): String {
+        val fullModel = model.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(fullModel)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val struct = fullModel.expectShape<StructureShape>("com.test#MyStruct")
+        val renderingCtx = RenderingContext(writer, struct, fullModel, provider, fullModel.defaultSettings())
+        val generator = StructureGenerator(renderingCtx)
+        generator.render()
+
+        return writer.toString()
     }
 }

@@ -142,6 +142,6 @@ class SerializeUnionGenerator(
 internal fun MemberShape.unionTypeName(ctx: ProtocolGenerator.GenerationContext): String {
     val unionShape = ctx.model.expectShape(id.withoutMember())
     val unionSymbol = ctx.symbolProvider.toSymbol(unionShape)
-    val variantName = unionVariantName(ctx.symbolProvider)
+    val variantName = unionVariantName()
     return "${unionSymbol.name}.$variantName"
 }

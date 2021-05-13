@@ -6,6 +6,9 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.traits.EnumDefinition
 import kotlin.test.assertEquals
@@ -111,6 +114,28 @@ class NamingTest {
             val definition = EnumDefinition.builder().name(input).value(input).build()
             val actual = definition.variantName()
             assertEquals(expected, actual, "input: $input")
+        }
+    }
+
+    @Test
+    fun testUnionVariantNames() {
+        val tests = listOf(
+            "Foo" to "Foo",
+            "FooBar" to "FooBar",
+            "NULL" to "Null",
+            "null" to "Null"
+        )
+
+        tests.forEach { (input, expected) ->
+
+            val model = """
+                structure TestStruct {
+                    $input: Integer
+                }
+            """.prependNamespaceAndService().toSmithyModel()
+
+            val shape = model.expectShape<MemberShape>("com.test#TestStruct\$$input")
+            assertEquals(expected, shape.unionVariantName(), "input: $input")
         }
     }
 }

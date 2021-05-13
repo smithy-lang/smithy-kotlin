@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.isError
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -37,7 +38,8 @@ class StructureGenerator(
         writer.putContext("class.name", symbol.name)
 
         writer.renderDocumentation(shape)
-        if (!shape.hasTrait<ErrorTrait>()) {
+        writer.renderAnnotations(shape)
+        if (!shape.isError) {
             renderStructure()
         } else {
             renderError()
@@ -75,7 +77,8 @@ class StructureGenerator(
         sortedMembers.forEach {
             val (memberName, memberSymbol) = memberNameSymbolIndex[it]!!
             writer.renderMemberDocumentation(model, it)
-            if (shape.hasTrait<ErrorTrait>() && "message" == memberName) {
+            writer.renderAnnotations(it)
+            if (shape.isError && "message" == memberName) {
                 val targetShape = model.expectShape(it.target)
                 if (!targetShape.isStringShape) {
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
@@ -226,6 +229,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
                     writer.renderMemberDocumentation(model, member)
+                    writer.renderAnnotations(member)
                     write("fun #1L(#1L: #2T): FluentBuilder", memberName, memberSymbol)
                 }
             }
@@ -244,6 +248,7 @@ class StructureGenerator(
                     }
 
                     writer.renderMemberDocumentation(model, member)
+                    writer.renderAnnotations(member)
                     write("var #L: #P", memberName, memberSymbol)
                 }
 
@@ -252,6 +257,7 @@ class StructureGenerator(
                 for (member in structMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
+                    writer.renderAnnotations(member)
                     openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
                         .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")

@@ -44,9 +44,9 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         contents.shouldContain(expectedProps)
 
         val expectedJavaBuilderInterface = """
-    interface Builder {
-        fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder
-        fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder
+    interface FluentBuilder {
+        fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder
+        fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder
         fun build(): Config
     }
 """
@@ -71,13 +71,13 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         contents.shouldContain(expectedDslBuilderInterface)
 
         val expectedBuilderImpl = """
-    internal class BuilderImpl() : Builder, DslBuilder {
+    internal class BuilderImpl() : FluentBuilder, DslBuilder {
         override var httpClientEngine: HttpClientEngine? = null
         override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
 
         override fun build(): Config = Config(this)
-        override fun httpClientEngine(httpClientEngine: HttpClientEngine): Builder = apply { this.httpClientEngine = httpClientEngine }
-        override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): Builder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
+        override fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder = apply { this.httpClientEngine = httpClientEngine }
+        override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
     }
 """
         contents.shouldContain(expectedBuilderImpl)

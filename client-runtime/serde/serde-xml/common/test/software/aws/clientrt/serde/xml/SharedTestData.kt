@@ -35,7 +35,7 @@ class SimpleStructClass {
                         Y_DESCRIPTOR.index -> result.y = deserializeInt()
                         Z_DESCRIPTOR.index -> result.z = deserializeString()
                         null -> break@loop
-                        else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                        else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                     }
                 }
             }
@@ -68,7 +68,7 @@ class SimpleStructOfStringsClass {
                         X_DESCRIPTOR.index -> result.x = deserializeString()
                         Y_DESCRIPTOR.index -> result.y = deserializeString()
                         null -> break@loop
-                        else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                        else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                     }
                 }
             }
@@ -103,7 +103,7 @@ class StructWithAttribsClass {
                             result.unknownFieldCount++
                             skipValue()
                         }
-                        else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                        else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                     }
                 }
             }
@@ -142,7 +142,7 @@ class StructWithMultiAttribsAndTextValClass {
                             result.unknownFieldCount++
                             skipValue()
                         }
-                        else -> throw XmlGenerationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
+                        else -> throw DeserializationException(IllegalStateException("unexpected field in BasicStructTest deserializer"))
                     }
                 }
             }
