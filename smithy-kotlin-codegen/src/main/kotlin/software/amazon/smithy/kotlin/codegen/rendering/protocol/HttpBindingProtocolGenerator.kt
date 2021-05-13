@@ -254,7 +254,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         val resolver = getProtocolHttpBindingResolver(ctx)
-        val httpTrait = resolver.httpTrait(op)
         val requestBindings = resolver.requestBindings(op)
         ctx.delegator.useShapeWriter(serializerSymbol) { writer ->
             // import all of http, http.request, and serde packages. All serializers requires one or more of the symbols
@@ -273,8 +272,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderSerdeCompanionObject(ctx, objectShape, memberShapes, SerdeTargetUse.OperationSerializer, writer)
                 }
                 .call {
-                    val contentType = resolver.determineRequestContentType(op)
-                    renderHttpSerialize(ctx, httpTrait, contentType, requestBindings, inputSymbol, writer)
+                    writer.openBlock("override suspend fun serialize(context: #T, input: #T): HttpRequestBuilder {", RuntimeTypes.Core.ExecutionContext, inputSymbol)
+                        .write("val builder = HttpRequestBuilder()")
+                        .call {
+                            renderHttpSerialize(ctx, op, writer)
+                        }
+                        .write("return builder")
+                        .closeBlock("}")
                 }
                 .closeBlock("}")
         }
@@ -338,19 +342,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     )
 
-    private fun renderHttpSerialize(
+    protected open fun renderHttpSerialize(
         ctx: ProtocolGenerator.GenerationContext,
-        httpTrait: HttpTrait,
-        contentType: String,
-        requestBindings: List<HttpBindingDescriptor>,
-        inputSymbol: Symbol,
+        op: OperationShape,
         writer: KotlinWriter
     ) {
+        val resolver = getProtocolHttpBindingResolver(ctx)
+        val httpTrait = resolver.httpTrait(op)
+        val requestBindings = resolver.requestBindings(op)
+
         writer.addImport(RuntimeTypes.Core.ExecutionContext)
 
-        writer.openBlock("override suspend fun serialize(context: #T, input: #T): HttpRequestBuilder {", RuntimeTypes.Core.ExecutionContext, inputSymbol)
-            .write("val builder = HttpRequestBuilder()")
-            .write("builder.method = HttpMethod.#L", httpTrait.method.toUpperCase())
+        writer.write("builder.method = HttpMethod.#L", httpTrait.method.toUpperCase())
             .write("")
             .call {
                 // URI components
@@ -360,7 +363,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                 writer.withBlock("builder.url {", "}") {
                     // Path
-                    write("path = \"#L\"", resolvedPath)
+                    write("path = #S", resolvedPath)
 
                     // Query Parameters
                     renderQueryParameters(ctx, httpTrait.uri.queryLiterals, queryBindings, writer)
@@ -388,29 +391,46 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             .write("")
-            .callIf(hasHttpBody(requestBindings)) {
-                // payload member(s)
-                val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-                if (httpPayload != null) {
-                    renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
-                } else {
-                    // Unbound document members that should be serialized into the document format for the protocol.
-                    // The generated code is the same across protocols and the serialization provider instance
-                    // passed into the function is expected to handle the formatting required by the protocol
-                    val documentMembers = requestBindings
-                        .filter { it.location == HttpBinding.Location.DOCUMENT }
-                        .sortedBy { it.memberName }
-
-                    renderUnboundPayloadSerde(ctx, documentMembers, writer)
-                }
-
-                // render content-type as last thing once the body has been set
-                writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
-                    writer.write("builder.headers[\"Content-Type\"] = #S", contentType)
-                }
+            .call {
+                renderSerializeOperationBody(ctx, op, writer)
             }
-            .write("return builder")
-            .closeBlock("}")
+    }
+
+    /**
+     * Render the serialization of any members bound to the payload (HttpBody).
+     * If there is a payload to render it should be bound to `builder.body` when this function returns
+     */
+    protected open fun renderSerializeOperationBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+        val resolver = getProtocolHttpBindingResolver(ctx)
+        val requestBindings = resolver.requestBindings(op)
+
+        // render nothing by default if there is nothing bound to the payload
+        if (!hasHttpBody(requestBindings)) return
+
+        // payload member(s)
+        val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        if (httpPayload != null) {
+            renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
+        } else {
+            // Unbound document members that should be serialized into the document format for the protocol.
+            // The generated code is the same across protocols and the serialization provider instance
+            // passed into the function is expected to handle the formatting required by the protocol
+            val documentMembers = requestBindings
+                .filter { it.location == HttpBinding.Location.DOCUMENT }
+                .sortedBy { it.memberName }
+
+            renderUnboundPayloadSerde(ctx, documentMembers, writer)
+        }
+
+        // render content-type as last thing once the body has been set
+        writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
+            val contentType = resolver.determineRequestContentType(op)
+            writer.write("builder.headers[\"Content-Type\"] = #S", contentType)
+        }
     }
 
     private fun renderQueryParameters(
@@ -964,23 +984,19 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 renderSerdeCompanionObject(ctx, shape, shape.members().toList(), SerdeTargetUse.DocumentDeserializer, writer)
             }
             .call {
-
-                if (shape.isUnionShape) {
-                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                    if (shape.isUnionShape) {
                         writer.write("var value: ${symbol.name}? = null")
                         renderDeserializerBody(ctx, shape, shape.members().toList(), SerdeTargetUse.DocumentDeserializer, writer)
                         writer.write("return value ?: throw DeserializationException(\"Deserialized value unexpectedly null: ${symbol.name}\")")
-                    }
-                        .closeBlock("}")
-                } else {
-                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                    } else {
                         writer.write("val builder = ${symbol.name}.builder()")
                         renderDeserializerBody(ctx, shape, shape.members().toList(), SerdeTargetUse.DocumentDeserializer, writer)
                         writer.write("return builder.build()")
                     }
-                        .closeBlock("}")
                 }
             }
+            .closeBlock("}")
     }
 }
 
