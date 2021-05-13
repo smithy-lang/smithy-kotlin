@@ -65,8 +65,6 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
             }
             .closeBlock("}")
             .write("")
-
-        operations.forEach { renderOperationExtFunctions(serviceSymbol.name, operationsIndex, it) }
     }
 
     private fun renderServiceConfig() {
@@ -124,9 +122,8 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.renderDocumentation(op)
         writer.renderAnnotations(op)
         writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op))
-    }
 
-    private fun renderOperationExtFunctions(serviceSymbolName: String, opIndex: OperationIndex, op: OperationShape) =
+        // Add DSL overload (if appropriate)
         opIndex.getInput(op).ifPresent { inputShape ->
             val outputShape = opIndex.getOutput(op)
             val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
@@ -135,12 +132,13 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 val input = ctx.symbolProvider.toSymbol(inputShape).name
                 val operationName = op.defaultName()
 
+                writer.write("")
                 writer.renderDocumentation(op)
                 writer.renderAnnotations(op)
-                val signature = "suspend fun $serviceSymbolName.$operationName(block: $input.DslBuilder.() -> Unit)"
+                val signature = "suspend fun $operationName(block: $input.DslBuilder.() -> Unit)"
                 val impl = "$operationName($input.builder().apply(block).build())"
                 writer.write("$signature = $impl")
-                writer.write("")
             }
         }
+    }
 }
