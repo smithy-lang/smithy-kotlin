@@ -16,8 +16,10 @@ fun assertFormUrlStringsEqual(expected: String, actual: String) {
     val expectedAsMap = expected.parseAsFormUrlMap()
     val actualAsMap = actual.parseAsFormUrlMap()
 
-    // assertEquals(expectedAsMap.size, actualAsMap.size)
-    assertEquals(expectedAsMap, actualAsMap)
+    val expectedCanonical = expectedAsMap.entries.sortedBy { it.key }.joinToString(separator = "&")
+    val actualCanonical = actualAsMap.entries.sortedBy { it.key }.joinToString(separator = "&")
+
+    assertEquals(expectedCanonical, actualCanonical)
 }
 
 /**

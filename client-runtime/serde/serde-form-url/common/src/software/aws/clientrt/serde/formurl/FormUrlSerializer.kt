@@ -60,7 +60,7 @@ private class FormUrlSerializer(
 
 private class FormUrlStructSerializer(
     private val parent: FormUrlSerializer,
-    private val descriptor: SdkFieldDescriptor,
+    private val structDescriptor: SdkFieldDescriptor,
     // field prefix generator function (e.g. nested structures, list elements, etc)
     private val prefixFn: PrefixFn? = null
 ) : StructSerializer, PrimitiveSerializer by parent {
@@ -68,7 +68,7 @@ private class FormUrlStructSerializer(
         get() = parent.buffer
 
     init {
-        descriptor.traits.mapNotNull { it as? QueryLiteral }
+        structDescriptor.traits.mapNotNull { it as? QueryLiteral }
             .forEach { literal ->
                 writeField(literal.asDescriptor()) {
                     serializeString(literal.value)
@@ -125,7 +125,17 @@ private class FormUrlStructSerializer(
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
         val nestedPrefix = "${descriptor.serialName}."
-        value.serialize(FormUrlSerializer(buffer) { nestedPrefix })
+        value.serialize(
+            FormUrlSerializer(buffer) {
+                // prepend the current prefix if one exists (e.g. deeply nested structures)
+                val currPrefix = prefixFn?.invoke()?.trimEnd('.')
+                if (currPrefix != null) {
+                    "$currPrefix.$nestedPrefix"
+                } else {
+                    nestedPrefix
+                }
+            }
+        )
     }
 
     override fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit) {
