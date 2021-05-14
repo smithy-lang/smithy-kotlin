@@ -72,6 +72,36 @@ class XmlStreamWriterTest {
 
         assertEquals(expected, writer.toString())
     }
+
+    /**
+     * The set of EOL characters and their corresponding escaped form are:
+     *
+     * | Name| Unicode code point | Escape Sequences |
+     * |-----|-------------|-----------------|
+     * | `CiAK` | `'\n \n'` | `'&#xA; &#xA;'` |
+     * | `YQ0KIGIKIGMN` | `'a\r\n b\n c\r'` | `'a&#xD;&#xA; b&#xA; c&#xD;'` |
+     * | `YQ3ChSBiwoU=` | `'a\r\u0085 b\u0085'` | `'a&#xD;&#x85; b&#x85;'` |
+     * | `YQ3igKggYsKFIGPigKg=` | `'a\r\u2028 b\u0085 c\u2028'` | `'a&#xD;&#x2028; b&#x85; c&#x2028;'` |
+     */
+    @Test
+    fun itEncodesEndOfLine() {
+        val testCaseMap = mapOf(
+            "\n \n" to """<a>&#xA; &#xA;</a>""",
+            "a\r\n b\n c\r" to """<a>a&#xD;&#xA; b&#xA; c&#xD;</a>""",
+            "a\r\u0085 b\u0085" to """<a>a&#xD;&#x85; b&#x85;</a>""",
+            "a\r\u2028 b\u0085 c\u2028" to """<a>a&#xD;&#x2028; b&#x85; c&#x2028;</a>"""
+        )
+
+        testCaseMap.forEach { (input, expected) ->
+            val writer = xmlStreamWriter(pretty = false)
+
+            writer.startTag("a")
+            writer.text(input)
+            writer.endTag("a")
+
+            assertEquals(expected, writer.toString())
+        }
+    }
 }
 
 const val expectedIdempotent = """<?xml version="1.0"?><id>912345678901</id>"""
