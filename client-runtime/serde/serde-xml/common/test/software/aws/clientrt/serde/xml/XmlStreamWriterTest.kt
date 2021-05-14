@@ -72,6 +72,54 @@ class XmlStreamWriterTest {
 
         assertEquals(expected, writer.toString())
     }
+
+    /**
+     * 	 The set of EOL characters and their corresponding escaped form are:
+     *
+     *  | Name| Unicode code point | Escape Sequences |
+     *  |-----|-------------|-----------------|
+     *  | `CiAK` | `'\n \n'` | `'&#xA; &#xA;'` |
+     *  | `YQ0KIGIKIGMN` | `'a\r\n b\n c\r'` | `'a&#xD;&#xA; b&#xA; c&#xD;'` |
+     *  | `YQ3ChSBiwoU=` | `'a\r\u0085 b\u0085'` | `'a&#xD;&#x85; b&#x85;'` |
+     *  | `YQ3igKggYsKFIGPigKg=` | `'a\r\u2028 b\u0085 c\u2028'` | `'a&#xD;&#x2028; b&#x85; c&#x2028;'` |
+     */
+    // FIXME ~ Unable to add "org.junit.jupiter:junit-jupiter-params" as a test dependency...classes do not resolve
+    // Once that's fixed this should be changed to use parameters
+    @Test
+    fun itEncodesEndOfLine() {
+        var writer = xmlStreamWriter(pretty = false)
+
+        writer.startTag("a")
+        writer.text("\n \n")
+        writer.endTag("a")
+
+        var expected = """<a>&#xA; &#xA;</a>"""
+        assertEquals(expected, writer.toString())
+
+        writer = xmlStreamWriter(pretty = false)
+        writer.startTag("a")
+        writer.text("a\r\n b\n c\r")
+        writer.endTag("a")
+
+        expected = """<a>a&#xD;&#xA; b&#xA; c&#xD;</a>"""
+        assertEquals(expected, writer.toString())
+
+        writer = xmlStreamWriter(pretty = false)
+        writer.startTag("a")
+        writer.text("a\r\u0085 b\u0085")
+        writer.endTag("a")
+
+        expected = """<a>a&#xD;&#x85; b&#x85;</a>"""
+        assertEquals(expected, writer.toString())
+
+        writer = xmlStreamWriter(pretty = false)
+        writer.startTag("a")
+        writer.text("a\r\u2028 b\u0085 c\u2028")
+        writer.endTag("a")
+
+        expected = """<a>a&#xD;&#x2028; b&#x85; c&#x2028;</a>"""
+        assertEquals(expected, writer.toString())
+    }
 }
 
 const val expectedIdempotent = """<?xml version="1.0"?><id>912345678901</id>"""
