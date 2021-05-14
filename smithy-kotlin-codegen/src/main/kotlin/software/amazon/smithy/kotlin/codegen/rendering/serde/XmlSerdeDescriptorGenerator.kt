@@ -31,7 +31,9 @@ open class XmlSerdeDescriptorGenerator(
     override fun getObjectDescriptorTraits(): List<SdkFieldDescriptorTrait> {
         val objTraits = mutableListOf<SdkFieldDescriptorTrait>()
         val serialName = when {
-            objectShape.hasTrait<HttpErrorTrait>() -> "Error"
+            // FIXME - we should be able to remove special casing of errors here which is protocol specific
+            // see https://github.com/awslabs/smithy-kotlin/issues/350
+            objectShape.hasTrait<ErrorTrait>() -> "Error"
             objectShape.hasTrait<XmlNameTrait>() -> objectShape.expectTrait<XmlNameTrait>().value
             objectShape.hasTrait<SyntheticClone>() -> objectShape.expectTrait<SyntheticClone>().archetype.name
             else -> objectShape.defaultName(serviceShape)
@@ -39,7 +41,7 @@ open class XmlSerdeDescriptorGenerator(
 
         objTraits.add(SerdeXml.XmlSerialName, serialName.dq())
 
-        if (objectShape.hasTrait<HttpErrorTrait>()) {
+        if (objectShape.hasTrait<ErrorTrait>()) {
             objTraits.add(SerdeXml.XmlError)
         }
 
