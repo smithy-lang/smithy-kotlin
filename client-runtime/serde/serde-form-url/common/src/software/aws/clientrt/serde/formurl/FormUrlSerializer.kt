@@ -302,7 +302,6 @@ private class FormUrlMapSerializer(
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeKey(key)
 
-        // FIXME - we should probably make list/map serializers take a prefix function rather than abusing descriptors...
         val childDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("$commonPrefix.value"))
         FormUrlListSerializer(parent, childDescriptor).apply(block)
     }
