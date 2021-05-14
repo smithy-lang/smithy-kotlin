@@ -434,9 +434,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     ""
                 }
 
-                writer.withBlock("input.${it.member.defaultName()}?.forEach { (key, value) ->", "}") {
-                    write("${nullCheck}$fn(key, value)")
-                }
+                writer.write("input.${it.member.defaultName()}")
+                    .indent()
+                    // ensure query precedence rules are enforced by filtering keys already set
+                    // (httpQuery bound members take precedence over a query map with same key)
+                    .write("?.filterNot{ contains(it.key) }")
+                    .withBlock("?.forEach { (key, value) ->", "}") {
+                        write("${nullCheck}$fn(key, value)")
+                    }
+                    .dedent()
             }
         }
     }
