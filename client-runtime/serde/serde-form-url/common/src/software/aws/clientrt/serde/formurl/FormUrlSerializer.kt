@@ -17,11 +17,11 @@ fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer(256))
 
 private class FormUrlSerializer(
     val buffer: SdkBuffer,
-    val prefixFn: PrefixFn? = null
+    val prefix: String = ""
 ) : Serializer {
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer =
-        FormUrlStructSerializer(this, descriptor, prefixFn)
+        FormUrlStructSerializer(this, descriptor, prefix)
 
     override fun beginList(descriptor: SdkFieldDescriptor): ListSerializer =
         FormUrlListSerializer(this, descriptor)
@@ -54,15 +54,15 @@ private class FormUrlSerializer(
     }
 
     override fun serializeNull() {
-        // null values are not supported
+        throw SerializationException("null values not supported by form-url serializer")
     }
 }
 
 private class FormUrlStructSerializer(
     private val parent: FormUrlSerializer,
     private val structDescriptor: SdkFieldDescriptor,
-    // field prefix generator function (e.g. nested structures, list elements, etc)
-    private val prefixFn: PrefixFn? = null
+    // field prefix (e.g. nested structures, list elements, etc)
+    private val prefix: String
 ) : StructSerializer, PrimitiveSerializer by parent {
     private val buffer
         get() = parent.buffer
@@ -80,8 +80,7 @@ private class FormUrlStructSerializer(
         if (buffer.writePosition> 0) {
             buffer.write("&")
         }
-        val prefix = prefixFn?.invoke()
-        prefix?.let { buffer.write(it) }
+        if (prefix.isNotBlank()) buffer.write(prefix)
         buffer.write(descriptor.serialName)
         buffer.write("=")
         block()
@@ -124,17 +123,10 @@ private class FormUrlStructSerializer(
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
-        val nestedPrefix = "${descriptor.serialName}."
+        val nestedPrefix = "${prefix}${descriptor.serialName}."
+        // prepend the current prefix if one exists (e.g. deeply nested structures)
         value.serialize(
-            FormUrlSerializer(buffer) {
-                // prepend the current prefix if one exists (e.g. deeply nested structures)
-                val currPrefix = prefixFn?.invoke()?.trimEnd('.')
-                if (currPrefix != null) {
-                    "$currPrefix.$nestedPrefix"
-                } else {
-                    nestedPrefix
-                }
-            }
+            FormUrlSerializer(buffer, nestedPrefix)
         )
     }
 
@@ -201,12 +193,9 @@ private class FormUrlListSerializer(
     override fun serializeRaw(value: String) = writePrefixed { write(value) }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
-        val nestedFn: PrefixFn = {
-            cnt++
-            prefix() + "."
-        }
-
-        value.serialize(FormUrlSerializer(buffer, nestedFn))
+        cnt++
+        val nestedPrefix = prefix() + "."
+        value.serialize(FormUrlSerializer(buffer, nestedPrefix))
     }
 
     override fun serializeNull() {}
@@ -290,10 +279,8 @@ private class FormUrlMapSerializer(
         checkNotSparse(value)
         writeKey(key)
 
-        val nestedFn: PrefixFn = {
-            "$commonPrefix.${mapName.value}."
-        }
-        value.serialize(FormUrlSerializer(buffer, nestedFn))
+        val nestedPrefix = "$commonPrefix.${mapName.value}."
+        value.serialize(FormUrlSerializer(buffer, nestedPrefix))
     }
 
     override fun rawEntry(key: String, value: String) = writeEntry(key) {
@@ -318,8 +305,6 @@ private class FormUrlMapSerializer(
 }
 
 private fun SdkBuffer.commonWriteNumber(value: Number): Unit = write(value.toString())
-
-private typealias PrefixFn = () -> String
 
 // like checkNotNull() but throws the correct serialization exception
 @OptIn(ExperimentalContracts::class)
