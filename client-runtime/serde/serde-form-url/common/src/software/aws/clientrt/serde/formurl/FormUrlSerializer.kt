@@ -162,18 +162,18 @@ private class FormUrlListSerializer(
     private val descriptor: SdkFieldDescriptor
 ) : ListSerializer {
     private val buffer = parent.buffer
-    private var cnt = 0
+    private var idx = 0
 
     private fun prefix(): String = when {
-        descriptor.hasTrait<FormUrlFlattened>() -> "${descriptor.serialName}.$cnt"
+        descriptor.hasTrait<FormUrlFlattened>() -> "${descriptor.serialName}.$idx"
         else -> {
             val memberName = descriptor.findTrait<FormUrlCollectionName>() ?: FormUrlCollectionName.Default
-            "${descriptor.serialName}.${memberName.member}.$cnt"
+            "${descriptor.serialName}.${memberName.member}.$idx"
         }
     }
 
     private fun writePrefixed(block: SdkBuffer.() -> Unit) {
-        cnt++
+        idx++
         if (buffer.writePosition > 0) buffer.write("&")
         buffer.write(prefix())
         buffer.write("=")
@@ -193,7 +193,7 @@ private class FormUrlListSerializer(
     override fun serializeRaw(value: String) = writePrefixed { write(value) }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
-        cnt++
+        idx++
         val nestedPrefix = prefix() + "."
         value.serialize(FormUrlSerializer(buffer, nestedPrefix))
     }
@@ -206,17 +206,17 @@ private class FormUrlMapSerializer(
     private val descriptor: SdkFieldDescriptor
 ) : MapSerializer, PrimitiveSerializer by parent {
     private val buffer = parent.buffer
-    private var cnt = 0
+    private var idx = 0
     private val mapName = descriptor.findTrait<FormUrlMapName>() ?: FormUrlMapName.Default
 
     private val commonPrefix: String
         get() = when {
-            descriptor.hasTrait<FormUrlFlattened>() -> "${descriptor.serialName}.$cnt"
-            else -> "${descriptor.serialName}.entry.$cnt"
+            descriptor.hasTrait<FormUrlFlattened>() -> "${descriptor.serialName}.$idx"
+            else -> "${descriptor.serialName}.entry.$idx"
         }
 
     private fun writeKey(key: String) {
-        cnt++
+        idx++
         if (buffer.writePosition > 0) buffer.write("&")
 
         val encodedKey = key.urlEncodeComponent()
