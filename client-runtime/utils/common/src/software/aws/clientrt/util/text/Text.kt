@@ -17,8 +17,7 @@ fun String.urlEncodeComponent(
 ): String {
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
-    for (i in data.indices) {
-        val cbyte = data[i]
+    for (cbyte in data) {
         val chr = cbyte.toChar()
         when (chr) {
             ' ' -> if (formUrlEncode) sb.append("+") else sb.append("%20")
@@ -51,13 +50,12 @@ private val VALID_PATH_PART = listOf(
 )
 
 // test if a string encoded to a ByteArray is already percent encoded starting at index [i]
-private fun isPercentEncodedAt(d: ByteArray, i: Int): Boolean {
-    if (i >= d.size) return false
-    return d[i].toChar() == '%' &&
+private fun isPercentEncodedAt(d: ByteArray, i: Int): Boolean =
+    i + 2 < d.size &&
+        d[i].toChar() == '%' &&
         i + 2 < d.size &&
-        d[i + 1].toChar().toUpperCase() in upperHex &&
-        d[i + 2].toChar().toUpperCase() in upperHex
-}
+        d[i + 1].toChar().toUpperCase() in upperHexSet &&
+        d[i + 2].toChar().toUpperCase() in upperHexSet
 
 /**
  * Encode a string that represents a raw URL path
@@ -91,6 +89,7 @@ fun String.encodeUrlPath(): String {
 }
 
 private const val upperHex: String = "0123456789ABCDEF"
+private val upperHexSet = upperHex.toSet()
 
 // $2.1 Percent-Encoding
 private fun Byte.percentEncode(): String = buildString(3) {
