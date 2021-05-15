@@ -290,14 +290,14 @@ private class FormUrlMapSerializer(
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeKey(key)
 
-        val childDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("$commonPrefix.value"))
+        val childDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("$commonPrefix.${mapName.value}"))
         FormUrlListSerializer(parent, childDescriptor).apply(block)
     }
 
     override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
         writeKey(key)
 
-        val childDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("$commonPrefix.value"))
+        val childDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("$commonPrefix.${mapName.value}"))
         FormUrlMapSerializer(parent, childDescriptor).apply(block)
     }
 
