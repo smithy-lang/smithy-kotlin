@@ -70,7 +70,7 @@ private class FormUrlStructSerializer(
     init {
         structDescriptor.traits.mapNotNull { it as? QueryLiteral }
             .forEach { literal ->
-                writeField(literal.asDescriptor()) {
+                writeField(literal.toDescriptor()) {
                     serializeString(literal.value)
                 }
             }
@@ -317,7 +317,7 @@ private inline fun <T : Any> checkNotSparse(value: T?): T {
     return value
 }
 
-private fun QueryLiteral.asDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName(key))
+private fun QueryLiteral.toDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.String, FormUrlSerialName(key))
 
 private val SdkFieldDescriptor.serialName: String
     get() = expectTrait<FormUrlSerialName>().name
