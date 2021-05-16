@@ -109,7 +109,11 @@ public fun String.splitAsQueryString(): Map<String, List<String>> {
         .forEach { pair ->
             val parts = pair.split("=")
             val key = parts[0]
-            val value = if (parts.size > 1) parts[1] else ""
+            val value = when (parts.size) {
+                1 -> ""
+                2 -> parts[1]
+                else -> throw IllegalArgumentException("invalid query string: $parts")
+            }
             if (entries.containsKey(key)) {
                 entries[key]!!.add(value)
             } else {
