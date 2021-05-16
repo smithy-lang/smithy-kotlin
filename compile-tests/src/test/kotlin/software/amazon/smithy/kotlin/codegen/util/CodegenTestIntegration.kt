@@ -51,7 +51,7 @@ class RestJsonTestProtocolGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         objectShape: Shape,
         members: List<MemberShape>,
-        targetUse: SerdeTargetUse,
+        subject: SerdeSubject,
         writer: KotlinWriter
     ): SerdeDescriptorGenerator = JsonSerdeDescriptorGenerator(ctx.toRenderingContext(this, objectShape, writer), members)
 }

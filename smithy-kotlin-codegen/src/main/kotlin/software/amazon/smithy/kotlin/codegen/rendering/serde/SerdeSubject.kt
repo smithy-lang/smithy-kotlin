@@ -8,7 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 /**
  * Describes the target use case of a serde descriptor
  */
-enum class SerdeTargetUse {
+enum class SerdeSubject {
     DocumentSerializer,
     OperationSerializer,
     DocumentDeserializer,
