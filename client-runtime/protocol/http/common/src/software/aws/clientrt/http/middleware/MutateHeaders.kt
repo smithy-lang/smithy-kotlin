@@ -17,7 +17,7 @@ class MutateHeaders : Feature {
     private val conditionallySet = HeadersBuilder()
 
     /**
-     * Override a header set in the request
+     * Set a header in the request, overriding any existing key of the same name
      */
     fun set(name: String, value: String): Unit = overrides.set(name, value)
 
