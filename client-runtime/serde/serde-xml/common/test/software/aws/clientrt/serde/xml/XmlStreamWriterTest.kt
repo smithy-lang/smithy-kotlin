@@ -77,6 +77,7 @@ class XmlStreamWriterTest {
     // https://github.com/awslabs/smithy-rs/blob/c15289a7163cb6344b088a0ee39244df2967070a/rust-runtime/smithy-xml/src/unescape.rs
     @Test
     fun itHandlesEscaping() {
+        //FIXME ~ the commented out tests do not pass the XPP parser. Once new parser is in place they should pass.
         val testCases = mapOf(
             // "< > ' \" &" to """<a>&lt; &gt; &apos; &quot; &amp;</a>""",
             """hello 🍕!""" to """<a>hello 🍕!</a>""",
