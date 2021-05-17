@@ -511,6 +511,29 @@ class XmlStreamReaderTest {
         assertNull(noNode)
         assertNull(unit.nextToken())
     }
+
+    @Test
+    fun itThrowsErrorsOnInvalidXmlSequences() = runSuspendTest {
+        val invalidTextList = listOf(
+            """&lte;""",
+            "&lte;",
+            "&lt",
+            "&#Q1234;",
+            "&#3.14;",
+            "&#xZZ",
+            "here is a & but without an escape sequence..."
+        )
+
+        invalidTextList.forEach { testCase ->
+            val input = "<a>$testCase</a>".encodeToByteArray()
+            // FIXME ~ XPP throws NPE here due to invalid internal state.  Once we have a better
+            //  XML parser we should expect a specific parse exception.
+            assertFails {
+                val actual = xmlStreamReader(input)
+                actual.allTokens()
+            }
+        }
+    }
 }
 
 suspend fun XmlStreamReader.allTokens(): List<XmlToken> {
