@@ -53,26 +53,6 @@ class HttpRequestTestBuilderTest {
     }
 
     @Test
-    fun itEncodesUriInMockEngine() {
-        httpRequestTest {
-            expected {
-                method = HttpMethod.POST
-                // expectations come in already encoded
-                uri = "/foo/2019-12-16T23%3A48%3A18Z"
-            }
-            operation { mockEngine ->
-                val request = HttpRequest {
-                    method = HttpMethod.POST
-                    // serializers don't need to worry about URL encoding, that is the engines job (or the wrapper
-                    // depending on the engine)
-                    url.path = "/foo/2019-12-16T23:48:18Z"
-                }
-                mockEngine.roundTrip(request)
-            }
-        }
-    }
-
-    @Test
     fun itAssertsQueryParameters() {
         val ex = assertFails {
             httpRequestTest {

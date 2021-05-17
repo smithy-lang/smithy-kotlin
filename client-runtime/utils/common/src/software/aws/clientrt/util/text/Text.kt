@@ -30,19 +30,15 @@ fun String.urlEncodeComponent(
     return sb.toString()
 }
 
-// from 'pchar' https://tools.ietf.org/html/rfc3986#section-3.3
-//
-// note `:` is a valid pchar by the RFC but we are going to percent encode
-// it anyway (by not including it in this list). tl;dr is that implementations
-// vary and many "over percent-encode" path components since they don't distinguish
-// from other uri components. There _shouldn't_ be any harm in over percent-encoding as
-// it'll just be decoded on the other side like any other percent-encoded char.
-//
-// this can affect things like signing, see: smithy-kotlin/issues/118
-// if there are other deviations in the future and you find yourself yet again editing
-// this definition, STOP and consider just making it configurable instead and returning to sanity
-private val VALID_PATH_PART = listOf(
-    '@',
+/**
+ * The set of reserved delimiters from section-2.2 allowed as a path character that do not require
+ * percent encoding.
+ * See 'pchar': https://tools.ietf.org/html/rfc3986#section-3.3
+ */
+@InternalApi
+val VALID_PCHAR_DELIMS = setOf(
+    '/',
+    ':', '@',
     // sub-delims from section-2.2
     '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=',
     // unreserved section-2.3
@@ -58,11 +54,20 @@ private fun isPercentEncodedAt(d: ByteArray, i: Int): Boolean =
         d[i + 2].toChar().toUpperCase() in upperHexSet
 
 /**
- * Encode a string that represents a raw URL path
+ * Encode a string that represents a raw URL path according to
  * https://tools.ietf.org/html/rfc3986#section-3.3
  */
 @InternalApi
-fun String.encodeUrlPath(): String {
+fun String.encodeUrlPath() = encodeUrlPath(VALID_PCHAR_DELIMS)
+
+/**
+ * Encode a string that represents a raw URL path component. Everything EXCEPT alphanumeric characters
+ * and all delimiters in the [validDelimiters] set will be percent encoded.
+ *
+ * @param validDelimiters the set of allowed delimiters that need not be percent-encoded
+ */
+@InternalApi
+fun String.encodeUrlPath(validDelimiters: Set<Char>): String {
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
 
@@ -79,7 +84,7 @@ fun String.encodeUrlPath(): String {
         val cbyte = data[i]
         when (val chr = cbyte.toChar()) {
             // unreserved
-            in 'a'..'z', in 'A'..'Z', in '0'..'9', '/', in VALID_PATH_PART -> sb.append(chr)
+            in 'a'..'z', in 'A'..'Z', in '0'..'9', in validDelimiters -> sb.append(chr)
             else -> sb.append(cbyte.percentEncode())
         }
         i++
