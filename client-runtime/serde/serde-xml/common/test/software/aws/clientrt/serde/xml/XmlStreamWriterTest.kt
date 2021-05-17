@@ -73,6 +73,29 @@ class XmlStreamWriterTest {
         assertEquals(expected, writer.toString())
     }
 
+    // The following escape tests were adapted from
+    // https://github.com/awslabs/smithy-rs/blob/c15289a7163cb6344b088a0ee39244df2967070a/rust-runtime/smithy-xml/src/unescape.rs
+    @Test
+    fun itHandlesEscaping() {
+        val testCases = mapOf(
+            // "< > ' \" &" to """<a>&lt; &gt; &apos; &quot; &amp;</a>""",
+            """hello 🍕!""" to """<a>hello 🍕!</a>""",
+            // """a<b>c\"d'e&f;;""" to """<a>a&lt;b&gt;c&quot;d&apos;e&amp;f;;</a>""",
+            "\n" to """<a>&#xA;</a>""",
+            "\r" to """<a>&#xD;</a>"""
+        )
+
+        testCases.forEach { (input, expected) ->
+            val writer = xmlStreamWriter(pretty = false)
+
+            writer.startTag("a")
+            writer.text(input)
+            writer.endTag("a")
+
+            assertEquals(expected, writer.toString())
+        }
+    }
+
     /**
      * The set of EOL characters and their corresponding escaped form are:
      *
