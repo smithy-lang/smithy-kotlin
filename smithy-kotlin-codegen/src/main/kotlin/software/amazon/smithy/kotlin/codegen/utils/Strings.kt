@@ -5,8 +5,9 @@
 
 package software.amazon.smithy.kotlin.codegen.utils
 
-fun String.doubleQuote(): String = "\"${this.slashEscape('\\').slashEscape('"')}\""
-fun String.slashEscape(char: Char) = this.replace(char.toString(), """\$char""")
+import software.amazon.smithy.utils.StringUtils
+
+fun String.doubleQuote(): String = StringUtils.escapeJavaString(this, "")
 
 /**
  * Double quote a string, eg. "abc" -> "\"abc\""
