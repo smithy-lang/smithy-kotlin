@@ -445,58 +445,55 @@ class XmlSerializerTest {
         val serializer = XmlSerializer()
         serializer.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objs"))) {
             for (obj in objs) {
-                mapEntry(obj.key, SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objvals"))) {
+                mapEntry(obj.key, SdkFieldDescriptor(SerialKind.Map)) {
                     for (v in obj.value) {
                         entry(v.key, v.value)
                     }
                 }
             }
         }
+
+        // NOTE the child map entries do not have a surrounding tag around them, much like a map of structs omit the
+        // structure tag
         val expected = """
             <objs>
                 <entry>
                     <key>A1</key>
                     <value>
-                        <objvals>
-                            <entry>
-                                <key>a</key>
-                                <value>b</value>
-                            </entry>
-                            <entry>
-                                <key>c</key>
-                                <value>d</value>
-                            </entry>
-                        </objvals>
+                        <entry>
+                            <key>a</key>
+                            <value>b</value>
+                        </entry>
+                        <entry>
+                            <key>c</key>
+                            <value>d</value>
+                        </entry>
                     </value>
                 </entry>
                 <entry>
                     <key>A2</key>
                     <value>
-                        <objvals>
-                            <entry>
-                                <key>e</key>
-                                <value>f</value>
-                            </entry>
-                            <entry>
-                                <key>g</key>
-                                <value>h</value>
-                            </entry>
-                        </objvals>
+                        <entry>
+                            <key>e</key>
+                            <value>f</value>
+                        </entry>
+                        <entry>
+                            <key>g</key>
+                            <value>h</value>
+                        </entry>
                     </value>
                 </entry>
                 <entry>
                     <key>A3</key>
                     <value>
-                        <objvals>
-                            <entry>
-                                <key>i</key>
-                                <value>j</value>
-                            </entry>
-                            <entry>
-                                <key>k</key>
-                                <value>l</value>
-                            </entry>
-                        </objvals>
+                        <entry>
+                            <key>i</key>
+                            <value>j</value>
+                        </entry>
+                        <entry>
+                            <key>k</key>
+                            <value>l</value>
+                        </entry>
                     </value>
                 </entry>
             </objs>
