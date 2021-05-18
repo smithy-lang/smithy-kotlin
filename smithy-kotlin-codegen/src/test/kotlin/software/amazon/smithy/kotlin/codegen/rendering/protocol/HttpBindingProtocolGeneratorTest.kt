@@ -79,7 +79,12 @@ internal class SmokeTestOperationSerializer(): HttpSerialize<SmokeTestRequest> {
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/smoketest/$label1/foo"
+            val pathSegments = listOf(
+                "smoketest",
+                "$label1".encodeLabel(),
+                "foo",
+            )
+            path = pathSegments.joinToString(separator = "/", prefix = "/")
             parameters {
                 if (input.query1 != null) append("Query1", input.query1)
             }
@@ -609,7 +614,12 @@ internal class TimestampInputOperationSerializer(): HttpSerialize<TimestampInput
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/input/timestamp/$tsLabel"
+            val pathSegments = listOf(
+                "input",
+                "timestamp",
+                "$tsLabel".encodeLabel(),
+            )
+            path = pathSegments.joinToString(separator = "/", prefix = "/")
             parameters {
                 if (input.queryTimestamp != null) append("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
                 if (input.queryTimestampList?.isNotEmpty() == true) appendAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
@@ -707,7 +717,11 @@ internal class ConstantQueryStringOperationSerializer(): HttpSerialize<ConstantQ
         builder.method = HttpMethod.GET
 
         builder.url {
-            path = "/ConstantQueryString/$label1"
+            val pathSegments = listOf(
+                "ConstantQueryString",
+                "$label1".encodeLabel(),
+            )
+            path = pathSegments.joinToString(separator = "/", prefix = "/")
             parameters {
                 append("foo", "bar")
                 append("hello", "")

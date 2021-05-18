@@ -303,45 +303,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         generator.render()
     }
 
-    // replace labels with any path bindings
-    private fun resolveUriPath(
-        ctx: ProtocolGenerator.GenerationContext,
-        httpTrait: HttpTrait,
-        pathBindings: List<HttpBindingDescriptor>,
-        writer: KotlinWriter
-    ): String = httpTrait.uri.segments.joinToString(
-        separator = "/",
-        prefix = "/",
-        postfix = "",
-        transform = { segment ->
-            if (segment.isLabel) {
-                // spec dictates member name and label name MUST be the same
-                val binding = pathBindings.find { binding ->
-                    binding.memberName == segment.content
-                } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
-
-                // shape must be string, number, boolean, or timestamp
-                val targetShape = ctx.model.expectShape(binding.member.target)
-                if (targetShape.isTimestampShape) {
-                    writer.addImport(RuntimeTypes.Core.TimestampFormat)
-                    val resolver = getProtocolHttpBindingResolver(ctx)
-                    val tsFormat = resolver.determineTimestampFormat(
-                        binding.member,
-                        HttpBinding.Location.LABEL,
-                        defaultTimestampFormat
-                    )
-                    val tsLabel = formatInstant("input.${binding.member.defaultName()}?", tsFormat, forceString = true)
-                    "\${$tsLabel}"
-                } else {
-                    "\${input.${binding.member.defaultName()}}"
-                }
-            } else {
-                // literal
-                segment.content.toEscapedLiteral()
-            }
-        }
-    )
-
     protected open fun renderHttpSerialize(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
@@ -357,12 +318,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .write("")
             .call {
                 // URI components
-                val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
-                val resolvedPath = resolveUriPath(ctx, httpTrait, pathBindings, writer)
-
                 writer.withBlock("builder.url {", "}") {
-                    // Path
-                    write("path = #S", resolvedPath)
+                    renderUri(ctx, op, writer)
 
                     // Query Parameters
                     renderQueryParameters(ctx, httpTrait, requestBindings, writer)
@@ -393,6 +350,66 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .call {
                 renderSerializeOperationBody(ctx, op, writer)
             }
+    }
+
+    // replace labels with any path bindings
+    protected open fun renderUri(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+        val resolver = getProtocolHttpBindingResolver(ctx)
+        val httpTrait = resolver.httpTrait(op)
+        val requestBindings = resolver.requestBindings(op)
+        val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
+
+        if (pathBindings.isNotEmpty()) {
+            writer.openBlock("val pathSegments = listOf(", ")") {
+                httpTrait.uri.segments.forEach { segment ->
+                    if (segment.isLabel || segment.isGreedyLabel) {
+                        // spec dictates member name and label name MUST be the same
+                        val binding = pathBindings.find { binding ->
+                            binding.memberName == segment.content
+                        } ?: throw CodegenException("failed to find corresponding member for httpLabel `${segment.content}")
+
+                        // shape must be string, number, boolean, or timestamp
+                        val targetShape = ctx.model.expectShape(binding.member.target)
+                        val identifier = if (targetShape.isTimestampShape) {
+                            writer.addImport(RuntimeTypes.Core.TimestampFormat)
+                            val tsFormat = resolver.determineTimestampFormat(
+                                binding.member,
+                                HttpBinding.Location.LABEL,
+                                defaultTimestampFormat
+                            )
+                            val tsLabel = formatInstant("input.${binding.member.defaultName()}?", tsFormat, forceString = true)
+                            tsLabel
+                        } else {
+                            "input.${binding.member.defaultName()}"
+                        }
+
+                        val encodeSymbol = RuntimeTypes.Http.EncodeLabel
+                        writer.addImport(encodeSymbol)
+                        val encodeFn = if (segment.isGreedyLabel) "${encodeSymbol.name}(greedy = true)" else "${encodeSymbol.name}()"
+                        writer.write("#S.$encodeFn,", "\${$identifier}")
+                    } else {
+                        // literal
+                        writer.write("#S,", segment.content.toEscapedLiteral())
+                    }
+                }
+            }
+
+            writer.write("""path = pathSegments.joinToString(separator = "/", prefix = "/")""")
+        } else {
+            // all literals, inline directly
+            val resolvedPath = httpTrait.uri.segments.joinToString(
+                separator = "/",
+                prefix = "/",
+                transform = {
+                    it.content.toEscapedLiteral()
+                }
+            )
+            writer.write("path = #S", resolvedPath)
+        }
     }
 
     /**
