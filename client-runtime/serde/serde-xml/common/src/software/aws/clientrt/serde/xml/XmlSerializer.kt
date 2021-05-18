@@ -172,11 +172,12 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 private class XmlMapSerializer(
     private val descriptor: SdkFieldDescriptor,
     private val xmlWriter: XmlStreamWriter,
-    private val xmlSerializer: XmlSerializer
+    private val xmlSerializer: XmlSerializer,
+    private val nestedMap: Boolean = false,
 ) : MapSerializer {
 
     override fun endMap() {
-        if (!descriptor.hasTrait<Flattened>()) {
+        if (!descriptor.hasTrait<Flattened>() && !nestedMap) {
             val ns = descriptor.findTrait<XmlNamespace>()
             xmlWriter.endTag(descriptor.serialName.name, ns)
         }
@@ -240,9 +241,10 @@ private class XmlMapSerializer(
 
     override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
         writeEntry(key) {
-            val ls = xmlSerializer.beginMap(mapDescriptor)
-            block.invoke(ls)
-            ls.endMap()
+            // nested maps do not require the surrounding member tag and Flattened only applies to structure members
+            // instead the child map's entries are serialized directly into the <value> tag of the parent map's entry
+            val ms = XmlMapSerializer(mapDescriptor, xmlWriter, xmlSerializer, nestedMap = true)
+            block.invoke(ms)
         }
     }
 

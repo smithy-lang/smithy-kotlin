@@ -358,7 +358,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .call {
                 // URI components
                 val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
-                val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
                 val resolvedPath = resolveUriPath(ctx, httpTrait, pathBindings, writer)
 
                 writer.withBlock("builder.url {", "}") {
@@ -366,7 +365,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     write("path = #S", resolvedPath)
 
                     // Query Parameters
-                    renderQueryParameters(ctx, httpTrait.uri.queryLiterals, queryBindings, writer)
+                    renderQueryParameters(ctx, httpTrait, requestBindings, writer)
                 }
             }
             .write("")
@@ -435,20 +434,56 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
     private fun renderQueryParameters(
         ctx: ProtocolGenerator.GenerationContext,
-        // literals in the URI
-        queryLiterals: Map<String, String>,
-        // shape bindings
-        queryBindings: List<HttpBindingDescriptor>,
+        httpTrait: HttpTrait,
+        requestBindings: List<HttpBindingDescriptor>,
         writer: KotlinWriter
     ) {
 
-        if (queryBindings.isEmpty() && queryLiterals.isEmpty()) return
+        // literals in the URI
+        val queryLiterals = httpTrait.uri.queryLiterals
+
+        // shape bindings
+        val queryBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY }
+
+        // maps bound via httpQueryParams trait
+        val queryMapBindings = requestBindings.filter { it.location == HttpBinding.Location.QUERY_PARAMS }
+
+        if (queryBindings.isEmpty() && queryLiterals.isEmpty() && queryMapBindings.isEmpty()) return
 
         writer.withBlock("parameters {", "}") {
             queryLiterals.forEach { (key, value) ->
                 writer.write("append(#S, #S)", key, value)
             }
+
             renderStringValuesMapParameters(ctx, queryBindings, writer)
+
+            queryMapBindings.forEach {
+                // either Map<String, String> or Map<String, Collection<String>>
+                // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
+                val target = ctx.model.expectShape<MapShape>(it.member.target)
+                val valueTarget = ctx.model.expectShape(target.value.target)
+                val fn = when (valueTarget.type) {
+                    ShapeType.STRING -> "append"
+                    ShapeType.LIST, ShapeType.SET -> "appendAll"
+                    else -> throw CodegenException("unexpected value type for httpQueryParams map")
+                }
+
+                val nullCheck = if (target.hasTrait<SparseTrait>()) {
+                    "if (value != null) "
+                } else {
+                    ""
+                }
+
+                writer.write("input.${it.member.defaultName()}")
+                    .indent()
+                    // ensure query precedence rules are enforced by filtering keys already set
+                    // (httpQuery bound members take precedence over a query map with same key)
+                    .write("?.filterNot{ contains(it.key) }")
+                    .withBlock("?.forEach { (key, value) ->", "}") {
+                        write("${nullCheck}$fn(key, value)")
+                    }
+                    .dedent()
+            }
         }
     }
 

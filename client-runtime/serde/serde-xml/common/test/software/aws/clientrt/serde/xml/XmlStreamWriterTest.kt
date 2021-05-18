@@ -72,6 +72,60 @@ class XmlStreamWriterTest {
 
         assertEquals(expected, writer.toString())
     }
+
+    // The following escape tests were adapted from
+    // https://github.com/awslabs/smithy-rs/blob/c15289a7163cb6344b088a0ee39244df2967070a/rust-runtime/smithy-xml/src/unescape.rs
+    @Test
+    fun itHandlesEscaping() {
+        // FIXME ~ the commented out tests do not pass the XPP parser. Once new parser is in place they should pass.
+        val testCases = mapOf(
+            // "< > ' \" &" to """<a>&lt; &gt; &apos; &quot; &amp;</a>""",
+            """hello 🍕!""" to """<a>hello 🍕!</a>""",
+            // """a<b>c\"d'e&f;;""" to """<a>a&lt;b&gt;c&quot;d&apos;e&amp;f;;</a>""",
+            "\n" to """<a>&#xA;</a>""",
+            "\r" to """<a>&#xD;</a>"""
+        )
+
+        testCases.forEach { (input, expected) ->
+            val writer = xmlStreamWriter(pretty = false)
+
+            writer.startTag("a")
+            writer.text(input)
+            writer.endTag("a")
+
+            assertEquals(expected, writer.toString())
+        }
+    }
+
+    /**
+     * The set of EOL characters and their corresponding escaped form are:
+     *
+     * | Name| Unicode code point | Escape Sequences |
+     * |-----|-------------|-----------------|
+     * | `CiAK` | `'\n \n'` | `'&#xA; &#xA;'` |
+     * | `YQ0KIGIKIGMN` | `'a\r\n b\n c\r'` | `'a&#xD;&#xA; b&#xA; c&#xD;'` |
+     * | `YQ3ChSBiwoU=` | `'a\r\u0085 b\u0085'` | `'a&#xD;&#x85; b&#x85;'` |
+     * | `YQ3igKggYsKFIGPigKg=` | `'a\r\u2028 b\u0085 c\u2028'` | `'a&#xD;&#x2028; b&#x85; c&#x2028;'` |
+     */
+    @Test
+    fun itEncodesEndOfLine() {
+        val testCaseMap = mapOf(
+            "\n \n" to """<a>&#xA; &#xA;</a>""",
+            "a\r\n b\n c\r" to """<a>a&#xD;&#xA; b&#xA; c&#xD;</a>""",
+            "a\r\u0085 b\u0085" to """<a>a&#xD;&#x85; b&#x85;</a>""",
+            "a\r\u2028 b\u0085 c\u2028" to """<a>a&#xD;&#x2028; b&#x85; c&#x2028;</a>"""
+        )
+
+        testCaseMap.forEach { (input, expected) ->
+            val writer = xmlStreamWriter(pretty = false)
+
+            writer.startTag("a")
+            writer.text(input)
+            writer.endTag("a")
+
+            assertEquals(expected, writer.toString())
+        }
+    }
 }
 
 const val expectedIdempotent = """<?xml version="1.0"?><id>912345678901</id>"""
