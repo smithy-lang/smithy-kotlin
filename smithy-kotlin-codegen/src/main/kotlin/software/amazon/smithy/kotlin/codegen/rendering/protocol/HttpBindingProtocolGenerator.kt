@@ -398,13 +398,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
 
-            writer.write("""path = pathSegments.joinToString(separator = "/", prefix = "/", postfix = "")""")
+            writer.write("""path = pathSegments.joinToString(separator = "/", prefix = "/")""")
         } else {
             // all literals, inline directly
             val resolvedPath = httpTrait.uri.segments.joinToString(
                 separator = "/",
                 prefix = "/",
-                postfix = "",
                 transform = {
                     it.content.toEscapedLiteral()
                 }
