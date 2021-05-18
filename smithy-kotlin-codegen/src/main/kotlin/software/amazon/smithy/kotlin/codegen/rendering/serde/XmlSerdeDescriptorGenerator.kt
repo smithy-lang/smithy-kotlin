@@ -70,7 +70,13 @@ open class XmlSerdeDescriptorGenerator(
         }
         traitList.add(SerdeXml.XmlSerialName, serialName.dq())
 
-        val flattened = member.getTrait<XmlFlattenedTrait>()?.also { traitList.add(it.toSdkTrait()) } != null
+        val memberTarget = ctx.model.expectShape(member.target)
+        val isNestedMap = memberTarget.isMapShape && targetShape.isMapShape && nameSuffix.isNotEmpty()
+        val flattened = member.getTrait<XmlFlattenedTrait>()?.also {
+            if (!isNestedMap) {
+                traitList.add(it.toSdkTrait())
+            }
+        } != null
         member.getTrait<XmlAttributeTrait>()?.let { traitList.add(it.toSdkTrait()) }
         member.getTrait<XmlNamespaceTrait>()?.let { traitList.add(it.toSdkTrait()) }
 
