@@ -71,5 +71,5 @@ public fun String.encodeLabel(greedy: Boolean = false): String {
     } else {
         VALID_HTTP_LABEL_DELIMS
     }
-    return encodeUrlPath(validDelims)
+    return encodeUrlPath(validDelims, checkPercentEncoded = false)
 }

@@ -54,27 +54,29 @@ private fun isPercentEncodedAt(d: ByteArray, i: Int): Boolean =
         d[i + 2].toChar().toUpperCase() in upperHexSet
 
 /**
- * Encode a string that represents a raw URL path according to
+ * Encode a string that represents a *raw* URL path according to
  * https://tools.ietf.org/html/rfc3986#section-3.3
  */
 @InternalApi
-fun String.encodeUrlPath() = encodeUrlPath(VALID_PCHAR_DELIMS)
+fun String.encodeUrlPath() = encodeUrlPath(VALID_PCHAR_DELIMS, checkPercentEncoded = true)
 
 /**
  * Encode a string that represents a raw URL path component. Everything EXCEPT alphanumeric characters
  * and all delimiters in the [validDelimiters] set will be percent encoded.
  *
  * @param validDelimiters the set of allowed delimiters that need not be percent-encoded
+ * @param checkPercentEncoded flag indicating if the encoding process should check for already percent-encoded
+ * characters and pass them through as is or not.
  */
 @InternalApi
-fun String.encodeUrlPath(validDelimiters: Set<Char>): String {
+fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolean): String {
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
 
     var i = 0
     while (i < data.size) {
         // 3.3 pchar: pct-encoded
-        if (isPercentEncodedAt(data, i)) {
+        if (checkPercentEncoded && isPercentEncodedAt(data, i)) {
             sb.append(data[i++].toChar())
             sb.append(data[i++].toChar())
             sb.append(data[i++].toChar())

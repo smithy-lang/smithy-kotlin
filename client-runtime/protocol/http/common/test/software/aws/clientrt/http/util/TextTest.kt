@@ -57,4 +57,14 @@ class TextTest {
         assertEquals(expected, input.encodeLabel())
         assertEquals(expected, input.urlEncodeComponent())
     }
+
+    @Test
+    fun encodesPercent() {
+        // verify that something that looks percent encoded actually encodes the percent. label/query should always
+        // be going from raw -> encoded. Users should not be percent-encoding values passed to the runtime
+        val input = "%25"
+        val expected = "%2525"
+        assertEquals(expected, input.encodeLabel())
+        assertEquals(expected, input.urlEncodeComponent())
+    }
 }
