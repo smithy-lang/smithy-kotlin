@@ -35,6 +35,7 @@ class IdempotentTokenGeneratorTest {
             internal class AllocateWidgetOperationSerializer(): HttpSerialize<AllocateWidgetRequest> {
             
                 companion object {
+                    private val CLIENTTOKEN_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
                     private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                         field(CLIENTTOKEN_DESCRIPTOR)
                     }

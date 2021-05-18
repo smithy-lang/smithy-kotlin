@@ -8,10 +8,8 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.defaultName
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.utils.StringUtils
 
@@ -120,3 +118,21 @@ internal fun Int.variableNameFor(type: NestedIdentifierType): String = "${type.p
  * Generate an identifier for a given nesting level
  */
 internal fun Int.nestedDescriptorName(): String = "_C$this"
+
+/**
+ * Returns true if the shape can contain other shapes
+ */
+internal fun Shape.isContainerShape() = when (this) {
+    is CollectionShape,
+    is MapShape -> true
+    else -> false
+}
+
+/**
+ * Returns [Shape] of the child member of the passed Shape is a collection type or null if not collection type.
+ */
+internal fun Shape.childShape(model: Model): Shape? = when (this) {
+    is CollectionShape -> model.expectShape(this.member.target)
+    is MapShape -> model.expectShape(this.value.target)
+    else -> null
+}

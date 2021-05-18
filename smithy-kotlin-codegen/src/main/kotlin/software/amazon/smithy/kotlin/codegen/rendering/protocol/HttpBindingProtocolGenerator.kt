@@ -59,19 +59,72 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> = listOf()
 
     /**
-     * Generate the set of [SdkFieldDescriptor]s for the types that require them.
-     * @param ctx generation context
-     * @param memberShape the shape representing the field descriptor
-     * @param writer kotlin writer
-     * @param memberTargetShape optional shape representing the type contained by a collection
-     * @param namePostfix a string to postfix to the descriptor name, used for nested synthetic fields
+     * Get the [SerdeDescriptorGenerator] to use for rendering the serde descriptors for [objectShape]
+     *
+     * @param ctx the protocol generator context
+     * @param objectShape the shape to render serialization for
+     * @param members the members to serialize (pre-sorted)
+     * @param subject the target serializer use
+     * @param writer the writer to render to
      */
-    protected abstract fun generateSdkFieldDescriptor(ctx: ProtocolGenerator.GenerationContext, memberShape: MemberShape, writer: KotlinWriter, memberTargetShape: Shape? = null, namePostfix: String = "")
+    protected abstract fun getSerdeDescriptorGenerator(
+        ctx: ProtocolGenerator.GenerationContext,
+        objectShape: Shape,
+        members: List<MemberShape>,
+        subject: SerdeSubject,
+        writer: KotlinWriter
+    ): SerdeDescriptorGenerator
 
     /**
-     * Generate the set of traits on the [SdkObjectDescriptor] for the types that require them.
+     * Render serialization code for [shape]. This function is invoked inside the body of the serializer function.
+     *
+     * By default this uses one of the base classes [SerializeStructGenerator] / [SerializeUnionGenerator] to render.
+     *
+     * @param ctx the protocol generator context
+     * @param shape the shape to render serialization for
+     * @param members the members to serialize (pre-sorted)
+     * @param subject the target serializer use
+     * @param writer the writer to render to
      */
-    protected abstract fun generateSdkObjectDescriptorTraits(ctx: ProtocolGenerator.GenerationContext, objectShape: Shape, writer: KotlinWriter)
+    protected open fun renderSerializerBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        subject: SerdeSubject,
+        writer: KotlinWriter,
+    ) {
+        if (shape.isUnionShape) {
+            SerializeUnionGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        } else {
+            SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        }
+    }
+
+    /**
+     * Render deserialization code for [shape]. This function is invoked inside the body of the deserializer function.
+     *
+     * By default this uses one of the base classes [DeserializeStructGenerator] / [DeserializeUnionGenerator] to render.
+     *
+     * @param ctx the protocol generator context
+     * @param shape the shape to render deserialization for
+     * @param members the members to deserialize (pre-sorted)
+     * @param subject the target deserializer use
+     * @param writer the writer to render to
+     */
+    protected open fun renderDeserializerBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: List<MemberShape>,
+        subject: SerdeSubject,
+        writer: KotlinWriter,
+    ) {
+        if (shape.isUnionShape) {
+            val name = ctx.symbolProvider.toSymbol(shape).name
+            DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
+        } else {
+            DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        }
+    }
 
     /**
      * Sort and return [members] in the order they should be serialized in (sort order may not matter in all protocols)
@@ -167,16 +220,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("internal class #T(val input: #T) : SdkSerializable {", serializerSymbol, symbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), SerdeSubject.DocumentSerializer, writer)
             }
             .call {
                 writer.withBlock("override fun serialize(serializer: Serializer) {", "}") {
                     val sortedMembers = sortMembersForSerialization(ctx, shape.members().toList())
-                    if (shape.isUnionShape) {
-                        SerializeUnionGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
-                    } else {
-                        SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
-                    }
+                    renderSerializerBody(ctx, shape, sortedMembers, SerdeSubject.DocumentSerializer, writer)
                 }
             }
             .closeBlock("}")
@@ -205,7 +254,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         val resolver = getProtocolHttpBindingResolver(ctx)
-        val httpTrait = resolver.httpTrait(op)
         val requestBindings = resolver.requestBindings(op)
         ctx.delegator.useShapeWriter(serializerSymbol) { writer ->
             // import all of http, http.request, and serde packages. All serializers requires one or more of the symbols
@@ -221,11 +269,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .call {
                     val objectShape = ctx.model.expectShape(op.input.get())
                     val memberShapes = requestBindings.filter { it.location == HttpBinding.Location.DOCUMENT }.map { it.member }
-                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, SerdeSubject.OperationSerializer, writer)
                 }
                 .call {
-                    val contentType = resolver.determineRequestContentType(op)
-                    renderHttpSerialize(ctx, httpTrait, contentType, requestBindings, inputSymbol, writer)
+                    writer.openBlock("override suspend fun serialize(context: #T, input: #T): HttpRequestBuilder {", RuntimeTypes.Core.ExecutionContext, inputSymbol)
+                        .write("val builder = HttpRequestBuilder()")
+                        .call {
+                            renderHttpSerialize(ctx, op, writer)
+                        }
+                        .write("return builder")
+                        .closeBlock("}")
                 }
                 .closeBlock("}")
         }
@@ -241,42 +294,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun renderSerdeCompanionObject(
         ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape?,
+        objectShape: Shape,
         memberShapes: List<MemberShape>,
+        subject: SerdeSubject,
         writer: KotlinWriter
     ) {
-        if (memberShapes.isEmpty()) return
-        writer.write("")
-            .withBlock("companion object {", "}") {
-                val sortedMembers = memberShapes.sortedBy { it.memberName }
-                for (member in sortedMembers) {
-                    generateSdkFieldDescriptor(ctx, member, writer)
-
-                    val memberTarget = ctx.model.expectShape(member.target)
-                    val nestedMember = memberTarget.childShape(ctx)
-                    if (nestedMember?.isContainerShape() == true) {
-                        renderNestedFieldDescriptors(ctx, member, nestedMember, 0, writer)
-                    }
-                }
-                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
-                    objectShape?.let { generateSdkObjectDescriptorTraits(ctx, it, writer) }
-
-                    for (member in sortedMembers) {
-                        write("field(#L)", member.descriptorName())
-                    }
-                }
-            }
-            .write("")
-    }
-
-    /**
-     * Generate field descriptors for nested serialization types.
-     */
-    private fun renderNestedFieldDescriptors(ctx: ProtocolGenerator.GenerationContext, rootShape: MemberShape, childShape: Shape, level: Int, writer: KotlinWriter) {
-        generateSdkFieldDescriptor(ctx, rootShape, writer, childShape, "_C$level")
-
-        val nestedMember = childShape.childShape(ctx)
-        if (nestedMember?.isContainerShape() == true) renderNestedFieldDescriptors(ctx, rootShape, nestedMember, level + 1, writer)
+        val generator = getSerdeDescriptorGenerator(ctx, objectShape, memberShapes, subject, writer)
+        generator.render()
     }
 
     // replace labels with any path bindings
@@ -318,19 +342,18 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
     )
 
-    private fun renderHttpSerialize(
+    protected open fun renderHttpSerialize(
         ctx: ProtocolGenerator.GenerationContext,
-        httpTrait: HttpTrait,
-        contentType: String,
-        requestBindings: List<HttpBindingDescriptor>,
-        inputSymbol: Symbol,
+        op: OperationShape,
         writer: KotlinWriter
     ) {
+        val resolver = getProtocolHttpBindingResolver(ctx)
+        val httpTrait = resolver.httpTrait(op)
+        val requestBindings = resolver.requestBindings(op)
+
         writer.addImport(RuntimeTypes.Core.ExecutionContext)
 
-        writer.openBlock("override suspend fun serialize(context: #T, input: #T): HttpRequestBuilder {", RuntimeTypes.Core.ExecutionContext, inputSymbol)
-            .write("val builder = HttpRequestBuilder()")
-            .write("builder.method = HttpMethod.#L", httpTrait.method.toUpperCase())
+        writer.write("builder.method = HttpMethod.#L", httpTrait.method.toUpperCase())
             .write("")
             .call {
                 // URI components
@@ -339,7 +362,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                 writer.withBlock("builder.url {", "}") {
                     // Path
-                    write("path = \"#L\"", resolvedPath)
+                    write("path = #S", resolvedPath)
 
                     // Query Parameters
                     renderQueryParameters(ctx, httpTrait, requestBindings, writer)
@@ -367,29 +390,46 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
             .write("")
-            .callIf(hasHttpBody(requestBindings)) {
-                // payload member(s)
-                val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-                if (httpPayload != null) {
-                    renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
-                } else {
-                    // Unbound document members that should be serialized into the document format for the protocol.
-                    // The generated code is the same across protocols and the serialization provider instance
-                    // passed into the function is expected to handle the formatting required by the protocol
-                    val documentMembers = requestBindings
-                        .filter { it.location == HttpBinding.Location.DOCUMENT }
-                        .sortedBy { it.memberName }
-
-                    renderUnboundPayloadSerde(ctx, documentMembers, writer)
-                }
-
-                // render content-type as last thing once the body has been set
-                writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
-                    writer.write("builder.headers[\"Content-Type\"] = #S", contentType)
-                }
+            .call {
+                renderSerializeOperationBody(ctx, op, writer)
             }
-            .write("return builder")
-            .closeBlock("}")
+    }
+
+    /**
+     * Render the serialization of any members bound to the payload (HttpBody).
+     * If there is a payload to render it should be bound to `builder.body` when this function returns
+     */
+    protected open fun renderSerializeOperationBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+        val resolver = getProtocolHttpBindingResolver(ctx)
+        val requestBindings = resolver.requestBindings(op)
+
+        // render nothing by default if there is nothing bound to the payload
+        if (!hasHttpBody(requestBindings)) return
+
+        // payload member(s)
+        val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        if (httpPayload != null) {
+            renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
+        } else {
+            // Unbound document members that should be serialized into the document format for the protocol.
+            // The generated code is the same across protocols and the serialization provider instance
+            // passed into the function is expected to handle the formatting required by the protocol
+            val documentMembers = requestBindings
+                .filter { it.location == HttpBinding.Location.DOCUMENT }
+                .sortedBy { it.memberName }
+
+            renderUnboundPayloadSerde(ctx, documentMembers, writer)
+        }
+
+        // render content-type as last thing once the body has been set
+        writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
+            val contentType = resolver.determineRequestContentType(op)
+            writer.write("builder.headers[\"Content-Type\"] = #S", contentType)
+        }
     }
 
     private fun renderQueryParameters(
@@ -476,7 +516,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("val serializer = context.serializer()")
             .call {
                 val renderForMembers = sortMembersForSerialization(ctx, members.map { it.member })
-                SerializeStructGenerator(ctx, renderForMembers, writer, defaultTimestampFormat).render()
+                val shape = ctx.model.expectShape(renderForMembers.first().container)
+                renderSerializerBody(ctx, shape, renderForMembers, SerdeSubject.OperationSerializer, writer)
             }
             .write("")
             .write("builder.body = ByteArrayContent(serializer.toByteArray())")
@@ -580,7 +621,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     val memberShapes = responseBindings
                         .filter { it.location == HttpBinding.Location.DOCUMENT }
                         .map { it.member }
-                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, writer)
+                    renderSerdeCompanionObject(ctx, objectShape, memberShapes, SerdeSubject.OperationDeserializer, writer)
                 }
                 .write("")
                 .call {
@@ -619,7 +660,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         it.hasTrait<HttpHeaderTrait>() || it.hasTrait<HttpPrefixHeadersTrait>()
                     }
 
-                    renderSerdeCompanionObject(ctx, shape, documentMembers, writer)
+                    renderSerdeCompanionObject(ctx, shape, documentMembers, SerdeSubject.ExceptionDeserializer, writer)
                 }
                 .write("")
                 .call {
@@ -683,7 +724,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("val payload = response.body.readAll()")
                         writer.withBlock("if (payload != null) {", "}") {
                             writer.write("val deserializer = context.deserializer(payload)")
-                            DeserializeStructGenerator(ctx, documentMembers, writer, defaultTimestampFormat).render()
+                            val shape = requireNotNull(outputSymbol.shape) { "output symbol must have a corresponding shape set in it's properties" }
+                            val use = when (shape.hasTrait<ErrorTrait>()) {
+                                true -> SerdeSubject.ExceptionDeserializer
+                                false -> SerdeSubject.OperationDeserializer
+                            }
+                            renderDeserializerBody(ctx, shape, documentMembers, use, writer)
                         }
                     }
                 }
@@ -970,26 +1016,22 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer.write("")
             .openBlock("internal class #T {", deserializerSymbol)
             .call {
-                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), writer)
+                renderSerdeCompanionObject(ctx, shape, shape.members().toList(), SerdeSubject.DocumentDeserializer, writer)
             }
             .call {
-
-                if (shape.isUnionShape) {
-                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                    if (shape.isUnionShape) {
                         writer.write("var value: ${symbol.name}? = null")
-                        DeserializeUnionGenerator(ctx, symbol.name, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        renderDeserializerBody(ctx, shape, shape.members().toList(), SerdeSubject.DocumentDeserializer, writer)
                         writer.write("return value ?: throw DeserializationException(\"Deserialized value unexpectedly null: ${symbol.name}\")")
-                    }
-                        .closeBlock("}")
-                } else {
-                    writer.withBlock("suspend fun deserialize(deserializer: Deserializer): ${symbol.name} {", "}") {
+                    } else {
                         writer.write("val builder = ${symbol.name}.builder()")
-                        DeserializeStructGenerator(ctx, shape.members().toList(), writer, defaultTimestampFormat).render()
+                        renderDeserializerBody(ctx, shape, shape.members().toList(), SerdeSubject.DocumentDeserializer, writer)
                         writer.write("return builder.build()")
                     }
-                        .closeBlock("}")
                 }
             }
+            .closeBlock("}")
     }
 }
 
@@ -1013,17 +1055,3 @@ internal fun stringToNumber(shape: NumberShape): String = when (shape.type) {
 // test if the request bindings have any members bound to the HTTP payload (body)
 private fun hasHttpBody(requestBindings: List<HttpBindingDescriptor>): Boolean =
     requestBindings.any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
-
-// Returns [true] if the shape can contain other shapes.
-private fun Shape.isContainerShape() = when (this) {
-    is CollectionShape,
-    is MapShape -> true
-    else -> false
-}
-
-// Returns [Shape] of the child member of the passed Shape is a collection type or null if not collection type.
-private fun Shape.childShape(ctx: ProtocolGenerator.GenerationContext): Shape? = when (this) {
-    is CollectionShape -> ctx.model.expectShape(this.member.target)
-    is MapShape -> ctx.model.expectShape(this.value.target)
-    else -> null
-}

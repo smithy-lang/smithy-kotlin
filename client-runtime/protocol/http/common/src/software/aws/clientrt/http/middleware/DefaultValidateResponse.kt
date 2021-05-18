@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package software.aws.clientrt.http.feature
+package software.aws.clientrt.http.middleware
 
 import software.aws.clientrt.SdkBaseException
 import software.aws.clientrt.http.*
