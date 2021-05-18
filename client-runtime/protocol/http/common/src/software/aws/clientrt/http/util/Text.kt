@@ -26,36 +26,9 @@ public fun String.splitAsQueryParameters(): QueryParameters {
 // This includes both colon ':' and comma ',' characters.
 // Smithy protocol tests & AWS services percent encode these expected values. Signing
 // will fail if these values are not percent encoded
-private val VALID_HTTP_LABEL_DELIMS: Set<Char> = VALID_PCHAR_DELIMS.toMutableSet().apply {
-    val delims = listOf(
-        '/',
-        ' ',
-        ':',
-        ',',
-        '?',
-        '#',
-        '[',
-        ']',
-        '(',
-        ')',
-        '@',
-        '!',
-        '$',
-        '&',
-        '\'',
-        ',',
-        '*',
-        '+',
-        ';',
-        '=',
-        '%'
-    )
-    removeAll(delims)
-}
+private val VALID_HTTP_LABEL_DELIMS: Set<Char> = VALID_PCHAR_DELIMS - "/ :,?#[]()@!$&'*+;=%".toSet()
 
-private val GREEDY_HTTP_LABEL_DELIMS: Set<Char> = VALID_HTTP_LABEL_DELIMS.toMutableSet().apply {
-    add('/')
-}
+private val GREEDY_HTTP_LABEL_DELIMS: Set<Char> = VALID_HTTP_LABEL_DELIMS + '/'
 
 /**
  * Encode a value that represents a member bound via `httpLabel`
