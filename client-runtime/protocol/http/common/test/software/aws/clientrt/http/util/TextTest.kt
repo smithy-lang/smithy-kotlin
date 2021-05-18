@@ -52,8 +52,8 @@ class TextTest {
     fun encodeReservedChars() {
         // verify that both httpLabel and httpQuery bound components encode characters from the reserved
         // set of characters in section 2.2
-        val input = ":/?#[]@!$&'()*+,;=%"
-        val expected = "%3A%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D%25"
+        val input = ":/?#[]@!$&'()*+,;=% "
+        val expected = "%3A%2F%3F%23%5B%5D%40%21%24%26%27%28%29%2A%2B%2C%3B%3D%25%20"
         assertEquals(expected, input.encodeLabel())
         assertEquals(expected, input.urlEncodeComponent())
     }
