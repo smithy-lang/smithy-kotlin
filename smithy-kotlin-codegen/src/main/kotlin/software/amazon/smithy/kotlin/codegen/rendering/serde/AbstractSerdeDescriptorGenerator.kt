@@ -58,31 +58,30 @@ abstract class AbstractSerdeDescriptorGenerator(
         if (memberShapes.isEmpty()) return
 
         writer.addImport("*", KotlinDependency.CLIENT_RT_SERDE)
-        writer.write("")
-            .withBlock("companion object {", "}") {
-                val sortedMembers = memberShapes.sortedBy { it.memberName }
-                for (member in sortedMembers) {
-                    val memberTarget = ctx.model.expectShape(member.target)
-                    renderFieldDescriptor(member, memberTarget)
+        // .withBlock("companion object {", "}") {
+        val sortedMembers = memberShapes.sortedBy { it.memberName }
+        for (member in sortedMembers) {
+            val memberTarget = ctx.model.expectShape(member.target)
+            renderFieldDescriptor(member, memberTarget)
 
-                    val nestedMember = memberTarget.childShape(ctx.model)
-                    if (nestedMember?.isContainerShape() == true) {
-                        renderContainerFieldDescriptors(member, nestedMember)
-                    }
-                }
-                writer.withBlock("private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
-                    val objTraits = getObjectDescriptorTraits()
-                    objTraits.forEach { trait ->
-                        writer.addImport(trait.symbol)
-                        writer.write("trait($trait)")
-                    }
-
-                    for (member in sortedMembers) {
-                        write("field(#L)", member.descriptorName())
-                    }
-                }
+            val nestedMember = memberTarget.childShape(ctx.model)
+            if (nestedMember?.isContainerShape() == true) {
+                renderContainerFieldDescriptors(member, nestedMember)
             }
-            .write("")
+        }
+        writer.withBlock("val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {", "}") {
+            val objTraits = getObjectDescriptorTraits()
+            objTraits.forEach { trait ->
+                writer.addImport(trait.symbol)
+                writer.write("trait($trait)")
+            }
+
+            for (member in sortedMembers) {
+                write("field(#L)", member.descriptorName())
+            }
+        }
+        // }
+        writer.write("")
     }
 
     /**
@@ -119,11 +118,11 @@ abstract class AbstractSerdeDescriptorGenerator(
 
         val traits = getFieldDescriptorTraits(member, targetShape, nameSuffix)
         if (traits.isEmpty()) {
-            writer.write("private val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
+            writer.write("val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
         } else {
             traits.forEach { trait -> writer.addImport(trait.symbol) }
             writer.write(
-                "private val #L = SdkFieldDescriptor(#L, #L)",
+                "val #L = SdkFieldDescriptor(#L, #L)",
                 descriptorName,
                 serialKind,
                 traits.joinToString(separator = ", ")

@@ -222,7 +222,7 @@ open class SerializeStructGenerator(
         val valueToSerializeName = valueToSerializeName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            writer.write("$serializerFnName($serializerTypeName($valueToSerializeName))")
+            writer.write("$serializerFnName(asSdkSerializable($valueToSerializeName, ::$serializerTypeName))")
         }
     }
 
@@ -243,9 +243,11 @@ open class SerializeStructGenerator(
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val containerName = if (nestingLevel == 0) "input." else ""
 
+        val value = "asSdkSerializable($valueName, ::$serializerTypeName)"
+
         when (isSparse) {
-            true -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> if ($valueName != null) entry($keyName, $serializerTypeName($valueName)) else entry($keyName, null as String?) }")
-            false -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $serializerTypeName($valueName)) }")
+            true -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> if ($valueName != null) entry($keyName, $value) else entry($keyName, null as String?) }")
+            false -> writer.write("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $value) }")
         }
     }
 
@@ -573,7 +575,7 @@ open class SerializeStructGenerator(
         val memberSerializerName = symbol.documentSerializerName()
         val valueToSerializeName = valueToSerializeName("it")
         // invoke the ctor of the serializer to delegate to and pass the value
-        val encoded = "$memberSerializerName($valueToSerializeName)"
+        val encoded = "$valueToSerializeName, ::$memberSerializerName"
 
         return SerializeInfo("field", encoded)
     }

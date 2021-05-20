@@ -36,13 +36,14 @@ object RuntimeTypes {
     }
 
     object Serde {
-        val SerdeAttributes = runtimeSymbol("SerdeAttributes", KotlinDependency.CLIENT_RT_SERDE)
         val SerdeProvider = runtimeSymbol("SerdeProvider", KotlinDependency.CLIENT_RT_SERDE)
         val Serializer = runtimeSymbol("Serializer", KotlinDependency.CLIENT_RT_SERDE)
         val Deserializer = runtimeSymbol("Deserializer", KotlinDependency.CLIENT_RT_SERDE)
 
         object SerdeJson {
             val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.CLIENT_RT_SERDE_JSON)
+            val JsonSerializer = runtimeSymbol("JsonSerializer", KotlinDependency.CLIENT_RT_SERDE_JSON)
+            val JsonDeserializer = runtimeSymbol("JsonDeserializer", KotlinDependency.CLIENT_RT_SERDE_JSON)
         }
 
         object SerdeXml {
