@@ -12,8 +12,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.descriptorName
-import software.amazon.smithy.kotlin.codegen.rendering.serde.serialKind
+import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
@@ -48,28 +47,13 @@ class RestJsonTestProtocolGenerator(
         return MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx))
     }
 
-    override fun generateSdkFieldDescriptor(
-        ctx: ProtocolGenerator.GenerationContext,
-        memberShape: MemberShape,
-        writer: KotlinWriter,
-        memberTargetShape: Shape?,
-        namePostfix: String
-    ) {
-        val shapeForSerialKind = memberTargetShape ?: ctx.model.expectShape(memberShape.target)
-        val serialKind = shapeForSerialKind.serialKind()
-        val descriptorName = memberShape.descriptorName(namePostfix)
-
-        writer.write("private val #L = SdkFieldDescriptor(#L)", descriptorName, serialKind)
-    }
-
-    override fun generateSdkObjectDescriptorTraits(
+    override fun getSerdeDescriptorGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         objectShape: Shape,
+        members: List<MemberShape>,
+        subject: SerdeSubject,
         writer: KotlinWriter
-    ) {
-        writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
-        writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
-    }
+    ): SerdeDescriptorGenerator = JsonSerdeDescriptorGenerator(ctx.toRenderingContext(this, objectShape, writer), members)
 }
 
 class MockRestJsonProtocolClientGenerator(

@@ -64,6 +64,9 @@ class HttpBindingProtocolGeneratorTest {
 internal class SmokeTestOperationSerializer(): HttpSerialize<SmokeTestRequest> {
 
     companion object {
+        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
+        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer)
+        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
@@ -76,7 +79,12 @@ internal class SmokeTestOperationSerializer(): HttpSerialize<SmokeTestRequest> {
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/smoketest/$label1/foo"
+            val pathSegments = listOf(
+                "smoketest",
+                "$label1".encodeLabel(),
+                "foo",
+            )
+            path = pathSegments.joinToString(separator = "/", prefix = "/")
             parameters {
                 if (input.query1 != null) append("Query1", input.query1)
             }
@@ -226,6 +234,9 @@ internal class ExplicitStructOperationSerializer(): HttpSerialize<ExplicitStruct
 internal class Nested4DocumentSerializer(val input: Nested4) : SdkSerializable {
 
     companion object {
+        private val INTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List)
+        private val INTMAP_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map)
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(INTLIST_DESCRIPTOR)
             field(INTMAP_DESCRIPTOR)
@@ -265,6 +276,9 @@ internal class Nested4DocumentSerializer(val input: Nested4) : SdkSerializable {
 internal class Nested3DocumentSerializer(val input: Nested3) : SdkSerializable {
 
     companion object {
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
+        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
+        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
@@ -294,6 +308,7 @@ internal class Nested3DocumentSerializer(val input: Nested3) : SdkSerializable {
 internal class UnionInputOperationSerializer(): HttpSerialize<UnionInputRequest> {
 
     companion object {
+        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADUNION_DESCRIPTOR)
         }
@@ -351,6 +366,7 @@ internal class UnionInputOperationSerializer(): HttpSerialize<UnionInputRequest>
             internal class FooUnionDocumentSerializer(val input: FooUnion) : SdkSerializable {
             
                 companion object {
+                    private val STRUCTLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List)
                     private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                         field(STRUCTLIST_DESCRIPTOR)
                     }
@@ -383,6 +399,7 @@ internal class UnionInputOperationSerializer(): HttpSerialize<UnionInputRequest>
 internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionOutputResponse> {
 
     companion object {
+        private val PAYLOADUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADUNION_DESCRIPTOR)
         }
@@ -421,6 +438,7 @@ internal class UnionOutputOperationDeserializer(): HttpDeserialize<UnionOutputRe
 internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<UnionAggregateOutputResponse> {
 
     companion object {
+        private val PAYLOADAGGREGATEUNION_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADAGGREGATEUNION_DESCRIPTOR)
         }
@@ -459,6 +477,8 @@ internal class UnionAggregateOutputOperationDeserializer(): HttpDeserialize<Unio
 internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
 
     companion object {
+        private val I32_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer)
+        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(I32_DESCRIPTOR)
             field(STRINGA_DESCRIPTOR)
@@ -486,6 +506,8 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
     companion object {
+        private val I32_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer)
+        private val STRINGA_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(I32_DESCRIPTOR)
             field(STRINGA_DESCRIPTOR)
@@ -530,6 +552,7 @@ internal class MyUnionDocumentSerializer(val input: MyUnion) : SdkSerializable {
 internal class EnumInputOperationSerializer(): HttpSerialize<EnumInputRequest> {
 
     companion object {
+        private val NESTEDWITHENUM_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(NESTEDWITHENUM_DESCRIPTOR)
         }
@@ -572,6 +595,11 @@ internal class EnumInputOperationSerializer(): HttpSerialize<EnumInputRequest> {
 internal class TimestampInputOperationSerializer(): HttpSerialize<TimestampInputRequest> {
 
     companion object {
+        private val DATETIME_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp)
+        private val EPOCHSECONDS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp)
+        private val HTTPDATE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp)
+        private val NORMAL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp)
+        private val TIMESTAMPLIST_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(DATETIME_DESCRIPTOR)
             field(EPOCHSECONDS_DESCRIPTOR)
@@ -586,7 +614,12 @@ internal class TimestampInputOperationSerializer(): HttpSerialize<TimestampInput
         builder.method = HttpMethod.POST
 
         builder.url {
-            path = "/input/timestamp/$tsLabel"
+            val pathSegments = listOf(
+                "input",
+                "timestamp",
+                "$tsLabel".encodeLabel(),
+            )
+            path = pathSegments.joinToString(separator = "/", prefix = "/")
             parameters {
                 if (input.queryTimestamp != null) append("qtime", input.queryTimestamp.format(TimestampFormat.ISO_8601))
                 if (input.queryTimestampList?.isNotEmpty() == true) appendAll("qtimeList", input.queryTimestampList.map { it.format(TimestampFormat.ISO_8601) })
@@ -636,6 +669,7 @@ internal class TimestampInputOperationSerializer(): HttpSerialize<TimestampInput
 internal class BlobInputOperationSerializer(): HttpSerialize<BlobInputRequest> {
 
     companion object {
+        private val PAYLOADBLOB_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Blob)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOADBLOB_DESCRIPTOR)
         }
@@ -683,7 +717,11 @@ internal class ConstantQueryStringOperationSerializer(): HttpSerialize<ConstantQ
         builder.method = HttpMethod.GET
 
         builder.url {
-            path = "/ConstantQueryString/$label1"
+            val pathSegments = listOf(
+                "ConstantQueryString",
+                "$label1".encodeLabel(),
+            )
+            path = pathSegments.joinToString(separator = "/", prefix = "/")
             parameters {
                 append("foo", "bar")
                 append("hello", "")
@@ -705,6 +743,10 @@ internal class ConstantQueryStringOperationSerializer(): HttpSerialize<ConstantQ
 internal class SmokeTestOperationDeserializer(): HttpDeserialize<SmokeTestResponse> {
 
     companion object {
+        private val PAYLOAD1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
+        private val PAYLOAD2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer)
+        private val PAYLOAD3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
+        private val PAYLOAD4_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Timestamp)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(PAYLOAD1_DESCRIPTOR)
             field(PAYLOAD2_DESCRIPTOR)
@@ -832,6 +874,9 @@ internal class SmokeTestOperationDeserializer(): HttpDeserialize<SmokeTestRespon
 internal class Nested3DocumentDeserializer {
 
     companion object {
+        private val MEMBER1_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
+        private val MEMBER2_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String)
+        private val MEMBER3_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MEMBER1_DESCRIPTOR)
             field(MEMBER2_DESCRIPTOR)
@@ -880,6 +925,8 @@ internal class Nested3DocumentDeserializer {
 internal class MapInputOperationSerializer(): HttpSerialize<MapInputRequest> {
 
     companion object {
+        private val MAPOFLISTS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Map)
+        private val MAPOFLISTS_C0_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List)
         private val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             field(MAPOFLISTS_DESCRIPTOR)
         }

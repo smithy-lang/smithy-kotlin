@@ -22,6 +22,8 @@ object RuntimeTypes {
         val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
         val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
         val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_HTTP, "content")
+        val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.CLIENT_RT_HTTP, "middleware")
+        val EncodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.CLIENT_RT_HTTP, "util")
     }
 
     object Core {
@@ -35,6 +37,13 @@ object RuntimeTypes {
 
     object Serde {
         val SerdeAttributes = runtimeSymbol("SerdeAttributes", KotlinDependency.CLIENT_RT_SERDE)
+        val SerdeProvider = runtimeSymbol("SerdeProvider", KotlinDependency.CLIENT_RT_SERDE)
+        val Serializer = runtimeSymbol("Serializer", KotlinDependency.CLIENT_RT_SERDE)
+        val Deserializer = runtimeSymbol("Deserializer", KotlinDependency.CLIENT_RT_SERDE)
+
+        object SerdeJson {
+            val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.CLIENT_RT_SERDE_JSON)
+        }
 
         object SerdeXml {
             val XmlSerialName = runtimeSymbol("XmlSerialName", KotlinDependency.CLIENT_RT_SERDE_XML)
@@ -45,6 +54,17 @@ object RuntimeTypes {
             val Flattened = runtimeSymbol("Flattened", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlAttribute = runtimeSymbol("XmlAttribute", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlMapName = runtimeSymbol("XmlMapName", KotlinDependency.CLIENT_RT_SERDE_XML)
+            val XmlError = runtimeSymbol("XmlError", KotlinDependency.CLIENT_RT_SERDE_XML)
+            val XmlDeserializer = runtimeSymbol("XmlDeserializer", KotlinDependency.CLIENT_RT_SERDE_XML)
+        }
+
+        object SerdeFormUrl {
+            val FormUrlSerialName = runtimeSymbol("FormUrlSerialName", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
+            val FormUrlCollectionName = runtimeSymbol("FormUrlCollectionName", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
+            val Flattened = runtimeSymbol("FormUrlFlattened", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
+            val FormUrlMapName = runtimeSymbol("FormUrlMapName", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
+            val QueryLiteral = runtimeSymbol("QueryLiteral", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
+            val FormUrlSerializer = runtimeSymbol("FormUrlSerializer", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
         }
     }
 }

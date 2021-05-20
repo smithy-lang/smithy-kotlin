@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.utils.CaseUtils
 
@@ -105,3 +106,10 @@ interface ProtocolGenerator {
         val delegator: KotlinDelegator
     )
 }
+
+fun <T : Shape> ProtocolGenerator.GenerationContext.toRenderingContext(
+    protocolGenerator: ProtocolGenerator,
+    forShape: T? = null,
+    writer: KotlinWriter,
+): RenderingContext<T> =
+    RenderingContext(writer, forShape, model, symbolProvider, settings, protocolGenerator, integrations)

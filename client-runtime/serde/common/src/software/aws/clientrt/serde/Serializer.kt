@@ -26,6 +26,9 @@ interface Serializer : PrimitiveSerializer {
      */
     fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer
 
+    // FIXME - we should commonize how we deal with buffers internally and rely on `SdkBuffer`
+    //  (likely once we roll our own json/xml serializers). Until then this should probably return a ByteStream?
+    //  we could also supply an SdkBuffer.wrap(byteArray) function that sets the read/write to the limits of the array?
     /**
      * Consume the serializer and get the payload as a [ByteArray]
      */

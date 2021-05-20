@@ -11,9 +11,8 @@ import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.engine.HttpClientEngine
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.response.HttpCall
-import software.aws.clientrt.http.util.encodeUrlPath
-import software.aws.clientrt.http.util.urlEncodeComponent
 import software.aws.clientrt.testing.runSuspendTest
+import software.aws.clientrt.util.text.urlEncodeComponent
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -66,26 +65,7 @@ fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runSuspendTest {
                 testHeaders["Content-Length"] = request.body.contentLength.toString()
             }
 
-            // Url::path is the raw path at this point and engines (or their wrappers) are expected to
-            // encode the raw path. Protocol tests specify expectations with the encoded path though
-            // so we need to encode the raw path that was actually built
-            var encodedPath = request.url.path.encodeUrlPath()
-
-            // RFC-3986 §3.3 allows sub-delims (defined in section2.2) to be in the path component.
-            // This includes both colon ':' and comma ',' characters.
-            // Smithy protocol tests percent encode these expected values though whereas `encodeUrlPath()`
-            // does not and follows the RFC. Fixing the tests was discussed but would adversely affect
-            // other SDK's and we were asked to work around it.
-            // Replace any left over sub-delims with the percent encoded value so that tests can proceed
-            // https://tools.ietf.org/html/rfc3986#section-3.3
-            val replacements = mapOf("," to "%2C")
-            for ((oldValue, newValue) in replacements) {
-                encodedPath = encodedPath.replace(oldValue, newValue)
-            }
-
-            val testUrl = request.url.copy(path = encodedPath)
-
-            actual = request.copy(url = testUrl, headers = testHeaders.build())
+            actual = request.copy(headers = testHeaders.build())
 
             // this control flow requires the service call (or whatever calls the mock engine) to be the last
             // statement in the operation{} block...

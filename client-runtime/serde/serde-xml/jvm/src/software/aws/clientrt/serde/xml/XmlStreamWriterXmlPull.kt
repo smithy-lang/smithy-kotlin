@@ -59,7 +59,15 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
     }
 
     override fun text(text: String): XmlStreamWriter {
-        serializer.text(text)
+        text.forEach { character ->
+            when (character) {
+                '\n' -> serializer.entityRef("#xA")
+                '\r' -> serializer.entityRef("#xD")
+                '\u0085' -> serializer.entityRef("#x85")
+                '\u2028' -> serializer.entityRef("#x2028")
+                else -> serializer.text(character.toString())
+            }
+        }
         return this
     }
 

@@ -60,7 +60,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                                 val compareFunc = when (bodyMediaType.toLowerCase()) {
                                     "application/json" -> "::assertJsonBodiesEqual"
                                     "application/xml" -> "::assertXmlBodiesEqual"
-                                    "application/x-www-form-urlencoded" -> TODO("urlencoded form assertion not implemented yet")
+                                    "application/x-www-form-urlencoded" -> "::assertFormUrlBodiesEqual"
                                     // compare reader bytes
                                     else -> "::assertBytesEqual"
                                 }

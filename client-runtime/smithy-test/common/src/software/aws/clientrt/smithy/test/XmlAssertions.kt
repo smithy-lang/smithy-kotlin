@@ -12,7 +12,7 @@ import software.aws.clientrt.serde.xml.dom.toXmlString
 import kotlin.test.assertEquals
 
 /**
- * Assert JSON strings for equality ignoring key order
+ * Assert XML strings for equality ignoring key order
  */
 suspend fun assertXmlStringsEqual(expected: String, actual: String) {
     // parse into a dom representation and sort the dom into a canonical form for comparison
@@ -25,7 +25,7 @@ suspend fun assertXmlStringsEqual(expected: String, actual: String) {
 }
 
 /**
- * Assert HTTP bodies are equal as JSON documents
+ * Assert HTTP bodies are equal as XML documents
  */
 suspend fun assertXmlBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
     val expectedStr = expected?.readAll()?.decodeToString()
