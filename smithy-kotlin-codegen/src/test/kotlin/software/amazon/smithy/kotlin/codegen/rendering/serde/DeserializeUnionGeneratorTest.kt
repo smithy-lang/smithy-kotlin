@@ -7,6 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 class DeserializeUnionGeneratorTest {
 
@@ -18,7 +20,7 @@ class DeserializeUnionGeneratorTest {
     """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
 
     @Test
-    fun `it deserializes a structure with primitive values`() {
+    fun `it deserializes a union with primitive values`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -43,7 +45,7 @@ class DeserializeUnionGeneratorTest {
                     }
                 }
             }
-        """.formatForTest(" ".repeat(8))
+        """.formatForTest("")
 
         val actual = model.codegenDeserializer("PrimitiveUnion")
 
@@ -51,7 +53,7 @@ class DeserializeUnionGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure with union containing collections of itself`() {
+    fun `it deserializes a union containing collections of itself`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -82,7 +84,7 @@ class DeserializeUnionGeneratorTest {
                             deserializer.deserializeList(UNIONLIST_DESCRIPTOR) {
                                 val col0 = mutableListOf<MyAggregateUnion>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { MyAggregateUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeMyAggregateUnionDocument(deserializer) } else { deserializeNull(); continue }
                                     col0.add(el0)
                                 }
                                 MyAggregateUnion.UnionList(col0)
@@ -92,7 +94,7 @@ class DeserializeUnionGeneratorTest {
                                 val map0 = mutableMapOf<String, MyAggregateUnion>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { MyAggregateUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeMyAggregateUnionDocument(deserializer) } else { deserializeNull(); continue }
                                     map0[k0] = v0
                                 }
                                 MyAggregateUnion.UnionMap(map0)
@@ -102,7 +104,7 @@ class DeserializeUnionGeneratorTest {
                     }
                 }
             }
-        """.formatForTest(" ".repeat(8))
+        """.formatForTest("")
 
         val actual = model.codegenDeserializer("MyAggregateUnion")
 
@@ -110,7 +112,7 @@ class DeserializeUnionGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a union of collection types containing collections`() {
+    fun `it deserializes a union of collection types containing collections`() {
         val model = (
             modelPrefix + """            
                     structure FooResponse { 
@@ -180,7 +182,7 @@ class DeserializeUnionGeneratorTest {
                                                 val map2 = mutableMapOf<String, BarUnion>()
                                                 while (hasNextEntry()) {
                                                     val k2 = key()
-                                                    val v2 = if (nextHasValue()) { BarUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                                    val v2 = if (nextHasValue()) { deserializeBarUnionDocument(deserializer) } else { deserializeNull(); continue }
                                                     map2[k2] = v2
                                                 }
                                                 FooUnion.StrMapVal(map2)
@@ -199,7 +201,7 @@ class DeserializeUnionGeneratorTest {
                 }
             }
 
-        """.formatForTest(" ".repeat(8))
+        """.formatForTest("")
 
         val actual = model.codegenDeserializer("FooUnion")
 
@@ -207,7 +209,7 @@ class DeserializeUnionGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure with nested collection types`() {
+    fun `it deserializes a union with nested collection types`() {
         val model = """                       
             @http(method: "GET", uri: "/input/union2")
             operation UnionTestOperation {
@@ -291,7 +293,7 @@ class DeserializeUnionGeneratorTest {
                     }
                 }
             }
-        """.formatForTest(" ".repeat(8))
+        """.formatForTest("")
 
         val actual = model.codegenDeserializer("MyAggregateUnion")
 
@@ -301,8 +303,17 @@ class DeserializeUnionGeneratorTest {
     private fun Model.codegenDeserializer(shapeName: String): String {
         val ctx = newTestContext()
 
-        ctx.generator.generateDeserializers(ctx.generationCtx)
-        ctx.generationCtx.delegator.flushWriters()
-        return ctx.manifest.expectFileString("src/main/kotlin/com/test/transform/${shapeName}DocumentDeserializer.kt")
+        val unionShape = ctx.generationCtx.model.expectShape(ShapeId.from("com.test#$shapeName"))
+        val testMembers = unionShape.members().toList()
+
+        return testRender(testMembers) { members, writer ->
+            DeserializeUnionGenerator(
+                ctx.generationCtx,
+                shapeName,
+                members,
+                writer,
+                TimestampFormatTrait.Format.EPOCH_SECONDS
+            ).render()
+        }
     }
 }

@@ -136,7 +136,7 @@ class DeserializeStructGeneratorTest {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        PAYLOAD_DESCRIPTOR.index -> builder.payload = NestedStructureDocumentDeserializer().deserialize(deserializer)
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload = deserializeNestedStructureDocument(deserializer)
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -169,7 +169,7 @@ class DeserializeStructGeneratorTest {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        PAYLOAD_DESCRIPTOR.index -> builder.payload = UnionStructureDocumentDeserializer().deserialize(deserializer)
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload = deserializeUnionStructureDocument(deserializer)
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -290,7 +290,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<FooUnion>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { FooUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeFooUnionDocument(deserializer) } else { deserializeNull(); continue }
                                     col0.add(el0)
                                 }
                                 col0
@@ -374,7 +374,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<SparseListElement?>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { SparseListElementDocumentDeserializer().deserialize(deserializer) } else { deserializeNull() }
+                                    val el0 = if (nextHasValue()) { deserializeSparseListElementDocument(deserializer) } else { deserializeNull() }
                                     col0.add(el0)
                                 }
                                 col0
@@ -467,7 +467,7 @@ class DeserializeStructGeneratorTest {
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
                                 val col0 = mutableListOf<NestedStructure>()
                                 while (hasNextElement()) {
-                                    val el0 = if (nextHasValue()) { NestedStructureDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    val el0 = if (nextHasValue()) { deserializeNestedStructureDocument(deserializer) } else { deserializeNull(); continue }
                                     col0.add(el0)
                                 }
                                 col0
@@ -708,7 +708,7 @@ class DeserializeStructGeneratorTest {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        PAYLOAD_DESCRIPTOR.index -> builder.payload = FooStructDocumentDeserializer().deserialize(deserializer)
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload = deserializeFooStructDocument(deserializer)
                         null -> break@loop
                         else -> skipValue()
                     }
@@ -946,7 +946,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, FooUnion>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { FooUnionDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeFooUnionDocument(deserializer) } else { deserializeNull(); continue }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1034,7 +1034,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, FooStruct?>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { FooStructDocumentDeserializer().deserialize(deserializer) } else { deserializeNull() }
+                                    val v0 = if (nextHasValue()) { deserializeFooStructDocument(deserializer) } else { deserializeNull() }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1196,7 +1196,7 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, FooStructure>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = if (nextHasValue()) { FooStructureDocumentDeserializer().deserialize(deserializer) } else { deserializeNull(); continue }
+                                    val v0 = if (nextHasValue()) { deserializeFooStructureDocument(deserializer) } else { deserializeNull(); continue }
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1434,7 +1434,7 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@while (true) {
                     when (findNextFieldIndex()) {
-                        FOOSTRUCTVAL_DESCRIPTOR.index -> builder.fooStructVal = FooStructDocumentDeserializer().deserialize(deserializer)
+                        FOOSTRUCTVAL_DESCRIPTOR.index -> builder.fooStructVal = deserializeFooStructDocument(deserializer)
                         null -> break@loop
                         else -> skipValue()
                     }

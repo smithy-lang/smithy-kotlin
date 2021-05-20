@@ -143,10 +143,7 @@ internal class TestProtocolClientGenerator(
     // }
 }
 
-// by default the abstract serde descriptor generator will not add any traits, it just does the sensible thing and converts target shape -> serial kind
-private class SerialKindOnlyDescriptorGenerator(ctx: RenderingContext<Shape>, members: List<MemberShape>) : AbstractSerdeDescriptorGenerator(ctx, members)
-
-// A HttpBindingProtocolGenerator for testing
+// A HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies)
 internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
@@ -164,7 +161,6 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun renderDeserializeOperationBody(
@@ -172,7 +168,6 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun renderSerializeDocumentBody(
@@ -180,7 +175,6 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         shape: Shape,
         writer: KotlinWriter
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun renderDeserializeDocumentBody(
@@ -188,7 +182,6 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         shape: Shape,
         writer: KotlinWriter
     ) {
-        TODO("Not yet implemented")
     }
 
     override fun renderDeserializeException(
@@ -196,16 +189,7 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         shape: Shape,
         writer: KotlinWriter
     ) {
-        TODO("Not yet implemented")
     }
-
-    // override fun getSerdeDescriptorGenerator(
-    //     ctx: ProtocolGenerator.GenerationContext,
-    //     objectShape: Shape,
-    //     members: List<MemberShape>,
-    //     subject: SerdeSubject,
-    //     writer: KotlinWriter
-    // ): SerdeDescriptorGenerator = SerialKindOnlyDescriptorGenerator(ctx.toRenderingContext(this, objectShape, writer), members)
 }
 
 // Create a test harness with all necessary codegen types

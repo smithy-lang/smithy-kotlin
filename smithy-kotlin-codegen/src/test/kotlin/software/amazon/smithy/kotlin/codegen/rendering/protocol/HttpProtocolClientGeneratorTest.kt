@@ -36,9 +36,6 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.transform.*")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.*")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
-
-        // test for feature imports that are added
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_SERDE_JSON.namespace}.JsonSerdeProvider")
     }
 
     @Test
@@ -80,7 +77,6 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFoo"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -96,7 +92,6 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooNoInput"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -112,7 +107,6 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooNoOutput"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -128,7 +122,6 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingInput"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -144,7 +137,6 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingOutput"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -160,7 +152,6 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingOutputNoInput"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -176,7 +167,6 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingInputNoOutput"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         registerDefaultMiddleware(op)
@@ -249,7 +239,6 @@ class HttpProtocolClientGeneratorTest {
                 service = serviceName
                 operationName = "GetStatus"
                 hostPrefix = "$prefix"
-                set(SerdeAttributes.SerdeProvider, serde)
             }
         }
         """
