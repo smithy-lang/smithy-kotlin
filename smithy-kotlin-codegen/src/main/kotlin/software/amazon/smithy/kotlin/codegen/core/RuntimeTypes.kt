@@ -56,6 +56,7 @@ object RuntimeTypes {
             val XmlAttribute = runtimeSymbol("XmlAttribute", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlMapName = runtimeSymbol("XmlMapName", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlError = runtimeSymbol("XmlError", KotlinDependency.CLIENT_RT_SERDE_XML)
+            val XmlSerializer = runtimeSymbol("XmlSerializer", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlDeserializer = runtimeSymbol("XmlDeserializer", KotlinDependency.CLIENT_RT_SERDE_XML)
         }
 
