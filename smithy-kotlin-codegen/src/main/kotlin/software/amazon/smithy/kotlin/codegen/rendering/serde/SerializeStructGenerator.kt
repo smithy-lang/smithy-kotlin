@@ -614,7 +614,7 @@ open class SerializeStructGenerator(
 
                 if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
                     val capitalizedSerializerFn = serializerFn.replaceFirstChar { c -> c.uppercaseChar() }
-                    serializerFn = "raw${capitalizedSerializerFn}"
+                    serializerFn = "raw$capitalizedSerializerFn"
                 }
 
                 formatInstant(defaultIdentifier, tsFormat, forceString = true)
