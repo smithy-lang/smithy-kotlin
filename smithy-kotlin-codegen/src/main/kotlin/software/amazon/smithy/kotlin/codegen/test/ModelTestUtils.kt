@@ -227,7 +227,7 @@ fun String.prependNamespaceAndService(
     protocol: AwsProtocolModelDeclaration? = null,
     operations: List<String> = emptyList()
 ): String {
-    val version = "\$version: \"$version\""
+    val versionExpr = "\$version: \"$version\""
     val (modelProtocol, modelImports) = if (protocol == null) {
         "" to imports
     } else {
@@ -238,7 +238,7 @@ fun String.prependNamespaceAndService(
 
     return (
         """
-        $version
+        $versionExpr
         namespace $namespace
         $importExpr
         $modelProtocol

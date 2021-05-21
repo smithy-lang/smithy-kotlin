@@ -71,7 +71,7 @@ fun EnumDefinition.variantName(): String {
     }
         .splitOnWordBoundaries()
         .fold(StringBuilder()) { acc, x ->
-            val curr = x.toLowerCase().capitalize()
+            val curr = x.lowercase().replaceFirstChar { c -> c.uppercaseChar() }
             if (acc.isNotEmpty() && acc.last().isDigit() && x.first().isDigit()) {
                 // split on word boundaries created distinct words for adjacent digits e.g. "11.4" -> ["11" "4"]
                 // separate these out with _ as they are likely versions strings of some sort where a separation
