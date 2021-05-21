@@ -118,6 +118,7 @@ fun compileSdkAndTest(
         sources = sdkSources
         inheritClassPath = true
         messageOutputStream = outputSink
+        jvmTarget = "1.8"
     }.compile()
 }
 
