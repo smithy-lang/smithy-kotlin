@@ -93,7 +93,7 @@ internal fun XmlToken?.isTerminal(minimumDepth: Int = 0) = when (this) {
     else -> depth < minimumDepth
 }
 
-internal fun XmlToken?.isNotTerminal(minimumDepth: Int = 0) = !this.isTerminal()
+internal fun XmlToken?.isNotTerminal(minimumDepth: Int = 0) = !this.isTerminal(minimumDepth)
 
 // Return true if the passed in node is the beginning node, false otherwise.
 internal fun XmlToken?.terminates(beginToken: XmlToken?): Boolean {

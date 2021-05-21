@@ -22,7 +22,7 @@ enum class HttpMethod {
          * @return [HttpMethod] for the given string
          * @throws IllegalArgumentException if the method is unknown
          */
-        fun parse(method: String): HttpMethod = when (method.toUpperCase()) {
+        fun parse(method: String): HttpMethod = when (method.uppercase()) {
             GET.name -> GET
             POST.name -> POST
             PUT.name -> PUT

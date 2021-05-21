@@ -18,7 +18,7 @@ fun String.urlEncodeComponent(
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
     for (cbyte in data) {
-        val chr = cbyte.toChar()
+        val chr = cbyte.toInt().toChar()
         when (chr) {
             ' ' -> if (formUrlEncode) sb.append("+") else sb.append("%20")
             // $2.3 Unreserved characters
@@ -48,10 +48,10 @@ val VALID_PCHAR_DELIMS = setOf(
 // test if a string encoded to a ByteArray is already percent encoded starting at index [i]
 private fun isPercentEncodedAt(d: ByteArray, i: Int): Boolean =
     i + 2 < d.size &&
-        d[i].toChar() == '%' &&
+        d[i].toInt().toChar() == '%' &&
         i + 2 < d.size &&
-        d[i + 1].toChar().toUpperCase() in upperHexSet &&
-        d[i + 2].toChar().toUpperCase() in upperHexSet
+        d[i + 1].toInt().toChar().uppercaseChar() in upperHexSet &&
+        d[i + 2].toInt().toChar().uppercaseChar() in upperHexSet
 
 /**
  * Encode a string that represents a *raw* URL path according to
@@ -77,14 +77,14 @@ fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolea
     while (i < data.size) {
         // 3.3 pchar: pct-encoded
         if (checkPercentEncoded && isPercentEncodedAt(data, i)) {
-            sb.append(data[i++].toChar())
-            sb.append(data[i++].toChar())
-            sb.append(data[i++].toChar())
+            sb.append(data[i++].toInt().toChar())
+            sb.append(data[i++].toInt().toChar())
+            sb.append(data[i++].toInt().toChar())
             continue
         }
 
         val cbyte = data[i]
-        when (val chr = cbyte.toChar()) {
+        when (val chr = cbyte.toInt().toChar()) {
             // unreserved
             in 'a'..'z', in 'A'..'Z', in '0'..'9', in validDelimiters -> sb.append(chr)
             else -> sb.append(cbyte.percentEncode())
