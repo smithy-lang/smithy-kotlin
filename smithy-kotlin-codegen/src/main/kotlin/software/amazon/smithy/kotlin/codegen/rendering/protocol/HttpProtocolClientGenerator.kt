@@ -57,7 +57,6 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
-        // writer.write("private val serde: SerdeProvider = #T()", serdeProviderSymbol)
         middleware.forEach {
             it.renderProperties(writer)
         }

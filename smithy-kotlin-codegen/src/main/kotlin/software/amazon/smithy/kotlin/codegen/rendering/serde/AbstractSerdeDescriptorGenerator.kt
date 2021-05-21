@@ -58,7 +58,6 @@ abstract class AbstractSerdeDescriptorGenerator(
         if (memberShapes.isEmpty()) return
 
         writer.addImport("*", KotlinDependency.CLIENT_RT_SERDE)
-        // .withBlock("companion object {", "}") {
         val sortedMembers = memberShapes.sortedBy { it.memberName }
         for (member in sortedMembers) {
             val memberTarget = ctx.model.expectShape(member.target)
@@ -80,7 +79,6 @@ abstract class AbstractSerdeDescriptorGenerator(
                 write("field(#L)", member.descriptorName())
             }
         }
-        // }
         writer.write("")
     }
 

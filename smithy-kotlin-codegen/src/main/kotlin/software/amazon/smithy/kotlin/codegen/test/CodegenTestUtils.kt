@@ -134,14 +134,7 @@ internal class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     features: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver
-) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver) {
-    // // This type assumes a JSON based protocol, but can be changed to pass
-    // // in format if necessary.
-    // override val serdeProviderSymbol: Symbol = buildSymbol {
-    //     name = "JsonSerdeProvider"
-    //     namespace(KotlinDependency.CLIENT_RT_SERDE_JSON)
-    // }
-}
+) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver)
 
 // A HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies)
 internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
