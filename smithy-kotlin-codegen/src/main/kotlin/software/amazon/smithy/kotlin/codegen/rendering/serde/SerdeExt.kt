@@ -16,7 +16,7 @@ import software.amazon.smithy.utils.StringUtils
 /**
  * Get the field descriptor name for a member shape
  */
-fun MemberShape.descriptorName(childName: String = ""): String = "${this.defaultName()}${childName}_DESCRIPTOR".toUpperCase()
+fun MemberShape.descriptorName(childName: String = ""): String = "${this.defaultName()}${childName}_DESCRIPTOR".uppercase()
 
 /**
  * Get the serializer class name for an operation. Operation inputs can be serialized to the protocol (e.g. HTTP)

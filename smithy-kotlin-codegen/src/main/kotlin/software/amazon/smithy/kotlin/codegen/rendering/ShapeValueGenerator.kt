@@ -171,7 +171,7 @@ class ShapeValueGenerator(
                         memberShape = generator.model.expectShape(member.target)
                         val currSymbol = generator.symbolProvider.toSymbol(currShape)
                         val memberName = generator.symbolProvider.toMemberName(member)
-                        val variantName = memberName.capitalize()
+                        val variantName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
                         writer.writeInline("${currSymbol.name}.$variantName(")
                         generator.writeShapeValueInline(writer, memberShape, valueNode)
                         writer.write(")")

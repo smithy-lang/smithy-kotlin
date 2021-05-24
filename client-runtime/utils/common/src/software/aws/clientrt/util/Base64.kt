@@ -34,9 +34,9 @@ private fun base64DecodedLen(encoded: ByteArray): Int {
 
     // figure out if the encoded string ends with 0, 1, or 2 bytes of padding ('=')
     var padding = 0
-    if (len >= 2 && encoded[len - 1] == BASE64_PAD.toByte() && encoded[len - 2] == BASE64_PAD.toByte()) {
+    if (len >= 2 && encoded[len - 1] == BASE64_PAD.code.toByte() && encoded[len - 2] == BASE64_PAD.code.toByte()) {
         padding = 2
-    } else if (encoded[len - 1] == BASE64_PAD.toByte()) {
+    } else if (encoded[len - 1] == BASE64_PAD.code.toByte()) {
         padding = 1
     }
 
@@ -78,9 +78,9 @@ fun ByteArray.encodeBase64(): ByteArray {
     // padding - always 0, 1, or 2
     // each block is 4 chars, we need (3-remainderCnt) pad chars
     if (remainderCnt > 0) {
-        output[blockCnt * 4 - 1] = BASE64_PAD.toByte()
+        output[blockCnt * 4 - 1] = BASE64_PAD.code.toByte()
         if (remainderCnt == 1) {
-            output[blockCnt * 4 - 2] = BASE64_PAD.toByte()
+            output[blockCnt * 4 - 2] = BASE64_PAD.code.toByte()
         }
     }
 
@@ -149,7 +149,7 @@ fun ByteArray.decodeBase64(): ByteArray {
     return decoded
 }
 
-private fun Int.toBase64(): Byte = BASE64_ENCODE_TABLE[this].toByte()
+private fun Int.toBase64(): Byte = BASE64_ENCODE_TABLE[this].code.toByte()
 private fun ByteArray.getOrZero(index: Int, mask: Int? = null): Int = if (index >= size) {
     0
 } else {

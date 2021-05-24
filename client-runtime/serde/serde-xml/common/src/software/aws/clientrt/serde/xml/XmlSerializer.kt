@@ -178,8 +178,7 @@ private class XmlMapSerializer(
 
     override fun endMap() {
         if (!descriptor.hasTrait<Flattened>() && !nestedMap) {
-            val ns = descriptor.findTrait<XmlNamespace>()
-            xmlWriter.endTag(descriptor.serialName.name, ns)
+            xmlWriter.endTag(descriptor.serialName.name)
         }
     }
 
@@ -295,8 +294,7 @@ private class XmlListSerializer(
 
     override fun endList() {
         if (!descriptor.hasTrait<Flattened>()) {
-            val ns = descriptor.findTrait<XmlNamespace>()
-            xmlWriter.endTag(descriptor.serialName.name, ns)
+            xmlWriter.endTag(descriptor.serialName.name)
         }
     }
 
@@ -356,7 +354,7 @@ private fun XmlStreamWriter.writeTag(
 ) {
     startTag(tagName, ns)
     apply(block)
-    endTag(tagName, ns)
+    endTag(tagName)
 }
 
 private fun XmlStreamWriter.startTag(tagName: String, ns: AbstractXmlNamespaceTrait?) {
@@ -364,10 +362,6 @@ private fun XmlStreamWriter.startTag(tagName: String, ns: AbstractXmlNamespaceTr
         namespacePrefix(ns.uri, ns.prefix)
     }
     startTag(tagName)
-}
-
-private fun XmlStreamWriter.endTag(tagName: String, ns: AbstractXmlNamespaceTrait?) {
-    endTag(tagName)
 }
 
 /**

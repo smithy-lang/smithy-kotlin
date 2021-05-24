@@ -31,7 +31,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.openBlock("expected {")
             .call {
                 writer
-                    .write("method = HttpMethod.${test.method.toUpperCase()}")
+                    .write("method = HttpMethod.${test.method.uppercase()}")
                     .write("uri = #S", test.uri)
                     .call {
                         test.resolvedHost.ifPresent { expectedHost ->
@@ -57,7 +57,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                             } else {
                                 writer.write("body = \"\"\"#L\"\"\"", body)
 
-                                val compareFunc = when (bodyMediaType.toLowerCase()) {
+                                val compareFunc = when (bodyMediaType.lowercase()) {
                                     "application/json" -> "::assertJsonBodiesEqual"
                                     "application/xml" -> "::assertXmlBodiesEqual"
                                     "application/x-www-form-urlencoded" -> "::assertFormUrlBodiesEqual"

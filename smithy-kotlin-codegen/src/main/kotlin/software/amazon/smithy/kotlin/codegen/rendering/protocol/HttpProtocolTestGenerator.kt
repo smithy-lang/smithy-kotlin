@@ -51,7 +51,8 @@ class HttpProtocolTestGenerator(
                 ?.filter(::isTestCaseAllowedForRunMode)
 
             requestTests?.let { testCases ->
-                val testClassName = "${operation.id.name.capitalize()}RequestTest"
+                val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                val testClassName = "${testOperationName}RequestTest"
                 val testFilename = "$testClassName.kt"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
                     LOGGER.fine("Generating request protocol test cases for ${operation.id}")
@@ -77,7 +78,8 @@ class HttpProtocolTestGenerator(
                 ?.filter(::isTestCaseAllowedForRunMode)
 
             responseTests?.let { testCases ->
-                val testClassName = "${operation.id.name.capitalize()}ResponseTest"
+                val testOperationName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
+                val testClassName = "${testOperationName}ResponseTest"
                 val testFilename = "$testClassName.kt"
                 ctx.delegator.useTestFileWriter(testFilename, ctx.settings.pkg.name) { writer ->
                     LOGGER.fine("Generating response protocol test cases for ${operation.id}")
@@ -103,7 +105,7 @@ class HttpProtocolTestGenerator(
 
                 errorTests?.let { testCases ->
                     // use operation name as filename
-                    val opName = operation.id.name.capitalize()
+                    val opName = operation.id.name.replaceFirstChar { c -> c.uppercaseChar() }
                     val testFilename = "${opName}ErrorTest.kt"
                     // multiple error (tests) may be associated with a single operation,
                     // use the operation name + error name as the class name

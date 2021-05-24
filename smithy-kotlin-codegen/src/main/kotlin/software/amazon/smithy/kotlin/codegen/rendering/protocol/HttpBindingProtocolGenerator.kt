@@ -314,7 +314,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         writer.addImport(RuntimeTypes.Core.ExecutionContext)
 
-        writer.write("builder.method = HttpMethod.#L", httpTrait.method.toUpperCase())
+        writer.write("builder.method = HttpMethod.#L", httpTrait.method.uppercase())
             .write("")
             .call {
                 // URI components
@@ -914,7 +914,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val prefix = binding.locationName
         val memberName = binding.member.defaultName()
 
-        val keyCollName = "keysFor${memberName.capitalize()}"
+        val keyMemberName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
+        val keyCollName = "keysFor$keyMemberName"
         val filter = if (prefix?.isNotEmpty() == true) ".filter { it.startsWith(\"$prefix\") }" else ""
 
         writer.write("val $keyCollName = response.headers.names()$filter")
