@@ -37,9 +37,9 @@ fun String.splitOnWordBoundaries(): List<String> {
 /**
  * Convert a string to `PascalCase` (uppercase start with upper case word boundaries)
  */
-fun String.toPascalCase(): String = splitOnWordBoundaries().joinToString(separator = "") { it.toLowerCase().capitalize() }
+fun String.toPascalCase(): String = splitOnWordBoundaries().joinToString(separator = "") { it.lowercase().replaceFirstChar { c -> c.uppercaseChar() } }
 
 /**
  * Convert a string to `camelCase` (lowercase start with upper case word boundaries)
  */
-fun String.toCamelCase(): String = toPascalCase().decapitalize()
+fun String.toCamelCase(): String = toPascalCase().replaceFirstChar { c -> c.lowercaseChar() }

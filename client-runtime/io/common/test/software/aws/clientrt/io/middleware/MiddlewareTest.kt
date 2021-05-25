@@ -16,7 +16,7 @@ class MiddlewareTest {
     @Test
     fun testDecorate() = runSuspendTest {
         val handler = object : Handler<String, String> {
-            override suspend fun call(request: String): String = request.capitalize()
+            override suspend fun call(request: String): String = request.replaceFirstChar { c -> c.uppercaseChar() }
         }
 
         val m1: MiddlewareFn<String, String> = { req, next ->
@@ -36,7 +36,7 @@ class MiddlewareTest {
     @Test
     fun testServiceLambda() = runSuspendTest {
         val handler = HandlerLambda<String, String> {
-            it.capitalize()
+            it.replaceFirstChar { c -> c.uppercaseChar() }
         }
         assertEquals("Foo", handler.call("foo"))
     }

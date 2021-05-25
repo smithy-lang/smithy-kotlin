@@ -48,7 +48,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
     /**
      * The name of the property to render to config
      */
-    val propertyName: String = builder.name ?: symbol.name.decapitalize()
+    val propertyName: String = builder.name ?: symbol.name.replaceFirstChar { c -> c.lowercaseChar() }
 
     /**
      * Additional base classes config should inherit from

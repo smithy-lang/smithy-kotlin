@@ -7,7 +7,7 @@ package software.aws.clientrt.http.util
 import software.aws.clientrt.util.InternalApi
 
 private class CaseInsensitiveString(val s: String) {
-    val hash: Int = s.toLowerCase().hashCode()
+    val hash: Int = s.lowercase().hashCode()
     override fun hashCode(): Int = hash
     override fun equals(other: Any?): Boolean = other is CaseInsensitiveString && other.s.equals(s, ignoreCase = true)
     override fun toString(): String = s

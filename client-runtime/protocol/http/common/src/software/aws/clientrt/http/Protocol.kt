@@ -41,6 +41,6 @@ public data class Protocol(val protocolName: String, val defaultPort: Int) {
         /**
          * Parse a protocol scheme string into a [Protocol] instance
          */
-        public fun parse(scheme: String): Protocol = byName[scheme.toLowerCase()] ?: Protocol(scheme, -1)
+        public fun parse(scheme: String): Protocol = byName[scheme.lowercase()] ?: Protocol(scheme, -1)
     }
 }

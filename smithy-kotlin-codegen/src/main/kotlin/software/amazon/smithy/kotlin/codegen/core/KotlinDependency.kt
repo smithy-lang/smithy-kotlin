@@ -34,7 +34,7 @@ private fun getDefaultRuntimeVersion(): String {
 // publishing info
 const val CLIENT_RT_GROUP: String = "software.aws.smithy.kotlin"
 val CLIENT_RT_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
-val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.4.31")
+val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.5.0")
 
 // See: https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
 enum class GradleConfiguration {

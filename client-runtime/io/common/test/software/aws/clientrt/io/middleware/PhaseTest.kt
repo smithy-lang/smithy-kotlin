@@ -32,7 +32,7 @@ class PhaseTest {
         }
 
         val handler = object : Handler<String, String> {
-            override suspend fun call(request: String): String = request.capitalize()
+            override suspend fun call(request: String): String = request.replaceFirstChar { c -> c.uppercaseChar() }
         }
 
         val actual = phase.handle("foo", handler)

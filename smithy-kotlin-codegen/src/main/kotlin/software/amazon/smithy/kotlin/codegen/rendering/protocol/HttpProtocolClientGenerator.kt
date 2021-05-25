@@ -136,7 +136,7 @@ abstract class HttpProtocolClientGenerator(
                 writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
                     writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
                         writer.write("val builder = HttpRequestBuilder()")
-                        writer.write("builder.method = HttpMethod.#L", httpTrait.method.toUpperCase())
+                        writer.write("builder.method = HttpMethod.#L", httpTrait.method.uppercase())
                         // NOTE: since there is no input the URI can only be a literal (no labels to fill)
                         writer.write("builder.url.path = #S", httpTrait.uri.toString())
                         writer.write("return builder")
@@ -158,12 +158,12 @@ abstract class HttpProtocolClientGenerator(
                 writer.write("operationName = #S", op.id.name)
 
                 // optional endpoint trait
-                op.getTrait<EndpointTrait>()?.let {
-                    val hostPrefix = it.hostPrefix.segments.joinToString(separator = "") { segment ->
+                op.getTrait<EndpointTrait>()?.let { endpointTrait ->
+                    val hostPrefix = endpointTrait.hostPrefix.segments.joinToString(separator = "") { segment ->
                         if (segment.isLabel) {
                             // hostLabel can only target string shapes
                             // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
-                            val member = inputShape.get().members().first { it.memberName == segment.content }
+                            val member = inputShape.get().members().first { member -> member.memberName == segment.content }
                             "\${input.${member.defaultName()}}"
                         } else {
                             segment.content

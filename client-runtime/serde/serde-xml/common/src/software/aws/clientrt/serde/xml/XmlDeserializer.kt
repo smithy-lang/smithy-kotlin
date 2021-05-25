@@ -358,7 +358,7 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
     val fieldQname = fieldDescriptor.toQualifiedName(findTrait())
     val tokenQname = beginElement.name
 
-    return fieldQname?.tag == tokenQname.tag
+    return fieldQname.tag == tokenQname.tag
 }
 
 // Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.

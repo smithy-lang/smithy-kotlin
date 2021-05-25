@@ -29,7 +29,7 @@ private fun isAndroid(): Boolean = try {
     false
 }
 
-private fun normalize(value: String): String = value.toLowerCase(Locale.US).replace(Regex("[^a-z0-9+]"), "")
+private fun normalize(value: String): String = value.lowercase(Locale.US).replace(Regex("[^a-z0-9+]"), "")
 
 private fun getOsInfo(): OperatingSystem {
     val name = normalize(System.getProperty("os.name"))
