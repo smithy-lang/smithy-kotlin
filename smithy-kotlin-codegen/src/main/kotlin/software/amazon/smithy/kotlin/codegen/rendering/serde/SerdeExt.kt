@@ -35,7 +35,7 @@ fun OperationShape.bodySerializerName(): String = "serialize" + StringUtils.capi
 fun OperationShape.deserializerName(): String = StringUtils.capitalize(this.id.name) + "OperationDeserializer"
 
 /**
- * Get name of the function responsible for serializing an operation's body (paylaod)
+ * Get name of the function responsible for deserializing an operation's body (paylaod)
  */
 fun OperationShape.bodyDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.id.name) + "OperationBody"
 
