@@ -46,14 +46,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     init {
         LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
-        integrations = ServiceLoader.load(KotlinIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
+        val allIntegrations = ServiceLoader.load(KotlinIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
             .also { integration ->
                 LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
             }.sortedBy(KotlinIntegration::order).toList()
 
         LOGGER.info("Preprocessing model")
         var resolvedModel = context.model
-        for (integration in integrations) {
+        for (integration in allIntegrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
 
@@ -61,6 +61,9 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         model = OperationNormalizer.transform(resolvedModel, settings.service)
 
         service = settings.getService(model)
+
+        // Filter out integrations that do not apply to the service under codegen.
+        integrations = allIntegrations.filter { integration -> integration.apply(service) }
 
         symbolProvider = integrations.fold(
             KotlinCodegenPlugin.createSymbolProvider(model, settings)
@@ -169,8 +172,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         // render the service (client) base exception type
         val baseExceptionSymbol = ExceptionBaseClassGenerator.baseExceptionSymbol(baseGenerationContext.settings)
-        writers.useFileWriter("${baseExceptionSymbol.name}.kt", baseExceptionSymbol.namespace) {
-            ExceptionBaseClassGenerator.render(baseGenerationContext, it)
+        writers.useFileWriter("${baseExceptionSymbol.name}.kt", baseExceptionSymbol.namespace) { writer ->
+            ExceptionBaseClassGenerator.render(baseGenerationContext, writer)
         }
     }
 }

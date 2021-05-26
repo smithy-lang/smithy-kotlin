@@ -10,9 +10,11 @@ import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.rendering.ClientConfigProperty
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 
 /**
@@ -41,6 +43,15 @@ interface KotlinIntegration {
      */
     val protocolGenerators: List<ProtocolGenerator>
         get() = listOf()
+
+    /**
+     * Determines if the integration should be applied to the current [ServiceShape].
+     * Implementing this method allows to apply integrations to specific services.
+     *
+     * @param service The service under codegen
+     * @return true if the Integration should be applied to the current codegen context, false otherwise.
+     */
+    fun apply(service: ServiceShape): Boolean = true
 
     /**
      * Additional properties to be add to the generated service config interface
@@ -126,6 +137,19 @@ interface KotlinIntegration {
      */
     fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
+        generator: HttpBindingProtocolGenerator,
         resolved: List<ProtocolMiddleware>
     ): List<ProtocolMiddleware> = resolved
+
+    fun augmentBaseErrorType(writer: KotlinWriter) {
+        // pass
+    }
+
+    /**
+     * Convenience function to replace one middleware with another.
+     * Adapted from https://discuss.kotlinlang.org/t/best-way-to-replace-an-element-of-an-immutable-list/8646/9
+     */
+    fun <T : ProtocolMiddleware> List<T>.replace(newValue: T, block: (T) -> Boolean) = map {
+        if (block(it)) newValue else it
+    }
 }

@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
@@ -32,6 +33,10 @@ object ExceptionBaseClassGenerator {
             write("constructor(message: String?) : super(message)")
             write("constructor(message: String?, cause: Throwable?) : super(message, cause)")
             write("constructor(cause: Throwable?) : super(cause)")
+
+            ctx.integrations.forEach { integration ->
+                integration.augmentBaseErrorType(writer)
+            }
         }
     }
 

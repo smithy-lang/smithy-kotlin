@@ -49,7 +49,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     fun getHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> {
         val defaultMiddleware = getDefaultHttpMiddleware(ctx)
         return ctx.integrations.fold(defaultMiddleware) { middleware, integration ->
-            integration.customizeMiddleware(ctx, middleware)
+            integration.customizeMiddleware(ctx, this, middleware)
         }
     }
 
