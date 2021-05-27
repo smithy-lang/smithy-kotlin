@@ -6,7 +6,6 @@
 package software.aws.clientrt.io
 
 import io.ktor.utils.io.bits.*
-import io.ktor.utils.io.charsets.*
 import io.ktor.utils.io.core.*
 import software.aws.clientrt.util.InternalApi
 
@@ -14,6 +13,9 @@ private class SdkBufferState {
     var writeHead: Int = 0
     var readHead: Int = 0
 }
+
+@OptIn(ExperimentalIoApi::class)
+internal expect fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): Memory
 
 /**
  * A buffer with read and write positions. Similar in spirit to `java.nio.ByteBuffer` but for use
@@ -27,13 +29,23 @@ private class SdkBufferState {
  */
 @OptIn(ExperimentalIoApi::class)
 @InternalApi
-class SdkBuffer(initialCapacity: Int) {
+class SdkBuffer internal constructor(
+    // we make use of ktor-io's `Memory` type which already implements most of the functionality in a platform
+    // agnostic way. We just need to wrap some methods around it
+    internal var memory: Memory,
+    val isReadOnly: Boolean = false
+) {
+    constructor(initialCapacity: Int, readOnly: Boolean = false) : this(DefaultAllocator.alloc(initialCapacity), readOnly)
+
     // TODO - we could implement Appendable but we would need to deal with Char as UTF-16 character
     //  (e.g. convert code points to number of bytes and write the correct utf bytes 1..4)
 
-    // we make use of ktor-io's `Memory` type which already implements most of the functionality in a platform
-    // agnostic way. We just need to wrap some methods around it
-    internal var memory = DefaultAllocator.alloc(initialCapacity)
+    companion object {
+        /**
+         * Create an SdkBuffer backed by the given ByteArray
+         */
+        fun of(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): SdkBuffer = SdkBuffer(Memory.ofByteArray(src, offset, length))
+    }
 
     private val state = SdkBufferState()
 
@@ -75,8 +87,8 @@ class SdkBuffer(initialCapacity: Int) {
     fun reserve(count: Int) {
         if (writeRemaining >= count) return
 
-        val minP2 = ceilp2(count)
-        val currP2 = ceilp2(memory.size32 + 1)
+        val minP2 = ceilp2(count + writePosition)
+        val currP2 = ceilp2(memory.size32 + writePosition + 1)
         val newSize = maxOf(minP2, currP2)
         memory = DefaultAllocator.realloc(memory, newSize)
     }
@@ -124,6 +136,12 @@ class SdkBuffer(initialCapacity: Int) {
  */
 public inline val SdkBuffer.canRead: Boolean
     get() = writePosition > readPosition
+
+/**
+ * Creates a new, read-only byte buffer that shares this buffer's content.
+ * Any attempts to write to the buffer will fail with [ReadOnlyBufferException]
+ */
+fun SdkBuffer.asReadOnly(): SdkBuffer = if (isReadOnly) this else SdkBuffer(memory, isReadOnly = true)
 
 /**
  * Read from this buffer exactly [length] bytes and write to [dest] starting at [offset]
@@ -237,6 +255,8 @@ private inline fun SdkBuffer.read(block: (memory: Memory, readStart: Int, endExc
 
 @OptIn(ExperimentalIoApi::class)
 private inline fun SdkBuffer.write(block: (memory: Memory, writeStart: Int, endExclusive: Int) -> Int): Int {
+    if (isReadOnly) throw ReadOnlyBufferException("attempt to write to readOnly buffer at index: $writePosition")
+
     val wc = block(memory, writePosition, capacity)
     commitWritten(wc)
     return wc

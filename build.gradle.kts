@@ -16,8 +16,8 @@ buildscript {
 }
 
 plugins {
-    kotlin("jvm") version "1.4.31" apply false
-    id("org.jetbrains.dokka") version "1.4.20"
+    kotlin("jvm") version "1.5.0" apply false
+    id("org.jetbrains.dokka")
 }
 
 allprojects {
