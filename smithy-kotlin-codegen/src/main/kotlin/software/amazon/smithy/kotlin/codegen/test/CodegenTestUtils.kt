@@ -6,11 +6,9 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
@@ -136,19 +134,9 @@ internal class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     features: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver
-) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver) {
-    // This type assumes a JSON based protocol, but can be changed to pass
-    // in format if necessary.
-    override val serdeProviderSymbol: Symbol = buildSymbol {
-        name = "JsonSerdeProvider"
-        namespace(KotlinDependency.CLIENT_RT_SERDE_JSON)
-    }
-}
+) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver)
 
-// by default the abstract serde descriptor generator will not add any traits, it just does the sensible thing and converts target shape -> serial kind
-private class SerialKindOnlyDescriptorGenerator(ctx: RenderingContext<Shape>, members: List<MemberShape>) : AbstractSerdeDescriptorGenerator(ctx, members)
-
-// A HttpBindingProtocolGenerator for testing
+// A HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies)
 internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
     override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
@@ -161,13 +149,40 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
         TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx))
 
-    override fun getSerdeDescriptorGenerator(
+    override fun renderSerializeOperationBody(
         ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape,
-        members: List<MemberShape>,
-        subject: SerdeSubject,
+        op: OperationShape,
         writer: KotlinWriter
-    ): SerdeDescriptorGenerator = SerialKindOnlyDescriptorGenerator(ctx.toRenderingContext(this, objectShape, writer), members)
+    ) {
+    }
+
+    override fun renderDeserializeOperationBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+    }
+
+    override fun renderSerializeDocumentBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        writer: KotlinWriter
+    ) {
+    }
+
+    override fun renderDeserializeDocumentBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        writer: KotlinWriter
+    ) {
+    }
+
+    override fun renderDeserializeException(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        writer: KotlinWriter
+    ) {
+    }
 }
 
 // Create a test harness with all necessary codegen types

@@ -30,7 +30,6 @@ include(":client-runtime:serde")
 include(":client-runtime:serde:serde-json")
 include(":client-runtime:serde:serde-xml")
 include(":client-runtime:serde:serde-form-url")
-include(":client-runtime:serde:serde-test")
 
 include(":compile-tests")
 

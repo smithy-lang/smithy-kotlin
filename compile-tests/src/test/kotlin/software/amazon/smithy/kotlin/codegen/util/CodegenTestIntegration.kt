@@ -14,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -47,13 +48,46 @@ class RestJsonTestProtocolGenerator(
         return MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx))
     }
 
-    override fun getSerdeDescriptorGenerator(
+    override fun renderSerializeOperationBody(
         ctx: ProtocolGenerator.GenerationContext,
-        objectShape: Shape,
-        members: List<MemberShape>,
-        subject: SerdeSubject,
+        op: OperationShape,
         writer: KotlinWriter
-    ): SerdeDescriptorGenerator = JsonSerdeDescriptorGenerator(ctx.toRenderingContext(this, objectShape, writer), members)
+    ) {
+        writer.write("""TODO("not-implemented - compile only test")""")
+    }
+
+    override fun renderDeserializeOperationBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+        writer.write("""TODO("not-implemented - compile only test")""")
+    }
+
+    override fun renderSerializeDocumentBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        writer: KotlinWriter
+    ) {
+        writer.write("""TODO("not-implemented - compile only test")""")
+    }
+
+    override fun renderDeserializeDocumentBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        writer: KotlinWriter
+    ) {
+        writer.write("""TODO("not-implemented - compile only test")""")
+    }
+
+    override fun renderDeserializeException(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        writer: KotlinWriter
+    ) {
+        writer.write("""TODO("not-implemented - compile only test")""")
+    }
+
 }
 
 class MockRestJsonProtocolClientGenerator(
@@ -62,9 +96,4 @@ class MockRestJsonProtocolClientGenerator(
     httpBindingResolver: HttpBindingResolver
 ) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver) {
 
-    override val serdeProviderSymbol: Symbol
-        get() = buildSymbol {
-            name = "JsonSerdeProvider"
-            namespace(KotlinDependency.CLIENT_RT_SERDE_JSON)
-        }
 }
