@@ -53,7 +53,7 @@ class RestJsonTestProtocolGenerator(
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        writer.write("TODO(\"not-implemented - compile only test\")")
+        writer.write("""TODO("not-implemented - compile only test")""")
     }
 
     override fun renderDeserializeOperationBody(
@@ -61,7 +61,7 @@ class RestJsonTestProtocolGenerator(
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        writer.write("TODO(\"not-implemented - compile only test\")")
+        writer.write("""TODO("not-implemented - compile only test")""")
     }
 
     override fun renderSerializeDocumentBody(
@@ -69,7 +69,7 @@ class RestJsonTestProtocolGenerator(
         shape: Shape,
         writer: KotlinWriter
     ) {
-        writer.write("TODO(\"not-implemented - compile only test\")")
+        writer.write("""TODO("not-implemented - compile only test")""")
     }
 
     override fun renderDeserializeDocumentBody(
@@ -77,7 +77,7 @@ class RestJsonTestProtocolGenerator(
         shape: Shape,
         writer: KotlinWriter
     ) {
-        writer.write("TODO(\"not-implemented - compile only test\")")
+        writer.write("""TODO("not-implemented - compile only test")""")
     }
 
     override fun renderDeserializeException(
@@ -85,7 +85,7 @@ class RestJsonTestProtocolGenerator(
         shape: Shape,
         writer: KotlinWriter
     ) {
-        writer.write("TODO(\"not-implemented - compile only test\")")
+        writer.write("""TODO("not-implemented - compile only test")""")
     }
 
 }
