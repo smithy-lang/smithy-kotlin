@@ -18,6 +18,7 @@ buildscript {
 plugins {
     kotlin("jvm") version "1.4.31" apply false
     id("org.jetbrains.dokka") version "1.4.20"
+    maven
 }
 
 allprojects {
@@ -59,3 +60,33 @@ tasks.register<JavaExec>("ktlintFormat") {
     main = "com.pinterest.ktlint.Main"
     args = listOf("-F") + lintPaths
 }
+
+task("createPom") {
+    group = "build"
+    description = "Generate a Maven pom.xml in the root based on Gradle config (used for GitHub dependency scans)"
+
+    val sdkVersion: String by project
+
+    outputs.file("pom.xml")
+
+    inputs.property("group", project.group)
+    inputs.property("name", project.name)
+    inputs.property("pomVersion", sdkVersion)
+    inputs.file("gradle.properties")
+
+    doLast {
+        allprojects
+            .filter { it.plugins.hasPlugin("maven-publish") }
+            .forEach { project ->
+                project.the<MavenPluginConvention>().pom() {
+                    project {
+                        groupId = project.group.toString()
+                        artifactId = project.name
+                        version = sdkVersion
+                    }
+                }.writeTo("pom.xml")
+            }
+    }
+}
+
+tasks.getByPath("build").dependsOn("createPom")
