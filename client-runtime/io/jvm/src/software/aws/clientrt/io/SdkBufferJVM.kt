@@ -15,8 +15,8 @@ actual fun SdkBuffer.bytes(): ByteArray = when (hasArray()) {
     false -> ByteArray(readRemaining).apply { readFully(this) }
 }
 
-internal actual fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int, length: Int): Memory
-Memory.of(src, offset, length)
+internal actual fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int, length: Int): Memory =
+    Memory.of(src, offset, length)
 
 /**
  * Create a new SdkBuffer using the given [ByteBuffer] as the contents
