@@ -10,6 +10,7 @@ Start here for an overview:
 
 ## Detailed sub-designs
 
+* [Document type](document-type.md)
 * [Domain class types in Kotlin SDK](domain-class-types-in-kotlin-sdk.md) (coming soon)
 * [Endpoint resolution](endpoint-resolution.md) (coming soon)
 * [Marshaling/serde](marshalling-serde.md) (coming soon)

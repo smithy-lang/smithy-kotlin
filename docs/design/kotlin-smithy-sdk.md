@@ -1,58 +1,29 @@
 # Kotlin Smithy SDK
 
-**Last updated**: 5/15/2020
+* **Type**: Design
+* **Author(s)**: Aaron Todd
 
-## Scope of Design
+# Abstract
 
-_This document only goes through the design of the core smithy shapes and traits and how those will be mapped to
-Kotlin_. The HTTP, Event Stream, XML, and MQTT Smithy specifications will all receive their own separate design as an
-addendum to this one. The reason for this approach is (1) this document is getting large on its own, (2) once we agree
-on the majority of the core spec we can start making progress on the code generator in parallel, and (3) since we are
-exploring the possibility of using Kotlin Multiplatform for the client-runtime we feel the need to do some more
-exploration and a POC before committing to a direction.
+This document presents the high-level design of how Smithy shapes and traits will map to code in Kotlin. It dictates the
+fundamental outline of the generated code and discusses exceptions or edge cases as necessary. The HTTP, Event Stream,
+XML, and MQTT Smithy specifications will all receive their own separate design as an addendum to this one. The reason
+for this approach is (1) this document is getting large on its own, (2) once we agree on the majority of the core spec
+we can start making progress on the code generator in parallel, and (3) since we are exploring the possibility of using
+Kotlin Multiplatform for the client-runtime we feel the need to do some more exploration and a POC before committing to
+a direction.
+
+# Design
 
 ## Core spec
 
-Reference the [Smithy Core Spec](https://awslabs.github.io/smithy/spec/core.html).
+Reference the [Smithy Core Spec](https://awslabs.github.io/smithy/1.0/spec/core/).
 
 ### Identifiers and naming
 
 Kotlin keywords can be found [here](https://kotlinlang.org/docs/reference/keyword-reference.html). Kotlin has both hard
-keywords and soft keywords (context sensitive).
-
-The list of hard keywords that can never be identifiers in Kotlin is:
-
-* `as`
-* `as?`
-* `break`
-* `class`
-* `continue`
-* `do`
-* `else`
-* `false`
-* `for`
-* `fun`
-* `if`
-* `in`
-* `!in`
-* `interface`
-* `is`
-* `!is`
-* `null`
-* `object`
-* `package`
-* `return`
-* `super`
-* `this`
-* `throw`
-* `true`
-* `try`
-* `typealias`
-* `typeof`
-* `val`
-* `var`
-* `when`
-* `while`
+keywords and soft keywords (context sensitive). Codegen will escape generated identifiers with names from the set of
+hard keywords (e.g., "null" will be escaped as `` `null` ``).
 
 ### Simple types
 
@@ -67,352 +38,14 @@ The list of hard keywords that can never be identifiers in Kotlin is:
 | `long`       | `Long`
 | `float`      | `Float`
 | `double`     | `Double`
-| `bigInteger` | `java.math.BigInteger`
-| `bigDecimal` | `java.math.BigDecimal`
+| `bigInteger` | *undecided (see [#213](https://github.com/awslabs/smithy-kotlin/issues/213))
+| `bigDecimal` | *undecided (see [#213](https://github.com/awslabs/smithy-kotlin/issues/213))
 | `timestamp`  | *custom type provided by client runtime
 | `document`   | *custom type provided by client runtime
 
 #### `document` type
 
-The `document` type is an untyped JSON-like value that can take on the following types: null, boolean, string, byte,
-short, integer, long, float, double, an array of these types, or a map of these types where the key is string.
-
-This type is best represented as a sum type (sealed class is closest we can get in Kotlin). See the
-[JSON type](https://github.com/Kotlin/kotlinx.serialization/blob/master/runtime/commonMain/src/kotlinx/serialization/json/JsonElement.kt)
-from the kotlinx.serialization lib for an example on which the following is derived. We should provide our own type but
-we may be able to internally deal with serialization by going through the one from the kotlinx.serialization library.
-
-````kotlin
-package com.amazonaws.smithy.runtime
-
-/**
- * Class representing a Smithy Document type.
- * Can be a [SmithyNumber], [SmithyBool], [SmithyString], [SmithyNull], [SmithyArray], or [SmithyMap]
- */
-sealed class Document {
-    /**
-     * Checks whether the current element is [SmithyNull]
-     */
-    val isNull: Boolean
-        get() = this == SmithyNull
-}
-
-/**
- * Class representing document `null` type.
- */
-object SmithyNull : Document() {
-    override fun toString(): String = "null"
-}
-
-/**
- * Class representing document `bool` type
- */
-data class SmithyBool(val value: Boolean): Document() {
-    override fun toString(): String = when(value) {
-        true -> "true"
-        false -> "false"
-    }
-}
-
-/**
- * Class representing document `string` type
- */
-data class SmithyString(val value: String) : Document() {
-    override fun toString(): String {
-        return "\"$value\""
-    }
-}
-
-/**
- * Class representing document numeric types.
- *
- * Creates a Document from a number literal: Int, Long, Short, Byte, Float, Double
- */
-class SmithyNumber(val content: Number) : Document() {
-    /**
-     * Returns the content as a byte which may involve rounding
-     */
-    val byte: Byte get() = content.toByte()
-
-    /**
-     * Returns the content as a int which may involve rounding
-     */
-    val int: Int get() = content.toInt()
-
-    /**
-     * Returns the content as a long which may involve rounding
-     */
-    val long: Long get() = content.toLong()
-
-    /**
-     * Returns the content as a float which may involve rounding
-     */
-    val float: Float get() = content.toFloat()
-
-    /**
-     * Returns the content as a double which may involve rounding
-     */
-    val double: Double get() = content.toDouble()
-
-    override fun toString(): String = content.toString()
-}
-
-/**
- * Class representing document `array` type
- */
-data class SmithyArray(val content: List<Document>): Document(), List<Document> by content{
-    /**
-     * Returns [index] th element of an array as [SmithyNumber] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getNumber(index: Int) = content[index] as? SmithyNumber
-
-    /**
-     * Returns [index] th element of an array as [SmithyBool] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getBoolean(index: Int) = content[index] as? SmithyBool
-
-    /**
-     * Returns [index] th element of an array as [SmithyString] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getString(index: Int) = content[index] as? SmithyString
-
-    /**
-     * Returns [index] th element of an array as [SmithyArray] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getArray(index: Int) = content[index] as? SmithyArray
-
-    /**
-     * Returns [index] th element of an array as [SmithyMap] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getMap(index: Int) = content[index] as? SmithyMap
-
-    override fun toString(): String = content.joinToString( separator = ",", prefix = "[", postfix = "]" )
-}
-
-/**
- * Class representing document `map` type
- *
- * Map consists of name-value pairs, where the value is an arbitrary Document. This is much like a JSON object.
- */
-data class SmithyMap(val content: Map<String, Document>): Document(), Map<String, Document> by content {
-    /**
-     * Returns [SmithyNumber] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getNumber(key: String): SmithyNumber? = getValue(key) as? SmithyNumber
-
-    /**
-     * Returns [SmithyBool] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getBoolean(key: String): SmithyBool? = getValue(key) as? SmithyBool
-
-    /**
-     * Returns [SmithyString] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getString(key: String): SmithyString? = getValue(key) as? SmithyString
-
-    /**
-     * Returns [SmithyArray] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getArray(key: String): SmithyArray? = getValue(key) as? SmithyArray
-
-    /**
-     * Returns [SmithyMap] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getMap(key: String): SmithyMap? = getValue(key) as? SmithyMap
-
-    override fun toString(): String {
-        return content.entries.joinToString(
-            separator = ",",
-            prefix = "{",
-            postfix = "}",
-            transform = {(k, v) -> """"$k":$v"""}
-        )
-    }
-}
-
-fun Boolean.toDocument() = SmithyBool(this)
-fun Number.toDocument() = SmithyNumber(this)
-fun String.toDocument() = SmithyString(this)
-
-/**
- * DSL builder for a [SmithyArray]
- */
-class DocumentArrayBuilder internal constructor() {
-    internal val content: MutableList<Document> = mutableListOf()
-
-    /**
-     * Adds [this] value to the current [SmithyArray] as [SmithyString]
-     */
-    operator fun String.unaryPlus() {
-        content.add(SmithyString(this))
-    }
-
-    /**
-     * Adds [this] value to the current [SmithyArray] as [SmithyBool]
-     */
-    operator fun Boolean.unaryPlus() {
-        content.add(SmithyBool(this))
-    }
-
-    /**
-     * Adds [this] value to the current [SmithyArray] as [Document]
-     */
-    operator fun Document.unaryPlus() {
-        content.add(this)
-    }
-
-    /**
-     * Convenience function to wrap raw numeric literals
-     *
-     * Use as `+n()` inside of [documentArray] builder init().
-     */
-    fun n(number: Number): SmithyNumber = SmithyNumber(number)
-}
-
-/**
- * Builds [SmithyArray] with given [init] builder.
- *
- * NOTE: raw numeric types need to be wrapped as a [SmithyNumber]. Use the [DocumentArrayBuilder::a] builder
- * as a shorthand.
- */
-fun documentArray(init: DocumentArrayBuilder.() -> Unit): Document {
-    val builder = DocumentArrayBuilder()
-    builder.init()
-    return SmithyArray(builder.content)
-}
-
-/**
- * DSL builder for a [Document] as a [SmithyMap]
- */
-class DocumentBuilder internal constructor() {
-    internal val content: MutableMap<String, Document> = linkedMapOf()
-
-    /**
-     * Adds given [value] as [SmithyBool] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: Boolean) {
-       require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value.toDocument()
-    }
-
-    /**
-     * Adds given [value] as [SmithyNumber] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: Number) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value.toDocument()
-    }
-
-    /**
-     * Adds given [value] as [SmithyString] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: String) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value.toDocument()
-    }
-
-    /**
-     * Adds given [value] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: Document) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value
-    }
-}
-
-/**
- * Builds [Document] with given [init] builder.
- *
- * ```
- * val doc = document {
- *     "foo" to 1
- *     "baz" to document {
- *         "quux" to documentArray {
- *             +n(202L)
- *             +n(12)
- *             +true
- *             +"blah"
- *         }
- *     }
- *     "foobar" to document {
- *         "nested" to "a string"
- *         "blerg" to documentArray {
- *             +documentArray {
- *                 +n(2.02)
- *              }
- *         }
- *     }
- * }
- * ```
- *
- * This generates the following JSON:
- * {"foo":1,"baz":{"quux":[202,12,true,"blah"]},"foobar":{"nested":"a string","blerg":[[2.02]]}}
- */
-fun document(init: DocumentBuilder.() -> Unit): Document {
-    val builder = DocumentBuilder()
-    builder.init()
-    return SmithyMap(builder.content)
-}
-````
-
-Example usage of building a doc or processing one:
-
-```kotlin
-fun foo() {
-    val doc = document {
-        "foo" to 1
-        "baz" to document {
-            "quux" to documentArray {
-                +n(202L)
-                +n(12)
-                +true
-                +"blah"
-            }
-        }
-        "foobar" to document {
-            "nested" to "a string"
-            "blerg" to documentArray {
-                +documentArray {
-                    +n(2.02)
-                }
-            }
-        }
-    }
-    println(doc)
-
-    processDoc(doc)
-}
-
-fun processDoc(doc: Document) {
-    when(doc) {
-        is SmithyNumber -> println("number: $doc")
-        is SmithyBool -> println("bool: ${doc.value}")
-        is SmithyString -> println("str: ${doc.value}")
-        is SmithyNull -> println("str: $doc")
-        is SmithyArray-> {
-            println("array")
-            for (d in doc) processDoc(d)
-        }
-        is SmithyMap -> {
-            println("map")
-            for((k,d) in doc) {
-                print("$k: ")
-                processDoc(d)
-            }
-        }
-    }
-}
-```
+See [Document type](document-type.md) for more detail.
 
 ### Aggregate types
 
@@ -438,7 +71,6 @@ Traits of generated classes in Kotlin:
    discussion.
 1. For the construction of requests, DSL-style builders are provided instead of constructors. This approach provides a
    more robust form of creation as we have more flexibility in how values are evaluated during instantiation of a type.
-   [See here](kotlin-smithy-sdk.md) for details.
 
 Non-boxed member values will be defaulted according to the spec:
 
@@ -606,8 +238,6 @@ val mystruct = MyStruct {
         quux = "foo"
     }
     yesno = SimpleYesNo.YES
-    // or set raw yesno
-    rawYesNo("raw")
 }
 
 println(mystruct)
@@ -673,7 +303,7 @@ data class Foo(val foo: String): MyUnion()
 
 ### Service types
 
-Services will generate both an interface as well as a concrete client implementation.
+Services will generate both an interface and a concrete client implementation provided by the protocol implementation.
 
 Each operation will generate a method with the given operation name and the `input` and `output` shapes of that
 operation.
@@ -909,27 +539,6 @@ client interface.
 ([example](https://techcrunch.com/2019/05/07/kotlin-is-now-googles-preferred-language-for-android-app-development/))
 that Kotlin is the preferred language going forward and that "Android will become increasingly Kotlin-first".
 
-**Suggestion**: We should provide a synchronous client interface.
-
-**Response**: Why? It's easy to generate and it will be easily consumable from Java code. It will also feel familiar to
-those that don't want to mess with coroutines yet and are used to using the existing synchronous APIs.
-
-**Suggestion**: We should consider generating an async client interface based on `CompletableFuture` but not for the
-initial release.
-
-**Response**: Why?
-
-* Kotlin code can be compiled next to Java code which means customers have a way out to make async service calls with
-  this new SDK _without us generating an API based on futures_. In other words, we are not limiting their ability but we
-  are limiting how they are able to go about it. They can either write some bridge code in Kotlin or use the blocking
-  interface and orchestrate their own threading around those blocking calls.
-* Our existing `aws-android-sdk` will still be available for some period of time in a maintenance mode. Customers that
-  want to use the existing async clients can continue to do so.
-* Generating an async client based off of the `CompletableFuture` will not be terribly difficult using the provided
-  bridge library from JetBrains so if we think customers will find it useful then we should add it. Though such a client
-  should be marked with the appropriate `RequiresApi` annotations and be nested in an e.g. `ext` or `jdk8` package to
-  make it clear it is not the primary service interface and using it has some caveats.
-
 ### Resource Types
 
 Each resources will be processed for each of the corresponding lifecycle operations as well as the non-lifecycle
@@ -993,7 +602,7 @@ The error trait will be processed as an exception type in Kotlin. This requires 
 See [Modeled errors](kotlin-modeled-errors.md) and
 [SDK exception hierarchy and metadata representation](sdk-exception-hierarchy-and-metadata-representation.md).
 
-#### Constrait traits
+#### Constraint traits
 
 ##### `enum` trait
 
@@ -1308,19 +917,12 @@ See [Endpoint resolution](endpoint-resolution.md)
 
 Influences endpoint resolution
 
-# Event stream spec
+## Event stream spec
 
 Binary streams: [Kotlin (binary) streaming request/response bodies](kotlin-binary-streaming-request-response-bodies.md)
 
 The design of event stream bindings (full duplex streams) is still in progress. It will be reviewed separately.
 
-# Appendix
+# Revision history
 
-## Marshalling/unmarshalling
-
-See [Marshaling/serde](marshalling-serde.md).
-
-## Project structure
-
-See the [example](https://github.com/aws-amplify/amplify-codegen/tree/smithy-kotlin/smithy-kotlin/design/example) in the
-staging repo.
+* 5/27/2021 - Initial upload
