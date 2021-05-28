@@ -5,6 +5,7 @@
 package software.aws.clientrt.io
 
 import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
 
 internal const val DEFAULT_BUFFER_SIZE: Int = 4096
 
@@ -50,6 +51,11 @@ expect interface SdkByteReadChannel : Closeable {
      * Reads all available bytes to [sink] buffer and returns immediately or suspends if no bytes available
      */
     suspend fun readAvailable(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset): Int
+
+    /**
+     * Suspend until *some* data is available or channel is closed
+     */
+    suspend fun awaitContent()
 
     /**
      * Close channel with optional cause cancellation.
@@ -124,4 +130,26 @@ public suspend fun SdkByteReadChannel.readByte(): Byte {
     val out = ByteArray(1)
     readFully(out)
     return out[0]
+}
+
+@OptIn(ExperimentalIoApi::class)
+public suspend fun SdkByteReadChannel.readAvailable(dest: SdkBuffer, limit: Int = dest.writeRemaining): Int {
+    if (this is KtorReadChannel) {
+        return chan.read { source, start, endExclusive ->
+            val rc = (endExclusive - start).toInt()
+            if (rc > 0) {
+                dest.reserve(rc)
+                source.copyTo(dest.memory, start.toInt(), rc, dest.writePosition)
+                dest.commitWritten(rc)
+            }
+            return@read rc
+        }
+    }
+
+    return readAvailableFallback(dest, limit)
+}
+
+internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, limit: Int): Int {
+    // we don't really expect to hit this since we use ktor to back all of our channels internally
+    TODO("readAvailableFallback() not implemented for $this")
 }

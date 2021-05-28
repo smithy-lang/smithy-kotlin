@@ -42,7 +42,9 @@ class SdkBuffer internal constructor(
 
     companion object {
         /**
-         * Create an SdkBuffer backed by the given ByteArray
+         * Create an SdkBuffer backed by the given ByteArray.
+         * This *DOES NOT* make the bytes of [src] available for reading, call [commitWritten] to
+         * mark bytes available for read.
          */
         fun of(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): SdkBuffer = SdkBuffer(Memory.ofByteArray(src, offset, length))
     }
@@ -122,9 +124,9 @@ class SdkBuffer internal constructor(
     }
 
     /**
-     * mark [count] bytes written and advance the [writePosition] by the same amount
+     * Mark [count] bytes written and advance the [writePosition] by the same amount
      */
-    internal fun commitWritten(count: Int) {
+    fun commitWritten(count: Int) {
         if (count <= 0) return
         require(count <= writeRemaining) { "Unable to write $count bytes; only $writeRemaining write capacity left" }
         state.writeHead += count
