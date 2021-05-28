@@ -5,9 +5,11 @@
 
 package software.aws.clientrt.io
 
+import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class SdkBufferTest {
     @Test
@@ -207,6 +209,15 @@ class SdkBufferTest {
     }
 
     @Test
+    fun testReserveExistingData() {
+        // https://github.com/awslabs/aws-sdk-kotlin/issues/147
+        val buf = SdkBuffer(256)
+        buf.commitWritten(138)
+        buf.reserve(444)
+        assertEquals(1024, buf.capacity)
+    }
+
+    @Test
     fun testWriteFullyPastDestSize() {
         val buf = SdkBuffer(16)
         val contents = byteArrayOf(1, 2, 3, 4, 5)
@@ -280,5 +291,46 @@ class SdkBufferTest {
         buf.commitWritten(16)
         val bytes = buf.bytes()
         assertEquals(16, bytes.size)
+    }
+
+    @Test
+    fun testReadOnly() {
+        val buf = SdkBuffer(16, readOnly = true)
+        val data = "foo"
+
+        assertFailsWith<ReadOnlyBufferException> {
+            buf.write(data)
+        }
+        assertFailsWith<ReadOnlyBufferException> {
+            buf.writeFully(data.encodeToByteArray())
+        }
+        assertFailsWith<ReadOnlyBufferException> {
+            val src = SdkBuffer.of(data.encodeToByteArray())
+            buf.writeFully(src)
+        }
+
+        assertTrue(buf.isReadOnly)
+        val buf2 = SdkBuffer(16).asReadOnly()
+        assertTrue(buf2.isReadOnly)
+    }
+
+    @Test
+    fun testOfByteArray() {
+        val data = "hello world".toByteArray()
+        val buf = SdkBuffer.of(data)
+        assertEquals(data.size, buf.capacity)
+
+        // does not automatically make the contents readable
+        assertEquals(0, buf.readRemaining)
+        buf.commitWritten(data.size)
+        assertEquals(data.size, buf.readRemaining)
+
+        buf.reset()
+        buf.commitWritten(6)
+        buf.write("tests")
+        assertEquals("hello tests", buf.decodeToString())
+
+        // original buffer should have been modified
+        assertEquals("hello tests", data.decodeToString())
     }
 }
