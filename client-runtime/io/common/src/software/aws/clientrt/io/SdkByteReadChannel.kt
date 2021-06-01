@@ -150,6 +150,8 @@ public suspend fun SdkByteReadChannel.readAvailable(dest: SdkBuffer, limit: Int 
 }
 
 internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, limit: Int): Int {
-    // we don't really expect to hit this since we use ktor to back all of our channels internally
-    TODO("readAvailableFallback() not implemented for $this")
+    if (availableForRead == 0) awaitContent()
+    val tmp = ByteArray(availableForRead)
+    dest.writeFully(tmp)
+    return tmp.size
 }
