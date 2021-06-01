@@ -11,6 +11,11 @@ pluginManagement {
         google()
         gradlePluginPortal()
     }
+
+    // configure the smithy-gradle plugin version
+    plugins {
+        id("org.jetbrains.dokka") version "1.4.32"
+    }
 }
 
 rootProject.name = "smithy-kotlin"
