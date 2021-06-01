@@ -7,9 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
-import software.amazon.smithy.kotlin.codegen.model.operationSignature
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -72,25 +70,22 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("$httpRootPkg.operation", "*")
         writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
+    }
 
-        // TODO - engine needs configurable (either auto detected or passed in through config).
-        //  For now default it to Ktor since it's the only available engine
-        val ktorEngineSymbol = Symbol.builder()
-            .name("KtorEngine")
-            .namespace(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE.namespace, ".")
-            .addDependency(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE)
-            .build()
-
-        writer.addImport(ktorEngineSymbol)
+    //  defaults to Ktor since it's the only available engine in smithy-kotlin runtime
+    protected open val defaultHttpClientEngineSymbol: Symbol = buildSymbol {
+        name = "KtorEngine"
+        namespace(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE)
     }
 
     /**
      * Render the class initialization block. By default this configures the HTTP client
      */
     protected open fun renderInit(writer: KotlinWriter) {
+        writer.addImport(defaultHttpClientEngineSymbol)
         writer.openBlock("init {", "}") {
-            writer.write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(HttpClientEngineConfig())")
-            writer.write("client = sdkHttpClient(httpClientEngine)")
+            writer.write("val httpClientEngine = config.httpClientEngine ?: #T(HttpClientEngineConfig())", defaultHttpClientEngineSymbol)
+            writer.write("client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)")
         }
     }
 
@@ -218,7 +213,6 @@ abstract class HttpProtocolClientGenerator(
 
     protected open fun renderClose(writer: KotlinWriter) {
         writer.write("")
-            // FIXME - this will eventually need to handle the case where an engine is passed in
             .openBlock("override fun close() {")
             .write("client.close()")
             .closeBlock("}")

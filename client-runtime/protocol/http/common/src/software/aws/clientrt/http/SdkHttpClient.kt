@@ -13,14 +13,16 @@ typealias HttpHandler = Handler<HttpRequestBuilder, HttpCall>
 
 /**
  * Create an [SdkHttpClient] with the given engine, and optionally configure it
+ * This will **not** manage the engine lifetime, the caller is expected to close it.
  */
 @HttpClientDsl
 fun sdkHttpClient(
     engine: HttpClientEngine,
-    configure: HttpClientConfig.() -> Unit = {}
+    configure: HttpClientConfig.() -> Unit = {},
+    manageEngine: Boolean = false,
 ): SdkHttpClient {
     val config = HttpClientConfig().apply(configure)
-    return SdkHttpClient(engine, config)
+    return SdkHttpClient(engine, config, manageEngine)
 }
 
 /**
@@ -30,7 +32,8 @@ fun sdkHttpClient(
  */
 class SdkHttpClient(
     val engine: HttpClientEngine,
-    val config: HttpClientConfig
+    val config: HttpClientConfig,
+    private val manageEngine: Boolean = false
 ) : HttpHandler {
 
     override suspend fun call(request: HttpRequestBuilder): HttpCall = engine.roundTrip(request.build())
@@ -39,6 +42,8 @@ class SdkHttpClient(
      * Shutdown this HTTP client and close any resources. The client will no longer be capable of making requests.
      */
     fun close() {
-        engine.close()
+        if (manageEngine) {
+            engine.close()
+        }
     }
 }
