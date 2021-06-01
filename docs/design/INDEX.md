@@ -1,6 +1,6 @@
 # Smithy Kotlin designs
 
-The following design documents informed the creation of Smithy Kotlin.
+The following design documents informed the creation of the Smithy Kotlin SDK.
 
 ## High-level
 
@@ -11,7 +11,7 @@ Start here for an overview:
 ## Detailed sub-designs
 
 * [Document type](document-type.md)
-* [Domain class types in Kotlin SDK](domain-class-types-in-kotlin-sdk.md) (coming soon)
+* [Domain class types in Kotlin SDK](domain-class-types-in-kotlin-sdk.md)
 * [Endpoint resolution](endpoint-resolution.md) (coming soon)
 * [Marshaling/serde](marshalling-serde.md) (coming soon)
 * [Modeled errors](modeled-errors.md) (coming soon)
