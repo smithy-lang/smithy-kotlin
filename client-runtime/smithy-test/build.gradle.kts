@@ -34,7 +34,7 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinxSerializationVersion")
-                implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+                implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
             }
         }
     }

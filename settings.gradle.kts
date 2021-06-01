@@ -15,6 +15,7 @@ pluginManagement {
 
 rootProject.name = "smithy-kotlin"
 enableFeaturePreview("GRADLE_METADATA")
+enableFeaturePreview("ONE_LOCKFILE_PER_PROJECT")
 
 include(":smithy-kotlin-codegen")
 

@@ -28,6 +28,24 @@ allprojects {
         jcenter()
         google()
     }
+
+    /*
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+
+    tasks.register("resolveAndLockAll") {
+        doFirst {
+            require(gradle.startParameter.isWriteDependencyLocks)
+        }
+        doLast {
+            configurations.filter {
+                // Add any custom filtering on the configurations to be resolved
+                it.isCanBeResolved
+            }.forEach { it.resolve() }
+        }
+    }
+    */
 }
 
 apply(from = rootProject.file("gradle/codecoverage.gradle"))
@@ -61,6 +79,7 @@ tasks.register<JavaExec>("ktlintFormat") {
     args = listOf("-F") + lintPaths
 }
 
+/*
 task("createPom") {
     group = "build"
     description = "Generate a Maven pom.xml in the root based on Gradle config (used for GitHub dependency scans)"
@@ -90,3 +109,4 @@ task("createPom") {
 }
 
 tasks.getByPath("build").dependsOn("createPom")
+*/

@@ -52,7 +52,7 @@ kotlin {
         androidTest {
             dependencies {
                 implementation "junit:junit:$junitVersion"
-                implementation "org.jetbrains.kotlin:kotlin-test"
+                // implementation "org.jetbrains.kotlin:kotlin-test"
                 implementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion"
                 implementation "org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutinesVersion"
                 implementation "io.kotest:kotest-assertions-core-jvm:$kotestVersion"

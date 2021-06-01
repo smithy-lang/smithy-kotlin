@@ -34,7 +34,7 @@ dependencies {
     // These are not set as test dependencies so they can be shared with other modules
     implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     implementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    //implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
@@ -112,4 +112,3 @@ publishing {
 }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
-
