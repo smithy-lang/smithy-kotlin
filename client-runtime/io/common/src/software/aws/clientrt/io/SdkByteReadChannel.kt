@@ -132,6 +132,9 @@ public suspend fun SdkByteReadChannel.readByte(): Byte {
     return out[0]
 }
 
+/**
+ * Reads all available bytes to [dest] buffer and returns immediately or suspends if no bytes available
+ */
 @OptIn(ExperimentalIoApi::class)
 public suspend fun SdkByteReadChannel.readAvailable(dest: SdkBuffer, limit: Int = dest.writeRemaining): Int {
     if (this is KtorReadChannel) {
