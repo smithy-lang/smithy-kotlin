@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen
 
+import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -69,7 +70,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         model = OperationNormalizer.transform(resolvedModel, settings.service)
 
         service = settings.getService(model)
-        check(service.sdkId == initialService.sdkId) { "Changing ServiceTrait.sdkId in model preprocess phase is unsupported." }
+        // sanity check that the sdkId did not change during the model preprocess phase as that would
+        // cause invalid behavior regarding selective integration loading.
+        // AWS services must provide this trait so this predication is to support non AWS codegen.
+        if (initialService.hasTrait<ServiceTrait>() && service.hasTrait<ServiceTrait>()) {
+            check(service.sdkId == initialService.sdkId) {
+                "Changing ServiceTrait.sdkId in model preprocess phase is unsupported."
+            }
+        }
 
         symbolProvider = integrations.fold(
             KotlinCodegenPlugin.createSymbolProvider(model, settings)
