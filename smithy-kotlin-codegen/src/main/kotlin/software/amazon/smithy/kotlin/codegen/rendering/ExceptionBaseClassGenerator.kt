@@ -8,7 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 
@@ -18,6 +18,12 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
  * with the expected constructors.
  */
 object ExceptionBaseClassGenerator {
+
+    /**
+     * Defines a section in which code can be added to the body of the base exception type.
+     */
+    object ExceptionBaseClassSection : SectionId
+
     fun render(ctx: CodegenContext, writer: KotlinWriter) {
         val baseException = ctx.protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
         writer.addImport(baseException)
@@ -34,9 +40,7 @@ object ExceptionBaseClassGenerator {
             write("constructor(message: String?, cause: Throwable?) : super(message, cause)")
             write("constructor(cause: Throwable?) : super(cause)")
 
-            ctx.integrations.forEach { integration ->
-                integration.augmentBaseErrorType(writer)
-            }
+            writer.declareSection(ExceptionBaseClassSection)
         }
     }
 

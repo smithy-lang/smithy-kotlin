@@ -45,13 +45,21 @@ interface KotlinIntegration {
         get() = listOf()
 
     /**
+     * Allows integration to specify [SectionWriterBinding]s to
+     * override or change codegen at specific, defined points.
+     * See [SectionWriter] for more details.
+     */
+    val sectionWriters: List<SectionWriterBinding>
+        get() = listOf()
+
+    /**
      * Determines if the integration should be applied to the current [ServiceShape].
      * Implementing this method allows to apply integrations to specific services.
      *
      * @param service The service under codegen
      * @return true if the Integration should be applied to the current codegen context, false otherwise.
      */
-    fun apply(service: ServiceShape): Boolean = true
+    fun enabledForService(service: ServiceShape): Boolean = true
 
     /**
      * Additional properties to be add to the generated service config interface
@@ -133,6 +141,7 @@ interface KotlinIntegration {
      * of middleware for the protocol (if any).
      *
      * @param ctx The codegen generation context
+     * @param generator The HttpBindingProtocolGenerator
      * @param resolved The middleware resolved by the protocol generator
      */
     fun customizeMiddleware(
@@ -140,16 +149,4 @@ interface KotlinIntegration {
         generator: HttpBindingProtocolGenerator,
         resolved: List<ProtocolMiddleware>
     ): List<ProtocolMiddleware> = resolved
-
-    fun augmentBaseErrorType(writer: KotlinWriter) {
-        // pass
-    }
-
-    /**
-     * Convenience function to replace one middleware with another.
-     * Adapted from https://discuss.kotlinlang.org/t/best-way-to-replace-an-element-of-an-immutable-list/8646/9
-     */
-    fun <T : ProtocolMiddleware> List<T>.replace(newValue: T, block: (T) -> Boolean) = map {
-        if (block(it)) newValue else it
-    }
 }

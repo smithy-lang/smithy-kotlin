@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.model
 
+import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -123,3 +124,9 @@ val Shape.isError: Boolean
  */
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape
+
+/**
+ * Get the [sdkId](https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#sdkid) from the (AWS) service shape
+ */
+val ServiceShape.sdkId: String
+    get() = expectTrait<ServiceTrait>().sdkId

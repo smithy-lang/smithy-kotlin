@@ -13,3 +13,8 @@ fun String.doubleQuote(): String = StringUtils.escapeJavaString(this, "")
  * Double quote a string, eg. "abc" -> "\"abc\""
  */
 fun String.dq(): String = this.doubleQuote()
+
+/**
+ * Convert a namespace formatted string to a path, eg. "a.b.c" -> "a/b/c"
+ */
+fun String.namespaceToPath() = replace('.', '/')

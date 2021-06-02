@@ -11,6 +11,11 @@ pluginManagement {
         google()
         gradlePluginPortal()
     }
+
+    // configure the smithy-gradle plugin version
+    plugins {
+        id("org.jetbrains.dokka") version "1.4.32"
+    }
 }
 
 rootProject.name = "smithy-kotlin"
@@ -30,7 +35,6 @@ include(":client-runtime:serde")
 include(":client-runtime:serde:serde-json")
 include(":client-runtime:serde:serde-xml")
 include(":client-runtime:serde:serde-form-url")
-include(":client-runtime:serde:serde-test")
 
 include(":compile-tests")
 

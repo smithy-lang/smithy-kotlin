@@ -19,10 +19,14 @@ import software.amazon.smithy.utils.StringUtils
 fun MemberShape.descriptorName(childName: String = ""): String = "${this.defaultName()}${childName}_DESCRIPTOR".uppercase()
 
 /**
- * Get the serializer class name for an operation. Operation inputs can be serialized to the protocol (e.g. HTTP)
- * and/or to the document/payload. Distinguishing from generic
+ * Get the serializer class name for an operation.
  */
 fun OperationShape.serializerName(): String = StringUtils.capitalize(this.id.name) + "OperationSerializer"
+
+/**
+ * Get name of the function responsible for serializing an operation's body (paylaod)
+ */
+fun OperationShape.bodySerializerName(): String = "serialize" + StringUtils.capitalize(this.id.name) + "OperationBody"
 
 /**
  * Get the deserializer class name for an operation. Operation outputs can be deserialized from the protocol (e.g. HTTP)
@@ -31,14 +35,24 @@ fun OperationShape.serializerName(): String = StringUtils.capitalize(this.id.nam
 fun OperationShape.deserializerName(): String = StringUtils.capitalize(this.id.name) + "OperationDeserializer"
 
 /**
+ * Get name of the function responsible for deserializing an operation's body (paylaod)
+ */
+fun OperationShape.bodyDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.id.name) + "OperationBody"
+
+/**
  * Get the serializer class name for a shape bound to the document/payload
  */
-fun Symbol.documentSerializerName(): String = StringUtils.capitalize(this.name) + "DocumentSerializer"
+fun Symbol.documentSerializerName(): String = "serialize" + StringUtils.capitalize(this.name) + "Document"
 
 /**
  * Get the deserializer class name for a shape bound to the document/payload
  */
-fun Symbol.documentDeserializerName(): String = StringUtils.capitalize(this.name) + "DocumentDeserializer"
+fun Symbol.documentDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.name) + "Document"
+
+/**
+ * Get the deserializer name for an error shape
+ */
+fun Symbol.errorDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.name) + "Error"
 
 /**
  * Format an instance of `Instant` using the given [tsFmt]

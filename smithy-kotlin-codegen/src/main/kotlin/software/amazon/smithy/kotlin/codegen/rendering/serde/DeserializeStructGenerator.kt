@@ -201,6 +201,10 @@ open class DeserializeStructGenerator(
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
         val populateNullValuePostfix = if (isSparse) "" else "; continue"
+        if (elementShape.isStructureShape || elementShape.isUnionShape) {
+            val symbol = ctx.symbolProvider.toSymbol(elementShape)
+            writer.addImport(symbol)
+        }
 
         writer.write("val $keyName = key()")
         writer.write("val $valueName = if (nextHasValue()) { $deserializerFn } else { deserializeNull()$populateNullValuePostfix }")
@@ -378,6 +382,10 @@ open class DeserializeStructGenerator(
         val deserializer = deserializerForShape(elementShape)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val populateNullValuePostfix = if (isSparse) "" else "; continue"
+        if (elementShape.isStructureShape || elementShape.isUnionShape) {
+            val symbol = ctx.symbolProvider.toSymbol(elementShape)
+            writer.addImport(symbol)
+        }
 
         writer.write("val $elementName = if (nextHasValue()) { $deserializer } else { deserializeNull()$populateNullValuePostfix }")
         writer.write("$parentMemberName.add($elementName)")
@@ -514,9 +522,8 @@ open class DeserializeStructGenerator(
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 val symbol = ctx.symbolProvider.toSymbol(target)
-                writer.addImport(symbol)
                 val deserializerName = symbol.documentDeserializerName()
-                "$deserializerName().deserialize(deserializer)"
+                "$deserializerName(deserializer)"
             }
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
         }

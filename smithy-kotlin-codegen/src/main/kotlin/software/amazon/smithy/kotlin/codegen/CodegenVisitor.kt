@@ -14,7 +14,9 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
+import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.sdkId
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -51,9 +53,15 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
             }.sortedBy(KotlinIntegration::order).toList()
 
+        // Filter out integrations that do not apply to the service under codegen.
+        val initialService = context.model.expectShape<ServiceShape>(settings.service)
+        integrations = allIntegrations.filter { integration ->
+            integration.enabledForService(initialService)
+        }
+
         LOGGER.info("Preprocessing model")
         var resolvedModel = context.model
-        for (integration in allIntegrations) {
+        for (integration in integrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
 
@@ -61,9 +69,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         model = OperationNormalizer.transform(resolvedModel, settings.service)
 
         service = settings.getService(model)
-
-        // Filter out integrations that do not apply to the service under codegen.
-        integrations = allIntegrations.filter { integration -> integration.apply(service) }
+        check(service.sdkId == initialService.sdkId) { "Changing ServiceTrait.sdkId in model preprocess phase is unsupported." }
 
         symbolProvider = integrations.fold(
             KotlinCodegenPlugin.createSymbolProvider(model, settings)

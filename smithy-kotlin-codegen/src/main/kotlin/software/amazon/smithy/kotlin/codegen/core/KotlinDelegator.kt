@@ -11,8 +11,10 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.utils.namespaceToPath
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.utils.CodeWriter
 import java.nio.file.Paths
 
 private const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
@@ -126,10 +128,22 @@ class KotlinDelegator(
         sourceSetRoot: String = DEFAULT_SOURCE_SET_ROOT
     ): KotlinWriter {
         // src/main/kotlin/namespace/filename
-        val root = sourceSetRoot + namespace.replace(".", "/")
+        val root = sourceSetRoot + namespace.namespaceToPath()
         val formattedFilename = Paths.get(root, filename).normalize().toString()
         val needsNewline = writers.containsKey(formattedFilename)
-        val writer = writers.getOrPut(formattedFilename) { KotlinWriter(namespace) }
+        val writer = writers.getOrPut(formattedFilename) {
+            val kotlinWriter = KotlinWriter(namespace)
+
+            // Register all integrations [SectionWriterBindings] on the writer.
+            integrations.forEach { integration ->
+                integration.sectionWriters.forEach { (sectionId, sectionWriter) ->
+                    kotlinWriter.registerSectionWriter(sectionId) { codeWriter: CodeWriter, defaultValue: Any ->
+                        sectionWriter.write(codeWriter, defaultValue)
+                    }
+                }
+            }
+            kotlinWriter
+        }
 
         if (needsNewline) {
             writer.write("\n")

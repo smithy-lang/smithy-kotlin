@@ -28,12 +28,6 @@ abstract class HttpProtocolClientGenerator(
 ) {
 
     /**
-     * The serialization/deserialization provider to be used for serialize/deserialize
-     * See: https://github.com/awslabs/smithy-kotlin/blob/main/client-runtime/serde/common/src/software/aws/clientrt/serde/SerdeProvider.kt
-     */
-    abstract val serdeProviderSymbol: Symbol
-
-    /**
      * Render the implementation of the service client interface
      */
     open fun render(writer: KotlinWriter) {
@@ -63,7 +57,6 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
-        writer.write("private val serde: SerdeProvider = #T()", serdeProviderSymbol)
         middleware.forEach {
             it.renderProperties(writer)
         }
@@ -79,10 +72,6 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("$httpRootPkg.operation", "*")
         writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig")
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
-
-        // serialization
-        writer.addImport(serdeProviderSymbol)
-        writer.addImport("SerdeProvider", KotlinDependency.CLIENT_RT_SERDE)
 
         // TODO - engine needs configurable (either auto detected or passed in through config).
         //  For now default it to Ktor since it's the only available engine
@@ -182,11 +171,6 @@ abstract class HttpProtocolClientGenerator(
                     }
                     writer.write("hostPrefix = #S", hostPrefix)
                 }
-
-                // always register a serde provider into an operation's execution context.
-                // Individual serializers/deserializers determine if they need to use it
-                writer.addImport(RuntimeTypes.Serde.SerdeAttributes)
-                writer.write("set(SerdeAttributes.SerdeProvider, serde)")
             }
         }
 
