@@ -241,17 +241,15 @@ Note the addition of a new `countryCode` parameter to the constructor and `count
 
 ## Comparisons
 
-Based on the above code, the data class approach appears to deliver more customer value because:
+Based on the above code, the upsides of the data class approach are:
 
-1. The data class generated type code is more concise.
-1. The data class generated type code provides more functionality (we have to implement less).
-1. The data class is more idiomatic (due to conventional usage of data class and default implementation of members).
-1. Because both types rely on private constructors and builders, construction is controlled and in the same way.
-1. For cases in which we need to implement custom equals/hashcode, this specificity is obvious to users in data classes
-   as it may be ambiguous in the general class case.
-1. The data class provides a hint as to the usage of the class is to only hold data.
-1. The behavior of the built-in functions of data classes behave consistently with any other data class implementations
-   customers may use outside the scope of the Kotlin SDK.
+1. The data class generated type code is more concise, making it easier to read and understand the generated code
+   quickly.
+1. The data class generated type code provides more functionality automatically so there's less to implement and test in
+   codegen.
+1. The data class provides a strong hint that the purpose of the class is solely to hold data.
+1. The behavior of the built-in functions of data classes (e.g., `hashCode`, `toString`, etc.) behave consistently with
+   all other data class implementations customers may use outside the scope of the Kotlin SDK.
 
 Downsides of data class over general classes:
 
@@ -267,7 +265,7 @@ Downsides of data class over general classes:
    implementations, choosing data classes may be a one-way door as it could result in unresolvable variance in behavior
    if the Kotlin changes makes some fundamental changes to how data classes behave that we do not wish to take into our
    SDK.
-   
+
    For example, if different versions of Kotlin provide different behaviors for data classes, we will have to deal with
    that variance in our SDKs as well as we cannot control language or stdlib versions that customers use. General
    classes provide us complete control. Additionally, a hypothetical situation in which we would need to migrate from
