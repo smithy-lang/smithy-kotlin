@@ -125,7 +125,7 @@ The following types and service would be generated (note the Java `Builder` impl
 **Put Object**
 See the Appendix for an overview of the `ByteStream` type.
 
-```
+```kt
 
 import software.aws.clientrt.content.ByteStream
 
@@ -184,7 +184,7 @@ class PutObjectResponse private constructor(builder: BuilderImpl){
 
 ### **Get Object**
 
-```
+```kt
 package com.amazonaws.service.s3.model
 
 class GetObjectRequest private constructor(builder: BuilderImpl){
@@ -249,7 +249,7 @@ class GetObjectResponse private constructor(builder: BuilderImpl){
 NOTE: There are types and internal details here not important to the design of how customers will interact with streaming requests/responses (e.g. serialization/deserialization). Those details are subject to change and not part of this design document. The focus here should be on the way streaming is exposed to a customer.
 
 
-```
+```kt
 package com.amazonaws.service.s3
 
 class S3Client: SdkClient {
@@ -281,7 +281,7 @@ class S3Client: SdkClient {
 
 Example Usage
 
-```
+```kt
 fun main() = runBlocking{
     val service = S3Client()
 
@@ -322,7 +322,7 @@ fun main() = runBlocking{
 
 For completeness the following is an example of reading the stream manually:
 
-```
+```kt
     // example of reading the response body as a stream (without going through one of the
     // provided transforms e.g. decodeToString(), toByteArray(), toFile(), etc)
     val getObjResp2 = service.getObjectAlt2(getRequest)
@@ -353,7 +353,7 @@ The first alternative has the advantage of a clear lifetime of when the response
 
 e.g.
 
-```
+```kt
 suspend fun getObject(input: GetObjectRequest): GetObjectResponse { ... }
 
 suspend fun getObject(block: GetObjectRequest.DslBuilder.() -> Unit): GetObjectResponse {
@@ -365,7 +365,7 @@ suspend fun getObject(block: GetObjectRequest.DslBuilder.() -> Unit): GetObjectR
 
 These DSL builder overloads allow callers to construct the request as part of the call:
 
-```
+```kt
 val resp = service.getObject {
     bucket = "my-bucket"
     key = "my-key"
@@ -381,7 +381,7 @@ Alternative 2 presents a different problem of knowing when the response stream h
 e.g.
 
 
-```
+```kt
 resp.body?.use {
     // do whatever you are going to do with the stream
 } // closed at the end of this block
@@ -403,7 +403,7 @@ After discussion and feedback from design review the recommendation will be to p
 The definition of the `ByteStream` type shown in the examples is given below. Whenever a Smithy model targets streaming blob shape this would be the symbol those shapes are mapped to in codegen.
 
 
-```
+```kt
 /**
  * Represents an abstract stream of bytes
  */
@@ -484,7 +484,7 @@ suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
 The `Source` interface is given below and represents an abstract channel to read bytes from, it's definition is subject to change:
 
 
-```
+```kt
 /**
  * Supplies a stream of bytes. Use this interface to read data from wherever it’s located: from the network, storage, or a buffer in memory.
  *
@@ -552,7 +552,7 @@ One alternative to a custom type such as `ByteStream` would be to utilize [Kotli
 A simplified example of the request/response would look like:
 
 
-```
+```kt
 class PutObjectRequest private constructor(builder: BuilderImpl) {
     val body: Flow<ByteArray>? = builder.body
 }
@@ -567,7 +567,7 @@ class GetObjectResponse private constructor(builder: BuilderImpl) {
 Usage of this type would be something like the following then:
 
 
-```
+```kt
 // PutObject
 val putObjectRequest = PutObjectRequest {
     body = fromByteArray(byteArrayOf(1,2,3))
@@ -594,7 +594,7 @@ resp.body?.collect { value ->
 
 The same set of transforms for the common use cases would be provided by the client runtime:
 
-```
+```kt
 
 fun fromByteArray(array: ByteArray): Flow<ByteArray> = flowOf(array)
 fun fromString(string: String): Flow<ByteArray> = fromByteArray(string.toByteArray())
