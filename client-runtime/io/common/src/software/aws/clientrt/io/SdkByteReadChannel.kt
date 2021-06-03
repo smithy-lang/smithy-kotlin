@@ -154,6 +154,8 @@ public suspend fun SdkByteReadChannel.readAvailable(dest: SdkBuffer, limit: Int 
 
 internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, limit: Int): Int {
     if (availableForRead == 0) awaitContent()
+    // channel was closed while waiting and no further content was made available
+    if (availableForRead == 0 && isClosedForRead) return -1
     val tmp = ByteArray(minOf(availableForRead, limit))
     dest.writeFully(tmp)
     return tmp.size
