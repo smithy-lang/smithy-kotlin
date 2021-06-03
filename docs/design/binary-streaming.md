@@ -637,9 +637,8 @@ The issue with going that route is two fold:
 
 ## Additional References
 
-* [Kotlin Smithy SDK](https://quip-amazon.com/pgYqAzdCpA9E)
+* [Kotlin Smithy SDK](kotlin-smithy-sdk.md)
 * [Smithy Core Spec](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html)
-* [Smithy Codegen Structural Overview](https://quip-amazon.com/62wdAUIaS8db)
 * [Kotlin Asynchronous Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) 
 
 # Revision history
