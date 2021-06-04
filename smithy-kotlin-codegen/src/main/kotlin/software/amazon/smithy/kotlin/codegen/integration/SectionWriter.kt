@@ -22,9 +22,14 @@ fun interface SectionWriter {
     /**
      * This function writes codegen for the bound section.
      * @param writer associated w/ file in which section content is emitted to
-     * @param defaultValue any default codegen provided by the base implementation
+     * @param previousValue any codegen output provided by the base implementation or a previously
+     *  evaluated [SectionWriter] associated with the same [SectionId]. For writers that wish to
+     *  append to any pre-existing codegen strings in the section, they must explicitly write
+     *  the contents of previousValue to the writer.  See the
+     *  [CodeWriter](https://github.com/awslabs/smithy/blob/main/smithy-utils/src/main/java/software/amazon/smithy/utils/CodeWriter.java)
+     *  documentation for more details
      */
-    fun write(writer: CodeWriter, defaultValue: Any)
+    fun write(writer: CodeWriter, previousValue: String?)
 }
 
 /**

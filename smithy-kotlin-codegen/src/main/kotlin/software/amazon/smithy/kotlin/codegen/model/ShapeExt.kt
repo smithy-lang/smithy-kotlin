@@ -124,9 +124,3 @@ val Shape.isError: Boolean
  */
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape
-
-/**
- * Get the [sdkId](https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#sdkid) from the (AWS) service shape
- */
-val ServiceShape.sdkId: String
-    get() = expectTrait<ServiceTrait>().sdkId

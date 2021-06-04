@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -17,7 +16,6 @@ import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.sdkId
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -48,17 +46,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     private val baseGenerationContext: GenerationContext
 
     init {
-        LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
-        val allIntegrations = ServiceLoader.load(KotlinIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
-            .also { integration ->
-                LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
-            }.sortedBy(KotlinIntegration::order).toList()
-
-        // Filter out integrations that do not apply to the service under codegen.
-        val initialService = context.model.expectShape<ServiceShape>(settings.service)
-        integrations = allIntegrations.filter { integration ->
-            integration.enabledForService(initialService)
-        }
+        val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
+        LOGGER.info("Discovering KotlinIntegration providers from ${classLoader.name}")
+        integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
+            .also { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
+            .filter { integration -> integration.enabledForService(context.model, settings) }
+            .also { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
+            .sortedBy(KotlinIntegration::order)
+            .toList()
 
         LOGGER.info("Preprocessing model")
         var resolvedModel = context.model
@@ -70,14 +65,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         model = OperationNormalizer.transform(resolvedModel, settings.service)
 
         service = settings.getService(model)
-        // sanity check that the sdkId did not change during the model preprocess phase as that would
-        // cause invalid behavior regarding selective integration loading.
-        // AWS services must provide this trait so this predication is to support non AWS codegen.
-        if (initialService.hasTrait<ServiceTrait>() && service.hasTrait<ServiceTrait>()) {
-            check(service.sdkId == initialService.sdkId) {
-                "Changing ServiceTrait.sdkId in model preprocess phase is unsupported."
-            }
-        }
 
         symbolProvider = integrations.fold(
             KotlinCodegenPlugin.createSymbolProvider(model, settings)

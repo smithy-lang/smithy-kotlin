@@ -72,8 +72,9 @@ fun <T : CodeWriter> T.declareSection(id: SectionId, block: T.() -> Unit = {}): 
  * [SectionWriter.write] to be called at the point in which the section is declared via
  * the [CodeWriter.declareSection] function.
  */
-fun <T : CodeWriter> T.registerSectionWriter(id: SectionId, writer: SectionWriter): T {
+fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): KotlinWriter {
     onSection(id.javaClass.canonicalName) { default ->
+        require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
         writer.write(this, default)
     }
     return this

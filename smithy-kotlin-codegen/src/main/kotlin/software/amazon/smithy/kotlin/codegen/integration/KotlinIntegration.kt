@@ -59,7 +59,7 @@ interface KotlinIntegration {
      * @param service The service under codegen
      * @return true if the Integration should be applied to the current codegen context, false otherwise.
      */
-    fun enabledForService(service: ServiceShape): Boolean = true
+    fun enabledForService(model: Model, settings: KotlinSettings): Boolean = true
 
     /**
      * Additional properties to be add to the generated service config interface
@@ -141,12 +141,10 @@ interface KotlinIntegration {
      * of middleware for the protocol (if any).
      *
      * @param ctx The codegen generation context
-     * @param generator The HttpBindingProtocolGenerator
      * @param resolved The middleware resolved by the protocol generator
      */
     fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
-        generator: HttpBindingProtocolGenerator,
         resolved: List<ProtocolMiddleware>
     ): List<ProtocolMiddleware> = resolved
 }

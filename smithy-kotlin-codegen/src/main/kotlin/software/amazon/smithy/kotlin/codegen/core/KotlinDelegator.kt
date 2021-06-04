@@ -137,8 +137,8 @@ class KotlinDelegator(
             // Register all integrations [SectionWriterBindings] on the writer.
             integrations.forEach { integration ->
                 integration.sectionWriters.forEach { (sectionId, sectionWriter) ->
-                    kotlinWriter.registerSectionWriter(sectionId) { codeWriter: CodeWriter, defaultValue: Any ->
-                        sectionWriter.write(codeWriter, defaultValue)
+                    kotlinWriter.registerSectionWriter(sectionId) { codeWriter: CodeWriter, previousValue: String? ->
+                        sectionWriter.write(codeWriter, previousValue)
                     }
                 }
             }
