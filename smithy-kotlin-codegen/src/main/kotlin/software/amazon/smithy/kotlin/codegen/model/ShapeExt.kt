@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.model
 
-import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -95,7 +94,11 @@ fun OperationIndex.operationSignature(model: Model, symbolProvider: SymbolProvid
         "suspend fun $operationName($inputParam)$outputParam"
     } else {
         val outputName = output.get()
-        val inputSignature = if (inputParam.isNotEmpty()) "$inputParam, " else ""
+        val inputSignature = if (inputParam.isNotEmpty()) {
+            "$inputParam, "
+        } else {
+            ""
+        }
         "suspend fun <T> $operationName(${inputSignature}block: suspend ($outputName) -> T): T"
     }
 }

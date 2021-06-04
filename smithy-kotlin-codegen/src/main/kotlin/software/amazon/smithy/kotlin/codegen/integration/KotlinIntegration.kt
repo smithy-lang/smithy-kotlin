@@ -10,7 +10,6 @@ import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.rendering.ClientConfigProperty
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.model.Model
