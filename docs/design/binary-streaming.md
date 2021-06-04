@@ -7,46 +7,12 @@
 
 This document covers the client interfaces to be generated for requests/responses with streaming binary payloads (`@streaming` Smithy trait applied to a `blob` shape). 
 
-The design of generic streams (streams that target a `union` shape) will be covered separately by the [event stream spec](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#event-streams) *in a future design review/document.*
+The design of generic streams (streams that target a `union` shape) will be covered separately by the [event stream spec](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#event-streams) *in a future design document.*
 
 Reference the additional documents listed in the Appendix for surrounding context on Smithy.
 
 
 # Design
-
-## Why start with binary streams?
-
-The [streaming trait](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#streaming-trait) can only be applied to `blob` or `union` shape (where a blob is binary data and a union is a finite set of possible shapes that can be assumed, see the  additional documents referenced in the appendix that cover Smithy shapes and prior design on how they map to Kotlin).
-
-A survey of current AWS models that use the `streaming` trait in their service somewhere (the shape may or may not be used in multiple operations) shows the following:
-
-
-```
-Service                      | Blob | Union | Total
-----------------------------------------------------
-ebs                          | 1    | -     | 1
-mediastore-data              | 1    | -     | 1
-cloudsearch-domain           | 1    | -     | 1
-lambda                       | 1    | -     | 1
-workmailmessageflow          | 1    | -     | 1
-polly                        | 1    | -     | 1
-kinesis-video-archived-media | 1    | -     | 1
-lex-runtime-service          | 1    | -     | 1
-glacier                      | 1    | -     | 1
-kinesis-video-media          | 1    | -     | 1
-kinesis                      | -    | 1     | 1
-s3                           | 1    | 1     | 2
-transcribe-streaming         | -    | 2     | 2
-====================================================
-Totals                       | 11   | 4     | 15
-----------------------------------------------------
-```
-
-
-Only 13 / 220 services use the `streaming` trait, of those usages only 4/15 (27%) target a non-binary shape. Binary (blob) streams represent the majority usage of streaming use cases in AWS services.
-
-Streams that target a `union` shape will not be represented the same as a stream of raw bytes. A stream of `Foo` types involves serialization and deserialization and a possible long-lived connection. Given the differences it makes sense to start with the common use case and consider each separately.
-
 
 ## Client Interface
 
@@ -343,7 +309,7 @@ For completeness the following is an example of reading the stream manually:
     }
 ```
 
-The analogous interface for writing to a stream may or may not be provided out of the box. There are some considerations there whether we want to support that or wait for something like [kotlinx-io](https://github.com/Kotlin/kotlinx-io) to be standardized and then provide wrappers for plugging those types in. We would definitely provide abstractions for transforming files, ByteArray, and Strings at a minimum though. There are many IO libraries though (OkIO, Ktor, kotlinx-io, etc) and it may just be enough to provide examples of how to adapt them to `ByteStream/Source` rather than trying to roll our own or favor one over the other.
+The analogous interface for writing to a stream may or may not be provided out of the box. There are some considerations there whether we want to support that or wait for something like [kotlinx-io](https://github.com/Kotlin/kotlinx-io) to be standardized and then provide wrappers for plugging those types in. We would definitely provide abstractions for transforming files, ByteArray, and Strings at a minimum though. There are many IO libraries though (OkIO, Ktor, kotlinx-io, etc) and it may just be enough to provide examples of how to adapt them to `ByteStream/SdkByteReadChannel` rather than trying to roll our own or favor one over the other.
 
 ### Response Alternatives
 
@@ -390,8 +356,8 @@ resp.body?.use {
 
 The advantage of this approach is flexibility in how the response is consumed and API methods all having a similar look and feel.
 
-**Recommendation 6/23/2020
-**
+**Recommendation 6/23/2020**
+
 After discussion and feedback from design review the recommendation will be to pursue Alternative 1 with minor updates to return the result of the block invoked (already captured in the code examples above). Alternative 1 leaves the door open to add other overloads such as alternative 2 or the DSL overload at a later date if there is demand for it while presenting the most conservative option for the runtime (resources can be cleaned up at a known point in time). 
 
 
@@ -429,9 +395,9 @@ sealed class ByteStream {
      */
     abstract class Reader : ByteStream() {
         /**
-         * Provides [Source] to read from/consume
+         * Provides [SdkByteReadChannel] to read from/consume
          */
-        abstract fun readFrom(): Source
+        abstract fun readFrom(): SdkByteReadChannel
     }
 
     companion object {
@@ -481,7 +447,7 @@ suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
 
 
 
-The `Source` interface is given below and represents an abstract channel to read bytes from, it's definition is subject to change:
+The `SdkByteReadChannel` interface is given below and represents an abstract channel to read bytes from, it's definition is subject to change:
 
 
 ```kt
@@ -490,7 +456,7 @@ The `Source` interface is given below and represents an abstract channel to read
  *
  * This interface is functionally equivalent to an asynchronous coroutine compatible [java.io.InputStream]
  */
-interface Source {
+interface SdkByteReadChannel {
     /**
      * Returns number of bytes that can be read without suspension. Read operations do no suspend and return immediately when this number is at least the number of bytes requested for read.
      */
@@ -538,7 +504,7 @@ The `ByteStream` type has a lot of nice properties:
 5. Due to (1) it makes codegen easier (any time you see `@streaming blob` shapes you can substitute `ByteStream` as the property type)
     1. If I had to prioritize properties this would be low on the list but it is nevertheless a “nice property”
 6. Being a sealed class with interfaces as the variants it can easily be implemented for Kotlin MPP
-7. The `Source` interface on which the streaming variant depends on allows for back pressure to occur
+7. The `SdkByteReadChannel` interface on which the streaming variant depends on allows for back pressure to occur
 8. It can handle streams of both known and unknown size (e.g. File, ByteArray, and String are all known, reading from a socket is unknown)
 
 ### Viable Alternatives to `ByteStream`
