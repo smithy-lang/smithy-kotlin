@@ -4,10 +4,16 @@
  */
 package software.aws.clientrt.http
 
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.*
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineClosedException
+import software.aws.clientrt.http.engine.SdkRequestContextElement
+import software.aws.clientrt.http.engine.createCallContext
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.io.Handler
+import kotlin.coroutines.coroutineContext
 
 typealias HttpHandler = Handler<HttpRequestBuilder, HttpCall>
 
@@ -36,12 +42,26 @@ class SdkHttpClient(
     private val manageEngine: Boolean = false
 ) : HttpHandler {
 
-    override suspend fun call(request: HttpRequestBuilder): HttpCall = engine.roundTrip(request.build())
+    private val clientJob = Job()
+    private val closed = atomic(false)
+
+    override suspend fun call(request: HttpRequestBuilder): HttpCall = executeWithCallContext(request)
+
+    private suspend fun executeWithCallContext(request: HttpRequestBuilder): HttpCall {
+        if (!engine.coroutineContext.job.isActive) throw HttpClientEngineClosedException()
+        val callContext = engine.createCallContext(coroutineContext)
+        val context = callContext + SdkRequestContextElement(callContext)
+        return withContext(context) {
+            engine.roundTrip(request.build())
+        }
+    }
 
     /**
      * Shutdown this HTTP client and close any resources. The client will no longer be capable of making requests.
      */
     fun close() {
+        if (!closed.compareAndSet(false, true)) return
+        clientJob.complete()
         if (manageEngine) {
             engine.close()
         }
