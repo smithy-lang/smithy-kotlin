@@ -46,7 +46,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
     init {
         val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
-        LOGGER.info("Discovering KotlinIntegration providers from ${classLoader.name}")
+        LOGGER.info("Discovering KotlinIntegration providers...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
             .also { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
             .filter { integration -> integration.enabledForService(context.model, settings) }
