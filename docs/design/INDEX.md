@@ -12,7 +12,7 @@ Start here for an overview:
 
 * [Document type](document-type.md)
 * [Domain class types in Kotlin SDK](domain-class-types-in-kotlin-sdk.md)
-* [Endpoint resolution](endpoint-resolution.md) (coming soon)
+* [Binary request/response streams](binary-streaming.md)
 * [Marshaling/serde](marshalling-serde.md) (coming soon)
 * [Modeled errors](modeled-errors.md) (coming soon)
 * [Nullable properties in SDK domain types](nullable-properties-in-sdk-domain-types.md) (coming soon)
