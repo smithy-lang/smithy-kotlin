@@ -17,7 +17,7 @@ import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.utils.CodeWriter
 import java.nio.file.Paths
 
-private const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
+const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
 private const val DEFAULT_TEST_SOURCE_SET_ROOT = "./src/test/kotlin/"
 
 /**
@@ -32,6 +32,8 @@ class KotlinDelegator(
 ) {
 
     private val writers: MutableMap<String, KotlinWriter> = mutableMapOf()
+    // Tracks dependencies for source not provided by codegen that may reside in the service source tree.
+    val runtimeDependencies: MutableList<SymbolDependency> = mutableListOf()
 
     /**
      * Writes all pending writers to disk and then clears them out.
@@ -46,11 +48,14 @@ class KotlinDelegator(
     /**
      * Gets all of the dependencies that have been registered in writers owned by the delegator.
      *
+     * This combines both all dependencies registered on writers as well as runtime dependencies
+     * to cover dependencies from any runtime customizations in the service source tree.
+     *
      * @return Returns all the dependencies.
      */
     val dependencies: List<SymbolDependency>
         get() {
-            return writers.values.flatMap(KotlinWriter::dependencies)
+            return writers.values.flatMap(KotlinWriter::dependencies) + runtimeDependencies
         }
 
     /**
