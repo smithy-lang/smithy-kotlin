@@ -9,26 +9,26 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpStatement
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.launch
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineBase
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
+import software.aws.clientrt.http.engine.callContext
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.logging.*
 import software.aws.clientrt.time.Instant
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 
 /**
  * JVM [HttpClientEngine] backed by Ktor
  */
-class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
+class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("ktor") {
     val client: HttpClient = HttpClient(OkHttp) {
         // TODO - propagate applicable client engine config to OkHttp engine
 
@@ -38,12 +38,12 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     private val logger = Logger.getLogger<KtorEngine>()
 
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
-        val callContext = coroutineContext
+        val callContext = callContext()
 
         val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 
         // run the request in another coroutine to allow streaming body to be handled
-        GlobalScope.launch(callContext + Dispatchers.IO) {
+        launch(callContext + Dispatchers.IO) {
             try {
                 execute(callContext, request, respChannel)
             } catch (ex: Exception) {

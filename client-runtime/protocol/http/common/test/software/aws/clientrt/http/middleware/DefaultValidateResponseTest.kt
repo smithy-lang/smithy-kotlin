@@ -5,7 +5,7 @@
 package software.aws.clientrt.http.middleware
 
 import software.aws.clientrt.http.*
-import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineBase
 import software.aws.clientrt.http.operation.newTestOperation
 import software.aws.clientrt.http.operation.roundTrip
 import software.aws.clientrt.http.request.HttpRequest
@@ -14,8 +14,6 @@ import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.http.response.HttpResponse
 import software.aws.clientrt.testing.runSuspendTest
 import software.aws.clientrt.time.Instant
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -23,8 +21,7 @@ import kotlin.test.assertFailsWith
 class DefaultValidateResponseTest {
     @Test
     fun itThrowsExceptionOnNon200Response() = runSuspendTest {
-        val mockEngine = object : HttpClientEngine {
-            override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+        val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val resp = HttpResponse(
                     HttpStatusCode.BadRequest,
@@ -49,8 +46,7 @@ class DefaultValidateResponseTest {
 
     @Test
     fun itPassesSuccessResponses() = runSuspendTest {
-        val mockEngine = object : HttpClientEngine {
-            override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+        val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val resp = HttpResponse(
                     HttpStatusCode.Accepted,

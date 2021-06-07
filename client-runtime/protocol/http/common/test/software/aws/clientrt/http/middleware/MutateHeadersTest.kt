@@ -8,7 +8,7 @@ package software.aws.clientrt.http.middleware
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
-import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineBase
 import software.aws.clientrt.http.operation.HttpOperationContext.Companion.HttpCallList
 import software.aws.clientrt.http.operation.newTestOperation
 import software.aws.clientrt.http.operation.roundTrip
@@ -21,15 +21,12 @@ import software.aws.clientrt.http.sdkHttpClient
 import software.aws.clientrt.testing.runSuspendTest
 import software.aws.clientrt.time.Instant
 import software.aws.clientrt.util.get
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class MutateHeadersTest {
 
-    private val mockEngine = object : HttpClientEngine {
-        override val coroutineContext: CoroutineContext = EmptyCoroutineContext
+    private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
             return HttpCall(request, resp, Instant.now(), Instant.now())
