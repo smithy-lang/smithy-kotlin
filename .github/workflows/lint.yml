@@ -3,8 +3,9 @@ name: Lint
 on:
   push:
     branches:
-      - '*'
+      - '**'
       - '!main'
+  workflow_dispatch:
 
 env:
   PACKAGE_NAME: smithy-kotlin
