@@ -43,3 +43,11 @@ interface ProtocolMiddleware {
      */
     fun renderProperties(writer: KotlinWriter) {}
 }
+
+/**
+ * Convenience function to replace one middleware with another.
+ * Adapted from https://discuss.kotlinlang.org/t/best-way-to-replace-an-element-of-an-immutable-list/8646/9
+ */
+fun <T : ProtocolMiddleware> List<T>.replace(newValue: T, block: (T) -> Boolean) = map {
+    if (block(it)) newValue else it
+}

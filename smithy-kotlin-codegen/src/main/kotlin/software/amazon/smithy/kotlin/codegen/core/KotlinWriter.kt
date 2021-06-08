@@ -9,6 +9,8 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependency
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionWriter
 import software.amazon.smithy.kotlin.codegen.lang.isBuiltIn
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.getTrait
@@ -54,12 +56,27 @@ fun <T : CodeWriter> T.withBlock(
 }
 
 /**
- * Similar to `CodeWriter.withBlock()` but using `pushState()`.
+ * Declares a section for extension in codegen.  The [SectionId] should be specified as a child
+ * of the type housing the codegen associated with the section. This keeps [SectionId]s closely
+ * associated with their targets.
  */
-fun <T : CodeWriter> T.withState(state: String, block: T.() -> Unit = {}): T {
-    pushState(state)
+fun <T : CodeWriter> T.declareSection(id: SectionId, block: T.() -> Unit = {}): T {
+    pushState(id.javaClass.canonicalName)
     block(this)
     popState()
+    return this
+}
+
+/**
+ * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
+ * [SectionWriter.write] to be called at the point in which the section is declared via
+ * the [CodeWriter.declareSection] function.
+ */
+fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): KotlinWriter {
+    onSection(id.javaClass.canonicalName) { default ->
+        require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
+        writer.write(this, default)
+    }
     return this
 }
 

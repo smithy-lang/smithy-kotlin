@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.ClientConfigProperty
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 
 /**
@@ -41,6 +42,23 @@ interface KotlinIntegration {
      */
     val protocolGenerators: List<ProtocolGenerator>
         get() = listOf()
+
+    /**
+     * Allows integration to specify [SectionWriterBinding]s to
+     * override or change codegen at specific, defined points.
+     * See [SectionWriter] for more details.
+     */
+    val sectionWriters: List<SectionWriterBinding>
+        get() = listOf()
+
+    /**
+     * Determines if the integration should be applied to the current [ServiceShape].
+     * Implementing this method allows to apply integrations to specific services.
+     *
+     * @param service The service under codegen
+     * @return true if the Integration should be applied to the current codegen context, false otherwise.
+     */
+    fun enabledForService(model: Model, settings: KotlinSettings): Boolean = true
 
     /**
      * Additional properties to be add to the generated service config interface
