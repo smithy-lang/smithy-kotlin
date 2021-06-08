@@ -47,6 +47,58 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun itDeserializesXmlWithEscapedCharacters2() = runSuspendTest {
+        val payload = """
+            <GetTopicAttributesResponse
+                xmlns="http://sns.amazonaws.com/doc/2010-03-31/">
+                <GetTopicAttributesResult>
+                    <Attributes>
+                        <entry>
+                            <key>Policy</key>
+                            <value>{&quot;Version&quot;:&quot;2008-10-17&quot;,&quot;Id&quot;:&quot;__default_policy_ID&quot;,&quot;Statement&quot;:[{&quot;Sid&quot;:&quot;__default_statement_ID&quot;,&quot;Effect&quot;:&quot;Allow&quot;,&quot;Principal&quot;:{&quot;AWS&quot;:&quot;*&quot;},&quot;Action&quot;:[&quot;SNS:GetTopicAttributes&quot;,&quot;SNS:SetTopicAttributes&quot;,&quot;SNS:AddPermission&quot;,&quot;SNS:RemovePermission&quot;,&quot;SNS:DeleteTopic&quot;,&quot;SNS:Subscribe&quot;,&quot;SNS:ListSubscriptionsByTopic&quot;,&quot;SNS:Publish&quot;,&quot;SNS:Receive&quot;],&quot;Resource&quot;:&quot;arn:aws:sns:us-west-2:406669096152:kg-test&quot;,&quot;Condition&quot;:{&quot;StringEquals&quot;:{&quot;AWS:SourceOwner&quot;:&quot;406669096152&quot;}}}]}</value>
+                        </entry>
+                        <entry>
+                            <key>Owner</key>
+                            <value>406669096152</value>
+                        </entry>
+                        <entry>
+                            <key>SubscriptionsPending</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>TopicArn</key>
+                            <value>arn:aws:sns:us-west-2:406669096152:kg-test</value>
+                        </entry>
+                        <entry>
+                            <key>EffectiveDeliveryPolicy</key>
+                            <value>{&quot;http&quot;:{&quot;defaultHealthyRetryPolicy&quot;:{&quot;minDelayTarget&quot;:20,&quot;maxDelayTarget&quot;:20,&quot;numRetries&quot;:3,&quot;numMaxDelayRetries&quot;:0,&quot;numNoDelayRetries&quot;:0,&quot;numMinDelayRetries&quot;:0,&quot;backoffFunction&quot;:&quot;linear&quot;},&quot;disableSubscriptionOverrides&quot;:false}}</value>
+                        </entry>
+                        <entry>
+                            <key>SubscriptionsConfirmed</key>
+                            <value>0</value>
+                        </entry>
+                        <entry>
+                            <key>DisplayName</key>
+                            <value/>
+                        </entry>
+                        <entry>
+                            <key>SubscriptionsDeleted</key>
+                            <value>0</value>
+                        </entry>
+                    </Attributes>
+                </GetTopicAttributesResult>
+                <ResponseMetadata>
+                    <RequestId>6d12e9ab-392f-561c-8f1f-b0938d88ec9f</RequestId>
+                </ResponseMetadata>
+            </GetTopicAttributesResponse>
+        """.trimIndent().encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+
+        actual.forEach { println(it) }
+        // println(actual)
+    }
+
+    @Test
     fun itDeserializesXmlWithAttributes() = runSuspendTest {
         val payload = """
             <batch>
