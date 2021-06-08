@@ -35,6 +35,10 @@ object RuntimeTypes {
         val TimestampFormat = runtimeSymbol("TimestampFormat", KotlinDependency.CLIENT_RT_CORE, "time")
     }
 
+    object Utils {
+        val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.CLIENT_RT_UTILS)
+    }
+
     object Serde {
         val SerdeProvider = runtimeSymbol("SerdeProvider", KotlinDependency.CLIENT_RT_SERDE)
         val Serializer = runtimeSymbol("Serializer", KotlinDependency.CLIENT_RT_SERDE)

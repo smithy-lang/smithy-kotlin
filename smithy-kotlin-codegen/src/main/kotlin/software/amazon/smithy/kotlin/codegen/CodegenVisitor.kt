@@ -45,11 +45,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     private val baseGenerationContext: GenerationContext
 
     init {
-        LOGGER.info("Attempting to discover KotlinIntegration from classpath...")
-        integrations = ServiceLoader.load(KotlinIntegration::class.java, context.pluginClassLoader.orElse(javaClass.classLoader))
-            .also { integration ->
-                LOGGER.info("Adding KotlinIntegration: ${integration.javaClass.name}")
-            }.sortedBy(KotlinIntegration::order).toList()
+        val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
+        LOGGER.info("Discovering KotlinIntegration providers...")
+        integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
+            .also { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
+            .filter { integration -> integration.enabledForService(context.model, settings) }
+            .also { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
+            .sortedBy(KotlinIntegration::order)
+            .toList()
 
         LOGGER.info("Preprocessing model")
         var resolvedModel = context.model
@@ -169,8 +172,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         // render the service (client) base exception type
         val baseExceptionSymbol = ExceptionBaseClassGenerator.baseExceptionSymbol(baseGenerationContext.settings)
-        writers.useFileWriter("${baseExceptionSymbol.name}.kt", baseExceptionSymbol.namespace) {
-            ExceptionBaseClassGenerator.render(baseGenerationContext, it)
+        writers.useFileWriter("${baseExceptionSymbol.name}.kt", baseExceptionSymbol.namespace) { writer ->
+            ExceptionBaseClassGenerator.render(baseGenerationContext, writer)
         }
     }
 }

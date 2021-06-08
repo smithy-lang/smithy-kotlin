@@ -94,7 +94,11 @@ fun OperationIndex.operationSignature(model: Model, symbolProvider: SymbolProvid
         "suspend fun $operationName($inputParam)$outputParam"
     } else {
         val outputName = output.get()
-        val inputSignature = if (inputParam.isNotEmpty()) "$inputParam, " else ""
+        val inputSignature = if (inputParam.isNotEmpty()) {
+            "$inputParam, "
+        } else {
+            ""
+        }
         "suspend fun <T> $operationName(${inputSignature}block: suspend ($outputName) -> T): T"
     }
 }
