@@ -5,12 +5,14 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -159,5 +161,29 @@ class Config private constructor(builder: BuilderImpl) {
     val customProp: Int? = builder.customProp
 """
         contents.shouldContain(expectedProps)
+    }
+
+    @Test
+    fun `it finds idempotency token via resources`() {
+        val model = """
+            namespace com.test
+            
+            service ResourceService {
+                resources: [Resource],
+                version: "1"
+            }
+            resource Resource {
+                operations: [CreateResource]
+            }
+            operation CreateResource {
+                input: IdempotentInput
+            }
+            structure IdempotentInput {
+                @idempotencyToken
+                tok: String
+            }
+        """.toSmithyModel()
+
+        model.expectShape<ServiceShape>("com.test#ResourceService").hasIdempotentTokenMember(model) shouldBe true
     }
 }

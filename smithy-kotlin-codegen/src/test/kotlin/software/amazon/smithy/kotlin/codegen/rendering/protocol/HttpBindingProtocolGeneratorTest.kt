@@ -474,4 +474,24 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         val contents = getTransformFileContents("ConstantQueryStringOperationSerializer.kt")
         contents.shouldNotContain("Content-Type")
     }
+
+    @Test
+    fun `it escapes uri literals`() {
+        // https://github.com/awslabs/smithy-kotlin/issues/65
+        // https://github.com/awslabs/smithy-kotlin/issues/395
+        val uri = "/test/\$LATEST"
+        val model = """
+            @http(method: "PUT", uri: "$uri", code: 200)
+            operation Foo{ }
+        """.prependNamespaceAndService(operations = listOf("Foo"))
+            .toSmithyModel()
+
+        val contents = getTransformFileContents("FooOperationSerializer.kt", model)
+
+        val latest = "\\\$LATEST"
+        val expected = """
+            path = "/test/$latest"
+        """
+        contents.shouldContainOnlyOnceWithDiff(expected)
+    }
 }
