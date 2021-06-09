@@ -71,9 +71,257 @@ The un-modeled fields are typically not known until runtime when a request or re
 We don't know what the future holds or in what ways we may need to extend the hierarchy to e.g. special case a service or add new metadata. The ability to easily add new metadata in a backwards compatible way is a desirable property. Examples that come to mind are service specific extensions like S3 which has [two possible request id fields](https://aws.amazon.com/premiumsupport/knowledge-center/s3-request-id-values/)
 
 
-## Solutions
+## PropertyBag + Extensions
 
-Several solutions are presented below that try to balance dealing with possible conflicts as well as the ability to add new metadata easily.
+The proposed design is to lift all the un-modeled (and even a few of the modeled) fields into a single extendable type (a property bag).
+
+```kotlin
+/**
+ * Additional metadata about an error
+ */
+open class ErrorMetadata {
+    @InternalApi
+    val attributes: Attributes = Attributes()       // PropertyBag
+
+    companion object {
+        /**
+         * Set if an error is retryable
+         */
+        val Retryable: AttributeKey<Boolean> = AttributeKey("Retryable")
+    }
+
+    val isRetryable: Boolean
+        get() = attributes.getOrNull(Retryable) ?: false
+}
+
+/**
+ * Base exception class for all exceptions thrown by the SDK. Exception may be a client side exception or a service exception
+ */
+open class SdkBaseException : RuntimeException {
+
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+
+    open val errorMetadata: ErrorMetadata = ErrorMetadata()
+}
+
+/**
+ * Base exception class for any errors that occur while attempting to use an SDK client to make (Smithy) service calls.
+ */
+open class ClientException : SdkBaseException {
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+}
+
+/**
+ * Generic interface that any protocol (e.g. HTTP, MQTT, etc) can extend to provide additional access to
+ * protocol specific details.
+ */
+interface ProtocolResponse
+
+object EmptyProtocolResponse : ProtocolResponse
+
+open class ServiceErrorMetadata : ErrorMetadata() {
+
+    companion object {
+        val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
+
+        val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
+
+        val ServiceName: AttributeKey<String> = AttributeKey("ServiceName")
+    }
+
+    /**
+     * The name of the service that sent this error response
+     */
+    val serviceName: String
+        get() = attributes.getOrNull(ServiceName) ?: ""
+
+    /**
+     * Indicates who is responsible for this exception (caller, service, or unknown)
+     */
+    val errorType: ServiceException.ErrorType
+        get() = attributes.getOrNull(ErrorType) ?: ServiceException.ErrorType.Unknown
+
+
+    /**
+     * The protocol response if available (this will differ depending on the underlying protocol e.g. HTTP, MQTT, etc)
+     */
+    val protocolResponse: ProtocolResponse
+        get() = attributes.getOrNull(ProtocolResponse) ?: EmptyProtocolResponse
+
+}
+
+/**
+ * ServiceException - Base exception class for any error response returned by a service. Receiving an exception of this
+ * type indicates that the caller's request was successfully transmitted to the service and the service sent back an
+ * error response.
+ */
+open class ServiceException : SdkBaseException {
+
+    /**
+     * Indicates who (if known) is at fault for this exception.
+     */
+    enum class ErrorType {
+        Client,
+        Server,
+        Unknown
+    }
+
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+
+    override val errorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
+}
+
+
+open class AwsErrorMetadata : ServiceErrorMetadata() {
+    companion object {
+        val RequestId: AttributeKey<String> = AttributeKey("RequestId")
+        val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
+    }
+
+    /**
+     * The request ID that was returned by the called service
+     */
+    val requestId: String
+        get() = attributes.getOrNull(RequestId) ?: ""
+
+    /**
+     * Returns the error code associated with the response
+     */
+    val errorCode: String
+        get() = attributes.getOrNull(ErrorCode) ?: ""
+
+}
+
+/**
+ * Base class for all modeled service exceptions
+ */
+public open class AwsServiceException : ServiceException {
+
+    public constructor() : super()
+
+    public constructor(message: String?) : super(message)
+
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    override val errorMetadata: AwsErrorMetadata = AwsErrorMetadata()
+}
+
+```
+
+
+Example of an exception inheriting from this hierarchy (slightly simplified):
+
+```kotlin
+/**
+ * Returned if the access point you are trying to create already exists
+ */
+class AccessPointAlreadyExistsException private constructor(builder: BuilderImpl) : AwsServiceException() {
+
+    val errorCode: String? = builder.errorCode
+    val errorMessage: String? = builder.errorMessage
+    val accessPointId: String? = builder.accessPointId
+
+    init {
+        errorMetadata.attributes[ErrorMetadata.Retryable] = false
+        errorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client
+    }
+
+    interface DslBuilder {
+        var errorCode: String?
+        var errorMessage: String?
+        var accessPointId: String?
+
+        fun build(): AccessPointAlreadyExistsException
+    }
+
+    private class BuilderImpl : DslBuilder {
+        override var errorCode: String? = ""
+        override var errorMessage: String? = ""
+        override var accessPointId: String? = ""
+
+        constructor(): super()
+        constructor(ex: AccessPointAlreadyExistsException) : super() {
+            this.errorCode = ex.errorCode
+            this.errorMessage = ex.errorMessage
+            this.accessPointId = ex.accessPointId
+        }
+
+        override fun build(): AccessPointAlreadyExistsException = AccessPointAlreadyExistsException(this)
+    }
+}
+```
+
+**Example usage:**
+
+![Example Usage](resources/sdk-exception-metadata-usage-example.png)
+
+**Example extensions:**
+
+
+```kotlin
+
+class S3ErrorMetadata : AwsErrorMetadata() {
+    companion object {
+        val ExtendedRequestId: AttributeKey<String> = AttributeKey("S3:ExtendedRequestId")
+    }
+
+    val extendedRequestId: String
+        get() = attributes.getOrNull(ExtendedRequestId) ?: ""
+}
+
+/**
+ * Base class for all S3 errors
+ */
+class S3Exception : AwsServiceException {
+    public constructor() : super()
+
+    public constructor(message: String?) : super(message)
+
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    override val errorMetadata: S3ErrorMetadata = S3ErrorMetadata()
+}
+
+// ALTERNATIVELY defined as an extension property
+
+
+val AwsErrorMetadata.extendedRequestId: String
+    get() = attributes.getOrNull(S3ErrorAttributes.ExtendedRequestId) ?: ""
+```
+
+
+**Advantages**:
+
+* Gives the appearance of immutability while still allowing the fields to be set at runtime
+* Easily extendable. The metadata type can be customized and generated per service and extension properties can be defined on it as needed.
+* Significantly reduces the chance of conflicts since there is only one field, `errorMetadata` , to worry about (does not completely remove the chance of a conflict though).
+
+**Disadvantages**:
+
+* Discoverability. Common properties can be defined in the base class (e.g. `AwsErrorMetadata.requestId`) but any extension properties past this may be slightly more difficult to discover. This could probably be mitigated somewhat by some careful choices around the package/subpackage that extensions are defined in such that it’s at least always consistent.
+
+
+## Alternatives
+
+Alternative solutions are presented below that try to balance dealing with possible conflicts as well as the ability to add new metadata easily.
 
 
 ### ALT 1: Rename customization
@@ -105,7 +353,7 @@ This solution would require renaming `AccessPointAlreadyExists.ErrorCode` to som
 
 ### ALT 2: Builder Hierarchy
 
-Another option is to use the builder pattern to create exceptions. A full example is given below (spoiler this isn’t optimal either and it’s a lot of code so before diving in maybe skip to the end of section for summary):
+Another option is to use the builder pattern to create exceptions. A full example is given below (NOTE: this isn’t optimal either and it’s a lot of code so before diving in maybe skip to the end of section for summary):
 
 ```kotlin
 /**
@@ -368,260 +616,13 @@ suspend fun myMiddleware(request, next) {
 
 * This still doesn’t actually solve the conflict issue. The Java V2 SDK employs a similar pattern to this but they hide many of the fields in a new type `[AwsErrorDetails](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/efs/model/AccessPointAlreadyExistsException.Builder.html)` which is why they have no conflict (in this case). This doesn’t solve the issue though as the Java V2 SDK still has conflicts in other cases. Take `[IdentityStore.AccessDeniedException](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/identitystore/model/AccessDeniedException.Builder.html)` which has a modeled field of `requestId` which conflicts with `AwsServiceException.requestId`. They de-conflict by renaming the modeled exception field to `requestIdValue`.
 
-### ALT 3: PropertyBag + Extensions
-
-Another option is to lift all the un-modeled (and even a few of the modeled) fields into a single extendable type (a property bag).
-
-```kotlin
-/**
- * Additional metadata about an error
- */
-open class ErrorMetadata {
-    @InternalApi
-    val attributes: Attributes = Attributes()       // PropertyBag
-
-    companion object {
-        /**
-         * Set if an error is retryable
-         */
-        val Retryable: AttributeKey<Boolean> = AttributeKey("Retryable")
-    }
-
-    val isRetryable: Boolean
-        get() = attributes.getOrNull(Retryable) ?: false
-}
-
-/**
- * Base exception class for all exceptions thrown by the SDK. Exception may be a client side exception or a service exception
- */
-open class SdkBaseException : RuntimeException {
-
-    constructor() : super()
-
-    constructor(message: String?) : super(message)
-
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    constructor(cause: Throwable?) : super(cause)
-
-    open val errorMetadata: ErrorMetadata = ErrorMetadata()
-}
-
-/**
- * Base exception class for any errors that occur while attempting to use an SDK client to make (Smithy) service calls.
- */
-open class ClientException : SdkBaseException {
-    constructor() : super()
-
-    constructor(message: String?) : super(message)
-
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    constructor(cause: Throwable?) : super(cause)
-}
-
-/**
- * Generic interface that any protocol (e.g. HTTP, MQTT, etc) can extend to provide additional access to
- * protocol specific details.
- */
-interface ProtocolResponse
-
-object EmptyProtocolResponse : ProtocolResponse
-
-open class ServiceErrorMetadata : ErrorMetadata() {
-
-    companion object {
-        val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
-
-        val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
-
-        val ServiceName: AttributeKey<String> = AttributeKey("ServiceName")
-    }
-
-    /**
-     * The name of the service that sent this error response
-     */
-    val serviceName: String
-        get() = attributes.getOrNull(ServiceName) ?: ""
-
-    /**
-     * Indicates who is responsible for this exception (caller, service, or unknown)
-     */
-    val errorType: ServiceException.ErrorType
-        get() = attributes.getOrNull(ErrorType) ?: ServiceException.ErrorType.Unknown
-
-
-    /**
-     * The protocol response if available (this will differ depending on the underlying protocol e.g. HTTP, MQTT, etc)
-     */
-    val protocolResponse: ProtocolResponse
-        get() = attributes.getOrNull(ProtocolResponse) ?: EmptyProtocolResponse
-
-}
-
-/**
- * ServiceException - Base exception class for any error response returned by a service. Receiving an exception of this
- * type indicates that the caller's request was successfully transmitted to the service and the service sent back an
- * error response.
- */
-open class ServiceException : SdkBaseException {
-
-    /**
-     * Indicates who (if known) is at fault for this exception.
-     */
-    enum class ErrorType {
-        Client,
-        Server,
-        Unknown
-    }
-
-    constructor() : super()
-
-    constructor(message: String?) : super(message)
-
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    constructor(cause: Throwable?) : super(cause)
-
-    override val errorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
-}
-
-
-open class AwsErrorMetadata : ServiceErrorMetadata() {
-    companion object {
-        val RequestId: AttributeKey<String> = AttributeKey("RequestId")
-        val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
-    }
-
-    /**
-     * The request ID that was returned by the called service
-     */
-    val requestId: String
-        get() = attributes.getOrNull(RequestId) ?: ""
-
-    /**
-     * Returns the error code associated with the response
-     */
-    val errorCode: String
-        get() = attributes.getOrNull(ErrorCode) ?: ""
-
-}
-
-/**
- * Base class for all modeled service exceptions
- */
-public open class AwsServiceException : ServiceException {
-
-    public constructor() : super()
-
-    public constructor(message: String?) : super(message)
-
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    override val errorMetadata: AwsErrorMetadata = AwsErrorMetadata()
-}
-
-```
-
-
-Example of an exception inheriting from this hierarchy (slightly simplified):
-
-```kotlin
-/**
- * Returned if the access point you are trying to create already exists
- */
-class AccessPointAlreadyExistsException private constructor(builder: BuilderImpl) : AwsServiceException() {
-
-    val errorCode: String? = builder.errorCode
-    val errorMessage: String? = builder.errorMessage
-    val accessPointId: String? = builder.accessPointId
-
-    init {
-        errorMetadata.attributes[ErrorMetadata.Retryable] = false
-        errorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client
-    }
-
-    interface DslBuilder {
-        var errorCode: String?
-        var errorMessage: String?
-        var accessPointId: String?
-
-        fun build(): AccessPointAlreadyExistsException
-    }
-
-    private class BuilderImpl : DslBuilder {
-        override var errorCode: String? = ""
-        override var errorMessage: String? = ""
-        override var accessPointId: String? = ""
-
-        constructor(): super()
-        constructor(ex: AccessPointAlreadyExistsException) : super() {
-            this.errorCode = ex.errorCode
-            this.errorMessage = ex.errorMessage
-            this.accessPointId = ex.accessPointId
-        }
-
-        override fun build(): AccessPointAlreadyExistsException = AccessPointAlreadyExistsException(this)
-    }
-}
-```
-
-**Example usage:**
-
-![Example Usage](resources/sdk-exception-metadata-usage-example.png)
-
-**Example extensions:**
-
-
-```kotlin
-
-class S3ErrorMetadata : AwsErrorMetadata() {
-    companion object {
-        val ExtendedRequestId: AttributeKey<String> = AttributeKey("S3:ExtendedRequestId")
-    }
-
-    val extendedRequestId: String
-        get() = attributes.getOrNull(ExtendedRequestId) ?: ""
-}
-
-/**
- * Base class for all S3 errors
- */
-class S3Exception : AwsServiceException {
-    public constructor() : super()
-
-    public constructor(message: String?) : super(message)
-
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    override val errorMetadata: S3ErrorMetadata = S3ErrorMetadata()
-}
-
-// ALTERNATIVELY defined as an extension property
-
-
-val AwsErrorMetadata.extendedRequestId: String
-    get() = attributes.getOrNull(S3ErrorAttributes.ExtendedRequestId) ?: ""
-```
-
-
-**Advantages**:
-
-* Gives the appearance of immutability while still allowing the fields to be set at runtime
-* Easily extendable. The metadata type can be customized and generated per service and extension properties can be defined on it as needed.
-* Significantly reduces the chance of conflicts since there is only one field, `errorMetadata` , to worry about (does not completely remove the chance of a conflict though).
-
-**Disadvantages**:
-
-* Discoverability. Common properties can be defined in the base class (e.g. `AwsErrorMetadata.requestId`) but any extension properties past this may be slightly more difficult to discover. This could probably be mitigated somewhat by some careful choices around the package/subpackage that extensions are defined in such that it’s at least always consistent.
-
-## Other Considerations
+## Future Considerations
 
 * Some SDK’s expose fields like `requestId` on more than just the error types. If the Kotlin SDK chooses to do something similar we should reconcile and ensure that there is “one way” to get at a piece of data.
 
 ## Recommendation
 
-The recommendation/consensus is to move forward with ALT 3 which provides the best opportunity for future extension, removes the customer facing mutability, and reduces the chance of conflict to a single property.
+The recommendation/consensus is to move forward with the proposed (property bag) design which provides the best opportunity for future extension, removes the customer facing mutability, and reduces the chance of conflict to a single property.
 
 ### Additional References
 

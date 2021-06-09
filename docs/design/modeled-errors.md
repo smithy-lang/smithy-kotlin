@@ -252,9 +252,9 @@ java.lang.Object
 
 Base exception class for any errors that occur while attempting to use an AWS client to make service calls to Amazon Web Services.
 
-Error responses from services will be handled as AmazonServiceExceptions. This class is primarily for errors that occur when unable to get a response from a service, or when the client is unable to understand a response from a service. For example, if a caller tries to use a client to make a service call, but no network connection is present, an AmazonClientException will be thrown to indicate that the client wasn't able to successfully make the service call, and no information from the service is available.
+Error responses from services will be handled as `AmazonServiceException`. This class is primarily for errors that occur when unable to get a response from a service, or when the client is unable to understand a response from a service. For example, if a caller tries to use a client to make a service call, but no network connection is present, an `AmazonClientException` will be thrown to indicate that the client wasn't able to successfully make the service call, and no information from the service is available.
 
-Callers should typically deal with exceptions through AmazonServiceException, which represent error responses returned by services. AmazonServiceException has much more information available for callers to appropriately deal with different types of errors that can occur.
+Callers should typically deal with exceptions through `AmazonServiceException`, which represent error responses returned by services. `AmazonServiceException` has much more information available for callers to appropriately deal with different types of errors that can occur.
 
 
 The API currently looks like this:
@@ -278,9 +278,9 @@ boolean isRetryable()
 
 `AmazonServiceException`
 
-Extension of AmazonClientException that represents an error response returned by an Amazon web service. Receiving an exception of this type indicates that the caller's request was correctly transmitted to the service, but for some reason, the service was not able to process it, and returned an error response instead.
+Extension of `AmazonClientException` that represents an error response returned by an Amazon web service. Receiving an exception of this type indicates that the caller's request was correctly transmitted to the service, but for some reason, the service was not able to process it, and returned an error response instead.
 
-AmazonServiceException provides callers several pieces of information that can be used to obtain more information about the error and why it occurred. In particular, the errorType field can be used to determine if the caller's request was invalid, or the service encountered an error on the server side while processing it.
+`AmazonServiceException` provides callers several pieces of information that can be used to obtain more information about the error and why it occurred. In particular, the `errorType` field can be used to determine if the caller's request was invalid, or the service encountered an error on the server side while processing it.
 
 
 The API currently looks like this:
