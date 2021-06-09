@@ -614,7 +614,7 @@ suspend fun myMiddleware(request, next) {
 
 **Disadvantages:**
 
-* This still doesn’t actually solve the conflict issue. The Java V2 SDK employs a similar pattern to this but they hide many of the fields in a new type `[AwsErrorDetails](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/efs/model/AccessPointAlreadyExistsException.Builder.html)` which is why they have no conflict (in this case). This doesn’t solve the issue though as the Java V2 SDK still has conflicts in other cases. Take `[IdentityStore.AccessDeniedException](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/identitystore/model/AccessDeniedException.Builder.html)` which has a modeled field of `requestId` which conflicts with `AwsServiceException.requestId`. They de-conflict by renaming the modeled exception field to `requestIdValue`.
+* This still doesn’t actually solve the conflict issue. The Java V2 SDK employs a similar pattern to this but they hide many of the fields in a new type [AwsErrorDetails](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/efs/model/AccessPointAlreadyExistsException.Builder.html) which is why they have no conflict (in this case). This doesn’t solve the issue though as the Java V2 SDK still has conflicts in other cases. Take [IdentityStore.AccessDeniedException](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/identitystore/model/AccessDeniedException.Builder.html) which has a modeled field of `requestId` which conflicts with `AwsServiceException.requestId`. They de-conflict by renaming the modeled exception field to `requestIdValue`.
 
 ## Future Considerations
 
