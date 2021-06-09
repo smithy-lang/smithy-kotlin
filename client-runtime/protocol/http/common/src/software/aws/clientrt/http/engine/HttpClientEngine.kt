@@ -33,7 +33,7 @@ interface HttpClientEngine : Closeable, CoroutineScope {
  * Base class that all concrete [HttpClientEngine] should inherit from
  */
 @InternalApi
-public abstract class HttpClientEngineBase(private val engineName: String) : HttpClientEngine {
+public abstract class HttpClientEngineBase(engineName: String) : HttpClientEngine {
     // why SupervisorJob? because failure of individual requests should not affect other requests or the overall engine
     override val coroutineContext: CoroutineContext = SupervisorJob() + CoroutineName("http-client-engine-$engineName-context")
     private val closed = atomic(false)
