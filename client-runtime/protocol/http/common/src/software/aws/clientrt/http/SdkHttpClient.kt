@@ -41,8 +41,6 @@ class SdkHttpClient(
     val config: HttpClientConfig,
     private val manageEngine: Boolean = false
 ) : HttpHandler {
-
-    private val clientJob = Job()
     private val closed = atomic(false)
 
     override suspend fun call(request: HttpRequestBuilder): HttpCall = executeWithCallContext(request)
@@ -61,7 +59,6 @@ class SdkHttpClient(
      */
     fun close() {
         if (!closed.compareAndSet(false, true)) return
-        clientJob.complete()
         if (manageEngine) {
             engine.close()
         }
