@@ -8,6 +8,7 @@ extra["moduleName"] = "software.aws.clientrt.http"
 
 // FIXME - atomicfu gradle plugin fails on transformJvmMainAtomicfu task for some reason, for now just use it as a library without the bytecode transform
 val atomicFuVersion: String by project
+val coroutinesVersion: String by project
 
 kotlin {
     sourceSets {
@@ -20,6 +21,8 @@ kotlin {
                 api(project(":client-runtime:io"))
                 implementation(project(":client-runtime:logging"))
 
+                // HttpClientEngine implements CoroutineScope
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
             }
         }
