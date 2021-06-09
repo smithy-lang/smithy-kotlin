@@ -303,7 +303,6 @@ private fun sanitizeDocumentation(doc: String): String = doc
     // Services may have comment string literals embedded in documentation.
     .replace("/*", "&##47;*")
     .replace("*/", "*&##47;")
-    .replace(Regex("(\\[)(.*\\.)(\\])"), "`$1`$2`$3`")
 
 // Remove all strings from source string and return the result
 private fun String.stripAll(stripList: List<String>): String {
