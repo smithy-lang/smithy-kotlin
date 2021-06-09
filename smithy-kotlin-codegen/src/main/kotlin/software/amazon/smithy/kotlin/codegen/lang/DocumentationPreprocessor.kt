@@ -31,5 +31,12 @@ class DocumentationPreprocessor : KotlinIntegration {
 
     // KDoc comments use inline markdown. Replace square brackets with escaped equivalents so that they
     // are not rendered as invalid links
-    private fun sanitize(str: String): String = str.replace(Regex("(\\[)(.*)(\\])"), "&#91;$2&#93;")
+    private fun sanitize(str: String): String {
+        val re = Regex("\\[(.*)\\]")
+        var result = str
+        while (re.containsMatchIn(result)) {
+            result = result.replace(re, "&#91;$1&#93;")
+        }
+        return result
+    }
 }

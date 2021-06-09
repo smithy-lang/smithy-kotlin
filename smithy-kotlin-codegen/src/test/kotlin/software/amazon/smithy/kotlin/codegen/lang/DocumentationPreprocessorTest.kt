@@ -37,7 +37,7 @@ class DocumentationPreprocessorTest {
         }
         
         union MyUnion {
-            @documentation("foo [bar baz qux] quux")
+            @documentation("foo [bar [baz] qux] quux")
             Integer: Integer,
             String: String,
             Unit: Unit
@@ -60,7 +60,7 @@ class DocumentationPreprocessorTest {
             "com.test#Foo" to "This should not be modified",
             "com.test#Foo\$Unit" to "member docs",
             "com.test#Unit" to "UserName@&#91;SubDomain.&#93;Domain.TopLevelDomain",
-            "com.test#MyUnion\$Integer" to "foo &#91;bar baz qux&#93; quux",
+            "com.test#MyUnion\$Integer" to "foo &#91;bar &#91;baz&#93; qux&#93; quux",
         )
         expectedDocs.forEach { (shapeId, expected) ->
             val shape = modified.expectShape(ShapeId.from(shapeId))
