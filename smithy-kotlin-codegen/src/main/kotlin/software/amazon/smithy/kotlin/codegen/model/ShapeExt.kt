@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
+import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import kotlin.streams.toList
@@ -68,12 +69,15 @@ fun StructureShape.hasStreamingMember(model: Model): Boolean =
 /**
  * Returns true if any operation bound to the service contains an input member marked with the IdempotencyTokenTrait
  */
-fun ServiceShape.hasIdempotentTokenMember(model: Model) =
-    this.operations.any { operationShapeId ->
-        val operation = model.expectShape(operationShapeId) as OperationShape
-        operation.input.isPresent &&
-            model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }
-    }
+fun ServiceShape.hasIdempotentTokenMember(model: Model): Boolean {
+    val topDownIndex = TopDownIndex.of(model)
+    return topDownIndex
+        .getContainedOperations(id)
+        .any { operation ->
+            operation.input.isPresent &&
+                model.expectShape(operation.input.get()).members().any { it.hasTrait(IdempotencyTokenTrait.ID.name) }
+        }
+}
 
 /**
  * Return the formatted (Kotlin) function signature for the given operation
@@ -94,7 +98,11 @@ fun OperationIndex.operationSignature(model: Model, symbolProvider: SymbolProvid
         "suspend fun $operationName($inputParam)$outputParam"
     } else {
         val outputName = output.get()
-        val inputSignature = if (inputParam.isNotEmpty()) "$inputParam, " else ""
+        val inputSignature = if (inputParam.isNotEmpty()) {
+            "$inputParam, "
+        } else {
+            ""
+        }
         "suspend fun <T> $operationName(${inputSignature}block: suspend ($outputName) -> T): T"
     }
 }

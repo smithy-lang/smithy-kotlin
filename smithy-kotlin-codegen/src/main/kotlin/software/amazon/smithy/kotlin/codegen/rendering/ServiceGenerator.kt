@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.operationSignature
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -13,22 +14,22 @@ import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 
-/**
- * Section name used when rendering the service interface companion object
- */
-const val SECTION_SERVICE_INTERFACE_COMPANION_OBJ = "service-interface-companion-obj"
-
-/**
- * Section name used when rendering the service configuration object
- */
-const val SECTION_SERVICE_INTERFACE_CONFIG = "service-interface-config"
-
 // FIXME - rename file and class to ServiceClientGenerator
 
 /**
  * Renders just the service client interfaces. The actual implementation is handled by protocol generators
  */
 class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
+    /**
+     * SectionId used when rendering the service interface companion object
+     */
+    object ServiceInterfaceCompanionObject : SectionId
+
+    /**
+     * SectionId used when rendering the service configuration object
+     */
+    object SectionServiceInterfaceConfig : SectionId
+
     init {
         require(ctx.shape is ServiceShape) { "ServiceShape is required for generating a service interface; was: ${ctx.shape}" }
     }
@@ -52,7 +53,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
             .call {
                 // allow integrations to add additional fields to companion object or configuration
                 writer.write("")
-                writer.withState(SECTION_SERVICE_INTERFACE_COMPANION_OBJ) {
+                writer.declareSection(ServiceInterfaceCompanionObject) {
                     renderCompanionObject()
                 }
                 writer.write("")
@@ -68,7 +69,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     }
 
     private fun renderServiceConfig() {
-        writer.withState(SECTION_SERVICE_INTERFACE_CONFIG) {
+        writer.declareSection(SectionServiceInterfaceConfig) {
             ClientConfigGenerator(ctx).render()
         }
     }

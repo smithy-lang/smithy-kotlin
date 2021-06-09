@@ -64,8 +64,8 @@ heterogeneous members. In Kotlin this can be represented as either a normal clas
 
 Traits of generated classes in Kotlin:
 
-1. We generate standard classes for types rather than Kotlin's data classes.
-   [See here](domain-class-types-in-kotlin-sdk.md) for the reasoning.
+1. We generate standard classes for types rather than Kotlin's data classes. See
+   [Domain class types in Kotlin SDK](domain-class-types-in-kotlin-sdk.md) for the reasoning.
 1. We generate request and response classes with nullable properties, regardless of any modeling notions of
    required-ness. [See here](nullable-properties-in-sdk-domain-types.md) for
    discussion.
