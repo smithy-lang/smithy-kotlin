@@ -49,7 +49,7 @@ class HttpProtocolClientGeneratorTest {
         val expected = """
     init {
         val httpClientEngine = config.httpClientEngine ?: KtorEngine(HttpClientEngineConfig())
-        client = sdkHttpClient(httpClientEngine)
+        client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)
     }
 """
         commonTestContents.shouldContainOnlyOnce(expected)
