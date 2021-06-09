@@ -111,6 +111,11 @@ data class HttpStatusCode(val value: Int, val description: String) {
  */
 fun HttpStatusCode.isSuccess(): Boolean = value in HttpStatusCode.Category.SUCCESS
 
+/**
+ * Check if the given status code is an informational code (HTTP codes 100 to 199 are considered informational)
+ */
+fun HttpStatusCode.isInformational(): Boolean = value in HttpStatusCode.Category.INFORMATION
+
 fun HttpStatusCode.category(): HttpStatusCode.Category = HttpStatusCode.Category.fromCode(this.value)
 
 private fun statusCodeMap(): Map<Int, HttpStatusCode> = mapOf(

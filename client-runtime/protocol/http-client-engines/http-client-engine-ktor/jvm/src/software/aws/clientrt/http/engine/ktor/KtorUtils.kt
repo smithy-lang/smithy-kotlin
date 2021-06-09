@@ -95,6 +95,8 @@ internal class KtorContentStream(private val channel: ByteReadChannel, private v
         return read
     }
 
+    override suspend fun awaitContent() = channel.awaitContent()
+
     override fun cancel(cause: Throwable?): Boolean {
         try {
             return channel.cancel(cause)
