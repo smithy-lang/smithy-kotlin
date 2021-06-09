@@ -1033,7 +1033,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
 // import CLIENT-RT.*
 internal fun importSerdePackage(writer: KotlinWriter) {
-    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "SdkFieldDescriptor")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "SdkObjectDescriptor")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "SerialKind")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "Deserializer")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "deserializeStruct")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "deserializeList")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "deserializeMap")
     writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
 }
 
