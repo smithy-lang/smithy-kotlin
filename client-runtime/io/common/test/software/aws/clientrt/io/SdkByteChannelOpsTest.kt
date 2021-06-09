@@ -5,6 +5,8 @@
 
 package software.aws.clientrt.io
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import software.aws.clientrt.testing.runSuspendTest
 import kotlin.test.*
 
@@ -77,5 +79,56 @@ class SdkByteChannelOpsTest {
 
         rc = chan.readAvailable(buffer)
         assertEquals(2, rc)
+    }
+
+    @Test
+    fun testReadAvailableNoSuspend() = runSuspendTest {
+        val chan = SdkByteReadChannel("world!".encodeToByteArray())
+        val buffer = SdkBuffer(16)
+        buffer.write("hello, ")
+
+        val rc = chan.readAvailable(buffer)
+        assertEquals(6, rc)
+
+        assertEquals("hello, world!", buffer.decodeToString())
+    }
+
+    @Test
+    fun testReadAvailableSuspend() = runSuspendTest {
+        val chan = SdkByteChannel()
+        val job = launch {
+            val buffer = SdkBuffer(16)
+            buffer.write("hello, ")
+
+            // should suspend
+            val rc = chan.readAvailable(buffer)
+            assertEquals(6, rc)
+
+            assertEquals("hello, world!", buffer.decodeToString())
+        }
+        yield()
+
+        // should resume
+        chan.writeUtf8("world!")
+
+        job.join()
+        Unit
+    }
+
+    @Test
+    fun testAwaitContent() = runSuspendTest {
+        val chan = SdkByteChannel()
+        var awaitingContent = false
+        launch {
+            awaitingContent = true
+            chan.awaitContent()
+            awaitingContent = false
+        }
+
+        yield()
+        assertTrue(awaitingContent)
+        chan.writeByte(1)
+        yield()
+        assertFalse(awaitingContent)
     }
 }

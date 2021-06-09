@@ -46,6 +46,8 @@ actual interface SdkByteReadChannel : Closeable {
     actual suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int
     suspend fun readAvailable(sink: ByteBuffer): Int
 
+    actual suspend fun awaitContent()
+
     /**
      * Close channel with optional cause cancellation
      */
