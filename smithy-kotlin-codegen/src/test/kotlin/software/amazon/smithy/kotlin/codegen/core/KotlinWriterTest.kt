@@ -50,4 +50,14 @@ class KotlinWriterTest {
         val actual = unit.toString()
         actual.shouldContainOnlyOnceWithDiff("here is some sweet sweet html")
     }
+
+    @Test
+    fun `it escapes invalid markdown links`() {
+        // https://github.com/awslabs/aws-sdk-kotlin/issues/153
+        val unit = KotlinWriter(TestModelDefault.NAMESPACE)
+        val docs = "UserName@[SubDomain.]Domain.TopLevelDomain"
+        unit.dokka(docs)
+        val actual = unit.toString()
+        actual.shouldContainOnlyOnceWithDiff("UserName@`[`SubDomain.`]`Domain.TopLevelDomain")
+    }
 }
