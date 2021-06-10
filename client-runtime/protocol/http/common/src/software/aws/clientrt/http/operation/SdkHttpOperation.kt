@@ -11,6 +11,7 @@ import software.aws.clientrt.http.Feature
 import software.aws.clientrt.http.FeatureKey
 import software.aws.clientrt.http.HttpClientFeatureFactory
 import software.aws.clientrt.http.HttpHandler
+import software.aws.clientrt.http.response.complete
 import software.aws.clientrt.logging.Logger
 import software.aws.clientrt.logging.withContext
 import software.aws.clientrt.util.InternalApi
@@ -87,7 +88,7 @@ suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
         return block(output)
     } finally {
         // pull the raw response(s) out of the context and cleanup any resources
-        val httpResp = context.getOrNull(HttpOperationContext.HttpCallList)?.forEach { it.response.complete() }
+        val httpResp = context.getOrNull(HttpOperationContext.HttpCallList)?.forEach { it.complete() }
     }
 }
 

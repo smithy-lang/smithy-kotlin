@@ -9,10 +9,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.*
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.request.HttpRequestBuilder
@@ -36,10 +33,22 @@ private const val BUFFER_SIZE = 4096
  */
 internal class KtorRequestAdapter(
     private val sdkRequest: HttpRequest,
-    private val callContext: CoroutineContext
-) {
+    callContext: CoroutineContext
+) : CoroutineScope {
 
     internal constructor(builder: HttpRequestBuilder, callContext: CoroutineContext) : this(builder.build(), callContext)
+
+    private val fillRequestJob = Job()
+    override val coroutineContext: CoroutineContext = callContext + Dispatchers.IO + fillRequestJob + CoroutineName("sdk-to-ktor-stream-proxy")
+    init {
+        callContext[Job]?.invokeOnCompletion { cause ->
+            if (cause != null) {
+                fillRequestJob.completeExceptionally(cause)
+            } else {
+                fillRequestJob.complete()
+            }
+        }
+    }
 
     fun toBuilder(): KtorRequestBuilder {
         // convert the basic request properties (minus the body)
@@ -63,6 +72,10 @@ internal class KtorRequestAdapter(
     @OptIn(ExperimentalStdlibApi::class)
     private fun proxyRequestStream(body: HttpBody.Streaming, contentType: ContentType?): OutgoingContent {
         val source = body.readFrom()
+        fillRequestJob.invokeOnCompletion { cause ->
+            source.cancel(cause)
+        }
+
         return object : OutgoingContent.ReadChannelContent() {
             override val contentType: ContentType? = contentType
             override val contentLength: Long? = body.contentLength
@@ -74,9 +87,8 @@ internal class KtorRequestAdapter(
                 // we want to read values off the incoming source and write them to this channel
                 val channel = ByteChannel()
 
-                // launch a coroutine to deal with filling the channel, it will be tied to the `callContext`
-                val ctx = callContext + Dispatchers.IO + CoroutineName("sdk-to-ktor-stream-proxy")
-                GlobalScope.launch(ctx) {
+                // launch a coroutine to deal with filling the channel
+                val proxyJob = launch {
                     try {
                         forwardSource(channel, source)
                         channel.close()
@@ -85,6 +97,15 @@ internal class KtorRequestAdapter(
                         channel.close(ex)
                     }
                 }
+
+                proxyJob.invokeOnCompletion { cause ->
+                    if (cause != null) {
+                        fillRequestJob.completeExceptionally(cause)
+                    } else {
+                        fillRequestJob.complete()
+                    }
+                }
+
                 return channel
             }
 

@@ -9,6 +9,7 @@ import software.aws.clientrt.http.HttpBody
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.content.ByteArrayContent
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineBase
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.http.response.HttpResponse
@@ -78,7 +79,7 @@ fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runSusp
     val testBuilder = HttpResponseTestBuilder<T>().apply(block)
 
     // provide the mock engine
-    val mockEngine = object : HttpClientEngine {
+    val mockEngine = object : HttpClientEngineBase("smithy-test-resp-mock-engine") {
         override suspend fun roundTrip(request: HttpRequest): HttpCall {
             val headers = Headers {
                 testBuilder.expected.headers.forEach { (key, value) ->

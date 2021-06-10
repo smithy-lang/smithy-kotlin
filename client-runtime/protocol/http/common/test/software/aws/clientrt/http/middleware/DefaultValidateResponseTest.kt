@@ -5,7 +5,7 @@
 package software.aws.clientrt.http.middleware
 
 import software.aws.clientrt.http.*
-import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineBase
 import software.aws.clientrt.http.operation.newTestOperation
 import software.aws.clientrt.http.operation.roundTrip
 import software.aws.clientrt.http.request.HttpRequest
@@ -21,7 +21,7 @@ import kotlin.test.assertFailsWith
 class DefaultValidateResponseTest {
     @Test
     fun itThrowsExceptionOnNon200Response() = runSuspendTest {
-        val mockEngine = object : HttpClientEngine {
+        val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val resp = HttpResponse(
                     HttpStatusCode.BadRequest,
@@ -46,7 +46,7 @@ class DefaultValidateResponseTest {
 
     @Test
     fun itPassesSuccessResponses() = runSuspendTest {
-        val mockEngine = object : HttpClientEngine {
+        val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val resp = HttpResponse(
                     HttpStatusCode.Accepted,
