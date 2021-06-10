@@ -7,10 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.expectTrait
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.shapes.*
@@ -56,18 +53,23 @@ open class XmlSerdeDescriptorGenerator(
         return objTraits
     }
 
+    /**
+     * Gets the serial name for the given member, taking into account [XmlNameTrait] if present.
+     */
+    protected fun getSerialName(member: MemberShape, nameSuffix: String): String = when {
+        nameSuffix.isEmpty() -> member.getTrait<XmlNameTrait>()?.value ?: member.memberName
+        else -> member.getTrait<XmlNameTrait>()?.value ?: "member"
+    }
+
     override fun getFieldDescriptorTraits(
         member: MemberShape,
         targetShape: Shape,
         nameSuffix: String
-    ): List<SdkFieldDescriptorTrait> {
+    ): MutableList<SdkFieldDescriptorTrait> {
 
         val traitList = mutableListOf<SdkFieldDescriptorTrait>()
 
-        val serialName = when (nameSuffix.isEmpty()) {
-            true -> member.getTrait<XmlNameTrait>()?.value ?: member.memberName
-            false -> member.getTrait<XmlNameTrait>()?.value ?: "member"
-        }
+        val serialName = getSerialName(member, nameSuffix)
         traitList.add(SerdeXml.XmlSerialName, serialName.dq())
 
         val memberTarget = ctx.model.expectShape(member.target)
