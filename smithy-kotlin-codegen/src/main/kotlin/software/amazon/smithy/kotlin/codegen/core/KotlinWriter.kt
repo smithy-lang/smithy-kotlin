@@ -98,14 +98,20 @@ fun KotlinWriter.addImport(
 }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
+    private val fullyQualifiedTypes: MutableSet<ImportStatement>
+    val dependencies: MutableList<SymbolDependency> = mutableListOf()
+    private val imports = ImportDeclarations()
+
     init {
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
         expressionStart = '#'
 
+        fullyQualifiedTypes = mutableSetOf()
+
         // type name: `Foo`
-        putFormatter('T', KotlinSymbolFormatter())
+        putFormatter('T', KotlinSymbolFormatter(fullyQualifiedTypes))
         // fully qualified type: `aws.sdk.kotlin.model.Foo`
         putFormatter('Q', KotlinSymbolFormatter(fullyQualifiedNames = true))
 
@@ -117,9 +123,6 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         putFormatter('D', KotlinPropertyFormatter(setDefault = true))
     }
 
-    val dependencies: MutableList<SymbolDependency> = mutableListOf()
-    private val imports = ImportDeclarations()
-
     fun addImport(symbol: Symbol, alias: String = symbol.name) {
         // don't import built-in symbols
         if (symbol.isBuiltIn) return
@@ -129,7 +132,10 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 
         // only add imports for symbols in a different namespace
         if (symbol.namespace.isNotEmpty() && symbol.namespace != fullPackageName) {
-            imports.addImport(symbol.namespace, symbol.name, alias)
+            imports.addImport(symbol.namespace, symbol.name, alias) { fullyQualifiedImport ->
+                // here we need to track the removed symbols as needing full qualification
+                fullyQualifiedTypes.add(fullyQualifiedImport)
+            }
         }
     }
 
@@ -147,7 +153,10 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     /**
      * Directly add an import
      */
-    fun addImport(packageName: String, symbolName: String, alias: String = symbolName) = imports.addImport(packageName, symbolName, alias)
+    fun addImport(packageName: String, symbolName: String, alias: String = symbolName) =
+        imports.addImport(packageName, symbolName, alias) { fullyQualifiedImport ->
+            fullyQualifiedTypes.add(fullyQualifiedImport)
+        }
 
     override fun toString(): String {
         val contents = super.toString()
@@ -231,12 +240,19 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
  * Implements Kotlin symbol formatting for the `#T` and `#Q` formatter(s)
  */
 private class KotlinSymbolFormatter(
+    private val fullyQualifiedTypes: Set<ImportStatement> = emptySet(),
     private val fullyQualifiedNames: Boolean = false,
 ) : BiFunction<Any, String, String> {
     override fun apply(type: Any, indent: String): String {
         when (type) {
             is Symbol -> {
-                return if (fullyQualifiedNames) type.fullName else type.name
+                if (type.name == "Deserializer") {
+                    println("boo")
+                }
+
+                val fqn = fullyQualifiedNames || fullyQualifiedTypes.contains(ImportStatement(type.namespace, type.name, ""))
+
+                return if (fqn) type.fullName else type.name
             }
             else -> throw CodegenException("Invalid type provided for #T. Expected a Symbol, but found `$type`")
         }

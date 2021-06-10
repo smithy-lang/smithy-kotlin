@@ -995,11 +995,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .openBlock("internal suspend fun #T(deserializer: Deserializer): #T {", deserializerSymbol, symbol)
             .call {
                 if (shape.isUnionShape) {
-                    writer.write("var value: ${symbol.name}? = null")
+                    writer.write("var value: #T? = null", symbol)
                     renderDeserializeDocumentBody(ctx, shape, writer)
                     writer.write("return value ?: throw DeserializationException(\"Deserialized value unexpectedly null: ${symbol.name}\")")
                 } else {
-                    writer.write("val builder = ${symbol.name}.builder()")
+                    writer.write("val builder = #T.builder()", symbol)
                     renderDeserializeDocumentBody(ctx, shape, writer)
                     writer.write("return builder.build()")
                 }
@@ -1037,9 +1037,12 @@ internal fun importSerdePackage(writer: KotlinWriter) {
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "SdkObjectDescriptor")
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "SerialKind")
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "Deserializer")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "Serializer")
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "deserializeStruct")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "serializeStruct")
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "deserializeList")
     writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "deserializeMap")
+    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "field")
     writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
 }
 
