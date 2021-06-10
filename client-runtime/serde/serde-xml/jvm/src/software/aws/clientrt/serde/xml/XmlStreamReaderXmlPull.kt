@@ -124,7 +124,7 @@ internal class XmlStreamReaderXmlPull(
     private fun XmlPullParser.takeNextValidToken(): XmlToken {
         try {
             do {
-                this.nextToken()
+                this.next()
             } while (lastToken() == null)
 
             return lastToken()
