@@ -8,7 +8,7 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
-import io.ktor.utils.io.ByteReadChannel
+import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
 import software.aws.clientrt.http.content.ByteArrayContent
@@ -141,27 +141,20 @@ class KtorRequestAdapterTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
-        // NOTE: Again sizing here takes some internal knowledge to ensure
-        // the "fill" coroutine is forced into a waiting state.
-        val content = ByteArray(8192) { (it % 128).toByte() }
-
-        val sdkSource = ByteReadChannel(content)
+        val sdkSource = ByteChannel()
         sdkBuilder.body = KtorHttpBody(sdkSource)
 
         val job = launch {
             val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()
             val convertedBody = actual.body as OutgoingContent.ReadChannelContent
-
             val channel = convertedBody.readFrom()
-            val buffer = ByteBuffer.allocate(2048)
-            for (i in 0 until 4) {
-                channel.readAvailable(buffer)
-                buffer.clear()
-            }
+            channel.readRemaining()
         }
 
-        delay(500)
+        yield()
+
         job.cancel()
+        yield()
         job.join()
 
         // if test runs to completion it worked. The "fill" coroutine that pulls
