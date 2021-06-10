@@ -20,21 +20,7 @@ data class HttpResponse(
     val status: HttpStatusCode,
     val headers: Headers,
     val body: HttpBody,
-) : ProtocolResponse {
-
-    /**
-     * Close the underlying response and cleanup any resources associated with it.
-     * After closing the response body is no longer valid and should not be read from.
-     *
-     * This must be called when finished with the response!
-     */
-    fun complete() {
-        when (body) {
-            is HttpBody.Streaming -> body.readFrom().cancel(null)
-            else -> return
-        }
-    }
-}
+) : ProtocolResponse
 
 /**
  * Get an HTTP header value by name. Returns the first header if multiple headers are set

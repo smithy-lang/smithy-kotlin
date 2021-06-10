@@ -9,26 +9,27 @@ import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpStatement
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import software.aws.clientrt.http.Headers
 import software.aws.clientrt.http.HttpStatusCode
 import software.aws.clientrt.http.engine.HttpClientEngine
+import software.aws.clientrt.http.engine.HttpClientEngineBase
 import software.aws.clientrt.http.engine.HttpClientEngineConfig
+import software.aws.clientrt.http.engine.callContext
 import software.aws.clientrt.http.request.HttpRequest
 import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.logging.*
 import software.aws.clientrt.time.Instant
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import software.aws.clientrt.http.response.HttpResponse as SdkHttpResponse
 
 /**
  * JVM [HttpClientEngine] backed by Ktor
  */
-class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
+class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("ktor") {
     val client: HttpClient = HttpClient(OkHttp) {
         // TODO - propagate applicable client engine config to OkHttp engine
 
@@ -38,12 +39,12 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
     private val logger = Logger.getLogger<KtorEngine>()
 
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
-        val callContext = coroutineContext
+        val callContext = callContext()
 
         val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 
         // run the request in another coroutine to allow streaming body to be handled
-        GlobalScope.launch(callContext + Dispatchers.IO) {
+        launch(callContext + Dispatchers.IO) {
             try {
                 execute(callContext, request, respChannel)
             } catch (ex: Exception) {
@@ -77,10 +78,11 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
             // we have a lifetime problem here...the stream (and HttpResponse instance) are only valid
             // until the end of this block. We don't know if the consumer wants to read the content fully or
             // stream it. We need to wait until the entire content has been read before leaving the block and
-            // releasing the underlying network resources...
+            // releasing the underlying network resources. We do this by blocking until the request job
+            // completes, at which point we signal it's safe to exit the block and release the underlying resources.
+            callContext.job.invokeOnCompletion { waiter.signal() }
 
-            // when the body has been read fully we will signal which allows the current block to exit
-            val body = KtorHttpBody(httpResp.content) { waiter.signal() }
+            val body = KtorHttpBody(httpResp.content)
 
             // copy the headers so that we no longer depend on the underlying ktor HttpResponse object
             // outside of the body content (which will signal once read that it is safe to exit the block)
@@ -93,7 +95,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngine {
             )
 
             logger.trace("signalling response")
-            val call = HttpCall(sdkRequest, resp, reqTime, respTime)
+            val call = HttpCall(sdkRequest, resp, reqTime, respTime, callContext)
             channel.send(call)
 
             logger.trace("waiting on body to be consumed")

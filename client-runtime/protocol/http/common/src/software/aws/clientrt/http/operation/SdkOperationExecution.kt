@@ -10,6 +10,7 @@ import software.aws.clientrt.http.HttpHandler
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.response.HttpCall
 import software.aws.clientrt.http.response.HttpResponse
+import software.aws.clientrt.http.response.complete
 import software.aws.clientrt.io.Handler
 import software.aws.clientrt.io.middleware.MapRequest
 import software.aws.clientrt.io.middleware.Middleware
@@ -152,7 +153,7 @@ class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
         if (callList.isNotEmpty()) {
             // an existing call was made and we are retrying for some reason, ensure the resources from the previous
             // attempt are released
-            callList.last().response.complete()
+            callList.last().complete()
         }
         val call = next.call(request)
         callList.add(call)

@@ -3,8 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 package software.aws.clientrt.http.engine.ktor
-import io.kotest.matchers.booleans.shouldBeFalse
-import io.kotest.matchers.booleans.shouldBeTrue
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.ktor.client.call.HttpClientCall
@@ -15,9 +13,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.*
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import software.aws.clientrt.http.*
 import software.aws.clientrt.http.request.HttpRequestBuilder
 import software.aws.clientrt.http.request.headers
@@ -115,89 +110,5 @@ class KtorUtilsTest {
         assertEquals(setOf("foo", "baz"), converted.names())
         assertEquals(true, converted.contains("baz", "quz"))
         assertEquals(true, converted.contains("baz"))
-    }
-
-    @Test
-    fun KtorContentStreamNotifiesOnReadAll() = runBlocking {
-        val channel = ByteChannel(true)
-        var called = false
-        val notify = {
-            called = true
-        }
-
-        val bytes = "testing".toByteArray()
-        channel.writeFully(bytes)
-        channel.close()
-
-        val content = KtorContentStream(channel, notify)
-        val actual = content.readRemaining()
-        assertEquals(bytes.size, actual.size)
-        called.shouldBeTrue()
-    }
-
-    @Test
-    fun KtorContentStreamNotifiesOnReadAvailable() = runBlocking {
-        val channel = ByteChannel(true)
-        var called = false
-        val notify = {
-            called = true
-        }
-
-        val bytes = "testing".toByteArray()
-        channel.writeFully(bytes)
-        channel.close()
-
-        val content = KtorContentStream(channel, notify)
-        val dst = ByteArray(16)
-        var read = content.readAvailable(dst, 0, 5)
-        assertEquals(5, read)
-        called.shouldBeFalse()
-        read = content.readAvailable(dst, 5, 2)
-        assertEquals(2, read)
-        called.shouldBeTrue()
-    }
-
-    @Test
-    fun KtorContentStreamNotifiesOnReadFully() = runBlocking {
-        val channel = ByteChannel(true)
-        var called = false
-        val notify = {
-            called = true
-        }
-
-        val bytes = "testing".toByteArray()
-        channel.writeFully(bytes)
-        channel.close()
-
-        val content = KtorContentStream(channel, notify)
-        val dst = ByteArray(16)
-        content.readFully(dst, 0, 5)
-        called.shouldBeFalse()
-        content.readFully(dst, 5, 2)
-        called.shouldBeTrue()
-    }
-
-    @Test
-    fun KtorContentStreamNotifiesOnCancel() = runBlocking {
-        val channel = ByteChannel(true)
-        var called = false
-        val notify = {
-            called = true
-        }
-
-        val bytes = "testing".toByteArray()
-        channel.writeFully(bytes)
-
-        val content = KtorContentStream(channel, notify)
-        val dst = ByteArray(16)
-        launch {
-            assertFailsWith(RuntimeException::class, "testing") {
-                content.readFully(dst, 0, 10)
-            }
-        }
-        delay(200)
-        content.cancel(RuntimeException("testing"))
-
-        called.shouldBeTrue()
     }
 }
