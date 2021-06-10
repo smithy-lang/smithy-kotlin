@@ -269,11 +269,11 @@ class AccessPointAlreadyExistsException private constructor(builder: BuilderImpl
 }
 ```
 
-**Example usage:**
+### Example usage
 
 ![Example Usage](resources/sdk-exception-metadata-usage-example.png)
 
-**Example extensions:**
+### Example extensions
 
 
 ```kotlin
@@ -308,13 +308,13 @@ val AwsErrorMetadata.extendedRequestId: String
 ```
 
 
-**Advantages**:
+### Advantages
 
 * Gives the appearance of immutability while still allowing the fields to be set at runtime
 * Easily extendable. The metadata type can be customized and generated per service and extension properties can be defined on it as needed.
 * Significantly reduces the chance of conflicts since there is only one field, `errorMetadata` , to worry about (does not completely remove the chance of a conflict though).
 
-**Disadvantages**:
+### Disadvantages
 
 * Discoverability. Common properties can be defined in the base class (e.g. `AwsErrorMetadata.requestId`) but any extension properties past this may be slightly more difficult to discover. This could probably be mitigated somewhat by some careful choices around the package/subpackage that extensions are defined in such that it’s at least always consistent.
 
@@ -576,7 +576,7 @@ class AccessPointAlreadyExistsException private constructor(builder: BuilderImpl
     }
 
     private class BuilderImpl : DslBuilder, AwsServiceException.BuilderImpl {
-       ` ``override var errorCode: String? = ""  // conflicts with parent errorCode`
+        override var errorCode: String? = ""  // conflicts with parent errorCode
         override var errorMessage: String? = ""
         override var accessPointId: String? = ""
 
@@ -618,11 +618,11 @@ suspend fun myMiddleware(request, next) {
 
 ## Future Considerations
 
-* Some SDK’s expose fields like `requestId` on more than just the error types. If the Kotlin SDK chooses to do something similar we should reconcile and ensure that there is “one way” to get at a piece of data.
+* Some SDKs expose fields like `requestId` on more than just the error types. If the Kotlin SDK chooses to do something similar we should reconcile and ensure that there is “one way” to get at a piece of data.
 
 ## Recommendation
 
-The recommendation/consensus is to move forward with the proposed (property bag) design which provides the best opportunity for future extension, removes the customer facing mutability, and reduces the chance of conflict to a single property.
+The recommendation/consensus was to move forward with the proposed (property bag) design which provides the best opportunity for future extension, removes the customer facing mutability, and reduces the chance of conflict to a single property.
 
 ### Additional References
 

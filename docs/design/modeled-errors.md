@@ -10,7 +10,7 @@ See the additional references in the Appendix for overview of Smithy or prior de
 
 # Design
 
-### Generic SDK Exceptions
+## Generic SDK Exceptions
 
 The following exceptions will be defined in the common client runtime. Modeled (Smithy) exceptions will inherit from `ServiceException`.  
 
@@ -157,9 +157,9 @@ The Smithy [error trait](https://awslabs.github.io/smithy/1.0/spec/core/type-ref
  The `message` member (if present) is translated to the exception `message` field that is always present on all SDK exceptions.
 
 
-**Protocol Response**
+ ### Protocol Response
 
-The current Android SDK and both the v1/v2 Java SDK's all provide access to pieces of the HTTP response (e.g. status code and headers) directly in the modeled service exceptions.
+The current Android SDK and both the v1/v2 Java SDKs all provide access to pieces of the HTTP response (e.g. status code and headers) directly in the modeled service exceptions.
 
 * [Android](https://aws-amplify.github.io/aws-sdk-android/docs/reference/index.html)
 * [V2 Java](https://sdk.amazonaws.com/java/api/latest/index.html?software/amazon/awssdk/core/exception/SdkServiceException.html) (via AwsErrorDetails)
@@ -195,7 +195,7 @@ fun ProtocolResponse.statusCode(): HttpStatusCode? {...}
 
 
 
-### AWS Kotlin SDK Exceptions  
+## AWS Kotlin SDK Exceptions  
 
 Modeled exceptions in the generated AWS Kotlin SDK will inherit from `AwsServiceException` which adds a few additional fields to the generic client runtime `ServiceException`.  
   
@@ -286,7 +286,7 @@ Extension of `AmazonClientException` that represents an error response returned 
 The API currently looks like this:
 
 ```java
-enum class ErrorType {
+enum ErrorType {
     Client, Service, Unknown
 }
 
