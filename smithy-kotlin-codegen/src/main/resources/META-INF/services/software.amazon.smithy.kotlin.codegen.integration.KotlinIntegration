@@ -1,1 +1,2 @@
 software.amazon.smithy.kotlin.codegen.lang.BuiltinPreprocessor
+software.amazon.smithy.kotlin.codegen.lang.DocumentationPreprocessor

@@ -295,7 +295,7 @@ private val commonHtmlTags = setOf(
 // NOTE: Currently we look for specific strings of Html tags commonly found in docs
 //       and remove them.  A better solution would be to generally convert from HTML to "pure"
 //       markdown such that formatting is preserved.
-// TODO: https://www.pivotaltracker.com/story/show/177053427
+// TODO: https://github.com/awslabs/smithy-kotlin/issues/136
 private fun sanitizeDocumentation(doc: String): String = doc
     .stripAll(commonHtmlTags)
     // Docs can have valid $ characters that shouldn't run through formatters.
