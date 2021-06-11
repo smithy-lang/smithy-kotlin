@@ -34,7 +34,9 @@ class HttpProtocolClientGeneratorTest {
     fun `it imports external symbols`() {
         commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
         commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.transform.*")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.*")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.HttpBody")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation.HttpDeserialize")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.middleware.MutateHeaders")
         commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
     }
 

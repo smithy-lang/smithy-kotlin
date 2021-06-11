@@ -19,19 +19,23 @@ object RuntimeTypes {
     object Http {
         val HttpBody = runtimeSymbol("HttpBody", KotlinDependency.CLIENT_RT_HTTP)
         val HttpMethod = runtimeSymbol("HttpMethod", KotlinDependency.CLIENT_RT_HTTP)
-        val readAll = runtimeSymbol("readAll", KotlinDependency.CLIENT_RT_HTTP)
         val SdkHttpClient = runtimeSymbol("SdkHttpClient", KotlinDependency.CLIENT_RT_HTTP)
         val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.CLIENT_RT_HTTP)
         val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_HTTP, "content")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.CLIENT_RT_HTTP, "middleware")
         val EncodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.CLIENT_RT_HTTP, "util")
-        val allSymbols = setOf(HttpBody, HttpMethod, readAll, ByteArrayContent, MutateHeadersMiddleware, EncodeLabel, SdkHttpClient, SdkHttpClientFn)
+        val readAll = runtimeSymbol("readAll", KotlinDependency.CLIENT_RT_HTTP)
+        val parameters = runtimeSymbol("parameters", KotlinDependency.CLIENT_RT_HTTP)
+        val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.CLIENT_RT_HTTP)
+        val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.CLIENT_RT_HTTP)
+        val allSymbols = setOf(HttpBody, HttpMethod, readAll, parameters, toByteStream, toHttpBody, ByteArrayContent, MutateHeadersMiddleware, EncodeLabel, SdkHttpClient, SdkHttpClientFn)
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.CLIENT_RT_HTTP, "request")
-            val url = runtimeSymbol("url", KotlinDependency.CLIENT_RT_HTTP, "request")
             val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, "request")
-            val allSymbols = setOf(HttpRequest, HttpRequestBuilder, url)
+            val url = runtimeSymbol("url", KotlinDependency.CLIENT_RT_HTTP, "request")
+            val headers = runtimeSymbol("headers", KotlinDependency.CLIENT_RT_HTTP, "request")
+            val allSymbols = setOf(HttpRequest, HttpRequestBuilder, url, headers)
         }
 
         object Response {
@@ -46,7 +50,8 @@ object RuntimeTypes {
             val SdkHttpOperation = runtimeSymbol("SdkHttpOperation", KotlinDependency.CLIENT_RT_HTTP, "operation")
             val context = runtimeSymbol("context", KotlinDependency.CLIENT_RT_HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.CLIENT_RT_HTTP, "operation")
-            val allSymbols = setOf(HttpSerialize, HttpDeserialize, SdkHttpOperation, context, roundTrip)
+            val execute = runtimeSymbol("execute", KotlinDependency.CLIENT_RT_HTTP, "operation")
+            val allSymbols = setOf(HttpSerialize, HttpDeserialize, SdkHttpOperation, context, roundTrip, execute)
         }
 
         object Engine {

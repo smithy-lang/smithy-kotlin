@@ -893,7 +893,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         writer.write("val $keyCollName = response.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
-            .write("val map = mutableMapOf<String, #T>", targetValueSymbol)
+            .write("val map = mutableMapOf<String, #T>()", targetValueSymbol)
             .openBlock("for (hdrKey in $keyCollName) {")
             .call {
                 val getFn = when (targetValueShape) {

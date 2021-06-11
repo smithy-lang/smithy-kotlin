@@ -163,7 +163,19 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expected = """
-            import software.aws.clientrt.serde.*
+            import software.aws.clientrt.serde.DeserializationException
+            import software.aws.clientrt.serde.Deserializer
+            import software.aws.clientrt.serde.SdkFieldDescriptor
+            import software.aws.clientrt.serde.SdkObjectDescriptor
+            import software.aws.clientrt.serde.SerialKind
+            import software.aws.clientrt.serde.SerializationException
+            import software.aws.clientrt.serde.Serializer
+            import software.aws.clientrt.serde.asSdkSerializable
+            import software.aws.clientrt.serde.deserializeList
+            import software.aws.clientrt.serde.deserializeMap
+            import software.aws.clientrt.serde.deserializeStruct
+            import software.aws.clientrt.serde.field
+            import software.aws.clientrt.serde.serializeStruct
             import software.aws.clientrt.serde.xml.Flattened
             import software.aws.clientrt.serde.xml.XmlAttribute
             import software.aws.clientrt.serde.xml.XmlSerialName
