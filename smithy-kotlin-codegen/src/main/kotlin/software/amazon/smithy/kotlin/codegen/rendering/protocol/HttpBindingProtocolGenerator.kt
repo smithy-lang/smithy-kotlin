@@ -419,7 +419,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         writer.write("#S.$encodeFn,", "\${$identifier}")
                     } else {
                         // literal
-                        writer.write("#S,", segment.content.toEscapedLiteral())
+                        writer.write("\"#L\",", segment.content.toEscapedLiteral())
                     }
                 }
             }
@@ -434,7 +434,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     it.content.toEscapedLiteral()
                 }
             )
-            writer.write("path = #S", resolvedPath)
+            writer.write("path = \"#L\"", resolvedPath)
         }
     }
 

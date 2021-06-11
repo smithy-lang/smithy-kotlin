@@ -1,0 +1,13 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.19.0
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'snyk:lic:maven:com.github.tschuchortdev:kotlin-compile-testing:MPL-2.0':
+    - '*':
+        reason: None Given
+        expires: 2030-01-01T00:00:00.000Z
+  'snyk:lic:maven:org.jetbrains.intellij.deps:trove4j:LGPL-2.1':
+    - '*':
+        reason: None Given
+        expires: 2030-01-01T00:00:00.000Z
+patch: {}

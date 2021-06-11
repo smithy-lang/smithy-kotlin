@@ -22,3 +22,27 @@ internal actual fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int, le
  * Create a new SdkBuffer using the given [ByteBuffer] as the contents
  */
 fun SdkBuffer.Companion.of(byteBuffer: ByteBuffer): SdkBuffer = SdkBuffer(Memory.of(byteBuffer))
+
+/**
+ * Read the buffer's content to the [dst] buffer moving its position.
+ */
+fun SdkBuffer.readFully(dst: ByteBuffer) {
+    val length = dst.remaining()
+    read { memory, readStart, _ ->
+        memory.copyTo(dst, readStart)
+        length
+    }
+}
+
+/**
+ * Read as much from this buffer as possible to [dst] buffer moving its position
+ */
+fun SdkBuffer.readAvailable(dst: ByteBuffer) {
+    val wc = minOf(readRemaining, dst.remaining())
+    if (wc == 0) return
+    val dstCopy = dst.duplicate().apply {
+        limit(position() + wc)
+    }
+    readFully(dstCopy)
+    dst.position(dst.position() + wc)
+}
