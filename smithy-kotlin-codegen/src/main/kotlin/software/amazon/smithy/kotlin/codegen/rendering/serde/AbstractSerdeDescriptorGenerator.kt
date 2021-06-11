@@ -6,10 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.addImport
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 
@@ -57,7 +54,7 @@ abstract class AbstractSerdeDescriptorGenerator(
     override fun render() {
         if (memberShapes.isEmpty()) return
 
-        writer.addImport("*", KotlinDependency.CLIENT_RT_SERDE)
+        writer.addImports(RuntimeTypes.Serde.allSymbols)
         val sortedMembers = memberShapes.sortedBy { it.memberName }
         for (member in sortedMembers) {
             val memberTarget = ctx.model.expectShape(member.target)

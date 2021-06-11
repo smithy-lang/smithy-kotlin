@@ -104,7 +104,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
-                    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.content", "*")
+                    writer.addImports(RuntimeTypes.Core.Content.allSymbols)
                     writer.writeInline("StringContent(")
                     ")"
                 } else {

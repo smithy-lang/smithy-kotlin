@@ -65,10 +65,9 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
         // http.*
-        val httpRootPkg = KotlinDependency.CLIENT_RT_HTTP.namespace
-        writer.addImport(httpRootPkg, "*")
-        writer.addImport("$httpRootPkg.operation", "*")
-        writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig")
+        writer.addImports(RuntimeTypes.Http.allSymbols)
+        writer.addImports(RuntimeTypes.Http.Operation.allSymbols)
+        writer.addImport(RuntimeTypes.Http.Engine.HttpClientEngineConfig)
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
     }
 
@@ -126,7 +125,7 @@ abstract class HttpProtocolClientGenerator(
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
                 // NOTE: this will never be triggered for AWS models where we preprocess operations to always have inputs/outputs
-                writer.addImport(RuntimeTypes.Http.HttpRequestBuilder)
+                writer.addImport(RuntimeTypes.Http.Request.HttpRequestBuilder)
                 writer.addImport(RuntimeTypes.Core.ExecutionContext)
                 writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
                     writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {

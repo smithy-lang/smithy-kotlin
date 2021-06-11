@@ -4,33 +4,23 @@
  */
 package software.amazon.smithy.kotlin.codegen.core
 
+import software.amazon.smithy.codegen.core.Symbol
+
+typealias FullyQualifiedSymbolName = Pair<String, String>
+
+internal fun Symbol.toFullyQualifiedSymbolName() = namespace to name
 /**
  * Container and formatter for Kotlin imports
  */
 class ImportDeclarations {
 
-    fun addImport(packageName: String, symbolName: String, alias: String = "", importRemoved: (ImportStatement) -> Unit = {}) {
+    fun addImport(packageName: String, symbolName: String, alias: String = "") {
         val canonicalAlias = if (alias == symbolName) "" else alias
-
-        // Collect any existing types that conflict with the new import
-        val collidedTypes = imports.filter {
-            it.alias == "" && it.symbolName == symbolName && it.packageName != packageName && symbolName != "*"
-        }
-        val typeNameCollision = collidedTypes.isNotEmpty()
-
-        val import = ImportStatement(packageName, symbolName, canonicalAlias)
-
-        // If multiple imports specify the same name but different packages, we
-        // favor keeping known SDK types in imports and fully qualifying
-        // symbols coming from models.
-        if (typeNameCollision) {
-            //mark for full qualification
-            importRemoved(import)
-            return
-        }
-
-        imports.add(import)
+        imports.add(ImportStatement(packageName, symbolName, canonicalAlias))
     }
+
+    fun symbolCollides(packageName: String, symbolName: String): Boolean =
+        imports.any { it.alias == "" && it.symbolName == symbolName && it.packageName != packageName && symbolName != "*" }
 
     override fun toString(): String {
         if (imports.isEmpty()) {
@@ -46,7 +36,7 @@ class ImportDeclarations {
     private val imports: MutableSet<ImportStatement> = mutableSetOf()
 }
 
-data class ImportStatement(val packageName: String, val symbolName: String, val alias: String) {
+private data class ImportStatement(val packageName: String, val symbolName: String, val alias: String) {
     val statement: String
         get() {
             return if (alias != "" && alias != symbolName) {
@@ -58,6 +48,3 @@ data class ImportStatement(val packageName: String, val symbolName: String, val 
 
     override fun toString(): String = statement
 }
-
-private fun String.isSdkRuntimePackage() : Boolean =
-    startsWith("software.aws.clientrt.") || startsWith("aws.sdk.kotlin.runtime.")
