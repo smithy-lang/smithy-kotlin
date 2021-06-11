@@ -98,7 +98,7 @@ fun KotlinWriter.addImport(
 }
 
 fun KotlinWriter.addImports(imports: Iterable<Symbol>) =
-    imports.forEach{ import -> addImport(import) }
+    imports.forEach { import -> addImport(import) }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     private val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName>

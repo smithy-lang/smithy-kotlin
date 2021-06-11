@@ -25,7 +25,7 @@ object RuntimeTypes {
         val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_HTTP, "content")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.CLIENT_RT_HTTP, "middleware")
         val EncodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.CLIENT_RT_HTTP, "util")
-        val allSymbols = setOf(HttpBody, HttpMethod, readAll, ByteArrayContent, MutateHeadersMiddleware, EncodeLabel,  SdkHttpClient, SdkHttpClientFn)
+        val allSymbols = setOf(HttpBody, HttpMethod, readAll, ByteArrayContent, MutateHeadersMiddleware, EncodeLabel, SdkHttpClient, SdkHttpClientFn)
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.CLIENT_RT_HTTP, "request")
@@ -90,8 +90,10 @@ object RuntimeTypes {
         val asSdkSerializable = runtimeSymbol("asSdkSerializable", KotlinDependency.CLIENT_RT_SERDE)
         val field = runtimeSymbol("field", KotlinDependency.CLIENT_RT_SERDE)
 
-        val allSymbols = setOf(Serializer, Deserializer, SdkFieldDescriptor, SdkObjectDescriptor,
-            SerialKind, deserializeStruct, serializeStruct, deserializeList, deserializeMap, field, SerializationException, DeserializationException, asSdkSerializable)
+        val allSymbols = setOf(
+            Serializer, Deserializer, SdkFieldDescriptor, SdkObjectDescriptor,
+            SerialKind, deserializeStruct, serializeStruct, deserializeList, deserializeMap, field, SerializationException, DeserializationException, asSdkSerializable
+        )
 
         object SerdeJson {
             val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.CLIENT_RT_SERDE_JSON)

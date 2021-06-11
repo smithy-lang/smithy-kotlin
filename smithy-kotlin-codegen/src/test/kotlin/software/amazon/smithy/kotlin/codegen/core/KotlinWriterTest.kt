@@ -7,7 +7,6 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.model.SymbolBuilder
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff

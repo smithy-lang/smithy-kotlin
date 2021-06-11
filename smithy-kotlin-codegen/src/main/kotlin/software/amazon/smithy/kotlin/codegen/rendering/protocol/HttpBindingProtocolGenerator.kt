@@ -293,8 +293,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .callIf(requiresBodySerde(ctx, requestBindings)) {
                     // render a function responsible for serializing the members bound to the payload
                     writer.write("")
-                        .openBlock("private fun #L(context: #T, input: #T): ByteArray {", "}",
-                            op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, inputSymbol) {
+                        .openBlock(
+                            "private fun #L(context: #T, input: #T): ByteArray {", "}",
+                            op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, inputSymbol
+                        ) {
                             renderSerializeOperationBody(ctx, op, writer)
                         }
                 }
@@ -853,7 +855,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         else -> throw CodegenException("unknown collection shape: $memberTarget")
                     }
 
-                    val mapFn = if (conversion.isNotEmpty()) "?.map { $conversion }" else ""
+                    val mapFn = if (conversion.isNotEmpty()) {
+                        "?.map { $conversion }"
+                    } else {
+                        ""
+                    }
 
                     writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
                     writer.write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)
@@ -879,7 +885,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val keyMemberName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
         val keyCollName = "keysFor$keyMemberName"
-        val filter = if (prefix?.isNotEmpty() == true) ".filter { it.startsWith(\"$prefix\") }" else ""
+        val filter = if (prefix?.isNotEmpty() == true) {
+            ".filter { it.startsWith(\"$prefix\") }"
+        } else {
+            ""
+        }
 
         writer.write("val $keyCollName = response.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
