@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.codegen.core.Symbol
 
+// Represents a namespace + name
 typealias FullyQualifiedSymbolName = Pair<String, String>
 
 internal fun Symbol.toFullyQualifiedSymbolName() = namespace to name

@@ -23,7 +23,7 @@ class WhiteLabelSDKTest {
         val model = javaClass.getResource("/kitchen-sink-model.smithy").asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
-        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = true)
+        val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
         assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())

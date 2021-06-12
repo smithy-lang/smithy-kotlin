@@ -1047,7 +1047,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 // import all [KotlinDependency.CLIENT_RT_SERDE] types
 internal fun importSerdePackage(writer: KotlinWriter) {
     writer.addImports(RuntimeTypes.Serde.allSymbols)
-
     writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
 }
 

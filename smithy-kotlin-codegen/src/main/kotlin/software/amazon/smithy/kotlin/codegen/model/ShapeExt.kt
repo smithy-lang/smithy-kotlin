@@ -13,7 +13,6 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
-import java.util.*
 import kotlin.streams.toList
 
 /**

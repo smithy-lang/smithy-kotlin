@@ -101,7 +101,7 @@ fun KotlinWriter.addImports(imports: Iterable<Symbol>) =
     imports.forEach { import -> addImport(import) }
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
-    private val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName>
+    private val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf()
     val dependencies: MutableList<SymbolDependency> = mutableListOf()
     private val imports = ImportDeclarations()
 
@@ -110,8 +110,6 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         trimTrailingSpaces()
         setIndentText("    ")
         expressionStart = '#'
-
-        fullyQualifiedSymbols = mutableSetOf()
 
         // type name: `Foo`
         putFormatter('T', KotlinSymbolFormatter(fullyQualifiedSymbols))
@@ -135,8 +133,9 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 
         // only add imports for symbols in a different namespace
         if (symbol.namespace.isNotEmpty() && symbol.namespace != fullPackageName) {
+            // Check to see if another symbol with the same name but different namespace
+            // is already contained in imports.  If so, in codegen it will be fully qualified
             if (imports.symbolCollides(symbol.namespace, symbol.name)) {
-                // here we need to track the symbols that need full qualification
                 fullyQualifiedSymbols.add(symbol.toFullyQualifiedSymbolName())
             } else {
                 imports.addImport(symbol.namespace, symbol.name, alias)
@@ -254,9 +253,9 @@ private class KotlinSymbolFormatter(
     override fun apply(type: Any, indent: String): String {
         when (type) {
             is Symbol -> {
-                val fqn = fullyQualifiedNames || fullyQualifiedTypes.contains(type.toFullyQualifiedSymbolName())
+                val fullyQualify = fullyQualifiedNames || fullyQualifiedTypes.contains(type.toFullyQualifiedSymbolName())
 
-                return if (fqn) type.fullName else type.name
+                return if (fullyQualify) type.fullName else type.name
             }
             else -> throw CodegenException("Invalid type provided for #T. Expected a Symbol, but found `$type`")
         }
