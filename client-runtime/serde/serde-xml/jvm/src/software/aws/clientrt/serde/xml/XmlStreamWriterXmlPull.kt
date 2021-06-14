@@ -8,6 +8,7 @@ package software.aws.clientrt.serde.xml
 import org.xmlpull.v1.XmlPullParserFactory
 import org.xmlpull.v1.XmlSerializer
 import java.io.ByteArrayOutputStream
+import java.nio.charset.StandardCharsets
 
 class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer = xmlSerializerFactory()) :
     XmlStreamWriter {
@@ -16,7 +17,7 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
     private val buffer = ByteArrayOutputStream()
 
     init {
-        serializer.setOutput(buffer, null)
+        serializer.setOutput(buffer, StandardCharsets.UTF_8.name())
         if (pretty) {
             serializer.setProperty("http://xmlpull.org/v1/doc/properties.html#serializer-indentation", " ".repeat(4))
             serializer.setProperty("http://xmlpull.org/v1/doc/properties.html#serializer-line-separator", "\n")
