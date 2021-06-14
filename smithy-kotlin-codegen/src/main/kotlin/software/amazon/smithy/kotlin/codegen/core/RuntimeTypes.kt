@@ -71,7 +71,8 @@ object RuntimeTypes {
             val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_CORE, "content")
             val ByteStream = runtimeSymbol("ByteStream", KotlinDependency.CLIENT_RT_CORE, "content")
             val StringContent = runtimeSymbol("StringContent", KotlinDependency.CLIENT_RT_CORE, "content")
-            val allSymbols = listOf(ByteArrayContent, ByteStream, StringContent)
+            val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CLIENT_RT_CORE, "content")
+            val allSymbols = listOf(ByteArrayContent, ByteStream, StringContent, toByteArray)
         }
     }
 
@@ -88,8 +89,11 @@ object RuntimeTypes {
         val SerializationException = runtimeSymbol("SerializationException", KotlinDependency.CLIENT_RT_SERDE)
         val DeserializationException = runtimeSymbol("DeserializationException", KotlinDependency.CLIENT_RT_SERDE)
 
-        val deserializeStruct = runtimeSymbol("deserializeStruct", KotlinDependency.CLIENT_RT_SERDE)
         val serializeStruct = runtimeSymbol("serializeStruct", KotlinDependency.CLIENT_RT_SERDE)
+        val serializeList = runtimeSymbol("serializeList", KotlinDependency.CLIENT_RT_SERDE)
+        val serializeMap = runtimeSymbol("serializeMap", KotlinDependency.CLIENT_RT_SERDE)
+
+        val deserializeStruct = runtimeSymbol("deserializeStruct", KotlinDependency.CLIENT_RT_SERDE)
         val deserializeList = runtimeSymbol("deserializeList", KotlinDependency.CLIENT_RT_SERDE)
         val deserializeMap = runtimeSymbol("deserializeMap", KotlinDependency.CLIENT_RT_SERDE)
         val asSdkSerializable = runtimeSymbol("asSdkSerializable", KotlinDependency.CLIENT_RT_SERDE)
@@ -97,7 +101,8 @@ object RuntimeTypes {
 
         val allSymbols = setOf(
             Serializer, Deserializer, SdkFieldDescriptor, SdkObjectDescriptor,
-            SerialKind, deserializeStruct, serializeStruct, deserializeList, deserializeMap, field, SerializationException, DeserializationException, asSdkSerializable
+            SerialKind, deserializeStruct, deserializeList, deserializeMap, field, SerializationException, DeserializationException, asSdkSerializable,
+            serializeStruct, serializeList, serializeMap
         )
 
         object SerdeJson {

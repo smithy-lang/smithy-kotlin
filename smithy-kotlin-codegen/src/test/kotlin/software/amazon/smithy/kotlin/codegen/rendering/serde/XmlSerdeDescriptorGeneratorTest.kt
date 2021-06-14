@@ -175,6 +175,8 @@ class XmlSerdeDescriptorGeneratorTest {
             import software.aws.clientrt.serde.deserializeMap
             import software.aws.clientrt.serde.deserializeStruct
             import software.aws.clientrt.serde.field
+            import software.aws.clientrt.serde.serializeList
+            import software.aws.clientrt.serde.serializeMap
             import software.aws.clientrt.serde.serializeStruct
             import software.aws.clientrt.serde.xml.Flattened
             import software.aws.clientrt.serde.xml.XmlAttribute
