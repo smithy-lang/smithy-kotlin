@@ -65,7 +65,7 @@ open class XmlSerdeDescriptorGenerator(
         member: MemberShape,
         targetShape: Shape,
         nameSuffix: String
-    ): MutableList<SdkFieldDescriptorTrait> {
+    ): List<SdkFieldDescriptorTrait> {
 
         val traitList = mutableListOf<SdkFieldDescriptorTrait>()
 

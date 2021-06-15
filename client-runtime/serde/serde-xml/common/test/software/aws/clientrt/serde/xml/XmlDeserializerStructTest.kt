@@ -201,7 +201,7 @@ class XmlDeserializerStructTest {
         println(bst.nested?.nested)
     }
 
-    class CaseInsensitiveStruct {
+    class AliasStruct {
         var message: String? = null
         var attribute: String? = null
 
@@ -226,15 +226,15 @@ class XmlDeserializerStructTest {
                 field(ATTRIBUTE_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): CaseInsensitiveStruct {
-                val result = CaseInsensitiveStruct()
+            suspend fun deserialize(deserializer: Deserializer): AliasStruct {
+                val result = AliasStruct()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
                             MESSAGE_DESCRIPTOR.index -> result.message = deserializeString()
                             ATTRIBUTE_DESCRIPTOR.index -> result.attribute = deserializeString()
                             null -> break@loop
-                            else -> throw DeserializationException(IllegalStateException("unexpected field in CaseInsensitiveStruct deserializer"))
+                            else -> throw DeserializationException(IllegalStateException("unexpected field in AliasStruct deserializer"))
                         }
                     }
                 }
@@ -244,7 +244,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesCaseInsensitiveMatchingOnElements() = runSuspendTest {
+    fun itHandlesAliasMatchingOnElements() = runSuspendTest {
         val tests = listOf(
             "<Struct><Message>Hi there</Message></Struct>",
             "<Struct><message>Hi there</message></Struct>",
@@ -253,13 +253,13 @@ class XmlDeserializerStructTest {
         )
         tests.forEach { payload ->
             val deserializer = XmlDeserializer(payload.encodeToByteArray())
-            val bst = CaseInsensitiveStruct.deserialize(deserializer)
+            val bst = AliasStruct.deserialize(deserializer)
             assertEquals("Hi there", bst.message, "Can't find 'Hi there' in $payload")
         }
     }
 
     @Test
-    fun itHandlesCaseInsensitiveMatchingOnAttributes() = runSuspendTest {
+    fun itHandlesAliasMatchingOnAttributes() = runSuspendTest {
         val tests = listOf(
             """<Struct Attribute="Hi there"></Struct>""",
             """<Struct attribute="Hi there"></Struct>""",
@@ -267,7 +267,7 @@ class XmlDeserializerStructTest {
         )
         tests.forEach { payload ->
             val deserializer = XmlDeserializer(payload.encodeToByteArray())
-            val bst = CaseInsensitiveStruct.deserialize(deserializer)
+            val bst = AliasStruct.deserialize(deserializer)
             assertEquals("Hi there", bst.attribute, "Can't find 'Hi there' in $payload")
         }
     }
