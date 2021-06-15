@@ -662,11 +662,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer
             .addImport(RuntimeTypes.Core.ExecutionContext)
             .openBlock(
-            "override suspend fun deserialize(context: #T, response: #T): #T {",
-            RuntimeTypes.Core.ExecutionContext,
-            RuntimeTypes.Http.Response.HttpResponse,
-            outputSymbol
-        )
+                "override suspend fun deserialize(context: #T, response: #T): #T {",
+                RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.Http.Response.HttpResponse,
+                outputSymbol
+            )
             .write("val builder = #T.builder()", outputSymbol)
             .write("")
             .call {
@@ -802,9 +802,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer
                         .addImport(RuntimeTypes.Core.Instant)
                         .write(
-                        "builder.#L = response.headers[#S]?.let { #L }",
-                        memberName, headerName, parseInstant("it", tsFormat)
-                    )
+                            "builder.#L = response.headers[#S]?.let { #L }",
+                            memberName, headerName, parseInstant("it", tsFormat)
+                        )
                 }
                 is CollectionShape -> {
                     // member > boolean, number, string, or timestamp
@@ -857,7 +857,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         ""
                     }
 
-                    //writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
+                    // writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
                     writer
                         .addImport(splitFn, KotlinDependency.CLIENT_RT_HTTP, subpackage = "util")
                         .write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)

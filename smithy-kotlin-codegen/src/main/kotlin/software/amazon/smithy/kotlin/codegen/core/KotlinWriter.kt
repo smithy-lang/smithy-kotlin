@@ -109,10 +109,9 @@ fun KotlinWriter.addImport(imports: Iterable<Symbol>): KotlinWriter {
 }
 
 fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
-    imports.forEach { importSet -> importSet.forEach { import -> addImport(import) }}
+    imports.forEach { importSet -> importSet.forEach { import -> addImport(import) } }
     return this
 }
-
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     private val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf()
