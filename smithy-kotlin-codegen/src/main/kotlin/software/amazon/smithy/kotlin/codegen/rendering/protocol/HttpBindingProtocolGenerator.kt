@@ -415,9 +415,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             "input.${binding.member.defaultName()}"
                         }
 
-                        val encodeSymbol = RuntimeTypes.Http.EncodeLabel
+                        val encodeSymbol = RuntimeTypes.Http.encodeLabel
                         writer.addImport(encodeSymbol)
-                        val encodeFn = if (segment.isGreedyLabel) "${encodeSymbol.name}(greedy = true)" else "${encodeSymbol.name}()"
+                        val encodeFn = if (segment.isGreedyLabel) {
+                            writer.format("#T(greedy = true)", encodeSymbol)
+                        } else {
+                            writer.format("#T()", encodeSymbol)
+                        }
                         writer.write("#S.$encodeFn,", "\${$identifier}")
                     } else {
                         // literal
