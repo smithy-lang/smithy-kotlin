@@ -126,7 +126,7 @@ internal fun TestContext.requestMembers(shape: Shape, location: HttpBinding.Loca
 internal fun TestContext.toGenerationContext(): GenerationContext =
     GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)
 
-internal fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
+fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
     toGenerationContext().toRenderingContext(writer, forShape)
 
 // A HttpProtocolClientGenerator for testing

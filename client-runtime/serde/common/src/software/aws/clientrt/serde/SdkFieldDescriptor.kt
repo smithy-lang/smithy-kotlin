@@ -73,4 +73,12 @@ inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.findTrait(): TExp
     return x as? TExpected
 }
 
+/**
+ * Find a set of traits of the given type.
+ */
+inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.findTraits(): Set<TExpected> = traits
+    .filter { it::class == TExpected::class }
+    .map { it as TExpected }
+    .toSet()
+
 inline fun <reified TExpected : FieldTrait> SdkFieldDescriptor.hasTrait() = traits.any { it is TExpected }
