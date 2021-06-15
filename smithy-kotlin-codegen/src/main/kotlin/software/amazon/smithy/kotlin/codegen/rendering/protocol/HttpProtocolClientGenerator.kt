@@ -65,8 +65,7 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
         // http.*
-        writer.addImports(RuntimeTypes.Http.allSymbols)
-        writer.addImports(RuntimeTypes.Http.Operation.allSymbols)
+        writer.addImport(RuntimeTypes.Http.allSymbols, RuntimeTypes.Http.Operation.allSymbols)
         writer.addImport(RuntimeTypes.Http.Engine.HttpClientEngineConfig)
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
     }

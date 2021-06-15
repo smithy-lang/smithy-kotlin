@@ -54,7 +54,7 @@ abstract class AbstractSerdeDescriptorGenerator(
     override fun render() {
         if (memberShapes.isEmpty()) return
 
-        writer.addImports(RuntimeTypes.Serde.allSymbols)
+        writer.addImport(RuntimeTypes.Serde.allSymbols)
         val sortedMembers = memberShapes.sortedBy { it.memberName }
         for (member in sortedMembers) {
             val memberTarget = ctx.model.expectShape(member.target)

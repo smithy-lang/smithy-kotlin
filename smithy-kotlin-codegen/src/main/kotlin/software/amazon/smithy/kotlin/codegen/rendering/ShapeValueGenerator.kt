@@ -104,7 +104,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
-                    writer.addImports(RuntimeTypes.Core.Content.allSymbols)
+                    writer.addImport(RuntimeTypes.Core.Content.allSymbols)
                     writer.writeInline("StringContent(")
                     ")"
                 } else {
