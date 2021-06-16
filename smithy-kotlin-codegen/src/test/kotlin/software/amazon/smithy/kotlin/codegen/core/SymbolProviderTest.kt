@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CLIENT_RT_CORE
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
@@ -132,12 +133,12 @@ class SymbolProviderTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val memberSymbol = provider.toSymbol(member)
 
-        assertEquals("software.aws.clientrt.content", memberSymbol.namespace)
+        assertEquals("$RUNTIME_ROOT_NS.content", memberSymbol.namespace)
         assertEquals("null", memberSymbol.defaultValue())
         assertEquals(true, memberSymbol.isBoxed)
         assertEquals("ByteStream", memberSymbol.name)
         val dependency = memberSymbol.dependencies[0].expectProperty("dependency") as KotlinDependency
-        assertEquals("client-rt-core", dependency.artifact)
+        assertEquals(CLIENT_RT_CORE.artifact, dependency.artifact)
     }
 
     @Test
@@ -406,7 +407,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val timestampSymbol = provider.toSymbol(tsShape)
-        assertEquals("software.aws.clientrt.time", timestampSymbol.namespace)
+        assertEquals("$RUNTIME_ROOT_NS.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
         assertEquals("null", timestampSymbol.defaultValue())
         assertEquals(true, timestampSymbol.isBoxed)

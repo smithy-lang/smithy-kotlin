@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CLIENT_RT_CORE
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.model.node.Node
 
@@ -36,7 +37,7 @@ class GradleGeneratorTest {
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expected = """
-            api("$CLIENT_RT_GROUP:client-rt-core:$CLIENT_RT_VERSION")
+            api("$RUNTIME_GROUP:${CLIENT_RT_CORE.artifact}:$RUNTIME_VERSION")
         """.trimIndent()
 
         contents.shouldContain(expected)

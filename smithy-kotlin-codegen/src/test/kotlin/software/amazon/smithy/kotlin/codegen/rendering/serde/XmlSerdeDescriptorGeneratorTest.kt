@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.ShapeId
 
@@ -163,10 +164,10 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expected = """
-            import software.aws.clientrt.serde.*
-            import software.aws.clientrt.serde.xml.Flattened
-            import software.aws.clientrt.serde.xml.XmlAttribute
-            import software.aws.clientrt.serde.xml.XmlSerialName
+            import $RUNTIME_ROOT_NS.serde.*
+            import $RUNTIME_ROOT_NS.serde.xml.Flattened
+            import $RUNTIME_ROOT_NS.serde.xml.XmlAttribute
+            import $RUNTIME_ROOT_NS.serde.xml.XmlSerialName
         """.formatForTest("")
 
         val contents = getContents(snippet, "FooRequest")

@@ -13,7 +13,7 @@ val platforms = listOf("common", "jvm", "android")
 
 // Allow subprojects to use internal API's
 // See: https://kotlinlang.org/docs/reference/opt-in-requirements.html#opting-in-to-using-api
-val experimentalAnnotations = listOf("kotlin.RequiresOptIn", "software.aws.clientrt.util.InternalApi")
+val experimentalAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.util.InternalApi")
 
 fun projectNeedsPlatform(project: Project, platform: String ): Boolean {
     val files = project.projectDir.listFiles()
@@ -44,7 +44,7 @@ subprojects {
     if (!needsConfigure) return@subprojects
 
     // TODO - the group to publish under needs negotiated still
-    group = "software.aws.smithy.kotlin"
+    group = "aws.smithy.kotlin"
     version = sdkVersion
 
     apply {
