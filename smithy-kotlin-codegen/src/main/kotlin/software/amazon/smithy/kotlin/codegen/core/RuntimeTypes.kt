@@ -28,23 +28,17 @@ object RuntimeTypes {
         val parameters = runtimeSymbol("parameters", KotlinDependency.CLIENT_RT_HTTP)
         val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.CLIENT_RT_HTTP)
         val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.CLIENT_RT_HTTP)
-        // FIXME ~ remove and references to allSymbols should be replaced w/ a dependency set specific to the codegen target.
-        val allSymbols = setOf(HttpBody, HttpMethod, readAll, parameters, toByteStream, toHttpBody, ByteArrayContent, MutateHeadersMiddleware, encodeLabel, SdkHttpClient, SdkHttpClientFn)
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.CLIENT_RT_HTTP, "request")
             val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, "request")
             val url = runtimeSymbol("url", KotlinDependency.CLIENT_RT_HTTP, "request")
             val headers = runtimeSymbol("headers", KotlinDependency.CLIENT_RT_HTTP, "request")
-            // FIXME ~ remove and references to allSymbols should be replaced w/ a dependency set specific to the codegen target.
-            val allSymbols = setOf(HttpRequest, HttpRequestBuilder, url, headers)
         }
 
         object Response {
             val HttpCall = runtimeSymbol("HttpCall", KotlinDependency.CLIENT_RT_HTTP, "response")
             val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.CLIENT_RT_HTTP, "response")
-            // FIXME ~ remove and references to allSymbols should be replaced w/ a dependency set specific to the codegen target.
-            val allSymbols = setOf(HttpCall, HttpResponse)
         }
 
         object Operation {
@@ -54,8 +48,6 @@ object RuntimeTypes {
             val context = runtimeSymbol("context", KotlinDependency.CLIENT_RT_HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.CLIENT_RT_HTTP, "operation")
             val execute = runtimeSymbol("execute", KotlinDependency.CLIENT_RT_HTTP, "operation")
-            // FIXME ~ remove and references to allSymbols should be replaced w/ a dependency set specific to the codegen target.
-            val allSymbols = setOf(HttpSerialize, HttpDeserialize, SdkHttpOperation, context, roundTrip, execute)
         }
 
         object Engine {
@@ -76,8 +68,6 @@ object RuntimeTypes {
             val ByteStream = runtimeSymbol("ByteStream", KotlinDependency.CLIENT_RT_CORE, "content")
             val StringContent = runtimeSymbol("StringContent", KotlinDependency.CLIENT_RT_CORE, "content")
             val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CLIENT_RT_CORE, "content")
-            // FIXME ~ remove and references to allSymbols should be replaced w/ a dependency set specific to the codegen target.
-            val allSymbols = listOf(ByteArrayContent, ByteStream, StringContent, toByteArray)
         }
     }
 
@@ -103,13 +93,6 @@ object RuntimeTypes {
         val deserializeMap = runtimeSymbol("deserializeMap", KotlinDependency.CLIENT_RT_SERDE)
         val asSdkSerializable = runtimeSymbol("asSdkSerializable", KotlinDependency.CLIENT_RT_SERDE)
         val field = runtimeSymbol("field", KotlinDependency.CLIENT_RT_SERDE)
-
-        // FIXME ~ remove and references to allSymbols should be replaced w/ a dependency set specific to the codegen target.
-        val allSymbols = setOf(
-            Serializer, Deserializer, SdkFieldDescriptor, SdkObjectDescriptor,
-            SerialKind, deserializeStruct, deserializeList, deserializeMap, field, SerializationException, DeserializationException, asSdkSerializable,
-            serializeStruct, serializeList, serializeMap
-        )
 
         object SerdeJson {
             val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.CLIENT_RT_SERDE_JSON)

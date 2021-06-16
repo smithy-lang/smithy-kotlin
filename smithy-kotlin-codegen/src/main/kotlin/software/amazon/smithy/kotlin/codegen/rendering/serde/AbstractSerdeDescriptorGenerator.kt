@@ -54,7 +54,20 @@ abstract class AbstractSerdeDescriptorGenerator(
     override fun render() {
         if (memberShapes.isEmpty()) return
 
-        writer.addImport(RuntimeTypes.Serde.allSymbols)
+        val serdeDescriptorSymbols = setOf(
+            RuntimeTypes.Serde.SdkFieldDescriptor,
+            RuntimeTypes.Serde.SdkObjectDescriptor,
+            RuntimeTypes.Serde.SerialKind,
+            RuntimeTypes.Serde.deserializeStruct,
+            RuntimeTypes.Serde.deserializeList,
+            RuntimeTypes.Serde.deserializeMap,
+            RuntimeTypes.Serde.field,
+            RuntimeTypes.Serde.asSdkSerializable,
+            RuntimeTypes.Serde.serializeStruct,
+            RuntimeTypes.Serde.serializeList,
+            RuntimeTypes.Serde.serializeMap
+        )
+        writer.addImport(serdeDescriptorSymbols)
         val sortedMembers = memberShapes.sortedBy { it.memberName }
         for (member in sortedMembers) {
             val memberTarget = ctx.model.expectShape(member.target)

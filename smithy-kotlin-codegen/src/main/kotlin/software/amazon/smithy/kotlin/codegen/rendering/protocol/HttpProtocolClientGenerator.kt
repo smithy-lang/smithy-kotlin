@@ -64,9 +64,14 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("${ctx.settings.pkg.name}.model", "*")
         writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
-        // http.*
-        writer.addImport(RuntimeTypes.Http.allSymbols, RuntimeTypes.Http.Operation.allSymbols)
-        writer.addImport(RuntimeTypes.Http.Engine.HttpClientEngineConfig)
+        val defaultClientSymbols = setOf(
+            RuntimeTypes.Http.Operation.SdkHttpOperation,
+            RuntimeTypes.Http.Operation.context,
+            RuntimeTypes.Http.Engine.HttpClientEngineConfig,
+            RuntimeTypes.Http.SdkHttpClient,
+            RuntimeTypes.Http.SdkHttpClientFn
+        )
+        writer.addImport(defaultClientSymbols)
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
     }
 
@@ -180,12 +185,15 @@ abstract class HttpProtocolClientGenerator(
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
         if (hasOutputStream) {
-            writer.write("return op.execute(client, #L, block)", inputVariableName)
+            writer
+                .addImport(RuntimeTypes.Http.Operation.execute)
+                .write("return op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
         } else {
+            writer.addImport(RuntimeTypes.Http.Operation.roundTrip)
             if (outputShape.isPresent) {
-                writer.write("return op.roundTrip(client, #L)", inputVariableName)
+                writer.write("return op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
             } else {
-                writer.write("op.roundTrip(client, #L)", inputVariableName)
+                writer.write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
             }
         }
     }
