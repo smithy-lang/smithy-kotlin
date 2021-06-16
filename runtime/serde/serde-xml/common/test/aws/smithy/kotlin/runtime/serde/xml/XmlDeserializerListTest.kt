@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
-import io.kotest.matchers.collections.shouldContainExactly
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import io.kotest.matchers.collections.shouldContainExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull

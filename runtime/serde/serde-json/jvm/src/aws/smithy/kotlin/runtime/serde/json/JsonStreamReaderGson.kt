@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import com.google.gson.stream.JsonReader
 import aws.smithy.kotlin.runtime.serde.DeserializationException
+import com.google.gson.stream.JsonReader
 import java.nio.charset.Charset
 import com.google.gson.stream.JsonToken as RawToken
 

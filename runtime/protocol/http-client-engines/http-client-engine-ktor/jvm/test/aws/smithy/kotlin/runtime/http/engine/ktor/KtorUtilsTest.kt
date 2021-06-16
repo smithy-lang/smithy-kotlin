@@ -3,6 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
+import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.request.headers
+import aws.smithy.kotlin.runtime.http.request.url
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.ktor.client.call.HttpClientCall
@@ -13,10 +17,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.*
-import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.request.headers
-import aws.smithy.kotlin.runtime.http.request.url
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.*
 

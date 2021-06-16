@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import com.google.gson.stream.JsonWriter
 import aws.smithy.kotlin.runtime.serde.SerializationException
+import com.google.gson.stream.JsonWriter
 import java.io.BufferedWriter
 import java.io.ByteArrayOutputStream
 import java.io.IOException

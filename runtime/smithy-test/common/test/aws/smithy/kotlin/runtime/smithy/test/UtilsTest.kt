@@ -4,10 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
-import io.kotest.matchers.string.shouldContain
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 import kotlin.test.assertFails
 

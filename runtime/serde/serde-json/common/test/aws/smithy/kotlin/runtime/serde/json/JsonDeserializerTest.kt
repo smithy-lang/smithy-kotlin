@@ -4,10 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.maps.shouldContainExactly
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.math.abs
 import kotlin.test.*
 

@@ -4,10 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
-import io.kotest.matchers.string.shouldContain
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 
 class HttpResponseTestBuilderTest {

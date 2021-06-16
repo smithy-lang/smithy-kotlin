@@ -4,11 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.readAll
 import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
-import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.readAll
 import kotlin.test.assertEquals
 
 /**

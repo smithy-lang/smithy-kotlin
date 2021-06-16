@@ -5,11 +5,11 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.InternalCoroutinesApi
 import kotlinx.coroutines.Job
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 

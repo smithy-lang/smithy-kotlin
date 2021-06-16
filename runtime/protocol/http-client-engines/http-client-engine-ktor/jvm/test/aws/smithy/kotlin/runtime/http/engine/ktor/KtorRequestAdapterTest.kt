@@ -4,6 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
+import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.request.header
+import aws.smithy.kotlin.runtime.http.request.url
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.ktor.http.ContentType
@@ -11,10 +15,6 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.request.header
-import aws.smithy.kotlin.runtime.http.request.url
 import java.nio.ByteBuffer
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

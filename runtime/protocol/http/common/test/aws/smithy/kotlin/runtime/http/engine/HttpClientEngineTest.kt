@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -18,6 +16,8 @@ import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlin.test.*
 
 /**

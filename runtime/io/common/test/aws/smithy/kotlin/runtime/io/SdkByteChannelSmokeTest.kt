@@ -4,9 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.string.shouldContain
 import io.ktor.utils.io.core.*
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.*
 
 open class SdkByteChannelSmokeTest {

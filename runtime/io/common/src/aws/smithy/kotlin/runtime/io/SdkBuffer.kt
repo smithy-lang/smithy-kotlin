@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.InternalApi
 import io.ktor.utils.io.bits.*
 import io.ktor.utils.io.core.*
-import aws.smithy.kotlin.runtime.util.InternalApi
 
 private class SdkBufferState {
     var writeHead: Int = 0

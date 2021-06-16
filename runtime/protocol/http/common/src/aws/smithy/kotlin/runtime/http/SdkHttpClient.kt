@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import kotlinx.atomicfu.atomic
-import kotlinx.coroutines.*
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineClosedException
 import aws.smithy.kotlin.runtime.http.engine.SdkRequestContextElement
@@ -13,6 +11,8 @@ import aws.smithy.kotlin.runtime.http.engine.createCallContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.Handler
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
 
 typealias HttpHandler = Handler<HttpRequestBuilder, HttpCall>

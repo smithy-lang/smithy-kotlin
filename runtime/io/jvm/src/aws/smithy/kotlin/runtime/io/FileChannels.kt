@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import kotlinx.coroutines.Dispatchers
 import aws.smithy.kotlin.runtime.util.InternalApi
+import kotlinx.coroutines.Dispatchers
 import java.io.File
 import java.nio.file.Path
 import io.ktor.util.cio.readChannel as cioReadChannel

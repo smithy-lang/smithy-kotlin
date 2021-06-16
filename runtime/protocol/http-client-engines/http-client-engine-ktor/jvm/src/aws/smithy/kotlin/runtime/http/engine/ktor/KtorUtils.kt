@@ -4,18 +4,18 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
-import io.ktor.client.statement.HttpResponse
-import io.ktor.http.*
-import io.ktor.utils.io.*
-import io.ktor.utils.io.core.*
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.*
+import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
 import java.nio.ByteBuffer
-import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
+import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
 internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {

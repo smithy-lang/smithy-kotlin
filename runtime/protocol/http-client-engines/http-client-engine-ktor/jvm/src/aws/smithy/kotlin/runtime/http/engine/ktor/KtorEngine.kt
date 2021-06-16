@@ -4,15 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.request.request
-import io.ktor.client.statement.HttpStatement
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
@@ -23,6 +14,15 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.*
 import aws.smithy.kotlin.runtime.time.Instant
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.okhttp.OkHttp
+import io.ktor.client.request.request
+import io.ktor.client.statement.HttpStatement
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.SendChannel
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 

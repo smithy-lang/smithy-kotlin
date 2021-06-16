@@ -4,16 +4,16 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import io.ktor.client.utils.EmptyContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 import io.ktor.client.request.HttpRequestBuilder as KtorRequestBuilder

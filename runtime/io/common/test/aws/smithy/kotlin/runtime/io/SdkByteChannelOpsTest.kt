@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.*
 
 class SdkByteChannelOpsTest {
