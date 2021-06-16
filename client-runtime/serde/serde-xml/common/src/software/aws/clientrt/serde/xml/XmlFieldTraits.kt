@@ -107,15 +107,55 @@ class XmlMapKeyNamespace(uri: String, prefix: String? = null) : AbstractXmlNames
  */
 data class XmlSerialName(val name: String) : FieldTrait
 
-// Generate a qualified name from a field descriptor.  Field descriptor must have trait XmlSerialName otherwise null is returned.
+/**
+ * Specifies an alternate name that can be used to match an XML node.
+ */
+data class XmlAliasName(val name: String) : FieldTrait
 
-internal fun SdkFieldDescriptor.toQualifiedName(xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()): XmlToken.QualifiedName {
-    val (localName, prefix) = findTrait<XmlSerialName>()?.name?.parseNodeWithPrefix() ?: throw DeserializationException("Unable to parse qualified name from $this")
+private fun toQualifiedName(xmlNamespace: XmlNamespace?, name: String?): XmlToken.QualifiedName {
+    val (localName, prefix) = name
+        ?.parseNodeWithPrefix()
+        ?: throw DeserializationException("Unable to parse qualified name from $name")
 
     return when {
         xmlNamespace != null -> XmlToken.QualifiedName(localName, if (prefix == xmlNamespace.prefix) prefix else null)
         prefix != null -> XmlToken.QualifiedName(localName, prefix)
         else -> XmlToken.QualifiedName(localName)
+    }
+}
+
+/**
+ * Generate a qualified name from a field descriptor. The field descriptor must have trait [XmlSerialName] otherwise an
+ * exception is thrown.
+ */
+internal fun SdkFieldDescriptor.toQualifiedName(
+    xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()
+): XmlToken.QualifiedName = toQualifiedName(xmlNamespace, findTrait<XmlSerialName>()?.name)
+
+/**
+ * Generate a set of qualified names from a field descriptor. The field descriptor must have trait [XmlSerialName]
+ * otherwise an exception is thrown. Any additional names will be found from [XmlAliasName] traits.
+ */
+internal fun SdkFieldDescriptor.toQualifiedNames(
+    xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()
+): Set<XmlToken.QualifiedName> =
+    setOf(toQualifiedName()) +
+        findTraits<XmlAliasName>().map { toQualifiedName(xmlNamespace, it.name) }
+
+/**
+ * Determines if the qualified name of this field descriptor matches the given name.
+ */
+internal fun SdkFieldDescriptor.nameMatches(other: String): Boolean = toQualifiedNames().any { it.tag == other }
+
+/**
+ * Requires that the given name matches one of this field descriptor's qualified names.
+ */
+internal fun SdkFieldDescriptor.requireNameMatch(other: String) {
+    val qualifiedNames = toQualifiedNames()
+    if (!nameMatches(other)) {
+        val validNames = qualifiedNames.joinToString(" or ")
+        val error = "Expected beginning element named $validNames but found $other"
+        throw DeserializationException(error)
     }
 }
 

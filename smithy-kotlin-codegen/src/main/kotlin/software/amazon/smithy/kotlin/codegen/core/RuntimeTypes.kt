@@ -102,6 +102,7 @@ object RuntimeTypes {
 
         object SerdeXml {
             val XmlSerialName = runtimeSymbol("XmlSerialName", KotlinDependency.CLIENT_RT_SERDE_XML)
+            val XmlAliasName = runtimeSymbol("XmlAliasName", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlCollectionName = runtimeSymbol("XmlCollectionName", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlNamespace = runtimeSymbol("XmlNamespace", KotlinDependency.CLIENT_RT_SERDE_XML)
             val XmlCollectionValueNamespace = runtimeSymbol("XmlCollectionValueNamespace", KotlinDependency.CLIENT_RT_SERDE_XML)
