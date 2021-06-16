@@ -43,3 +43,22 @@ fun String.toPascalCase(): String = splitOnWordBoundaries().joinToString(separat
  * Convert a string to `camelCase` (lowercase start with upper case word boundaries)
  */
 fun String.toCamelCase(): String = toPascalCase().replaceFirstChar { c -> c.lowercaseChar() }
+
+/**
+ * Inverts the case of a character. For example:
+ * * 'a' → 'A'
+ * * 'A' → 'a'
+ * * '!' → '!'
+ */
+fun Char.toggleCase(): Char = if (isUpperCase()) toLowerCase() else toUpperCase()
+
+/**
+ * Toggles the case of the first character in the string. For example:
+ * * "apple" → "Apple"
+ * * "Apple" → "apple"
+ * * "!apple" → "!apple"
+ */
+fun String.toggleFirstCharacterCase(): String = when {
+    isEmpty() -> this
+    else -> first().toggleCase() + substring(1)
+}

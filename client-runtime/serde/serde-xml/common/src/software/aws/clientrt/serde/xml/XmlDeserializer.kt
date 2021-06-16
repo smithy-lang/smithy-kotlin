@@ -14,7 +14,7 @@ internal sealed class FieldLocation {
     abstract val fieldIndex: Int
 
     data class Text(override val fieldIndex: Int) : FieldLocation() // Xml nodes have only one associated Text element
-    data class Attribute(override val fieldIndex: Int, val name: XmlToken.QualifiedName) : FieldLocation()
+    data class Attribute(override val fieldIndex: Int, val names: Set<XmlToken.QualifiedName>) : FieldLocation()
 }
 
 /**
@@ -52,8 +52,9 @@ class XmlDeserializer(
                 reader.seek<XmlToken.BeginElement>()
             } ?: throw DeserializationException("Could not find a begin element for new struct")
 
-            val objectName = descriptor.toQualifiedName()
-            if (validateRootElement && structToken.name.tag != objectName.tag) throw DeserializationException("Expected beginning element named $objectName but found ${structToken.name}")
+            if (validateRootElement) {
+                descriptor.requireNameMatch(structToken.name.tag)
+            }
         }
 
         // Consume any remaining terminating tokens from previous deserialization
@@ -151,7 +152,7 @@ internal class XmlListDeserializer(
     override suspend fun hasNextElement(): Boolean {
         if (!flattened && firstCall) {
             val nextToken = reader.peek()
-            val matchedListDescriptor = nextToken is XmlToken.BeginElement && nextToken.name == descriptor.toQualifiedName()
+            val matchedListDescriptor = nextToken is XmlToken.BeginElement && descriptor.nameMatches(nextToken.name.tag)
             val hasChildren = if (nextToken == null) false else nextToken.depth >= reader.lastToken!!.depth
 
             if (!matchedListDescriptor && !hasChildren) return false
@@ -259,8 +260,10 @@ internal class XmlStructDeserializer(
             }
             is FieldLocation.Attribute -> {
                 transform(
-                    parentToken.attributes[nextField.name]
-                        ?: throw DeserializationException("Expected attrib value ${nextField.name} not found in ${parentToken.name}")
+                    nextField
+                        .names
+                        .mapNotNull { parentToken.attributes[it] }
+                        .firstOrNull() ?: throw DeserializationException("Expected attrib value ${nextField.names.first()} not found in ${parentToken.name}")
                 )
             }
         }
@@ -309,7 +312,7 @@ private suspend fun XmlStreamReader.tokenAttributesToFieldLocations(descriptor: 
     if (descriptor.hasXmlAttributes && lastToken is XmlToken.BeginElement) {
         val attribFields = descriptor.fields.filter { it.hasTrait<XmlAttribute>() }
         val matchedAttribFields = attribFields.filter { it.findFieldLocation(lastToken as XmlToken.BeginElement, peek() ?: throw DeserializationException("Unexpected end of tokens")) != null }
-        matchedAttribFields.map { FieldLocation.Attribute(it.index, it.toQualifiedName()) }
+        matchedAttribFields.map { FieldLocation.Attribute(it.index, it.toQualifiedNames()) }
             .toMutableList()
     } else {
         mutableListOf()
@@ -331,7 +334,8 @@ private fun SdkFieldDescriptor.findFieldLocation(
         }
     }
     is FieldLocation.Attribute -> {
-        if (currentToken.attributes[property.name]?.isNotBlank() == true) property else null
+        val foundMatch = property.names.any { currentToken.attributes[it]?.isNotBlank() == true }
+        if (foundMatch) property else null
     }
 }
 
@@ -340,7 +344,7 @@ private fun SdkFieldDescriptor.findFieldLocation(
 private fun SdkFieldDescriptor.toFieldLocation(): FieldLocation =
     when (findTrait<XmlAttribute>()) {
         null -> FieldLocation.Text(index) // Assume a text value if no attributes defined.
-        else -> FieldLocation.Attribute(index, toQualifiedName())
+        else -> FieldLocation.Attribute(index, toQualifiedNames())
     }
 
 // Matches fields and tokens with matching qualified name
@@ -355,10 +359,7 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
         if (fieldName.element == tokenQname.local) return true
     }
 
-    val fieldQname = fieldDescriptor.toQualifiedName(findTrait())
-    val tokenQname = beginElement.name
-
-    return fieldQname.tag == tokenQname.tag
+    return fieldDescriptor.nameMatches(beginElement.name.tag)
 }
 
 // Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
