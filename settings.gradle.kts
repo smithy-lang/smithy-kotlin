@@ -24,7 +24,7 @@ enableFeaturePreview("GRADLE_METADATA")
 include(":smithy-kotlin-codegen")
 
 include(":runtime")
-include(":runtime:client-rt-core")
+include(":runtime:runtime-core")
 include(":runtime:logging")
 include(":runtime:testing")
 include(":runtime:smithy-test")

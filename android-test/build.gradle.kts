@@ -53,7 +53,7 @@ kotlin {
 
                 implementation(project(":runtime:serde"))
                 implementation(project(":runtime:serde:serde-json"))
-                implementation(project(":runtime:client-rt-core"))
+                implementation(project(":runtime:runtime-core"))
 
                 // TODO - HTTP
             }

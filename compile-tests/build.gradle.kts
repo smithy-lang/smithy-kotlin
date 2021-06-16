@@ -18,7 +18,7 @@ val kotlinCompileTestingVersion: String by project
 dependencies {
     testImplementation(project(":smithy-kotlin-codegen"))
     testImplementation(project(":runtime"))
-    testImplementation(project(":runtime:client-rt-core"))
+    testImplementation(project(":runtime:runtime-core"))
     testImplementation(project(":runtime:protocol:http"))
     testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-ktor"))
     testImplementation(project(":runtime:serde:serde-json"))
