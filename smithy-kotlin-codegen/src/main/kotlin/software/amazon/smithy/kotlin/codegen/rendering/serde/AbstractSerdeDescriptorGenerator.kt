@@ -54,6 +54,7 @@ abstract class AbstractSerdeDescriptorGenerator(
     override fun render() {
         if (memberShapes.isEmpty()) return
 
+        // FIXME - decompose these symbols directly when they are emitted
         val serdeDescriptorSymbols = setOf(
             RuntimeTypes.Serde.SdkFieldDescriptor,
             RuntimeTypes.Serde.SdkObjectDescriptor,

@@ -640,7 +640,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun generateExceptionDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: StructureShape) {
         val outputSymbol = ctx.symbolProvider.toSymbol(shape)
-        val exceptionDeserializerImports = setOf(
+        val exceptionDeserializerSymbols = setOf(
             RuntimeTypes.Core.ExecutionContext,
             RuntimeTypes.Http.Response.HttpResponse,
             RuntimeTypes.Serde.SdkObjectDescriptor,
@@ -663,7 +663,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val resolver = getProtocolHttpBindingResolver(ctx)
             val responseBindings = resolver.responseBindings(shape)
             writer
-                .addImport(exceptionDeserializerImports)
+                .addImport(exceptionDeserializerSymbols)
                 .write("")
                 .openBlock("internal class #T: #T<#T> {", deserializerSymbol, RuntimeTypes.Http.Operation.HttpDeserialize, outputSymbol)
                 .write("")
