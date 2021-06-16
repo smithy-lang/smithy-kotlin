@@ -13,7 +13,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":client-runtime:serde"))
+                api(project(":runtime:serde"))
             }
         }
         jvmMain {

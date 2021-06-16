@@ -14,10 +14,10 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":client-runtime:protocol:http"))
+                api(project(":runtime:protocol:http"))
 
-                implementation(project(":client-runtime:testing"))
-                implementation(project(":client-runtime:serde:serde-xml"))
+                implementation(project(":runtime:testing"))
+                implementation(project(":runtime:serde:serde-xml"))
 
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
 
@@ -27,7 +27,7 @@ kotlin {
         }
         commonTest {
             dependencies {
-                implementation(project(":client-runtime:testing"))
+                implementation(project(":runtime:testing"))
             }
         }
 

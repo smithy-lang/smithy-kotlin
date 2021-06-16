@@ -11,8 +11,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":client-runtime:serde"))
-                implementation(project(":client-runtime:io"))
+                api(project(":runtime:serde"))
+                implementation(project(":runtime:io"))
             }
         }
     }

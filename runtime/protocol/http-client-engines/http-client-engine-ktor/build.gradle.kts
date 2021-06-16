@@ -13,11 +13,11 @@ kotlin {
     sourceSets {
         jvmMain {
             dependencies {
-                api(project(":client-runtime:protocol:http"))
-                implementation(project(":client-runtime:io"))
+                api(project(":runtime:protocol:http"))
+                implementation(project(":runtime:io"))
                 // okhttp works on both JVM and Android
                 implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
-                implementation(project(":client-runtime:logging"))
+                implementation(project(":runtime:logging"))
             }
         }
     }

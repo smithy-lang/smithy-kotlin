@@ -15,8 +15,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":client-runtime:serde"))
-                implementation(project(":client-runtime:logging"))
+                api(project(":runtime:serde"))
+                implementation(project(":runtime:logging"))
             }
         }
         jvmMain {

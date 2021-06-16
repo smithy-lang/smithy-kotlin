@@ -12,9 +12,9 @@ kotlin {
         commonMain {
             dependencies {
                 // io types are exposed as part of content/*
-                api(project(":client-runtime:io"))
+                api(project(":runtime:io"))
                 // Attributes property bag is exposed as client options
-                api(project(":client-runtime:utils"))
+                api(project(":runtime:utils"))
             }
         }
     }

@@ -14,12 +14,12 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":client-runtime:client-rt-core"))
+                api(project(":runtime:client-rt-core"))
                 // exposes: Attributes
-                api(project(":client-runtime:utils"))
+                api(project(":runtime:utils"))
                 // exposes: service+middleware
-                api(project(":client-runtime:io"))
-                implementation(project(":client-runtime:logging"))
+                api(project(":runtime:io"))
+                implementation(project(":runtime:logging"))
 
                 // HttpClientEngine implements CoroutineScope
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
@@ -29,7 +29,7 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation(project(":client-runtime:testing"))
+                implementation(project(":runtime:testing"))
             }
         }
     }

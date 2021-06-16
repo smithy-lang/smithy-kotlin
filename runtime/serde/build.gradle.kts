@@ -12,8 +12,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":client-runtime:client-rt-core"))
-                api(project(":client-runtime:utils"))
+                api(project(":runtime:client-rt-core"))
+                api(project(":runtime:utils"))
             }
         }
     }
@@ -24,7 +24,7 @@ subprojects {
         sourceSets {
             commonTest {
                 dependencies {
-                    implementation(project(":client-runtime:testing"))
+                    implementation(project(":runtime:testing"))
                 }
             }
         }

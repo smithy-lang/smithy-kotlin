@@ -16,7 +16,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(project(":client-runtime:utils"))
+                implementation(project(":runtime:utils"))
                 implementation("io.ktor:ktor-io:$ktorVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
@@ -24,7 +24,7 @@ kotlin {
 
         commonTest {
             dependencies {
-                implementation(project(":client-runtime:testing"))
+                implementation(project(":runtime:testing"))
             }
         }
 
