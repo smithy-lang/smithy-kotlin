@@ -34,6 +34,10 @@ object KotlinTypes {
     val Double: Symbol = builtInSymbol("Double")
     val Boolean: Symbol = builtInSymbol("Boolean")
 
+    val List: Symbol = builtInSymbol("List", "kotlin.collections")
+    val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
+    val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
+
     /**
      * A (non-exhaustive) set of builtin Kotlin symbols
      */
@@ -59,12 +63,16 @@ object KotlinTypes {
         Float,
         Double,
         Boolean,
+
+        List,
+        Set,
+        Map
     )
 }
 
-private fun builtInSymbol(symbol: String): Symbol = buildSymbol {
+private fun builtInSymbol(symbol: String, ns: String = "kotlin"): Symbol = buildSymbol {
     name = symbol
-    namespace = "kotlin"
+    namespace = ns
     nullable = false
 }
 
@@ -88,7 +96,7 @@ fun isValidKotlinIdentifier(s: String): Boolean {
  * Flag indicating if this symbol is a Kotlin built-in symbol
  */
 val Symbol.isBuiltIn: Boolean
-    get() = namespace == "kotlin"
+    get() = namespace.startsWith("kotlin")
 
 /**
  * Escape characters in strings to ensure they are treated as pure literals.

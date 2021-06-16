@@ -236,9 +236,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         serializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
-        importSerdePackage(writer)
-        writer.write("")
-            .openBlock("internal fun #T(serializer: Serializer, input: #T) {", serializerSymbol, symbol)
+        writer
+            .addImport(RuntimeTypes.Serde.serializeStruct, RuntimeTypes.Serde.SdkFieldDescriptor, RuntimeTypes.Serde.SdkObjectDescriptor, RuntimeTypes.Serde.Serializer)
+            .write("")
+            .openBlock("internal fun #T(serializer: #T, input: #T) {", serializerSymbol, RuntimeTypes.Serde.Serializer, symbol)
             .call {
                 renderSerializeDocumentBody(ctx, shape, writer)
             }
@@ -266,23 +267,27 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             reference(inputSymbol, SymbolReference.ContextOption.DECLARE)
         }
-
+        val operationSerializerSymbols = setOf(
+            RuntimeTypes.Http.HttpBody,
+            RuntimeTypes.Http.HttpMethod,
+            RuntimeTypes.Http.Operation.HttpSerialize,
+            RuntimeTypes.Http.ByteArrayContent,
+            RuntimeTypes.Http.Request.HttpRequestBuilder,
+            RuntimeTypes.Http.Request.url
+        )
         val resolver = getProtocolHttpBindingResolver(ctx)
         val requestBindings = resolver.requestBindings(op)
         ctx.delegator.useShapeWriter(serializerSymbol) { writer ->
             // import all of http, http.request, and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
-            importSerdePackage(writer)
-            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.request", "*")
-            writer.addImport(RuntimeTypes.Http.HttpSerialize)
-
-            writer.write("")
-                .openBlock("internal class #T: HttpSerialize<#T> {", serializerSymbol, inputSymbol)
+            writer
+                .addImport(operationSerializerSymbols)
+                .write("")
+                .openBlock("internal class #T: #T<#T> {", serializerSymbol, RuntimeTypes.Http.Operation.HttpSerialize, inputSymbol)
                 .call {
-                    writer.openBlock("override suspend fun serialize(context: #T, input: #T): HttpRequestBuilder {", RuntimeTypes.Core.ExecutionContext, inputSymbol)
-                        .write("val builder = HttpRequestBuilder()")
+                    writer.openBlock("override suspend fun serialize(context: #T, input: #T): #T {", RuntimeTypes.Core.ExecutionContext, inputSymbol, RuntimeTypes.Http.Request.HttpRequestBuilder)
+                        .write("val builder = #T()", RuntimeTypes.Http.Request.HttpRequestBuilder)
                         .call {
                             renderHttpSerialize(ctx, op, writer)
                         }
@@ -293,7 +298,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .callIf(requiresBodySerde(ctx, requestBindings)) {
                     // render a function responsible for serializing the members bound to the payload
                     writer.write("")
-                        .openBlock("private fun #L(context: ExecutionContext, input: #T): ByteArray {", "}", op.bodySerializerName(), inputSymbol) {
+                        .openBlock(
+                            "private fun #L(context: #T, input: #T): ByteArray {", "}",
+                            op.bodySerializerName(), RuntimeTypes.Core.ExecutionContext, inputSymbol
+                        ) {
                             renderSerializeOperationBody(ctx, op, writer)
                         }
                 }
@@ -309,9 +317,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val httpTrait = resolver.httpTrait(op)
         val requestBindings = resolver.requestBindings(op)
 
-        writer.addImport(RuntimeTypes.Core.ExecutionContext)
-
-        writer.write("builder.method = HttpMethod.#L", httpTrait.method.uppercase())
+        writer
+            .addImport(RuntimeTypes.Core.ExecutionContext)
+            .write("builder.method = #T.#L", RuntimeTypes.Http.HttpMethod, httpTrait.method.uppercase())
             .write("")
             .call {
                 // URI components
@@ -333,14 +341,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     .filter { it.location == HttpBinding.Location.PREFIX_HEADERS }
 
                 if (headerBindings.isNotEmpty() || prefixHeaderBindings.isNotEmpty()) {
-                    writer.withBlock("builder.headers {", "}") {
-                        renderStringValuesMapParameters(ctx, headerBindings, writer)
-                        prefixHeaderBindings.forEach {
-                            writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
-                                write("append(\"#L\$key\", value!!)", it.locationName)
+                    writer
+                        .addImport(RuntimeTypes.Http.Request.headers)
+                        .withBlock("builder.#T {", "}", RuntimeTypes.Http.Request.headers) {
+                            renderStringValuesMapParameters(ctx, headerBindings, writer)
+                            prefixHeaderBindings.forEach {
+                                writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
+                                    write("append(\"#L\$key\", value!!)", it.locationName)
+                                }
                             }
                         }
-                    }
                 }
             }
             .write("")
@@ -359,8 +369,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = resolver.requestBindings(op)
         if (!hasHttpBody(requestBindings)) return
 
-        writer.addImport(RuntimeTypes.Http.ByteArrayContent)
-
         // payload member(s)
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
@@ -368,11 +376,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         } else {
             // Unbound document members that should be serialized into the document format for the protocol.
             // delegate to the generate operation body serializer function
-            writer.write("val payload = #L(context, input)", op.bodySerializerName())
-                .write("builder.body = ByteArrayContent(payload)")
+            writer
+                .addImport(RuntimeTypes.Http.ByteArrayContent)
+                .write("val payload = #L(context, input)", op.bodySerializerName())
+                .write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
         }
 
-        writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
+        writer.openBlock("if (builder.body !is #T.Empty) {", "}", RuntimeTypes.Http.HttpBody) {
             val contentType = resolver.determineRequestContentType(op)
             writer.write("builder.headers[\"Content-Type\"] = #S", contentType)
         }
@@ -413,9 +423,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             "input.${binding.member.defaultName()}"
                         }
 
-                        val encodeSymbol = RuntimeTypes.Http.EncodeLabel
+                        val encodeSymbol = RuntimeTypes.Http.encodeLabel
                         writer.addImport(encodeSymbol)
-                        val encodeFn = if (segment.isGreedyLabel) "${encodeSymbol.name}(greedy = true)" else "${encodeSymbol.name}()"
+                        val encodeFn = if (segment.isGreedyLabel) {
+                            writer.format("#T(greedy = true)", encodeSymbol)
+                        } else {
+                            writer.format("#T()", encodeSymbol)
+                        }
                         writer.write("#S.$encodeFn,", "\${$identifier}")
                     } else {
                         // literal
@@ -456,41 +470,43 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         if (queryBindings.isEmpty() && queryLiterals.isEmpty() && queryMapBindings.isEmpty()) return
 
-        writer.withBlock("parameters {", "}") {
-            queryLiterals.forEach { (key, value) ->
-                writer.write("append(#S, #S)", key, value)
-            }
-
-            renderStringValuesMapParameters(ctx, queryBindings, writer)
-
-            queryMapBindings.forEach {
-                // either Map<String, String> or Map<String, Collection<String>>
-                // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
-                val target = ctx.model.expectShape<MapShape>(it.member.target)
-                val valueTarget = ctx.model.expectShape(target.value.target)
-                val fn = when (valueTarget.type) {
-                    ShapeType.STRING -> "append"
-                    ShapeType.LIST, ShapeType.SET -> "appendAll"
-                    else -> throw CodegenException("unexpected value type for httpQueryParams map")
+        writer
+            .addImport(RuntimeTypes.Http.parameters)
+            .withBlock("#T {", "}", RuntimeTypes.Http.parameters) {
+                queryLiterals.forEach { (key, value) ->
+                    writer.write("append(#S, #S)", key, value)
                 }
 
-                val nullCheck = if (target.hasTrait<SparseTrait>()) {
-                    "if (value != null) "
-                } else {
-                    ""
-                }
+                renderStringValuesMapParameters(ctx, queryBindings, writer)
 
-                writer.write("input.${it.member.defaultName()}")
-                    .indent()
-                    // ensure query precedence rules are enforced by filtering keys already set
-                    // (httpQuery bound members take precedence over a query map with same key)
-                    .write("?.filterNot{ contains(it.key) }")
-                    .withBlock("?.forEach { (key, value) ->", "}") {
-                        write("${nullCheck}$fn(key, value)")
+                queryMapBindings.forEach {
+                    // either Map<String, String> or Map<String, Collection<String>>
+                    // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
+                    val target = ctx.model.expectShape<MapShape>(it.member.target)
+                    val valueTarget = ctx.model.expectShape(target.value.target)
+                    val fn = when (valueTarget.type) {
+                        ShapeType.STRING -> "append"
+                        ShapeType.LIST, ShapeType.SET -> "appendAll"
+                        else -> throw CodegenException("unexpected value type for httpQueryParams map")
                     }
-                    .dedent()
+
+                    val nullCheck = if (target.hasTrait<SparseTrait>()) {
+                        "if (value != null) "
+                    } else {
+                        ""
+                    }
+
+                    writer.write("input.${it.member.defaultName()}")
+                        .indent()
+                        // ensure query precedence rules are enforced by filtering keys already set
+                        // (httpQuery bound members take precedence over a query map with same key)
+                        .write("?.filterNot{ contains(it.key) }")
+                        .withBlock("?.forEach { (key, value) ->", "}") {
+                            write("${nullCheck}$fn(key, value)")
+                        }
+                        .dedent()
+                }
             }
-        }
     }
 
     // shared implementation for rendering members that belong to StringValuesMap (e.g. Header or Query parameters)
@@ -527,25 +543,32 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ShapeType.BLOB -> {
                 val isBinaryStream = ctx.model.expectShape(binding.member.target).hasTrait<StreamingTrait>()
                 if (isBinaryStream) {
-                    writer.write("builder.body = input.#L.toHttpBody() ?: HttpBody.Empty", memberName)
+                    writer
+                        .addImport(RuntimeTypes.Http.toHttpBody)
+                        .write("builder.body = input.#L.#T() ?: #T.Empty", memberName, RuntimeTypes.Http.toHttpBody, RuntimeTypes.Http.HttpBody)
                 } else {
-                    writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
-                    writer.write("builder.body = ByteArrayContent(input.#L)", memberName)
+                    writer
+                        .addImport(RuntimeTypes.Http.ByteArrayContent)
+                        .write("builder.body = #T(input.#L)", RuntimeTypes.Http.ByteArrayContent, memberName)
                 }
             }
             ShapeType.STRING -> {
-                writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.content", "ByteArrayContent")
+                writer.addImport(RuntimeTypes.Http.ByteArrayContent)
                 val contents = if (target.isEnum) {
                     "$memberName.value"
                 } else {
                     memberName
                 }
-                writer.write("builder.body = ByteArrayContent(input.#L.toByteArray())", contents)
+                writer
+                    .addImport(RuntimeTypes.Core.Content.toByteArray)
+                    .write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, RuntimeTypes.Core.Content.toByteArray)
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the generated operation body serializer function
-                writer.write("val payload = #L(context, input)", op.bodySerializerName())
-                    .write("builder.body = ByteArrayContent(payload)")
+                writer
+                    .addImport(RuntimeTypes.Http.ByteArrayContent)
+                    .write("val payload = #L(context, input)", op.bodySerializerName())
+                    .write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
             }
             ShapeType.DOCUMENT -> {
                 // TODO - deal with document members
@@ -576,6 +599,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
+        val operationDeserializerSymbols = setOf(
+            RuntimeTypes.Http.Operation.HttpDeserialize,
+            RuntimeTypes.Http.Response.HttpResponse,
+        )
 
         val resolver = getProtocolHttpBindingResolver(ctx)
         val responseBindings = resolver.responseBindings(op)
@@ -583,15 +610,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
-            importSerdePackage(writer)
-            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
-            writer.addImport(RuntimeTypes.Http.HttpResponse)
-            writer.addImport(RuntimeTypes.Http.HttpDeserialize)
-
-            writer.write("")
+            writer
+                .addImport(operationDeserializerSymbols)
+                .write("")
                 .openBlock(
-                    "internal class #T: HttpDeserialize<#T> {",
+                    "internal class #T: #T<#T> {",
                     deserializerSymbol,
+                    RuntimeTypes.Http.Operation.HttpDeserialize,
                     outputSymbol
                 )
                 .write("")
@@ -615,6 +640,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun generateExceptionDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: StructureShape) {
         val outputSymbol = ctx.symbolProvider.toSymbol(shape)
+        val exceptionDeserializerSymbols = setOf(
+            RuntimeTypes.Core.ExecutionContext,
+            RuntimeTypes.Http.Response.HttpResponse,
+            RuntimeTypes.Serde.SdkObjectDescriptor,
+            RuntimeTypes.Serde.SdkFieldDescriptor,
+            RuntimeTypes.Serde.SerialKind,
+            RuntimeTypes.Serde.deserializeStruct,
+            RuntimeTypes.Http.Response.HttpResponse,
+            RuntimeTypes.Http.Operation.HttpDeserialize,
+        )
 
         val deserializerSymbol = buildSymbol {
             val deserializerName = "${outputSymbol.name}Deserializer"
@@ -625,15 +660,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
-            importSerdePackage(writer)
-            writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "*")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.response", "HttpResponse")
-            writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation", "HttpDeserialize")
-
             val resolver = getProtocolHttpBindingResolver(ctx)
             val responseBindings = resolver.responseBindings(shape)
-            writer.write("")
-                .openBlock("internal class #T: HttpDeserialize<#L> {", deserializerSymbol, outputSymbol.name)
+            writer
+                .addImport(exceptionDeserializerSymbols)
+                .write("")
+                .openBlock("internal class #T: #T<#T> {", deserializerSymbol, RuntimeTypes.Http.Operation.HttpDeserialize, outputSymbol)
                 .write("")
                 .call {
                     renderHttpDeserialize(ctx, outputSymbol, responseBindings, outputSymbol.errorDeserializerName(), writer)
@@ -661,13 +693,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         bodyDeserializerName: String,
         writer: KotlinWriter
     ) {
-        writer.addImport(RuntimeTypes.Core.ExecutionContext)
-
-        writer.openBlock(
-            "override suspend fun deserialize(context: #T, response: HttpResponse): #T {",
-            RuntimeTypes.Core.ExecutionContext,
-            outputSymbol
-        )
+        writer
+            .addImport(RuntimeTypes.Core.ExecutionContext)
+            .openBlock(
+                "override suspend fun deserialize(context: #T, response: #T): #T {",
+                RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.Http.Response.HttpResponse,
+                outputSymbol
+            )
             .write("val builder = #T.builder()", outputSymbol)
             .write("")
             .call {
@@ -704,10 +737,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     if (documentMembers.isNotEmpty()) {
                         // FIXME - we should not be slurping the entire contents into memory, instead our deserializers
                         // should work off of an SdkByteReadChannel
-                        writer.write("val payload = response.body.readAll()")
-                        writer.withBlock("if (payload != null) {", "}") {
-                            writer.write("#L(builder, payload)", bodyDeserializerName)
-                        }
+                        writer
+                            .addImport(RuntimeTypes.Http.readAll)
+                            .write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
+                            .withBlock("if (payload != null) {", "}") {
+                                writer.write("#L(builder, payload)", bodyDeserializerName)
+                            }
                     }
                 }
             }
@@ -768,8 +803,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     )
                 }
                 is BlobShape -> {
-                    writer.addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
-                    writer.write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
+                    writer
+                        .addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
+                        .write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
                 }
                 is StringShape -> {
                     when {
@@ -777,15 +813,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             val enumSymbol = ctx.symbolProvider.toSymbol(memberTarget)
                             writer.addImport(enumSymbol)
                             writer.write(
-                                "builder.#L = response.headers[#S]?.let { #L.fromValue(it) }",
+                                "builder.#L = response.headers[#S]?.let { #T.fromValue(it) }",
                                 memberName,
                                 headerName,
-                                enumSymbol.name
+                                enumSymbol
                             )
                         }
                         memberTarget.hasTrait<MediaTypeTrait>() -> {
-                            writer.addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
-                            writer.write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
+                            writer
+                                .addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
+                                .write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
                         }
                         else -> {
                             writer.write("builder.#L = response.headers[#S]", memberName, headerName)
@@ -798,12 +835,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         HttpBinding.Location.HEADER,
                         defaultTimestampFormat
                     )
-                    writer.addImport(RuntimeTypes.Core.Instant)
-
-                    writer.write(
-                        "builder.#L = response.headers[#S]?.let { #L }",
-                        memberName, headerName, parseInstant("it", tsFormat)
-                    )
+                    writer
+                        .addImport(RuntimeTypes.Core.Instant)
+                        .write(
+                            "builder.#L = response.headers[#S]?.let { #L }",
+                            memberName, headerName, parseInstant("it", tsFormat)
+                        )
                 }
                 is CollectionShape -> {
                     // member > boolean, number, string, or timestamp
@@ -850,10 +887,16 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         else -> throw CodegenException("unknown collection shape: $memberTarget")
                     }
 
-                    val mapFn = if (conversion.isNotEmpty()) "?.map { $conversion }" else ""
+                    val mapFn = if (conversion.isNotEmpty()) {
+                        "?.map { $conversion }"
+                    } else {
+                        ""
+                    }
 
-                    writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
-                    writer.write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)
+                    // writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
+                    writer
+                        .addImport(splitFn, KotlinDependency.CLIENT_RT_HTTP, subpackage = "util")
+                        .write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)
                 }
                 else -> throw CodegenException("unknown deserialization: header binding: $hdrBinding; member: `$memberName`")
             }
@@ -876,11 +919,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val keyMemberName = memberName.replaceFirstChar { c -> c.uppercaseChar() }
         val keyCollName = "keysFor$keyMemberName"
-        val filter = if (prefix?.isNotEmpty() == true) ".filter { it.startsWith(\"$prefix\") }" else ""
+        val filter = if (prefix?.isNotEmpty() == true) {
+            ".filter { it.startsWith(\"$prefix\") }"
+        } else {
+            ""
+        }
 
         writer.write("val $keyCollName = response.headers.names()$filter")
         writer.openBlock("if ($keyCollName.isNotEmpty()) {")
-            .write("val map = mutableMapOf<String, ${targetValueSymbol.name}>()")
+            .write("val map = mutableMapOf<String, #T>()", targetValueSymbol)
             .openBlock("for (hdrKey in $keyCollName) {")
             .call {
                 val getFn = when (targetValueShape) {
@@ -918,10 +965,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val targetSymbol = ctx.symbolProvider.toSymbol(target)
         when (target.type) {
             ShapeType.STRING -> {
-                writer.write("val contents = response.body.readAll()?.decodeToString()")
+                writer
+                    .addImport(RuntimeTypes.Http.readAll)
+                    .write("val contents = response.body.#T()?.decodeToString()", RuntimeTypes.Http.readAll)
                 if (target.isEnum) {
                     writer.addImport(targetSymbol)
-                    writer.write("builder.$memberName = contents?.let { ${targetSymbol.name}.fromValue(it) }")
+                    writer.write("builder.$memberName = contents?.let { #T.fromValue(it) }", targetSymbol)
                 } else {
                     writer.write("builder.$memberName = contents")
                 }
@@ -929,18 +978,22 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ShapeType.BLOB -> {
                 val isBinaryStream = target.hasTrait<StreamingTrait>()
                 val conversion = if (isBinaryStream) {
+                    writer.addImport(RuntimeTypes.Http.toByteStream)
                     "toByteStream()"
                 } else {
+                    writer.addImport(RuntimeTypes.Http.readAll)
                     "readAll()"
                 }
                 writer.write("builder.$memberName = response.body.$conversion")
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the payload deserializer
-                writer.write("val payload = response.body.readAll()")
-                writer.withBlock("if (payload != null) {", "}") {
-                    write("#L(builder, payload)", bodyDeserializerName)
-                }
+                writer
+                    .addImport(RuntimeTypes.Http.readAll)
+                    .write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
+                    .withBlock("if (payload != null) {", "}") {
+                        write("#L(builder, payload)", bodyDeserializerName)
+                    }
             }
             ShapeType.DOCUMENT -> {
                 // TODO - implement document support
@@ -989,17 +1042,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         deserializerSymbol: Symbol,
         writer: KotlinWriter
     ) {
-        importSerdePackage(writer)
-
-        writer.write("")
-            .openBlock("internal suspend fun #T(deserializer: Deserializer): #T {", deserializerSymbol, symbol)
+        val documentDeserializerSymbols = setOf(
+            RuntimeTypes.Serde.Deserializer,
+            RuntimeTypes.Serde.SdkFieldDescriptor,
+            RuntimeTypes.Serde.SdkObjectDescriptor,
+            RuntimeTypes.Serde.SerialKind,
+            RuntimeTypes.Serde.deserializeStruct,
+        )
+        writer
+            .addImport(documentDeserializerSymbols)
+            .write("")
+            .openBlock("internal suspend fun #T(deserializer: #T): #T {", deserializerSymbol, RuntimeTypes.Serde.Deserializer, symbol)
             .call {
                 if (shape.isUnionShape) {
-                    writer.write("var value: ${symbol.name}? = null")
+                    writer.write("var value: #T? = null", symbol)
                     renderDeserializeDocumentBody(ctx, shape, writer)
-                    writer.write("return value ?: throw DeserializationException(\"Deserialized value unexpectedly null: ${symbol.name}\")")
+                    writer
+                        .addImport(RuntimeTypes.Serde.DeserializationException)
+                        .write("return value ?: throw #T(\"Deserialized value unexpectedly null: ${symbol.name}\")", RuntimeTypes.Serde.DeserializationException)
                 } else {
-                    writer.write("val builder = ${symbol.name}.builder()")
+                    writer.write("val builder = #T.builder()", symbol)
                     renderDeserializeDocumentBody(ctx, shape, writer)
                     writer.write("return builder.build()")
                 }
@@ -1029,12 +1091,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             hasHttpBody(bindings)
         }
     }
-}
-
-// import CLIENT-RT.*
-internal fun importSerdePackage(writer: KotlinWriter) {
-    writer.addImport(KotlinDependency.CLIENT_RT_SERDE.namespace, "*")
-    writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SERDE.dependencies)
 }
 
 // return the conversion function to use to convert a Kotlin string to a given number shape

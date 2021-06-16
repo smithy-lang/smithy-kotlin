@@ -67,6 +67,11 @@ open class XmlSerdeDescriptorGenerator(
         nameSuffix: String
     ): List<SdkFieldDescriptorTrait> {
 
+        ctx.writer.addImport(
+            RuntimeTypes.Serde.SerdeXml.XmlDeserializer,
+            RuntimeTypes.Serde.SerdeXml.XmlSerialName,
+        )
+
         val traitList = mutableListOf<SdkFieldDescriptorTrait>()
 
         val serialName = getSerialName(member, nameSuffix)

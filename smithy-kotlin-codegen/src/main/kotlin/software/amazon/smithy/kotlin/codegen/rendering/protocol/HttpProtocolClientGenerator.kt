@@ -64,11 +64,14 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("${ctx.settings.pkg.name}.model", "*")
         writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
-        // http.*
-        val httpRootPkg = KotlinDependency.CLIENT_RT_HTTP.namespace
-        writer.addImport(httpRootPkg, "*")
-        writer.addImport("$httpRootPkg.operation", "*")
-        writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig")
+        val defaultClientSymbols = setOf(
+            RuntimeTypes.Http.Operation.SdkHttpOperation,
+            RuntimeTypes.Http.Operation.context,
+            RuntimeTypes.Http.Engine.HttpClientEngineConfig,
+            RuntimeTypes.Http.SdkHttpClient,
+            RuntimeTypes.Http.SdkHttpClientFn
+        )
+        writer.addImport(defaultClientSymbols)
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
     }
 
@@ -126,7 +129,7 @@ abstract class HttpProtocolClientGenerator(
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
                 // NOTE: this will never be triggered for AWS models where we preprocess operations to always have inputs/outputs
-                writer.addImport(RuntimeTypes.Http.HttpRequestBuilder)
+                writer.addImport(RuntimeTypes.Http.Request.HttpRequestBuilder)
                 writer.addImport(RuntimeTypes.Core.ExecutionContext)
                 writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
                     writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
@@ -182,12 +185,15 @@ abstract class HttpProtocolClientGenerator(
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
         if (hasOutputStream) {
-            writer.write("return op.execute(client, #L, block)", inputVariableName)
+            writer
+                .addImport(RuntimeTypes.Http.Operation.execute)
+                .write("return op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
         } else {
+            writer.addImport(RuntimeTypes.Http.Operation.roundTrip)
             if (outputShape.isPresent) {
-                writer.write("return op.roundTrip(client, #L)", inputVariableName)
+                writer.write("return op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
             } else {
-                writer.write("op.roundTrip(client, #L)", inputVariableName)
+                writer.write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
             }
         }
     }
