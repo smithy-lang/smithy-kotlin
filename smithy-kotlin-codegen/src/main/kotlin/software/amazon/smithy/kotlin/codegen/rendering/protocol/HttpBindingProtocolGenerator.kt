@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import software.amazon.smithy.aws.traits.ServiceTrait
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
@@ -345,13 +344,13 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer
                         .addImport(RuntimeTypes.Http.Request.headers)
                         .withBlock("builder.#T {", "}", RuntimeTypes.Http.Request.headers) {
-                        renderStringValuesMapParameters(ctx, headerBindings, writer)
-                        prefixHeaderBindings.forEach {
-                            writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
-                                write("append(\"#L\$key\", value!!)", it.locationName)
+                            renderStringValuesMapParameters(ctx, headerBindings, writer)
+                            prefixHeaderBindings.forEach {
+                                writer.withBlock("input.${it.member.defaultName()}?.filter { it.value != null }?.forEach { (key, value) ->", "}") {
+                                    write("append(\"#L\$key\", value!!)", it.locationName)
+                                }
                             }
                         }
-                    }
                 }
             }
             .write("")
@@ -474,40 +473,40 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer
             .addImport(RuntimeTypes.Http.parameters)
             .withBlock("#T {", "}", RuntimeTypes.Http.parameters) {
-            queryLiterals.forEach { (key, value) ->
-                writer.write("append(#S, #S)", key, value)
-            }
-
-            renderStringValuesMapParameters(ctx, queryBindings, writer)
-
-            queryMapBindings.forEach {
-                // either Map<String, String> or Map<String, Collection<String>>
-                // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
-                val target = ctx.model.expectShape<MapShape>(it.member.target)
-                val valueTarget = ctx.model.expectShape(target.value.target)
-                val fn = when (valueTarget.type) {
-                    ShapeType.STRING -> "append"
-                    ShapeType.LIST, ShapeType.SET -> "appendAll"
-                    else -> throw CodegenException("unexpected value type for httpQueryParams map")
+                queryLiterals.forEach { (key, value) ->
+                    writer.write("append(#S, #S)", key, value)
                 }
 
-                val nullCheck = if (target.hasTrait<SparseTrait>()) {
-                    "if (value != null) "
-                } else {
-                    ""
-                }
+                renderStringValuesMapParameters(ctx, queryBindings, writer)
 
-                writer.write("input.${it.member.defaultName()}")
-                    .indent()
-                    // ensure query precedence rules are enforced by filtering keys already set
-                    // (httpQuery bound members take precedence over a query map with same key)
-                    .write("?.filterNot{ contains(it.key) }")
-                    .withBlock("?.forEach { (key, value) ->", "}") {
-                        write("${nullCheck}$fn(key, value)")
+                queryMapBindings.forEach {
+                    // either Map<String, String> or Map<String, Collection<String>>
+                    // https://awslabs.github.io/smithy/1.0/spec/core/http-traits.html#httpqueryparams-trait
+                    val target = ctx.model.expectShape<MapShape>(it.member.target)
+                    val valueTarget = ctx.model.expectShape(target.value.target)
+                    val fn = when (valueTarget.type) {
+                        ShapeType.STRING -> "append"
+                        ShapeType.LIST, ShapeType.SET -> "appendAll"
+                        else -> throw CodegenException("unexpected value type for httpQueryParams map")
                     }
-                    .dedent()
+
+                    val nullCheck = if (target.hasTrait<SparseTrait>()) {
+                        "if (value != null) "
+                    } else {
+                        ""
+                    }
+
+                    writer.write("input.${it.member.defaultName()}")
+                        .indent()
+                        // ensure query precedence rules are enforced by filtering keys already set
+                        // (httpQuery bound members take precedence over a query map with same key)
+                        .write("?.filterNot{ contains(it.key) }")
+                        .withBlock("?.forEach { (key, value) ->", "}") {
+                            write("${nullCheck}$fn(key, value)")
+                        }
+                        .dedent()
+                }
             }
-        }
     }
 
     // shared implementation for rendering members that belong to StringValuesMap (e.g. Header or Query parameters)
