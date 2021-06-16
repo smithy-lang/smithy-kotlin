@@ -429,6 +429,87 @@ class FormUrlSerializerTest {
         assertEquals(expected, actual)
     }
 
+    data class NestedStruct(
+        val mapInput: Map<String, String>? = null,
+        val listInput: List<String>? = null
+    ) : SdkSerializable {
+        override fun serialize(serializer: Serializer) {
+            val listDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("ListArg"))
+            val mapDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("MapArg"))
+            val objectDescriptor = SdkObjectDescriptor.build {
+                trait(FormUrlSerialName("NestedStruct"))
+                field(listDescriptor)
+                field(mapDescriptor)
+            }
+            serializer.serializeStruct(objectDescriptor) {
+                if (listInput != null) {
+                    listField(listDescriptor) {
+                        listInput.forEach { serializeString(it) }
+                    }
+                }
+
+                if (mapInput != null) {
+                    mapField(mapDescriptor) {
+                        mapInput.forEach { (key, value) ->
+                            entry(key, value)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    data class NestedStructureInput(val nested: NestedStruct) {
+        companion object {
+            val NESTED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, FormUrlSerialName("Nested"))
+            val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
+                field(NESTED_DESCRIPTOR)
+            }
+        }
+
+        fun serialize(serializer: Serializer) {
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                field(NESTED_DESCRIPTOR, nested)
+            }
+        }
+    }
+
+    @Test
+    fun itSerializesNestedMaps() {
+        val input = NestedStructureInput(
+            nested = NestedStruct(mapInput = mapOf("k1" to "v1", "k2" to "v2"))
+        )
+
+        val expected = """
+            Nested.MapArg.entry.1.key=k1
+            &Nested.MapArg.entry.1.value=v1
+            &Nested.MapArg.entry.2.key=k2
+            &Nested.MapArg.entry.2.value=v2
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itSerializesNestedLists() {
+        val input = NestedStructureInput(
+            nested = NestedStruct(listInput = listOf("v1", "v2"))
+        )
+
+        val expected = """
+            Nested.ListArg.member.1=v1
+            &Nested.ListArg.member.2=v2
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
     @Test
     fun itSerializesRenamedMaps() {
         // map with xmlName key/value overrides
