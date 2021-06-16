@@ -145,7 +145,7 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
                     .write("")
 
                 writer.dokka("Get a list of all possible variants")
-                openBlock("fun values(): List<#Q> = listOf(", symbol)
+                openBlock("fun values(): #Q<#Q> = listOf(", KotlinTypes.List, symbol)
                     .call {
                         sortedDefinitions.forEachIndexed { idx, definition ->
                             val variantName = getVariantName(definition)
