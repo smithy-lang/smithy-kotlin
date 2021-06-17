@@ -47,6 +47,21 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun itDeserializesXmlTextWithAmpersands() = runSuspendTest {
+        val payload = """             
+            <value>{&quot;Version&quot;:&quot;2008-10-17&quot;,&quot;Id&quot;:&quot;__default_policy_ID&quot;,&quot;Statement&quot;:[{&quot;Sid&quot;:&quot;__default_statement_ID&quot;,&quot;Effect&quot;:&quot;Allow&quot;,&quot;Principal&quot;:{&quot;AWS&quot;:&quot;*&quot;},&quot;Action&quot;:[&quot;SNS:GetTopicAttributes&quot;,&quot;SNS:SetTopicAttributes&quot;,&quot;SNS:AddPermission&quot;,&quot;SNS:RemovePermission&quot;,&quot;SNS:DeleteTopic&quot;,&quot;SNS:Subscribe&quot;,&quot;SNS:ListSubscriptionsByTopic&quot;,&quot;SNS:Publish&quot;,&quot;SNS:Receive&quot;],&quot;Resource&quot;:&quot;arn:aws:sns:us-west-2:406669096152:kg-test&quot;,&quot;Condition&quot;:{&quot;StringEquals&quot;:{&quot;AWS:SourceOwner&quot;:&quot;406669096152&quot;}}}]}</value>            
+        """.trimIndent().encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+
+        // Test that input contains a single TEXT
+        assertEquals(3, actual.size)
+        assertTrue(actual[0] is XmlToken.BeginElement)
+        assertTrue(actual[1] is XmlToken.Text)
+        assertTrue(actual[2] is XmlToken.EndElement)
+        assertTrue((actual[1] as XmlToken.Text).value!!.isNotEmpty())
+    }
+
+    @Test
     fun itDeserializesXmlWithAttributes() = runSuspendTest {
         val payload = """
             <batch>

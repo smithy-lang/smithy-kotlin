@@ -61,8 +61,7 @@ internal class KtorHeaders(private val headers: Headers) : software.aws.clientrt
 }
 
 // wrapper around ByteReadChannel that implements the [Source] interface
-internal class KtorContentStream(private val channel: ByteReadChannel, private val onClose: (() -> Unit)? = null) :
-    SdkByteReadChannel {
+internal class KtorContentStream(private val channel: ByteReadChannel) : SdkByteReadChannel {
     override val availableForRead: Int
         get() = channel.availableForRead
 
@@ -74,45 +73,26 @@ internal class KtorContentStream(private val channel: ByteReadChannel, private v
 
     override suspend fun readRemaining(limit: Int): ByteArray {
         val packet = channel.readRemaining(limit.toLong())
-        notifyIfExhausted()
         return packet.readBytes()
     }
 
     override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) {
         channel.readFully(sink, offset, length)
-        notifyIfExhausted()
     }
 
-    override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int {
-        val read = channel.readAvailable(sink, offset, length)
-        notifyIfExhausted()
-        return read
-    }
+    override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int =
+        channel.readAvailable(sink, offset, length)
 
-    override suspend fun readAvailable(sink: ByteBuffer): Int {
-        val read = channel.readAvailable(sink)
-        notifyIfExhausted()
-        return read
-    }
+    override suspend fun readAvailable(sink: ByteBuffer): Int = channel.readAvailable(sink)
 
-    override fun cancel(cause: Throwable?): Boolean {
-        try {
-            return channel.cancel(cause)
-        } finally {
-            onClose?.invoke()
-        }
-    }
+    override suspend fun awaitContent() = channel.awaitContent()
 
-    private fun notifyIfExhausted() {
-        if (channel.isClosedForRead) {
-            onClose?.invoke()
-        }
-    }
+    override fun cancel(cause: Throwable?): Boolean = channel.cancel(cause)
 }
 
 // wrapper around a ByteReadChannel that implements the content as an SDK (streaming) HttpBody
-internal class KtorHttpBody(channel: ByteReadChannel, onClose: (() -> Unit)? = null) : HttpBody.Streaming() {
-    private val source = KtorContentStream(channel, onClose)
+internal class KtorHttpBody(channel: ByteReadChannel) : HttpBody.Streaming() {
+    private val source = KtorContentStream(channel)
     override fun readFrom(): SdkByteReadChannel = source
 }
 

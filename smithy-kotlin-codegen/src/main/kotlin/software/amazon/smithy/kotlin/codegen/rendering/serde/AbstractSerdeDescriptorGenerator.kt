@@ -6,10 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.addImport
-import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 
@@ -57,7 +54,21 @@ abstract class AbstractSerdeDescriptorGenerator(
     override fun render() {
         if (memberShapes.isEmpty()) return
 
-        writer.addImport("*", KotlinDependency.CLIENT_RT_SERDE)
+        // FIXME - decompose these symbols directly when they are emitted
+        val serdeDescriptorSymbols = setOf(
+            RuntimeTypes.Serde.SdkFieldDescriptor,
+            RuntimeTypes.Serde.SdkObjectDescriptor,
+            RuntimeTypes.Serde.SerialKind,
+            RuntimeTypes.Serde.deserializeStruct,
+            RuntimeTypes.Serde.deserializeList,
+            RuntimeTypes.Serde.deserializeMap,
+            RuntimeTypes.Serde.field,
+            RuntimeTypes.Serde.asSdkSerializable,
+            RuntimeTypes.Serde.serializeStruct,
+            RuntimeTypes.Serde.serializeList,
+            RuntimeTypes.Serde.serializeMap
+        )
+        writer.addImport(serdeDescriptorSymbols)
         val sortedMembers = memberShapes.sortedBy { it.memberName }
         for (member in sortedMembers) {
             val memberTarget = ctx.model.expectShape(member.target)

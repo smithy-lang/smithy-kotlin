@@ -12,6 +12,8 @@ internal actual class KtorReadChannelAdapter actual constructor(
     chan: KtorByteReadChannel
 ) : SdkByteReadChannel, KtorReadChannelAdapterBase(chan) {
     override suspend fun readAvailable(sink: ByteBuffer): Int = chan.readAvailable(sink)
+
+    override suspend fun awaitContent() = chan.awaitContent()
 }
 
 internal actual class KtorWriteChannelAdapter actual constructor(

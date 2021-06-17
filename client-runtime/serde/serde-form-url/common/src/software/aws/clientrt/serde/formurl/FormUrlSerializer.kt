@@ -137,11 +137,13 @@ private class FormUrlStructSerializer(
     }
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
-        FormUrlListSerializer(parent, descriptor).apply(block)
+        val childDescriptor = descriptor.copyWithNewSerialName("${prefix}${descriptor.serialName}")
+        FormUrlListSerializer(parent, childDescriptor).apply(block)
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
-        FormUrlMapSerializer(parent, descriptor).apply(block)
+        val childDescriptor = descriptor.copyWithNewSerialName("${prefix}${descriptor.serialName}")
+        FormUrlMapSerializer(parent, childDescriptor).apply(block)
     }
 
     override fun rawField(descriptor: SdkFieldDescriptor, value: String) = writeField(descriptor) {
@@ -321,3 +323,9 @@ private fun QueryLiteral.toDescriptor(): SdkFieldDescriptor = SdkFieldDescriptor
 
 private val SdkFieldDescriptor.serialName: String
     get() = expectTrait<FormUrlSerialName>().name
+
+private fun SdkFieldDescriptor.copyWithNewSerialName(newName: String): SdkFieldDescriptor {
+    val newTraits = traits.filterNot { it is FormUrlSerialName }.toMutableSet()
+    newTraits.add(FormUrlSerialName(newName))
+    return SdkFieldDescriptor(kind, newTraits)
+}

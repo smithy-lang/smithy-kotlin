@@ -7,9 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
-import software.amazon.smithy.kotlin.codegen.model.operationSignature
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
 import software.amazon.smithy.kotlin.codegen.rendering.serde.serializerName
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -66,31 +64,31 @@ abstract class HttpProtocolClientGenerator(
         writer.addImport("${ctx.settings.pkg.name}.model", "*")
         writer.addImport("${ctx.settings.pkg.name}.transform", "*")
 
-        // http.*
-        val httpRootPkg = KotlinDependency.CLIENT_RT_HTTP.namespace
-        writer.addImport(httpRootPkg, "*")
-        writer.addImport("$httpRootPkg.operation", "*")
-        writer.addImport("$httpRootPkg.engine", "HttpClientEngineConfig")
+        val defaultClientSymbols = setOf(
+            RuntimeTypes.Http.Operation.SdkHttpOperation,
+            RuntimeTypes.Http.Operation.context,
+            RuntimeTypes.Http.Engine.HttpClientEngineConfig,
+            RuntimeTypes.Http.SdkHttpClient,
+            RuntimeTypes.Http.SdkHttpClientFn
+        )
+        writer.addImport(defaultClientSymbols)
         writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
+    }
 
-        // TODO - engine needs configurable (either auto detected or passed in through config).
-        //  For now default it to Ktor since it's the only available engine
-        val ktorEngineSymbol = Symbol.builder()
-            .name("KtorEngine")
-            .namespace(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE.namespace, ".")
-            .addDependency(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE)
-            .build()
-
-        writer.addImport(ktorEngineSymbol)
+    //  defaults to Ktor since it's the only available engine in smithy-kotlin runtime
+    protected open val defaultHttpClientEngineSymbol: Symbol = buildSymbol {
+        name = "KtorEngine"
+        namespace(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE)
     }
 
     /**
      * Render the class initialization block. By default this configures the HTTP client
      */
     protected open fun renderInit(writer: KotlinWriter) {
+        writer.addImport(defaultHttpClientEngineSymbol)
         writer.openBlock("init {", "}") {
-            writer.write("val httpClientEngine = config.httpClientEngine ?: KtorEngine(HttpClientEngineConfig())")
-            writer.write("client = sdkHttpClient(httpClientEngine)")
+            writer.write("val httpClientEngine = config.httpClientEngine ?: #T(HttpClientEngineConfig())", defaultHttpClientEngineSymbol)
+            writer.write("client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)")
         }
     }
 
@@ -131,7 +129,7 @@ abstract class HttpProtocolClientGenerator(
                 // no serializer implementation is generated for operations with no input, inline the HTTP
                 // protocol request from the operation itself
                 // NOTE: this will never be triggered for AWS models where we preprocess operations to always have inputs/outputs
-                writer.addImport(RuntimeTypes.Http.HttpRequestBuilder)
+                writer.addImport(RuntimeTypes.Http.Request.HttpRequestBuilder)
                 writer.addImport(RuntimeTypes.Core.ExecutionContext)
                 writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
                     writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
@@ -187,12 +185,15 @@ abstract class HttpProtocolClientGenerator(
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
         if (hasOutputStream) {
-            writer.write("return op.execute(client, #L, block)", inputVariableName)
+            writer
+                .addImport(RuntimeTypes.Http.Operation.execute)
+                .write("return op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
         } else {
+            writer.addImport(RuntimeTypes.Http.Operation.roundTrip)
             if (outputShape.isPresent) {
-                writer.write("return op.roundTrip(client, #L)", inputVariableName)
+                writer.write("return op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
             } else {
-                writer.write("op.roundTrip(client, #L)", inputVariableName)
+                writer.write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
             }
         }
     }
@@ -218,7 +219,6 @@ abstract class HttpProtocolClientGenerator(
 
     protected open fun renderClose(writer: KotlinWriter) {
         writer.write("")
-            // FIXME - this will eventually need to handle the case where an engine is passed in
             .openBlock("override fun close() {")
             .write("client.close()")
             .closeBlock("}")
