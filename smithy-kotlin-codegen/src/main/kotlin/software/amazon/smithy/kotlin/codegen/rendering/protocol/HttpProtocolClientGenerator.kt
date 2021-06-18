@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.deserializerName
@@ -24,6 +25,8 @@ abstract class HttpProtocolClientGenerator(
     protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
+
+    object OperationDeserializerMappingSection : SectionId
 
     /**
      * Render the implementation of the service client interface
@@ -142,10 +145,14 @@ abstract class HttpProtocolClientGenerator(
                 }
             }
 
-            if (outputShape.isPresent) {
-                writer.write("deserializer = ${op.deserializerName()}()")
+            val deserializerType = if (outputShape.isPresent) {
+                "${op.deserializerName()}()"
             } else {
-                writer.write("deserializer = UnitDeserializer")
+                "UnitDeserializer"
+            }
+
+            writer.declareSection(OperationDeserializerMappingSection, mapOf("Operation" to op)) {
+                write("deserializer = $deserializerType")
             }
 
             // execution context

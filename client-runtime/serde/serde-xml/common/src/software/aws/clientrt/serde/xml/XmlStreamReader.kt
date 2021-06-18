@@ -76,4 +76,4 @@ suspend inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicat
 /*
 * Creates an [XmlStreamReader] instance
 */
-internal expect fun xmlStreamReader(payload: ByteArray): XmlStreamReader
+expect fun xmlStreamReader(payload: ByteArray): XmlStreamReader

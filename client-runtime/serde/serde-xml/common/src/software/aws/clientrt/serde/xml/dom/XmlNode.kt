@@ -56,7 +56,7 @@ class XmlNode {
 }
 
 // parse a string into a dom representation
-internal suspend fun parseDom(reader: XmlStreamReader): XmlNode {
+suspend fun parseDom(reader: XmlStreamReader): XmlNode {
 
     val nodeStack: Stack<XmlNode> = mutableListOf()
 
