@@ -381,7 +381,7 @@ open class SerializeStructGenerator(
      * ```
      */
     private fun renderBlobEntry(nestingLevel: Int, listMemberName: String) {
-        writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
+        writer.addImport("encodeBase64String", KotlinDependency.UTILS)
 
         val containerName = if (nestingLevel == 0) "input." else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
@@ -465,7 +465,7 @@ open class SerializeStructGenerator(
      * }
      */
     private fun renderBlobElement(nestingLevel: Int, listMemberName: String) {
-        writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
+        writer.addImport("encodeBase64String", KotlinDependency.UTILS)
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
 
@@ -600,7 +600,7 @@ open class SerializeStructGenerator(
             ShapeType.FLOAT,
             ShapeType.DOUBLE -> defaultIdentifier
             ShapeType.BLOB -> {
-                writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
+                writer.addImport("encodeBase64String", KotlinDependency.UTILS)
                 "$defaultIdentifier.encodeBase64String()"
             }
             ShapeType.TIMESTAMP -> {

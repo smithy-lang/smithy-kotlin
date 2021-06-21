@@ -18,10 +18,10 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
     override fun openTestFunctionBlock(): String = "= httpRequestTest {"
 
     override fun renderTestBody(test: HttpRequestTestCase) {
-        writer.addImport(KotlinDependency.CLIENT_RT_SMITHY_TEST.namespace, "*")
-        writer.addImport(KotlinDependency.CLIENT_RT_HTTP.namespace, "HttpMethod")
-        writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.config", "IdempotencyTokenProvider")
-        writer.dependencies.addAll(KotlinDependency.CLIENT_RT_SMITHY_TEST.dependencies)
+        writer.addImport(KotlinDependency.SMITHY_TEST.namespace, "*")
+        writer.addImport(KotlinDependency.HTTP.namespace, "HttpMethod")
+        writer.addImport("${KotlinDependency.CORE.namespace}.config", "IdempotencyTokenProvider")
+        writer.dependencies.addAll(KotlinDependency.SMITHY_TEST.dependencies)
         renderExpectedBlock(test)
         writer.write("")
         renderOperationBlock(test)

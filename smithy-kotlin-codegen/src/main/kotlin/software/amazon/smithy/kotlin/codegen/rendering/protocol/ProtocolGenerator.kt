@@ -38,7 +38,7 @@ interface ProtocolGenerator {
 
         val DefaultServiceExceptionSymbol: Symbol = buildSymbol {
             name = "ServiceException"
-            namespace(KotlinDependency.CLIENT_RT_CORE)
+            namespace(KotlinDependency.CORE)
         }
     }
 

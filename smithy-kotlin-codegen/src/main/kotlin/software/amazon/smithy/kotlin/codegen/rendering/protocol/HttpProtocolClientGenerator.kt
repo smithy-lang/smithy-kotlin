@@ -77,13 +77,13 @@ abstract class HttpProtocolClientGenerator(
             RuntimeTypes.Http.SdkHttpClientFn
         )
         writer.addImport(defaultClientSymbols)
-        writer.dependencies.addAll(KotlinDependency.CLIENT_RT_HTTP.dependencies)
+        writer.dependencies.addAll(KotlinDependency.HTTP.dependencies)
     }
 
     //  defaults to Ktor since it's the only available engine in smithy-kotlin runtime
     protected open val defaultHttpClientEngineSymbol: Symbol = buildSymbol {
         name = "KtorEngine"
-        namespace(KotlinDependency.CLIENT_RT_HTTP_KTOR_ENGINE)
+        namespace(KotlinDependency.HTTP_KTOR_ENGINE)
     }
 
     /**

@@ -87,7 +87,7 @@ fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): Ko
 // Convenience function to create symbol and add it as an import.
 fun KotlinWriter.addImport(
     name: String,
-    dependency: KotlinDependency = KotlinDependency.CLIENT_RT_CORE,
+    dependency: KotlinDependency = KotlinDependency.CORE,
     namespace: String = dependency.namespace,
     subpackage: String? = null
 ): KotlinWriter {

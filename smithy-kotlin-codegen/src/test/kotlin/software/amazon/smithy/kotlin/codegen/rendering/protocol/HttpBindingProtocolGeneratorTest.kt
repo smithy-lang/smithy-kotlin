@@ -9,6 +9,7 @@ import io.kotest.matchers.string.shouldNotContain
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
@@ -287,7 +288,7 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
 }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
-        contents.shouldContainOnlyOnce("import software.aws.clientrt.time.TimestampFormat")
+        contents.shouldContainOnlyOnce("import $RUNTIME_ROOT_NS.time.TimestampFormat")
     }
 
     @Test

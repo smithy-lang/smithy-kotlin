@@ -29,7 +29,7 @@ class ServiceGeneratorTest {
     @Test
     fun `it imports external symbols`() {
         commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
-        commonTestContents.shouldContainOnlyOnce("import $CLIENT_RT_ROOT_NS.SdkClient")
+        commonTestContents.shouldContainOnlyOnce("import $RUNTIME_ROOT_NS.SdkClient")
     }
 
     @Test
