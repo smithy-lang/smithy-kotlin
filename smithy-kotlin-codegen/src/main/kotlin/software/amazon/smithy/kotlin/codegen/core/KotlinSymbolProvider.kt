@@ -181,7 +181,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {
-        val dependency = KotlinDependency.CLIENT_RT_CORE
+        val dependency = KotlinDependency.CORE
         return createSymbolBuilder(shape, "Instant", boxed = true)
             .namespace("${dependency.namespace}.time", ".")
             .addDependency(dependency)
@@ -189,7 +189,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun blobShape(shape: BlobShape): Symbol = if (shape.hasTrait<StreamingTrait>()) {
-        val dependency = KotlinDependency.CLIENT_RT_CORE
+        val dependency = KotlinDependency.CORE
         createSymbolBuilder(shape, "ByteStream", boxed = true)
             .namespace("${dependency.namespace}.content", ".")
             .addDependency(dependency)
@@ -199,7 +199,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     }
 
     override fun documentShape(shape: DocumentShape?): Symbol {
-        val dependency = KotlinDependency.CLIENT_RT_CORE
+        val dependency = KotlinDependency.CORE
         return createSymbolBuilder(shape, "Document", boxed = true)
             .namespace("${dependency.namespace}.smithy", ".")
             .addDependency(dependency)

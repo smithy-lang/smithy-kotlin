@@ -14,7 +14,7 @@ class SymbolBuilderTest {
     fun `it builds symbols`() {
         val x = buildSymbol {
             name = "Foo"
-            dependencies += KotlinDependency.CLIENT_RT_CORE
+            dependencies += KotlinDependency.CORE
             reference {
                 name = "MyRef"
             }

@@ -101,7 +101,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         val sdkInterfaceSymbol = Symbol.builder()
             .name("SdkClient")
             .namespace(RUNTIME_ROOT_NS, ".")
-            .addDependency(KotlinDependency.CLIENT_RT_CORE)
+            .addDependency(KotlinDependency.CORE)
             .build()
 
         writer.addImport(sdkInterfaceSymbol)

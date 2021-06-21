@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CLIENT_RT_CORE
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
@@ -138,7 +138,7 @@ class SymbolProviderTest {
         assertEquals(true, memberSymbol.isBoxed)
         assertEquals("ByteStream", memberSymbol.name)
         val dependency = memberSymbol.dependencies[0].expectProperty("dependency") as KotlinDependency
-        assertEquals(CLIENT_RT_CORE.artifact, dependency.artifact)
+        assertEquals(CORE.artifact, dependency.artifact)
     }
 
     @Test
@@ -359,7 +359,7 @@ class SymbolProviderTest {
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
         assertEquals(true, documentSymbol.isBoxed)
-        assertEquals("${KotlinDependency.CLIENT_RT_CORE.namespace}.smithy", documentSymbol.namespace)
+        assertEquals("${KotlinDependency.CORE.namespace}.smithy", documentSymbol.namespace)
         assertEquals(1, documentSymbol.dependencies.size)
     }
 
