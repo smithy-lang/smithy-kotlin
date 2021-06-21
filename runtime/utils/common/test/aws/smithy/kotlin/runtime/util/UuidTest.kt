@@ -32,7 +32,7 @@ class UuidTest {
 
     @Test
     fun `it should yield valid UUID strings`() {
-        val uuid = Uuid(0x12_34_56_78_90_ab_cd_ef, 0x21_43_65_87_09_ba_dc_fe)
+        val uuid = Uuid(0x12345678_90ab_cdef, 0x2143_658709badcfe)
         assertEquals("12345678-90ab-cdef-2143-658709badcfe", uuid.toString())
     }
 }

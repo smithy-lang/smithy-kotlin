@@ -24,7 +24,7 @@ data class Uuid(val high: Long, val low: Long) {
         /**
          * Generates a random [Uuid], specifically a
          * [UUID v4](https://en.wikipedia.org/wiki/Universally_unique_identifier#Version_4_.28random.29).
-         * Generated UUIDs are not generated with a cryptographically-strong random number generator.
+         * UUIDs are not generated with a cryptographically-strong random number generator.
          */
         @WeakRng
         fun random(): Uuid {
