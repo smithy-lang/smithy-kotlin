@@ -17,13 +17,42 @@ import software.amazon.smithy.kotlin.codegen.model.namespace
  */
 object RuntimeTypes {
     object Http {
-        val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, "request")
-        val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.CLIENT_RT_HTTP, "response")
-        val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
-        val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
+        val HttpBody = runtimeSymbol("HttpBody", KotlinDependency.CLIENT_RT_HTTP)
+        val HttpMethod = runtimeSymbol("HttpMethod", KotlinDependency.CLIENT_RT_HTTP)
+        val SdkHttpClient = runtimeSymbol("SdkHttpClient", KotlinDependency.CLIENT_RT_HTTP)
+        val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.CLIENT_RT_HTTP)
         val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_HTTP, "content")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.CLIENT_RT_HTTP, "middleware")
-        val EncodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.CLIENT_RT_HTTP, "util")
+        val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.CLIENT_RT_HTTP, "util")
+        val readAll = runtimeSymbol("readAll", KotlinDependency.CLIENT_RT_HTTP)
+        val parameters = runtimeSymbol("parameters", KotlinDependency.CLIENT_RT_HTTP)
+        val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.CLIENT_RT_HTTP)
+        val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.CLIENT_RT_HTTP)
+
+        object Request {
+            val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.CLIENT_RT_HTTP, "request")
+            val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, "request")
+            val url = runtimeSymbol("url", KotlinDependency.CLIENT_RT_HTTP, "request")
+            val headers = runtimeSymbol("headers", KotlinDependency.CLIENT_RT_HTTP, "request")
+        }
+
+        object Response {
+            val HttpCall = runtimeSymbol("HttpCall", KotlinDependency.CLIENT_RT_HTTP, "response")
+            val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.CLIENT_RT_HTTP, "response")
+        }
+
+        object Operation {
+            val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
+            val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
+            val SdkHttpOperation = runtimeSymbol("SdkHttpOperation", KotlinDependency.CLIENT_RT_HTTP, "operation")
+            val context = runtimeSymbol("context", KotlinDependency.CLIENT_RT_HTTP, "operation")
+            val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.CLIENT_RT_HTTP, "operation")
+            val execute = runtimeSymbol("execute", KotlinDependency.CLIENT_RT_HTTP, "operation")
+        }
+
+        object Engine {
+            val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.CLIENT_RT_HTTP, "engine")
+        }
     }
 
     object Core {
@@ -33,6 +62,13 @@ object RuntimeTypes {
         val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CLIENT_RT_CORE)
         val Instant = runtimeSymbol("Instant", KotlinDependency.CLIENT_RT_CORE, "time")
         val TimestampFormat = runtimeSymbol("TimestampFormat", KotlinDependency.CLIENT_RT_CORE, "time")
+
+        object Content {
+            val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_CORE, "content")
+            val ByteStream = runtimeSymbol("ByteStream", KotlinDependency.CLIENT_RT_CORE, "content")
+            val StringContent = runtimeSymbol("StringContent", KotlinDependency.CLIENT_RT_CORE, "content")
+            val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CLIENT_RT_CORE, "content")
+        }
     }
 
     object Utils {
@@ -40,9 +76,23 @@ object RuntimeTypes {
     }
 
     object Serde {
-        val SerdeProvider = runtimeSymbol("SerdeProvider", KotlinDependency.CLIENT_RT_SERDE)
         val Serializer = runtimeSymbol("Serializer", KotlinDependency.CLIENT_RT_SERDE)
         val Deserializer = runtimeSymbol("Deserializer", KotlinDependency.CLIENT_RT_SERDE)
+        val SdkFieldDescriptor = runtimeSymbol("SdkFieldDescriptor", KotlinDependency.CLIENT_RT_SERDE)
+        val SdkObjectDescriptor = runtimeSymbol("SdkObjectDescriptor", KotlinDependency.CLIENT_RT_SERDE)
+        val SerialKind = runtimeSymbol("SerialKind", KotlinDependency.CLIENT_RT_SERDE)
+        val SerializationException = runtimeSymbol("SerializationException", KotlinDependency.CLIENT_RT_SERDE)
+        val DeserializationException = runtimeSymbol("DeserializationException", KotlinDependency.CLIENT_RT_SERDE)
+
+        val serializeStruct = runtimeSymbol("serializeStruct", KotlinDependency.CLIENT_RT_SERDE)
+        val serializeList = runtimeSymbol("serializeList", KotlinDependency.CLIENT_RT_SERDE)
+        val serializeMap = runtimeSymbol("serializeMap", KotlinDependency.CLIENT_RT_SERDE)
+
+        val deserializeStruct = runtimeSymbol("deserializeStruct", KotlinDependency.CLIENT_RT_SERDE)
+        val deserializeList = runtimeSymbol("deserializeList", KotlinDependency.CLIENT_RT_SERDE)
+        val deserializeMap = runtimeSymbol("deserializeMap", KotlinDependency.CLIENT_RT_SERDE)
+        val asSdkSerializable = runtimeSymbol("asSdkSerializable", KotlinDependency.CLIENT_RT_SERDE)
+        val field = runtimeSymbol("field", KotlinDependency.CLIENT_RT_SERDE)
 
         object SerdeJson {
             val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.CLIENT_RT_SERDE_JSON)

@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.shapes.MemberShape
@@ -27,6 +28,11 @@ open class JsonSerdeDescriptorGenerator(
         nameSuffix: String
     ): List<SdkFieldDescriptorTrait> {
         if (nameSuffix.isNotBlank()) return emptyList()
+
+        ctx.writer.addImport(
+            RuntimeTypes.Serde.SerdeJson.JsonDeserializer,
+            RuntimeTypes.Serde.SerdeJson.JsonSerialName,
+        )
 
         val serialName = member.getTrait<JsonNameTrait>()?.value ?: member.memberName
         return listOf(SdkFieldDescriptorTrait(RuntimeTypes.Serde.SerdeJson.JsonSerialName, serialName.dq()))

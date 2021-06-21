@@ -79,7 +79,7 @@ sealed class Baz {
         /**
          * Get a list of all possible variants
          */
-        fun values(): List<test.model.Baz> = listOf(
+        fun values(): kotlin.collections.List<test.model.Baz> = listOf(
             Bar,
             Foo
         )
@@ -162,7 +162,7 @@ sealed class Baz {
         /**
          * Get a list of all possible variants
          */
-        fun values(): List<test.model.Baz> = listOf(
+        fun values(): kotlin.collections.List<test.model.Baz> = listOf(
             T2Micro,
             T2Nano
         )

@@ -92,6 +92,12 @@ class ShapeValueGenerator(
     }
 
     private fun primitiveDeclaration(writer: KotlinWriter, shape: Shape, block: () -> Unit) {
+        val blobHandlingSymbols = listOf(
+            RuntimeTypes.Core.Content.ByteArrayContent,
+            RuntimeTypes.Core.Content.ByteStream,
+            RuntimeTypes.Core.Content.StringContent,
+            RuntimeTypes.Core.Content.toByteArray
+        )
         val suffix = when (shape.type) {
             ShapeType.STRING -> {
                 if (shape.hasTrait<EnumTrait>()) {
@@ -104,7 +110,7 @@ class ShapeValueGenerator(
             }
             ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
-                    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.content", "*")
+                    writer.addImport(blobHandlingSymbols)
                     writer.writeInline("StringContent(")
                     ")"
                 } else {

@@ -164,9 +164,20 @@ class XmlSerdeDescriptorGeneratorTest {
         """
 
         val expected = """
-            import $RUNTIME_ROOT_NS.serde.*
+            import $RUNTIME_ROOT_NS.serde.SdkFieldDescriptor
+            import $RUNTIME_ROOT_NS.serde.SdkObjectDescriptor
+            import $RUNTIME_ROOT_NS.serde.SerialKind
+            import $RUNTIME_ROOT_NS.serde.asSdkSerializable
+            import $RUNTIME_ROOT_NS.serde.deserializeList
+            import $RUNTIME_ROOT_NS.serde.deserializeMap
+            import $RUNTIME_ROOT_NS.serde.deserializeStruct
+            import $RUNTIME_ROOT_NS.serde.field
+            import $RUNTIME_ROOT_NS.serde.serializeList
+            import $RUNTIME_ROOT_NS.serde.serializeMap
+            import $RUNTIME_ROOT_NS.serde.serializeStruct
             import $RUNTIME_ROOT_NS.serde.xml.Flattened
             import $RUNTIME_ROOT_NS.serde.xml.XmlAttribute
+            import $RUNTIME_ROOT_NS.serde.xml.XmlDeserializer
             import $RUNTIME_ROOT_NS.serde.xml.XmlSerialName
         """.formatForTest("")
 
