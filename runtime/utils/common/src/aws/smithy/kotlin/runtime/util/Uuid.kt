@@ -68,7 +68,7 @@ data class Uuid(val high: Long, val low: Long) {
             var shiftBits = 64 - srcOffset * 8
             var destIndex = destOffset
 
-            repeat (length * 2) {
+            repeat(length * 2) {
                 shiftBits -= 4
                 val nibble = src shr shiftBits and 0xf
                 dest[destIndex++] = nibbleChars[nibble.toInt()]
