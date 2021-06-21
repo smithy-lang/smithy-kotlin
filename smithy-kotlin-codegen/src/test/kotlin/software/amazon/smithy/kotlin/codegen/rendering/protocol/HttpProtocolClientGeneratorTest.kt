@@ -34,13 +34,13 @@ class HttpProtocolClientGeneratorTest {
     fun `it imports external symbols`() {
         commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
         commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.transform.*")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.SdkHttpClient")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.sdkHttpClient")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation.SdkHttpOperation")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation.context")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation.execute")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.operation.roundTrip")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngineConfig")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.SdkHttpClient")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.sdkHttpClient")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.SdkHttpOperation")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.context")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.execute")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
+        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.engine.HttpClientEngineConfig")
     }
 
     @Test

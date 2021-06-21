@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.model.node.Node
 
@@ -32,11 +33,11 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(KotlinDependency.CLIENT_RT_CORE)
+        val dependencies = listOf(KotlinDependency.CORE)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expected = """
-            api("$CLIENT_RT_GROUP:client-rt-core:$CLIENT_RT_VERSION")
+            api("$RUNTIME_GROUP:${CORE.artifact}:$RUNTIME_VERSION")
         """.trimIndent()
 
         contents.shouldContain(expected)
@@ -60,7 +61,7 @@ class GradleGeneratorTest {
         )
 
         val manifest = MockManifest()
-        val dependencies = listOf(KotlinDependency.CLIENT_RT_CORE)
+        val dependencies = listOf(KotlinDependency.CORE)
         writeGradleBuild(settings, manifest, dependencies)
         val contents = manifest.getFileString("build.gradle.kts").get()
         val expectedRepositories = """

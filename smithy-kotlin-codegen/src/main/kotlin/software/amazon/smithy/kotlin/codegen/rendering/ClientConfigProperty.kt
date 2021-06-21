@@ -161,13 +161,13 @@ object KotlinClientRuntimeConfigProperty {
     init {
         val httpClientConfigSymbol = buildSymbol {
             name = "HttpClientConfig"
-            namespace(KotlinDependency.CLIENT_RT_HTTP, "config")
+            namespace(KotlinDependency.HTTP, "config")
         }
 
         HttpClientEngine = ClientConfigProperty {
             symbol = buildSymbol {
                 name = "HttpClientEngine"
-                namespace(KotlinDependency.CLIENT_RT_HTTP, "engine")
+                namespace(KotlinDependency.HTTP, "engine")
             }
             baseClass = httpClientConfigSymbol
             documentation = """
@@ -178,12 +178,12 @@ object KotlinClientRuntimeConfigProperty {
         IdempotencyTokenProvider = ClientConfigProperty {
             symbol = buildSymbol {
                 name = "IdempotencyTokenProvider"
-                namespace(KotlinDependency.CLIENT_RT_CORE, "config")
+                namespace(KotlinDependency.CORE, "config")
             }
 
             baseClass = buildSymbol {
                 name = "IdempotencyTokenConfig"
-                namespace(KotlinDependency.CLIENT_RT_CORE, "config")
+                namespace(KotlinDependency.CORE, "config")
             }
 
             documentation = """
