@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.config
 
-import aws.smithy.kotlin.runtime.time.Instant
-import kotlin.random.Random
+import aws.smithy.kotlin.runtime.util.Uuid
+import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
 
 /**
  * User-accessible configuration for client-side token generation.
@@ -44,5 +44,6 @@ fun interface IdempotencyTokenProvider {
  * TODO: Implement a real function.  See https://www.pivotaltracker.com/story/show/174214013
  */
 private class DefaultIdempotencyTokenProvider : IdempotencyTokenProvider {
-    override fun generateToken(): String = Instant.now().epochSeconds.toString() + Random.nextInt()
+    @OptIn(WeakRng::class)
+    override fun generateToken(): String = Uuid.random().toString()
 }
