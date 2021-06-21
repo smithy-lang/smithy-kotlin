@@ -211,7 +211,7 @@ class ShapeValueGenerator(
         override fun numberNode(node: NumberNode) {
             when (currShape.type) {
                 ShapeType.TIMESTAMP -> {
-                    writer.addImport("${KotlinDependency.CLIENT_RT_CORE.namespace}.time", "Instant")
+                    writer.addImport("${KotlinDependency.CORE.namespace}.time", "Instant")
                     writer.writeInline("Instant.fromEpochSeconds(#L, 0)", node.value)
                 }
 

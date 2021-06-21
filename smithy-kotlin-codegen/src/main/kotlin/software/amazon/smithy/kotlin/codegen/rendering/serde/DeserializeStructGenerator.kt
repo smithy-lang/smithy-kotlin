@@ -495,7 +495,7 @@ open class DeserializeStructGenerator(
             ShapeType.FLOAT -> "deserializeFloat()"
             ShapeType.DOUBLE -> "deserializeDouble()"
             ShapeType.BLOB -> {
-                writer.addImport("decodeBase64Bytes", KotlinDependency.CLIENT_RT_UTILS)
+                writer.addImport("decodeBase64Bytes", KotlinDependency.UTILS)
                 "deserializeString().decodeBase64Bytes()"
             }
             ShapeType.TIMESTAMP -> {

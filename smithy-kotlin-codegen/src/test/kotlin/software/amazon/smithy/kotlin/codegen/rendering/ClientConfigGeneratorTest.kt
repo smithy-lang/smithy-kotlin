@@ -85,10 +85,10 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         contents.shouldContain(expectedBuilderImpl)
 
         val expectedImports = listOf(
-            "import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.config.HttpClientConfig",
-            "import ${KotlinDependency.CLIENT_RT_HTTP.namespace}.engine.HttpClientEngine",
-            "import ${KotlinDependency.CLIENT_RT_CORE.namespace}.config.IdempotencyTokenConfig",
-            "import ${KotlinDependency.CLIENT_RT_CORE.namespace}.config.IdempotencyTokenProvider",
+            "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
+            "import ${KotlinDependency.HTTP.namespace}.engine.HttpClientEngine",
+            "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenConfig",
+            "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenProvider",
         )
         expectedImports.forEach {
             contents.shouldContain(it)

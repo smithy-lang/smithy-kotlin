@@ -114,7 +114,7 @@ fun compileSdkAndTest(
 
     // Run test against
     return KotlinCompilation().apply {
-        kotlincArguments = listOf("-Xopt-in=software.aws.clientrt.util.InternalApi")
+        kotlincArguments = listOf("-Xopt-in=aws.smithy.kotlin.runtime.util.InternalApi")
         sources = sdkSources
         inheritClassPath = true
         messageOutputStream = outputSink

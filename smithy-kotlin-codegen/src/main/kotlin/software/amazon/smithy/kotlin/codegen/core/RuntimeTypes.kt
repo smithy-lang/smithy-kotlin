@@ -17,111 +17,111 @@ import software.amazon.smithy.kotlin.codegen.model.namespace
  */
 object RuntimeTypes {
     object Http {
-        val HttpBody = runtimeSymbol("HttpBody", KotlinDependency.CLIENT_RT_HTTP)
-        val HttpMethod = runtimeSymbol("HttpMethod", KotlinDependency.CLIENT_RT_HTTP)
-        val SdkHttpClient = runtimeSymbol("SdkHttpClient", KotlinDependency.CLIENT_RT_HTTP)
-        val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.CLIENT_RT_HTTP)
-        val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_HTTP, "content")
-        val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.CLIENT_RT_HTTP, "middleware")
-        val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.CLIENT_RT_HTTP, "util")
-        val readAll = runtimeSymbol("readAll", KotlinDependency.CLIENT_RT_HTTP)
-        val parameters = runtimeSymbol("parameters", KotlinDependency.CLIENT_RT_HTTP)
-        val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.CLIENT_RT_HTTP)
-        val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.CLIENT_RT_HTTP)
+        val HttpBody = runtimeSymbol("HttpBody", KotlinDependency.HTTP)
+        val HttpMethod = runtimeSymbol("HttpMethod", KotlinDependency.HTTP)
+        val SdkHttpClient = runtimeSymbol("SdkHttpClient", KotlinDependency.HTTP)
+        val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.HTTP)
+        val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.HTTP, "content")
+        val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
+        val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
+        val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
+        val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
+        val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.HTTP)
+        val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.HTTP)
 
         object Request {
-            val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.CLIENT_RT_HTTP, "request")
-            val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.CLIENT_RT_HTTP, "request")
-            val url = runtimeSymbol("url", KotlinDependency.CLIENT_RT_HTTP, "request")
-            val headers = runtimeSymbol("headers", KotlinDependency.CLIENT_RT_HTTP, "request")
+            val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.HTTP, "request")
+            val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.HTTP, "request")
+            val url = runtimeSymbol("url", KotlinDependency.HTTP, "request")
+            val headers = runtimeSymbol("headers", KotlinDependency.HTTP, "request")
         }
 
         object Response {
-            val HttpCall = runtimeSymbol("HttpCall", KotlinDependency.CLIENT_RT_HTTP, "response")
-            val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.CLIENT_RT_HTTP, "response")
+            val HttpCall = runtimeSymbol("HttpCall", KotlinDependency.HTTP, "response")
+            val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.HTTP, "response")
         }
 
         object Operation {
-            val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
-            val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.CLIENT_RT_HTTP, "operation")
-            val SdkHttpOperation = runtimeSymbol("SdkHttpOperation", KotlinDependency.CLIENT_RT_HTTP, "operation")
-            val context = runtimeSymbol("context", KotlinDependency.CLIENT_RT_HTTP, "operation")
-            val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.CLIENT_RT_HTTP, "operation")
-            val execute = runtimeSymbol("execute", KotlinDependency.CLIENT_RT_HTTP, "operation")
+            val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.HTTP, "operation")
+            val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.HTTP, "operation")
+            val SdkHttpOperation = runtimeSymbol("SdkHttpOperation", KotlinDependency.HTTP, "operation")
+            val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
+            val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
+            val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
         }
 
         object Engine {
-            val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.CLIENT_RT_HTTP, "engine")
+            val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.HTTP, "engine")
         }
     }
 
     object Core {
-        val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CLIENT_RT_CORE, "client")
-        val ExecutionContext = runtimeSymbol("ExecutionContext", KotlinDependency.CLIENT_RT_CORE, "client")
-        val ErrorMetadata = runtimeSymbol("ErrorMetadata", KotlinDependency.CLIENT_RT_CORE)
-        val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CLIENT_RT_CORE)
-        val Instant = runtimeSymbol("Instant", KotlinDependency.CLIENT_RT_CORE, "time")
-        val TimestampFormat = runtimeSymbol("TimestampFormat", KotlinDependency.CLIENT_RT_CORE, "time")
+        val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CORE, "client")
+        val ExecutionContext = runtimeSymbol("ExecutionContext", KotlinDependency.CORE, "client")
+        val ErrorMetadata = runtimeSymbol("ErrorMetadata", KotlinDependency.CORE)
+        val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CORE)
+        val Instant = runtimeSymbol("Instant", KotlinDependency.CORE, "time")
+        val TimestampFormat = runtimeSymbol("TimestampFormat", KotlinDependency.CORE, "time")
 
         object Content {
-            val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CLIENT_RT_CORE, "content")
-            val ByteStream = runtimeSymbol("ByteStream", KotlinDependency.CLIENT_RT_CORE, "content")
-            val StringContent = runtimeSymbol("StringContent", KotlinDependency.CLIENT_RT_CORE, "content")
-            val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CLIENT_RT_CORE, "content")
+            val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CORE, "content")
+            val ByteStream = runtimeSymbol("ByteStream", KotlinDependency.CORE, "content")
+            val StringContent = runtimeSymbol("StringContent", KotlinDependency.CORE, "content")
+            val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CORE, "content")
         }
     }
 
     object Utils {
-        val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.CLIENT_RT_UTILS)
+        val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
     }
 
     object Serde {
-        val Serializer = runtimeSymbol("Serializer", KotlinDependency.CLIENT_RT_SERDE)
-        val Deserializer = runtimeSymbol("Deserializer", KotlinDependency.CLIENT_RT_SERDE)
-        val SdkFieldDescriptor = runtimeSymbol("SdkFieldDescriptor", KotlinDependency.CLIENT_RT_SERDE)
-        val SdkObjectDescriptor = runtimeSymbol("SdkObjectDescriptor", KotlinDependency.CLIENT_RT_SERDE)
-        val SerialKind = runtimeSymbol("SerialKind", KotlinDependency.CLIENT_RT_SERDE)
-        val SerializationException = runtimeSymbol("SerializationException", KotlinDependency.CLIENT_RT_SERDE)
-        val DeserializationException = runtimeSymbol("DeserializationException", KotlinDependency.CLIENT_RT_SERDE)
+        val Serializer = runtimeSymbol("Serializer", KotlinDependency.SERDE)
+        val Deserializer = runtimeSymbol("Deserializer", KotlinDependency.SERDE)
+        val SdkFieldDescriptor = runtimeSymbol("SdkFieldDescriptor", KotlinDependency.SERDE)
+        val SdkObjectDescriptor = runtimeSymbol("SdkObjectDescriptor", KotlinDependency.SERDE)
+        val SerialKind = runtimeSymbol("SerialKind", KotlinDependency.SERDE)
+        val SerializationException = runtimeSymbol("SerializationException", KotlinDependency.SERDE)
+        val DeserializationException = runtimeSymbol("DeserializationException", KotlinDependency.SERDE)
 
-        val serializeStruct = runtimeSymbol("serializeStruct", KotlinDependency.CLIENT_RT_SERDE)
-        val serializeList = runtimeSymbol("serializeList", KotlinDependency.CLIENT_RT_SERDE)
-        val serializeMap = runtimeSymbol("serializeMap", KotlinDependency.CLIENT_RT_SERDE)
+        val serializeStruct = runtimeSymbol("serializeStruct", KotlinDependency.SERDE)
+        val serializeList = runtimeSymbol("serializeList", KotlinDependency.SERDE)
+        val serializeMap = runtimeSymbol("serializeMap", KotlinDependency.SERDE)
 
-        val deserializeStruct = runtimeSymbol("deserializeStruct", KotlinDependency.CLIENT_RT_SERDE)
-        val deserializeList = runtimeSymbol("deserializeList", KotlinDependency.CLIENT_RT_SERDE)
-        val deserializeMap = runtimeSymbol("deserializeMap", KotlinDependency.CLIENT_RT_SERDE)
-        val asSdkSerializable = runtimeSymbol("asSdkSerializable", KotlinDependency.CLIENT_RT_SERDE)
-        val field = runtimeSymbol("field", KotlinDependency.CLIENT_RT_SERDE)
+        val deserializeStruct = runtimeSymbol("deserializeStruct", KotlinDependency.SERDE)
+        val deserializeList = runtimeSymbol("deserializeList", KotlinDependency.SERDE)
+        val deserializeMap = runtimeSymbol("deserializeMap", KotlinDependency.SERDE)
+        val asSdkSerializable = runtimeSymbol("asSdkSerializable", KotlinDependency.SERDE)
+        val field = runtimeSymbol("field", KotlinDependency.SERDE)
 
         object SerdeJson {
-            val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.CLIENT_RT_SERDE_JSON)
-            val JsonSerializer = runtimeSymbol("JsonSerializer", KotlinDependency.CLIENT_RT_SERDE_JSON)
-            val JsonDeserializer = runtimeSymbol("JsonDeserializer", KotlinDependency.CLIENT_RT_SERDE_JSON)
+            val JsonSerialName = runtimeSymbol("JsonSerialName", KotlinDependency.SERDE_JSON)
+            val JsonSerializer = runtimeSymbol("JsonSerializer", KotlinDependency.SERDE_JSON)
+            val JsonDeserializer = runtimeSymbol("JsonDeserializer", KotlinDependency.SERDE_JSON)
         }
 
         object SerdeXml {
-            val XmlSerialName = runtimeSymbol("XmlSerialName", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlAliasName = runtimeSymbol("XmlAliasName", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlCollectionName = runtimeSymbol("XmlCollectionName", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlNamespace = runtimeSymbol("XmlNamespace", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlCollectionValueNamespace = runtimeSymbol("XmlCollectionValueNamespace", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlMapKeyNamespace = runtimeSymbol("XmlMapKeyNamespace", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val Flattened = runtimeSymbol("Flattened", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlAttribute = runtimeSymbol("XmlAttribute", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlMapName = runtimeSymbol("XmlMapName", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlError = runtimeSymbol("XmlError", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlSerializer = runtimeSymbol("XmlSerializer", KotlinDependency.CLIENT_RT_SERDE_XML)
-            val XmlDeserializer = runtimeSymbol("XmlDeserializer", KotlinDependency.CLIENT_RT_SERDE_XML)
+            val XmlSerialName = runtimeSymbol("XmlSerialName", KotlinDependency.SERDE_XML)
+            val XmlAliasName = runtimeSymbol("XmlAliasName", KotlinDependency.SERDE_XML)
+            val XmlCollectionName = runtimeSymbol("XmlCollectionName", KotlinDependency.SERDE_XML)
+            val XmlNamespace = runtimeSymbol("XmlNamespace", KotlinDependency.SERDE_XML)
+            val XmlCollectionValueNamespace = runtimeSymbol("XmlCollectionValueNamespace", KotlinDependency.SERDE_XML)
+            val XmlMapKeyNamespace = runtimeSymbol("XmlMapKeyNamespace", KotlinDependency.SERDE_XML)
+            val Flattened = runtimeSymbol("Flattened", KotlinDependency.SERDE_XML)
+            val XmlAttribute = runtimeSymbol("XmlAttribute", KotlinDependency.SERDE_XML)
+            val XmlMapName = runtimeSymbol("XmlMapName", KotlinDependency.SERDE_XML)
+            val XmlError = runtimeSymbol("XmlError", KotlinDependency.SERDE_XML)
+            val XmlSerializer = runtimeSymbol("XmlSerializer", KotlinDependency.SERDE_XML)
+            val XmlDeserializer = runtimeSymbol("XmlDeserializer", KotlinDependency.SERDE_XML)
         }
 
         object SerdeFormUrl {
-            val FormUrlSerialName = runtimeSymbol("FormUrlSerialName", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
-            val FormUrlCollectionName = runtimeSymbol("FormUrlCollectionName", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
-            val Flattened = runtimeSymbol("FormUrlFlattened", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
-            val FormUrlMapName = runtimeSymbol("FormUrlMapName", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
-            val QueryLiteral = runtimeSymbol("QueryLiteral", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
-            val FormUrlSerializer = runtimeSymbol("FormUrlSerializer", KotlinDependency.CLIENT_RT_SERDE_FORM_URL)
+            val FormUrlSerialName = runtimeSymbol("FormUrlSerialName", KotlinDependency.SERDE_FORM_URL)
+            val FormUrlCollectionName = runtimeSymbol("FormUrlCollectionName", KotlinDependency.SERDE_FORM_URL)
+            val Flattened = runtimeSymbol("FormUrlFlattened", KotlinDependency.SERDE_FORM_URL)
+            val FormUrlMapName = runtimeSymbol("FormUrlMapName", KotlinDependency.SERDE_FORM_URL)
+            val QueryLiteral = runtimeSymbol("QueryLiteral", KotlinDependency.SERDE_FORM_URL)
+            val FormUrlSerializer = runtimeSymbol("FormUrlSerializer", KotlinDependency.SERDE_FORM_URL)
         }
     }
 }
