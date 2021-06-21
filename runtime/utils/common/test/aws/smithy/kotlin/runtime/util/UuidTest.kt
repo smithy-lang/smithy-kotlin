@@ -7,12 +7,15 @@ package aws.smithy.kotlin.runtime.util
 import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @ExperimentalUnsignedTypes
 @OptIn(WeakRng::class)
 class UuidTest {
     @Test
     fun `it should generate random UUIDs`() {
+        var seenUuids = mutableSetOf<Uuid>()
+
         repeat(100) { // randomness is unpredictable so do this a bunch to lower risk of false positive
             val uuid = Uuid.random()
 
@@ -21,6 +24,9 @@ class UuidTest {
 
             // Check that type 2 is set
             assertEquals(0x8000_000000000000U.toLong(), uuid.low and 0xc000_000000000000U.toLong())
+
+            // Check that the UUID is truly random
+            assertTrue(seenUuids.add(uuid), """Generated UUID "$uuid" is not unique""")
         }
     }
 
