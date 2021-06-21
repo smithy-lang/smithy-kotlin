@@ -5,7 +5,7 @@
 
 description = "Test utilities for generated Smithy services"
 extra["displayName"] = "Smithy :: Kotlin :: Test"
-extra["moduleName"] = "software.aws.clientrt.smithy.test"
+extra["moduleName"] = "aws.smithy.kotlin.runtime.smithy.test"
 
 val kotlinVersion: String by project
 val kotlinxSerializationVersion: String = "0.20.0"
