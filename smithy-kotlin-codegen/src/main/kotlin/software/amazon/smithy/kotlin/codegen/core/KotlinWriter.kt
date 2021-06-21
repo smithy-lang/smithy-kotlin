@@ -69,7 +69,8 @@ fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> 
     return this
 }
 
-private fun CodeWriter.removeContext(context: Map<String, Any?>): Unit = context.keys.forEach { key -> removeContext(key) }
+private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
+    context.keys.forEach { key -> removeContext(key) }
 
 /**
  * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the

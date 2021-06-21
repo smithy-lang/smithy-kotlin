@@ -26,7 +26,7 @@ abstract class HttpProtocolClientGenerator(
     protected val httpBindingResolver: HttpBindingResolver
 ) {
 
-    object OperationDeserializer : SectionId {
+    object OperationDeserializerBinding : SectionId {
         const val Operation = "Operation" // Context for operation being codegened at the time of section invocation
     }
 
@@ -147,14 +147,12 @@ abstract class HttpProtocolClientGenerator(
                 }
             }
 
-            val deserializerType = if (outputShape.isPresent) {
-                "${op.deserializerName()}()"
-            } else {
-                "UnitDeserializer"
-            }
-
-            writer.declareSection(OperationDeserializer, mapOf(OperationDeserializer.Operation to op)) {
-                write("deserializer = $deserializerType")
+            writer.declareSection(OperationDeserializerBinding, mapOf(OperationDeserializerBinding.Operation to op)) {
+                if (outputShape.isPresent) {
+                    write("deserializer = ${op.deserializerName()}()")
+                } else {
+                    write("deserializer = UnitDeserializer")
+                }
             }
 
             // execution context
