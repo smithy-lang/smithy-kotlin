@@ -60,12 +60,17 @@ fun <T : CodeWriter> T.withBlock(
  * of the type housing the codegen associated with the section. This keeps [SectionId]s closely
  * associated with their targets.
  */
-fun <T : CodeWriter> T.declareSection(id: SectionId, block: T.() -> Unit = {}): T {
+fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> = emptyMap(), block: T.() -> Unit = {}): T {
+    putContext(context)
     pushState(id.javaClass.canonicalName)
     block(this)
     popState()
+    removeContext(context)
     return this
 }
+
+private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
+    context.keys.forEach { key -> removeContext(key) }
 
 /**
  * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the

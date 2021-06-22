@@ -9,10 +9,12 @@ import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
 import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * DOM representation of an XML document
  */
+@InternalApi
 class XmlNode {
     val name: XmlToken.QualifiedName
 
@@ -56,7 +58,7 @@ class XmlNode {
 }
 
 // parse a string into a dom representation
-internal suspend fun parseDom(reader: XmlStreamReader): XmlNode {
+suspend fun parseDom(reader: XmlStreamReader): XmlNode {
 
     val nodeStack: Stack<XmlNode> = mutableListOf()
 
