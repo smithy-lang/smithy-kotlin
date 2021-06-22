@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.response
 
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.coroutines.CompletableJob
 import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
@@ -49,7 +50,8 @@ data class HttpCall(
  *
  * This must be called when finished with the response!
  */
-internal fun HttpCall.complete() {
+@InternalApi
+fun HttpCall.complete() {
     val job = callContext[Job] as? CompletableJob ?: return
     job.complete()
 }
