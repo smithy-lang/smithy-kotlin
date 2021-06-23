@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
+import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
@@ -131,5 +132,74 @@ class KotlinWriterTest {
         val actual = unit.toString()
 
         Assertions.assertEquals(expected, actual)
+    }
+
+    object TestId : SectionId {
+        const val a = "a"
+    }
+
+    @Test
+    fun `it handles overriding stateful sections`() {
+        val unit = KotlinWriter(TestModelDefault.NAMESPACE)
+
+        unit.registerSectionWriter(TestId) { writer, previousValue ->
+            val state = writer.getContext(TestId.a)
+            writer.write(previousValue)
+            writer.write("// section with state $state")
+        }
+
+        unit.write("// before section")
+        unit.declareSection(TestId, mapOf(TestId.a to 1)) {
+            unit.write("// original in section")
+        }
+        unit.write("// after section")
+
+        val expected = """
+            // before section
+            // original in section
+            // section with state 1
+            // after section
+        """.trimIndent()
+        val actual = unit.toString()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    object NestedTestId : SectionId {
+        const val a = "a" // intentionally collides with [TestId]
+    }
+
+    @Test
+    fun `it handles nested stateful sections`() {
+        val unit = KotlinWriter(TestModelDefault.NAMESPACE)
+
+        unit.registerSectionWriter(TestId) { writer, previousValue ->
+            val state = writer.getContext(TestId.a)
+            writer.write("// section with state $state")
+            writer.write(previousValue)
+        }
+
+        unit.registerSectionWriter(NestedTestId) { writer, previousValue ->
+            val state = writer.getContext(NestedTestId.a)
+            writer.write("// nested section with state $state")
+        }
+
+        unit.write("// before section")
+        unit.declareSection(TestId, mapOf(TestId.a to 1)) {
+            unit.declareSection(NestedTestId, mapOf(NestedTestId.a to 2)) {
+                unit.write("// original in nested section")
+            }
+        }
+        unit.write("// after section")
+
+        val expected = """
+            // before section
+            // section with state 1
+            // nested section with state 2
+            // after section
+        """.trimIndent()
+        val actual = unit.toString()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
     }
 }
