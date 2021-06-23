@@ -50,7 +50,7 @@ class HttpStringValuesMapSerializer(
                     writer.addImport(RuntimeTypes.Core.TimestampFormat)
                 }
                 is BlobShape -> {
-                    writer.addImport("encodeBase64String", KotlinDependency.CLIENT_RT_UTILS)
+                    writer.addImport("encodeBase64String", KotlinDependency.UTILS)
                     writer.write(
                         "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.encodeBase64String())",
                         memberName,
@@ -139,7 +139,7 @@ class HttpStringValuesMapSerializer(
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {
-                    writer.addImport("encodeBase64", KotlinDependency.CLIENT_RT_UTILS)
+                    writer.addImport("encodeBase64", KotlinDependency.UTILS)
                     ".encodeBase64()"
                 }
                 else -> ""

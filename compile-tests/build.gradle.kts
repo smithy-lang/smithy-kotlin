@@ -17,11 +17,11 @@ val kotlinCompileTestingVersion: String by project
 
 dependencies {
     testImplementation(project(":smithy-kotlin-codegen"))
-    testImplementation(project(":client-runtime"))
-    testImplementation(project(":client-runtime:client-rt-core"))
-    testImplementation(project(":client-runtime:protocol:http"))
-    testImplementation(project(":client-runtime:protocol:http-client-engines:http-client-engine-ktor"))
-    testImplementation(project(":client-runtime:serde:serde-json"))
+    testImplementation(project(":runtime"))
+    testImplementation(project(":runtime:runtime-core"))
+    testImplementation(project(":runtime:protocol:http"))
+    testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-ktor"))
+    testImplementation(project(":runtime:serde:serde-json"))
 
     testImplementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
     testImplementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")

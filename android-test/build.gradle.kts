@@ -51,9 +51,9 @@ kotlin {
                 implementation("com.android.support:support-annotations:28.0.0")
                 implementation("com.android.support.test:runner:1.0.2")
 
-                implementation(project(":client-runtime:serde"))
-                implementation(project(":client-runtime:serde:serde-json"))
-                implementation(project(":client-runtime:client-rt-core"))
+                implementation(project(":runtime:serde"))
+                implementation(project(":runtime:serde:serde-json"))
+                implementation(project(":runtime:runtime-core"))
 
                 // TODO - HTTP
             }

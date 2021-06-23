@@ -804,7 +804,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 is BlobShape -> {
                     writer
-                        .addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
+                        .addImport("decodeBase64", KotlinDependency.UTILS)
                         .write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
                 }
                 is StringShape -> {
@@ -821,7 +821,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         }
                         memberTarget.hasTrait<MediaTypeTrait>() -> {
                             writer
-                                .addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
+                                .addImport("decodeBase64", KotlinDependency.UTILS)
                                 .write("builder.#L = response.headers[#S]?.decodeBase64()", memberName, headerName)
                         }
                         else -> {
@@ -872,7 +872,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                                     "${enumSymbol.name}.fromValue(it)"
                                 }
                                 collectionMemberTarget.hasTrait<MediaTypeTrait>() -> {
-                                    writer.addImport("decodeBase64", KotlinDependency.CLIENT_RT_UTILS)
+                                    writer.addImport("decodeBase64", KotlinDependency.UTILS)
                                     "it.decodeBase64()"
                                 }
                                 else -> ""
@@ -895,7 +895,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                     // writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
                     writer
-                        .addImport(splitFn, KotlinDependency.CLIENT_RT_HTTP, subpackage = "util")
+                        .addImport(splitFn, KotlinDependency.HTTP, subpackage = "util")
                         .write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)
                 }
                 else -> throw CodegenException("unknown deserialization: header binding: $hdrBinding; member: `$memberName`")
