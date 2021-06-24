@@ -6,12 +6,16 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
+import aws.smithy.kotlin.runtime.client.SdkLogMode
+import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
-import aws.smithy.kotlin.runtime.io.Handler
+import aws.smithy.kotlin.runtime.http.response.dumpResponse
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.MapRequest
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
@@ -167,8 +171,19 @@ class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  * default middleware that logs requests/responses
  */
 private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
-    request.context.logger.trace { "httpRequest: ${request.subject}" }
-    val call = next.call(request)
-    request.context.logger.trace { "httpResponse: ${call.response}" }
+    val logMode = request.context.sdkLogMode
+    if (logMode.isEnabled(SdkLogMode.LogRequest) || logMode.isEnabled(SdkLogMode.LogRequestWithBody)) {
+        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(SdkLogMode.LogRequestWithBody))
+        request.context.logger.info { "HttpRequest:\n$formattedReq" }
+    }
+
+    var call = next.call(request)
+
+    if (logMode.isEnabled(SdkLogMode.LogResponse) || logMode.isEnabled(SdkLogMode.LogResponseWithBody)) {
+        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(SdkLogMode.LogResponseWithBody))
+        call = call.copy(response = resp)
+        request.context.logger.info { "HttpResponse:\n$formattedResp" }
+    }
+
     return call
 }

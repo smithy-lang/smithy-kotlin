@@ -5,6 +5,9 @@
 package aws.smithy.kotlin.runtime.http.request
 
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
+import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Used to construct an HTTP request
@@ -53,3 +56,49 @@ fun HttpRequestBuilder.headers(block: HeadersBuilder.() -> Unit) = headers.apply
  * Add a single header. This will append to any existing headers with the same name.
  */
 fun HttpRequestBuilder.header(name: String, value: String) = headers.append(name, value)
+
+/**
+ * Dump a debug description of the request
+ *
+ * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
+ * replaced.
+ */
+@InternalApi
+suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
+    val buffer = SdkBuffer(256)
+
+    // TODO - we have no way to know the http version at this level
+    buffer.write("${request.method} ${request.url.encodedPath} HTTP/\r\n")
+    buffer.write("Host: ${request.url.host}\r\n")
+
+    val contentLength = request.headers["Content-Length"]?.toLongOrNull() ?: (request.body.contentLength ?: 0)
+    if (contentLength > 0) {
+        buffer.write("Content-Length: $contentLength\r\n")
+    }
+
+    val skip = setOf("Host", "Content-Length")
+    request.headers.entries()
+        .filterNot { it.key in skip }
+        .forEach {
+            buffer.write(it.value.joinToString(separator = ";", prefix = "${it.key}: ", postfix = "\r\n"))
+        }
+
+    buffer.write("\r\n")
+
+    if (dumpBody) {
+        when (val body = request.body) {
+            is HttpBody.Bytes -> buffer.writeFully(body.bytes())
+            is HttpBody.Streaming -> {
+                // FIXME - would be better to rewind the stream if possible
+                // consume the stream and replace the body
+                val content = body.readAll()
+                if (content != null) {
+                    buffer.writeFully(content)
+                    request.body = ByteArrayContent(content)
+                }
+            }
+        }
+    }
+
+    return buffer.decodeToString()
+}

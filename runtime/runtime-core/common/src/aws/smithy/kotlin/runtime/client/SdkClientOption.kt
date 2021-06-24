@@ -27,6 +27,11 @@ public object SdkClientOption {
      * A token generator for idempotency tokens
      */
     public val IdempotencyTokenProvider: ClientOption<IdempotencyTokenProvider> = ClientOption("IdempotencyTokenProvider")
+
+    /**
+     * The client logging mode (see [SdkLogMode]
+     */
+    public val LogMode: ClientOption<SdkLogMode> = ClientOption("LogMode")
 }
 
 /**
@@ -35,3 +40,10 @@ public object SdkClientOption {
 @InternalApi
 val ExecutionContext.idempotencyTokenProvider: IdempotencyTokenProvider
     get() = getOrNull(SdkClientOption.IdempotencyTokenProvider) ?: IdempotencyTokenProvider.Default
+
+/**
+ * Get the [SdkLogMode] from the context. If one is not set a default will be returned
+ */
+@InternalApi
+val ExecutionContext.sdkLogMode: SdkLogMode
+    get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.None
