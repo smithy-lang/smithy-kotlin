@@ -102,10 +102,7 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 // last statement should be service invoke
                 val opName = operation.defaultName()
 
-                // streaming requests have a different operation signature that require a block to be passed to
-                // process the response - add an empty block if necessary
-                val block = if (isStreamingRequest) "{}" else ""
-                writer.write("service.#L(#L)$block", opName, inputParamName)
+                writer.write("service.#L(#L)", opName, inputParamName)
             }
             .closeBlock("}")
     }
