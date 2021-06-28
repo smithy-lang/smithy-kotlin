@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.logging.withContext
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
@@ -38,9 +39,16 @@ open class HttpOperationContext {
         val HttpCallList: AttributeKey<List<HttpCall>> = AttributeKey("HttpCallList")
 
         /**
-         * The logging instance for a single operation. This is guaranteed to exist.
+         * The per/request logging context.
          */
-        val Logger: AttributeKey<Logger> = AttributeKey("Logger")
+        val LoggingContext: AttributeKey<Map<String, Any>> = AttributeKey("LogContext")
+
+        /**
+         * The unique request ID generated for tracking the request in-flight client side.
+         *
+         * NOTE: This is guaranteed to exist.
+         */
+        val SdkRequestId: AttributeKey<String> = AttributeKey("SdkRequestId")
 
         /**
          * Build this operation into an HTTP [ExecutionContext]
@@ -75,8 +83,19 @@ open class HttpOperationContext {
     }
 }
 
-/**
- * Get the operation logger from the context
- */
-val ExecutionContext.logger: Logger
-    get() = this[HttpOperationContext.Logger]
+@InternalApi
+inline fun <reified T> ExecutionContext.getLogger(): Logger {
+    val instance = Logger.getLogger<T>()
+    val logCtx = this[HttpOperationContext.LoggingContext]
+    return instance.withContext(logCtx)
+}
+
+@InternalApi
+fun ExecutionContext.getLogger(name: String): Logger {
+    val instance = Logger.getLogger(name)
+    val logCtx = this[HttpOperationContext.LoggingContext]
+    return instance.withContext(logCtx)
+}
+
+@InternalApi
+fun Logger.withContext(context: ExecutionContext): Logger = withContext(context[HttpOperationContext.LoggingContext])

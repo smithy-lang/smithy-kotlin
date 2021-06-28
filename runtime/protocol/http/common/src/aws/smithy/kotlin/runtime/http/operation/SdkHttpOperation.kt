@@ -12,9 +12,8 @@ import aws.smithy.kotlin.runtime.http.FeatureKey
 import aws.smithy.kotlin.runtime.http.HttpClientFeatureFactory
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.response.complete
-import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.logging.withContext
 import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.util.Uuid
 import aws.smithy.kotlin.runtime.util.get
 
 /**
@@ -22,6 +21,7 @@ import aws.smithy.kotlin.runtime.util.get
  * @property execution Phases used to execute the operation request and get a response instance
  * @property context An [ExecutionContext] instance scoped to this operation
  */
+@OptIn(Uuid.WeakRng::class)
 @InternalApi
 class SdkHttpOperation<I, O>(
     val execution: SdkOperationExecution<I, O>,
@@ -31,11 +31,12 @@ class SdkHttpOperation<I, O>(
 ) {
 
     private val features: MutableMap<FeatureKey<*>, Feature> = mutableMapOf()
-    private val logger: Logger = Logger.getLogger<SdkHttpOperation<I, O>>()
 
     init {
-        // TODO - probably log our own version of a request id to easily trace calls?
-        context[HttpOperationContext.Logger] = logger.withContext(
+        val sdkRequestId = Uuid.random().toString()
+        context[HttpOperationContext.SdkRequestId] = sdkRequestId
+        context[HttpOperationContext.LoggingContext] = mapOf(
+            "sdkRequestId" to sdkRequestId,
             "service" to context[SdkClientOption.ServiceName],
             "operation" to context[SdkClientOption.OperationName],
         )

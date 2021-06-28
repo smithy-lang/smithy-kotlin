@@ -9,7 +9,6 @@ import kotlin.random.Random
 /**
  * A KMP-compatible implementation of UUID, necessary because no cross-platform implementation exists yet.
  */
-@ExperimentalUnsignedTypes
 data class Uuid(val high: Long, val low: Long) {
     companion object {
         private val nibbleChars = "0123456789abcdef".toCharArray()
