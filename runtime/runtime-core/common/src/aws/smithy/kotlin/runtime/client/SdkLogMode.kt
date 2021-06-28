@@ -28,7 +28,7 @@ sealed class SdkLogMode(private val mask: Int) {
     }
 
     /**
-     * Log the request body if possible
+     * Log the request details as well as the body if possible
      */
     object LogRequestWithBody : SdkLogMode(0x02) {
         override fun toString(): String = "LogRequestWithBody"
@@ -42,7 +42,7 @@ sealed class SdkLogMode(private val mask: Int) {
     }
 
     /**
-     * Log the response body if possible
+     * Log the response details as well as the body if possible
      */
     object LogResponseWithBody : SdkLogMode(0x08) {
         override fun toString(): String = "LogResponseWithBody"
