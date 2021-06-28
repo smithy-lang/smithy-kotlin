@@ -14,8 +14,6 @@ Start here for an overview:
 * [Domain class types in Kotlin SDK](domain-class-types-in-kotlin-sdk.md)
 * [Binary request/response streams](binary-streaming.md)
 * [Marshaling/serde](marshalling-serde.md) (coming soon)
-* [Modeled errors](modeled-errors.md) (coming soon)
+* [Modeled errors](modeled-errors.md)
 * [Nullable properties in SDK domain types](nullable-properties-in-sdk-domain-types.md) (coming soon)
 * [Pagination](pagination.md) (coming soon)
-* [SDK exception hierarchy and metadata representation](sdk-exception-hierarchy-and-metadata-representation.md) (coming
-  soon)
