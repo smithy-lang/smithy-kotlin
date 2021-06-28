@@ -84,13 +84,6 @@ open class HttpOperationContext {
 }
 
 @InternalApi
-inline fun <reified T> ExecutionContext.getLogger(): Logger {
-    val instance = Logger.getLogger<T>()
-    val logCtx = this[HttpOperationContext.LoggingContext]
-    return instance.withContext(logCtx)
-}
-
-@InternalApi
 fun ExecutionContext.getLogger(name: String): Logger {
     val instance = Logger.getLogger(name)
     val logCtx = this[HttpOperationContext.LoggingContext]
