@@ -5,8 +5,10 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
+import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.protocoltests.traits.HttpRequestTestCase
 
 /**
@@ -77,12 +79,9 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
         writer.openBlock("operation { mockEngine ->")
             .call {
                 var inputParamName = ""
-                var isStreamingRequest = false
                 operation.input.ifPresent {
                     inputParamName = "input"
                     val inputShape = model.expectShape(it)
-
-                    isStreamingRequest = inputShape.asStructureShape().get().hasStreamingMember(model)
 
                     // invoke the DSL builder for the input type
                     writer.writeInline("\nval input = ")
@@ -102,7 +101,12 @@ open class HttpProtocolUnitTestRequestGenerator protected constructor(builder: B
                 // last statement should be service invoke
                 val opName = operation.defaultName()
 
-                writer.write("service.#L(#L)", opName, inputParamName)
+                val isStreamingResponse = model.expectShape<StructureShape>(operation.output.get()).hasStreamingMember(model)
+
+                // streaming responses have a different operation signature that require a block to be passed to
+                // process the response - add an empty block if necessary
+                val block = if (isStreamingResponse) "{}" else ""
+                writer.write("service.#L(#L)$block", opName, inputParamName)
             }
             .closeBlock("}")
     }
