@@ -748,11 +748,56 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (el1 in value) {
-                                serializeInt(el1)
+                        input.payload.forEach { (key, value) ->
+                            listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
+                                for (el1 in value) {
+                                    serializeInt(el1)
+                                }
                             }
-                        }}
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse map of a set of primitive values`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: MapOfSet
+            }
+            
+            @sparse
+            map MapOfSet {
+                key: String,
+                value: IntegerSet
+            }            
+            
+            set IntegerSet {
+                member: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) ->
+                            if (value != null) {
+                                listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
+                                    for (el1 in value) {
+                                        serializeInt(el1)
+                                    }
+                                }
+                            } else rawEntry(key, "null")
+                        }
                     }
                 }
             }
@@ -956,11 +1001,13 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (el1 in value) {
-                                serializeString(el1)
+                        input.payload.forEach { (key, value) ->
+                            listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
+                                for (el1 in value) {
+                                    serializeString(el1)
+                                }
                             }
-                        }}
+                        }
                     }
                 }
             }
@@ -999,13 +1046,15 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            for (el1 in value) {
-                                serializer.serializeMap(PAYLOAD_C1_DESCRIPTOR) {
-                                    el1.forEach { (key2, value2) -> entry(key2, value2) }
+                        input.payload.forEach { (key, value) ->
+                            listEntry(key, PAYLOAD_C0_DESCRIPTOR) {
+                                for (el1 in value) {
+                                    serializer.serializeMap(PAYLOAD_C1_DESCRIPTOR) {
+                                        el1.forEach { (key2, value2) -> entry(key2, value2) }
+                                    }
                                 }
                             }
-                        }}
+                        }
                     }
                 }
             }
@@ -1074,9 +1123,53 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.payload != null) {
                     mapField(PAYLOAD_DESCRIPTOR) {
-                        input.payload.forEach { (key, value) -> mapEntry(key, PAYLOAD_C0_DESCRIPTOR) {
-                            value.forEach { (key1, value1) -> entry(key1, value1) }
-                        }}
+                        input.payload.forEach { (key, value) ->
+                            mapEntry(key, PAYLOAD_C0_DESCRIPTOR) {
+                                value.forEach { (key1, value1) -> entry(key1, value1) }
+                            }
+                        }
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo").stripCodegenPrefix()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it serializes a structure containing a sparse map of a map of a primitive value`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest { 
+                payload: StringMap
+            }
+            
+            @sparse
+            map StringMap {
+                key: String,
+                value: StringMap2
+            }
+            
+            map StringMap2 {
+                key: String,
+                value: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                if (input.payload != null) {
+                    mapField(PAYLOAD_DESCRIPTOR) {
+                        input.payload.forEach { (key, value) ->
+                            if (value != null) {
+                                mapEntry(key, PAYLOAD_C0_DESCRIPTOR) {
+                                    value.forEach { (key1, value1) -> entry(key1, value1) }
+                                }
+                            } else rawEntry(key, "null")
+                        }
                     }
                 }
             }

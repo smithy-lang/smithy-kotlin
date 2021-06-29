@@ -11,7 +11,11 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.node.Node
+import software.amazon.smithy.model.node.NumberNode
+import software.amazon.smithy.model.node.StringNode
+import software.amazon.smithy.model.node.ToNode
 import software.amazon.smithy.model.shapes.*
+import kotlin.test.assertEquals
 
 class ShapeValueGeneratorTest {
 
@@ -196,5 +200,45 @@ MyUnion.StringMember("v1")
         """.trimIndent()
 
         contents.shouldContainOnlyOnce(expected)
+    }
+
+    @Test
+    fun `it renders numbers`() {
+        for (type in listOf("Double", "Float")) {
+            val model = """
+                structure MyStruct {
+                    member: $type,
+                }
+            """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
+
+            val shape = model.expectShape(ShapeId.from("foo.bar#MyStruct"))
+            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+            val gen = ShapeValueGenerator(model, provider)
+
+            val tests = mapOf<ToNode, String>(
+                NumberNode.from(1.2) to "1.2.to$type()",
+                StringNode.from("-Infinity") to "$type.NEGATIVE_INFINITY",
+                StringNode.from("Infinity") to "$type.POSITIVE_INFINITY",
+                StringNode.from("NaN") to "$type.NaN",
+            )
+
+            for ((nodeValue, serialization) in tests) {
+                val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+
+                val node = Node.objectNodeBuilder()
+                    .withMember("member", nodeValue)
+                    .build()
+
+                gen.writeShapeValueInline(writer, shape, node)
+                val contents = writer.toString()
+
+                val expected = """
+                    MyStruct {
+                        member = $serialization
+                    }
+                """.trimIndent()
+                contents.shouldContainOnlyOnce(expected)
+            }
+        }
     }
 }

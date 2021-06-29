@@ -131,3 +131,9 @@ val Shape.isError: Boolean
  */
 val Shape.isNumberShape: Boolean
     get() = this is NumberShape
+
+/**
+ * Test if a shape has the sparse trait applied.
+ */
+val Shape.isSparse: Boolean
+    get() = hasTrait<SparseTrait>()
