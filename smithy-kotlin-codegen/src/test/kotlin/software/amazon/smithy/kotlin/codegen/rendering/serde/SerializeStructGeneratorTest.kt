@@ -796,7 +796,7 @@ class SerializeStructGeneratorTest {
                                         serializeInt(el1)
                                     }
                                 }
-                            } else rawEntry(key, "null")
+                            } else entry(key, null as String?)
                         }
                     }
                 }
@@ -1168,7 +1168,7 @@ class SerializeStructGeneratorTest {
                                 mapEntry(key, PAYLOAD_C0_DESCRIPTOR) {
                                     value.forEach { (key1, value1) -> entry(key1, value1) }
                                 }
-                            } else rawEntry(key, "null")
+                            } else entry(key, null as String?)
                         }
                     }
                 }

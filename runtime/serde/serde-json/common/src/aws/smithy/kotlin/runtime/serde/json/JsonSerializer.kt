@@ -8,8 +8,8 @@ import aws.smithy.kotlin.runtime.serde.*
 
 class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
     companion object {
-        val doublesToStringify = setOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN)
-        val floatsToStringify = setOf(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
+        private val doublesToStringify = setOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN)
+        private val floatsToStringify = setOf(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
     }
 
     private val jsonWriter = jsonStreamWriter()

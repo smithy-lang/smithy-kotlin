@@ -306,7 +306,7 @@ open class SerializeStructGenerator(
         val parentName = parentName(valueName)
 
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
-            writer.withBlockIf(isSparse, "if ($valueName != null) {", "} else rawEntry($keyName, \"null\")") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyName, null as String?)") {
                 writer.withBlock("mapEntry($keyName, $descriptorName) {", "}") {
                     delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
                 }
@@ -336,7 +336,7 @@ open class SerializeStructGenerator(
         val parentName = parentName(valueName)
 
         writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
-            writer.withBlockIf(isSparse, "if ($valueName != null) {", "} else rawEntry($keyName, \"null\")") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyName, null as String?)") {
                 writer.withBlock("listEntry($keyName, $descriptorName) {", "}") {
                     delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, parentName)
                 }

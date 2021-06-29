@@ -48,7 +48,7 @@ fun <T : CodeWriter> T.withBlock(
     textAfterNewLine: String,
     vararg args: Any,
     block: T.() -> Unit
-): T = withBlockIf(true, textBeforeNewLine, textAfterNewLine, *args) { block(this) }
+): T = wrapBlockIf(true, textBeforeNewLine, textAfterNewLine, *args) { block(this) }
 
 /**
  * Extension function that is more idiomatic Kotlin that is roughly the same purpose as an if block wrapped around
@@ -56,7 +56,7 @@ fun <T : CodeWriter> T.withBlock(
  *
  * Example:
  * ```
- * writer.withBlockIf(foo == bar, "{", "}") {
+ * writer.wrapBlockIf(foo == bar, "{", "}") {
  *     write("foo")
  * }
  * ```
@@ -68,7 +68,7 @@ fun <T : CodeWriter> T.withBlock(
  * if (foo == bar) writer.closeBlock("}")
  * ```
  */
-fun <T : CodeWriter> T.withBlockIf(
+fun <T : CodeWriter> T.wrapBlockIf(
     condition: Boolean,
     textBeforeNewLine: String,
     textAfterNewLine: String,

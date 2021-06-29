@@ -13,7 +13,7 @@ import aws.smithy.kotlin.runtime.serde.*
  */
 class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
     companion object {
-        val validNumberStrings = setOf("Infinity", "-Infinity", "NaN")
+        private val validNumberStrings = setOf("Infinity", "-Infinity", "NaN")
     }
 
     private val reader = jsonStreamReader(payload)
