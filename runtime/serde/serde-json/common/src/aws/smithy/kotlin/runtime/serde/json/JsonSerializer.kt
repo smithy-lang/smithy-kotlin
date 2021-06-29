@@ -12,7 +12,6 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         val floatsToStringify = setOf(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
     }
 
-
     private val jsonWriter = jsonStreamWriter()
 
     override fun toByteArray(): ByteArray =

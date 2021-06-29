@@ -15,7 +15,6 @@ import software.amazon.smithy.model.node.NumberNode
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.model.node.ToNode
 import software.amazon.smithy.model.shapes.*
-import kotlin.test.assertEquals
 
 class ShapeValueGeneratorTest {
 
