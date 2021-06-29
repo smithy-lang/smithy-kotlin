@@ -64,7 +64,6 @@ jobs:
   # TODO "windows-compat" - requires figuring out git credentials while upstream/downstream repos are private still
  
   downstream:
-    needs: linux-compat
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
