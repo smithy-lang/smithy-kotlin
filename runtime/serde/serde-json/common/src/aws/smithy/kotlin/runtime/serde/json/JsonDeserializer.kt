@@ -12,6 +12,10 @@ import aws.smithy.kotlin.runtime.serde.*
  * @param payload underlying document from which tokens are read
  */
 class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
+    companion object {
+        private val validNumberStrings = setOf("Infinity", "-Infinity", "NaN")
+    }
+
     private val reader = jsonStreamReader(payload)
 
     // deserializing a single byte isn't common in JSON - we are going to assume that bytes are represented
@@ -31,11 +35,14 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
     // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
-    private suspend fun <T> nextNumberValue(block: (value: String) -> T): T =
-        when (val token = reader.nextToken()) {
-            is JsonToken.Number -> block(token.value)
+    private suspend fun <T> nextNumberValue(block: (value: String) -> T): T {
+        val token = reader.nextToken()
+        return when {
+            token is JsonToken.Number -> block(token.value)
+            token is JsonToken.String && validNumberStrings.contains(token.value) -> block(token.value)
             else -> throw DeserializationException("$token cannot be deserialized as type Number")
         }
+    }
 
     override suspend fun deserializeString(): String =
         // allow for tokens to be consumed as string even when the next token isn't a quoted string

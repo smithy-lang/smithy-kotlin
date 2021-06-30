@@ -182,6 +182,40 @@ class JsonSerializerTest {
 
         assertEquals("""{"boolean":true,"boolean":null,"byte":10,"short":20,"int":30,"long":40,"float":50.0,"double":60.0,"char":"A","string":"Str0","listInt":[1,2,3]}""", json.toByteArray().decodeToString())
     }
+
+    @Test
+    fun canSerializeNonFiniteDoubles() {
+        val tests = mapOf(
+            Double.NEGATIVE_INFINITY to "\"-Infinity\"",
+            Double.POSITIVE_INFINITY to "\"Infinity\"",
+            Double.NaN to "\"NaN\"",
+        )
+
+        for ((input, expected) in tests) {
+            val json = JsonSerializer()
+            json.serializeDouble(input)
+            val actual = json.toByteArray().decodeToString()
+
+            assertEquals(expected, actual)
+        }
+    }
+
+    @Test
+    fun canSerializeNonFiniteFloats() {
+        val tests = mapOf(
+            Float.NEGATIVE_INFINITY to "\"-Infinity\"",
+            Float.POSITIVE_INFINITY to "\"Infinity\"",
+            Float.NaN to "\"NaN\"",
+        )
+
+        for ((input, expected) in tests) {
+            val json = JsonSerializer()
+            json.serializeFloat(input)
+            val actual = json.toByteArray().decodeToString()
+
+            assertEquals(expected, actual)
+        }
+    }
 }
 
 data class Primitives(

@@ -799,14 +799,75 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, Set<Int>>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val col1 = mutableSetOf<Int>()
-                                        while (hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                            col1.add(el1)
-                                        }
-                                        col1
-                                    }
+                                    val v0 =
+                                        if (nextHasValue()) {
+                                            deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
+                                                val col1 = mutableSetOf<Int>()
+                                                while (hasNextElement()) {
+                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                                    col1.add(el1)
+                                                }
+                                                col1
+                                            }
+                                        } else { deserializeNull(); continue }
+            
+                                    map0[k0] = v0
+                                }
+                                map0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it deserializes a structure containing a sparse map of a set of primitive values`() {
+        val model = (
+            modelPrefix + """            
+            structure FooResponse { 
+                payload: MapOfSet
+            }
+            
+            @sparse
+            map MapOfSet {
+                key: String,
+                value: IntegerSet
+            }            
+            
+            set IntegerSet {
+                member: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                            deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
+                                val map0 = mutableMapOf<String, Set<Int>?>()
+                                while (hasNextEntry()) {
+                                    val k0 = key()
+                                    val v0 =
+                                        if (nextHasValue()) {
+                                            deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
+                                                val col1 = mutableSetOf<Int>()
+                                                while (hasNextElement()) {
+                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                                    col1.add(el1)
+                                                }
+                                                col1
+                                            }
+                                        } else { deserializeNull() }
+            
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1079,14 +1140,18 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, List<String>>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val col1 = mutableListOf<String>()
-                                        while (hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
-                                            col1.add(el1)
-                                        }
-                                        col1
-                                    }
+                                    val v0 =
+                                        if (nextHasValue()) {
+                                            deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
+                                                val col1 = mutableListOf<String>()
+                                                while (hasNextElement()) {
+                                                    val el1 = if (nextHasValue()) { deserializeString() } else { deserializeNull(); continue }
+                                                    col1.add(el1)
+                                                }
+                                                col1
+                                            }
+                                        } else { deserializeNull(); continue }
+            
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1136,22 +1201,26 @@ class DeserializeStructGeneratorTest {
                                 val map0 = mutableMapOf<String, List<Map<String, Boolean>>>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val col1 = mutableListOf<Map<String, Boolean>>()
-                                        while (hasNextElement()) {
-                                            val el1 = deserializer.deserializeMap(PAYLOAD_C1_DESCRIPTOR) {
-                                                val map2 = mutableMapOf<String, Boolean>()
-                                                while (hasNextEntry()) {
-                                                    val k2 = key()
-                                                    val v2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
-                                                    map2[k2] = v2
+                                    val v0 =
+                                        if (nextHasValue()) {
+                                            deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
+                                                val col1 = mutableListOf<Map<String, Boolean>>()
+                                                while (hasNextElement()) {
+                                                    val el1 = deserializer.deserializeMap(PAYLOAD_C1_DESCRIPTOR) {
+                                                        val map2 = mutableMapOf<String, Boolean>()
+                                                        while (hasNextEntry()) {
+                                                            val k2 = key()
+                                                            val v2 = if (nextHasValue()) { deserializeBoolean() } else { deserializeNull(); continue }
+                                                            map2[k2] = v2
+                                                        }
+                                                        map2
+                                                    }
+                                                    col1.add(el1)
                                                 }
-                                                map2
+                                                col1
                                             }
-                                            col1.add(el1)
-                                        }
-                                        col1
-                                    }
+                                        } else { deserializeNull(); continue }
+            
                                     map0[k0] = v0
                                 }
                                 map0
@@ -1242,15 +1311,78 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     val map0 = mutableMapOf<String, Map<String, Int>>()
                     while (hasNextEntry()) {
                         val k0 = key()
-                        val v0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
-                            val map1 = mutableMapOf<String, Int>()
-                            while (hasNextEntry()) {
-                                val k1 = key()
-                                val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                map1[k1] = v1
-                            }
-                            map1
-                        }
+                        val v0 =
+                            if (nextHasValue()) {
+                                deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
+                                    val map1 = mutableMapOf<String, Int>()
+                                    while (hasNextEntry()) {
+                                        val k1 = key()
+                                        val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                        map1[k1] = v1
+                                    }
+                                    map1
+                                }
+                            } else { deserializeNull(); continue }
+
+                        map0[k0] = v0
+                    }
+                    map0
+                }
+            null -> break@loop
+            else -> skipValue()
+        }
+    }
+}
+        """.trimIndent()
+
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it deserializes a structure containing a sparse map of a map of a primitive value`() {
+        val model = (
+            modelPrefix + """            
+            structure FooResponse { 
+                payload: StringMap
+            }
+            
+            @sparse
+            map StringMap {
+                key: String,
+                value: StringMap2
+            }
+            
+            map StringMap2 {
+                key: String,
+                value: Integer
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+    loop@while (true) {
+        when (findNextFieldIndex()) {
+            PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
+                    val map0 = mutableMapOf<String, Map<String, Int>?>()
+                    while (hasNextEntry()) {
+                        val k0 = key()
+                        val v0 =
+                            if (nextHasValue()) {
+                                deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
+                                    val map1 = mutableMapOf<String, Int>()
+                                    while (hasNextEntry()) {
+                                        val k1 = key()
+                                        val v1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                        map1[k1] = v1
+                                    }
+                                    map1
+                                }
+                            } else { deserializeNull() }
+
                         map0[k0] = v0
                     }
                     map0

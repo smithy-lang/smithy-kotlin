@@ -48,10 +48,36 @@ fun <T : CodeWriter> T.withBlock(
     textAfterNewLine: String,
     vararg args: Any,
     block: T.() -> Unit
+): T = wrapBlockIf(true, textBeforeNewLine, textAfterNewLine, *args) { block(this) }
+
+/**
+ * Extension function that is more idiomatic Kotlin that is roughly the same purpose as an if block wrapped around
+ * the provided function `openBlock(String textBeforeNewline, String textAfterNewline, Runnable r)`
+ *
+ * Example:
+ * ```
+ * writer.wrapBlockIf(foo == bar, "{", "}") {
+ *     write("foo")
+ * }
+ * ```
+ *
+ * Equivalent to:
+ * ```
+ * if (foo == bar) writer.openBlock("{")
+ * writer.write("foo")
+ * if (foo == bar) writer.closeBlock("}")
+ * ```
+ */
+fun <T : CodeWriter> T.wrapBlockIf(
+    condition: Boolean,
+    textBeforeNewLine: String,
+    textAfterNewLine: String,
+    vararg args: Any,
+    block: T.() -> Unit,
 ): T {
-    openBlock(textBeforeNewLine, *args)
+    if (condition) openBlock(textBeforeNewLine, *args)
     block(this)
-    closeBlock(textAfterNewLine)
+    if (condition) closeBlock(textAfterNewLine)
     return this
 }
 
