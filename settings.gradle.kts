@@ -19,7 +19,6 @@ pluginManagement {
 }
 
 rootProject.name = "smithy-kotlin"
-enableFeaturePreview("GRADLE_METADATA")
 
 include(":smithy-kotlin-codegen")
 
