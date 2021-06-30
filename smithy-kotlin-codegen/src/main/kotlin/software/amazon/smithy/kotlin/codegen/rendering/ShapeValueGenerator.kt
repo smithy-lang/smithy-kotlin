@@ -189,7 +189,21 @@ class ShapeValueGenerator(
         }
 
         override fun stringNode(node: StringNode) {
-            writer.writeInline("#S", node.value)
+            when (currShape.type) {
+                ShapeType.DOUBLE,
+                ShapeType.FLOAT -> {
+                    val symbolName = generator.symbolProvider.toSymbol(currShape).name
+                    val symbolMember = when (node.value) {
+                        "Infinity" -> "POSITIVE_INFINITY"
+                        "-Infinity" -> "NEGATIVE_INFINITY"
+                        "NaN" -> "NaN"
+                        else -> throw CodegenException("""Cannot interpret $symbolName value "${node.value}".""")
+                    }
+                    writer.writeInline("#L", "$symbolName.$symbolMember")
+                }
+
+                else -> writer.writeInline("#S", node.value)
+            }
         }
 
         override fun nullNode(node: NullNode) {
@@ -227,16 +241,23 @@ class ShapeValueGenerator(
                 ShapeType.BIG_INTEGER, ShapeType.BIG_DECIMAL -> {
                     // TODO - We need to decide non-JVM only symbols to generate for these before we know how to assign values to them
                 }
+
+                ShapeType.DOCUMENT -> {
+                    // TODO - deal with document shapes
+                }
+
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")
             }
         }
 
         override fun booleanNode(node: BooleanNode) {
-            if (currShape.type != ShapeType.BOOLEAN) {
-                throw CodegenException("unexpected shape type $currShape for boolean value")
+            when (currShape.type) {
+                ShapeType.DOCUMENT -> {
+                    // TODO - deal with document shapes
+                }
+                ShapeType.BOOLEAN -> writer.writeInline("#L", if (node.value) "true" else "false")
+                else -> throw CodegenException("unexpected shape type $currShape for boolean value")
             }
-
-            writer.writeInline("#L", if (node.value) "true" else "false")
         }
     }
 }
