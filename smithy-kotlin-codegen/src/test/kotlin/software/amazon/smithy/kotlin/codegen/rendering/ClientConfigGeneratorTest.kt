@@ -35,13 +35,14 @@ class ClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig {
+class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
 """
         contents.shouldContain(expectedCtor)
 
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
+    override val sdkLogMode: SdkLogMode = builder.sdkLogMode
 """
         contents.shouldContain(expectedProps)
 
@@ -49,6 +50,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
     interface FluentBuilder {
         fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder
         fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder
+        fun sdkLogMode(sdkLogMode: SdkLogMode): FluentBuilder
         fun build(): Config
     }
 """
@@ -67,28 +69,42 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
          */
         var idempotencyTokenProvider: IdempotencyTokenProvider?
 
+        /**
+         * Configure events that will be logged. By default clients will not output
+         * raw requests or responses. Use this setting to opt-in to additional debug logging.
+         * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
+         * **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
+         * performance considerations when dumping the request/response body. This is primarily a tool for
+         * debug purposes.
+         */
+        var sdkLogMode: SdkLogMode
+
         fun build(): Config
     }
 """
-        contents.shouldContain(expectedDslBuilderInterface)
+        contents.shouldContainWithDiff(expectedDslBuilderInterface)
 
         val expectedBuilderImpl = """
     internal class BuilderImpl() : FluentBuilder, DslBuilder {
         override var httpClientEngine: HttpClientEngine? = null
         override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+        override var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
         override fun build(): Config = Config(this)
         override fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder = apply { this.httpClientEngine = httpClientEngine }
         override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
+        override fun sdkLogMode(sdkLogMode: SdkLogMode): FluentBuilder = apply { this.sdkLogMode = sdkLogMode }
     }
 """
-        contents.shouldContain(expectedBuilderImpl)
+        contents.shouldContainWithDiff(expectedBuilderImpl)
 
         val expectedImports = listOf(
             "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
             "import ${KotlinDependency.HTTP.namespace}.engine.HttpClientEngine",
             "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenConfig",
             "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenProvider",
+            "import ${KotlinDependency.CORE.namespace}.config.SdkClientConfig",
+            "import ${KotlinDependency.CORE.namespace}.client.SdkLogMode",
         )
         expectedImports.forEach {
             contents.shouldContain(it)
