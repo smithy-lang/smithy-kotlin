@@ -46,4 +46,4 @@ val ExecutionContext.idempotencyTokenProvider: IdempotencyTokenProvider
  */
 @InternalApi
 val ExecutionContext.sdkLogMode: SdkLogMode
-    get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.None
+    get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.Default

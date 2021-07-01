@@ -88,7 +88,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
     internal class BuilderImpl() : FluentBuilder, DslBuilder {
         override var httpClientEngine: HttpClientEngine? = null
         override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
-        override var sdkLogMode: SdkLogMode = SdkLogMode.None
+        override var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
         override fun build(): Config = Config(this)
         override fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder = apply { this.httpClientEngine = httpClientEngine }

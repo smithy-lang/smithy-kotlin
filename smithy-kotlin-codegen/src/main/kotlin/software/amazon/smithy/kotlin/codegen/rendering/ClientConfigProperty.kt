@@ -197,7 +197,7 @@ object KotlinClientRuntimeConfigProperty {
             symbol = buildSymbol {
                 name = "SdkLogMode"
                 namespace(KotlinDependency.CORE, "client")
-                defaultValue = "SdkLogMode.None"
+                defaultValue = "SdkLogMode.Default"
                 nullable = false
             }
 

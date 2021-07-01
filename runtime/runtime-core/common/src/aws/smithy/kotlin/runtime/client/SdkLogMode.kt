@@ -15,9 +15,11 @@ package aws.smithy.kotlin.runtime.client
  * ```
  */
 sealed class SdkLogMode(private val mask: Int) {
-    @Suppress
-    object None : SdkLogMode(0x00) {
-        override fun toString(): String = "None"
+    /**
+     * The default logging mode which does not opt-in to anything
+     */
+    object Default : SdkLogMode(0x00) {
+        override fun toString(): String = "Default"
     }
 
     /**
@@ -58,7 +60,7 @@ sealed class SdkLogMode(private val mask: Int) {
     internal class Composite(mask: Int) : SdkLogMode(mask)
 
     operator fun plus(mode: SdkLogMode): SdkLogMode = Composite(mask or mode.mask)
-    operator fun minus(mode: SdkLogMode): SdkLogMode = Composite(mask and (mode.mask.inv()))
+    operator fun minus(mode: SdkLogMode): SdkLogMode = Composite(mask and mode.mask.inv())
 
     /**
      * Test if a particular [SdkLogMode] is enabled

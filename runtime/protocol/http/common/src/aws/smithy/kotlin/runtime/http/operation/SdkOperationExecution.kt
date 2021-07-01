@@ -174,7 +174,7 @@ private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<S
     val logMode = request.context.sdkLogMode
     if (logMode.isEnabled(SdkLogMode.LogRequest) || logMode.isEnabled(SdkLogMode.LogRequestWithBody)) {
         val formattedReq = dumpRequest(request.subject, logMode.isEnabled(SdkLogMode.LogRequestWithBody))
-        request.context.logger.info { "HttpRequest:\n$formattedReq" }
+        request.context.logger.debug { "HttpRequest:\n$formattedReq" }
     }
 
     var call = next.call(request)
@@ -182,7 +182,7 @@ private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<S
     if (logMode.isEnabled(SdkLogMode.LogResponse) || logMode.isEnabled(SdkLogMode.LogResponseWithBody)) {
         val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(SdkLogMode.LogResponseWithBody))
         call = call.copy(response = resp)
-        request.context.logger.info { "HttpResponse:\n$formattedResp" }
+        request.context.logger.debug { "HttpResponse:\n$formattedResp" }
     }
 
     return call

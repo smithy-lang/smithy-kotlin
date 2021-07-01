@@ -60,7 +60,7 @@ fun ProtocolResponse.statusCode(): HttpStatusCode? {
 @InternalApi
 suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpResponse, String> {
     val buffer = SdkBuffer(256)
-    buffer.write("HTTP/ ${response.status}\r\n")
+    buffer.write("HTTP ${response.status}\r\n")
     response.headers.forEach { key, values ->
         buffer.write(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
     }

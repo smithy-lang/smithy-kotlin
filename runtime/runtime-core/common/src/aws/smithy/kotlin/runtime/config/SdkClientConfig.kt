@@ -21,5 +21,5 @@ interface SdkClientConfig {
      * debug purposes.
      */
     val sdkLogMode: SdkLogMode
-        get() = SdkLogMode.None
+        get() = SdkLogMode.Default
 }

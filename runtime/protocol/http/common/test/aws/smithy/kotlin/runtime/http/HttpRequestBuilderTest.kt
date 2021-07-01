@@ -34,7 +34,7 @@ class HttpRequestBuilderTest {
     }
 
     @Test
-    fun testDumpResponse() = runSuspendTest {
+    fun testDumpRequest() = runSuspendTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"
         val builder = HttpRequestBuilder().apply {
             url {
@@ -62,7 +62,7 @@ class HttpRequestBuilderTest {
 
         val actual = dumpRequest(builder, true)
         assertTrue(builder.body is HttpBody.Bytes)
-        val expected = "GET /debug/test?foo=bar HTTP/\r\nHost: test.amazon.com\r\nContent-Length: ${content.length}\r\nx-baz: quux;qux\r\n\r\n$content"
+        val expected = "GET /debug/test?foo=bar\r\nHost: test.amazon.com\r\nContent-Length: ${content.length}\r\nx-baz: quux;qux\r\n\r\n$content"
         assertEquals(expected, actual)
     }
 }

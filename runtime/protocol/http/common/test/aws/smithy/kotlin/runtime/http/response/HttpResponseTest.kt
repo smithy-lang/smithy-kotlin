@@ -56,7 +56,7 @@ class HttpResponseTest {
         assertTrue(c2.body is HttpBody.Bytes)
         assertNotSame(resp, c2)
 
-        val expected = "HTTP/ 200: OK\r\nx-foo: bar\r\n\r\n$content"
+        val expected = "HTTP 200: OK\r\nx-foo: bar\r\n\r\n$content"
         assertEquals(expected, actual)
     }
 }

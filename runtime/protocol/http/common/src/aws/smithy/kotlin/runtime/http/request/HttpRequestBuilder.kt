@@ -67,8 +67,8 @@ fun HttpRequestBuilder.header(name: String, value: String) = headers.append(name
 suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
     val buffer = SdkBuffer(256)
 
-    // TODO - we have no way to know the http version at this level
-    buffer.write("${request.method} ${request.url.encodedPath} HTTP/\r\n")
+    // TODO - we have no way to know the http version at this level to set HTTP/x.x
+    buffer.write("${request.method} ${request.url.encodedPath}\r\n")
     buffer.write("Host: ${request.url.host}\r\n")
 
     val contentLength = request.headers["Content-Length"]?.toLongOrNull() ?: (request.body.contentLength ?: 0)
