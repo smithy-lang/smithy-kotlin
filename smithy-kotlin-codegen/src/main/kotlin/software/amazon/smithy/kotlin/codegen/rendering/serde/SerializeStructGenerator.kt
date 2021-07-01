@@ -152,7 +152,7 @@ open class SerializeStructGenerator(
      */
     protected fun delegateMapSerialization(rootMemberShape: MemberShape, mapShape: MapShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
-        val isSparse = mapShape.hasTrait<SparseTrait>()
+        val isSparse = mapShape.isSparse
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -168,8 +168,8 @@ open class SerializeStructGenerator(
             ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampEntry(mapShape.value, elementShape, nestingLevel, parentMemberName)
             ShapeType.SET,
-            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
-            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
+            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.UNION,
             ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
             else -> error("Unhandled type ${elementShape.type}")
@@ -181,7 +181,7 @@ open class SerializeStructGenerator(
      */
     protected fun delegateListSerialization(rootMemberShape: MemberShape, listShape: CollectionShape, nestingLevel: Int, parentMemberName: String) {
         val elementShape = ctx.model.expectShape(listShape.member.target)
-        val isSparse = listShape.hasTrait<SparseTrait>()
+        val isSparse = listShape.isSparse
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -297,6 +297,7 @@ open class SerializeStructGenerator(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
+        isSparse: Boolean,
         parentMemberName: String
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
@@ -304,8 +305,12 @@ open class SerializeStructGenerator(
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val parentName = parentName(valueName)
 
-        writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> mapEntry($keyName, $descriptorName) {", "}}") {
-            delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
+        writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyName, null as String?)") {
+                writer.withBlock("mapEntry($keyName, $descriptorName) {", "}") {
+                    delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
+                }
+            }
         }
     }
 
@@ -322,6 +327,7 @@ open class SerializeStructGenerator(
         rootMemberShape: MemberShape,
         elementShape: CollectionShape,
         nestingLevel: Int,
+        isSparse: Boolean,
         parentMemberName: String
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
@@ -329,8 +335,12 @@ open class SerializeStructGenerator(
         val (keyName, valueName) = keyValueNames(nestingLevel)
         val parentName = parentName(valueName)
 
-        writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) -> listEntry($keyName, $descriptorName) {", "}}") {
-            delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, parentName)
+        writer.withBlock("$containerName$parentMemberName.forEach { ($keyName, $valueName) ->", "}") {
+            writer.wrapBlockIf(isSparse, "if ($valueName != null) {", "} else entry($keyName, null as String?)") {
+                writer.withBlock("listEntry($keyName, $descriptorName) {", "}") {
+                    delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, parentName)
+                }
+            }
         }
     }
 

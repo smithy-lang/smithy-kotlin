@@ -15,22 +15,48 @@ import kotlin.test.*
 class JsonDeserializerTest {
     @Test
     fun itHandlesDoubles() = runSuspendTest {
-        val payload = "1.2".encodeToByteArray()
-        val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeDouble()
-        val expected = 1.2
-        assertNotNull(actual)
-        assertTrue(abs(actual - expected) <= 0.0001)
+        val tests = mapOf(
+            "1.2" to 1.2,
+            "\"-Infinity\"" to Double.NEGATIVE_INFINITY,
+            "\"Infinity\"" to Double.POSITIVE_INFINITY,
+            "\"NaN\"" to Double.NaN,
+        )
+
+        for ((input, expected) in tests) {
+            val payload = input.encodeToByteArray()
+            val deserializer = JsonDeserializer(payload)
+            val actual = deserializer.deserializeDouble()
+            assertNotNull(actual)
+
+            if (expected.isFinite()) {
+                assertTrue(abs(actual - expected) <= 0.0001)
+            } else {
+                assertEquals(expected, actual)
+            }
+        }
     }
 
     @Test
     fun itHandlesFloats() = runSuspendTest {
-        val payload = "1.2".encodeToByteArray()
-        val deserializer = JsonDeserializer(payload)
-        val actual = deserializer.deserializeFloat()
-        val expected = 1.2f
-        assertNotNull(actual)
-        assertTrue(abs(actual - expected) <= 0.0001f)
+        val tests = mapOf(
+            "1.2" to 1.2f,
+            "\"-Infinity\"" to Float.NEGATIVE_INFINITY,
+            "\"Infinity\"" to Float.POSITIVE_INFINITY,
+            "\"NaN\"" to Float.NaN,
+        )
+
+        for ((input, expected) in tests) {
+            val payload = input.encodeToByteArray()
+            val deserializer = JsonDeserializer(payload)
+            val actual = deserializer.deserializeFloat()
+            assertNotNull(actual)
+
+            if (expected.isFinite()) {
+                assertTrue(abs(actual - expected) <= 0.0001f)
+            } else {
+                assertEquals(expected, actual)
+            }
+        }
     }
 
     @Test

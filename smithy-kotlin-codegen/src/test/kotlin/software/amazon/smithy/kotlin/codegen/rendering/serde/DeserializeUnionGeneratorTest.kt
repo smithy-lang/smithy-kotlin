@@ -175,22 +175,26 @@ class DeserializeUnionGeneratorTest {
                                 val map0 = mutableMapOf<String, List<Map<String, BarUnion>>>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = deserializer.deserializeList(STRMAPVAL_C0_DESCRIPTOR) {
-                                        val col1 = mutableListOf<Map<String, BarUnion>>()
-                                        while (hasNextElement()) {
-                                            val el1 = deserializer.deserializeMap(STRMAPVAL_C1_DESCRIPTOR) {
-                                                val map2 = mutableMapOf<String, BarUnion>()
-                                                while (hasNextEntry()) {
-                                                    val k2 = key()
-                                                    val v2 = if (nextHasValue()) { deserializeBarUnionDocument(deserializer) } else { deserializeNull(); continue }
-                                                    map2[k2] = v2
+                                    val v0 =
+                                        if (nextHasValue()) {
+                                            deserializer.deserializeList(STRMAPVAL_C0_DESCRIPTOR) {
+                                                val col1 = mutableListOf<Map<String, BarUnion>>()
+                                                while (hasNextElement()) {
+                                                    val el1 = deserializer.deserializeMap(STRMAPVAL_C1_DESCRIPTOR) {
+                                                        val map2 = mutableMapOf<String, BarUnion>()
+                                                        while (hasNextEntry()) {
+                                                            val k2 = key()
+                                                            val v2 = if (nextHasValue()) { deserializeBarUnionDocument(deserializer) } else { deserializeNull(); continue }
+                                                            map2[k2] = v2
+                                                        }
+                                                        FooUnion.StrMapVal(map2)
+                                                    }
+                                                    col1.add(el1)
                                                 }
-                                                FooUnion.StrMapVal(map2)
+                                                FooUnion.StrMapVal(col1)
                                             }
-                                            col1.add(el1)
-                                        }
-                                        FooUnion.StrMapVal(col1)
-                                    }
+                                        } else { deserializeNull(); continue }
+            
                                     map0[k0] = v0
                                 }
                                 FooUnion.StrMapVal(map0)
@@ -276,14 +280,18 @@ class DeserializeUnionGeneratorTest {
                                 val map0 = mutableMapOf<String, List<Int>>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
-                                    val v0 = deserializer.deserializeList(MAPOFLISTS_C0_DESCRIPTOR) {
-                                        val col1 = mutableListOf<Int>()
-                                        while (hasNextElement()) {
-                                            val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                                            col1.add(el1)
-                                        }
-                                        MyAggregateUnion.MapOfLists(col1)
-                                    }
+                                    val v0 =
+                                        if (nextHasValue()) {
+                                            deserializer.deserializeList(MAPOFLISTS_C0_DESCRIPTOR) {
+                                                val col1 = mutableListOf<Int>()
+                                                while (hasNextElement()) {
+                                                    val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                                    col1.add(el1)
+                                                }
+                                                MyAggregateUnion.MapOfLists(col1)
+                                            }
+                                        } else { deserializeNull(); continue }
+            
                                     map0[k0] = v0
                                 }
                                 MyAggregateUnion.MapOfLists(map0)

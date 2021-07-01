@@ -111,18 +111,18 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
      */
     protected open fun renderServiceCall() {
         val inputParamName = operation.input.map { "input" }.orElse("")
-        val isStreamingRequest = operation.input.map {
-            val inputShape = model.expectShape(it)
-            inputShape.asStructureShape().get().hasStreamingMember(model)
+        val isStreamingResponse = operation.output.map {
+            val outputShape = model.expectShape(it)
+            outputShape.asStructureShape().get().hasStreamingMember(model)
         }.orElse(false)
 
         // invoke the operation
         val opName = operation.defaultName()
 
         if (operation.output.isPresent) {
-            // streaming requests have a different operation signature that require a block to be passed to
+            // streaming responses have a different operation signature that require a block to be passed to
             // process the response - add an empty block if necessary
-            if (isStreamingRequest) {
+            if (isStreamingResponse) {
                 writer.openBlock("service.#L(#L){ actualResult ->", opName, inputParamName)
                     .call {
                         renderAssertions()
