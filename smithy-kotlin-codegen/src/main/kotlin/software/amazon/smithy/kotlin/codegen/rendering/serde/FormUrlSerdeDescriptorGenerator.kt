@@ -21,17 +21,17 @@ open class FormUrlSerdeDescriptorGenerator(
     memberShapes: List<MemberShape>? = null
 ) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
 
-    val service: ServiceShape by lazy { ctx.model.expectShape<ServiceShape>(ctx.settings.service) }
+    protected val service: ServiceShape by lazy { ctx.model.expectShape<ServiceShape>(ctx.settings.service) }
 
     /**
-     * The serialized name for a shape.
+     * The serialized name for the main object shape of this generator.
      */
-    open val serialName: String
+    open val objectSerialName: String
         get() = objectShape.getTrait<SyntheticClone>()?.archetype?.name ?: objectShape.defaultName(service)
 
     override fun getObjectDescriptorTraits(): List<SdkFieldDescriptorTrait> {
         val traits = mutableListOf<SdkFieldDescriptorTrait>()
-        traits.add(SerdeFormUrl.FormUrlSerialName, serialName.dq())
+        traits.add(SerdeFormUrl.FormUrlSerialName, objectSerialName.dq())
         return traits
     }
 
