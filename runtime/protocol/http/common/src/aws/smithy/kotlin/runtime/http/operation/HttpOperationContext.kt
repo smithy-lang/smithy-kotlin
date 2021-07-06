@@ -41,7 +41,7 @@ open class HttpOperationContext {
         /**
          * The per/request logging context.
          */
-        val LoggingContext: AttributeKey<Map<String, Any>> = AttributeKey("LogContext")
+        val LoggingContext: AttributeKey<Map<String, Any>> = AttributeKey("LoggingContext")
 
         /**
          * The unique request ID generated for tracking the request in-flight client side.
