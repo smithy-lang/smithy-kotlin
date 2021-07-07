@@ -34,7 +34,7 @@ sealed class ByteStream {
         /**
          * Provides [SdkByteReadChannel] to read from/consume. Implementations that are idempotent *MUST* provide
          * a fresh read channel reset to the original state on each invocation of [readFrom]. Consumers are allowed
-         * to close the stream and ask for a new one.
+         * to close the stream and ask for a new one when it is marked as idempotent.
          */
         abstract fun readFrom(): SdkByteReadChannel
 
