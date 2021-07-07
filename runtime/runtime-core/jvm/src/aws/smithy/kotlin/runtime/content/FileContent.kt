@@ -20,4 +20,5 @@ public class FileContent(
         get() = file.length()
 
     override fun readFrom(): SdkByteReadChannel = file.readChannel()
+    override val isIdempotent: Boolean = true
 }

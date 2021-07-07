@@ -45,6 +45,12 @@ sealed class HttpBody {
          * Provides [SdkByteReadChannel] for the content
          */
         abstract fun readFrom(): SdkByteReadChannel
+
+        /**
+         * Flag indicating that [readFrom] is an idempotent operation and that the channel to read from can be
+         * created multiple times. A stream that is non-idempotent can only be consumed once.
+         */
+        open val isIdempotent: Boolean = false
     }
 }
 
@@ -59,6 +65,7 @@ fun ByteStream.toHttpBody(): HttpBody = when (val bytestream = this) {
     is ByteStream.Reader -> object : HttpBody.Streaming() {
         override val contentLength: Long? = bytestream.contentLength
         override fun readFrom(): SdkByteReadChannel = bytestream.readFrom()
+        override val isIdempotent: Boolean = bytestream.isIdempotent
     }
 }
 

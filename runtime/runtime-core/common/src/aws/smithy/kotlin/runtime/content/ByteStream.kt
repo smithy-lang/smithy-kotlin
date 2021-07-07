@@ -21,7 +21,8 @@ sealed class ByteStream {
      */
     abstract class Buffer : ByteStream() {
         /**
-         * Provides [ByteArray] to be consumed
+         * Provides [ByteArray] to be consumed. This *MUST* be idempotent as the data may be
+         * read multiple times.
          */
         abstract fun bytes(): ByteArray
     }
@@ -31,9 +32,24 @@ sealed class ByteStream {
      */
     abstract class Reader : ByteStream() {
         /**
-         * Provides [SdkByteReadChannel] to read from/consume
+         * Provides [SdkByteReadChannel] to read from/consume. Implementations that are idempotent *MUST* provide
+         * a fresh read channel reset to the original state on each invocation of [readFrom]. Consumers are allowed
+         * to close the stream and ask for a new one.
          */
         abstract fun readFrom(): SdkByteReadChannel
+
+        /**
+         * Flag indicating that [readFrom] is an idempotent operation and that the channel to read from can be
+         * created multiple times. A stream that is non-idempotent can only be consumed once.
+         *
+         * As an example, implementations backed by files or in-memory buffers should be idempotent.
+         * A stream that is produced dynamically where the original data cannot be re-constructed can only be read
+         * from once and are considered non-idempotent.
+         *
+         * Idempotency is an important aspect for operations that require (e.g.) calculating checksums on the data
+         * provided.
+         */
+        open val isIdempotent: Boolean = false
     }
 
     companion object {
