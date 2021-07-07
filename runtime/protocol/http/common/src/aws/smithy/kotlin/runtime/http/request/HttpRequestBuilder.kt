@@ -89,7 +89,6 @@ suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String 
         when (val body = request.body) {
             is HttpBody.Bytes -> buffer.writeFully(body.bytes())
             is HttpBody.Streaming -> {
-                // FIXME - would be better to rewind the stream if possible
                 // consume the stream and replace the body
                 val content = body.readAll()
                 if (content != null) {
