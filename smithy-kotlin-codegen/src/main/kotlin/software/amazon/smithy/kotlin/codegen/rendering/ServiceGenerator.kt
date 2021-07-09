@@ -50,6 +50,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.renderAnnotations(service)
         writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
             .call { overrideServiceName() }
+            .write("val config: Config") // allow client's Config type to be accessed
             .call {
                 // allow integrations to add additional fields to companion object or configuration
                 writer.write("")

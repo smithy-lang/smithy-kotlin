@@ -73,6 +73,7 @@ object RuntimeTypes {
 
     object Utils {
         val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
+        val urlEncodeComponent = runtimeSymbol("urlEncodeComponent", KotlinDependency.UTILS, "text")
     }
 
     object Serde {
