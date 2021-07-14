@@ -4,43 +4,25 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import io.kotest.matchers.collections.shouldContainExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-suspend fun JsonStreamReader.allTokens(): List<JsonToken> {
-    val tokens = mutableListOf<JsonToken>()
-    while (true) {
-        val token = nextToken()
-        tokens.add(token)
-        if (token is JsonToken.EndDocument) {
-            break
-        }
-    }
-    return tokens
-}
-
-fun assertTokensAreEqual(expected: List<JsonToken>, actual: List<JsonToken>) {
-    assertEquals(expected.size, actual.size, "unbalanced tokens")
-    val pairs = expected.zip(actual)
-    pairs.forEach { (exp, act) ->
-        assertEquals(exp, act)
-    }
-}
-
-@OptIn(ExperimentalStdlibApi::class)
 class JsonStreamReaderTest {
     @Test
     fun itDeserializesObjects() = runSuspendTest {
-        val payload = """
+        // language=JSON
+        val actual = """ 
             {
                 "x": 1,
                 "y": "2"
             }
-        """.trimIndent().encodeToByteArray()
-        val actual = jsonStreamReader(payload).allTokens()
+        """.allTokens()
 
-        val expected = listOf(
+        actual.shouldContainExactly(
             JsonToken.BeginObject,
             JsonToken.Name("x"),
             JsonToken.Number("1"),
@@ -49,12 +31,156 @@ class JsonStreamReaderTest {
             JsonToken.EndObject,
             JsonToken.EndDocument
         )
-        assertTokensAreEqual(expected, actual)
+    }
+
+    @Test
+    fun isDeserializesArrays() = runSuspendTest {
+        // language=JSON
+        val actual = """[ "hello", "world" ]""".allTokens()
+
+        actual.shouldContainExactly(
+            JsonToken.BeginArray,
+            JsonToken.String("hello"),
+            JsonToken.String("world"),
+            JsonToken.EndArray,
+            JsonToken.EndDocument
+        )
+    }
+
+    @Test
+    fun itDeserializesSingleScalarStrings() = runSuspendTest {
+        // language=JSON
+        val actual = "\"hello\"".allTokens()
+        actual.shouldContainExactly(
+            JsonToken.String("hello"),
+            JsonToken.EndDocument
+        )
+    }
+
+    @Test
+    fun itDeserializesSingleScalarNumbers() = runSuspendTest {
+        // language=JSON
+        val actual = "1.2".allTokens()
+        actual.shouldContainExactly(
+            JsonToken.Number("1.2"),
+            JsonToken.EndDocument
+        )
+    }
+
+    @Test
+    fun itCanHandleAllDataTypes() = runSuspendTest {
+        // language=JSON
+        val actual = """[ "hello", true, false, 1.0, 1, -34.234e3, null ]""".allTokens()
+
+        actual.shouldContainExactly(
+            JsonToken.BeginArray,
+            JsonToken.String("hello"),
+            JsonToken.Bool(true),
+            JsonToken.Bool(false),
+            JsonToken.Number("1.0"),
+            JsonToken.Number("1"),
+            JsonToken.Number("-34.234e3"),
+            JsonToken.Null,
+            JsonToken.EndArray,
+            JsonToken.EndDocument
+        )
+    }
+
+    @Test
+    fun canHandleNesting() = runSuspendTest {
+        // language=JSON
+        val actual = """
+        [
+          "hello",
+          {
+            "foo": [
+              20,
+              true,
+              null
+            ],
+            "bar": "value"
+          }
+        ]""".allTokens()
+
+        actual.shouldContainExactly(
+            JsonToken.BeginArray,
+            JsonToken.String("hello"),
+            JsonToken.BeginObject,
+            JsonToken.Name("foo"),
+            JsonToken.BeginArray,
+            JsonToken.Number("20"),
+            JsonToken.Bool(true),
+            JsonToken.Null,
+            JsonToken.EndArray,
+            JsonToken.Name("bar"),
+            JsonToken.String("value"),
+            JsonToken.EndObject,
+            JsonToken.EndArray,
+            JsonToken.EndDocument
+        )
+    }
+
+    @Test
+    fun itSkipsValuesRecursively() = runSuspendTest {
+        val payload = """
+        {
+            "x": 1,
+            "unknown": {
+                "a": "a",
+                "b": "b",
+                "c": ["d", "e", "f"],
+                "g": {
+                    "h": "h",
+                    "i": "i"
+                }
+             },
+            "y": 2
+        }
+        """.trimIndent()
+        val reader = newReader(payload)
+        // skip x
+        reader.apply {
+            nextToken() // begin obj
+            nextToken() // x
+            nextToken() // value
+        }
+
+        val name = reader.nextToken() as JsonToken.Name
+        assertEquals("unknown", name.value)
+        reader.skipNext()
+
+        val y = reader.nextToken() as JsonToken.Name
+        assertEquals("y", y.value)
+    }
+
+    @Test
+    fun itSkipsSimpleValues() = runSuspendTest {
+        val payload = """
+        {
+            "x": 1,
+            "z": "unknown",
+            "y": 2
+        }
+        """.trimIndent()
+        val reader = newReader(payload)
+        // skip x
+        reader.apply {
+            nextToken() // begin obj
+            nextToken() // x
+        }
+        reader.skipNext()
+
+        val name = reader.nextToken() as JsonToken.Name
+        assertEquals("z", name.value)
+        reader.skipNext()
+
+        val y = reader.nextToken() as JsonToken.Name
+        assertEquals("y", y.value)
     }
 
     @Test
     fun kitchenSink() = runSuspendTest {
-        val payload = """
+        val actual = """
         {
             "num": 1,
             "str": "string",
@@ -70,9 +196,9 @@ class JsonStreamReaderTest {
             },
             "null": null
         }
-        """.trimIndent().encodeToByteArray()
-        val actual = jsonStreamReader(payload).allTokens()
-        val expected = listOf(
+        """.trimIndent().allTokens()
+
+        actual.shouldContainExactly(
             JsonToken.BeginObject,
             JsonToken.Name("num"),
             JsonToken.Number("1"),
@@ -103,65 +229,19 @@ class JsonStreamReaderTest {
             JsonToken.EndObject,
             JsonToken.EndDocument
         )
-
-        assertTokensAreEqual(expected, actual)
-    }
-
-    @Test
-    fun itSkipsValuesRecursively() = runSuspendTest {
-        val payload = """
-        {
-            "x": 1,
-            "unknown": {
-                "a": "a",
-                "b": "b",
-                "c": ["d", "e", "f"],
-                "g": {
-                    "h": "h",
-                    "i": "i"
-                }
-             },
-            "y": 2
-        }
-        """.trimIndent().encodeToByteArray()
-        val reader = jsonStreamReader(payload)
-        // skip x
-        reader.apply {
-            nextToken() // begin obj
-            nextToken() // x
-            nextToken() // value
-        }
-
-        val name = reader.nextToken() as JsonToken.Name
-        assertEquals("unknown", name.value)
-        reader.skipNext()
-
-        val y = reader.nextToken() as JsonToken.Name
-        assertEquals("y", y.value)
-    }
-
-    @Test
-    fun itSkipsSimpleValues() = runSuspendTest {
-        val payload = """
-        {
-            "x": 1,
-            "z": "unknown",
-            "y": 2
-        }
-        """.trimIndent().encodeToByteArray()
-        val reader = jsonStreamReader(payload)
-        // skip x
-        reader.apply {
-            nextToken() // begin obj
-            nextToken() // x
-        }
-        reader.skipNext()
-
-        val name = reader.nextToken() as JsonToken.Name
-        assertEquals("z", name.value)
-        reader.skipNext()
-
-        val y = reader.nextToken() as JsonToken.Name
-        assertEquals("y", y.value)
     }
 }
+
+private suspend fun String.allTokens(): List<JsonToken> {
+    val reader = newReader(this)
+    val tokens = mutableListOf<JsonToken>()
+    while (true) {
+        val token = reader.nextToken()
+        tokens.add(token)
+        if (token is JsonToken.EndDocument) {
+            return tokens
+        }
+    }
+}
+
+private fun newReader(contents: String): JsonStreamReader = JsonLexer(CharStream(SdkByteReadChannel(contents.encodeToByteArray())))
