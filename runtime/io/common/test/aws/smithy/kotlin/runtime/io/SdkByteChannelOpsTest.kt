@@ -131,4 +131,32 @@ class SdkByteChannelOpsTest {
         yield()
         assertFalse(awaitingContent)
     }
+
+    @Test
+    fun testReadUtf8Chars() = runSuspendTest {
+        val chan = SdkByteReadChannel("hello".encodeToByteArray())
+        assertEquals('h', chan.readUtf8Char())
+        assertEquals('e', chan.readUtf8Char())
+        assertEquals('l', chan.readUtf8Char())
+        assertEquals('l', chan.readUtf8Char())
+        assertEquals('o', chan.readUtf8Char())
+        assertNull(chan.readUtf8Char())
+    }
+
+    @Test
+    fun testReadMultibyteUtf8Chars(): Unit = runSuspendTest {
+        // $ - 1 byte, cent sign - 2bytes, euro sign - 3 bytes, 4 points
+//        val content = "$¢€\uD834\uDD22"
+        val content = "$¢€"
+        // code point count = 1, char count = 2 (surrogate pair)
+//        val content = "\uD834\uDD22"
+        // https://www.fileformat.info/info/unicode/char/1d122/index.htm
+        // see https://en.wikipedia.org/wiki/UTF-16
+        val chan = SdkByteReadChannel(content.encodeToByteArray())
+        for (c in content) {
+            assertEquals(c, chan.readUtf8Char())
+        }
+        assertNull(chan.readUtf8Char())
+        fail("does not handle surrogate pairs")
+    }
 }

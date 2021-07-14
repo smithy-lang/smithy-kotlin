@@ -160,3 +160,44 @@ internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, l
     dest.writeFully(tmp)
     return tmp.size
 }
+
+/**
+ * Reads a UTF-8 [Char] from the channel. Returns [null] if closed
+ */
+suspend fun SdkByteReadChannel.readUtf8Char(): Char? {
+    awaitContent()
+    if (availableForRead == 0 && isClosedForRead) return null
+
+    val firstByte = readByte()
+    val cnt = firstByte.utf8Count()
+    var code = when (cnt) {
+        1 -> firstByte.toInt()
+        2 -> firstByte.toInt() and 0x1f
+        3 -> firstByte.toInt() and 0x0f
+        else -> firstByte.toInt() and 0x07
+    }
+
+    for (i in 1 until cnt) {
+        awaitContent()
+        if (availableForRead == 0 && isClosedForRead) return null
+        val byte = readByte()
+        val bint = byte.toInt()
+        if (bint and 0xc0 != 0x80) throw IllegalStateException("invalid UTF-8 successor byte: $byte")
+
+        code = (code shl 6) or (bint and 0x3f)
+    }
+
+    return Char(code)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+internal inline fun Byte.utf8Count(): Int {
+    val x = this.toUInt()
+    return when {
+        x <= 0x7fu -> 1 // 0xxx xxxx one byte
+        x and 0xe0u == 0xc0u -> 2 // 110x xxxx two bytes
+        x and 0xf0u == 0xe0u -> 3 // 1110 xxxx three bytes
+        x and 0xf8u == 0xf0u -> 4 // 1111 0xxx 4 bytes
+        else -> throw IllegalStateException("$this is not a valid utf8 start sequence")
+    }
+}
