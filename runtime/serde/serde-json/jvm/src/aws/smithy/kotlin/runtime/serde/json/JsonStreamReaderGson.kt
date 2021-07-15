@@ -60,4 +60,4 @@ private class JsonStreamReaderGson(payload: ByteArray, charset: Charset = Charse
 /*
 * Creates a [JsonStreamReader] instance
 */
-internal actual fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonStreamReaderGson(payload)
+// internal actual fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonStreamReaderGson(payload)

@@ -31,9 +31,19 @@ internal class JsonLexer(
             RawJsonToken.BeginObject -> openStructure('{', RawJsonToken.BeginObject, JsonToken.BeginObject)
             RawJsonToken.EndObject -> closeStructure('}', RawJsonToken.BeginObject, JsonToken.EndObject).moveToNextElement()
             RawJsonToken.Name -> readName()
-            RawJsonToken.EndDocument -> JsonToken.EndDocument
+            RawJsonToken.EndDocument -> {
+                check(stack.isEmpty()) { invalidDocMessage() }
+                JsonToken.EndDocument
+            }
             else -> readScalarValue(raw).moveToNextElement()
         }
+    }
+
+    private fun invalidDocMessage(): String = when (stack.top()) {
+        RawJsonToken.BeginArray -> "expected ']'"
+        RawJsonToken.BeginObject -> "expected '}'"
+        RawJsonToken.Name -> "expected ':'"
+        else -> "invalid json document"
     }
 
     override suspend fun peek(): RawJsonToken = peeked ?: doPeek()
@@ -93,7 +103,7 @@ internal class JsonLexer(
      * [-]0-9[.[0-9]][[E|e][+|-]0-9]
      */
     private suspend fun readNumber(): JsonToken {
-        val value = with(StringBuilder()) {
+        val value = buildString {
             if (data.peek() == '-') {
                 append(data.nextOrThrow())
             }
@@ -109,8 +119,8 @@ internal class JsonLexer(
                 }
                 readDigits(this)
             }
-            toString()
         }
+        check(value.isNotEmpty()) { "Invalid number, expected '-' || 0..9, found ${data.peek()}" }
         return JsonToken.Number(value)
     }
 

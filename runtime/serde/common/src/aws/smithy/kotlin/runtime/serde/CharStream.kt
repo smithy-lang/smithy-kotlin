@@ -33,6 +33,7 @@ interface CharStream {
     }
 }
 
+// FIXME - this is wrong for utf8
 internal class ByteArrayBackedCharStream(private val bytes: ByteArray) : CharStream {
     private var position = 0
     override suspend fun peek(): Char? = bytes.getOrNull(position)?.toChar()

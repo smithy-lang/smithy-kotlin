@@ -10,6 +10,8 @@ import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 
 class JsonStreamReaderTest {
     @Test
@@ -45,6 +47,21 @@ class JsonStreamReaderTest {
             JsonToken.EndArray,
             JsonToken.EndDocument
         )
+    }
+
+    @Test
+    fun itFailsOnUnclosedArrays(): Unit = runSuspendTest {
+        assertFails {
+            """[ "hello", "world" """.allTokens()
+        }
+    }
+
+    @Test
+    fun itFailsOnNaN(): Unit = runSuspendTest {
+        assertFailsWith<IllegalStateException>("Invalid number") {
+            // language=JSON
+            val actual = """[NaN]""".allTokens()
+        }
     }
 
     @Test

@@ -166,17 +166,3 @@ private class JsonFieldIterator(
         reader.skipNext()
     }
 }
-
-// return the next token and require that it be of type [TExpected] or else throw an exception
-private suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
-    val token = this.nextToken()
-    requireToken<TExpected>(token)
-    return token as TExpected
-}
-
-// require that the given token be of type [TExpected] or else throw an exception
-private inline fun <reified TExpected> requireToken(token: JsonToken) {
-    if (token::class != TExpected::class) {
-        throw DeserializationException("expected ${TExpected::class}; found ${token::class}")
-    }
-}
