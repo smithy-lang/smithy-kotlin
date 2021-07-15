@@ -7,6 +7,10 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.serde.*
 
 class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
+    companion object {
+        private val doublesToStringify = setOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN)
+        private val floatsToStringify = setOf(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
+    }
 
     private val jsonWriter = jsonStreamWriter()
 
@@ -213,11 +217,19 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     }
 
     override fun serializeFloat(value: Float) {
-        jsonWriter.writeValue(value)
+        if (floatsToStringify.contains(value)) {
+            jsonWriter.writeValue(value.toString())
+        } else {
+            jsonWriter.writeValue(value)
+        }
     }
 
     override fun serializeDouble(value: Double) {
-        jsonWriter.writeValue(value)
+        if (doublesToStringify.contains(value)) {
+            jsonWriter.writeValue(value.toString())
+        } else {
+            jsonWriter.writeValue(value)
+        }
     }
 
     override fun serializeString(value: String) {

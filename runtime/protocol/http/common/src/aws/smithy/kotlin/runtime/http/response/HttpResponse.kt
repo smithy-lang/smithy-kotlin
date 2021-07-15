@@ -8,6 +8,10 @@ import aws.smithy.kotlin.runtime.ProtocolResponse
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
+import aws.smithy.kotlin.runtime.http.readAll
+import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Immutable container for an HTTP response
@@ -44,4 +48,40 @@ fun ProtocolResponse.getAllHeaders(name: String): List<String>? {
 fun ProtocolResponse.statusCode(): HttpStatusCode? {
     val httpResp = this as? HttpResponse
     return httpResp?.status
+}
+
+/**
+ * Dump a debug description of the response. Either the original response or a copy will be returned to the caller
+ * depending on if the body is consumed.
+ *
+ * @param dumpBody Flag controlling whether to also dump the body out. If true the body will be consumed and
+ * replaced.
+ */
+@InternalApi
+suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpResponse, String> {
+    val buffer = SdkBuffer(256)
+    buffer.write("HTTP ${response.status}\r\n")
+    response.headers.forEach { key, values ->
+        buffer.write(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
+    }
+    buffer.write("\r\n")
+
+    var respCopy = response
+    if (dumpBody) {
+        when (val body = response.body) {
+            is HttpBody.Bytes -> buffer.writeFully(body.bytes())
+            is HttpBody.Streaming -> {
+                // consume the stream and replace the body. There isn't much rewinding we can do here, most engines
+                // use a stream that reads right off the wire.
+                val content = body.readAll()
+                if (content != null) {
+                    buffer.writeFully(content)
+                    val newBody = ByteArrayContent(content)
+                    respCopy = response.copy(body = newBody)
+                }
+            }
+        }
+    }
+
+    return respCopy to buffer.decodeToString()
 }

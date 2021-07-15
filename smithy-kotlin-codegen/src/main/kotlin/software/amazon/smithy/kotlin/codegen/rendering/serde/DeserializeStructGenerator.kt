@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.isSparse
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*
@@ -158,7 +159,7 @@ open class DeserializeStructGenerator(
         parentMemberName: String
     ) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
-        val isSparse = mapShape.hasTrait<SparseTrait>()
+        val isSparse = mapShape.isSparse
 
         when (elementShape.type) {
             ShapeType.BOOLEAN,
@@ -174,8 +175,8 @@ open class DeserializeStructGenerator(
             ShapeType.BLOB,
             ShapeType.TIMESTAMP -> renderEntry(elementShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.SET,
-            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
-            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
+            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.UNION,
             ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, isSparse, parentMemberName)
             else -> error("Unhandled type ${elementShape.type}")
@@ -229,10 +230,12 @@ open class DeserializeStructGenerator(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
+        isSparse: Boolean,
         parentMemberName: String
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
+        val populateNullValuePostfix = if (isSparse) "" else "; continue"
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val mutableCollectionType = mapShape.mutableCollectionType()
         val nextNestingLevel = nestingLevel + 1
@@ -240,12 +243,16 @@ open class DeserializeStructGenerator(
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
 
         writer.write("val $keyName = key()")
-        writer.withBlock("val $valueName = deserializer.deserializeMap($descriptorName) {", "}") {
-            write("val $memberName = $mutableCollectionType()")
-            withBlock("while (hasNextEntry()) {", "}") {
-                delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, memberName)
+        writer.withBlock("val $valueName =", "") {
+            withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
+                withBlock("deserializer.deserializeMap($descriptorName) {", "}") {
+                    write("val $memberName = $mutableCollectionType()")
+                    withBlock("while (hasNextEntry()) {", "}") {
+                        delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, memberName)
+                    }
+                    write(collectionReturnExpression)
+                }
             }
-            write(collectionReturnExpression)
         }
         writer.write("$parentMemberName[$keyName] = $valueName")
     }
@@ -269,10 +276,12 @@ open class DeserializeStructGenerator(
         rootMemberShape: MemberShape,
         collectionShape: CollectionShape,
         nestingLevel: Int,
+        isSparse: Boolean,
         parentMemberName: String
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
+        val populateNullValuePostfix = if (isSparse) "" else "; continue"
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val mutableCollectionType = collectionShape.mutableCollectionType()
         val nextNestingLevel = nestingLevel + 1
@@ -280,12 +289,16 @@ open class DeserializeStructGenerator(
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
 
         writer.write("val $keyName = key()")
-        writer.withBlock("val $valueName = deserializer.deserializeList($descriptorName) {", "}") {
-            write("val $memberName = $mutableCollectionType()")
-            withBlock("while (hasNextElement()) {", "}") {
-                delegateListDeserialization(rootMemberShape, collectionShape, nextNestingLevel, memberName)
+        writer.withBlock("val $valueName =", "") {
+            withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
+                withBlock("deserializer.deserializeList($descriptorName) {", "}") {
+                    write("val $memberName = $mutableCollectionType()")
+                    withBlock("while (hasNextElement()) {", "}") {
+                        delegateListDeserialization(rootMemberShape, collectionShape, nextNestingLevel, memberName)
+                    }
+                    write(collectionReturnExpression)
+                }
             }
-            write(collectionReturnExpression)
         }
         writer.write("$parentMemberName[$keyName] = $valueName")
     }

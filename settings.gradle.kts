@@ -12,14 +12,17 @@ pluginManagement {
         gradlePluginPortal()
     }
 
-    // configure the smithy-gradle plugin version
+    // configure default plugin versions
     plugins {
-        id("org.jetbrains.dokka") version "1.4.32"
+        val kotlinVersion: String by settings
+        val dokkaVersion: String by settings
+        id("org.jetbrains.dokka") version dokkaVersion
+        id("org.jetbrains.kotlin.jvm") version kotlinVersion
+        id("org.jetbrains.kotlin.multiplatform") version kotlinVersion
     }
 }
 
 rootProject.name = "smithy-kotlin"
-enableFeaturePreview("GRADLE_METADATA")
 
 include(":smithy-kotlin-codegen")
 

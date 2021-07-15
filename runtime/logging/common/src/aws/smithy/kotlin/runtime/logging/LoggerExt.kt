@@ -14,7 +14,9 @@ private class ContextualLogger(
     logCtx: Map<String, Any>
 ) : Logger {
 
-    private val formattedCtx = logCtx.entries.joinToString(separator = "; ", postfix = ";") { "${it.key}: ${it.value}" }
+    private val formattedCtx by lazy {
+        logCtx.entries.joinToString(separator = "; ", postfix = ";") { "${it.key}: ${it.value}" }
+    }
 
     override fun trace(msg: () -> Any?) { inner.trace { "$formattedCtx - ${msg.invoke()}" } }
     override fun trace(t: Throwable?, msg: () -> Any?) { inner.trace(t) { "$formattedCtx - ${msg.invoke()}" } }
@@ -36,3 +38,8 @@ private class ContextualLogger(
  * Return a new logger with the given key-value pairs as contextual data added to all requests logged
  */
 fun Logger.withContext(vararg pairs: Pair<String, Any>): Logger = ContextualLogger(this, pairs.toMap())
+
+/**
+ * Return a new logger with the given map as contextual data added to all requests logged
+ */
+fun Logger.withContext(context: Map<String, Any>): Logger = ContextualLogger(this, context)

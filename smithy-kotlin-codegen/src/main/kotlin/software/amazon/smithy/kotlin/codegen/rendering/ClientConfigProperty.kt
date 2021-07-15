@@ -157,6 +157,7 @@ private fun builtInProperty(name: String, symbol: Symbol, documentation: String?
 object KotlinClientRuntimeConfigProperty {
     val HttpClientEngine: ClientConfigProperty
     val IdempotencyTokenProvider: ClientConfigProperty
+    val SdkLogMode: ClientConfigProperty
 
     init {
         val httpClientConfigSymbol = buildSymbol {
@@ -189,6 +190,31 @@ object KotlinClientRuntimeConfigProperty {
             documentation = """
             Override the default idempotency token generator. SDK clients will generate tokens for members
             that represent idempotent tokens when not explicitly set by the caller using this generator.
+            """.trimIndent()
+        }
+
+        SdkLogMode = ClientConfigProperty {
+            symbol = buildSymbol {
+                name = "SdkLogMode"
+                namespace(KotlinDependency.CORE, "client")
+                defaultValue = "SdkLogMode.Default"
+                nullable = false
+            }
+
+            baseClass = buildSymbol {
+                name = "SdkClientConfig"
+                namespace(KotlinDependency.CORE, "config")
+            }
+
+            documentation = """
+            Configure events that will be logged. By default clients will not output
+            raw requests or responses. Use this setting to opt-in to additional debug logging.
+
+            This can be used to configure logging of requests, responses, retries, etc of SDK clients.
+
+            **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
+            performance considerations when dumping the request/response body. This is primarily a tool for
+            debug purposes.
             """.trimIndent()
         }
     }

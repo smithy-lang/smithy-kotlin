@@ -41,6 +41,7 @@ class ClientConfigGenerator(
      * Attempt to detect and register properties automatically based on the model
      */
     private fun registerDefaultProps() {
+        props.add(KotlinClientRuntimeConfigProperty.SdkLogMode)
         if (ctx.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
             props.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
         }

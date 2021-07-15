@@ -6,15 +6,20 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
+import aws.smithy.kotlin.runtime.client.SdkLogMode
+import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
-import aws.smithy.kotlin.runtime.io.Handler
+import aws.smithy.kotlin.runtime.http.response.dumpResponse
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.MapRequest
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
+import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -104,13 +109,18 @@ private class SerializeHandler<Input, Output> (
     private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder
 ) : Handler<OperationRequest<Input>, Output> {
 
+    companion object {
+        // generics aren't propagated on names anyway, just fill in a placeholder for type parameters
+        private val logger = Logger.getLogger<SerializeHandler<Unit, Unit>>()
+    }
+
     @OptIn(ExperimentalTime::class)
     override suspend fun call(request: OperationRequest<Input>): Output {
         val tv = measureTimedValue {
             mapRequest(request.context, request.subject)
         }
 
-        request.context.logger.trace { "request serialized in ${tv.duration}" }
+        logger.withContext(request.context).trace { "request serialized in ${tv.duration}" }
         return inner.call(SdkHttpRequest(request.context, tv.value))
     }
 }
@@ -132,13 +142,17 @@ private class DeserializeHandler<Output>(
     private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output
 ) : Handler<SdkHttpRequest, Output> {
 
+    companion object {
+        private val logger = Logger.getLogger<DeserializeHandler<Unit>>()
+    }
+
     @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         val call = inner.call(request)
         val tv = measureTimedValue {
             mapResponse(request.context, call.response)
         }
-        request.context.logger.trace { "response deserialized in: ${tv.duration}" }
+        logger.withContext(request.context).trace { "response deserialized in: ${tv.duration}" }
         return tv.value
     }
 }
@@ -146,7 +160,7 @@ private class DeserializeHandler<Output>(
 /**
  * default middleware that handles managing the HTTP call list
  */
-class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
+private class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
     private val callList: MutableList<HttpCall> = mutableListOf()
 
     override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {
@@ -167,8 +181,21 @@ class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  * default middleware that logs requests/responses
  */
 private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
-    request.context.logger.trace { "httpRequest: ${request.subject}" }
-    val call = next.call(request)
-    request.context.logger.trace { "httpResponse: ${call.response}" }
+    val logMode = request.context.sdkLogMode
+    val logger by lazy { request.context.getLogger("httpTraceMiddleware") }
+
+    if (logMode.isEnabled(SdkLogMode.LogRequest) || logMode.isEnabled(SdkLogMode.LogRequestWithBody)) {
+        val formattedReq = dumpRequest(request.subject, logMode.isEnabled(SdkLogMode.LogRequestWithBody))
+        logger.debug { "HttpRequest:\n$formattedReq" }
+    }
+
+    var call = next.call(request)
+
+    if (logMode.isEnabled(SdkLogMode.LogResponse) || logMode.isEnabled(SdkLogMode.LogResponseWithBody)) {
+        val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(SdkLogMode.LogResponseWithBody))
+        call = call.copy(response = resp)
+        logger.debug { "HttpResponse:\n$formattedResp" }
+    }
+
     return call
 }
