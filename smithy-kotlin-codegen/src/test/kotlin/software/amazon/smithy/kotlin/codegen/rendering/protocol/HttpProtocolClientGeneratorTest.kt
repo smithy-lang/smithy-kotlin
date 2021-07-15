@@ -32,32 +32,32 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it imports external symbols`() {
-        commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.model.*")
-        commonTestContents.shouldContainOnlyOnce("import ${TestModelDefault.NAMESPACE}.transform.*")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.SdkHttpClient")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.sdkHttpClient")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.SdkHttpOperation")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.context")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.execute")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
-        commonTestContents.shouldContainOnlyOnce("import ${KotlinDependency.HTTP.namespace}.engine.HttpClientEngineConfig")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${TestModelDefault.NAMESPACE}.model.*")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${TestModelDefault.NAMESPACE}.transform.*")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.SdkHttpClient")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.sdkHttpClient")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.SdkHttpOperation")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.engine.HttpClientEngineConfig")
     }
 
     @Test
     fun `it renders constructor`() {
-        commonTestContents.shouldContainOnlyOnce("internal class DefaultTestClient(private val config: TestClient.Config) : TestClient {")
+        commonTestContents.shouldContainOnlyOnceWithDiff("internal class DefaultTestClient(override val config: TestClient.Config) : TestClient {")
     }
 
     @Test
     fun `it renders properties and init`() {
-        commonTestContents.shouldContainOnlyOnce("val client: SdkHttpClient")
+        commonTestContents.shouldContainOnlyOnceWithDiff("val client: SdkHttpClient")
         val expected = """
     init {
         val httpClientEngine = config.httpClientEngine ?: KtorEngine(HttpClientEngineConfig())
         client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)
     }
 """
-        commonTestContents.shouldContainOnlyOnce(expected)
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -67,7 +67,7 @@ class HttpProtocolClientGeneratorTest {
         client.close()
     }
 """
-        commonTestContents.shouldContainOnlyOnce(expected)
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -252,7 +252,7 @@ class HttpProtocolClientGeneratorTest {
 
     @Test
     fun `it annotates deprecated operation functions`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 override suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse {
