@@ -82,7 +82,7 @@ internal class JsonLexer(
         return JsonToken.Name(name)
     }
 
-    private suspend fun readScalarValue(raw: RawJsonToken) = when (raw) {
+    private suspend fun readScalarValue(raw: RawJsonToken): JsonToken = when (raw) {
         RawJsonToken.String -> JsonToken.String(readQuoted())
         RawJsonToken.Bool, RawJsonToken.Null -> readKeyWord()
         RawJsonToken.Number -> readNumber()
@@ -91,8 +91,10 @@ internal class JsonLexer(
 
     private suspend fun JsonToken.moveToNextElement(): JsonToken {
         data.nextNonWhitespace(peek = true)
-        data.consume(',', optional = true)
-        if (stack.topOrNull() == RawJsonToken.Name) {
+        val top = stack.topOrNull()
+        val expectComma = data.peek() != ']' && top == RawJsonToken.BeginArray
+        data.consume(',', optional = !expectComma)
+        if (top == RawJsonToken.Name) {
             stack.pop()
         }
         return this
@@ -165,10 +167,10 @@ internal class JsonLexer(
     }
 
     private suspend fun CharStream.nextNonWhitespace(peek: Boolean = false): Char? {
-        while (this.peek()?.isWhitespace() == true) {
-            this.next()
+        while (peek()?.isWhitespace() == true) {
+            next()
         }
-        return if (peek) this.peek() else this.next()
+        return if (peek) peek() else next()
     }
 }
 

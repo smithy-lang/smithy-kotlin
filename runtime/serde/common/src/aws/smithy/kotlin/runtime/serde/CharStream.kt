@@ -28,16 +28,9 @@ interface CharStream {
     suspend fun next(): Char?
 
     companion object {
-        operator fun invoke(bytes: ByteArray): CharStream = ByteArrayBackedCharStream(bytes)
+        operator fun invoke(bytes: ByteArray): CharStream = CharStream(SdkByteReadChannel(bytes))
         operator fun invoke(chan: SdkByteReadChannel): CharStream = ReadChannelCharStream(chan)
     }
-}
-
-// FIXME - this is wrong for utf8
-internal class ByteArrayBackedCharStream(private val bytes: ByteArray) : CharStream {
-    private var position = 0
-    override suspend fun peek(): Char? = bytes.getOrNull(position)?.toChar()
-    override suspend fun next(): Char? = bytes.getOrNull(position++)?.toChar()
 }
 
 internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : CharStream {

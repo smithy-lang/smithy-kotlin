@@ -60,9 +60,27 @@ class JsonStreamReaderTest {
     fun itFailsOnNaN(): Unit = runSuspendTest {
         assertFailsWith<IllegalStateException>("Invalid number") {
             // language=JSON
-            val actual = """[NaN]""".allTokens()
+            """[NaN]""".allTokens()
         }
     }
+
+    @Test
+    fun itFailsOnMissingComma(): Unit = runSuspendTest {
+        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','"){
+            """[3[4]]""".allTokens()
+        }
+
+    }
+
+    @Test
+    fun itFailsOnTrailingComma(): Unit = runSuspendTest {
+        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','"){
+            val tokens = """["",]""".allTokens()
+            println(tokens)
+        }
+
+    }
+
 
     @Test
     fun itDeserializesSingleScalarStrings() = runSuspendTest {

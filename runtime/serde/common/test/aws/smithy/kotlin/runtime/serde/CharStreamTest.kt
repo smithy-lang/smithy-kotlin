@@ -67,10 +67,6 @@ abstract class CharStreamTest {
     }
 }
 
-class ByteArrayBackedCharStreamTest : CharStreamTest() {
-    override fun newCharStream(contents: String): CharStream = CharStream(contents.encodeToByteArray())
-}
-
 class ReadChannelCharStreamTest : CharStreamTest() {
     override fun newCharStream(contents: String): CharStream = CharStream(SdkByteReadChannel(contents.encodeToByteArray()))
 }
