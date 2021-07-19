@@ -41,6 +41,7 @@ class HexTest {
     @Test
     fun testFooBar() {
         assertEquals("666f6f626172", encodeHex("foobar".encodeToByteArray()))
+        assertEquals("foobar", decodeHex("666f6f626172").decodeToString())
     }
 
     @Test

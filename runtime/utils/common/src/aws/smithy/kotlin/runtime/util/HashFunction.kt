@@ -10,9 +10,9 @@ package aws.smithy.kotlin.runtime.util
  */
 interface HashFunction {
     /**
-     * Add [chunk] to the digest value
+     * Add [input] to the digest value
      */
-    fun update(chunk: ByteArray)
+    fun update(input: ByteArray)
 
     /**
      * Calculate the digest bytes
