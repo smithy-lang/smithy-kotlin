@@ -14,7 +14,7 @@ object Digest {
     /**
      * Compute the MD5 hash for the specified [input]
      */
-    fun md5(input: ByteArray): ByteArray = hash(MD5(), input)
+    fun md5(input: ByteArray): ByteArray = hash(Md5(), input)
 
     /**
      * Compute the crc32 for the specified [input]

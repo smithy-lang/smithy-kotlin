@@ -29,7 +29,7 @@ public fun decodeHex(s: String): ByteArray {
     var writeIdx = 0
 
     // if the buffer isn't even, prepend 0
-    if (s.length and 0x01 == 1) {
+    if (s.length % 2 == 1) {
         result[writeIdx++] = s[0].digitToInt(16).toByte()
         start = writeIdx
     }

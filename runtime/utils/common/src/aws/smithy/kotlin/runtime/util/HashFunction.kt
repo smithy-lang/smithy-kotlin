@@ -35,4 +35,4 @@ expect class Sha256() : HashFunction
 /**
  * Implementation of RFC1321 MD5 digest
  */
-expect class MD5() : HashFunction
+expect class Md5() : HashFunction

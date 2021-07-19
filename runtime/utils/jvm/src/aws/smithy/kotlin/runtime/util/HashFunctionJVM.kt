@@ -15,7 +15,7 @@ actual class Sha256 : HashFunction {
     override fun reset() = md.reset()
 }
 
-actual class MD5 : HashFunction {
+actual class Md5 : HashFunction {
     private val md = MessageDigest.getInstance("MD5")
     override fun update(input: ByteArray) = md.update(input)
     override fun digest(): ByteArray = md.digest()
