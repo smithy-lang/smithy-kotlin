@@ -15,3 +15,8 @@ expect class Crc32() : HashFunction {
      */
     val value: Long
 }
+
+/**
+ * Compute the CRC32 checksum of the current [ByteArray]
+ */
+fun ByteArray.crc32(): Long = Crc32().also { it.update(this) }.value

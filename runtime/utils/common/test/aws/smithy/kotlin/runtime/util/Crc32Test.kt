@@ -11,6 +11,6 @@ import kotlin.test.assertEquals
 class Crc32Test {
     @Test
     fun testCrc32() {
-        assertEquals(2666930069L, Digest.crc32("foobar".encodeToByteArray()))
+        assertEquals(2666930069L, "foobar".encodeToByteArray().crc32())
     }
 }

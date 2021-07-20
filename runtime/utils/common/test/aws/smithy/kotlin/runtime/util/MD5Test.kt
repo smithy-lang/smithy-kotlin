@@ -26,7 +26,7 @@ class MD5Test {
     @Test
     fun testRfc1321Vectors() {
         for (test in tests) {
-            val actual = Digest.md5(test.first.encodeToByteArray()).encodeToHex()
+            val actual = test.first.encodeToByteArray().md5().encodeToHex()
             assertEquals(test.second, actual)
         }
     }
@@ -60,7 +60,7 @@ class MD5Test {
             0x79, 0x05, 0x40, 0x25, 0x25, 0x5f, 0xb1, 0xa2, 0x6e, 0x4b, 0xc4, 0x22, 0xae, 0xf5, 0x4e, 0xb4
         ).map { it.toByte() }.toByteArray()
 
-        assertContentEquals(expected, Digest.md5(message1))
-        assertContentEquals(expected, Digest.md5(message2))
+        assertContentEquals(expected, message1.md5())
+        assertContentEquals(expected, message2.md5())
     }
 }
