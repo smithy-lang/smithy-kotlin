@@ -161,6 +161,7 @@ internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, l
     return tmp.size
 }
 
+// FIXME - maybe this should be readUtf8CodePoint(): Int and allow consumer to turn that into Char(s). Surrogate pairs will be 4 bytes but 2 chars...
 /**
  * Reads a UTF-8 [Char] from the channel. Returns [null] if closed
  */
