@@ -31,6 +31,7 @@ actual class Crc32 : HashFunction {
     override fun update(input: ByteArray) = md.update(input)
     override fun digest(): ByteArray {
         val x = value
+        reset()
         return byteArrayOf(
             ((x shl 24) and 0xff).toByte(),
             ((x shl 16) and 0xff).toByte(),

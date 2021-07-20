@@ -10,12 +10,13 @@ package aws.smithy.kotlin.runtime.util
  */
 interface HashFunction {
     /**
-     * Add [input] to the digest value
+     * Update the running hash with [input] bytes. This can be called multiple times.
      */
     fun update(input: ByteArray)
 
     /**
-     * Calculate the digest bytes
+     * Finalize the hash computation and return the digest bytes.
+     * The hash function will be [reset] after the call is made.
      */
     fun digest(): ByteArray
 
