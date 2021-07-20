@@ -25,18 +25,18 @@ actual class Md5 : HashFunction {
 actual class Crc32 : HashFunction {
     private val md = CRC32()
 
-    actual val value: Long
-        get() = md.value
+    actual val value: UInt
+        get() = md.value.toUInt()
 
     override fun update(input: ByteArray) = md.update(input)
     override fun digest(): ByteArray {
         val x = value
         reset()
         return byteArrayOf(
-            ((x shl 24) and 0xff).toByte(),
-            ((x shl 16) and 0xff).toByte(),
-            ((x shl 8) and 0xff).toByte(),
-            (x and 0xff).toByte()
+            ((x shl 24) and 0xffu).toByte(),
+            ((x shl 16) and 0xffu).toByte(),
+            ((x shl 8) and 0xffu).toByte(),
+            (x and 0xffu).toByte()
         )
     }
     override fun reset() = md.reset()
