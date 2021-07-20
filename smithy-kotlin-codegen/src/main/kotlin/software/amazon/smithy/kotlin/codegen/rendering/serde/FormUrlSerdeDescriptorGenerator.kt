@@ -9,50 +9,33 @@ import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.model.traits.SyntheticClone
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.XmlFlattenedTrait
-import software.amazon.smithy.model.traits.XmlNameTrait
 
 private typealias SerdeFormUrl = RuntimeTypes.Serde.SerdeFormUrl
 
-class FormUrlSerdeDescriptorGenerator(
+open class FormUrlSerdeDescriptorGenerator(
     ctx: RenderingContext<Shape>,
     memberShapes: List<MemberShape>? = null
 ) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
 
+    protected val service: ServiceShape by lazy { ctx.model.expectShape<ServiceShape>(ctx.settings.service) }
+
+    /**
+     * The serialized name for the main object shape of this generator.
+     */
+    open val objectSerialName: String
+        get() = objectShape.getTrait<SyntheticClone>()?.archetype?.name ?: objectShape.defaultName(service)
+
     override fun getObjectDescriptorTraits(): List<SdkFieldDescriptorTrait> {
-
         val traits = mutableListOf<SdkFieldDescriptorTrait>()
-        val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
-
-        val serialName = when {
-            objectShape.hasTrait<XmlNameTrait>() -> objectShape.expectTrait<XmlNameTrait>().value
-            objectShape.hasTrait<SyntheticClone>() -> objectShape.expectTrait<SyntheticClone>().archetype.name
-            else -> objectShape.defaultName(service)
-        }
-        traits.add(SerdeFormUrl.FormUrlSerialName, serialName.dq())
-
-        val objectShape = requireNotNull(ctx.shape)
-        if (objectShape.hasTrait<OperationInput>()) {
-            // see https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#request-serialization
-
-            // operation inputs are normalized in smithy-kotlin::OperationNormalizer to be "[OperationName]Request"
-            val action = objectShape.id.name.removeSuffix("Request")
-            val version = service.version
-            traits.add(SerdeFormUrl.QueryLiteral, "Action".dq(), action.dq())
-            traits.add(SerdeFormUrl.QueryLiteral, "Version".dq(), version.dq())
-        }
-
+        traits.add(SerdeFormUrl.FormUrlSerialName, objectSerialName.dq())
         return traits
     }
 
-    override fun getFieldDescriptorTraits(
+    final override fun getFieldDescriptorTraits(
         member: MemberShape,
         targetShape: Shape,
         nameSuffix: String
@@ -60,27 +43,28 @@ class FormUrlSerdeDescriptorGenerator(
         val traits = mutableListOf<SdkFieldDescriptorTrait>()
         if (nameSuffix.isNotEmpty()) return traits
 
-        val serialName = member.getTrait<XmlNameTrait>()?.value ?: member.memberName
+        val serialName = getMemberSerialName(member)
         traits.add(SerdeFormUrl.FormUrlSerialName, serialName.dq())
 
-        val flattened = member.getTrait<XmlFlattenedTrait>()?.also {
+        val flattened = isMemberFlattened(member, targetShape)
+        if (flattened) {
             traits.add(SerdeFormUrl.Flattened)
-        } != null
+        }
 
         when (targetShape.type) {
             ShapeType.LIST, ShapeType.SET -> {
                 val collectionMember = (targetShape as CollectionShape).member
-                if (!flattened && collectionMember.hasTrait<XmlNameTrait>()) {
-                    // flattened collections should only need the XmlSerialName trait since there is no <member> element
-                    val memberName = collectionMember.expectTrait<XmlNameTrait>().value
+                val memberName = getMemberSerialName(collectionMember)
+                if (!flattened && memberName != collectionMember.memberName) {
+                    // flattened collections should only need the name trait since there is no <member> element
                     traits.add(SerdeFormUrl.FormUrlCollectionName, memberName.dq())
                 }
             }
             ShapeType.MAP -> {
                 val mapMember = targetShape as MapShape
 
-                val customKeyName = mapMember.key.getTrait<XmlNameTrait>()?.value
-                val customValueName = mapMember.value.getTrait<XmlNameTrait>()?.value
+                val customKeyName = getMemberSerialNameOverride(mapMember.key)
+                val customValueName = getMemberSerialNameOverride(mapMember.value)
 
                 val mapTraitArgs = when {
                     customKeyName != null && customValueName != null -> listOf("key = ${customKeyName.dq()}", "value = ${customValueName.dq()}")
@@ -97,4 +81,19 @@ class FormUrlSerdeDescriptorGenerator(
 
         return traits
     }
+
+    private fun getMemberSerialName(member: MemberShape): String =
+        getMemberSerialNameOverride(member) ?: member.memberName
+
+    /**
+     * Gets any applicable name override for a [MemberShape]. Implementing protocols can check specific traits or other
+     * conditions to determine whether an override is in effect. By default, there is no override.
+     */
+    open fun getMemberSerialNameOverride(member: MemberShape): String? = null
+
+    /**
+     * Determines whether a [MemberShape] should be flattened. Implementing protocols can check specific traits or other
+     * conditions to determinw whether flattening should occur. By default, members are not flattened.
+     */
+    open fun isMemberFlattened(member: MemberShape, targetShape: Shape): Boolean = false
 }
