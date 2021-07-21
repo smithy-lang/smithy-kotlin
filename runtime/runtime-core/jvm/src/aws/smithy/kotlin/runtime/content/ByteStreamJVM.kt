@@ -41,7 +41,8 @@ suspend fun ByteStream.writeToFile(file: File): Long {
     val writer = file.writeChannel()
     val src = when (this) {
         is ByteStream.Buffer -> SdkByteReadChannel(bytes())
-        is ByteStream.Reader -> readFrom()
+        is ByteStream.OneShotStream -> readFrom()
+        is ByteStream.ReplayableStream -> newReader()
     }
 
     try {

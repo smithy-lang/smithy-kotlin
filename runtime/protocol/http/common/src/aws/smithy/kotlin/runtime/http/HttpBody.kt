@@ -42,15 +42,24 @@ sealed class HttpBody {
      */
     abstract class Streaming : HttpBody() {
         /**
-         * Provides [SdkByteReadChannel] for the content
+         * Provides [SdkByteReadChannel] for the content. Implementations MUST provide the same channel
+         * every time [readFrom] is invoked until a call to [reset]. Replayable streams that support reset
+         * MUST provide fresh channels after [reset] is invoked.
          */
         abstract fun readFrom(): SdkByteReadChannel
 
         /**
-         * Flag indicating that [readFrom] is an idempotent operation and that the channel to read from can be
-         * created multiple times. A stream that is non-idempotent can only be consumed once.
+         * Flag indicating the stream can be consumed multiple times. If `false` [reset] will throw an
+         * [UnsupportedOperationException].
          */
-        open val isIdempotent: Boolean = false
+        open val isReplayable: Boolean = false
+
+        /**
+         * Reset the stream such that the next call to [readFrom] provides a fresh channel.
+         * @throws UnsupportedOperationException if the stream can only be consumed once. Consumers can check
+         * [isReplayable] before calling
+         */
+        open fun reset() { throw UnsupportedOperationException("${this::class.qualifiedName} can only be consumed once") }
     }
 }
 
@@ -62,10 +71,19 @@ fun ByteStream.toHttpBody(): HttpBody = when (val bytestream = this) {
         override val contentLength: Long? = bytestream.contentLength
         override fun bytes(): ByteArray = bytestream.bytes()
     }
-    is ByteStream.Reader -> object : HttpBody.Streaming() {
+    is ByteStream.OneShotStream -> object : HttpBody.Streaming() {
         override val contentLength: Long? = bytestream.contentLength
         override fun readFrom(): SdkByteReadChannel = bytestream.readFrom()
-        override val isIdempotent: Boolean = bytestream.isIdempotent
+    }
+    is ByteStream.ReplayableStream -> object : HttpBody.Streaming() {
+        private var chan: SdkByteReadChannel? = null
+        override val contentLength: Long? = bytestream.contentLength
+        override fun readFrom(): SdkByteReadChannel = chan ?: bytestream.newReader()
+        override val isReplayable: Boolean = true
+        override fun reset() {
+            chan?.close()
+            chan = null
+        }
     }
 }
 
@@ -98,7 +116,7 @@ fun HttpBody.toByteStream(): ByteStream? = when (val body = this) {
         override val contentLength: Long? = body.contentLength
         override fun bytes(): ByteArray = body.bytes()
     }
-    is HttpBody.Streaming -> object : ByteStream.Reader() {
+    is HttpBody.Streaming -> object : ByteStream.OneShotStream() {
         override val contentLength: Long? = body.contentLength
         override fun readFrom(): SdkByteReadChannel = body.readFrom()
     }

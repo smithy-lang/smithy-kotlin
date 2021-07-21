@@ -28,29 +28,26 @@ sealed class ByteStream {
     }
 
     /**
-     * Variant of an [ByteStream] with a streaming payload. Content is read from the given source
+     * Variant of a [ByteStream] with a streaming payload that can only be consumed once.
      */
-    abstract class Reader : ByteStream() {
+    abstract class OneShotStream : ByteStream() {
         /**
-         * Provides [SdkByteReadChannel] to read from/consume. Implementations that are idempotent *MUST* provide
-         * a fresh read channel reset to the original state on each invocation of [readFrom]. Consumers are allowed
-         * to close the stream and ask for a new one when it is marked as idempotent. Non-idempotent implementations
-         * should return the same channel if invoked multiple times.
+         * Provides [SdkByteReadChannel] to read from/consume. This function MUST be idempotent, implementations must
+         * return the same channel every time (or a channel in the equivalent state).
          */
         abstract fun readFrom(): SdkByteReadChannel
+    }
 
+    /**
+     * Variant of an [ByteStream] with a streaming payload that can be consumed multiple times.
+     */
+    abstract class ReplayableStream : ByteStream() {
         /**
-         * Flag indicating that [readFrom] is an idempotent operation and that the channel to read from can be
-         * created multiple times. A stream that is non-idempotent can only be consumed once.
-         *
-         * As an example, implementations backed by files or in-memory buffers should be idempotent.
-         * A stream that is produced dynamically where the original data cannot be re-constructed can only be read
-         * from once and are considered non-idempotent.
-         *
-         * Idempotency is an important aspect for operations that require (e.g.) calculating checksums on the data
-         * provided.
+         * Provides [SdkByteReadChannel] to read from/consume. Implementations MUST provide a fresh read channel
+         * reset to the original state on each invocation of [newReader]. Consumers are allowed
+         * to close the stream and ask for a new one.
          */
-        open val isIdempotent: Boolean = false
+        abstract fun newReader(): SdkByteReadChannel
     }
 
     companion object {
@@ -66,6 +63,16 @@ sealed class ByteStream {
     }
 }
 
+private suspend fun consumeStream(chan: SdkByteReadChannel): ByteArray {
+    val bytes = chan.readRemaining()
+    // readRemaining will read up to `limit` bytes (which is defaulted to Int.MAX_VALUE) or until
+    // the stream is closed and no more bytes remain.
+    // This is usually sufficient to consume the stream but technically that's not what it's doing.
+    // Save us a painful debug session later in the very rare chance this were to occur...
+    check(chan.isClosedForRead) { "failed to read all bytes from ByteStream, more data still expected" }
+    return bytes
+}
+
 /**
  * Consume the [ByteStream] and pull the entire contents into memory as a [ByteArray].
  * Only do this if you are sure the contents fit in-memory as this will read the entire contents
@@ -73,16 +80,8 @@ sealed class ByteStream {
  */
 suspend fun ByteStream.toByteArray(): ByteArray = when (val stream = this) {
     is ByteStream.Buffer -> stream.bytes()
-    is ByteStream.Reader -> {
-        val chan = stream.readFrom()
-        val bytes = chan.readRemaining()
-        // readRemaining will read up to `limit` bytes (which is defaulted to Int.MAX_VALUE) or until
-        // the stream is closed and no more bytes remain.
-        // This is usually sufficient to consume the stream but technically that's not what it's doing.
-        // Save us a painful debug session later in the very rare chance this were to occur...
-        check(chan.isClosedForRead) { "failed to read all bytes from ByteStream.Reader, more data still expected" }
-        bytes
-    }
+    is ByteStream.OneShotStream -> consumeStream(stream.readFrom())
+    is ByteStream.ReplayableStream -> consumeStream(stream.newReader())
 }
 
 suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
@@ -90,6 +89,7 @@ suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
 fun ByteStream.cancel() {
     when (val stream = this) {
         is ByteStream.Buffer -> stream.bytes()
-        is ByteStream.Reader -> stream.readFrom().cancel(null)
+        is ByteStream.OneShotStream -> stream.readFrom().cancel(null)
+        is ByteStream.ReplayableStream -> stream.newReader().cancel(null)
     }
 }
