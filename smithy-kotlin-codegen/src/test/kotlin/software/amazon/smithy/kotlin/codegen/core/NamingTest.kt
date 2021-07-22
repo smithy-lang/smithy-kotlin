@@ -21,11 +21,18 @@ class NamingTest {
         assertEquals("ApiGateway", "API Gateway".clientName())
         assertEquals("Lambda", "Lambda".clientName())
         assertEquals("ElastiCache", "ElastiCache".clientName())
-        assertEquals("ApiGatewayManagementApi", "ApiGatewayManagementApi".clientName())
+        assertEquals("ApiGatewayManagement", "ApiGatewayManagementApi".clientName())
         assertEquals("MigrationHubConfig", "MigrationHub Config".clientName())
         assertEquals("IoTFleetHub", "IoTFleetHub".clientName())
         assertEquals("Iot1ClickProjects", "IoT 1Click Projects".clientName())
         assertEquals("DynamoDb", "DynamoDB".clientName())
+
+        // sdkId sanitization rules
+        assertEquals("Directory", "Directory Service".clientName())
+        assertEquals("Foo", "FooClient".clientName())
+        assertEquals("Foo", "Fooservice".clientName())
+        assertEquals("Foo", "FooApI".clientName())
+        assertEquals("FooApiBar", "FooApiBar".clientName())
     }
 
     @Test

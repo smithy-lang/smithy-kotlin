@@ -34,13 +34,17 @@ fun MemberShape.defaultName(): String = memberName.toCamelCase()
  */
 fun OperationShape.defaultName(): String = id.name.toCamelCase()
 
+// https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#sdkid
+private fun String.sanitizeClientName(): String =
+    replace(Regex("(API|Client|Service)\$", setOf(RegexOption.IGNORE_CASE)), "")
+
 /**
  * Get the generated SDK service client name to use. The target should be a string that represents the `sdkId`
  * of the service.
  *
  * See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
  */
-fun String.clientName(): String = toPascalCase()
+fun String.clientName(): String = sanitizeClientName().toPascalCase()
 
 /**
  * Get the (un-validated) name of an enum variant from the trait definition
