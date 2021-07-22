@@ -49,7 +49,7 @@ class HttpRequestBuilderTest {
 
             // test streaming bodies get replaced
             val chan = SdkByteReadChannel(content.encodeToByteArray())
-            val stream = object : ByteStream.Reader() {
+            val stream = object : ByteStream.OneShotStream() {
                 override val contentLength: Long = content.length.toLong()
                 override fun readFrom(): SdkByteReadChannel = chan
             }
