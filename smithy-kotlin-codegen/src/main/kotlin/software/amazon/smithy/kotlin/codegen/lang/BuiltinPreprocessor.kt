@@ -73,6 +73,6 @@ class BuiltinPreprocessor : KotlinIntegration {
 }
 
 private fun prefixWithService(sdkId: String, id: ShapeId): ShapeId {
-    val prefixed = "${sdkId.clientName()}${id.name}"
+    val prefixed = "${clientName(sdkId)}${id.name}"
     return ShapeId.fromParts(id.namespace, prefixed)
 }
