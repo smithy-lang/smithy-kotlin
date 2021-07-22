@@ -78,7 +78,7 @@ fun ByteStream.toHttpBody(): HttpBody = when (val bytestream = this) {
     is ByteStream.ReplayableStream -> object : HttpBody.Streaming() {
         private var chan: SdkByteReadChannel? = null
         override val contentLength: Long? = bytestream.contentLength
-        override fun readFrom(): SdkByteReadChannel = chan ?: bytestream.newReader()
+        override fun readFrom(): SdkByteReadChannel = chan ?: bytestream.newReader().also { chan = it }
         override val isReplayable: Boolean = true
         override fun reset() {
             chan?.close()
