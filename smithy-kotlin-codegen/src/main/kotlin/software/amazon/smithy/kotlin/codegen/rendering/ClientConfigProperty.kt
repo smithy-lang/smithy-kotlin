@@ -57,6 +57,10 @@ class ClientConfigProperty private constructor(builder: Builder) {
      */
     val baseClass: Symbol? = builder.baseClass
 
+    //FIXME - docs
+    val defaultValue: String? = builder.defaultValue
+
+    val constantValue: String? = builder.constantValue
     /**
      * Flag indicating if this property stems from some base class and needs an override modifier when rendered
      */
@@ -127,7 +131,14 @@ class ClientConfigProperty private constructor(builder: Builder) {
 
         var baseClass: Symbol? = null
 
-        fun build(): ClientConfigProperty = ClientConfigProperty(this)
+        var defaultValue: String? = null
+
+        var constantValue: String? = null
+
+        fun build(): ClientConfigProperty {
+            check(!(defaultValue != null && constantValue != null)) { "Cannot provide both default and constant values." }
+            return ClientConfigProperty(this)
+        }
     }
 }
 

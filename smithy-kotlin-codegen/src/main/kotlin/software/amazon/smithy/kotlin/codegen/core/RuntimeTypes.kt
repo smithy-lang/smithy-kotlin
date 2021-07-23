@@ -23,6 +23,8 @@ object RuntimeTypes {
         val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.HTTP)
         val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.HTTP, "content")
         val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
+        val QueryParameters = runtimeSymbol("QueryParameters", KotlinDependency.HTTP)
+        val QueryParametersBuilder = runtimeSymbol("QueryParametersBuilder", KotlinDependency.HTTP)
         val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
         val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)

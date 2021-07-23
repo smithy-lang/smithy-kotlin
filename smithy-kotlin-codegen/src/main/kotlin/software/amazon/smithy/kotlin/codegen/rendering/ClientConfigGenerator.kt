@@ -5,7 +5,9 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
+import software.amazon.smithy.kotlin.codegen.core.callIf
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -21,6 +23,7 @@ import software.amazon.smithy.model.shapes.ServiceShape
 class ClientConfigGenerator(
     private val ctx: RenderingContext<ServiceShape>,
     detectDefaultProps: Boolean = true,
+    private val builderReturnType: Symbol? = null,
     vararg properties: ClientConfigProperty
 ) {
 
@@ -52,7 +55,9 @@ class ClientConfigGenerator(
 
     fun render() {
         // push context to be used throughout generation of the class
-        ctx.writer.putContext("configClass.name", "Config")
+        if (ctx.writer.getContext("configClass.name") == null) {
+            ctx.writer.putContext("configClass.name", "Config")
+        }
 
         addPropertyImports()
 
@@ -64,12 +69,25 @@ class ClientConfigGenerator(
         val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
         ctx.writer.openBlock("class #configClass.name:L private constructor(builder: BuilderImpl)$formattedBaseClasses {")
             .call { renderImmutableProperties() }
+            .call { renderCompanionObject() }
             .call { renderJavaBuilderInterface() }
             .call { renderDslBuilderInterface() }
             .call { renderBuilderImpl() }
             .closeBlock("}")
 
         ctx.writer.removeContext("configClass.name")
+    }
+
+    // make this work tomorrow
+    private fun renderCompanionObject() {
+        if (builderReturnType != null) {
+            ctx.writer.withBlock("companion object {", "}") {
+                write("@JvmStatic")
+                write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
+                write("fun builder(): DslBuilder = BuilderImpl()")
+                write("operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()", builderReturnType)
+            }
+        }
     }
 
     /**
@@ -87,14 +105,27 @@ class ClientConfigGenerator(
     private fun renderImmutableProperties() {
         props.forEach { prop ->
             val override = if (prop.requiresOverride) "override " else ""
-            ctx.writer.write("${override}val #1L: #2P = builder.#1L", prop.propertyName, prop.symbol)
+
+            when {
+                prop.defaultValue != null -> {
+                    ctx.writer.write("${override}val #1L: #2T = builder.#1L ?: #3L", prop.propertyName, prop.symbol, prop.defaultValue)
+                }
+                prop.constantValue != null -> {
+                    ctx.writer.write("${override}val #1L: #2T = #3L", prop.propertyName, prop.symbol, prop.constantValue)
+                }
+                else -> {
+                    ctx.writer.write("${override}val #1L: #2P = builder.#1L", prop.propertyName, prop.symbol)
+                }
+            }
         }
     }
 
     private fun renderJavaBuilderInterface() {
         ctx.writer.write("")
             .withBlock("interface FluentBuilder {", "}") {
-                props.forEach { prop ->
+                props
+                    .filter { it.constantValue == null }
+                    .forEach { prop ->
                     // we want the type names sans nullability (?) for arguments
                     write("fun #1L(#1L: #2L): FluentBuilder", prop.propertyName, prop.symbol.name)
                 }
@@ -105,7 +136,9 @@ class ClientConfigGenerator(
     private fun renderDslBuilderInterface() {
         ctx.writer.write("")
             .withBlock("interface DslBuilder {", "}") {
-                props.forEach { prop ->
+                props
+                    .filter { it.constantValue == null }
+                    .forEach { prop ->
                     prop.documentation?.let { ctx.writer.dokka(it) }
                     write("var #L: #P", prop.propertyName, prop.symbol)
                     write("")
@@ -119,14 +152,18 @@ class ClientConfigGenerator(
         ctx.writer.write("")
             .withBlock("internal class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
                 // override DSL properties
-                props.forEach { prop ->
+                props
+                    .filter { it.constantValue == null }
+                    .forEach { prop ->
                     write("override var #L: #D", prop.propertyName, prop.symbol)
                 }
                 write("")
 
                 write("")
                 write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
-                props.forEach { prop ->
+                props
+                    .filter { it.constantValue == null }
+                    .forEach { prop ->
                     // we want the type names sans nullability (?) for arguments
                     write("override fun #1L(#1L: #2L): FluentBuilder = apply { this.#1L = #1L }", prop.propertyName, prop.symbol.name)
                 }
