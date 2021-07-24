@@ -33,7 +33,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
      * e.g.
      * ```
      * val symbol = Symbol.builder()
-     *    .boxed() // mark the symbol as nullable
+     *    .nullable = true // mark the symbol as nullable
      *    .defaultValue("foo") // set the default value for the property
      *    .build()
      * ```
@@ -57,9 +57,14 @@ class ClientConfigProperty private constructor(builder: Builder) {
      */
     val baseClass: Symbol? = builder.baseClass
 
-    //FIXME - docs
-    val defaultValue: String? = builder.defaultValue
+    /**
+     * If the property is not provided in the builder then a ClientException is thrown
+     */
+    val required: Boolean = builder.required
 
+    /**
+     * Specifies that the value should be populated with a constant value that cannot be overridden in the builder.
+     */
     val constantValue: String? = builder.constantValue
     /**
      * Flag indicating if this property stems from some base class and needs an override modifier when rendered
@@ -131,14 +136,10 @@ class ClientConfigProperty private constructor(builder: Builder) {
 
         var baseClass: Symbol? = null
 
-        var defaultValue: String? = null
-
+        var required: Boolean = false
         var constantValue: String? = null
 
-        fun build(): ClientConfigProperty {
-            check(!(defaultValue != null && constantValue != null)) { "Cannot provide both default and constant values." }
-            return ClientConfigProperty(this)
-        }
+        fun build(): ClientConfigProperty = ClientConfigProperty(this)
     }
 }
 
