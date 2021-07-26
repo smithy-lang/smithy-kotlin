@@ -41,6 +41,16 @@ inline fun <reified T : Shape> Model.expectShape(shapeId: String): T =
     this.expectShape(ShapeId.from(shapeId), T::class.java)
 
 /**
+ * Returns this shape's ID name with the suffix changed (if applicable). For example, given a shape with the name
+ * "OperationResponse", the call `changeNameSuffix("Response" to "Result")` will return "OperationResult". Note that if
+ * the given "from" is not the existing suffix then this method merely appends the "to" suffix.
+ */
+fun Shape.changeNameSuffix(fromTo: Pair<String, String>): String {
+    val unsuffixed = id.name.removeSuffix(fromTo.first)
+    return "$unsuffixed${fromTo.second}"
+}
+
+/**
  * If is member shape returns target, otherwise returns self.
  * @param model for loading the target shape
  */
