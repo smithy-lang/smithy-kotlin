@@ -6,7 +6,9 @@
 package aws.smithy.kotlin.runtime.serde
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readUtf8Char
+import aws.smithy.kotlin.runtime.io.readUtf8CodePoint
+import aws.smithy.kotlin.runtime.util.text.codePointToChars
+import aws.smithy.kotlin.runtime.util.text.isSupplementaryCodePoint
 
 /**
  * A stream of data that returns characters one [Char] at a time
@@ -34,13 +36,26 @@ interface CharStream {
 }
 
 internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : CharStream {
-    private var peeked: Char? = null
-    override suspend fun peek(): Char? = peeked ?: chan.readUtf8Char().also { peeked = it }
+    private var peeked = mutableListOf<Char>()
+    override suspend fun peek(): Char? {
+        if (peeked.isEmpty()) {
+            val code = chan.readUtf8CodePoint() ?: return null
+            when {
+                Char.isSupplementaryCodePoint(code) -> {
+                    val chars = Char.codePointToChars(code)
+                    chars.forEach(peeked::add)
+                }
+                else -> peeked.add(code.toChar())
+            }
+        }
+        return peeked.lastOrNull()
+    }
 
     override suspend fun next(): Char? {
-        val chr = peeked ?: chan.readUtf8Char()
-        peeked = null
-        return chr
+        if (peeked.isEmpty()) {
+            peek()
+        }
+        return peeked.removeLastOrNull()
     }
 }
 
