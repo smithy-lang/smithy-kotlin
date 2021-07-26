@@ -18,14 +18,22 @@ class NamingTest {
     @Test
     fun `it produces the correct string transformation for client names`() {
         // See https://awslabs.github.io/smithy/1.0/spec/aws/aws-core.html#using-sdk-service-id-for-client-naming
-        assertEquals("ApiGateway", "API Gateway".clientName())
-        assertEquals("Lambda", "Lambda".clientName())
-        assertEquals("ElastiCache", "ElastiCache".clientName())
-        assertEquals("ApiGatewayManagementApi", "ApiGatewayManagementApi".clientName())
-        assertEquals("MigrationHubConfig", "MigrationHub Config".clientName())
-        assertEquals("IoTFleetHub", "IoTFleetHub".clientName())
-        assertEquals("Iot1ClickProjects", "IoT 1Click Projects".clientName())
-        assertEquals("DynamoDb", "DynamoDB".clientName())
+        assertEquals("ApiGateway", clientName("API Gateway"))
+        assertEquals("Lambda", clientName("Lambda"))
+        assertEquals("ElastiCache", clientName("ElastiCache"))
+        assertEquals("ApiGatewayManagement", clientName("ApiGatewayManagementApi"))
+        assertEquals("MigrationHubConfig", clientName("MigrationHub Config"))
+        assertEquals("IoTFleetHub", clientName("IoTFleetHub"))
+        assertEquals("Iot1ClickProjects", clientName("IoT 1Click Projects"))
+        assertEquals("DynamoDb", clientName("DynamoDB"))
+
+        // sdkId sanitization rules
+        assertEquals("Directory", clientName("Directory Service"))
+        assertEquals("Foo", clientName("FooClient"))
+        assertEquals("Foo", clientName("Fooservice"))
+        assertEquals("Foo", clientName("Foo Service"))
+        assertEquals("Foo", clientName("FooApI"))
+        assertEquals("FooApiBar", clientName("FooApiBar"))
     }
 
     @Test
