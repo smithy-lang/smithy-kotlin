@@ -16,6 +16,7 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
+import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -27,7 +28,12 @@ abstract class HttpProtocolClientGenerator(
 ) {
 
     object OperationDeserializerBinding : SectionId {
-        const val Operation = "Operation" // Context for operation being codegened at the time of section invocation
+        // Context for operation being codegened at the time of section invocation
+        const val Operation = "Operation"
+    }
+
+    object OperationMiddlewareBinding : SectionId {
+        const val Operation = "Operation"
     }
 
     /**
@@ -120,8 +126,10 @@ abstract class HttpProtocolClientGenerator(
         val outputShape = opIndex.getOutput(op)
         val httpTrait = httpBindingResolver.httpTrait(op)
 
-        val inputSymbolName = inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
-        val outputSymbolName = outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
+        val inputSymbolName =
+            inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
+        val outputSymbolName =
+            outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
 
         writer.openBlock(
             "val op = SdkHttpOperation.build<#L, #L> {", "}",
@@ -137,7 +145,11 @@ abstract class HttpProtocolClientGenerator(
                 writer.addImport(RuntimeTypes.Http.Request.HttpRequestBuilder)
                 writer.addImport(RuntimeTypes.Core.ExecutionContext)
                 writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
-                    writer.openBlock("override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {", "}", KotlinTypes.Unit) {
+                    writer.openBlock(
+                        "override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {",
+                        "}",
+                        KotlinTypes.Unit
+                    ) {
                         writer.write("val builder = HttpRequestBuilder()")
                         writer.write("builder.method = HttpMethod.#L", httpTrait.method.uppercase())
                         // NOTE: since there is no input the URI can only be a literal (no labels to fill)
@@ -168,7 +180,8 @@ abstract class HttpProtocolClientGenerator(
                         if (segment.isLabel) {
                             // hostLabel can only target string shapes
                             // see: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#hostlabel-trait
-                            val member = inputShape.get().members().first { member -> member.memberName == segment.content }
+                            val member =
+                                inputShape.get().members().first { member -> member.memberName == segment.content }
                             "\${input.${member.defaultName()}}"
                         } else {
                             segment.content
@@ -180,6 +193,14 @@ abstract class HttpProtocolClientGenerator(
         }
 
         writer.write("registerDefaultMiddleware(op)")
+
+        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+            writer.addImport(RuntimeTypes.Http.Md5ChecksumMiddleware)
+            writer.write("op.install(#T)", RuntimeTypes.Http.Md5ChecksumMiddleware)
+        }
+
+        // allow integrations to register operation specific middleware
+        writer.declareSection(OperationMiddlewareBinding, mapOf(OperationMiddlewareBinding.Operation to op))
     }
 
     /**
