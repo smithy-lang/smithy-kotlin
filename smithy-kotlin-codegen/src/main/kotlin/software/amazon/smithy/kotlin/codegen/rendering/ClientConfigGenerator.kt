@@ -78,7 +78,6 @@ class ClientConfigGenerator(
         ctx.writer.removeContext("configClass.name")
     }
 
-    // make this work tomorrow
     private fun renderCompanionObject() {
         if (builderReturnType != null) {
             ctx.writer.withBlock("companion object {", "}") {
