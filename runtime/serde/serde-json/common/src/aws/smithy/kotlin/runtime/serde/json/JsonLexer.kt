@@ -84,7 +84,7 @@ internal class JsonLexer(
 
     private suspend fun readScalarValue(raw: RawJsonToken): JsonToken = when (raw) {
         RawJsonToken.String -> JsonToken.String(readQuoted())
-        RawJsonToken.Bool, RawJsonToken.Null -> readKeyWord()
+        RawJsonToken.Bool, RawJsonToken.Null -> readKeyword()
         RawJsonToken.Number -> readNumber()
         else -> throw IllegalStateException("Unhandled token $raw")
     }
@@ -132,8 +132,10 @@ internal class JsonLexer(
         }
     }
 
+    // reads a quoted JSON string out of the stream
     private suspend fun readQuoted(): String {
         data.consume('"')
+        // read bytes until a non-escaped end-quote
         val value = data.readUntil { it == '"' }
         data.consume('"')
         return value
@@ -154,14 +156,14 @@ internal class JsonLexer(
         return closeToken
     }
 
-    private suspend fun readKeyWord(): JsonToken = when (val ch = data.peekOrThrow()) {
-        't' -> readKeyWord("true", JsonToken.Bool(true))
-        'f' -> readKeyWord("false", JsonToken.Bool(false))
-        'n' -> readKeyWord("null", JsonToken.Null)
+    private suspend fun readKeyword(): JsonToken = when (val ch = data.peekOrThrow()) {
+        't' -> readLiteral("true", JsonToken.Bool(true))
+        'f' -> readLiteral("false", JsonToken.Bool(false))
+        'n' -> readLiteral("null", JsonToken.Null)
         else -> throw IllegalStateException("Unable to handle keyword starting with '$ch'")
     }
 
-    private suspend fun readKeyWord(expectedString: String, token: JsonToken): JsonToken {
+    private suspend fun readLiteral(expectedString: String, token: JsonToken): JsonToken {
         data.consume(expectedString)
         return token
     }
