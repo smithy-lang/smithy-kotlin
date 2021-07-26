@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.serde.consume
 import aws.smithy.kotlin.runtime.serde.nextOrThrow
 import aws.smithy.kotlin.runtime.serde.peekOrThrow
-import aws.smithy.kotlin.runtime.serde.readUntil
 
 private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
@@ -136,7 +135,32 @@ internal class JsonLexer(
     private suspend fun readQuoted(): String {
         data.consume('"')
         // read bytes until a non-escaped end-quote
-        val value = data.readUntil { it == '"' }
+        val value = buildString {
+            var chr = data.peekOrThrow()
+            while (chr != '"') {
+                // handle escapes
+                when (chr) {
+                    '\\' -> {
+                        // consume escape backslash
+                        data.nextOrThrow()
+                        when (val byte = data.nextOrThrow()) {
+                            '\\' -> append('\\')
+                            '/' -> append('/')
+                            '"' -> append('"')
+                            'b' -> append('\b')
+                            'f' -> append("\u000C")
+                            'r' -> append('\r')
+                            'n' -> append('\n')
+                            't' -> append('\t')
+                            else -> throw IllegalStateException("invalid escape character: $byte")
+                        }
+                    }
+                    else -> append(data.nextOrThrow())
+                }
+
+                chr = data.peekOrThrow()
+            }
+        }
         data.consume('"')
         return value
     }

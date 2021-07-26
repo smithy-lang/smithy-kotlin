@@ -66,21 +66,18 @@ class JsonStreamReaderTest {
 
     @Test
     fun itFailsOnMissingComma(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','"){
+        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','") {
             """[3[4]]""".allTokens()
         }
-
     }
 
     @Test
     fun itFailsOnTrailingComma(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','"){
+        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','") {
             val tokens = """["",]""".allTokens()
             println(tokens)
         }
-
     }
-
 
     @Test
     fun itDeserializesSingleScalarStrings() = runSuspendTest {
@@ -264,6 +261,37 @@ class JsonStreamReaderTest {
             JsonToken.EndObject,
             JsonToken.EndDocument
         )
+    }
+
+    @Test
+    fun itHandlesEscapes() = runSuspendTest {
+        val tests = listOf(
+            """\"quote""" to "\"quote",
+            """\/forward-slash""" to "/forward-slash",
+            """\\back-slash""" to "\\back-slash",
+            """\bbackspace""" to "\bbackspace",
+            """\fformfeed""" to "\u000cformfeed",
+            """\nlinefeed""" to "\nlinefeed",
+            """\rcarriage-return""" to "\rcarriage-return",
+            """\ttab""" to "\ttab",
+            // Unicode
+        )
+
+        tests.forEach {
+            val actual = """
+                {
+                    "foo": "${it.first}"
+                }
+            """.trimIndent().allTokens()
+
+            actual.shouldContainExactly(
+                JsonToken.BeginObject,
+                JsonToken.Name("foo"),
+                JsonToken.String(it.second),
+                JsonToken.EndObject,
+                JsonToken.EndDocument
+            )
+        }
     }
 }
 
