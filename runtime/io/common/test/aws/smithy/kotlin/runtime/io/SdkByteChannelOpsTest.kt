@@ -135,28 +135,32 @@ class SdkByteChannelOpsTest {
     @Test
     fun testReadUtf8Chars() = runSuspendTest {
         val chan = SdkByteReadChannel("hello".encodeToByteArray())
-        assertEquals('h', chan.readUtf8Char())
-        assertEquals('e', chan.readUtf8Char())
-        assertEquals('l', chan.readUtf8Char())
-        assertEquals('l', chan.readUtf8Char())
-        assertEquals('o', chan.readUtf8Char())
-        assertNull(chan.readUtf8Char())
+        assertEquals('h', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('e', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('l', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('l', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('o', chan.readUtf8CodePoint()?.toChar())
+        assertNull(chan.readUtf8CodePoint())
     }
 
     @Test
     fun testReadMultibyteUtf8Chars(): Unit = runSuspendTest {
-        // $ - 1 byte, cent sign - 2bytes, euro sign - 3 bytes, 4 points
-//        val content = "$¢€\uD834\uDD22"
-        val content = "$¢€"
-        // code point count = 1, char count = 2 (surrogate pair)
-//        val content = "\uD834\uDD22"
         // https://www.fileformat.info/info/unicode/char/1d122/index.htm
-        // see https://en.wikipedia.org/wiki/UTF-16
+        // $ - 1 byte, cent sign - 2bytes, euro sign - 3 bytes, musical clef - 4 points (surrogate pair)
+        val content = "$¢€\uD834\uDD22"
         val chan = SdkByteReadChannel(content.encodeToByteArray())
-        for (c in content) {
-            assertEquals(c, chan.readUtf8Char())
+
+        val expected = listOf(
+            36, // $
+            162, // ¢
+            8364, // €
+            119074 // musical F clef
+        )
+
+        expected.forEachIndexed { i, exp ->
+            val code = chan.readUtf8CodePoint()
+            assertEquals(exp, code, "[i=$i] expected $exp, found $code ")
         }
-        assertNull(chan.readUtf8Char())
-        fail("does not handle surrogate pairs")
+        assertNull(chan.readUtf8CodePoint())
     }
 }

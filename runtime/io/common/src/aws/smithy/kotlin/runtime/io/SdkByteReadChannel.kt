@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.text.byteCountUtf8
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 
@@ -161,26 +162,26 @@ internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, l
     return tmp.size
 }
 
-// FIXME - maybe this should be readUtf8CodePoint(): Int and allow consumer to turn that into Char(s). Surrogate pairs will be 4 bytes but 2 chars...
 /**
- * Reads a UTF-8 [Char] from the channel. Returns [null] if closed
+ * Reads a UTF-8 code point from the channel. Returns `null` if closed
  */
-suspend fun SdkByteReadChannel.readUtf8Char(): Char? {
+suspend fun SdkByteReadChannel.readUtf8CodePoint(): Int? {
     awaitContent()
     if (availableForRead == 0 && isClosedForRead) return null
 
     val firstByte = readByte()
-    val cnt = firstByte.utf8Count()
+    val cnt = byteCountUtf8(firstByte)
     var code = when (cnt) {
         1 -> firstByte.toInt()
         2 -> firstByte.toInt() and 0x1f
         3 -> firstByte.toInt() and 0x0f
-        else -> firstByte.toInt() and 0x07
+        4 -> firstByte.toInt() and 0x07
+        else -> throw IllegalStateException("Invalid UTF-8 start sequence: $firstByte")
     }
 
     for (i in 1 until cnt) {
         awaitContent()
-        if (availableForRead == 0 && isClosedForRead) return null
+        if (availableForRead == 0 && isClosedForRead) throw IllegalStateException("unexpected EOF: expected ${cnt - i} bytes")
         val byte = readByte()
         val bint = byte.toInt()
         if (bint and 0xc0 != 0x80) throw IllegalStateException("invalid UTF-8 successor byte: $byte")
@@ -188,17 +189,5 @@ suspend fun SdkByteReadChannel.readUtf8Char(): Char? {
         code = (code shl 6) or (bint and 0x3f)
     }
 
-    return Char(code)
-}
-
-@Suppress("NOTHING_TO_INLINE")
-internal inline fun Byte.utf8Count(): Int {
-    val x = this.toUInt()
-    return when {
-        x <= 0x7fu -> 1 // 0xxx xxxx one byte
-        x and 0xe0u == 0xc0u -> 2 // 110x xxxx two bytes
-        x and 0xf0u == 0xe0u -> 3 // 1110 xxxx three bytes
-        x and 0xf8u == 0xf0u -> 4 // 1111 0xxx 4 bytes
-        else -> throw IllegalStateException("$this is not a valid utf8 start sequence")
-    }
+    return code
 }
