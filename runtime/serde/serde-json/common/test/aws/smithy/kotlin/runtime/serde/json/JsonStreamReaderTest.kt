@@ -335,6 +335,24 @@ class JsonStreamReaderTest {
         assertEquals("\u0000", """"\u0000"""".decodeJsonStringToken())
         assertEquals("\u001f", """"\u001f"""".decodeJsonStringToken())
     }
+
+    @Test
+    fun testUnescapedControlChars() = runSuspendTest {
+        assertFailsWith<DeserializationException> {
+            """["new
+line"]""".allTokens()
+        }.message.shouldContain("Unescaped control character")
+
+        assertFailsWith<DeserializationException> {
+            val tokens = """["foo	tab"]""".trimIndent().allTokens()
+            println(tokens)
+        }.message.shouldContain("Unescaped control character")
+
+        // whitespace should be fine
+        assertEquals("foo  space", """"foo  space"""".decodeJsonStringToken())
+        // delete should be fine
+        assertEquals("\u007F", """""""".decodeJsonStringToken())
+    }
 }
 
 private suspend fun String.decodeJsonStringToken(): String {

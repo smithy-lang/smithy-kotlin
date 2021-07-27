@@ -173,7 +173,10 @@ internal class JsonLexer(
                             else -> throw DeserializationException("Invalid escape character: `$byte`")
                         }
                     }
-                    else -> append(data.nextOrThrow())
+                    else -> {
+                        if (chr.isControl()) throw DeserializationException("Unescaped control character: `$chr`")
+                        append(data.nextOrThrow())
+                    }
                 }
 
                 chr = data.peekOrThrow()
@@ -262,3 +265,6 @@ private inline fun lexerCheck(value: Boolean, lazyMessage: () -> Any) {
         throw DeserializationException(message.toString())
     }
 }
+
+// Test whether a character is a control character (ignoring SP and DEL)
+private fun Char.isControl(): Boolean = code in 0x00..0x1F
