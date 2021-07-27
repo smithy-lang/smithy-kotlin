@@ -238,5 +238,27 @@ class ExceptionGeneratorTest {
             contents.shouldContainOnlyOnceWithDiff(expected)
             contents.shouldContainOnlyOnceWithDiff("import foo.bar.QuxException")
         }
+
+        @Test
+        fun itFailsIfBaseExceptionCollidesWithErrorType() {
+            val model = """
+                operation FooOperation {
+                    errors: [TestException]
+                }
+                
+                @error("client")
+                structure TestException {
+                    details: String
+                }
+            """.trimIndent().prependNamespaceAndService(operations = listOf("FooOperation")).toSmithyModel()
+            val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+            val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+            val ctx = GenerationContext(model, provider, model.defaultSettings())
+
+            val e = assertThrows<CodegenException> {
+                ExceptionBaseClassGenerator.render(ctx, writer)
+            }
+            e.message.shouldContainOnlyOnceWithDiff("Collision in error types.  Generated base error type 'TestException' is not unique.")
+        }
     }
 }
