@@ -5,10 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.serde.CharStream
-import aws.smithy.kotlin.runtime.serde.consume
-import aws.smithy.kotlin.runtime.serde.nextOrThrow
-import aws.smithy.kotlin.runtime.serde.peekOrThrow
+import aws.smithy.kotlin.runtime.serde.*
 
 private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
@@ -144,6 +141,7 @@ internal class JsonLexer(
                         // consume escape backslash
                         data.nextOrThrow()
                         when (val byte = data.nextOrThrow()) {
+                            'u' -> readEscapedUnicode(this)
                             '\\' -> append('\\')
                             '/' -> append('/')
                             '"' -> append('"')
@@ -152,7 +150,7 @@ internal class JsonLexer(
                             'r' -> append('\r')
                             'n' -> append('\n')
                             't' -> append('\t')
-                            else -> throw IllegalStateException("invalid escape character: $byte")
+                            else -> throw IllegalStateException("Invalid escape character: `$byte`")
                         }
                     }
                     else -> append(data.nextOrThrow())
@@ -163,6 +161,24 @@ internal class JsonLexer(
         }
         data.consume('"')
         return value
+    }
+
+    /**
+     * Read JSON unicode escape sequences (e.g. "\u1234") and append them to [sb]. Will also read an additional
+     * codepoint if the first codepoint is the start of a surrogate pair
+     */
+    private suspend fun readEscapedUnicode(sb: StringBuilder) {
+        // already consumed \u escape, take next 4 bytes as high
+        val high = data.take(4).decodeEscapedCodePoint()
+        if (high.isHighSurrogate()) {
+            val escapedLow = data.take(6)
+            check(escapedLow.startsWith("\\u")) { "Expected surrogate pair, found `$escapedLow`" }
+            val low = escapedLow.substring(2).decodeEscapedCodePoint()
+            check(low.isLowSurrogate()) { "Invalid surrogate pair: (${high.code}, ${low.code})" }
+            sb.append(high, low)
+        } else {
+            sb.append(high)
+        }
     }
 
     private suspend fun openStructure(expectedChar: Char, rawToken: RawJsonToken, actualToken: JsonToken): JsonToken {
@@ -208,3 +224,10 @@ private fun <T> MutableList<T>.top(): T = this[count() - 1]
 private fun <T> MutableList<T>.topOrNull(): T? = if (isNotEmpty()) top() else null
 
 private typealias Stack<T> = MutableList<T>
+
+// decode an escaped unicode character to an integer code point (e.g. D801)
+// the escape characters `\u` should be stripped from the input before calling
+private fun String.decodeEscapedCodePoint(): Char {
+    if (!all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) throw IllegalStateException("Invalid unicode escape: `\\u$this`")
+    return toInt(16).toChar()
+}

@@ -106,3 +106,13 @@ suspend fun CharStream.readUntil(exitPredicate: (Char) -> Boolean): String = bui
         append(nextOrThrow())
     }
 }
+
+/**
+ * Take [count] characters from the stream
+ */
+suspend fun CharStream.take(count: Int): String = buildString {
+    require(count >= 0) { "expected count > 0: $count" }
+    for (i in 0 until count) {
+        append(nextOrThrow())
+    }
+}

@@ -60,6 +60,19 @@ abstract class CharStreamTest {
         assertEquals(" world", sut.readAll())
     }
 
+    @Test
+    fun testTake(): Unit = runSuspendTest {
+        val sut = newCharStream("foobar")
+        val read = sut.take(4)
+        assertEquals("foob", read)
+
+        assertFailsWith<IllegalStateException> {
+            sut.take(3)
+        }
+
+        Unit
+    }
+
     private suspend fun CharStream.readAll(): String = buildString {
         while (peek() != null) {
             append(next())

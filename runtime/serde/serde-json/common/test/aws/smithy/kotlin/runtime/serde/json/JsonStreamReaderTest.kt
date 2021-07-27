@@ -8,10 +8,8 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFails
-import kotlin.test.assertFailsWith
+import io.kotest.matchers.string.shouldContain
+import kotlin.test.*
 
 class JsonStreamReaderTest {
     @Test
@@ -293,6 +291,64 @@ class JsonStreamReaderTest {
             )
         }
     }
+
+    @Test
+    fun testUnescapeControls(): Unit = runSuspendTest {
+        assertEquals("\"test\"", """"\"test\""""".decodeJsonStringToken())
+        assertEquals("foo\rbar", """"foo\rbar"""".decodeJsonStringToken())
+        assertEquals("foo\r\n", """"foo\r\n"""".decodeJsonStringToken())
+        assertEquals("\r\nbar", """"\r\nbar"""".decodeJsonStringToken())
+        assertEquals("\bf\u000Co\to\r\n", """"\bf\fo\to\r\n"""".decodeJsonStringToken())
+    }
+
+    @Test
+    fun testUnicodeUnescape(): Unit = runSuspendTest {
+        assertFailsWith<IllegalStateException> {
+            """"\uD801\nasdf"""".allTokens()
+        }.message.shouldContain("Expected surrogate pair")
+
+        assertFailsWith<IllegalStateException> {
+            """"\uD801\u00"""".allTokens()
+        }.message.shouldContain("Unexpected end of stream")
+
+        assertFailsWith<IllegalStateException> {
+            """"\uD801\u+04D"""".allTokens()
+        }.message.shouldContain("Invalid unicode escape: `\\u+04D`")
+
+        assertFailsWith<IllegalStateException> {
+            """"\u00"""".allTokens()
+        }.message.shouldContain("Unexpected end of stream")
+
+        assertFailsWith<IllegalStateException> {
+            """"\uD801\uC501"""".allTokens()
+        }.message.shouldContain("Invalid surrogate pair: (${0xD801}, ${0xC501})")
+
+        assertFailsWith<IllegalStateException> {
+            """"\zD801\uC501"""".allTokens()
+        }.message.shouldContain("Invalid escape character: `z`")
+
+        assertEquals("\uD801\uDC37", """"\uD801\udc37"""".decodeJsonStringToken(), "surrogate pair")
+        assertEquals("\u0000", """"\u0000"""".decodeJsonStringToken())
+        assertEquals("\u001f", """"\u001f"""".decodeJsonStringToken())
+    }
+}
+
+private suspend fun String.decodeJsonStringToken(): String {
+    val reader = newReader(this)
+    val tokens = mutableListOf<JsonToken>()
+    while (true) {
+        val token = reader.nextToken()
+        tokens.add(token)
+        if (token is JsonToken.EndDocument) {
+            break
+        }
+    }
+
+    // element + end doc
+    assertEquals(2, tokens.size)
+    val token = tokens.first()
+    assertTrue(token is JsonToken.String)
+    return token.value
 }
 
 private suspend fun String.allTokens(): List<JsonToken> {
