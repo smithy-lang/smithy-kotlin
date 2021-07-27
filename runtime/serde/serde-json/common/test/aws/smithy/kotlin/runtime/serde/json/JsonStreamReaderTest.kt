@@ -64,17 +64,20 @@ class JsonStreamReaderTest {
 
     @Test
     fun itFailsOnMissingComma(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','") {
+        assertFailsWith<IllegalStateException> {
             """[3[4]]""".allTokens()
-        }
+        }.message.shouldContain("Unexpected char `[` expected `,`")
     }
 
     @Test
     fun itFailsOnTrailingComma(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException>("Unexpected char '[' expected ','") {
-            val tokens = """["",]""".allTokens()
-            println(tokens)
-        }
+        assertFailsWith<IllegalStateException> {
+            """["",]""".allTokens()
+        }.message.shouldContain("Unexpected char `]` expected scalar value")
+
+        assertFailsWith<IllegalStateException> {
+            """{"foo":"bar",}""".allTokens()
+        }.message.shouldContain("Unexpected char `}` expected key")
     }
 
     @Test

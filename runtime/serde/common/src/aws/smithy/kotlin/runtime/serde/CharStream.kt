@@ -86,14 +86,18 @@ suspend fun CharStream.consume(expected: CharSequence) = expected.forEach { cons
  * If it does not match:
  *  - and [optional] is true don't consume it, return
  *  - else throw [IllegalStateException]
+ *
+ *  Returns whether the expected character was consumed
  */
-suspend fun CharStream.consume(expected: Char, optional: Boolean = false) {
+suspend fun CharStream.consume(expected: Char, optional: Boolean = false): Boolean {
     val ch = peek()
     if (ch == expected) {
         nextOrThrow()
     } else if (!optional) {
         throw IllegalStateException("Unexpected char '$ch' expected '$expected'")
     }
+
+    return ch == expected
 }
 
 /**

@@ -88,8 +88,20 @@ internal class JsonLexer(
     private suspend fun JsonToken.moveToNextElement(): JsonToken {
         data.nextNonWhitespace(peek = true)
         val top = stack.topOrNull()
-        val expectComma = data.peek() != ']' && top == RawJsonToken.BeginArray
-        data.consume(',', optional = !expectComma)
+        val hadComma = data.consume(',', optional = true)
+        val next = data.nextNonWhitespace(peek = true)
+
+        // FIXME - trying to figure out comma handling with only the state we've implemented is difficult
+        // extra comma, expected value, e.g.: ["foo", ]
+        if (hadComma && ((top == RawJsonToken.BeginArray && next == ']') || (top == RawJsonToken.BeginObject && next == '}'))) {
+            throw IllegalStateException("Unexpected char `$next` expected scalar value")
+        }
+
+        // expect comma but didn't have one, e.g.: ["foo" "bar"]
+//        if (!hadComma && (next != ']' || next != '}')){
+//            throw IllegalStateException("Unexpected char `$next` expected `,`")
+//        }
+
         if (top == RawJsonToken.Name) {
             stack.pop()
         }
