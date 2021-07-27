@@ -18,11 +18,13 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class Md5ChecksumTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
@@ -46,5 +48,21 @@ class Md5ChecksumTest {
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(expected, call.request.headers["Content-MD5"])
+    }
+
+    @Test
+    fun itOnlySetsHeaderForBytesContent() = runSuspendTest {
+        val req = HttpRequestBuilder().apply {
+            body = object : HttpBody.Streaming() {
+                override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel("fooey".encodeToByteArray())
+            }
+        }
+        val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        op.install(Md5Checksum)
+
+        op.roundTrip(client, Unit)
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
+        assertNull(call.request.headers["Content-MD5"])
     }
 }
