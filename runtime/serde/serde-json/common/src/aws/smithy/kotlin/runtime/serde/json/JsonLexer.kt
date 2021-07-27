@@ -6,6 +6,8 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
@@ -21,17 +23,23 @@ internal class JsonLexer(
         val raw = peek()
         peeked = null
 
-        return when (raw) {
-            RawJsonToken.BeginArray -> openStructure('[', RawJsonToken.BeginArray, JsonToken.BeginArray)
-            RawJsonToken.EndArray -> closeStructure(']', RawJsonToken.BeginArray, JsonToken.EndArray).moveToNextElement()
-            RawJsonToken.BeginObject -> openStructure('{', RawJsonToken.BeginObject, JsonToken.BeginObject)
-            RawJsonToken.EndObject -> closeStructure('}', RawJsonToken.BeginObject, JsonToken.EndObject).moveToNextElement()
-            RawJsonToken.Name -> readName()
-            RawJsonToken.EndDocument -> {
-                check(stack.isEmpty()) { invalidDocMessage() }
-                JsonToken.EndDocument
+        try {
+            return when (raw) {
+                RawJsonToken.BeginArray -> openStructure('[', RawJsonToken.BeginArray, JsonToken.BeginArray)
+                RawJsonToken.EndArray -> closeStructure(']', RawJsonToken.BeginArray, JsonToken.EndArray).moveToNextElement()
+                RawJsonToken.BeginObject -> openStructure('{', RawJsonToken.BeginObject, JsonToken.BeginObject)
+                RawJsonToken.EndObject -> closeStructure('}', RawJsonToken.BeginObject, JsonToken.EndObject).moveToNextElement()
+                RawJsonToken.Name -> readName()
+                RawJsonToken.EndDocument -> {
+                    lexerCheck(stack.isEmpty()) { invalidDocMessage() }
+                    JsonToken.EndDocument
+                }
+                else -> readScalarValue(raw).moveToNextElement()
             }
-            else -> readScalarValue(raw).moveToNextElement()
+        } catch (ex: DeserializationException) {
+            throw ex
+        } catch (ex: Exception) {
+            throw DeserializationException(cause = ex)
         }
     }
 
@@ -82,7 +90,7 @@ internal class JsonLexer(
         RawJsonToken.String -> JsonToken.String(readQuoted())
         RawJsonToken.Bool, RawJsonToken.Null -> readKeyword()
         RawJsonToken.Number -> readNumber()
-        else -> throw IllegalStateException("Unhandled token $raw")
+        else -> throw DeserializationException("Unhandled token $raw")
     }
 
     private suspend fun JsonToken.moveToNextElement(): JsonToken {
@@ -94,12 +102,12 @@ internal class JsonLexer(
         // FIXME - trying to figure out comma handling with only the state we've implemented is difficult
         // extra comma, expected value, e.g.: ["foo", ]
         if (hadComma && ((top == RawJsonToken.BeginArray && next == ']') || (top == RawJsonToken.BeginObject && next == '}'))) {
-            throw IllegalStateException("Unexpected char `$next` expected scalar value")
+            throw DeserializationException("Unexpected char `$next` expected scalar value")
         }
 
         // expect comma but didn't have one, e.g.: ["foo" "bar"]
 //        if (!hadComma && (next != ']' || next != '}')){
-//            throw IllegalStateException("Unexpected char `$next` expected `,`")
+//            throw DeserializationException("Unexpected char `$next` expected `,`")
 //        }
 
         if (top == RawJsonToken.Name) {
@@ -130,7 +138,7 @@ internal class JsonLexer(
                 readDigits(this)
             }
         }
-        check(value.isNotEmpty()) { "Invalid number, expected '-' || 0..9, found ${data.peek()}" }
+        lexerCheck(value.isNotEmpty()) { "Invalid number, expected '-' || 0..9, found ${data.peek()}" }
         return JsonToken.Number(value)
     }
 
@@ -162,7 +170,7 @@ internal class JsonLexer(
                             'r' -> append('\r')
                             'n' -> append('\n')
                             't' -> append('\t')
-                            else -> throw IllegalStateException("Invalid escape character: `$byte`")
+                            else -> throw DeserializationException("Invalid escape character: `$byte`")
                         }
                     }
                     else -> append(data.nextOrThrow())
@@ -184,9 +192,9 @@ internal class JsonLexer(
         val high = data.take(4).decodeEscapedCodePoint()
         if (high.isHighSurrogate()) {
             val escapedLow = data.take(6)
-            check(escapedLow.startsWith("\\u")) { "Expected surrogate pair, found `$escapedLow`" }
+            lexerCheck(escapedLow.startsWith("\\u")) { "Expected surrogate pair, found `$escapedLow`" }
             val low = escapedLow.substring(2).decodeEscapedCodePoint()
-            check(low.isLowSurrogate()) { "Invalid surrogate pair: (${high.code}, ${low.code})" }
+            lexerCheck(low.isLowSurrogate()) { "Invalid surrogate pair: (${high.code}, ${low.code})" }
             sb.append(high, low)
         } else {
             sb.append(high)
@@ -203,7 +211,7 @@ internal class JsonLexer(
         data.consume(expectedChar)
         val obj = stack.pop()
         if (obj != expectedStackToken) {
-            throw IllegalStateException("Unexpected close token '$expectedChar' encountered")
+            throw DeserializationException("Unexpected close token '$expectedChar' encountered")
         }
         return closeToken
     }
@@ -212,7 +220,7 @@ internal class JsonLexer(
         't' -> readLiteral("true", JsonToken.Bool(true))
         'f' -> readLiteral("false", JsonToken.Bool(false))
         'n' -> readLiteral("null", JsonToken.Null)
-        else -> throw IllegalStateException("Unable to handle keyword starting with '$ch'")
+        else -> throw DeserializationException("Unable to handle keyword starting with '$ch'")
     }
 
     private suspend fun readLiteral(expectedString: String, token: JsonToken): JsonToken {
@@ -240,6 +248,17 @@ private typealias Stack<T> = MutableList<T>
 // decode an escaped unicode character to an integer code point (e.g. D801)
 // the escape characters `\u` should be stripped from the input before calling
 private fun String.decodeEscapedCodePoint(): Char {
-    if (!all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) throw IllegalStateException("Invalid unicode escape: `\\u$this`")
+    if (!all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) throw DeserializationException("Invalid unicode escape: `\\u$this`")
     return toInt(16).toChar()
+}
+
+@OptIn(ExperimentalContracts::class)
+private inline fun lexerCheck(value: Boolean, lazyMessage: () -> Any) {
+    contract {
+        returns() implies value
+    }
+    if (!value) {
+        val message = lazyMessage()
+        throw DeserializationException(message.toString())
+    }
 }

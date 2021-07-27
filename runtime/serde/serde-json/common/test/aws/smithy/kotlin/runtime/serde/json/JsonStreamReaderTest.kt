@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.serde.CharStream
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.string.shouldContain
@@ -56,7 +57,7 @@ class JsonStreamReaderTest {
 
     @Test
     fun itFailsOnNaN(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException>("Invalid number") {
+        assertFailsWith<DeserializationException>("Invalid number") {
             // language=JSON
             """[NaN]""".allTokens()
         }
@@ -64,18 +65,18 @@ class JsonStreamReaderTest {
 
     @Test
     fun itFailsOnMissingComma(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """[3[4]]""".allTokens()
         }.message.shouldContain("Unexpected char `[` expected `,`")
     }
 
     @Test
     fun itFailsOnTrailingComma(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """["",]""".allTokens()
         }.message.shouldContain("Unexpected char `]` expected scalar value")
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """{"foo":"bar",}""".allTokens()
         }.message.shouldContain("Unexpected char `}` expected key")
     }
@@ -306,27 +307,27 @@ class JsonStreamReaderTest {
 
     @Test
     fun testUnicodeUnescape(): Unit = runSuspendTest {
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """"\uD801\nasdf"""".allTokens()
         }.message.shouldContain("Expected surrogate pair")
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """"\uD801\u00"""".allTokens()
         }.message.shouldContain("Unexpected end of stream")
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """"\uD801\u+04D"""".allTokens()
         }.message.shouldContain("Invalid unicode escape: `\\u+04D`")
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """"\u00"""".allTokens()
         }.message.shouldContain("Unexpected end of stream")
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """"\uD801\uC501"""".allTokens()
         }.message.shouldContain("Invalid surrogate pair: (${0xD801}, ${0xC501})")
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<DeserializationException> {
             """"\zD801\uC501"""".allTokens()
         }.message.shouldContain("Invalid escape character: `z`")
 
