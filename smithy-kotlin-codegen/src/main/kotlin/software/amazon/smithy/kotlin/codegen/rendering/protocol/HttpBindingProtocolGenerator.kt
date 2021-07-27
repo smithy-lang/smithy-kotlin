@@ -384,7 +384,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         writer.openBlock("if (builder.body !is #T.Empty) {", "}", RuntimeTypes.Http.HttpBody) {
             val contentType = resolver.determineRequestContentType(op)
-            writer.write("builder.headers[\"Content-Type\"] = #S", contentType)
+            writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
         }
     }
 
