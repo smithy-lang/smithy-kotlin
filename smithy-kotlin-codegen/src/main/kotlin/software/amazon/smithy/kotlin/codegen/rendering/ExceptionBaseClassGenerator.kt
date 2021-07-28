@@ -29,7 +29,8 @@ object ExceptionBaseClassGenerator {
         writer.addImport(baseException)
         val serviceException = baseExceptionSymbol(ctx.settings)
 
-        writer.dokka("Base class for all service related exceptions thrown by the ${ctx.settings.sdkId.clientName()} client")
+        val name = clientName(ctx.settings.sdkId)
+        writer.dokka("Base class for all service related exceptions thrown by the $name client")
         writer.withBlock(
             "open class #T : #T {", "}",
             serviceException,
@@ -48,7 +49,7 @@ object ExceptionBaseClassGenerator {
      * Get the (generated) symbol that constitutes the base class exceptions will inherit from
      */
     fun baseExceptionSymbol(settings: KotlinSettings): Symbol = buildSymbol {
-        val serviceName = settings.sdkId.clientName()
+        val serviceName = clientName(settings.sdkId)
         name = "${serviceName}Exception"
         namespace = "${settings.pkg.name}.model"
         definitionFile = "$name.kt"
