@@ -258,7 +258,7 @@ class ExceptionGeneratorTest {
             val e = assertThrows<CodegenException> {
                 ExceptionBaseClassGenerator.render(ctx, writer)
             }
-            e.message.shouldContainOnlyOnceWithDiff("Collision in error types.  Generated base error type 'TestException' is not unique.")
+            e.message.shouldContainOnlyOnceWithDiff("Generated base error type 'TestException' collides with com.test#TestException.")
         }
     }
 }

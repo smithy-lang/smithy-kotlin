@@ -60,8 +60,10 @@ object ExceptionBaseClassGenerator {
     // Compare generated base exception name with all error type names.  Throw exception if not unique.
     private fun checkForCollision(model: Model, exceptionSymbol: Symbol) {
         model.operationShapes.forEach { operationShape ->
-            val errorTypeNames = operationShape.errors.map { shapeId -> shapeId.name }
-            if (errorTypeNames.contains(exceptionSymbol.name)) throw CodegenException("Collision in error types.  Generated base error type '${exceptionSymbol.name}' is not unique to Error shape names.")
+            val errorNameToShapeIndex = operationShape.errors.map { shapeId -> shapeId.name to shapeId }.toMap()
+            if (errorNameToShapeIndex.containsKey(exceptionSymbol.name)) {
+                throw CodegenException("Generated base error type '${exceptionSymbol.name}' collides with ${errorNameToShapeIndex[exceptionSymbol.name]}.")
+            }
         }
     }
 }
