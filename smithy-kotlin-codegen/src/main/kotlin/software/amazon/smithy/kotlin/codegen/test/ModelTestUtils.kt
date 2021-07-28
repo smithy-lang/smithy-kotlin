@@ -80,7 +80,7 @@ internal fun URL.toSmithyModel(serviceShapeId: String? = null): Model {
 fun String.toSmithyModel(sourceLocation: String? = null, serviceShapeId: String? = null, applyDefaultTransforms: Boolean = true): Model {
     val processed = if (this.trimStart().startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
     val model = try {
-         Model.assembler()
+        Model.assembler()
             .discoverModels()
             .addUnparsedModel(sourceLocation ?: "test.smithy", processed)
             .assemble()
