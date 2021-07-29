@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -23,16 +24,12 @@ import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
  */
 abstract class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
-    protected val middleware: List<ProtocolMiddleware>,
+    protected val middlewares: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
 
     object OperationDeserializerBinding : SectionId {
         // Context for operation being codegened at the time of section invocation
-        const val Operation = "Operation"
-    }
-
-    object OperationMiddlewareBinding : SectionId {
         const val Operation = "Operation"
     }
 
@@ -46,16 +43,33 @@ abstract class HttpProtocolClientGenerator(
         val operationsIndex = OperationIndex.of(ctx.model)
 
         importSymbols(writer)
+
         writer.openBlock("internal class Default${symbol.name}(private val config: ${symbol.name}.Config) : ${symbol.name} {")
             .call { renderProperties(writer) }
             .call { renderInit(writer) }
             .call {
+                // allow middleware to write properties that can be re-used
+                val appliedMiddleware = mutableSetOf<ProtocolMiddleware>()
+                operations.forEach { op ->
+                    middlewares.filterTo(appliedMiddleware) { it.isEnabledFor(ctx, op) }
+                }
+
+                operations.first().let { op ->
+                    ctx.delegator.useSymbolWriter(op.registerMiddlewareSymbol(ctx.settings)) { middlewareWriter ->
+                        appliedMiddleware.forEach { it.renderProperties(middlewareWriter) }
+                    }
+                }
+            }
+            .call {
                 operations.forEach { op ->
                     renderOperationBody(writer, operationsIndex, op)
+
+                    ctx.delegator.useSymbolWriter(op.registerMiddlewareSymbol(ctx.settings)) { middlewareWriter ->
+                        renderOperationMiddleware(op, middlewareWriter)
+                    }
                 }
             }
             .call { renderClose(writer) }
-            .call { renderOperationMiddleware(writer) }
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
             .write("")
@@ -66,9 +80,6 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
-        middleware.forEach {
-            it.renderProperties(writer)
-        }
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -126,10 +137,7 @@ abstract class HttpProtocolClientGenerator(
         val outputShape = opIndex.getOutput(op)
         val httpTrait = httpBindingResolver.httpTrait(op)
 
-        val inputSymbolName =
-            inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
-        val outputSymbolName =
-            outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
+        val (inputSymbolName, outputSymbolName) = ioSymbolNames(op)
 
         writer.openBlock(
             "val op = SdkHttpOperation.build<#L, #L> {", "}",
@@ -192,15 +200,7 @@ abstract class HttpProtocolClientGenerator(
             }
         }
 
-        writer.write("registerDefaultMiddleware(op)")
-
-        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-            writer.addImport(RuntimeTypes.Http.Md5ChecksumMiddleware)
-            writer.write("op.install(#T)", RuntimeTypes.Http.Md5ChecksumMiddleware)
-        }
-
-        // allow integrations to register operation specific middleware
-        writer.declareSection(OperationMiddlewareBinding, mapOf(OperationMiddlewareBinding.Operation to op))
+        writer.write("#T(config, op)", op.registerMiddlewareSymbol(ctx.settings))
     }
 
     /**
@@ -226,23 +226,71 @@ abstract class HttpProtocolClientGenerator(
         }
     }
 
-    protected open fun renderOperationMiddleware(writer: KotlinWriter) {
-        writer.openBlock("private fun <I, O>  registerDefaultMiddleware(op: SdkHttpOperation<I,O>){")
+    private fun ioSymbolNames(op: OperationShape): Pair<String, String> {
+        val opIndex = OperationIndex.of(ctx.model)
+        val inputShape = opIndex.getInput(op)
+        val outputShape = opIndex.getOutput(op)
+
+        val inputSymbolName =
+            inputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
+        val outputSymbolName =
+            outputShape.map { ctx.symbolProvider.toSymbol(it).name }.getOrNull() ?: KotlinTypes.Unit.fullName
+
+        return Pair(inputSymbolName, outputSymbolName)
+    }
+
+    /**
+     * Renders the operation specific middleware registration function
+     *
+     * ```
+     * internal fun register{OperationName}Middleware(config: Service.Config, op: SdkHttpOperation<Input, Output>) {
+     *     ...
+     * }
+     * ```
+     */
+    protected open fun renderOperationMiddleware(op: OperationShape, writer: KotlinWriter) {
+        writer.write("")
+
+        val registerFnSymbol = op.registerMiddlewareSymbol(ctx.settings)
+        val (inputSymbolName, outputSymbolName) = ioSymbolNames(op)
+
+        writer.addImport("${ctx.settings.pkg.name}.model", "*")
+        setOf(
+            RuntimeTypes.Http.Operation.SdkHttpOperation,
+        ).forEach(writer::addImport)
+
+        val service = ctx.symbolProvider.toSymbol(ctx.service)
+
+        writer.openBlock(
+            "internal fun #T(config: #T.Config, op: #T<#L,#L>) {",
+            registerFnSymbol,
+            service,
+            RuntimeTypes.Http.Operation.SdkHttpOperation,
+            inputSymbolName,
+            outputSymbolName
+        )
             .openBlock("op.apply {")
             .call {
-                middleware.forEach { feat ->
-                    feat.addImportsAndDependencies(writer)
-                    if (feat.needsConfiguration) {
-                        writer.openBlock("install(#L) {", feat.name)
-                            .call { feat.renderConfigure(writer) }
-                            .closeBlock("}")
-                    } else {
-                        writer.write("install(#L)", feat.name)
+                middlewares
+                    .filter { it.isEnabledFor(ctx, op) }
+                    .forEach { middleware ->
+                        middleware.addImportsAndDependencies(writer)
+                        if (middleware.needsConfiguration) {
+                            writer.openBlock("install(#L) {", middleware.name)
+                                .call { middleware.renderConfigure(writer) }
+                                .closeBlock("}")
+                        } else {
+                            writer.write("install(#L)", middleware.name)
+                        }
                     }
+                if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+                    writer.addImport(RuntimeTypes.Http.Md5ChecksumMiddleware)
+                    writer.write("op.install(#T)", RuntimeTypes.Http.Md5ChecksumMiddleware)
                 }
             }
             .closeBlock("}")
             .closeBlock("}")
+            .write("")
     }
 
     protected open fun renderClose(writer: KotlinWriter) {
@@ -257,4 +305,13 @@ abstract class HttpProtocolClientGenerator(
      * Render any additional methods to support client operation
      */
     protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
+}
+
+fun OperationShape.registerMiddlewareSymbol(settings: KotlinSettings): Symbol {
+    val op = this
+    return buildSymbol {
+        name = op.registerMiddlewareName()
+        definitionFile = "OperationMiddleware.kt"
+        namespace = settings.pkg.name
+    }
 }

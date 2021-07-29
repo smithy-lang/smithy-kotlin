@@ -363,6 +363,9 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
 internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse> {
 
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): SmokeTestResponse {
+        if (!response.status.isSuccess()) {
+            throwSmokeTestError(context, response)
+        }
         val builder = SmokeTestResponse.builder()
 
         builder.intHeader = response.headers["X-Header2"]?.toInt()

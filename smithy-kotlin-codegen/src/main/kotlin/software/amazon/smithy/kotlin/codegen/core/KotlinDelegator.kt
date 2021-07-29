@@ -69,7 +69,7 @@ class KotlinDelegator(
         block: (KotlinWriter) -> Unit
     ) {
         val symbol = symbolProvider.toSymbol(shape)
-        useShapeWriter(symbol, block)
+        useSymbolWriter(symbol, block)
     }
 
     /**
@@ -78,7 +78,7 @@ class KotlinDelegator(
      * @param symbol Symbol to create the writer for.
      * @param block Lambda that accepts and works with the file.
      */
-    fun useShapeWriter(
+    fun useSymbolWriter(
         symbol: Symbol,
         block: (KotlinWriter) -> Unit
     ) {

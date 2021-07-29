@@ -29,6 +29,7 @@ object RuntimeTypes {
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
         val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.HTTP)
         val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.HTTP)
+        val isSuccess = runtimeSymbol("isSuccess", KotlinDependency.HTTP)
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.HTTP, "request")

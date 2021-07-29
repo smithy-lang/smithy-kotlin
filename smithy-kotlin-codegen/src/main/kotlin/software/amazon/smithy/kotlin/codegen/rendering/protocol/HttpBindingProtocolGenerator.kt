@@ -8,6 +8,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
@@ -64,7 +65,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the serialize function which has the following signature:
      *
      * ```
-     * fun serializeFoo(context: ExecutionContext, input: Foo): ByteArray {
+     * fun serializeFooOperationBody(context: ExecutionContext, input: Foo): ByteArray {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -83,7 +84,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the deserialize function which has the following signature:
      *
      * ```
-     * fun deserializeFoo(builder: Foo.DslBuilder, payload: ByteArray) {
+     * fun deserializeFooOperationBody(builder: Foo.DslBuilder, payload: ByteArray) {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -103,7 +104,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the serialize function which has the following signature:
      *
      * ```
-     * suspend fun serializeFoo(serializer: Serializer, input: Foo) {
+     * suspend fun serializeFooDocumentBody(serializer: Serializer, input: Foo) {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -122,7 +123,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the deserialize function which has the following signature:
      *
      * ```
-     * suspend fun deserializeFoo(deserializer: Deserializer): Foo {
+     * suspend fun deserializeFooDocumentBody(deserializer: Deserializer): Foo {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -155,6 +156,30 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * @param writer the writer to render to
      */
     abstract fun renderDeserializeException(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter)
+
+    /**
+     * Render implementation responsible for matching an HTTP response that represents one of the modeled errors for
+     * an operation.
+     *
+     * This function is invoked from the operation deserializer based on [renderIsHttpError] logic. i.e. the response
+     * has already been determined to be an error, it is up to this function to figure out which one and throw it.
+     *
+     * The function has the following signature:
+     *
+     * ```
+     * suspend fun throwFooOperationError(context: ExecutionContext, response: HttpResponse): Nothing {
+     *     <-- CURRENT WRITER CONTEXT -->
+     * }
+     * ```
+     *
+     * Implementations are expected to throw an exception matched from the response. If none can be matched then throw
+     * a suitable generic exception.
+     *
+     * @param ctx the protocol generator context
+     * @param op the operation shape to render error matching
+     * @param writer the writer to render to
+     */
+    abstract fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx)
@@ -215,7 +240,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 reference(symbol, SymbolReference.ContextOption.DECLARE)
             }
 
-            ctx.delegator.useShapeWriter(serializerSymbol) { writer ->
+            ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
                 renderDocumentSerializer(ctx, symbol, shape, serializerSymbol, writer)
             }
         }
@@ -277,7 +302,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         )
         val resolver = getProtocolHttpBindingResolver(ctx)
         val requestBindings = resolver.requestBindings(op)
-        ctx.delegator.useShapeWriter(serializerSymbol) { writer ->
+        ctx.delegator.useSymbolWriter(serializerSymbol) { writer ->
             // import all of http, http.request, and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
@@ -606,7 +631,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
         val resolver = getProtocolHttpBindingResolver(ctx)
         val responseBindings = resolver.responseBindings(op)
-        ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
+        ctx.delegator.useSymbolWriter(deserializerSymbol) { writer ->
             // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
             // and most require quite a few. Rather than try and figure out which specific ones are used just take them
             // all to ensure all the various DSL builders are available, etc
@@ -621,7 +646,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 )
                 .write("")
                 .call {
-                    renderHttpDeserialize(ctx, outputSymbol, responseBindings, op.bodyDeserializerName(), writer)
+                    renderHttpDeserialize(ctx, outputSymbol, responseBindings, op.bodyDeserializerName(), op, writer)
                 }
                 .closeBlock("}")
                 .callIf(requiresBodySerde(ctx, responseBindings)) {
@@ -632,6 +657,27 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             renderDeserializeOperationBody(ctx, op, writer)
                         }
                 }
+                .call {
+                    writer.write("")
+                        .openBlock(
+                            "private suspend fun throw${op.defaultName().capitalize()}Error(context: #T, response: #T): #Q {", "}",
+                            RuntimeTypes.Core.ExecutionContext,
+                            RuntimeTypes.Http.Response.HttpResponse,
+                            KotlinTypes.Nothing
+                        ) {
+                            renderThrowOperationError(ctx, op, writer)
+                        }
+                }
+        }
+    }
+
+    /**
+     * Renders the logic to detect if an HTTP response should be considered an error for this operation
+     */
+    protected open fun renderIsHttpError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+        writer.addImport(RuntimeTypes.Http.isSuccess)
+        writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
+            write("throw${op.defaultName().capitalize()}Error(context, response)")
         }
     }
 
@@ -659,7 +705,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
 
-        ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
+        ctx.delegator.useSymbolWriter(deserializerSymbol) { writer ->
             val resolver = getProtocolHttpBindingResolver(ctx)
             val responseBindings = resolver.responseBindings(shape)
             writer
@@ -668,7 +714,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .openBlock("internal class #T: #T<#T> {", deserializerSymbol, RuntimeTypes.Http.Operation.HttpDeserialize, outputSymbol)
                 .write("")
                 .call {
-                    renderHttpDeserialize(ctx, outputSymbol, responseBindings, outputSymbol.errorDeserializerName(), writer)
+                    renderHttpDeserialize(ctx, outputSymbol, responseBindings, outputSymbol.errorDeserializerName(), null, writer)
                 }
                 .closeBlock("}")
                 .callIf(requiresBodySerde(ctx, responseBindings)) {
@@ -691,6 +737,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         outputSymbol: Symbol,
         responseBindings: List<HttpBindingDescriptor>,
         bodyDeserializerName: String,
+        // this method is shared between operation and exception deserialization. In the case of operations this MUST be set
+        op: OperationShape?,
         writer: KotlinWriter
     ) {
         writer
@@ -701,6 +749,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 RuntimeTypes.Http.Response.HttpResponse,
                 outputSymbol
             )
+            .call {
+                if (outputSymbol.shape?.isError == false && op != null) {
+                    // handle operation errors
+                    renderIsHttpError(ctx, op, writer)
+                }
+            }
             .write("val builder = #T.builder()", outputSymbol)
             .write("")
             .call {
@@ -735,7 +789,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .map { it.member }
 
                     if (documentMembers.isNotEmpty()) {
-                        // FIXME - we should not be slurping the entire contents into memory, instead our deserializers
+                        // TODO - we should not be slurping the entire contents into memory, instead our deserializers
                         // should work off of an SdkByteReadChannel
                         writer
                             .addImport(RuntimeTypes.Http.readAll)
@@ -1021,7 +1075,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 reference(symbol, SymbolReference.ContextOption.DECLARE)
             }
 
-            ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
+            ctx.delegator.useSymbolWriter(deserializerSymbol) { writer ->
                 renderDocumentDeserializer(ctx, symbol, shape, deserializerSymbol, writer)
             }
         }
