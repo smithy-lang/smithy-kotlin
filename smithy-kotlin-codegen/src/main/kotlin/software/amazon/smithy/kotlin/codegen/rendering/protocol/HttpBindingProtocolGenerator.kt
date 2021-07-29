@@ -366,10 +366,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected open fun renderSerializeHttpBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val resolver = getProtocolHttpBindingResolver(ctx)
-        val requestBindings = resolver.requestBindings(op)
-        if (!hasHttpBody(requestBindings)) return
+        if (!resolver.hasHttpBody(op)) return
 
         // payload member(s)
+        val requestBindings = resolver.requestBindings(op)
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
             renderExplicitHttpPayloadSerializer(ctx, op, httpPayload, writer)
@@ -1088,7 +1088,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 else -> false
             }
         } else {
-            hasHttpBody(bindings)
+            // test if the request/response bindings have any members bound to the HTTP payload (body)
+            bindings.any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
         }
     }
 }
@@ -1103,10 +1104,6 @@ internal fun stringToNumber(shape: NumberShape): String = when (shape.type) {
     ShapeType.DOUBLE -> "toDouble()"
     else -> throw CodegenException("unknown number shape: $shape")
 }
-
-// test if the request/response bindings have any members bound to the HTTP payload (body)
-private fun hasHttpBody(bindings: List<HttpBindingDescriptor>): Boolean =
-    bindings.any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
 
 /**
  * Return member shapes bound to the DOCUMENT

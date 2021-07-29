@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
@@ -86,19 +87,44 @@ interface HttpBindingResolver {
 }
 
 /**
+ * @return true if the operation contains request data bound to the PAYLOAD or DOCUMENT locations
+ */
+fun HttpBindingResolver.hasHttpBody(operationShape: OperationShape): Boolean =
+    requestBindings(operationShape).any {
+        it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT
+    }
+
+
+/**
  * An Http Binding Resolver that relies on [HttpTrait] data from service models.
- * @param generationContext [ProtocolGenerator.GenerationContext] from which model state is retrieved
- * @param
+ * @param model Model
+ * @param serviceShape service under which to find bindings
+ * @param defaultContentType content-type
+ * @param bindingIndex [HttpBindingIndex]
+ * @param topDownIndex [TopDownIndex]
  */
 class HttpTraitResolver(
-    private val generationContext: ProtocolGenerator.GenerationContext,
+    private val model: Model,
+    private val serviceShape: ServiceShape,
     private val defaultContentType: String,
-    private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(generationContext.model),
-    private val topDownIndex: TopDownIndex = TopDownIndex.of(generationContext.model)
+    private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(model),
+    private val topDownIndex: TopDownIndex = TopDownIndex.of(model)
 ) : HttpBindingResolver {
+    /**
+     * @param ctx [ProtocolGenerator.GenerationContext]
+     * @param defaultContentType content-type
+     * @param bindingIndex [HttpBindingIndex]
+     * @param topDownIndex [TopDownIndex]
+     */
+    constructor(
+        ctx: ProtocolGenerator.GenerationContext,
+        defaultContentType: String,
+        bindingIndex: HttpBindingIndex = HttpBindingIndex.of(ctx.model),
+        topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
+    ) : this(ctx.model, ctx.service, defaultContentType, bindingIndex, topDownIndex)
 
     override fun bindingOperations(): List<OperationShape> = topDownIndex
-        .getContainedOperations(generationContext.service)
+        .getContainedOperations(serviceShape)
         .filter { op -> op.hasTrait<HttpTrait>() }
         .toList<OperationShape>()
 
