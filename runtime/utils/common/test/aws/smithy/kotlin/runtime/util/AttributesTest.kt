@@ -59,4 +59,15 @@ class AttributesTest {
         assertEquals("Baz", attr1[key2])
         assertEquals("Quux", attr1[key3])
     }
+
+    @Test
+    fun testSetIfNotNull() {
+        val attributes = Attributes()
+        val strKey = AttributeKey<String>("string")
+        attributes.setIfNotNull(strKey, null)
+        assertFalse(attributes.contains(strKey))
+
+        attributes.setIfNotNull(strKey, "foo")
+        assertEquals("foo", attributes[strKey])
+    }
 }
