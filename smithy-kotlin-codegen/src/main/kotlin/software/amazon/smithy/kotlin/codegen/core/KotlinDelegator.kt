@@ -14,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.utils.namespaceToPath
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.utils.CodeWriter
 import java.nio.file.Paths
 
 const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"

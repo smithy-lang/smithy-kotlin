@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.integration
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.utils.CodeWriter
 
 /**
  * A tag interface to denote a unique point in codegen in which integrations

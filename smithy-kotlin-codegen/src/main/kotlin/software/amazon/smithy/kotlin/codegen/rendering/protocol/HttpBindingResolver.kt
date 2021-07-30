@@ -94,7 +94,6 @@ fun HttpBindingResolver.hasHttpBody(operationShape: OperationShape): Boolean =
         it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT
     }
 
-
 /**
  * An Http Binding Resolver that relies on [HttpTrait] data from service models.
  * @param model Model
