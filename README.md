@@ -25,6 +25,9 @@ Smithy code generators for Kotlin.
 ### Android Integration Tests
 
 The client-runtime is meant to be compatible with and run on Android API 16+ devices.
+Later versions of the Android may contain security fixes so consider reviewing
+known vulnerabilities for the Android versions you choose to support in your
+application.
 
 The `android-test` project can be run manually with the script below. 
 
