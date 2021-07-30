@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.TopDownIndex
 
 /**
  * Renders the base class that all (modeled) exceptions inherit from.
@@ -29,7 +30,7 @@ object ExceptionBaseClassGenerator {
     fun render(ctx: CodegenContext, writer: KotlinWriter) {
         val baseException = ctx.protocolGenerator?.exceptionBaseClassSymbol ?: ProtocolGenerator.DefaultServiceExceptionSymbol
         writer.addImport(baseException)
-        val serviceException = baseExceptionSymbol(ctx.settings).also { checkForCollision(ctx.model, it) }
+        val serviceException = baseExceptionSymbol(ctx.settings).also { checkForCollision(ctx, it) }
 
         val name = clientName(ctx.settings.sdkId)
         writer.dokka("Base class for all service related exceptions thrown by the $name client")
@@ -58,9 +59,12 @@ object ExceptionBaseClassGenerator {
     }
 
     // Compare generated base exception name with all error type names.  Throw exception if not unique.
-    private fun checkForCollision(model: Model, exceptionSymbol: Symbol) {
-        model.operationShapes.forEach { operationShape ->
-            val errorNameToShapeIndex = operationShape.errors.map { shapeId -> shapeId.name to shapeId }.toMap()
+    private fun checkForCollision(ctx: CodegenContext, exceptionSymbol: Symbol) {
+        val topDownIndex = TopDownIndex.of(ctx.model)
+        val operations = topDownIndex.getContainedOperations(ctx.settings.service)
+
+        operations.forEach { operationShape ->
+            val errorNameToShapeIndex = operationShape.errors.associateBy { shapeId -> shapeId.name }
             if (errorNameToShapeIndex.containsKey(exceptionSymbol.name)) {
                 throw CodegenException("Generated base error type '${exceptionSymbol.name}' collides with ${errorNameToShapeIndex[exceptionSymbol.name]}.")
             }
