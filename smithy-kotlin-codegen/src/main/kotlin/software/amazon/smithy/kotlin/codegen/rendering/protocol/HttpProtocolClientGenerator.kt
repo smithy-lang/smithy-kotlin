@@ -46,7 +46,7 @@ abstract class HttpProtocolClientGenerator(
         val operationsIndex = OperationIndex.of(ctx.model)
 
         importSymbols(writer)
-        writer.openBlock("internal class Default${symbol.name}(private val config: ${symbol.name}.Config) : ${symbol.name} {")
+        writer.openBlock("internal class Default${symbol.name}(override val config: ${symbol.name}.Config) : ${symbol.name} {")
             .call { renderProperties(writer) }
             .call { renderInit(writer) }
             .call {

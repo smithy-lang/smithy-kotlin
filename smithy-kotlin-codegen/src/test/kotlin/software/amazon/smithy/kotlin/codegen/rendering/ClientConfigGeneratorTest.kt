@@ -128,7 +128,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
             ClientConfigProperty.Boolean("boolProp"),
         )
 
-        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, *customProps).render()
+        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
         val contents = writer.toString()
 
         // we should have no base classes when not using the default and no inheritFrom specified

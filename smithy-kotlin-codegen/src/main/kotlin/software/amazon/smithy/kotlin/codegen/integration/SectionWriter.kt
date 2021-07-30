@@ -4,7 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.integration
 
-import software.amazon.smithy.utils.CodeWriter
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 
 /**
  * A tag interface to denote a unique point in codegen in which integrations
@@ -15,8 +15,8 @@ interface SectionId
 
 /**
  * A [SectionWriter] integrates with Smithy Sections.  It takes in a
- * [CodeWriter] and default codegen strings (if any).  Implementations
- * use the [CodeWriter] to inject code at the specified section.
+ * [KotlinWriter] and default codegen strings (if any).  Implementations
+ * use the [KotlinWriter] to inject code at the specified section.
  */
 fun interface SectionWriter {
     /**
@@ -29,7 +29,7 @@ fun interface SectionWriter {
      *  [CodeWriter](https://github.com/awslabs/smithy/blob/main/smithy-utils/src/main/java/software/amazon/smithy/utils/CodeWriter.java)
      *  documentation for more details
      */
-    fun write(writer: CodeWriter, previousValue: String?)
+    fun write(writer: KotlinWriter, previousValue: String?)
 }
 
 /**
