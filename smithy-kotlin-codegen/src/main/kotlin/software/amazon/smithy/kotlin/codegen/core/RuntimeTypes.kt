@@ -31,6 +31,7 @@ object RuntimeTypes {
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
         val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.HTTP)
         val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.HTTP)
+        val splitAsQueryParameters = runtimeSymbol("splitAsQueryParameters", KotlinDependency.HTTP, "util")
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.HTTP, "request")
@@ -71,6 +72,7 @@ object RuntimeTypes {
             val ByteStream = runtimeSymbol("ByteStream", KotlinDependency.CORE, "content")
             val StringContent = runtimeSymbol("StringContent", KotlinDependency.CORE, "content")
             val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CORE, "content")
+            val decodeToString = runtimeSymbol("decodeToString", KotlinDependency.CORE, "content")
         }
     }
 
