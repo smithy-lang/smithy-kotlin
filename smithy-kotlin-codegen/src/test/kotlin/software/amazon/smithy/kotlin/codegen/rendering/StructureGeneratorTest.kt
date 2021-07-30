@@ -303,9 +303,15 @@ class StructureGeneratorTest {
         StructureGenerator(renderingCtx).render()
 
         val generated = writer.toString()
-        generated.shouldContainOnlyOnceWithDiff("bar=*** Sensitive Data Redacted ***")
-        generated.shouldContainOnlyOnceWithDiff("baz=*** Sensitive Data Redacted ***")
-        generated.shouldContainOnlyOnceWithDiff("qux=\$qux")
+        val expected = """
+            override fun toString(): kotlin.String = buildString {
+                append("Foo(")
+                append("bar=*** Sensitive Data Redacted ***,")
+                append("baz=*** Sensitive Data Redacted ***,")
+                append("qux=${'$'}qux)")
+            }
+        """.formatForTest()
+        generated.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test

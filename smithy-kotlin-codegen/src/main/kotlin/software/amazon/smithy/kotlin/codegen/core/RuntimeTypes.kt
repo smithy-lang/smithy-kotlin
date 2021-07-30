@@ -26,6 +26,7 @@ object RuntimeTypes {
         val QueryParameters = runtimeSymbol("QueryParameters", KotlinDependency.HTTP)
         val QueryParametersBuilder = runtimeSymbol("QueryParametersBuilder", KotlinDependency.HTTP)
         val toQueryParameters = runtimeSymbol("toQueryParameters", KotlinDependency.HTTP)
+        val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
         val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
         val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
