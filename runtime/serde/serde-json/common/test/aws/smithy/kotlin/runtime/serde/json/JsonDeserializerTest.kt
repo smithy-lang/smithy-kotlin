@@ -382,7 +382,6 @@ class JsonDeserializerTest {
                             else -> throw RuntimeException("unexpected field during test")
                         }
                     }
-                    nested
                 }
                 return nested
             }

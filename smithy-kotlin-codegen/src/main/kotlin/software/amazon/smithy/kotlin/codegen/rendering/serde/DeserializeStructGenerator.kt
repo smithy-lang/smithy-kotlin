@@ -103,6 +103,7 @@ open class DeserializeStructGenerator(
     }
 
     // TODO ~ Not yet implemented
+    @Suppress("UNUSED_PARAMETER") // Until method is implemented
     protected fun renderDocumentShapeDeserializer(memberShape: MemberShape) {
     }
 

@@ -134,6 +134,7 @@ open class XmlSerdeDescriptorGenerator(
                         traitList.add(it)
                     }
             }
+            else -> { } // No action needed
         }
 
         return traitList

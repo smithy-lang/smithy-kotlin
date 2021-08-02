@@ -29,6 +29,14 @@ allprojects {
     }
 }
 
+if (project.properties["kotlinWarningsAsErrors"]?.toString()?.toBoolean() == true) {
+    subprojects {
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+            kotlinOptions.allWarningsAsErrors = true
+        }
+    }
+}
+
 apply(from = rootProject.file("gradle/codecoverage.gradle"))
 
 val ktlint by configurations.creating

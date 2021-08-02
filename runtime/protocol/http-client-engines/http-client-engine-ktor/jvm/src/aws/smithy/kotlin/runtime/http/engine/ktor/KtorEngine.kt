@@ -120,5 +120,5 @@ internal class Waiter {
     suspend fun wait() { channel.receive() }
 
     // give the signal to continue
-    fun signal() { channel.offer(Unit) }
+    fun signal() { channel.trySend(Unit).getOrThrow() }
 }

@@ -522,6 +522,7 @@ open class SerializeStructGenerator(
         }
     }
 
+    @Suppress("UNUSED_PARAMETER") // Until method is implemented
     private fun renderDocumentShapeSerializer(memberShape: MemberShape) {
         // TODO("Not yet implemented")
     }
