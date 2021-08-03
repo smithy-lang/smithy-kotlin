@@ -179,7 +179,7 @@ class KotlinWriterTest {
             writer.write(previousValue)
         }
 
-        unit.registerSectionWriter(NestedTestId) { writer, previousValue ->
+        unit.registerSectionWriter(NestedTestId) { writer, _ ->
             val state = writer.getContext(NestedTestId.a)
             writer.write("// nested section with state $state")
         }

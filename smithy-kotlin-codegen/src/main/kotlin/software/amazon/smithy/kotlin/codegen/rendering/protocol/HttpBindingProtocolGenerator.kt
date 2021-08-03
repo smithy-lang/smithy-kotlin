@@ -593,7 +593,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         // be different though (e.g. uri/method). We need to generate a serializer/deserializer per/operation
         // NOT per input/output shape
         val deserializerSymbol = buildSymbol {
-            definitionFile = "${op.deserializerName().capitalize()}.kt"
+            val definitionFileName = op.deserializerName().replaceFirstChar(Char::uppercaseChar)
+            definitionFile = "$definitionFileName.kt"
             name = op.deserializerName()
             namespace = "${ctx.settings.pkg.name}.transform"
 
