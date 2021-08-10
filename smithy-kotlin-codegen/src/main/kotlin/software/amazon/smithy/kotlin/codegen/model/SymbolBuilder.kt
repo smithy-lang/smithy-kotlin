@@ -26,7 +26,7 @@ open class SymbolBuilder {
     var declarationFile: String? = null
     var defaultValue: String? = null
 
-    val dependencies: MutableList<SymbolDependencyContainer> = mutableListOf()
+    val dependencies: MutableSet<SymbolDependencyContainer> = mutableSetOf()
     val references: MutableList<SymbolReference> = mutableListOf()
 
     fun dependency(dependency: SymbolDependencyContainer) = dependencies.add(dependency)
