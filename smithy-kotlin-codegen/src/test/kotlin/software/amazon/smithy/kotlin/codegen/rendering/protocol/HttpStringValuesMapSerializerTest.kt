@@ -6,10 +6,12 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import org.junit.jupiter.api.Test
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
+import software.amazon.smithy.kotlin.codegen.test.newTestContext
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
@@ -21,7 +23,7 @@ class HttpStringValuesMapSerializerTest {
     private fun getTestContents(model: Model, operationId: String, location: HttpBinding.Location): String {
         val testCtx = model.newTestContext()
         val httpGenerator = testCtx.generator as HttpBindingProtocolGenerator
-        val resolver = httpGenerator.getProtocolHttpBindingResolver(testCtx.generationCtx)
+        val resolver = httpGenerator.getProtocolHttpBindingResolver(testCtx.generationCtx.model, testCtx.generationCtx.service)
         val op = model.expectShape<OperationShape>(operationId)
         val bindings = resolver.requestBindings(op).filter {
             it.location == location
