@@ -47,7 +47,7 @@ class StructureGenerator(
         writer.removeContext("class.name")
     }
 
-    private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { symbolProvider.toMemberName(it) }
+    private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { it.defaultName() }
     private val memberNameSymbolIndex: Map<MemberShape, Pair<String, Symbol>> =
         sortedMembers
             .map { member -> member to Pair(symbolProvider.toMemberName(member), symbolProvider.toSymbol(member)) }
@@ -120,7 +120,7 @@ class StructureGenerator(
                         if (targetShape.hasTrait<SensitiveTrait>()) {
                             write("append(\"#1L=*** Sensitive Data Redacted ***$separator\")", memberName)
                         } else {
-                            write("append(\"#1L=\$#1L$separator\")", memberName)
+                            write("append(\"#1L=\$#2L$separator\")", memberShape.defaultName(), memberName)
                         }
                     }
                 }

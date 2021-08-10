@@ -32,6 +32,7 @@ class StructureGeneratorTest {
                 @documentation("This *is* documentation about the shape.")
                 structure MyStruct {
                     foo: String,
+                    object: String,
                     @documentation("This *is* documentation about the member.")
                     bar: PrimitiveInteger,
                     baz: Integer,
@@ -79,6 +80,7 @@ class StructureGeneratorTest {
                 val baz: Int? = builder.baz
                 val byteValue: Byte? = builder.byteValue
                 val foo: String? = builder.foo
+                val `object`: String? = builder.`object`
                 val quux: Qux? = builder.quux
         """.formatForTest(indent = "")
 
@@ -110,6 +112,7 @@ class StructureGeneratorTest {
                 append("baz=${'$'}baz,")
                 append("byteValue=${'$'}byteValue,")
                 append("foo=${'$'}foo,")
+                append("object=${'$'}`object`,")
                 append("quux=${'$'}quux)")
             }
         """.formatForTest()
@@ -125,6 +128,7 @@ class StructureGeneratorTest {
             result = 31 * result + (baz ?: 0)
             result = 31 * result + (byteValue?.toInt() ?: 0)
             result = 31 * result + (foo?.hashCode() ?: 0)
+            result = 31 * result + (`object`?.hashCode() ?: 0)
             result = 31 * result + (quux?.hashCode() ?: 0)
             return result
         }
@@ -145,6 +149,7 @@ class StructureGeneratorTest {
                 if (baz != other.baz) return false
                 if (byteValue != other.byteValue) return false
                 if (foo != other.foo) return false
+                if (`object` != other.`object`) return false
                 if (quux != other.quux) return false
         
                 return true
@@ -173,6 +178,7 @@ class StructureGeneratorTest {
                 fun baz(baz: Int): FluentBuilder
                 fun byteValue(byteValue: Byte): FluentBuilder
                 fun foo(foo: String): FluentBuilder
+                fun `object`(`object`: String): FluentBuilder
                 fun quux(quux: Qux): FluentBuilder
             }
         """.formatForTest()
@@ -190,6 +196,7 @@ class StructureGeneratorTest {
                 var baz: Int?
                 var byteValue: Byte?
                 var foo: String?
+                var `object`: String?
                 var quux: Qux?
         
                 fun build(): MyStruct
@@ -212,6 +219,7 @@ class StructureGeneratorTest {
                 override var baz: Int? = null
                 override var byteValue: Byte? = null
                 override var foo: String? = null
+                override var `object`: String? = null
                 override var quux: Qux? = null
         
                 constructor(x: MyStruct) : this() {
@@ -219,6 +227,7 @@ class StructureGeneratorTest {
                     this.baz = x.baz
                     this.byteValue = x.byteValue
                     this.foo = x.foo
+                    this.`object` = x.`object`
                     this.quux = x.quux
                 }
         
@@ -227,6 +236,7 @@ class StructureGeneratorTest {
                 override fun baz(baz: Int): FluentBuilder = apply { this.baz = baz }
                 override fun byteValue(byteValue: Byte): FluentBuilder = apply { this.byteValue = byteValue }
                 override fun foo(foo: String): FluentBuilder = apply { this.foo = foo }
+                override fun `object`(`object`: String): FluentBuilder = apply { this.`object` = `object` }
                 override fun quux(quux: Qux): FluentBuilder = apply { this.quux = quux }
             }
         """.formatForTest()
