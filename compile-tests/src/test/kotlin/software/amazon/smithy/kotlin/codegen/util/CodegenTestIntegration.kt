@@ -5,16 +5,17 @@
 package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.namespace
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
-import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -38,14 +39,15 @@ class RestJsonTestProtocolGenerator(
     override val protocol: ShapeId = RestJson1Trait.ID
 ) : HttpBindingProtocolGenerator() {
 
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver = HttpTraitResolver(ctx, "application/json")
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
+        HttpTraitResolver(model, serviceShape, "application/json")
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         // NOP
     }
 
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator {
-        return MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx))
+        return MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
     }
 
     override fun renderSerializeOperationBody(

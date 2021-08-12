@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
@@ -28,12 +29,14 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * The default serde format for timestamps.
      */
-    protected abstract val defaultTimestampFormat: TimestampFormatTrait.Format
+    abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
     /**
      * Returns HTTP binding resolver for protocol specified by input.
+     * @param model service model
+     * @param serviceShape service under codegen
      */
-    abstract fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver
+    abstract fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver
 
     /**
      * Get the [HttpProtocolClientGenerator] to be used to render the implementation of the service client interface
@@ -157,7 +160,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     abstract fun renderDeserializeException(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter)
 
     override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpOperations = resolver.bindingOperations()
         // render HttpSerialize for all operation inputs
         httpOperations.forEach { operation ->
@@ -172,7 +175,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     }
 
     override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         // render HttpDeserialize for all operation outputs
         val httpOperations = resolver.bindingOperations()
         httpOperations.forEach { operation ->
@@ -275,7 +278,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             RuntimeTypes.Http.Request.HttpRequestBuilder,
             RuntimeTypes.Http.Request.url
         )
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val requestBindings = resolver.requestBindings(op)
         ctx.delegator.useShapeWriter(serializerSymbol) { writer ->
             // import all of http, http.request, and serde packages. All serializers requires one or more of the symbols
@@ -313,7 +316,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpTrait = resolver.httpTrait(op)
         val requestBindings = resolver.requestBindings(op)
 
@@ -365,7 +368,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * If there is a payload to render it should be bound to `builder.body` when this function returns
      */
     protected open fun renderSerializeHttpBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         if (!resolver.hasHttpBody(op)) return
 
         // payload member(s)
@@ -394,7 +397,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpTrait = resolver.httpTrait(op)
         val requestBindings = resolver.requestBindings(op)
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
@@ -515,7 +518,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         bindings: List<HttpBindingDescriptor>,
         writer: KotlinWriter
     ) {
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         HttpStringValuesMapSerializer(ctx, bindings, resolver, defaultTimestampFormat).render(writer)
     }
 
@@ -605,7 +608,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             RuntimeTypes.Http.Response.HttpResponse,
         )
 
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val responseBindings = resolver.responseBindings(op)
         ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
             // import all of http, http.response , and serde packages. All serializers requires one or more of the symbols
@@ -661,7 +664,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         ctx.delegator.useShapeWriter(deserializerSymbol) { writer ->
-            val resolver = getProtocolHttpBindingResolver(ctx)
+            val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
             val responseBindings = resolver.responseBindings(shape)
             writer
                 .addImport(exceptionDeserializerSymbols)
@@ -777,7 +780,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         bindings: List<HttpBindingDescriptor>,
         writer: KotlinWriter
     ) {
-        val resolver = getProtocolHttpBindingResolver(ctx)
+        val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         bindings.forEach { hdrBinding ->
             val memberTarget = ctx.model.expectShape(hdrBinding.member.target)
             val memberName = hdrBinding.member.defaultName()
