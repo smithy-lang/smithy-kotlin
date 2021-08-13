@@ -77,6 +77,7 @@ open class FormUrlSerdeDescriptorGenerator(
                     traits.add(SerdeFormUrl.FormUrlMapName, *it.toTypedArray())
                 }
             }
+            else -> { } // No action needed
         }
 
         return traits

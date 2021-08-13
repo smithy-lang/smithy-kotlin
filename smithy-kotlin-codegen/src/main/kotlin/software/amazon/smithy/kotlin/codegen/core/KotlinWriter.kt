@@ -146,7 +146,7 @@ fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
 
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     private val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf()
-    val dependencies: MutableList<SymbolDependency> = mutableListOf()
+    val dependencies: MutableSet<SymbolDependency> = mutableSetOf()
     private val imports = ImportDeclarations()
 
     init {

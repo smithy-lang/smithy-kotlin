@@ -14,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.utils.namespaceToPath
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.utils.CodeWriter
 import java.nio.file.Paths
 
 const val DEFAULT_SOURCE_SET_ROOT = "./src/main/kotlin/"
@@ -142,8 +141,8 @@ class KotlinDelegator(
             // Register all integrations [SectionWriterBindings] on the writer.
             integrations.forEach { integration ->
                 integration.sectionWriters.forEach { (sectionId, sectionWriter) ->
-                    kotlinWriter.registerSectionWriter(sectionId) { codeWriter: CodeWriter, previousValue: String? ->
-                        sectionWriter.write(codeWriter, previousValue)
+                    kotlinWriter.registerSectionWriter(sectionId) { writer: KotlinWriter, previousValue: String? ->
+                        sectionWriter.write(writer, previousValue)
                     }
                 }
             }

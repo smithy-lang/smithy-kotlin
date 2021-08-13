@@ -4,3 +4,13 @@
  */
 
 description = "Internal test utilities"
+
+kotlin {
+    sourceSets {
+        metadata {
+            dependencies {
+                commonMainApi(project(":runtime:utils"))
+            }
+        }
+    }
+}

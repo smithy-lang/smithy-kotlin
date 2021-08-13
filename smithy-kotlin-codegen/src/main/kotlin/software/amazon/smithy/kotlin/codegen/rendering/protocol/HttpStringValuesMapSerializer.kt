@@ -5,9 +5,11 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
+import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
+import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
@@ -26,17 +28,25 @@ import software.amazon.smithy.model.traits.*
  * ```
  */
 class HttpStringValuesMapSerializer(
-    private val ctx: ProtocolGenerator.GenerationContext,
+    private val model: Model,
+    private val symbolProvider: SymbolProvider,
     private val bindings: List<HttpBindingDescriptor>,
     private val resolver: HttpBindingResolver,
     private val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) {
+    constructor(
+        ctx: ProtocolGenerator.GenerationContext,
+        bindings: List<HttpBindingDescriptor>,
+        resolver: HttpBindingResolver,
+        defaultTimestampFormat: TimestampFormatTrait.Format,
+    ) : this(ctx.model, ctx.symbolProvider, bindings, resolver, defaultTimestampFormat)
+
     fun render(
         writer: KotlinWriter
     ) {
         bindings.sortedBy(HttpBindingDescriptor::memberName).forEach {
-            val memberName = ctx.symbolProvider.toMemberName(it.member)
-            val memberTarget = ctx.model.expectShape(it.member.target)
+            val memberName = symbolProvider.toMemberName(it.member)
+            val memberTarget = model.expectShape(it.member.target)
             val paramName = it.locationName
             val location = it.location
             val member = it.member
@@ -62,7 +72,7 @@ class HttpStringValuesMapSerializer(
                     // encode to string
                     val encodedValue = "\"\${input.$memberName}\""
 
-                    val targetSymbol = ctx.symbolProvider.toSymbol(member)
+                    val targetSymbol = symbolProvider.toSymbol(member)
                     val defaultValue = targetSymbol.defaultValue()
                     if ((memberTarget.isNumberShape || memberTarget.isBooleanShape) && targetSymbol.isNotBoxed && defaultValue != null) {
                         // unboxed primitive with a default value
@@ -81,7 +91,7 @@ class HttpStringValuesMapSerializer(
     }
 
     private fun renderCollectionShape(binding: HttpBindingDescriptor, memberTarget: CollectionShape, writer: KotlinWriter) {
-        val collectionMemberTarget = ctx.model.expectShape(memberTarget.member.target)
+        val collectionMemberTarget = model.expectShape(memberTarget.member.target)
         val mapFnContents = when (collectionMemberTarget.type) {
             ShapeType.TIMESTAMP -> {
                 // special case of timestamp list
@@ -103,7 +113,7 @@ class HttpStringValuesMapSerializer(
             else -> "\"\$it\""
         }
 
-        val memberName = ctx.symbolProvider.toMemberName(binding.member)
+        val memberName = symbolProvider.toMemberName(binding.member)
         val paramName = binding.locationName
         // appendAll collection parameter 2
         val param2 = if (mapFnContents.isEmpty()) "input.$memberName" else "input.$memberName.map { $mapFnContents }"
@@ -116,7 +126,7 @@ class HttpStringValuesMapSerializer(
     }
 
     private fun renderStringShape(binding: HttpBindingDescriptor, memberTarget: StringShape, writer: KotlinWriter) {
-        val memberName = ctx.symbolProvider.toMemberName(binding.member)
+        val memberName = symbolProvider.toMemberName(binding.member)
         val location = binding.location
         val paramName = binding.locationName
 

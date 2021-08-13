@@ -23,7 +23,7 @@ fun isValidVersion(version: String): Boolean {
 private fun getDefaultRuntimeVersion(): String {
     // generated as part of the build, see smithy-kotlin-codegen/build.gradle.kts
     try {
-        val version = object {}.javaClass.getResource("sdk-version.txt").readText()
+        val version = object {}.javaClass.getResource("sdk-version.txt")?.readText() ?: throw CodegenException("sdk-version.txt does not exist")
         check(isValidVersion(version)) { "Version parsed from sdk-version.txt '$version' is not a valid version string" }
         return version
     } catch (ex: Exception) {
