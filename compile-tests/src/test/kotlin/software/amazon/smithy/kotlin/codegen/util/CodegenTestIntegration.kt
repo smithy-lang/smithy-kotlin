@@ -90,6 +90,14 @@ class RestJsonTestProtocolGenerator(
         writer.write("""TODO("not-implemented - compile only test")""")
     }
 
+    override fun renderThrowOperationError(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+        writer.write("""TODO("not-implemented - compile only test")""")
+    }
+
 }
 
 class MockRestJsonProtocolClientGenerator(

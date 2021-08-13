@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.model.shapes.OperationShape
 
 /**
  * Interface that allows middleware to be registered and configured with the generated protocol client
@@ -18,6 +19,11 @@ interface ProtocolMiddleware {
     // flag that controls whether renderConfigure() needs called
     val needsConfiguration: Boolean
         get() = true
+
+    /**
+     * Test if this middleware applies to a given operation.
+     */
+    fun isEnabledFor(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Boolean = true
 
     /**
      * Register any imports or dependencies that will be needed to use this middleware at runtime
@@ -38,8 +44,7 @@ interface ProtocolMiddleware {
     fun renderConfigure(writer: KotlinWriter) {}
 
     /**
-     * Render any instance properties (e.g. add private properties that exist for the lifetime of the client
-     * that are re-used by the feature)
+     * Render any internal static properties re-used by the feature
      */
     fun renderProperties(writer: KotlinWriter) {}
 }

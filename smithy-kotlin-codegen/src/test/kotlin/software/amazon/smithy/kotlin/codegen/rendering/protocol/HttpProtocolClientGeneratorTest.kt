@@ -83,7 +83,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFoo"
             }
         }
-        registerDefaultMiddleware(op)
+        registerGetFooMiddleware(config, op)
         return op.roundTrip(client, input)
     }
 """,
@@ -98,7 +98,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoInput"
             }
         }
-        registerDefaultMiddleware(op)
+        registerGetFooNoInputMiddleware(config, op)
         return op.roundTrip(client, input)
     }
 """,
@@ -113,7 +113,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoOutput"
             }
         }
-        registerDefaultMiddleware(op)
+        registerGetFooNoOutputMiddleware(config, op)
         return op.roundTrip(client, input)
     }
 """,
@@ -128,7 +128,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInput"
             }
         }
-        registerDefaultMiddleware(op)
+        registerGetFooStreamingInputMiddleware(config, op)
         return op.roundTrip(client, input)
     }
 """,
@@ -143,7 +143,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutput"
             }
         }
-        registerDefaultMiddleware(op)
+        registerGetFooStreamingOutputMiddleware(config, op)
         return op.execute(client, input, block)
     }
 """,
@@ -158,7 +158,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutputNoInput"
             }
         }
-        registerDefaultMiddleware(op)
+        registerGetFooStreamingOutputNoInputMiddleware(config, op)
         return op.execute(client, input, block)
     }
 """,
@@ -173,7 +173,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInputNoOutput"
             }
         }
-        registerDefaultMiddleware(op)
+        registerGetFooStreamingInputNoOutputMiddleware(config, op)
         return op.roundTrip(client, input)
     }
 """
