@@ -64,10 +64,10 @@ class AttributesTest {
     fun testSetIfNotNull() {
         val attributes = Attributes()
         val strKey = AttributeKey<String>("string")
-        attributes.setIfNotNull(strKey, null)
+        attributes.setIfValueNotNull(strKey, null)
         assertFalse(attributes.contains(strKey))
 
-        attributes.setIfNotNull(strKey, "foo")
+        attributes.setIfValueNotNull(strKey, "foo")
         assertEquals("foo", attributes[strKey])
     }
 }

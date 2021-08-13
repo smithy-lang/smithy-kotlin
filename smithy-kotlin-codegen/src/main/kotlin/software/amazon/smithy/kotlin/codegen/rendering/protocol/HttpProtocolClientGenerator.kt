@@ -24,7 +24,7 @@ import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
  */
 abstract class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
-    protected val middlewares: List<ProtocolMiddleware>,
+    protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
 
@@ -51,7 +51,7 @@ abstract class HttpProtocolClientGenerator(
                 // allow middleware to write properties that can be re-used
                 val appliedMiddleware = mutableSetOf<ProtocolMiddleware>()
                 operations.forEach { op ->
-                    middlewares.filterTo(appliedMiddleware) { it.isEnabledFor(ctx, op) }
+                    middleware.filterTo(appliedMiddleware) { it.isEnabledFor(ctx, op) }
                 }
 
                 operations.first().let { op ->
@@ -255,9 +255,7 @@ abstract class HttpProtocolClientGenerator(
         val (inputSymbolName, outputSymbolName) = ioSymbolNames(op)
 
         writer.addImport("${ctx.settings.pkg.name}.model", "*")
-        setOf(
-            RuntimeTypes.Http.Operation.SdkHttpOperation,
-        ).forEach(writer::addImport)
+        writer.addImport(RuntimeTypes.Http.Operation.SdkHttpOperation)
 
         val service = ctx.symbolProvider.toSymbol(ctx.service)
 
@@ -271,7 +269,7 @@ abstract class HttpProtocolClientGenerator(
         )
             .openBlock("op.apply {")
             .call {
-                middlewares
+                middleware
                     .filter { it.isEnabledFor(ctx, op) }
                     .forEach { middleware ->
                         middleware.addImportsAndDependencies(writer)
