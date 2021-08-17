@@ -3,58 +3,76 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
-
-publishing {
-    repositories {
-        maven { name = "testLocal"; url = "$rootProject.buildDir/m2" }
-        maven {
-            name = "awsCodeArtifact"
-            url = project.findProperty("codeartifact.url")
-            credentials {
-                username = "aws"
-                password = project.findProperty("codeartifact.token") ?: System.getenv("CODEARTIFACT_TOKEN")
-            }
-        }
-    }
-
-    publications.all {
-        pom {
-            url = "https://github.com/awslabs/smithy-kotlin"
-            licenses {
-                license {
-                    name = "The Apache License, Version 2.0"
-                    url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                }
-            }
-            developers {
-                developer {
-                    id = "smithy-kotlin"
-                    name = "AWS SDK Kotlin Team"
-                    // TODO - team email?
-                }
-            }
-            scm {
-                connection = "scm:git:git://github.com/awslabs/smithy-kotlin.git"
-                developerConnection = "scm:git:ssh://github.com/awslabs/smith-kotlin.git"
-                url = "https://github.com/awslabs/smithy-kotlin"
-            }
-        }
-    }
-
-    if (project.hasProperty("signingKey") && project.hasProperty("signingPassword")) {
-        signing {
-            useInMemoryPgpKeys(
-                    (String) project.property("signingKey"),
-                    (String) project.property("signingPassword")
-            )
-            sign(publications)
-        }
-    }
+// FIXME: Create a real "javadoc" JAR from the Dokka output
+tasks.register("javadocJar", Jar) {
+    archiveClassifier.set("javadoc")
+    from()
 }
 
-tasks.register('publishToAwsCodeArtifact') {
-    dependsOn 'publishAllPublicationsToAwsCodeArtifactRepository'
-    group 'publishing'
+project.afterEvaluate {
+    String publishGroupName = project.findProperty("publishGroupName")
+    if (publishGroupName == null || project.group.startsWith(publishGroupName)) {
+        println "Going to publish ${project.name} because publishGroupName = $publishGroupName and project.group = ${project.group}"
+        apply plugin: 'maven-publish'
+        apply plugin: 'signing'
+
+        publishing {
+            repositories {
+                maven { name = "testLocal"; url = "$rootProject.buildDir/m2" }
+                maven {
+                    name = "awsCodeArtifact"
+                    url = project.findProperty("codeartifact.url")
+                    credentials {
+                        username = "aws"
+                        password = project.findProperty("codeartifact.token") ?: System.getenv("CODEARTIFACT_TOKEN")
+                    }
+                }
+            }
+
+            publications.all {
+                pom {
+                    name = project.name
+                    description = project.description
+                    url = "https://github.com/awslabs/smithy-kotlin"
+                    licenses {
+                        license {
+                            name = "The Apache License, Version 2.0"
+                            url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = "smithy-kotlin"
+                            name = "AWS SDK Kotlin Team"
+                            // TODO - team email?
+                        }
+                    }
+                    scm {
+                        connection = "scm:git:git://github.com/awslabs/smithy-kotlin.git"
+                        developerConnection = "scm:git:ssh://github.com/awslabs/smith-kotlin.git"
+                        url = "https://github.com/awslabs/smithy-kotlin"
+                    }
+
+                    artifact(tasks["javadocJar"])
+                }
+            }
+
+            if (project.hasProperty("signingKey") && project.hasProperty("signingPassword")) {
+                signing {
+                    useInMemoryPgpKeys(
+                            (String) project.property("signingKey"),
+                            (String) project.property("signingPassword")
+                    )
+                    sign(publications)
+                }
+            }
+        }
+
+        tasks.register('publishToAwsCodeArtifact') {
+            dependsOn 'publishAllPublicationsToAwsCodeArtifactRepository'
+            group 'publishing'
+        }
+    } else {
+        println "Skip publishing ${project.name} because publishGroupName = $publishGroupName and project.group = ${project.group}"
+    }
 }
