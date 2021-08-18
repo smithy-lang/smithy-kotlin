@@ -12,7 +12,6 @@ tasks.register("javadocJar", Jar) {
 project.afterEvaluate {
     String publishGroupName = project.findProperty("publishGroupName")
     if (publishGroupName == null || project.group.startsWith(publishGroupName)) {
-        println "Going to publish ${project.name} because publishGroupName = $publishGroupName and project.group = ${project.group}"
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
 
@@ -72,7 +71,5 @@ project.afterEvaluate {
             dependsOn 'publishAllPublicationsToAwsCodeArtifactRepository'
             group 'publishing'
         }
-    } else {
-        println "Skip publishing ${project.name} because publishGroupName = $publishGroupName and project.group = ${project.group}"
     }
 }
