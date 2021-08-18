@@ -14,7 +14,7 @@ extra["displayName"] = "Smithy :: Kotlin :: Codegen"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 
 val sdkVersion: String by project
-group = "software.amazon.smithy"
+group = "software.amazon.smithy.kotlin"
 version = sdkVersion
 
 val smithyVersion: String by project
@@ -101,14 +101,19 @@ tasks.jacocoTestReport {
 // Always run the jacoco test report after testing.
 tasks["test"].finalizedBy(tasks["jacocoTestReport"])
 
-publishing {
-    publications {
-        create<MavenPublication>("codegen") {
-            from(components["java"])
-            artifact(sourcesJar)
+if (
+    !project.hasProperty("publishGroupName") ||
+    group.toString().startsWith(project.property("publishGroupName") as String)
+) {
+    plugins.apply("maven-publish")
+    publishing {
+        publications {
+            create<MavenPublication>("codegen") {
+                from(components["java"])
+                artifact(sourcesJar)
+            }
         }
     }
+
+    apply(from = rootProject.file("gradle/publish.gradle"))
 }
-
-apply(from = rootProject.file("gradle/publish.gradle"))
-
