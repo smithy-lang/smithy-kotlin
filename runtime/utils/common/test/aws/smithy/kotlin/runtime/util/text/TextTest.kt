@@ -101,5 +101,15 @@ class TextTest {
         expectedNoEquals.entries.forEach { entry ->
             actualNoEquals.shouldContain(entry.key, entry.value)
         }
+
+        val queryValueWithEquals = "foo=bar&baz=quux=="
+        val actualValueWithEquals = queryValueWithEquals.splitAsQueryString()
+        val expectedValueWithEquals = mapOf(
+            "foo" to listOf("bar"),
+            "baz" to listOf("quux=="),
+        )
+        expectedValueWithEquals.entries.forEach { entry ->
+            actualValueWithEquals.shouldContain(entry.key, entry.value)
+        }
     }
 }
