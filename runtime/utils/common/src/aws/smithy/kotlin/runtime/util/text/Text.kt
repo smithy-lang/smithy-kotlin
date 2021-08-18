@@ -114,7 +114,7 @@ public fun String.splitAsQueryString(): Map<String, List<String>> {
     val entries = mutableMapOf<String, MutableList<String>>()
     split("&")
         .forEach { pair ->
-            val parts = pair.split("=")
+            val parts = pair.split("=", limit = 2)
             val key = parts[0]
             val value = when (parts.size) {
                 1 -> ""
