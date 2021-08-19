@@ -10,8 +10,8 @@ kotlin.sourceSets {
         implementation group: "org.jetbrains.kotlinx", name: "kotlinx-coroutines-core", version: coroutinesVersion
     }
     commonTest.dependencies {
-        implementation "org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion"
-        implementation "org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion"
+        implementation "org.jetbrains.kotlin:kotlin-test-common:$kotlinTestVersion"
+        implementation "org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinTestVersion"
         implementation "io.kotest:kotest-assertions-core:$kotestVersion"
     }
 }

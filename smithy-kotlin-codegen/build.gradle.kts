@@ -19,6 +19,7 @@ version = sdkVersion
 
 val smithyVersion: String by project
 val kotlinVersion: String by project
+val kotlinTestVersion: String by project
 val junitVersion: String by project
 val kotestVersion: String by project
 
@@ -33,8 +34,8 @@ dependencies {
     // These are not set as test dependencies so they can be shared with other modules
     implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
     implementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-    implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-test:$kotlinTestVersion")
+    implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinTestVersion")
 }
 
 val generateSdkRuntimeVersion by tasks.registering {
