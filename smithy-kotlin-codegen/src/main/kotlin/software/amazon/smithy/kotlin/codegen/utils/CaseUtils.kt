@@ -50,7 +50,7 @@ fun String.toCamelCase(): String = toPascalCase().replaceFirstChar { c -> c.lowe
  * * 'A' → 'a'
  * * '!' → '!'
  */
-fun Char.toggleCase(): Char = if (isUpperCase()) toLowerCase() else toUpperCase()
+fun Char.toggleCase(): Char = if (isUpperCase()) lowercaseChar() else uppercaseChar()
 
 /**
  * Toggles the case of the first character in the string. For example:

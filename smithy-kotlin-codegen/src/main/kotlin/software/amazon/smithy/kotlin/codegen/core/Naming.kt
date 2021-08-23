@@ -82,3 +82,9 @@ fun EnumDefinition.variantName(): String {
  * e.g. `VariantName`
  */
 fun MemberShape.unionVariantName(): String = this.memberName.toPascalCase()
+
+/**
+ * Get the name of the middleware registration function for an operation
+ * e.g. `register{OperationName}Middleware
+ */
+fun OperationShape.registerMiddlewareName(): String = "register${this.defaultName().replaceFirstChar(Char::uppercase)}Middleware"

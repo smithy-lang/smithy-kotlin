@@ -11,6 +11,7 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import kotlin.test.assertEquals
 
 class KotlinWriterTest {
 
@@ -179,7 +180,7 @@ class KotlinWriterTest {
             writer.write(previousValue)
         }
 
-        unit.registerSectionWriter(NestedTestId) { writer, previousValue ->
+        unit.registerSectionWriter(NestedTestId) { writer, _ ->
             val state = writer.getContext(NestedTestId.a)
             writer.write("// nested section with state $state")
         }
@@ -201,5 +202,23 @@ class KotlinWriterTest {
         val actual = unit.toString()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it only adds redundant dependencies once`() {
+        val unit = KotlinWriter(TestModelDefault.NAMESPACE)
+
+        // Do all these things twice
+        val symbol = buildSymbol {
+            dependency(KotlinDependency.KOTLIN_TEST)
+            dependency(KotlinDependency.KOTLIN_TEST)
+        }
+        unit.addImport(symbol, "Foo")
+        unit.addImport(symbol, "Foo")
+        unit.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
+        unit.dependencies.addAll(KotlinDependency.KOTLIN_TEST.dependencies)
+
+        val expected = setOf(KotlinDependency.KOTLIN_TEST.dependencies.first())
+        assertEquals(expected, unit.dependencies)
     }
 }

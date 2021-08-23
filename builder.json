@@ -5,9 +5,16 @@
     "variables": {
         "gradlew": "{source_dir}/gradlew -p {source_dir}"
     },
+    "env": {
+        "JAVA_HOME": "{java_home}"
+    },
+    "imports": [
+        "JDK8"
+    ],
+    "build_dir": "target/build",
     "build_steps": [
         "pwd",
-        "{gradlew} assemble" 
+        "{gradlew} assemble --parallel" 
     ],
     "post_build_steps": [
         "{gradlew} publishToMavenLocal" 
@@ -15,26 +22,7 @@
     "test_steps": [
         "{gradlew} test allTests"
     ],
-    "imports": [
-        "JDK8"
-    ],
-    "build_dir": "target/build",
-    "env": {
-        "JAVA_HOME": "{java_home}"
-    },
     "downstream": [
         { "name": "aws-sdk-kotlin" }    
-    ],
-    "hosts": {
-        "ubuntu": {
-            "packages": [
-                "openjdk-8-jdk-headless"
-            ]
-        },
-        "debian": {
-            "packages": [
-                "openjdk-8-jdk-headless"
-            ]
-        }
-    }
+    ]
 }

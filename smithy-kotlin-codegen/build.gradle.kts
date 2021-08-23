@@ -14,7 +14,7 @@ extra["displayName"] = "Smithy :: Kotlin :: Codegen"
 extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
 
 val sdkVersion: String by project
-group = "software.amazon.smithy"
+group = "software.amazon.smithy.kotlin"
 version = sdkVersion
 
 val smithyVersion: String by project
@@ -111,4 +111,3 @@ publishing {
 }
 
 apply(from = rootProject.file("gradle/publish.gradle"))
-

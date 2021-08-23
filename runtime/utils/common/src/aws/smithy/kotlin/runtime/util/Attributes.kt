@@ -75,6 +75,13 @@ fun <T : Any> Attributes.putIfAbsent(key: AttributeKey<T>, value: T) {
 }
 
 /**
+ * Set a value for [key] only if [value] is not null
+ */
+fun <T : Any> Attributes.setIfValueNotNull(key: AttributeKey<T>, value: T?) {
+    if (value != null) set(key, value)
+}
+
+/**
  * Removes an attribute with the specified [key] and returns its current value, returns `null` if an attribute doesn't exist
  */
 fun <T : Any> Attributes.takeOrNull(key: AttributeKey<T>): T? = getOrNull(key).also { remove(key) }

@@ -18,6 +18,7 @@ buildscript {
 plugins {
     kotlin("jvm") apply false
     id("org.jetbrains.dokka")
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 
 allprojects {
@@ -29,7 +30,38 @@ allprojects {
     }
 }
 
+if (project.properties["kotlinWarningsAsErrors"]?.toString()?.toBoolean() == true) {
+    subprojects {
+        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+            kotlinOptions.allWarningsAsErrors = true
+        }
+    }
+}
+
 apply(from = rootProject.file("gradle/codecoverage.gradle"))
+
+if (
+    project.hasProperty("sonatypeUsername") &&
+    project.hasProperty("sonatypePassword") &&
+    project.hasProperty("publishGroupName")
+) {
+    apply(plugin = "io.github.gradle-nexus.publish-plugin")
+
+    val publishGroupName = project.property("publishGroupName") as String
+    group = publishGroupName
+
+    nexusPublishing {
+        packageGroup.set(publishGroupName)
+        repositories {
+            create("awsNexus") {
+                nexusUrl.set(uri("https://aws.oss.sonatype.org/service/local/"))
+                snapshotRepositoryUrl.set(uri("https://aws.oss.sonatype.org/content/repositories/snapshots/"))
+                username.set(project.property("sonatypeUsername") as String)
+                password.set(project.property("sonatypePassword") as String)
+            }
+        }
+    }
+}
 
 val ktlint by configurations.creating
 val ktlintVersion: String by project

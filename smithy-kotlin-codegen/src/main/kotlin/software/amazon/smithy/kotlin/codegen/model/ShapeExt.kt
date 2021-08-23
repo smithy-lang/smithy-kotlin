@@ -73,8 +73,22 @@ inline fun <reified T : Trait> Shape.expectTrait(): T = expectTrait(T::class.jav
  * Kotlin sugar for getTrait() check. e.g. shape.getTrait<EnumTrait>() instead of shape.getTrait(EnumTrait::class.java)
  */
 inline fun <reified T : Trait> Shape.getTrait(): T? = getTrait(T::class.java).getOrNull()
-fun StructureShape.hasStreamingMember(model: Model): Boolean =
-    this.allMembers.values.any { model.getShape(it.target).get().hasTrait<StreamingTrait>() }
+
+fun StructureShape.hasStreamingMember(model: Model): Boolean = findStreamingMember(model) != null
+fun UnionShape.hasStreamingMember(model: Model) = findMemberWithTrait<StreamingTrait>(model) != null
+
+/*
+ * Returns the member of this structure targeted with streaming trait (if it exists).
+ *
+ * A structure must have at most one streaming member.
+ */
+fun StructureShape.findStreamingMember(model: Model): MemberShape? = findMemberWithTrait<StreamingTrait>(model)
+
+inline fun <reified T : Trait> StructureShape.findMemberWithTrait(model: Model): MemberShape? =
+    members().find { it.getMemberTrait(model, T::class.java).isPresent }
+
+inline fun <reified T : Trait> UnionShape.findMemberWithTrait(model: Model): MemberShape? =
+    members().find { it.getMemberTrait(model, T::class.java).isPresent }
 
 /**
  * Returns true if any operation bound to the service contains an input member marked with the IdempotencyTokenTrait

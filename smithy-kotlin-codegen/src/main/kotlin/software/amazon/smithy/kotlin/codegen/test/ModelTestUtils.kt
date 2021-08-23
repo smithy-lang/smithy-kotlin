@@ -18,6 +18,7 @@ import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.shapes.SmithyIdlModelSerializer
+import software.amazon.smithy.model.validation.ValidatedResultException
 import java.net.URL
 
 /**
@@ -78,11 +79,17 @@ internal fun URL.toSmithyModel(serviceShapeId: String? = null): Model {
  */
 fun String.toSmithyModel(sourceLocation: String? = null, serviceShapeId: String? = null, applyDefaultTransforms: Boolean = true): Model {
     val processed = if (this.trimStart().startsWith("\$version")) this else "\$version: \"1.0\"\n$this"
-    val model = Model.assembler()
-        .discoverModels()
-        .addUnparsedModel(sourceLocation ?: "test.smithy", processed)
-        .assemble()
-        .unwrap()
+    val model = try {
+        Model.assembler()
+            .discoverModels()
+            .addUnparsedModel(sourceLocation ?: "test.smithy", processed)
+            .assemble()
+            .unwrap()
+    } catch (e: ValidatedResultException) {
+        System.err.println("Model failed to parse:")
+        System.err.println(this)
+        throw e
+    }
     return if (applyDefaultTransforms) model.applyKotlinCodegenTransforms(serviceShapeId) else model
 }
 

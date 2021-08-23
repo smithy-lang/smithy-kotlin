@@ -139,15 +139,15 @@ internal class TestProtocolClientGenerator(
 // A HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies)
 internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
-    override fun getProtocolHttpBindingResolver(ctx: ProtocolGenerator.GenerationContext): HttpBindingResolver =
-        HttpTraitResolver(ctx, "application/json")
+    override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
+        HttpTraitResolver(model, serviceShape, "application/json")
 
     override val protocol: ShapeId = RestJson1Trait.ID
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
 
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx))
+        TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
 
     override fun renderSerializeOperationBody(
         ctx: ProtocolGenerator.GenerationContext,
@@ -180,6 +180,13 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun renderDeserializeException(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
+        writer: KotlinWriter
+    ) {
+    }
+
+    override fun renderThrowOperationError(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
         writer: KotlinWriter
     ) {
     }

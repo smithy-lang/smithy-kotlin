@@ -42,6 +42,12 @@ class QueryParametersBuilder : StringValuesMapBuilder(true, 8) {
     }
 }
 
+fun Map<String, String>.toQueryParameters(): QueryParameters {
+    val builder = QueryParametersBuilder()
+    entries.forEach { entry -> builder.append(entry.key, entry.value) }
+    return builder.build()
+}
+
 private class QueryParametersImpl(values: Map<String, List<String>> = emptyMap()) : QueryParameters, StringValuesMapImpl(true, values) {
     override fun toString(): String = "QueryParameters ${entries()}"
 }
