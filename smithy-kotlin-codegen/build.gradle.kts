@@ -101,19 +101,13 @@ tasks.jacocoTestReport {
 // Always run the jacoco test report after testing.
 tasks["test"].finalizedBy(tasks["jacocoTestReport"])
 
-if (
-    !project.hasProperty("publishGroupName") ||
-    group.toString().startsWith(project.property("publishGroupName") as String)
-) {
-    plugins.apply("maven-publish")
-    publishing {
-        publications {
-            create<MavenPublication>("codegen") {
-                from(components["java"])
-                artifact(sourcesJar)
-            }
+publishing {
+    publications {
+        create<MavenPublication>("codegen") {
+            from(components["java"])
+            artifact(sourcesJar)
         }
     }
-
-    apply(from = rootProject.file("gradle/publish.gradle"))
 }
+
+apply(from = rootProject.file("gradle/publish.gradle"))
