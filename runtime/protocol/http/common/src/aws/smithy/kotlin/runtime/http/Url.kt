@@ -18,6 +18,7 @@ import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
  * @property fragment URL fragment
  * @property userInfo username and pasword (optional)
  * @property forceQuery keep trailing question mark regardless of whether there are any query parameters
+ * @property encodeParameters configures if parameter values are encoded (default) or left as-is.
  */
 data class Url(
     val scheme: Protocol,
@@ -27,7 +28,8 @@ data class Url(
     val parameters: QueryParameters = QueryParameters.Empty,
     val fragment: String? = null,
     val userInfo: UserInfo? = null,
-    val forceQuery: Boolean = false
+    val forceQuery: Boolean = false,
+    val encodeParameters: Boolean = true
 ) {
     init {
         require(port in 1..65536) { "port must be in between 1 and 65536" }
@@ -63,7 +65,7 @@ data class Url(
      * Get the full encoded path including query parameters and fragment
      */
     public val encodedPath: String
-        get() = encodePath(path, parameters.entries(), fragment, forceQuery)
+        get() = encodePath(path, parameters.entries(), fragment, forceQuery, encodeParameters)
 }
 
 // get the full encoded URL path component e.g. `/path/foo/bar?x=1&y=2#fragment`
@@ -71,7 +73,8 @@ private fun encodePath(
     path: String,
     queryParameters: Set<Map.Entry<String, List<String>>>? = null,
     fragment: String? = null,
-    forceQuery: Boolean = false
+    forceQuery: Boolean = false,
+    encodeParameters: Boolean = true
 ): String = buildString {
     if (path.isNotBlank()) {
         append("/")
@@ -82,7 +85,11 @@ private fun encodePath(
         append("?")
     }
 
-    queryParameters?.let { urlEncodeQueryParametersTo(it, this) }
+    if (encodeParameters) {
+        queryParameters?.let { urlEncodeQueryParametersTo(it, this) }
+    } else {
+        queryParameters?.let { urlEncodeQueryParametersTo(it, this, encodeFn = { param -> param }) }
+    }
 
     if (fragment != null && fragment.isNotBlank()) {
         append("#")
