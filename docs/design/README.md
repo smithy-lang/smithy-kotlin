@@ -16,4 +16,4 @@ Start here for an overview:
 * [Marshaling/serde](marshalling-serde.md) (coming soon)
 * [Modeled errors](modeled-errors.md)
 * [Nullable properties in SDK domain types](nullable-properties-in-sdk-domain-types.md) (coming soon)
-* [Pagination](pagination.md) (coming soon)
+* [Pagination](paginators.md)

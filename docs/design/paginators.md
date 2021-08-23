@@ -108,10 +108,9 @@ class ListFunctionsPaginator(
     override val hasMorePages: Boolean
         get() = isFirstPage || (cursor?.isNotEmpty() ?: false)
 
-    override suspend fun next(maxPageSize: Int?): ListFunctionsResponse? {
+    override suspend fun next(): ListFunctionsResponse? {
         val req = initialRequest.copy {
-            marker = cursor
-            maxItems = maxPageSize
+            this.marker = cursor
         }
 
         val result = client.listFunctions(req)
