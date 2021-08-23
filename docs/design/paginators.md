@@ -109,6 +109,8 @@ class ListFunctionsPaginator(
         get() = isFirstPage || (cursor?.isNotEmpty() ?: false)
 
     override suspend fun next(): ListFunctionsResponse? {
+        if (!hasMorePages) return null
+
         val req = initialRequest.copy {
             this.marker = cursor
         }
@@ -206,7 +208,7 @@ fun listFunctionsPaginated(...)
 
 ### API ALT 1 - Expose Paginators as Flows
 
-An alternative design would be to just expose paginators as flows rather than creating a new `Paginator` interface. This design hasn’t been fully explored but one issue is that this would expose the `[Flow](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html)` type which is not defined in the `stdlib` but rather in `kotlinx-coroutines-core`.
+An alternative design would be to just expose paginators as flows rather than creating a new `Paginator` interface. This design hasn’t been fully explored but one issue is that this would expose the [Flow](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html) type which is not defined in the `stdlib` but rather in `kotlinx-coroutines-core`.
 
 
 ## Additional Considerations
@@ -221,7 +223,7 @@ For better coroutine support, the runtime (possibly in a separate extension pack
 /*
  * Consume this [Paginator] as a [Flow]
  */
-fun<T> Paginator<T>.asFlow(maxPageSize: Int? = null): Flow<T> = flow {
+fun<T> Paginator<T>.asFlow(): Flow<T> = flow {
     while(hasMorePages) {
         val result = next(maxPageSize)
         if (result != null) {
