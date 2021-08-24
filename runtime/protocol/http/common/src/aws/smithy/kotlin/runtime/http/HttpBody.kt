@@ -59,30 +59,30 @@ sealed class HttpBody {
          * @throws UnsupportedOperationException if the stream can only be consumed once. Consumers can check
          * [isReplayable] before calling
          */
-        open fun reset() { throw UnsupportedOperationException("${this::class.qualifiedName} can only be consumed once") }
+        open fun reset() { throw UnsupportedOperationException("${this::class.simpleName} can only be consumed once") }
     }
 }
 
 /**
  * Convert a [ByteStream] to the equivalent [HttpBody] variant
  */
-fun ByteStream.toHttpBody(): HttpBody = when (val bytestream = this) {
+fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
     is ByteStream.Buffer -> object : HttpBody.Bytes() {
-        override val contentLength: Long? = bytestream.contentLength
-        override fun bytes(): ByteArray = bytestream.bytes()
+        override val contentLength: Long? = byteStream.contentLength
+        override fun bytes(): ByteArray = byteStream.bytes()
     }
     is ByteStream.OneShotStream -> object : HttpBody.Streaming() {
-        override val contentLength: Long? = bytestream.contentLength
-        override fun readFrom(): SdkByteReadChannel = bytestream.readFrom()
+        override val contentLength: Long? = byteStream.contentLength
+        override fun readFrom(): SdkByteReadChannel = byteStream.readFrom()
     }
     is ByteStream.ReplayableStream -> object : HttpBody.Streaming() {
-        private var chan: SdkByteReadChannel? = null
-        override val contentLength: Long? = bytestream.contentLength
-        override fun readFrom(): SdkByteReadChannel = chan ?: bytestream.newReader().also { chan = it }
+        private var channel: SdkByteReadChannel? = null
+        override val contentLength: Long? = byteStream.contentLength
+        override fun readFrom(): SdkByteReadChannel = channel ?: byteStream.newReader().also { channel = it }
         override val isReplayable: Boolean = true
         override fun reset() {
-            chan?.close()
-            chan = null
+            channel?.close()
+            channel = null
         }
     }
 }
@@ -101,7 +101,7 @@ suspend fun HttpBody.readAll(): ByteArray? = when (this) {
         // readRemaining will read up to `limit` bytes (which is defaulted to Int.MAX_VALUE) or until
         // the stream is closed and no more bytes remain.
         // This is usually sufficient to consume the stream but technically that's not what it's doing.
-        // Save us a painful debug session later in the very rare chance this were to occur..
+        // Save us a painful debug session later in the very rare chance this were to occur.
         check(readChan.isClosedForRead) { "failed to read all HttpBody bytes from stream" }
         bytes
     }
