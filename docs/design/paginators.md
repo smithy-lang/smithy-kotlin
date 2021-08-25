@@ -257,12 +257,8 @@ For better coroutine support, the runtime could provide adapters for Paginators 
  */
 fun<T> Paginator<T>.asFlow(): Flow<T> = flow {
     while(hasMorePages) {
-        val result = next(maxPageSize)
-        if (result != null) {
-            emit(result)
-        }else {
-            break
-        }
+        val result = next()
+         emit(result)
     }
 }
 ```
