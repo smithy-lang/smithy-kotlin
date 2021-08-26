@@ -52,6 +52,7 @@ object RuntimeTypes {
             val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.HTTP, "operation")
             val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.HTTP, "operation")
             val SdkHttpOperation = runtimeSymbol("SdkHttpOperation", KotlinDependency.HTTP, "operation")
+            val OperationRequest = runtimeSymbol("OperationRequest", KotlinDependency.HTTP, "operation")
             val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
             val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
