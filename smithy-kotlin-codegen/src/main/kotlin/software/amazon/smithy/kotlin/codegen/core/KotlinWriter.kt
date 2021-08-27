@@ -100,7 +100,7 @@ fun <T : CodeWriter> T.closeAndOpenBlock(
     vararg args: Any,
 ): T = apply {
     dedent()
-    openBlock(textBeforeNewLine, args)
+    openBlock(textBeforeNewLine, *args)
     indent()
 }
 
