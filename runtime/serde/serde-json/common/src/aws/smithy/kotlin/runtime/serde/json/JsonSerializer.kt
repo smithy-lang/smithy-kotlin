@@ -5,6 +5,8 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
     companion object {
@@ -94,9 +96,9 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         serializeChar(value)
     }
 
-    override fun rawField(descriptor: SdkFieldDescriptor, value: String) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) {
         jsonWriter.writeName(descriptor.serialName)
-        serializeRaw(value)
+        serializeInstant(value, format)
     }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
@@ -169,6 +171,11 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         if (value != null) serializeChar(value) else jsonWriter.writeNull()
     }
 
+    override fun entry(key: String, value: Instant?, format: TimestampFormat) {
+        jsonWriter.writeName(key)
+        if (value != null) serializeInstant(value, format) else jsonWriter.writeNull()
+    }
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         jsonWriter.writeName(key)
         beginList(listDescriptor)
@@ -181,11 +188,6 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         beginMap(mapDescriptor)
         block.invoke(this)
         endMap()
-    }
-
-    override fun rawEntry(key: String, value: String) {
-        jsonWriter.writeName(key)
-        serializeRaw(value)
     }
 
     override fun serializeNull() {
@@ -240,7 +242,7 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         value.serialize(this)
     }
 
-    override fun serializeRaw(value: String) {
-        jsonWriter.writeRawValue(value)
+    override fun serializeInstant(value: Instant, format: TimestampFormat) {
+        jsonWriter.writeRawValue(value.format(format))
     }
 }

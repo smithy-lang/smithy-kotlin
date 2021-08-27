@@ -40,6 +40,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
      */
     actual fun format(fmt: TimestampFormat): String = when (fmt) {
+        // FIXME - need to restrict to microsecond precision for iso8601
         TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value)
         TimestampFormat.RFC_5322 -> RFC_5322_FIXED_DATE_TIME.format(ZonedDateTime.ofInstant(value, ZoneOffset.UTC))
         TimestampFormat.EPOCH_SECONDS -> {

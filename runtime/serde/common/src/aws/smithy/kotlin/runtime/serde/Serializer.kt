@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 package aws.smithy.kotlin.runtime.serde
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 interface Serializer : PrimitiveSerializer {
     /**
@@ -125,6 +127,15 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
+    fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat)
+
+    /**
+     * Writes the field name given in the descriptor, and then
+     * serializes value.
+     *
+     * @param descriptor
+     * @param value
+     */
     fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable)
 
     /**
@@ -153,12 +164,6 @@ interface StructSerializer : PrimitiveSerializer {
      * @param block
      */
     fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
-
-    /**
-     * Writes the field using the given [descriptor] and then serializes
-     * the raw [value] without any additional escaping or formatting
-     */
-    fun rawField(descriptor: SdkFieldDescriptor, value: String)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -276,6 +281,15 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
+    fun entry(key: String, value: Instant?, format: TimestampFormat)
+
+    /**
+     * Writes the key given in the descriptor, and then
+     * serializes value.
+     *
+     * @param key
+     * @param value
+     */
     fun entry(key: String, value: SdkSerializable?)
 
     /**
@@ -297,11 +311,6 @@ interface MapSerializer : PrimitiveSerializer {
      * @param block
      */
     fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
-
-    /**
-     * Writes the key and then serializes the raw [value] without any additional escaping or formatting
-     */
-    fun rawEntry(key: String, value: String)
 
     /**
      * Ends the map that was started (i.e. in JSON this would be a '}').
@@ -378,10 +387,11 @@ interface PrimitiveSerializer {
     fun serializeString(value: String)
 
     /**
-     * Serialize the contents of [value] without any additional escaping. The value
-     * should already be formatted appropriately.
+     * Serializes the given value.
+     *
+     * @param value
      */
-    fun serializeRaw(value: String)
+    fun serializeInstant(value: Instant, format: TimestampFormat)
 
     /**
      * Calls the serialize method on the given object.
