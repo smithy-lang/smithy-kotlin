@@ -37,7 +37,7 @@ class SerializeUnionGeneratorTest {
                 when (input) {
                     is FooUnion.IntVal -> field(INTVAL_DESCRIPTOR, input.value)
                     is FooUnion.StrVal -> field(STRVAL_DESCRIPTOR, input.value)
-                    is FooUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value.format(TimestampFormat.ISO_8601))
+                    is FooUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value, TimestampFormat.ISO_8601)
                 }
             }
         """.trimIndent()

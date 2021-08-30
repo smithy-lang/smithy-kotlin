@@ -87,10 +87,10 @@ open class SerializeStructGenerator(
             ShapeType.STRUCTURE,
             ShapeType.UNION -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
             ShapeType.DOCUMENT -> renderDocumentShapeSerializer(memberShape)
+            ShapeType.TIMESTAMP -> renderTimestampMemberSerializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
             ShapeType.STRING,
-            ShapeType.TIMESTAMP,
             ShapeType.BYTE,
             ShapeType.SHORT,
             ShapeType.INTEGER,
@@ -403,7 +403,7 @@ open class SerializeStructGenerator(
      * Renders the serialization of a timestamp value contained by a map.  Example:
      *
      * ```
-     * input.fooTimestampMap.forEach { (key, value) -> rawEntry(key, it.format(TimestampFormat.EPOCH_SECONDS)) }
+     * input.fooTimestampMap.forEach { (key, value) -> entry(key, it, TimestampFormat.EPOCH_SECONDS) }
      * ```
      */
     private fun renderTimestampEntry(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
@@ -420,17 +420,12 @@ open class SerializeStructGenerator(
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
             .orElse(defaultTimestampFormat)
+            .toRuntimeEnum()
 
         val (keyName, valueName) = keyValueNames(nestingLevel)
-        val serializerFn = when (tsFormat) {
-            TimestampFormatTrait.Format.EPOCH_SECONDS -> "rawEntry"
-            else -> "entry"
-        }
-
-        val encoding = formatInstant("it", tsFormat, forceString = true)
         val containerName = if (nestingLevel == 0) "input." else ""
 
-        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> $serializerFn($keyName, $encoding) }")
+        writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, it, $tsFormat) }")
     }
 
     /**
@@ -489,7 +484,7 @@ open class SerializeStructGenerator(
      *
      * ```
      * for (c0 in input.payload) {
-     *      serializeRaw(c0.format(TimestampFormat.EPOCH_SECONDS))
+     *      serializeTimestamp(c0, TimestampFormat.EPOCH_SECONDS)
      * }
      */
     private fun renderTimestampElement(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
@@ -507,18 +502,13 @@ open class SerializeStructGenerator(
             .getTrait(TimestampFormatTrait::class.java)
             .map { it.format }
             .orElse(defaultTimestampFormat)
-
-        val serializerFn = when (tsFormat) {
-            TimestampFormatTrait.Format.EPOCH_SECONDS -> "serializeRaw"
-            else -> "serializeString"
-        }
+            .toRuntimeEnum()
 
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val containerName = if (nestingLevel == 0) "input." else ""
-        val encoding = formatInstant(elementName, tsFormat, forceString = true)
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.write("$serializerFn($encoding)")
+            writer.write("serializeTimestamp($elementName, $tsFormat)")
         }
     }
 
@@ -556,6 +546,23 @@ open class SerializeStructGenerator(
         } else {
             writer.write("input.#L?.let { $serializeFn(#L, $encoded) }$postfix", memberName, memberShape.descriptorName())
         }
+    }
+
+    open fun renderTimestampMemberSerializer(memberShape: MemberShape) {
+        val memberName = ctx.symbolProvider.toMemberName(memberShape)
+        writer.addImport(RuntimeTypes.Core.TimestampFormat)
+        val target = ctx.model.expectShape(memberShape.target)
+        val tsFormat = memberShape
+            .getTrait(TimestampFormatTrait::class.java)
+            .map { it.format }
+            .orElseGet {
+                target.getTrait(TimestampFormatTrait::class.java)
+                    .map { it.format }
+                    .orElse(defaultTimestampFormat)
+            }
+            .toRuntimeEnum()
+
+        writer.write("input.#L?.let { field(#L, it, #L) }", memberName, memberShape.descriptorName(), tsFormat)
     }
 
     /**
@@ -614,24 +621,6 @@ open class SerializeStructGenerator(
                 writer.addImport("encodeBase64String", KotlinDependency.UTILS)
                 "$defaultIdentifier.encodeBase64String()"
             }
-            ShapeType.TIMESTAMP -> {
-                writer.addImport(RuntimeTypes.Core.TimestampFormat)
-                val tsFormat = shape
-                    .getTrait(TimestampFormatTrait::class.java)
-                    .map { it.format }
-                    .orElseGet {
-                        target.getTrait(TimestampFormatTrait::class.java)
-                            .map { it.format }
-                            .orElse(defaultTimestampFormat)
-                    }
-
-                if (tsFormat == TimestampFormatTrait.Format.EPOCH_SECONDS) {
-                    val capitalizedSerializerFn = serializerFn.replaceFirstChar { c -> c.uppercaseChar() }
-                    serializerFn = "raw$capitalizedSerializerFn"
-                }
-
-                formatInstant(defaultIdentifier, tsFormat, forceString = true)
-            }
             ShapeType.STRING -> when {
                 target.hasTrait<EnumTrait>() -> "$defaultIdentifier.value"
                 else -> defaultIdentifier
@@ -678,4 +667,11 @@ open class SerializeStructGenerator(
         }
         return "serialize$suffix"
     }
+}
+
+fun TimestampFormatTrait.Format.toRuntimeEnum(): String = when (this) {
+    TimestampFormatTrait.Format.EPOCH_SECONDS -> "TimestampFormat.EPOCH_SECONDS"
+    TimestampFormatTrait.Format.DATE_TIME -> "TimestampFormat.ISO_8601"
+    TimestampFormatTrait.Format.HTTP_DATE -> "TimestampFormat.RFC_5322"
+    else -> throw CodegenException("unknown timestamp format: $this")
 }

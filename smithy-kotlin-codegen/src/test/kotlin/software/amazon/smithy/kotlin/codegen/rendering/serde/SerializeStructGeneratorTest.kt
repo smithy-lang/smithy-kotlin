@@ -105,7 +105,7 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.payload?.let { rawField(PAYLOAD_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
+                input.payload?.let { field(PAYLOAD_DESCRIPTOR, it, TimestampFormat.EPOCH_SECONDS) }
             }
         """.trimIndent()
 
@@ -127,7 +127,7 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.payload?.let { field(PAYLOAD_DESCRIPTOR, it.format(TimestampFormat.ISO_8601)) }
+                input.payload?.let { field(PAYLOAD_DESCRIPTOR, it, TimestampFormat.ISO_8601) }
             }
         """.trimIndent()
 
@@ -154,7 +154,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeRaw(el0.format(TimestampFormat.EPOCH_SECONDS))
+                            serializeTimestamp(el0, TimestampFormat.EPOCH_SECONDS)
                         }
                     }
                 }
@@ -187,7 +187,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeString(el0.format(TimestampFormat.ISO_8601))
+                            serializeTimestamp(el0, TimestampFormat.ISO_8601)
                         }
                     }
                 }
@@ -223,7 +223,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeString(el0.format(TimestampFormat.ISO_8601))
+                            serializeTimestamp(el0, TimestampFormat.ISO_8601)
                         }
                     }
                 }
@@ -1379,9 +1379,9 @@ class SerializeStructGeneratorTest {
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
-                input.member1?.let { rawField(MEMBER1_DESCRIPTOR, it.format(TimestampFormat.EPOCH_SECONDS)) }
-                input.member2?.let { field(MEMBER2_DESCRIPTOR, it.format(TimestampFormat.RFC_5322)) }
-                input.member3?.let { field(MEMBER3_DESCRIPTOR, it.format(TimestampFormat.ISO_8601)) }
+                input.member1?.let { field(MEMBER1_DESCRIPTOR, it, TimestampFormat.EPOCH_SECONDS) }
+                input.member2?.let { field(MEMBER2_DESCRIPTOR, it, TimestampFormat.RFC_5322) }
+                input.member3?.let { field(MEMBER3_DESCRIPTOR, it, TimestampFormat.ISO_8601) }
             }
         """.trimIndent()
 
@@ -1409,7 +1409,7 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.fooTimestampMap != null) {
                     mapField(FOOTIMESTAMPMAP_DESCRIPTOR) {
-                        input.fooTimestampMap.forEach { (key, value) -> rawEntry(key, it.format(TimestampFormat.EPOCH_SECONDS)) }
+                        input.fooTimestampMap.forEach { (key, value) -> entry(key, it, TimestampFormat.EPOCH_SECONDS) }
                     }
                 }
             }
@@ -1441,7 +1441,7 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.fooTimestampMap != null) {
                     mapField(FOOTIMESTAMPMAP_DESCRIPTOR) {
-                        input.fooTimestampMap.forEach { (key, value) -> entry(key, it.format(TimestampFormat.ISO_8601)) }
+                        input.fooTimestampMap.forEach { (key, value) -> entry(key, it, TimestampFormat.ISO_8601) }
                     }
                 }
             }
@@ -1474,7 +1474,7 @@ class SerializeStructGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 if (input.fooTimestampMap != null) {
                     mapField(FOOTIMESTAMPMAP_DESCRIPTOR) {
-                        input.fooTimestampMap.forEach { (key, value) -> entry(key, it.format(TimestampFormat.ISO_8601)) }
+                        input.fooTimestampMap.forEach { (key, value) -> entry(key, it, TimestampFormat.ISO_8601) }
                     }
                 }
             }
