@@ -30,7 +30,6 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 /**
  * JVM [HttpClientEngine] backed by Ktor
  */
-@InternalAPI
 class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("ktor") {
     val client: HttpClient = HttpClient(OkHttp) {
         // TODO - propagate applicable client engine config to OkHttp engine
@@ -40,6 +39,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("kto
     }
     private val logger = Logger.getLogger<KtorEngine>()
 
+    @OptIn(InternalAPI::class)
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
         val callContext = callContext()
 

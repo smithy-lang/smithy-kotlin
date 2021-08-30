@@ -17,7 +17,6 @@ import kotlin.test.Ignore
  * Generated SDKs are emitted via a parameter in tests, the test output emits the directory created to store the SDK sources.
  * Example: "Wrote generated SDK to /tmp/sdk-codegen-1606867139716"
  */
-@Ignore
 class ApiEvolutionTest {
     @Test
     fun `client calling operation with no input to operation with empty input compiles`() {
