@@ -271,15 +271,9 @@ abstract class HttpProtocolClientGenerator(
             .call {
                 middleware
                     .filter { it.isEnabledFor(ctx, op) }
+                    .sortedBy(ProtocolMiddleware::order)
                     .forEach { middleware ->
-                        middleware.addImportsAndDependencies(writer)
-                        if (middleware.needsConfiguration) {
-                            writer.openBlock("install(#L) {", middleware.name)
-                                .call { middleware.renderConfigure(writer) }
-                                .closeBlock("}")
-                        } else {
-                            writer.write("install(#L)", middleware.name)
-                        }
+                        middleware.render(ctx, op, writer)
                     }
                 if (op.hasTrait<HttpChecksumRequiredTrait>()) {
                     writer.addImport(RuntimeTypes.Http.Md5ChecksumMiddleware)
