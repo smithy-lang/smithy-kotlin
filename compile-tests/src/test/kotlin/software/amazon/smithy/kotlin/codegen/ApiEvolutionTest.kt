@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
+import kotlin.test.Ignore
 
 /**
  * These tests cover Smithy model changes that, by policy, are considered backward compatible against
@@ -16,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
  * Generated SDKs are emitted via a parameter in tests, the test output emits the directory created to store the SDK sources.
  * Example: "Wrote generated SDK to /tmp/sdk-codegen-1606867139716"
  */
+@Ignore
 class ApiEvolutionTest {
     @Test
     fun `client calling operation with no input to operation with empty input compiles`() {

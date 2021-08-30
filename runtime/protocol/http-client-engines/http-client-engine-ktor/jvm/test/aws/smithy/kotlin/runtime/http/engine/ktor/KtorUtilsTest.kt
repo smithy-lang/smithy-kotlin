@@ -15,11 +15,13 @@ import io.ktor.http.*
 import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.util.*
 import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.*
 
+@InternalAPI
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall
         get() = TODO("Not yet implemented")
@@ -35,6 +37,7 @@ class MockHttpResponse : HttpResponse() {
     override val version: HttpProtocolVersion = HttpProtocolVersion.HTTP_1_1
 }
 
+@InternalAPI
 class KtorUtilsTest {
 
     @Test

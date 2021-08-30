@@ -12,6 +12,7 @@ import io.ktor.client.utils.EmptyContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
+import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import java.nio.ByteBuffer
@@ -50,6 +51,7 @@ internal class KtorRequestAdapter(
         }
     }
 
+    @InternalAPI
     fun toBuilder(): KtorRequestBuilder {
         // convert the basic request properties (minus the body)
         val builder = sdkRequest.toKtorRequestBuilder()

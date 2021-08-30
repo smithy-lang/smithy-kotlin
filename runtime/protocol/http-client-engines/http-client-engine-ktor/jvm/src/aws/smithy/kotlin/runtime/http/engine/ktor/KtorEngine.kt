@@ -18,6 +18,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpStatement
+import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
@@ -29,6 +30,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 /**
  * JVM [HttpClientEngine] backed by Ktor
  */
+@InternalAPI
 class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("ktor") {
     val client: HttpClient = HttpClient(OkHttp) {
         // TODO - propagate applicable client engine config to OkHttp engine
@@ -65,6 +67,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("kto
         }
     }
 
+    @InternalAPI
     private suspend fun execute(
         callContext: CoroutineContext,
         sdkRequest: HttpRequest,
