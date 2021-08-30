@@ -10,7 +10,6 @@ import software.amazon.smithy.kotlin.codegen.util.compileSdkAndTest
 import software.amazon.smithy.model.Model
 import java.io.ByteArrayOutputStream
 import java.net.URL
-import kotlin.test.Ignore
 
 /**
  * Tests that validate the generated source for a white-label SDK
