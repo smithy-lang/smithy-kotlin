@@ -243,6 +243,10 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     }
 
     override fun serializeInstant(value: Instant, format: TimestampFormat) {
-        jsonWriter.writeRawValue(value.format(format))
+        when (format) {
+            TimestampFormat.EPOCH_SECONDS -> jsonWriter.writeRawValue(value.format(format))
+            TimestampFormat.ISO_8601,
+            TimestampFormat.RFC_5322 -> jsonWriter.writeValue(value.format(format))
+        }
     }
 }
