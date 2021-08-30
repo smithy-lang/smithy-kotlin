@@ -484,7 +484,7 @@ open class SerializeStructGenerator(
      *
      * ```
      * for (c0 in input.payload) {
-     *      serializeTimestamp(c0, TimestampFormat.EPOCH_SECONDS)
+     *      serializeInstant(c0, TimestampFormat.EPOCH_SECONDS)
      * }
      */
     private fun renderTimestampElement(memberShape: Shape, elementShape: Shape, nestingLevel: Int, listMemberName: String) {
@@ -508,7 +508,7 @@ open class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$listMemberName) {", "}") {
-            writer.write("serializeTimestamp($elementName, $tsFormat)")
+            writer.write("serializeInstant($elementName, $tsFormat)")
         }
     }
 

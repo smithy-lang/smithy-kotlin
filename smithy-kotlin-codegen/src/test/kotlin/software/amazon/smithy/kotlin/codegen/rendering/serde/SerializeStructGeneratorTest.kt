@@ -154,7 +154,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeTimestamp(el0, TimestampFormat.EPOCH_SECONDS)
+                            serializeInstant(el0, TimestampFormat.EPOCH_SECONDS)
                         }
                     }
                 }
@@ -187,7 +187,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeTimestamp(el0, TimestampFormat.ISO_8601)
+                            serializeInstant(el0, TimestampFormat.ISO_8601)
                         }
                     }
                 }
@@ -223,7 +223,7 @@ class SerializeStructGeneratorTest {
                 if (input.payload != null) {
                     listField(PAYLOAD_DESCRIPTOR) {
                         for (el0 in input.payload) {
-                            serializeTimestamp(el0, TimestampFormat.ISO_8601)
+                            serializeInstant(el0, TimestampFormat.ISO_8601)
                         }
                     }
                 }
