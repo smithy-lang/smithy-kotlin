@@ -5,9 +5,11 @@
 
 package aws.smithy.kotlin.serde.benchmarks.json
 
+import aws.smithy.kotlin.runtime.serde.json.JsonDeserializer
 import aws.smithy.kotlin.runtime.serde.json.JsonToken
 import aws.smithy.kotlin.runtime.serde.json.jsonStreamReader
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import aws.smithy.kotlin.serde.benchmarks.model.twitter.deserializeTwitterFeedDocument
 import kotlinx.benchmark.*
 
 
@@ -20,12 +22,31 @@ open class TwitterBenchmark {
 
     private val input = TwitterBenchmark::class.java.getResource("/twitter.json")!!.readBytes()
 
+    @Setup
+    fun init() = runSuspendTest {
+        val deserializer = JsonDeserializer(input)
+        val feed = deserializeTwitterFeedDocument(deserializer)
+        // sanity check
+        checkNotNull(feed.statuses)
+        check(feed.statuses.size == 100)
+        check(feed.statuses[87].createdAt == "Sun Aug 31 00:28:59 +0000 2014")
+    }
+
     @Benchmark
     fun tokensBenchmark() = runSuspendTest {
         val tokenizer = jsonStreamReader(input)
         do {
             val token = tokenizer.nextToken()
         }while (token != JsonToken.EndDocument)
+    }
+
+    @Benchmark
+    fun deserializeBenchmark() = runSuspendTest {
+        val deserializer = JsonDeserializer(input)
+        val feed = deserializeTwitterFeedDocument(deserializer)
+        checkNotNull(feed.statuses)
+        check(feed.statuses.size == 100)
+        check(feed.statuses[87].createdAt == "Sun Aug 31 00:28:59 +0000 2014")
     }
 }
 

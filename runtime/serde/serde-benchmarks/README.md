@@ -11,9 +11,10 @@ This project contains micro benchmarks for the serialization implementation(s).
 Baseline `0.4.0-alpha`
 ```
 jvm summary:
-Benchmark                         Mode  Cnt  Score   Error  Units
-CitmBenchmark.tokensBenchmark     avgt    5  6.149 ± 0.733  ms/op
-TwitterBenchmark.tokensBenchmark  avgt    5  4.611 ± 0.282  ms/op
+Benchmark                              Mode  Cnt  Score   Error  Units
+CitmBenchmark.tokensBenchmark          avgt    5  6.427 ± 3.039  ms/op
+TwitterBenchmark.deserializeBenchmark  avgt    5  7.904 ± 0.411  ms/op
+TwitterBenchmark.tokensBenchmark       avgt    5  4.976 ± 0.617  ms/op
 ```
 
 ## JSON Data
@@ -25,3 +26,49 @@ JSON file   | Size | Description
 `twitter.json` | 632KB | Search "一" (character of "one" in Japanese and Chinese) in Twitter public time line for gathering some tweets with CJK characters.
 
 
+## Benchmarks
+
+The `models` folder contains hand rolled Smithy models for some of the benchmarks. Code was generated in a standalone
+project, hand massaged, and copied into the `model.{name}` folder. 
+
+e.g.
+
+```kotlin
+plugins {
+    kotlin("jvm") version "1.5.20"
+    id("software.amazon.smithy").version("0.5.3")
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+val smithyVersion = "1.9.1"
+
+dependencies {
+    implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
+    implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
+    implementation("software.amazon.smithy.kotlin:smithy-aws-kotlin-codegen:0.4.0-alpha")
+}
+
+tasks["jar"].enabled = false
+```
+
+```json
+{
+    "version": "1.0",
+    "plugins": {
+        "kotlin-codegen": {
+            "service": "aws.benchmarks.twitter#Twitter",
+            "package": {
+                "name": "aws.benchmarks.json",
+                "version": "0.0.1"
+            },
+            "build": {
+                "rootProject": true
+            }
+        }
+    }
+}
+```
