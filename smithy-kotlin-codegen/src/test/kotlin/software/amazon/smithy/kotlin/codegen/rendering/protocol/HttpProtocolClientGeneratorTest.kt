@@ -17,7 +17,7 @@ class HttpProtocolClientGeneratorTest {
     private val deprecatedTestContents: String
     private val writer: KotlinWriter = KotlinWriter(TestModelDefault.NAMESPACE)
 
-    class MockProtocolMiddleware1 : ProtocolMiddleware {
+    class MockProtocolMiddleware1 : HttpFeatureMiddleware() {
         override val name: String = "MockProtocolMiddleware1"
         override fun renderConfigure(writer: KotlinWriter) {
             writer.write("configurationField1 = \"testing\"")

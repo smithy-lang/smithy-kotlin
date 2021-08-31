@@ -64,7 +64,7 @@ fun QueryParameters.urlEncode(): String = buildString {
  */
 fun QueryParameters.urlEncodeTo(out: Appendable) = urlEncodeQueryParametersTo(entries(), out)
 
-internal fun urlEncodeQueryParametersTo(entries: Set<Map.Entry<String, List<String>>>, out: Appendable) {
+internal fun urlEncodeQueryParametersTo(entries: Set<Map.Entry<String, List<String>>>, out: Appendable, encodeFn: (String) -> String = { it.urlEncodeComponent() }) {
     entries.sortedBy { it.key }.forEachIndexed { i, entry ->
         entry.value.forEachIndexed { j, value ->
             if (i > 0 || j > 0) {
@@ -72,7 +72,7 @@ internal fun urlEncodeQueryParametersTo(entries: Set<Map.Entry<String, List<Stri
             }
             out.append(entry.key)
             out.append("=")
-            out.append(value.urlEncodeComponent())
+            out.append(encodeFn(value))
         }
     }
 }
