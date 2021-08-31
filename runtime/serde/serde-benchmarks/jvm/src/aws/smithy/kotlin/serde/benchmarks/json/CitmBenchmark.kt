@@ -7,8 +7,8 @@ package aws.smithy.kotlin.serde.benchmarks.json
 
 import aws.smithy.kotlin.runtime.serde.json.JsonToken
 import aws.smithy.kotlin.runtime.serde.json.jsonStreamReader
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlinx.benchmark.*
+import kotlinx.coroutines.runBlocking
 
 @Warmup(iterations = 7, time = 1)
 @Measurement(iterations = 5, time = 1, timeUnit = BenchmarkTimeUnit.MILLISECONDS)
@@ -19,7 +19,7 @@ open class CitmBenchmark {
     private val input = CitmBenchmark::class.java.getResource("/citm_catalog.json")!!.readBytes()
 
     @Benchmark
-    fun tokensBenchmark() = runSuspendTest {
+    fun tokensBenchmark() = runBlocking {
         val tokenizer = jsonStreamReader(input)
         do {
             val token = tokenizer.nextToken()

@@ -9,15 +9,16 @@ plugins {
 extra.set("skipPublish", true)
 
 val kotlinxBenchmarkVersion: String by project
+val coroutinesVersion: String by project
 
 
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.3.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinxBenchmarkVersion")
                 implementation(project(":runtime:serde:serde-json"))
-                implementation(project(":runtime:testing"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
         }
     }
