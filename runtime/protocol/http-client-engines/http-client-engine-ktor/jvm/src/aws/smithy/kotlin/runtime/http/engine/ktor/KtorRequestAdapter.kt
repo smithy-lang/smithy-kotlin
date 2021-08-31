@@ -12,6 +12,7 @@ import io.ktor.client.utils.EmptyContent
 import io.ktor.http.ContentType
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
+import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import java.nio.ByteBuffer
@@ -31,6 +32,8 @@ private const val BUFFER_SIZE = 4096
 /**
  * Adapts an SDK HTTP request to something Ktor understands
  */
+// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
+@OptIn(InternalAPI::class)
 internal class KtorRequestAdapter(
     private val sdkRequest: HttpRequest,
     callContext: CoroutineContext
