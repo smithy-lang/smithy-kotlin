@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeStatusDocument(deserializer: Deserializer): Status {
     val builder = Status.builder()
     val CREATEDAT_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("created_at"))

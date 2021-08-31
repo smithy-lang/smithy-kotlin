@@ -7,8 +7,6 @@
 
 package aws.smithy.kotlin.serde.benchmarks.model.twitter
 
-
-
 class User private constructor(builder: BuilderImpl) {
     val contributorsEnabled: Boolean? = builder.contributorsEnabled
     val createdAt: String? = builder.createdAt
@@ -56,7 +54,6 @@ class User private constructor(builder: BuilderImpl) {
         fun builder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): User = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

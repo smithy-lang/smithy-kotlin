@@ -13,7 +13,6 @@ import aws.smithy.kotlin.serde.benchmarks.model.twitter.TwitterFeed
 import aws.smithy.kotlin.serde.benchmarks.model.twitter.deserializeTwitterFeedDocument
 import kotlinx.benchmark.*
 
-
 @Warmup(iterations = 7, time = 1)
 @Measurement(iterations = 5, time = 1, timeUnit = BenchmarkTimeUnit.MILLISECONDS)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
@@ -44,7 +43,7 @@ open class TwitterBenchmark {
         val tokenizer = jsonStreamReader(input)
         do {
             val token = tokenizer.nextToken()
-        }while (token != JsonToken.EndDocument)
+        } while (token != JsonToken.EndDocument)
     }
 
     @Benchmark
@@ -53,4 +52,3 @@ open class TwitterBenchmark {
         deserializeTwitterFeedDocument(deserializer)
     }
 }
-

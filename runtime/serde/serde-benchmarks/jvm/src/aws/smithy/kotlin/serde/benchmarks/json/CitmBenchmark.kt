@@ -23,6 +23,6 @@ open class CitmBenchmark {
         val tokenizer = jsonStreamReader(input)
         do {
             val token = tokenizer.nextToken()
-        }while (token != JsonToken.EndDocument)
+        } while (token != JsonToken.EndDocument)
     }
 }

@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeSearchMetadataDocument(deserializer: Deserializer): SearchMetadata {
     val builder = SearchMetadata.builder()
     val COMPLETEDIN_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Double, JsonSerialName("completed_in"))

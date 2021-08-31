@@ -7,8 +7,6 @@
 
 package aws.smithy.kotlin.serde.benchmarks.model.twitter
 
-
-
 class SearchMetadata private constructor(builder: BuilderImpl) {
     val completedIn: Double? = builder.completedIn
     val count: Int? = builder.count
@@ -27,7 +25,6 @@ class SearchMetadata private constructor(builder: BuilderImpl) {
         fun builder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): SearchMetadata = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

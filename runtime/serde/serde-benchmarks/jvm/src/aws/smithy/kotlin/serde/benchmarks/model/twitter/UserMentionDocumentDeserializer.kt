@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeUserMentionDocument(deserializer: Deserializer): UserMention {
     val builder = UserMention.builder()
     val ID_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("id"))
@@ -36,15 +35,16 @@ internal suspend fun deserializeUserMentionDocument(deserializer: Deserializer):
             when (findNextFieldIndex()) {
                 ID_DESCRIPTOR.index -> builder.id = deserializeInt()
                 IDSTR_DESCRIPTOR.index -> builder.idStr = deserializeString()
-                INDICES_DESCRIPTOR.index -> builder.indices =
-                    deserializer.deserializeList(INDICES_DESCRIPTOR) {
-                        val col0 = mutableListOf<Int>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                            col0.add(el0)
+                INDICES_DESCRIPTOR.index ->
+                    builder.indices =
+                        deserializer.deserializeList(INDICES_DESCRIPTOR) {
+                            val col0 = mutableListOf<Int>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
                 NAME_DESCRIPTOR.index -> builder.name = deserializeString()
                 SCREENNAME_DESCRIPTOR.index -> builder.screenName = deserializeString()
                 null -> break@loop

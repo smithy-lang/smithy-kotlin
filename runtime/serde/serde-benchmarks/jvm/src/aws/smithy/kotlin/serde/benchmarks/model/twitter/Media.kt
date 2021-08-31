@@ -26,7 +26,6 @@ class Media private constructor(builder: BuilderImpl) {
         fun builder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Media = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

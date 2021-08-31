@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeUserDocument(deserializer: Deserializer): User {
     val builder = User.builder()
     val CONTRIBUTORSENABLED_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Boolean, JsonSerialName("contributors_enabled"))

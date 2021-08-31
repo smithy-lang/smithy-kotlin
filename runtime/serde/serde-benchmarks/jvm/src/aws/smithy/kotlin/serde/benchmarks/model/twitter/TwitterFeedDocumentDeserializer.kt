@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeTwitterFeedDocument(deserializer: Deserializer): TwitterFeed {
     val builder = TwitterFeed.builder()
     val SEARCHMETADATA_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("search_metadata"))
@@ -29,15 +28,16 @@ internal suspend fun deserializeTwitterFeedDocument(deserializer: Deserializer):
         loop@while (true) {
             when (findNextFieldIndex()) {
                 SEARCHMETADATA_DESCRIPTOR.index -> builder.searchMetadata = deserializeSearchMetadataDocument(deserializer)
-                STATUSES_DESCRIPTOR.index -> builder.statuses =
-                    deserializer.deserializeList(STATUSES_DESCRIPTOR) {
-                        val col0 = mutableListOf<Status>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeStatusDocument(deserializer) } else { deserializeNull(); continue }
-                            col0.add(el0)
+                STATUSES_DESCRIPTOR.index ->
+                    builder.statuses =
+                        deserializer.deserializeList(STATUSES_DESCRIPTOR) {
+                            val col0 = mutableListOf<Status>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeStatusDocument(deserializer) } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
                 null -> break@loop
                 else -> skipValue()
             }

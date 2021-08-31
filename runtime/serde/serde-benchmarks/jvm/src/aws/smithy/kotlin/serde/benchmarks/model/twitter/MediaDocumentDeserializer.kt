@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeMediaDocument(deserializer: Deserializer): Media {
     val builder = Media.builder()
     val DISPLAYURL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("display_url"))
@@ -48,15 +47,16 @@ internal suspend fun deserializeMediaDocument(deserializer: Deserializer): Media
                 EXPANDEDURL_DESCRIPTOR.index -> builder.expandedUrl = deserializeString()
                 ID_DESCRIPTOR.index -> builder.id = deserializeLong()
                 IDSTR_DESCRIPTOR.index -> builder.idStr = deserializeString()
-                INDICES_DESCRIPTOR.index -> builder.indices =
-                    deserializer.deserializeList(INDICES_DESCRIPTOR) {
-                        val col0 = mutableListOf<Int>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                            col0.add(el0)
+                INDICES_DESCRIPTOR.index ->
+                    builder.indices =
+                        deserializer.deserializeList(INDICES_DESCRIPTOR) {
+                            val col0 = mutableListOf<Int>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
                 MEDIAURL_DESCRIPTOR.index -> builder.mediaUrl = deserializeString()
                 MEDIAURLHTTPS_DESCRIPTOR.index -> builder.mediaUrlHttps = deserializeString()
                 SIZES_DESCRIPTOR.index -> builder.sizes = deserializeSizesDocument(deserializer)

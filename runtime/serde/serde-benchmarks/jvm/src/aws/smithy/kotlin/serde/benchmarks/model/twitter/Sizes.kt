@@ -7,8 +7,6 @@
 
 package aws.smithy.kotlin.serde.benchmarks.model.twitter
 
-
-
 class Sizes private constructor(builder: BuilderImpl) {
     val large: Large? = builder.large
     val medium: Medium? = builder.medium
@@ -22,7 +20,6 @@ class Sizes private constructor(builder: BuilderImpl) {
         fun builder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Sizes = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

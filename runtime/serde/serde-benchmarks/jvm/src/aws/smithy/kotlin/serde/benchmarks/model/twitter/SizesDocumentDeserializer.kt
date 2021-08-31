@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeSizesDocument(deserializer: Deserializer): Sizes {
     val builder = Sizes.builder()
     val LARGE_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Struct, JsonSerialName("large"))

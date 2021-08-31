@@ -7,8 +7,6 @@
 
 package aws.smithy.kotlin.serde.benchmarks.model.twitter
 
-
-
 class Status private constructor(builder: BuilderImpl) {
     val createdAt: String? = builder.createdAt
     val entities: Entities? = builder.entities
@@ -30,7 +28,6 @@ class Status private constructor(builder: BuilderImpl) {
         fun builder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Status = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

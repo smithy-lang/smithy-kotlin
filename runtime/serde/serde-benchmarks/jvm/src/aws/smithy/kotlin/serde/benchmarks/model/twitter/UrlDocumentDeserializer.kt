@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeUrlDocument(deserializer: Deserializer): Url {
     val builder = Url.builder()
     val DISPLAYURL_DESCRIPTOR = SdkFieldDescriptor(SerialKind.String, JsonSerialName("display_url"))
@@ -34,15 +33,16 @@ internal suspend fun deserializeUrlDocument(deserializer: Deserializer): Url {
             when (findNextFieldIndex()) {
                 DISPLAYURL_DESCRIPTOR.index -> builder.displayUrl = deserializeString()
                 EXPANDEDURL_DESCRIPTOR.index -> builder.expandedUrl = deserializeString()
-                INDICES_DESCRIPTOR.index -> builder.indices =
-                    deserializer.deserializeList(INDICES_DESCRIPTOR) {
-                        val col0 = mutableListOf<Int>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
-                            col0.add(el0)
+                INDICES_DESCRIPTOR.index ->
+                    builder.indices =
+                        deserializer.deserializeList(INDICES_DESCRIPTOR) {
+                            val col0 = mutableListOf<Int>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
                 URL_DESCRIPTOR.index -> builder.url = deserializeString()
                 null -> break@loop
                 else -> skipValue()

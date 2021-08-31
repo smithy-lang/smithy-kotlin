@@ -7,7 +7,6 @@
 
 package aws.smithy.kotlin.serde.benchmarks.model.twitter
 
-
 class TwitterFeed private constructor(builder: BuilderImpl) {
     val searchMetadata: SearchMetadata? = builder.searchMetadata
     val statuses: List<Status>? = builder.statuses
@@ -19,7 +18,6 @@ class TwitterFeed private constructor(builder: BuilderImpl) {
         fun builder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): TwitterFeed = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

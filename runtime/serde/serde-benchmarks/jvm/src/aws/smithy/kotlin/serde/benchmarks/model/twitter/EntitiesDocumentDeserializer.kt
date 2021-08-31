@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.serde.deserializeList
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeEntitiesDocument(deserializer: Deserializer): Entities {
     val builder = Entities.builder()
     val HASHTAGS_DESCRIPTOR = SdkFieldDescriptor(SerialKind.List, JsonSerialName("hashtags"))
@@ -32,42 +31,46 @@ internal suspend fun deserializeEntitiesDocument(deserializer: Deserializer): En
     deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         loop@while (true) {
             when (findNextFieldIndex()) {
-                HASHTAGS_DESCRIPTOR.index -> builder.hashtags =
-                    deserializer.deserializeList(HASHTAGS_DESCRIPTOR) {
-                        val col0 = mutableListOf<Hashtag>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeHashtagDocument(deserializer) } else { deserializeNull(); continue }
-                            col0.add(el0)
+                HASHTAGS_DESCRIPTOR.index ->
+                    builder.hashtags =
+                        deserializer.deserializeList(HASHTAGS_DESCRIPTOR) {
+                            val col0 = mutableListOf<Hashtag>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeHashtagDocument(deserializer) } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
-                MEDIA_DESCRIPTOR.index -> builder.media =
-                    deserializer.deserializeList(MEDIA_DESCRIPTOR) {
-                        val col0 = mutableListOf<Media>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeMediaDocument(deserializer) } else { deserializeNull(); continue }
-                            col0.add(el0)
+                MEDIA_DESCRIPTOR.index ->
+                    builder.media =
+                        deserializer.deserializeList(MEDIA_DESCRIPTOR) {
+                            val col0 = mutableListOf<Media>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeMediaDocument(deserializer) } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
-                URLS_DESCRIPTOR.index -> builder.urls =
-                    deserializer.deserializeList(URLS_DESCRIPTOR) {
-                        val col0 = mutableListOf<Url>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeUrlDocument(deserializer) } else { deserializeNull(); continue }
-                            col0.add(el0)
+                URLS_DESCRIPTOR.index ->
+                    builder.urls =
+                        deserializer.deserializeList(URLS_DESCRIPTOR) {
+                            val col0 = mutableListOf<Url>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeUrlDocument(deserializer) } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
-                USERMENTIONS_DESCRIPTOR.index -> builder.userMentions =
-                    deserializer.deserializeList(USERMENTIONS_DESCRIPTOR) {
-                        val col0 = mutableListOf<UserMention>()
-                        while (hasNextElement()) {
-                            val el0 = if (nextHasValue()) { deserializeUserMentionDocument(deserializer) } else { deserializeNull(); continue }
-                            col0.add(el0)
+                USERMENTIONS_DESCRIPTOR.index ->
+                    builder.userMentions =
+                        deserializer.deserializeList(USERMENTIONS_DESCRIPTOR) {
+                            val col0 = mutableListOf<UserMention>()
+                            while (hasNextElement()) {
+                                val el0 = if (nextHasValue()) { deserializeUserMentionDocument(deserializer) } else { deserializeNull(); continue }
+                                col0.add(el0)
+                            }
+                            col0
                         }
-                        col0
-                    }
                 null -> break@loop
                 else -> skipValue()
             }

@@ -7,8 +7,6 @@
 
 package aws.smithy.kotlin.serde.benchmarks.model.twitter
 
-
-
 class Small private constructor(builder: BuilderImpl) {
     val h: Int? = builder.h
     val resize: String? = builder.resize
@@ -21,7 +19,6 @@ class Small private constructor(builder: BuilderImpl) {
         fun builder(): DslBuilder = BuilderImpl()
 
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Small = BuilderImpl().apply(block).build()
-
     }
 
     override fun toString(): kotlin.String = buildString {

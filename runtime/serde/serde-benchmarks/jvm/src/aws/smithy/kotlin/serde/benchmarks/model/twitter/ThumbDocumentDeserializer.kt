@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.serde.SerialKind
 import aws.smithy.kotlin.runtime.serde.deserializeStruct
 import aws.smithy.kotlin.runtime.serde.json.JsonSerialName
 
-
 internal suspend fun deserializeThumbDocument(deserializer: Deserializer): Thumb {
     val builder = Thumb.builder()
     val H_DESCRIPTOR = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("h"))
