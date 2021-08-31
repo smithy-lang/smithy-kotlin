@@ -39,6 +39,7 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("kto
     }
     private val logger = Logger.getLogger<KtorEngine>()
 
+    // TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
     @OptIn(InternalAPI::class)
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
         val callContext = callContext()

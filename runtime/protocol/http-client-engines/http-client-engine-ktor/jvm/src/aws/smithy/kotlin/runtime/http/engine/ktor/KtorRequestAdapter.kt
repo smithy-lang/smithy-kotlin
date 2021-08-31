@@ -32,6 +32,7 @@ private const val BUFFER_SIZE = 4096
 /**
  * Adapts an SDK HTTP request to something Ktor understands
  */
+// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
 @OptIn(InternalAPI::class)
 internal class KtorRequestAdapter(
     private val sdkRequest: HttpRequest,

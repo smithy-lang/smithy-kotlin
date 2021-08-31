@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
+// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
 @OptIn(InternalAPI::class)
 internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()

@@ -21,6 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 
+// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
 @OptIn(InternalAPI::class)
 class KtorRequestAdapterTest {
     @Test

@@ -21,6 +21,7 @@ import io.ktor.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.*
 
+// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
 @OptIn(InternalAPI::class)
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall
@@ -37,7 +38,8 @@ class MockHttpResponse : HttpResponse() {
     override val version: HttpProtocolVersion = HttpProtocolVersion.HTTP_1_1
 }
 
-@InternalAPI
+// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
+@OptIn(InternalAPI::class)
 class KtorUtilsTest {
 
     @Test
