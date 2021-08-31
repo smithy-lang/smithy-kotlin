@@ -19,7 +19,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
-@InternalAPI
+@OptIn(InternalAPI::class)
 internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()
     builder.method = HttpMethod.parse(this.method.name)
@@ -51,7 +51,6 @@ internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     return builder
 }
 
-@InternalAPI
 internal fun HttpRequestBuilder.toKtorRequestBuilder(): KtorHttpRequestBuilder = build().toKtorRequestBuilder()
 
 // wrapper around ktor headers that implements expected SDK interface for Headers

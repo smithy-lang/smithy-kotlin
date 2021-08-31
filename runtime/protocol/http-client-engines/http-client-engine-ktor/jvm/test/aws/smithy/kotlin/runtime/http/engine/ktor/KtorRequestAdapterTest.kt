@@ -21,7 +21,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 
-@InternalAPI
+@OptIn(InternalAPI::class)
 class KtorRequestAdapterTest {
     @Test
     fun itStripsContentTypeHeader() = runBlocking {

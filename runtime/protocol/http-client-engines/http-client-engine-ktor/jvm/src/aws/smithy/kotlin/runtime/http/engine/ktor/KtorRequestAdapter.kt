@@ -32,6 +32,7 @@ private const val BUFFER_SIZE = 4096
 /**
  * Adapts an SDK HTTP request to something Ktor understands
  */
+@OptIn(InternalAPI::class)
 internal class KtorRequestAdapter(
     private val sdkRequest: HttpRequest,
     callContext: CoroutineContext
@@ -51,7 +52,6 @@ internal class KtorRequestAdapter(
         }
     }
 
-    @InternalAPI
     fun toBuilder(): KtorRequestBuilder {
         // convert the basic request properties (minus the body)
         val builder = sdkRequest.toKtorRequestBuilder()

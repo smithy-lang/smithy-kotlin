@@ -21,7 +21,7 @@ import io.ktor.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.*
 
-@InternalAPI
+@OptIn(InternalAPI::class)
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall
         get() = TODO("Not yet implemented")

@@ -67,7 +67,6 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("kto
         }
     }
 
-    @InternalAPI
     private suspend fun execute(
         callContext: CoroutineContext,
         sdkRequest: HttpRequest,
