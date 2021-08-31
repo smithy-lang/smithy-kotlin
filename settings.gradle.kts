@@ -16,9 +16,11 @@ pluginManagement {
     plugins {
         val kotlinVersion: String by settings
         val dokkaVersion: String by settings
+        val kotlinxBenchmarkVersion: String by settings
         id("org.jetbrains.dokka") version dokkaVersion
         id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("org.jetbrains.kotlin.multiplatform") version kotlinVersion
+        id("org.jetbrains.kotlinx.benchmark") version kotlinxBenchmarkVersion
     }
 }
 
@@ -37,6 +39,7 @@ include(":runtime:serde")
 include(":runtime:serde:serde-json")
 include(":runtime:serde:serde-xml")
 include(":runtime:serde:serde-form-url")
+include(":runtime:serde:serde-benchmarks")
 include(":runtime:protocol:http")
 include(":runtime:protocol:http-client-engines:http-client-engine-ktor")
 
