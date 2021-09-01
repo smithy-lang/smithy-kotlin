@@ -12,8 +12,9 @@ service Twitter {
     operations: [GetFeed]
 }
 
-@http(uri: "/GetFeed", method: "GET")
+@http(uri: "/GetFeed", method: "POST")
 operation GetFeed {
+    input: GetFeedResponse,
     output: GetFeedResponse
 }
 

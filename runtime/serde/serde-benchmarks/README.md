@@ -9,12 +9,14 @@ This project contains micro benchmarks for the serialization implementation(s).
 ```
 
 Baseline `0.4.0-alpha`
+
 ```
 jvm summary:
 Benchmark                              Mode  Cnt  Score   Error  Units
-CitmBenchmark.tokensBenchmark          avgt    5  7.188 ± 1.099  ms/op
-TwitterBenchmark.deserializeBenchmark  avgt    5  5.999 ± 0.510  ms/op
-TwitterBenchmark.tokensBenchmark       avgt    5  4.753 ± 1.337  ms/op
+CitmBenchmark.tokensBenchmark          avgt    5  6.289 ± 1.814  ms/op
+TwitterBenchmark.deserializeBenchmark  avgt    5  6.280 ± 0.774  ms/op
+TwitterBenchmark.serializeBenchmark    avgt    5  1.516 ± 0.054  ms/op
+TwitterBenchmark.tokensBenchmark       avgt    5  3.448 ± 0.364  ms/op
 ```
 
 ## JSON Data
@@ -62,7 +64,7 @@ tasks["jar"].enabled = false
         "kotlin-codegen": {
             "service": "aws.benchmarks.twitter#Twitter",
             "package": {
-                "name": "aws.benchmarks.json",
+                "name": "aws.smith.kotlin.serde.benchmarks.json.twitter",
                 "version": "0.0.1"
             },
             "build": {
@@ -72,3 +74,12 @@ tasks["jar"].enabled = false
     }
 }
 ```
+
+Copy the output into the appropriate directories, e.g.:
+
+```shell
+cp -r build/smithyprojections/smithy-sandbox/source/kotlin-codegen/src/main/kotlin/aws/smithy/kotlin/serde/benchmarks/json/twitter/model ~/path/to/smithy-kotlin/runtime/serde/serde-benchmarks/jvm/src/aws/smithy/kotlin/serde/benchmarks/json/twitter/.
+cp -r build/smithyprojections/smithy-sandbox/source/kotlin-codegen/src/main/kotlin/aws/smithy/kotlin/serde/benchmarks/json/twitter/transform ~/path/to/smithy-kotlin/runtime/serde/serde-benchmarks/jvm/src/aws/smithy/kotlin/serde/benchmarks/json/twitter/.
+```
+
+Remove `GetFeedRequest`, `GetFeedResponse`, the operation serializer and deserializer, and the exception type.
