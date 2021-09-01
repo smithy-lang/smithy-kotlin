@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
+import io.kotest.matchers.collections.shouldNotBeIn
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.*
 
@@ -185,6 +186,64 @@ class JsonStreamReaderTest {
 
         val y = reader.nextToken() as JsonToken.Name
         assertEquals("y", y.value)
+    }
+
+    @Test
+    fun itSkipsValuesRecursivelyAfterPeek() = runSuspendTest {
+        val payload = """
+        {
+            "x": 1,
+            "nested": {
+                "a": "a",
+                "unknown": {
+                    "b": "b",
+                    "c": ["d", "e", "f"],
+                    "g": {
+                        "h": "h",
+                        "i": "i"
+                    }
+                },
+                "k": "k"
+             },
+            "y": 2
+        }
+        """.trimIndent()
+        val reader = newReader(payload)
+        // skip x
+        reader.apply {
+            nextToken() // begin obj
+            nextToken() // x
+            nextToken() // value
+        }
+
+        val nexted = reader.nextToken() as JsonToken.Name
+        assertEquals("nested", nexted.value)
+        reader.apply {
+            nextToken() // BeginObj
+            nextToken() // a
+            nextToken() // value
+        }
+
+        val unknown = reader.nextToken() as JsonToken.Name
+        assertEquals("unknown", unknown.value)
+        // skip the entire unknown subtree
+        reader.skipNext()
+
+        val remaining = mutableListOf<JsonToken>()
+        for (i in 0..6) {
+            remaining.add(reader.nextToken())
+        }
+
+        remaining.shouldContainExactly(
+            JsonToken.Name("k"),
+            JsonToken.String("k"),
+            JsonToken.EndObject,
+            JsonToken.Name("y"),
+            JsonToken.Number("2"),
+            JsonToken.EndObject,
+            JsonToken.EndDocument
+        )
+
     }
 
     @Test

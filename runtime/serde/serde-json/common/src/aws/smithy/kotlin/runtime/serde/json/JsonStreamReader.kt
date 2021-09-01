@@ -26,7 +26,7 @@ interface JsonStreamReader {
     /**
      * Peek at the next token type
      */
-    suspend fun peek(): RawJsonToken
+    suspend fun peek(): JsonToken
 }
 
 /*

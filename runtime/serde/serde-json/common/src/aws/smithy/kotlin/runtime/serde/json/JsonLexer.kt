@@ -31,12 +31,17 @@ private enum class State {
 internal class JsonLexer(
     private val data: CharStream
 ) : JsonStreamReader {
-    private var peeked: RawJsonToken? = null
+    private var peeked: JsonToken? = null
 //    private val stack: Stack<RawJsonToken> = mutableListOf()
     private var stateStack: Stack<State> = mutableListOf(State.Initial)
 
     override suspend fun nextToken(): JsonToken {
-        peeked = null
+        val tmp = peeked
+        if (tmp != null) {
+            peeked = null
+            return tmp
+        }
+
         try {
             return when (stateStack.top()) {
                 State.Initial -> readToken()
@@ -53,9 +58,11 @@ internal class JsonLexer(
         }
     }
 
-    override suspend fun peek(): RawJsonToken = peeked ?: doPeek()
+    override suspend fun peek(): JsonToken = peeked ?: doPeek()
 
     override suspend fun skipNext() {
+        // FIXME - peeking modifies the state stack, we need to take this into account or else we can peek() a BeginObject, try to skipIt recurisvely
+        // but fail to do so
         val startDepth = stateStack.size
         nextToken()
         while (stateStack.size > startDepth) {
@@ -63,27 +70,10 @@ internal class JsonLexer(
         }
     }
 
-    private suspend fun doPeek(): RawJsonToken {
-        val next = data.nextNonWhitespace(peek = true) ?: return RawJsonToken.EndDocument
-
-        return when (next) {
-            '{' -> RawJsonToken.BeginObject
-            '"' -> {
-                when (stateStack.top()) {
-                    State.ObjectFirstKeyOrEnd, State.ObjectNextKeyOrEnd -> RawJsonToken.Name
-                    else -> RawJsonToken.String
-                }
+    private suspend fun doPeek(): JsonToken {
+        return nextToken().also {
+                peeked = it
             }
-            '}' -> RawJsonToken.EndObject
-            '[' -> RawJsonToken.BeginArray
-            ']' -> RawJsonToken.EndArray
-            't' -> RawJsonToken.Bool
-            'f' -> RawJsonToken.Bool
-            'n' -> RawJsonToken.Null
-            else -> RawJsonToken.Number
-        }.also {
-            peeked = it
-        }
     }
     private suspend fun stateObjectFirstKeyOrEnd(): JsonToken {
         return when (val chr = data.nextNonWhitespace(peek = true)) {
