@@ -19,6 +19,7 @@ import java.time.format.DateTimeFormatter.ISO_INSTANT
 import java.time.format.DateTimeFormatterBuilder
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
+import java.time.temporal.ChronoUnit
 import java.time.Instant as jtInstant
 
 actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
@@ -40,8 +41,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
      */
     actual fun format(fmt: TimestampFormat): String = when (fmt) {
-        // FIXME - need to restrict to microsecond precision for iso8601
-        TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value)
+        TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value.truncatedTo(ChronoUnit.MICROS))
         TimestampFormat.RFC_5322 -> RFC_5322_FIXED_DATE_TIME.format(ZonedDateTime.ofInstant(value, ZoneOffset.UTC))
         TimestampFormat.EPOCH_SECONDS -> {
             val sb = StringBuffer("$epochSeconds")

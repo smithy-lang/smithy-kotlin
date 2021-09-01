@@ -12,6 +12,7 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
+import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
 import org.junit.jupiter.api.Test
@@ -20,6 +21,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 
+// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
+@OptIn(InternalAPI::class)
 class KtorRequestAdapterTest {
     @Test
     fun itStripsContentTypeHeader() = runBlocking {

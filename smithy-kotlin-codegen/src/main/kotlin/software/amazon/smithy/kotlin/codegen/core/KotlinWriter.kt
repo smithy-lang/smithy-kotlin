@@ -82,6 +82,29 @@ fun <T : CodeWriter> T.wrapBlockIf(
 }
 
 /**
+ * Extension function that closes the previous block, dedents, opens a new block with [textBeforeNewLine], and indents.
+ *
+ * This is useful for chaining if-if-else-else branches.
+ *
+ * Example:
+ * ```
+ * writer.openBlock("if (foo) {")
+ *     .write("foo()")
+ *     .closeAndOpenBlock("} else {")
+ *     .write("bar()")
+ *     .closeBlock("}")
+ * ```
+ */
+fun <T : CodeWriter> T.closeAndOpenBlock(
+    textBeforeNewLine: String,
+    vararg args: Any,
+): T = apply {
+    dedent()
+    openBlock(textBeforeNewLine, *args)
+    indent()
+}
+
+/**
  * Declares a section for extension in codegen.  The [SectionId] should be specified as a child
  * of the type housing the codegen associated with the section. This keeps [SectionId]s closely
  * associated with their targets.
