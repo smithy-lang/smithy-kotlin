@@ -50,9 +50,9 @@ class JsonStreamReaderTest {
 
     @Test
     fun itFailsOnUnclosedArrays(): Unit = runSuspendTest {
-        assertFails {
+        assertFailsWith<DeserializationException> {
             """[ "hello", "world" """.allTokens()
-        }
+        }.message.shouldContain("expected ']'")
     }
 
     @Test

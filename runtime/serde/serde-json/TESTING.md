@@ -12,7 +12,7 @@ changes against the [JSONTestSuite](https://github.com/nst/JSONTestSuite) and ma
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "1.5.20"
+    kotlin("jvm") version "1.5.30"
     application
     id("com.github.johnrengelman.shadow") version "7.0.0"
 }
@@ -30,11 +30,12 @@ allprojects {
 
 
 // NOTE: set to whatever locally published version you are working on
-val serdeJsonVersion: String = "0.4.0-kmp"
+val smithyKotlinVersion: String = "0.4.1-kmp-json"
 dependencies {
-    implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
-    implementation("aws.smithy.kotlin:serde-json:$serdeJsonVersion")
+   implementation(kotlin("stdlib"))
+   implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+   implementation("aws.smithy.kotlin:serde-json:$smithyKotlinVersion")
+   implementation("aws.smithy.kotlin:utils:$smithyKotlinVersion")
 }
 
 tasks.jar {
@@ -56,8 +57,10 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import aws.smithy.kotlin.runtime.serde.json.JsonToken
 import aws.smithy.kotlin.runtime.serde.json.jsonStreamReader
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 
+@OptIn(InternalApi::class)
 suspend fun isValidJson(bytes: ByteArray):Boolean {
     val lexer = jsonStreamReader(bytes)
     println(lexer::class.qualifiedName)
