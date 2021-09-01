@@ -13,28 +13,38 @@ private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
 private val PLUS_MINUS = setOf('-', '+')
 
+private enum class State {
+    // Entry point. Expecting any JSON value
+    Initial,
+    // Expecting the next token to be the *first* value in an array, or the end of the array.
+    ArrayFirstValueOrEnd,
+    // Expecting the next token to the next value in an array, or the end of the array.
+    ArrayNextValueOrEnd,
+    // Expecting the next token to be the *first* key in the object, or the end of the object.
+    ObjectFirstKeyOrEnd,
+    // Expecting the next token to the next object key, or the end of the object.
+    ObjectNextKeyOrEnd,
+    // Expecting the next token to be the value of a field in an object.
+    ObjectFieldValue,
+}
+
 internal class JsonLexer(
     private val data: CharStream
 ) : JsonStreamReader {
     private var peeked: RawJsonToken? = null
-    private val stack: Stack<RawJsonToken> = mutableListOf()
+//    private val stack: Stack<RawJsonToken> = mutableListOf()
+    private var stateStack: Stack<State> = mutableListOf(State.Initial)
 
     override suspend fun nextToken(): JsonToken {
-        val raw = peek()
         peeked = null
-
         try {
-            return when (raw) {
-                RawJsonToken.BeginArray -> openStructure('[', RawJsonToken.BeginArray, JsonToken.BeginArray)
-                RawJsonToken.EndArray -> closeStructure(']', RawJsonToken.BeginArray, JsonToken.EndArray).moveToNextElement()
-                RawJsonToken.BeginObject -> openStructure('{', RawJsonToken.BeginObject, JsonToken.BeginObject)
-                RawJsonToken.EndObject -> closeStructure('}', RawJsonToken.BeginObject, JsonToken.EndObject).moveToNextElement()
-                RawJsonToken.Name -> readName()
-                RawJsonToken.EndDocument -> {
-                    lexerCheck(stack.isEmpty()) { invalidDocMessage() }
-                    JsonToken.EndDocument
-                }
-                else -> readScalarValue(raw).moveToNextElement()
+            return when (stateStack.top()) {
+                State.Initial -> readToken()
+                State.ArrayFirstValueOrEnd -> stateArrayFirstValueOrEnd()
+                State.ArrayNextValueOrEnd -> stateArrayNextValueOrEnd()
+                State.ObjectFirstKeyOrEnd -> stateObjectFirstKeyOrEnd()
+                State.ObjectNextKeyOrEnd -> stateObjectNextKeyOrEnd()
+                State.ObjectFieldValue -> stateObjectFieldValue()
             }
         } catch (ex: DeserializationException) {
             throw ex
@@ -43,19 +53,12 @@ internal class JsonLexer(
         }
     }
 
-    private fun invalidDocMessage(): String = when (stack.top()) {
-        RawJsonToken.BeginArray -> "expected ']'"
-        RawJsonToken.BeginObject -> "expected '}'"
-        RawJsonToken.Name -> "expected ':'"
-        else -> "invalid json document"
-    }
-
     override suspend fun peek(): RawJsonToken = peeked ?: doPeek()
 
     override suspend fun skipNext() {
-        val startDepth = stack.size
+        val startDepth = stateStack.size
         nextToken()
-        while (stack.size > startDepth) {
+        while (stateStack.size > startDepth) {
             nextToken()
         }
     }
@@ -65,7 +68,12 @@ internal class JsonLexer(
 
         return when (next) {
             '{' -> RawJsonToken.BeginObject
-            '"' -> if (stack.topOrNull() == RawJsonToken.BeginObject) RawJsonToken.Name else RawJsonToken.String
+            '"' -> {
+                when (stateStack.top()) {
+                    State.ObjectFirstKeyOrEnd, State.ObjectNextKeyOrEnd -> RawJsonToken.Name
+                    else -> RawJsonToken.String
+                }
+            }
             '}' -> RawJsonToken.EndObject
             '[' -> RawJsonToken.BeginArray
             ']' -> RawJsonToken.EndArray
@@ -77,43 +85,108 @@ internal class JsonLexer(
             peeked = it
         }
     }
+    private suspend fun stateObjectFirstKeyOrEnd(): JsonToken {
+        return when (val chr = data.nextNonWhitespace(peek = true)) {
+            '}' -> endObject()
+            '"' -> readName()
+            else -> throw unexpectedToken(chr, "\"")
+        }
+    }
 
+    private suspend fun stateObjectNextKeyOrEnd(): JsonToken {
+        return when (val chr = data.nextNonWhitespace(peek = true)) {
+            '}' -> endObject()
+            ',' -> {
+                data.consume(',')
+                data.nextNonWhitespace(peek = true)
+                readName()
+            }
+            else -> throw unexpectedToken(chr, ",", "}")
+        }
+    }
+
+    private suspend fun stateObjectFieldValue(): JsonToken {
+        return when (val chr = data.nextNonWhitespace(peek = true)) {
+            ':' -> {
+                data.consume(':')
+                stateStack.replaceTop(State.ObjectNextKeyOrEnd)
+                readToken()
+            }
+            else -> throw unexpectedToken(chr, ":")
+        }
+    }
+
+    private suspend fun stateArrayFirstValueOrEnd(): JsonToken {
+        return when (data.nextNonWhitespace(peek = true)) {
+            ']' -> endArray()
+            else -> {
+                stateStack.replaceTop(State.ArrayNextValueOrEnd)
+                readToken()
+            }
+        }
+    }
+    private suspend fun stateArrayNextValueOrEnd(): JsonToken {
+        return when (val chr = data.nextNonWhitespace(peek = true)) {
+            ']' -> endArray()
+            ',' -> {
+                data.consume(',')
+                readToken()
+            }
+            else -> throw unexpectedToken(chr, ",", "]")
+        }
+    }
+
+    // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
+    private suspend fun startObject(): JsonToken {
+        data.consume('{')
+        stateStack.push(State.ObjectFirstKeyOrEnd)
+        return JsonToken.BeginObject
+    }
+
+    // discards the '}' character and pops the current state
+    private suspend fun endObject(): JsonToken {
+        data.consume('}')
+        val top = stateStack.pop()
+        lexerCheck(top == State.ObjectFirstKeyOrEnd || top == State.ObjectNextKeyOrEnd) { "Unexpected close `}` encountered" }
+        return JsonToken.EndObject
+    }
+
+    // discards the '[' and pushes 'ArrayFirstValueOrEnd' state
+    private suspend fun startArray(): JsonToken {
+        data.consume('[')
+        stateStack.push(State.ArrayFirstValueOrEnd)
+        return JsonToken.BeginArray
+    }
+
+    // discards the '}' character and pops the current state
+    private suspend fun endArray(): JsonToken {
+        data.consume(']')
+        val top = stateStack.pop()
+        lexerCheck(top == State.ArrayFirstValueOrEnd || top == State.ArrayNextValueOrEnd) { "Unexpected close `]` encountered" }
+        return JsonToken.EndArray
+    }
+
+    // read an object key
     private suspend fun readName(): JsonToken {
-        val name = readQuoted()
-        data.nextNonWhitespace(peek = true)
-        data.consume(':')
-        stack.push(RawJsonToken.Name)
+        val name = when (val chr = data.peekOrThrow()) {
+            '"' -> readQuoted()
+            else -> throw unexpectedToken(chr, "\"")
+        }
+        stateStack.replaceTop(State.ObjectFieldValue)
         return JsonToken.Name(name)
     }
 
-    private suspend fun readScalarValue(raw: RawJsonToken): JsonToken = when (raw) {
-        RawJsonToken.String -> JsonToken.String(readQuoted())
-        RawJsonToken.Bool, RawJsonToken.Null -> readKeyword()
-        RawJsonToken.Number -> readNumber()
-        else -> throw DeserializationException("Unhandled token $raw")
-    }
-
-    private suspend fun JsonToken.moveToNextElement(): JsonToken {
-        data.nextNonWhitespace(peek = true)
-        val top = stack.topOrNull()
-        val hadComma = data.consume(',', optional = true)
-        val next = data.nextNonWhitespace(peek = true)
-
-        // FIXME - trying to figure out comma handling with only the state we've implemented is difficult
-        // extra comma, expected value, e.g.: ["foo", ]
-        if (hadComma && ((top == RawJsonToken.BeginArray && next == ']') || (top == RawJsonToken.BeginObject && next == '}'))) {
-            throw DeserializationException("Unexpected char `$next` expected scalar value")
+    // read the next token from the stream
+    private suspend fun readToken(): JsonToken {
+        return when(val chr = data.nextNonWhitespace(peek = true)) {
+            '{' -> startObject()
+            '[' -> startArray()
+            '"' -> JsonToken.String(readQuoted())
+            't', 'f', 'n' -> readKeyword()
+            '-', in '0'..'9'-> readNumber()
+            null -> JsonToken.EndDocument
+            else -> throw unexpectedToken(chr, "{", "[", "\"", "null", "true", "false", "<number>")
         }
-
-        // expect comma but didn't have one, e.g.: ["foo" "bar"]
-//        if (!hadComma && (next != ']' || next != '}')){
-//            throw DeserializationException("Unexpected char `$next` expected `,`")
-//        }
-
-        if (top == RawJsonToken.Name) {
-            stack.pop()
-        }
-        return this
     }
 
     /**
@@ -204,21 +277,6 @@ internal class JsonLexer(
         }
     }
 
-    private suspend fun openStructure(expectedChar: Char, rawToken: RawJsonToken, actualToken: JsonToken): JsonToken {
-        data.consume(expectedChar)
-        stack.push(rawToken)
-        return actualToken
-    }
-
-    private suspend fun closeStructure(expectedChar: Char, expectedStackToken: RawJsonToken, closeToken: JsonToken): JsonToken {
-        data.consume(expectedChar)
-        val obj = stack.pop()
-        if (obj != expectedStackToken) {
-            throw DeserializationException("Unexpected close token '$expectedChar' encountered")
-        }
-        return closeToken
-    }
-
     private suspend fun readKeyword(): JsonToken = when (val ch = data.peekOrThrow()) {
         't' -> readLiteral("true", JsonToken.Bool(true))
         'f' -> readLiteral("false", JsonToken.Bool(false))
@@ -231,6 +289,7 @@ internal class JsonLexer(
         return token
     }
 
+    // fixme move to CharStream extensions
     private suspend fun CharStream.nextNonWhitespace(peek: Boolean = false): Char? {
         while (peek()?.isWhitespace() == true) {
             next()
@@ -245,6 +304,11 @@ private fun <T> MutableList<T>.pop(): T = removeLast()
 private fun <T> MutableList<T>.popOrNull(): T? = removeLastOrNull()
 private fun <T> MutableList<T>.top(): T = this[count() - 1]
 private fun <T> MutableList<T>.topOrNull(): T? = if (isNotEmpty()) top() else null
+private fun <T> MutableList<T>.replaceTop(item: T): T? {
+    val lastTop = popOrNull()
+    push(item)
+    return lastTop
+}
 
 private typealias Stack<T> = MutableList<T>
 
@@ -268,3 +332,9 @@ private inline fun lexerCheck(value: Boolean, lazyMessage: () -> Any) {
 
 // Test whether a character is a control character (ignoring SP and DEL)
 private fun Char.isControl(): Boolean = code in 0x00..0x1F
+
+private fun unexpectedToken(found: Char?, vararg expected: String): DeserializationException {
+    val pluralModifier = if (expected.size > 1) " one of" else ""
+    val formatted = expected.joinToString(separator = ", "){ "'$it'" }
+    return DeserializationException("Unexpected token '$found', expected$pluralModifier $formatted")
+}

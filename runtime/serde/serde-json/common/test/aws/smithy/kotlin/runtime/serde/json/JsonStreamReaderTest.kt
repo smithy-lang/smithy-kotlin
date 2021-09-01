@@ -52,7 +52,7 @@ class JsonStreamReaderTest {
     fun itFailsOnUnclosedArrays(): Unit = runSuspendTest {
         assertFailsWith<DeserializationException> {
             """[ "hello", "world" """.allTokens()
-        }.message.shouldContain("expected ']'")
+        }.message.shouldContain("expected one of ',', ']'")
     }
 
     @Test
@@ -67,18 +67,18 @@ class JsonStreamReaderTest {
     fun itFailsOnMissingComma(): Unit = runSuspendTest {
         assertFailsWith<DeserializationException> {
             """[3[4]]""".allTokens()
-        }.message.shouldContain("Unexpected char `[` expected `,`")
+        }.message.shouldContain("Unexpected token '[', expected one of ',', ']'")
     }
 
     @Test
     fun itFailsOnTrailingComma(): Unit = runSuspendTest {
         assertFailsWith<DeserializationException> {
             """["",]""".allTokens()
-        }.message.shouldContain("Unexpected char `]` expected scalar value")
+        }.message.shouldContain("Unexpected token ']', expected one of '{', '[', '")
 
         assertFailsWith<DeserializationException> {
             """{"foo":"bar",}""".allTokens()
-        }.message.shouldContain("Unexpected char `}` expected key")
+        }.message.shouldContain("Unexpected token '}', expected '\"'")
     }
 
     @Test
