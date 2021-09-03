@@ -18,6 +18,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpStatement
+import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
@@ -38,6 +39,8 @@ class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("kto
     }
     private val logger = Logger.getLogger<KtorEngine>()
 
+    // TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
+    @OptIn(InternalAPI::class)
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
         val callContext = callContext()
 
