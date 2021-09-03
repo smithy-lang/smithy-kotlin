@@ -28,22 +28,36 @@ private enum class State {
     ObjectFieldValue,
 }
 
+private typealias StateMutation = () -> Unit
+
 internal class JsonLexer(
     private val data: CharStream
 ) : JsonStreamReader {
     private var peeked: JsonToken? = null
-//    private val stack: Stack<RawJsonToken> = mutableListOf()
-    private var stateStack: Stack<State> = mutableListOf(State.Initial)
+    private val pendingStateMutations: MutableList<StateMutation> = mutableListOf()
+    private val state: Stack<State> = mutableListOf(State.Initial)
 
     override suspend fun nextToken(): JsonToken {
-        val tmp = peeked
-        if (tmp != null) {
-            peeked = null
-            return tmp
-        }
+        val next = peek()
+        peeked = null
+        pendingStateMutations.forEach(StateMutation::invoke)
+        pendingStateMutations.clear()
+        return next
+    }
 
+    override suspend fun peek(): JsonToken = peeked ?: doPeek().also { peeked = it }
+
+    override suspend fun skipNext() {
+        val startDepth = state.size
+        nextToken()
+        while (state.size > startDepth) {
+            nextToken()
+        }
+    }
+
+    private suspend fun doPeek(): JsonToken {
         try {
-            return when (stateStack.top()) {
+            return when (state.top()) {
                 State.Initial -> readToken()
                 State.ArrayFirstValueOrEnd -> stateArrayFirstValueOrEnd()
                 State.ArrayNextValueOrEnd -> stateArrayNextValueOrEnd()
@@ -58,23 +72,6 @@ internal class JsonLexer(
         }
     }
 
-    override suspend fun peek(): JsonToken = peeked ?: doPeek()
-
-    override suspend fun skipNext() {
-        // FIXME - peeking modifies the state stack, we need to take this into account or else we can peek() a BeginObject, try to skipIt recurisvely
-        // but fail to do so
-        val startDepth = stateStack.size
-        nextToken()
-        while (stateStack.size > startDepth) {
-            nextToken()
-        }
-    }
-
-    private suspend fun doPeek(): JsonToken {
-        return nextToken().also {
-                peeked = it
-            }
-    }
     private suspend fun stateObjectFirstKeyOrEnd(): JsonToken {
         return when (val chr = data.nextNonWhitespace(peek = true)) {
             '}' -> endObject()
@@ -99,7 +96,7 @@ internal class JsonLexer(
         return when (val chr = data.nextNonWhitespace(peek = true)) {
             ':' -> {
                 data.consume(':')
-                stateStack.replaceTop(State.ObjectNextKeyOrEnd)
+                pendingStateMutations.add { state.replaceTop(State.ObjectNextKeyOrEnd) }
                 readToken()
             }
             else -> throw unexpectedToken(chr, ":")
@@ -110,7 +107,7 @@ internal class JsonLexer(
         return when (data.nextNonWhitespace(peek = true)) {
             ']' -> endArray()
             else -> {
-                stateStack.replaceTop(State.ArrayNextValueOrEnd)
+                pendingStateMutations.add { state.replaceTop(State.ArrayNextValueOrEnd) }
                 readToken()
             }
         }
@@ -129,30 +126,32 @@ internal class JsonLexer(
     // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
     private suspend fun startObject(): JsonToken {
         data.consume('{')
-        stateStack.push(State.ObjectFirstKeyOrEnd)
+        pendingStateMutations.add { state.push(State.ObjectFirstKeyOrEnd) }
         return JsonToken.BeginObject
     }
 
     // discards the '}' character and pops the current state
     private suspend fun endObject(): JsonToken {
         data.consume('}')
-        val top = stateStack.pop()
+        val top = state.top()
         lexerCheck(top == State.ObjectFirstKeyOrEnd || top == State.ObjectNextKeyOrEnd) { "Unexpected close `}` encountered" }
+        pendingStateMutations.add { state.pop() }
         return JsonToken.EndObject
     }
 
     // discards the '[' and pushes 'ArrayFirstValueOrEnd' state
     private suspend fun startArray(): JsonToken {
         data.consume('[')
-        stateStack.push(State.ArrayFirstValueOrEnd)
+        pendingStateMutations.add { state.push(State.ArrayFirstValueOrEnd) }
         return JsonToken.BeginArray
     }
 
     // discards the '}' character and pops the current state
     private suspend fun endArray(): JsonToken {
         data.consume(']')
-        val top = stateStack.pop()
+        val top = state.top()
         lexerCheck(top == State.ArrayFirstValueOrEnd || top == State.ArrayNextValueOrEnd) { "Unexpected close `]` encountered" }
+        pendingStateMutations.add { state.pop() }
         return JsonToken.EndArray
     }
 
@@ -162,18 +161,18 @@ internal class JsonLexer(
             '"' -> readQuoted()
             else -> throw unexpectedToken(chr, "\"")
         }
-        stateStack.replaceTop(State.ObjectFieldValue)
+        pendingStateMutations.add { state.replaceTop(State.ObjectFieldValue) }
         return JsonToken.Name(name)
     }
 
-    // read the next token from the stream
+    // read the next token from the stream (only called from state functions)
     private suspend fun readToken(): JsonToken {
-        return when(val chr = data.nextNonWhitespace(peek = true)) {
+        return when (val chr = data.nextNonWhitespace(peek = true)) {
             '{' -> startObject()
             '[' -> startArray()
             '"' -> JsonToken.String(readQuoted())
             't', 'f', 'n' -> readKeyword()
-            '-', in '0'..'9'-> readNumber()
+            '-', in '0'..'9' -> readNumber()
             null -> JsonToken.EndDocument
             else -> throw unexpectedToken(chr, "{", "[", "\"", "null", "true", "false", "<number>")
         }
@@ -325,6 +324,6 @@ private fun Char.isControl(): Boolean = code in 0x00..0x1F
 
 private fun unexpectedToken(found: Char?, vararg expected: String): DeserializationException {
     val pluralModifier = if (expected.size > 1) " one of" else ""
-    val formatted = expected.joinToString(separator = ", "){ "'$it'" }
+    val formatted = expected.joinToString(separator = ", ") { "'$it'" }
     return DeserializationException("Unexpected token '$found', expected$pluralModifier $formatted")
 }

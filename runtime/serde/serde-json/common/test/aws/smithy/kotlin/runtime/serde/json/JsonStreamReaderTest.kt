@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
-import io.kotest.matchers.collections.shouldNotBeIn
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.*
 
@@ -243,7 +242,6 @@ class JsonStreamReaderTest {
             JsonToken.EndObject,
             JsonToken.EndDocument
         )
-
     }
 
     @Test
