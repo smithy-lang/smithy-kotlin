@@ -64,7 +64,7 @@ tasks["jar"].enabled = false
         "kotlin-codegen": {
             "service": "aws.benchmarks.twitter#Twitter",
             "package": {
-                "name": "aws.smith.kotlin.serde.benchmarks.json.twitter",
+                "name": "aws.smithy.kotlin.benchmarks.serde.json.twitter",
                 "version": "0.0.1"
             },
             "build": {
