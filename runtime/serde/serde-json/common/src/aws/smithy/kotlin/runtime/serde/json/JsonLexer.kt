@@ -28,20 +28,55 @@ private enum class State {
     ObjectFieldValue,
 }
 
-private typealias StateMutation = () -> Unit
+private typealias StateStack = Stack<State>
+private typealias StateMutation = (StateStack) -> Unit
+
+/**
+ * Manages internal lexer state
+ *
+ * The entire lexer works off peeking tokens. Only when nextToken() is called should state be mutated.
+ * State manager helps enforce this invariant.
+ */
+private data class StateManager(
+    private val state: StateStack = mutableListOf(State.Initial),
+    private val pendingMutations: MutableList<StateMutation> = mutableListOf()
+) {
+
+    /**
+     * The size of the state stack
+     */
+    val size: Int
+        get() = state.size
+
+    /**
+     * Remove all pending mutations and run them to bring state up to date
+     */
+    fun update() {
+        pendingMutations.forEach { it.invoke(state) }
+        pendingMutations.clear()
+    }
+
+    /**
+     * Push a pending mutation
+     */
+    fun mutate(mutation: StateMutation) { pendingMutations.add(mutation) }
+
+    /**
+     * Get the top of the state stack
+     */
+    fun top(): State = state.top()
+}
 
 internal class JsonLexer(
     private val data: CharStream
 ) : JsonStreamReader {
     private var peeked: JsonToken? = null
-    private val pendingStateMutations: MutableList<StateMutation> = mutableListOf()
-    private val state: Stack<State> = mutableListOf(State.Initial)
+    private val state = StateManager()
 
     override suspend fun nextToken(): JsonToken {
         val next = peek()
         peeked = null
-        pendingStateMutations.forEach(StateMutation::invoke)
-        pendingStateMutations.clear()
+        state.update()
         return next
     }
 
@@ -96,7 +131,7 @@ internal class JsonLexer(
         return when (val chr = data.nextNonWhitespace(peek = true)) {
             ':' -> {
                 data.consume(':')
-                pendingStateMutations.add { state.replaceTop(State.ObjectNextKeyOrEnd) }
+                state.mutate { it.replaceTop(State.ObjectNextKeyOrEnd) }
                 readToken()
             }
             else -> throw unexpectedToken(chr, ":")
@@ -107,7 +142,7 @@ internal class JsonLexer(
         return when (data.nextNonWhitespace(peek = true)) {
             ']' -> endArray()
             else -> {
-                pendingStateMutations.add { state.replaceTop(State.ArrayNextValueOrEnd) }
+                state.mutate { it.replaceTop(State.ArrayNextValueOrEnd) }
                 readToken()
             }
         }
@@ -126,7 +161,7 @@ internal class JsonLexer(
     // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
     private suspend fun startObject(): JsonToken {
         data.consume('{')
-        pendingStateMutations.add { state.push(State.ObjectFirstKeyOrEnd) }
+        state.mutate { it.push(State.ObjectFirstKeyOrEnd) }
         return JsonToken.BeginObject
     }
 
@@ -135,14 +170,14 @@ internal class JsonLexer(
         data.consume('}')
         val top = state.top()
         lexerCheck(top == State.ObjectFirstKeyOrEnd || top == State.ObjectNextKeyOrEnd) { "Unexpected close `}` encountered" }
-        pendingStateMutations.add { state.pop() }
+        state.mutate { it.pop() }
         return JsonToken.EndObject
     }
 
     // discards the '[' and pushes 'ArrayFirstValueOrEnd' state
     private suspend fun startArray(): JsonToken {
         data.consume('[')
-        pendingStateMutations.add { state.push(State.ArrayFirstValueOrEnd) }
+        state.mutate { it.push(State.ArrayFirstValueOrEnd) }
         return JsonToken.BeginArray
     }
 
@@ -151,7 +186,7 @@ internal class JsonLexer(
         data.consume(']')
         val top = state.top()
         lexerCheck(top == State.ArrayFirstValueOrEnd || top == State.ArrayNextValueOrEnd) { "Unexpected close `]` encountered" }
-        pendingStateMutations.add { state.pop() }
+        state.mutate { it.pop() }
         return JsonToken.EndArray
     }
 
@@ -161,7 +196,7 @@ internal class JsonLexer(
             '"' -> readQuoted()
             else -> throw unexpectedToken(chr, "\"")
         }
-        pendingStateMutations.add { state.replaceTop(State.ObjectFieldValue) }
+        state.mutate { it.replaceTop(State.ObjectFieldValue) }
         return JsonToken.Name(name)
     }
 
