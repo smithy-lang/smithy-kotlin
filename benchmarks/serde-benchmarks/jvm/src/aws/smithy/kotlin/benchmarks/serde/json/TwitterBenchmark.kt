@@ -15,9 +15,6 @@ import aws.smithy.kotlin.runtime.serde.json.jsonStreamReader
 import kotlinx.benchmark.*
 import kotlinx.coroutines.runBlocking
 
-@Warmup(iterations = 7, time = 1)
-@Measurement(iterations = 5, time = 1, timeUnit = BenchmarkTimeUnit.MILLISECONDS)
-@OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.AverageTime)
 @State(Scope.Benchmark)
 open class TwitterBenchmark {

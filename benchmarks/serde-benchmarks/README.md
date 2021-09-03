@@ -13,10 +13,10 @@ Baseline `0.4.0-alpha`
 ```
 jvm summary:
 Benchmark                              Mode  Cnt  Score   Error  Units
-CitmBenchmark.tokensBenchmark          avgt    5  6.289 ± 1.814  ms/op
-TwitterBenchmark.deserializeBenchmark  avgt    5  6.280 ± 0.774  ms/op
-TwitterBenchmark.serializeBenchmark    avgt    5  1.516 ± 0.054  ms/op
-TwitterBenchmark.tokensBenchmark       avgt    5  3.448 ± 0.364  ms/op
+CitmBenchmark.tokensBenchmark          avgt    5  6.060 ± 0.549  ms/op
+TwitterBenchmark.deserializeBenchmark  avgt    5  6.433 ± 0.396  ms/op
+TwitterBenchmark.serializeBenchmark    avgt    5  1.551 ± 0.090  ms/op
+TwitterBenchmark.tokensBenchmark       avgt    5  4.375 ± 0.080  ms/op
 ```
 
 ## JSON Data

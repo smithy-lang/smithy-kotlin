@@ -47,6 +47,16 @@ benchmark {
     targets {
         register("jvm")
     }
+
+    configurations {
+        getByName("main") {
+            iterations = 5
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            warmups = 7
+            outputTimeUnit = "ms"
+        }
+    }
 }
 
 // Workaround for https://github.com/Kotlin/kotlinx-benchmark/issues/39
