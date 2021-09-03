@@ -39,11 +39,12 @@ include(":runtime:serde")
 include(":runtime:serde:serde-json")
 include(":runtime:serde:serde-xml")
 include(":runtime:serde:serde-form-url")
-include(":runtime:serde:serde-benchmarks")
 include(":runtime:protocol:http")
 include(":runtime:protocol:http-client-engines:http-client-engine-ktor")
 
 include(":compile-tests")
+include(":benchmarks")
+include(":benchmarks:serde-benchmarks")
 
 
 // FIXME - intellij DOES NOT like this project included. Everything builds fine but intellij 2020.x
