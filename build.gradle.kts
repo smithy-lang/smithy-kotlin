@@ -4,8 +4,8 @@
  */
 buildscript {
     repositories {
+        mavenCentral()
         google()
-        jcenter()
     }
 
     val kotlinVersion: String by project
@@ -25,7 +25,6 @@ allprojects {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
         google()
     }
 }
