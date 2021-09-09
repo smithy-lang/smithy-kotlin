@@ -13,6 +13,61 @@ import io.kotest.matchers.string.shouldContain
 import kotlin.test.*
 
 class JsonStreamReaderTest {
+
+    object KitchenSink {
+        // serialized JSON document
+        val payload: String = """
+        {
+            "num": 1,
+            "str": "string",
+            "list": [1,2.3456,"3"],
+            "nested": {
+                "l2": [
+                    {
+                        "x": "x",
+                        "bool": true
+                    }
+                ],
+                "falsey": false
+            },
+            "null": null
+        }
+        """.trimIndent()
+
+        // expected tokens for "content"
+        val tokens: List<JsonToken> = listOf(
+            JsonToken.BeginObject,
+            JsonToken.Name("num"),
+            JsonToken.Number("1"),
+            JsonToken.Name("str"),
+            JsonToken.String("string"),
+            JsonToken.Name("list"),
+            JsonToken.BeginArray,
+            JsonToken.Number("1"),
+            JsonToken.Number("2.3456"),
+            JsonToken.String("3"),
+            JsonToken.EndArray,
+            JsonToken.Name("nested"),
+            JsonToken.BeginObject,
+            JsonToken.Name("l2"),
+            JsonToken.BeginArray,
+            JsonToken.BeginObject,
+            JsonToken.Name("x"),
+            JsonToken.String("x"),
+            JsonToken.Name("bool"),
+            JsonToken.Bool(true),
+            JsonToken.EndObject,
+            JsonToken.EndArray,
+            JsonToken.Name("falsey"),
+            JsonToken.Bool(false),
+            JsonToken.EndObject,
+            JsonToken.Name("null"),
+            JsonToken.Null,
+            JsonToken.EndObject,
+            JsonToken.EndDocument
+        )
+    }
+
     @Test
     fun itDeserializesObjects() = runSuspendTest {
         // language=JSON
@@ -209,24 +264,19 @@ class JsonStreamReaderTest {
         """.trimIndent()
         val reader = newReader(payload)
         // skip x
-        reader.apply {
-            nextToken() // begin obj
-            nextToken() // x
-            nextToken() // value
-        }
+        // BeginObj, x, value
+        repeat(3) { reader.nextToken() }
 
-        val nexted = reader.nextToken() as JsonToken.Name
-        assertEquals("nested", nexted.value)
-        reader.apply {
-            nextToken() // BeginObj
-            nextToken() // a
-            nextToken() // value
-        }
+        val nested = reader.nextToken() as JsonToken.Name
+        assertEquals("nested", nested.value)
+        // BeginObj, a, value
+        repeat(3) { reader.nextToken() }
 
         val unknown = reader.nextToken() as JsonToken.Name
         assertEquals("unknown", unknown.value)
         // skip the entire unknown subtree
         reader.skipNext()
+        reader.peek()
 
         val remaining = mutableListOf<JsonToken>()
         for (i in 0..6) {
@@ -242,6 +292,17 @@ class JsonStreamReaderTest {
             JsonToken.EndObject,
             JsonToken.EndDocument
         )
+    }
+
+    @Test
+    fun testPeek() = runSuspendTest {
+        val reader = newReader(KitchenSink.payload)
+        KitchenSink.tokens.forEachIndexed { idx, expectedToken ->
+            repeat(2) {
+                assertEquals(expectedToken, reader.peek(), "[idx=$idx] unexpected peeked token")
+            }
+            assertEquals(expectedToken, reader.nextToken(), "[idx=$idx] unexpected next token")
+        }
     }
 
     @Test
@@ -271,55 +332,8 @@ class JsonStreamReaderTest {
 
     @Test
     fun kitchenSink() = runSuspendTest {
-        val actual = """
-        {
-            "num": 1,
-            "str": "string",
-            "list": [1,2.3456,"3"],
-            "nested": {
-                "l2": [
-                    {
-                        "x": "x",
-                        "bool": true
-                    }
-                ],
-                "falsey": false
-            },
-            "null": null
-        }
-        """.trimIndent().allTokens()
-
-        actual.shouldContainExactly(
-            JsonToken.BeginObject,
-            JsonToken.Name("num"),
-            JsonToken.Number("1"),
-            JsonToken.Name("str"),
-            JsonToken.String("string"),
-            JsonToken.Name("list"),
-            JsonToken.BeginArray,
-            JsonToken.Number("1"),
-            JsonToken.Number("2.3456"),
-            JsonToken.String("3"),
-            JsonToken.EndArray,
-            JsonToken.Name("nested"),
-            JsonToken.BeginObject,
-            JsonToken.Name("l2"),
-            JsonToken.BeginArray,
-            JsonToken.BeginObject,
-            JsonToken.Name("x"),
-            JsonToken.String("x"),
-            JsonToken.Name("bool"),
-            JsonToken.Bool(true),
-            JsonToken.EndObject,
-            JsonToken.EndArray,
-            JsonToken.Name("falsey"),
-            JsonToken.Bool(false),
-            JsonToken.EndObject,
-            JsonToken.Name("null"),
-            JsonToken.Null,
-            JsonToken.EndObject,
-            JsonToken.EndDocument
-        )
+        val actual = KitchenSink.payload.allTokens()
+        actual.shouldContainExactly(KitchenSink.tokens)
     }
 
     @Test
