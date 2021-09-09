@@ -7,54 +7,22 @@ package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.util.*
 
-private enum class EncoderState {
-    /**
-     * Starting state
-     */
-    Initial,
-
-    /**
-     * Object has started, expecting first object key
-     */
-    ObjectFirstKeyOrEnd,
-
-    /**
-     * Expecting next object key or end of the object
-     */
-    ObjectNextKeyOrEnd,
-
-    /**
-     * Expecting a value to be written
-     */
-    ObjectFieldValue,
-
-    /**
-     * Expecting first array value or end of array
-     */
-    ArrayFirstElementOrEnd,
-
-    /**
-     * Expecting next array value or end of array
-     */
-    ArrayNextElementOrEnd
-}
-
 internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWriter {
     private val buffer = StringBuilder()
 
     override val bytes: ByteArray
         get() = buffer.toString().encodeToByteArray()
 
-    private val state: ListStack<EncoderState> = mutableListOf(EncoderState.Initial)
+    private val state: ListStack<LexerState> = mutableListOf(LexerState.Initial)
 
     private var depth: Int = 0
 
-    override fun beginObject() = openStructure("{", EncoderState.ObjectFirstKeyOrEnd)
+    override fun beginObject() = openStructure("{", LexerState.ObjectFirstKeyOrEnd)
     override fun endObject() = closeStructure("}")
-    override fun beginArray() = openStructure("[", EncoderState.ArrayFirstElementOrEnd)
+    override fun beginArray() = openStructure("[", LexerState.ArrayFirstValueOrEnd)
     override fun endArray() = closeStructure("]")
 
-    private fun openStructure(token: String, nextState: EncoderState) {
+    private fun openStructure(token: String, nextState: LexerState) {
         encodeValue(token)
         if (pretty) writeNewline()
         depth++
@@ -91,17 +59,17 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
 
     private fun encodeValue(value: String) {
         when (state.top()) {
-            EncoderState.ArrayFirstElementOrEnd -> {
-                state.replaceTop(EncoderState.ArrayNextElementOrEnd)
+            LexerState.ArrayFirstValueOrEnd -> {
+                state.replaceTop(LexerState.ArrayNextValueOrEnd)
                 writeIndent()
             }
-            EncoderState.ArrayNextElementOrEnd -> {
+            LexerState.ArrayNextValueOrEnd -> {
                 writeComma()
                 writeIndent()
             }
-            EncoderState.ObjectFieldValue -> {
+            LexerState.ObjectFieldValue -> {
                 writeColon()
-                state.replaceTop(EncoderState.ObjectNextKeyOrEnd)
+                state.replaceTop(LexerState.ObjectNextKeyOrEnd)
             }
             else -> {}
         }
@@ -118,12 +86,12 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
     }
 
     override fun writeName(name: String) {
-        if (state.top() == EncoderState.ObjectNextKeyOrEnd) {
+        if (state.top() == LexerState.ObjectNextKeyOrEnd) {
             writeComma()
         }
         writeIndent()
         buffer.appendQuoted(name.escape())
-        state.replaceTop(EncoderState.ObjectFieldValue)
+        state.replaceTop(LexerState.ObjectFieldValue)
     }
 
     override fun writeValue(value: String) = encodeValue("\"${value.escape()}\"")

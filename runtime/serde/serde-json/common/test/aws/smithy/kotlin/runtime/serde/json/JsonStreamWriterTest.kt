@@ -79,7 +79,7 @@ class JsonStreamWriterTest {
     }
 
     @Test
-    fun testNested() {
+    fun testPretty() {
         // language=JSON
         val expected = """{
     "foo": "bar",

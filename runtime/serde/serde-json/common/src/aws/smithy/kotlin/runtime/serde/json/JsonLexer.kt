@@ -14,21 +14,6 @@ private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
 private val PLUS_MINUS = setOf('-', '+')
 
-private enum class LexerState {
-    // Entry point. Expecting any JSON value
-    Initial,
-    // Expecting the next token to be the *first* value in an array, or the end of the array.
-    ArrayFirstValueOrEnd,
-    // Expecting the next token to the next value in an array, or the end of the array.
-    ArrayNextValueOrEnd,
-    // Expecting the next token to be the *first* key in the object, or the end of the object.
-    ObjectFirstKeyOrEnd,
-    // Expecting the next token to the next object key, or the end of the object.
-    ObjectNextKeyOrEnd,
-    // Expecting the next token to be the value of a field in an object.
-    ObjectFieldValue,
-}
-
 private typealias StateStack = ListStack<LexerState>
 private typealias StateMutation = (StateStack) -> Unit
 
