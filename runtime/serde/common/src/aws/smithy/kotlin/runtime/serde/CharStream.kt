@@ -120,3 +120,15 @@ suspend fun CharStream.take(count: Int): String = buildString {
         append(nextOrThrow())
     }
 }
+
+/**
+ * Read the next non-whitespace character from the stream
+ * @param peek Flag indicating if the next character should be consumed or peeked (whitespace will be consumed,
+ * this only controls if the next non-whitespace character is consumed as well)
+ */
+suspend fun CharStream.nextNonWhitespace(peek: Boolean = false): Char? {
+    while (peek()?.isWhitespace() == true) {
+        next()
+    }
+    return if (peek) peek() else next()
+}
