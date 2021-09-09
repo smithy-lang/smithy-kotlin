@@ -2,10 +2,21 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+import software.amazon.smithy.gradle.tasks.SmithyBuild
+
 plugins {
     kotlin("multiplatform")
     id("org.jetbrains.kotlinx.benchmark")
+    id("software.amazon.smithy")
 }
+
+buildscript {
+    val smithyVersion: String by project
+    dependencies {
+        classpath("software.amazon.smithy:smithy-cli:$smithyVersion")
+    }
+}
+
 
 extra.set("skipPublish", true)
 
@@ -28,7 +39,7 @@ kotlin {
             kotlin.srcDir("$platform/$srcDir")
             resources.srcDir("$platform/${resourcesPrefix}resources")
             languageSettings.progressiveMode = true
-            experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) }
+            experimentalAnnotations.forEach { languageSettings.optIn(it) }
         }
 
         val kotlinxBenchmarkVersion: String by project
@@ -39,6 +50,9 @@ kotlin {
                 implementation(project(":runtime:serde:serde-json"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
+        }
+        val jvmMain by getting {
+            kotlin.srcDir("${project.buildDir}/generated-src/src")
         }
     }
 }
@@ -64,4 +78,52 @@ afterEvaluate {
     tasks.named<org.gradle.jvm.tasks.Jar>("jvmBenchmarkJar") {
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
+}
+
+tasks["smithyBuildJar"].enabled = false
+
+val codegen by configurations.creating
+
+dependencies {
+    codegen(project(":benchmarks:serde-benchmarks-codegen"))
+}
+
+val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
+    group = "codegen"
+    classpath = configurations.getByName("codegen")
+    println(configurations.getByName("codegen"))
+    inputs.file(projectDir.resolve("smithy-build.json"))
+    inputs.files(configurations.getByName("codegen"))
+}
+
+data class BenchmarkModel(val name: String) {
+    val projectionRootDir: File
+        get() = project.file("${project.buildDir}/smithyprojections/${project.name}/$name/kotlin-codegen/src/main/kotlin").absoluteFile
+
+    val sourceSetRootDir: File
+        get() = project.file("${project.buildDir}/generated-src/src").absoluteFile
+}
+
+val benchmarkModels = listOf("twitter").map{ BenchmarkModel(it) }
+
+
+val stageGeneratedSources = tasks.register("stageGeneratedSources") {
+    group = "codegen"
+    dependsOn(generateSdk)
+    doLast {
+        benchmarkModels.forEach {
+            copy {
+                from("${it.projectionRootDir}")
+                into("${it.sourceSetRootDir}")
+                include("**/model/*.kt")
+                include("**/transform/*.kt")
+                exclude("**/transform/*OperationSerializer.kt")
+                exclude("**/transform/*OperationDeserializer.kt")
+            }
+        }
+    }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
+    dependsOn(stageGeneratedSources)
 }

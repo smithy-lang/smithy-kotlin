@@ -2,11 +2,9 @@ $version: "1.0"
 
 namespace aws.benchmarks.twitter
 
-use aws.api#service
-use aws.protocols#restJson1
+use aws.benchmarks.protocols#serdeBenchmarkJson
 
-@service(sdkId: "Twitter JSON Benchmark")
-@restJson1
+@serdeBenchmarkJson
 service Twitter {
     version: "2019-12-16",
     operations: [GetFeed]

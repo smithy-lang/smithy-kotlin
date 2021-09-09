@@ -30,56 +30,7 @@ JSON file   | Size | Description
 
 ## Benchmarks
 
-The `models` folder contains hand rolled Smithy models for some of the benchmarks. Code was generated in a standalone
-project, hand massaged, and copied into the `model.{name}` folder. 
+The `model` folder contains hand rolled Smithy models for some of the benchmarks. The `smithy-benchmarks-codegen` project 
+contains the codegen support to generate these models.
 
-e.g.
-
-```kotlin
-plugins {
-    kotlin("jvm") version "1.5.20"
-    id("software.amazon.smithy").version("0.5.3")
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-val smithyVersion = "1.9.1"
-
-dependencies {
-    implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
-    implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
-    implementation("software.amazon.smithy.kotlin:smithy-aws-kotlin-codegen:0.4.0-alpha")
-}
-
-tasks["jar"].enabled = false
-```
-
-```json
-{
-    "version": "1.0",
-    "plugins": {
-        "kotlin-codegen": {
-            "service": "aws.benchmarks.twitter#Twitter",
-            "package": {
-                "name": "aws.smithy.kotlin.benchmarks.serde.json.twitter",
-                "version": "0.0.1"
-            },
-            "build": {
-                "rootProject": true
-            }
-        }
-    }
-}
-```
-
-Copy the output into the appropriate directories, e.g.:
-
-```shell
-cp -r build/smithyprojections/smithy-sandbox/source/kotlin-codegen/src/main/kotlin/aws/smithy/kotlin/serde/benchmarks/json/twitter/model ~/path/to/smithy-kotlin/runtime/serde/serde-benchmarks/jvm/src/aws/smithy/kotlin/serde/benchmarks/json/twitter/.
-cp -r build/smithyprojections/smithy-sandbox/source/kotlin-codegen/src/main/kotlin/aws/smithy/kotlin/serde/benchmarks/json/twitter/transform ~/path/to/smithy-kotlin/runtime/serde/serde-benchmarks/jvm/src/aws/smithy/kotlin/serde/benchmarks/json/twitter/.
-```
-
-Remove `GetFeedRequest`, `GetFeedResponse`, the operation serializer and deserializer, and the exception type.
+These models are generated as part of the build. Until you run `assemble` you may see errors in your IDE.
