@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.util.*
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
@@ -13,7 +14,7 @@ private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
 private val PLUS_MINUS = setOf('-', '+')
 
-private enum class State {
+private enum class LexerState {
     // Entry point. Expecting any JSON value
     Initial,
     // Expecting the next token to be the *first* value in an array, or the end of the array.
@@ -28,7 +29,7 @@ private enum class State {
     ObjectFieldValue,
 }
 
-private typealias StateStack = Stack<State>
+private typealias StateStack = ListStack<LexerState>
 private typealias StateMutation = (StateStack) -> Unit
 
 /**
@@ -38,7 +39,7 @@ private typealias StateMutation = (StateStack) -> Unit
  * State manager helps enforce this invariant.
  */
 private data class StateManager(
-    private val state: StateStack = mutableListOf(State.Initial),
+    private val state: StateStack = mutableListOf(LexerState.Initial),
     private val pendingMutations: MutableList<StateMutation> = mutableListOf()
 ) {
 
@@ -64,7 +65,7 @@ private data class StateManager(
     /**
      * Get the top of the state stack
      */
-    fun current(): State = state.top()
+    fun current(): LexerState = state.top()
 }
 
 /**
@@ -96,12 +97,12 @@ internal class JsonLexer(
     private suspend fun doPeek(): JsonToken {
         try {
             return when (state.current()) {
-                State.Initial -> readToken()
-                State.ArrayFirstValueOrEnd -> stateArrayFirstValueOrEnd()
-                State.ArrayNextValueOrEnd -> stateArrayNextValueOrEnd()
-                State.ObjectFirstKeyOrEnd -> stateObjectFirstKeyOrEnd()
-                State.ObjectNextKeyOrEnd -> stateObjectNextKeyOrEnd()
-                State.ObjectFieldValue -> stateObjectFieldValue()
+                LexerState.Initial -> readToken()
+                LexerState.ArrayFirstValueOrEnd -> stateArrayFirstValueOrEnd()
+                LexerState.ArrayNextValueOrEnd -> stateArrayNextValueOrEnd()
+                LexerState.ObjectFirstKeyOrEnd -> stateObjectFirstKeyOrEnd()
+                LexerState.ObjectNextKeyOrEnd -> stateObjectNextKeyOrEnd()
+                LexerState.ObjectFieldValue -> stateObjectFieldValue()
             }
         } catch (ex: DeserializationException) {
             throw ex
@@ -135,7 +136,7 @@ internal class JsonLexer(
         when (val chr = data.nextNonWhitespace(peek = true)) {
             ':' -> {
                 data.consume(':')
-                state.mutate { it.replaceTop(State.ObjectNextKeyOrEnd) }
+                state.mutate { it.replaceTop(LexerState.ObjectNextKeyOrEnd) }
                 readToken()
             }
             else -> throw unexpectedToken(chr, ":")
@@ -146,7 +147,7 @@ internal class JsonLexer(
         when (data.nextNonWhitespace(peek = true)) {
             ']' -> endArray()
             else -> {
-                state.mutate { it.replaceTop(State.ArrayNextValueOrEnd) }
+                state.mutate { it.replaceTop(LexerState.ArrayNextValueOrEnd) }
                 readToken()
             }
         }
@@ -165,7 +166,7 @@ internal class JsonLexer(
     // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
     private suspend fun startObject(): JsonToken {
         data.consume('{')
-        state.mutate { it.push(State.ObjectFirstKeyOrEnd) }
+        state.mutate { it.push(LexerState.ObjectFirstKeyOrEnd) }
         return JsonToken.BeginObject
     }
 
@@ -173,7 +174,7 @@ internal class JsonLexer(
     private suspend fun endObject(): JsonToken {
         data.consume('}')
         val top = state.current()
-        lexerCheck(top == State.ObjectFirstKeyOrEnd || top == State.ObjectNextKeyOrEnd) { "Unexpected close `}` encountered" }
+        lexerCheck(top == LexerState.ObjectFirstKeyOrEnd || top == LexerState.ObjectNextKeyOrEnd) { "Unexpected close `}` encountered" }
         state.mutate { it.pop() }
         return JsonToken.EndObject
     }
@@ -181,7 +182,7 @@ internal class JsonLexer(
     // discards the '[' and pushes 'ArrayFirstValueOrEnd' state
     private suspend fun startArray(): JsonToken {
         data.consume('[')
-        state.mutate { it.push(State.ArrayFirstValueOrEnd) }
+        state.mutate { it.push(LexerState.ArrayFirstValueOrEnd) }
         return JsonToken.BeginArray
     }
 
@@ -189,7 +190,7 @@ internal class JsonLexer(
     private suspend fun endArray(): JsonToken {
         data.consume(']')
         val top = state.current()
-        lexerCheck(top == State.ArrayFirstValueOrEnd || top == State.ArrayNextValueOrEnd) { "Unexpected close `]` encountered" }
+        lexerCheck(top == LexerState.ArrayFirstValueOrEnd || top == LexerState.ArrayNextValueOrEnd) { "Unexpected close `]` encountered" }
         state.mutate { it.pop() }
         return JsonToken.EndArray
     }
@@ -200,14 +201,14 @@ internal class JsonLexer(
             '"' -> readQuoted()
             else -> throw unexpectedToken(chr, "\"")
         }
-        state.mutate { it.replaceTop(State.ObjectFieldValue) }
+        state.mutate { it.replaceTop(LexerState.ObjectFieldValue) }
         return JsonToken.Name(name)
     }
 
     // read the next token from the stream. This is only invoked from state functions which guarantees
     // the current state should be such that the next character is the start of a token
-    private suspend fun readToken(): JsonToken {
-        return when (val chr = data.nextNonWhitespace(peek = true)) {
+    private suspend fun readToken(): JsonToken =
+        when (val chr = data.nextNonWhitespace(peek = true)) {
             '{' -> startObject()
             '[' -> startArray()
             '"' -> JsonToken.String(readQuoted())
@@ -216,7 +217,6 @@ internal class JsonLexer(
             null -> JsonToken.EndDocument
             else -> throw unexpectedToken(chr, "{", "[", "\"", "null", "true", "false", "<number>")
         }
-    }
 
     /**
      * Read based on the number spec : https://www.json.org/json-en.html
@@ -318,19 +318,6 @@ internal class JsonLexer(
         return token
     }
 }
-
-private fun <T> MutableList<T>.push(item: T) = add(item)
-private fun <T> MutableList<T>.pop(): T = removeLast()
-private fun <T> MutableList<T>.popOrNull(): T? = removeLastOrNull()
-private fun <T> MutableList<T>.top(): T = this[count() - 1]
-private fun <T> MutableList<T>.topOrNull(): T? = if (isNotEmpty()) top() else null
-private fun <T> MutableList<T>.replaceTop(item: T): T? {
-    val lastTop = popOrNull()
-    push(item)
-    return lastTop
-}
-
-private typealias Stack<T> = MutableList<T>
 
 // decode an escaped unicode character to an integer code point (e.g. D801)
 // the escape characters `\u` should be stripped from the input before calling
