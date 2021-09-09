@@ -36,7 +36,6 @@ fun writeGradleBuild(
         writer.withBlock("repositories {", "}\n") {
             write("mavenLocal()")
             write("mavenCentral()")
-            write("jcenter()")
         }
     }
 

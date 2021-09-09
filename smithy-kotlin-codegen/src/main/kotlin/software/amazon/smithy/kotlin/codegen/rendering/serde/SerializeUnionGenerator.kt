@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.unionVariantName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -117,7 +118,7 @@ class SerializeUnionGenerator(
      * Render code to serialize a primitive or structure shape. Example:
      *
      * ```
-     * is FooUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value.format(TimestampFormat.ISO_8601))
+     * is FooUnion.StringMember -> field(TIMESTAMP4_DESCRIPTOR, input.value)
      * ```
      *
      * @param memberShape [MemberShape] referencing the primitive type
@@ -132,6 +133,24 @@ class SerializeUnionGenerator(
         val descriptorName = memberShape.descriptorName()
 
         writer.write("is $unionTypeName -> $serializeFn($descriptorName, $encoded)")
+    }
+
+    override fun renderTimestampMemberSerializer(memberShape: MemberShape) {
+        writer.addImport(RuntimeTypes.Core.TimestampFormat)
+        val target = ctx.model.expectShape(memberShape.target)
+        val tsFormat = memberShape
+            .getTrait(TimestampFormatTrait::class.java)
+            .map { it.format }
+            .orElseGet {
+                target.getTrait(TimestampFormatTrait::class.java)
+                    .map { it.format }
+                    .orElse(defaultTimestampFormat)
+            }
+            .toRuntimeEnum()
+
+        val unionTypeName = memberShape.unionTypeName(ctx)
+        val descriptorName = memberShape.descriptorName()
+        writer.write("is $unionTypeName -> field($descriptorName, input.value, $tsFormat)")
     }
 }
 
