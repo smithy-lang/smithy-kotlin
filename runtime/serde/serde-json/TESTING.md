@@ -168,18 +168,11 @@ n_number_with_leading_zero.json                 [012]
 ```
 
 
-FIXME - some of these should probably be addressed (trailing commas, etc)
 
 This test case succeeds with our parser and that's OK since we're
 a token streaming parser (multiple values are allowed):
 ```
-n_array_comma_after_close.json                  [""],
-n_array_extra_comma.json                        ["",]
 n_array_just_minus.json                         [-]
-n_array_number_and_comma.json                   [1,]
-n_object_garbage_at_end.json                    {"a":"a" 123}
-n_object_trailing_comma.json                    {"id":0,}
 n_structure_double_array.json                   [][]
-n_structure_object_with_trailing_garbage.json 	{"a": true} "x"
 n_structure_whitespace_formfeed.json            [0C] <=> []
 ```
