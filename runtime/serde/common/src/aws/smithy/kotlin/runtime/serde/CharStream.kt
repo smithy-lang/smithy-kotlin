@@ -5,8 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde
 
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readUtf8CodePoint
+import aws.smithy.kotlin.runtime.util.text.byteCountUtf8
 import aws.smithy.kotlin.runtime.util.text.codePointToChars
 import aws.smithy.kotlin.runtime.util.text.isSupplementaryCodePoint
 
@@ -20,26 +19,74 @@ interface CharStream {
      *
      * @return the next [Char] or null if the stream is completed
      */
-    suspend fun peek(): Char?
+    fun peek(): Char?
 
     /**
      * Return and 'consume' the next [Char] in the stream, suspending if necessary until one is available.
      *
      * @return the next [Char] or null if the stream is completed
      */
-    suspend fun next(): Char?
+    fun next(): Char?
 
     companion object {
-        operator fun invoke(bytes: ByteArray): CharStream = CharStream(SdkByteReadChannel(bytes))
-        operator fun invoke(chan: SdkByteReadChannel): CharStream = ReadChannelCharStream(chan)
+//        operator fun invoke(bytes: ByteArray): CharStream = CharStream(SdkByteReadChannel(bytes))
+        operator fun invoke(bytes: ByteArray): CharStream = ByteArrayCharStream(bytes)
+//        operator fun invoke(chan: SdkByteReadChannel): CharStream = ReadChannelCharStream(chan)
     }
 }
 
-internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : CharStream {
+//internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : CharStream {
+//    private var peeked = mutableListOf<Char>()
+//    override suspend fun peek(): Char? {
+//        if (peeked.isEmpty()) {
+//            val code = chan.readUtf8CodePoint() ?: return null
+//            when {
+//                Char.isSupplementaryCodePoint(code) -> {
+//                    val chars = Char.codePointToChars(code)
+//                    chars.forEach(peeked::add)
+//                }
+//                else -> peeked.add(code.toChar())
+//            }
+//        }
+//        return peeked.lastOrNull()
+//    }
+//
+//    override suspend fun next(): Char? {
+//        if (peeked.isEmpty()) {
+//            peek()
+//        }
+//        return peeked.removeLastOrNull()
+//    }
+//}
+
+internal class ByteArrayCharStream(private val bytes: ByteArray) : CharStream {
     private var peeked = mutableListOf<Char>()
-    override suspend fun peek(): Char? {
+    private var cursor = 0
+
+    override fun peek(): Char? {
         if (peeked.isEmpty()) {
-            val code = chan.readUtf8CodePoint() ?: return null
+            if (cursor >= bytes.size) return null
+            val firstByte = bytes[cursor]
+            val cnt = byteCountUtf8(firstByte)
+            var code = when (cnt) {
+                1 -> firstByte.toInt()
+                2 -> firstByte.toInt() and 0x1f
+                3 -> firstByte.toInt() and 0x0f
+                4 -> firstByte.toInt() and 0x07
+                else -> throw IllegalStateException("Invalid UTF-8 start sequence: $firstByte")
+            }
+            cursor++
+
+            for (i in 1 until cnt) {
+                if (cursor >= bytes.size) throw IllegalStateException("unexpected EOF: expected ${cnt - i} bytes")
+                val byte = bytes[cursor]
+                val bint = byte.toInt()
+                if (bint and 0xc0 != 0x80) throw IllegalStateException("invalid UTF-8 successor byte: $byte")
+
+                code = (code shl 6) or (bint and 0x3f)
+                cursor++
+            }
+
             when {
                 Char.isSupplementaryCodePoint(code) -> {
                     val chars = Char.codePointToChars(code)
@@ -53,20 +100,39 @@ internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : Cha
         return peeked.lastOrNull()
     }
 
-    override suspend fun next(): Char? {
+    override fun next(): Char? {
         if (peeked.isEmpty()) {
             peek()
         }
         return peeked.removeLastOrNull()
     }
 }
+//internal class ByteArrayCharStream(bytes: ByteArray) : CharStream {
+//    private var peeked: Char? = null
+//    private var cursor = 0
+//    private val data = bytes.decodeToString()
+//
+//    override fun peek(): Char? {
+//        if (peeked != null) return peeked
+//        if (cursor >= data.length) return null
+//        peeked = data[cursor]
+//        return peeked
+//    }
+//
+//    override fun next(): Char? {
+//        val next = peeked ?: peek()
+//        cursor++
+//        peeked = null
+//        return next
+//    }
+//}
 
 /**
  * Consume and return the next [Char] in the underlying [CharStream] throwing an exception if null
  *
  * @see [CharStream.next]
  */
-suspend fun CharStream.nextOrThrow(): Char = next() ?: throw IllegalStateException("Unexpected end of stream")
+fun CharStream.nextOrThrow(): Char = next() ?: throw IllegalStateException("Unexpected end of stream")
 
 /**
  * Peek and return the next [Char] in the underlying [CharStream] throwing an exception if null.
@@ -75,12 +141,12 @@ suspend fun CharStream.nextOrThrow(): Char = next() ?: throw IllegalStateExcepti
  *
  * @see [CharStream.peek]
  */
-suspend fun CharStream.peekOrThrow(): Char = peek() ?: throw IllegalStateException("Unexpected end of stream")
+fun CharStream.peekOrThrow(): Char = peek() ?: throw IllegalStateException("Unexpected end of stream")
 
 /**
  * Consume the [expected] CharSequence or throw an exception if an unexpected char is encountered
  */
-suspend fun CharStream.consume(expected: CharSequence) = expected.forEach { consume(it) }
+fun CharStream.consume(expected: CharSequence) = expected.forEach { consume(it) }
 
 /**
  * If the next character matches [expected] consume it.
@@ -91,7 +157,7 @@ suspend fun CharStream.consume(expected: CharSequence) = expected.forEach { cons
  *
  *  Returns whether the expected character was consumed
  */
-suspend fun CharStream.consume(expected: Char, optional: Boolean = false): Boolean {
+fun CharStream.consume(expected: Char, optional: Boolean = false): Boolean {
     val ch = peek()
     if (ch == expected) {
         nextOrThrow()
@@ -107,7 +173,7 @@ suspend fun CharStream.consume(expected: Char, optional: Boolean = false): Boole
  *
  * The first character that matches the [exitPredicate] is left on the stream (ie. not consumed).
  */
-suspend fun CharStream.readUntil(exitPredicate: (Char) -> Boolean): String = buildString {
+fun CharStream.readUntil(exitPredicate: (Char) -> Boolean): String = buildString {
     while (!exitPredicate(peekOrThrow())) {
         append(nextOrThrow())
     }
@@ -116,7 +182,7 @@ suspend fun CharStream.readUntil(exitPredicate: (Char) -> Boolean): String = bui
 /**
  * Take [count] characters from the stream
  */
-suspend fun CharStream.take(count: Int): String = buildString {
+fun CharStream.take(count: Int): String = buildString {
     require(count >= 0) { "expected count > 0: $count" }
     for (i in 0 until count) {
         append(nextOrThrow())
@@ -128,7 +194,7 @@ suspend fun CharStream.take(count: Int): String = buildString {
  * @param peek Flag indicating if the next character should be consumed or peeked (whitespace will be consumed,
  * this only controls if the next non-whitespace character is consumed as well)
  */
-suspend fun CharStream.nextNonWhitespace(peek: Boolean = false): Char? {
+fun CharStream.nextNonWhitespace(peek: Boolean = false): Char? {
     while (peek()?.isWhitespace() == true) {
         next()
     }

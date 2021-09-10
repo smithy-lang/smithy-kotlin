@@ -488,4 +488,4 @@ private suspend fun String.allTokens(): List<JsonToken> {
     }
 }
 
-private fun newReader(contents: String): JsonStreamReader = JsonLexer(CharStream(SdkByteReadChannel(contents.encodeToByteArray())))
+private fun newReader(contents: String): JsonStreamReader = JsonLexer(CharStream(contents.encodeToByteArray()))

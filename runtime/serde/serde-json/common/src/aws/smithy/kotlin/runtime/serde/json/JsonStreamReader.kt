@@ -33,7 +33,8 @@ interface JsonStreamReader {
 * Creates a [JsonStreamReader] instance
 */
 @InternalApi
-fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(CharStream(SdkByteReadChannel(payload)))
+//fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(CharStream(SdkByteReadChannel(payload)))
+fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(CharStream(payload))
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
 internal suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {

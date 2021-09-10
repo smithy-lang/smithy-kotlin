@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.serde
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import aws.smithy.kotlin.runtime.util.text.byteCountUtf8
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -82,6 +83,7 @@ abstract class CharStreamTest {
             "Привет, мир",
             "Γειά σου Κόσμε",
             "नमस्ते दुनिया",
+           "नमस्ते दुनिया",
             "you have summoned ZA̡͊͠͝LGΌ"
         )
 
@@ -108,6 +110,10 @@ abstract class CharStreamTest {
     }
 }
 
-class ReadChannelCharStreamTest : CharStreamTest() {
-    override fun newCharStream(contents: String): CharStream = CharStream(SdkByteReadChannel(contents.encodeToByteArray()))
+//class ReadChannelCharStreamTest : CharStreamTest() {
+//    override fun newCharStream(contents: String): CharStream = CharStream(SdkByteReadChannel(contents.encodeToByteArray()))
+//}
+
+class ByteArrayCharStreamTest : CharStreamTest() {
+    override fun newCharStream(contents: String): CharStream = CharStream(contents.encodeToByteArray())
 }

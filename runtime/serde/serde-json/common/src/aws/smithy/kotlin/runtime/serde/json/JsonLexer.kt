@@ -79,7 +79,7 @@ internal class JsonLexer(
         }
     }
 
-    private suspend fun doPeek(): JsonToken {
+    private fun doPeek(): JsonToken {
         try {
             return when (state.current()) {
                 LexerState.Initial -> readToken()
@@ -97,7 +97,7 @@ internal class JsonLexer(
     }
 
     // handles the [State.ObjectFirstKeyOrEnd] state
-    private suspend fun stateObjectFirstKeyOrEnd(): JsonToken =
+    private fun stateObjectFirstKeyOrEnd(): JsonToken =
         when (val chr = data.nextNonWhitespace(peek = true)) {
             '}' -> endObject()
             '"' -> readName()
@@ -105,7 +105,7 @@ internal class JsonLexer(
         }
 
     // handles the [State.ObjectNextKeyOrEnd] state
-    private suspend fun stateObjectNextKeyOrEnd(): JsonToken =
+    private fun stateObjectNextKeyOrEnd(): JsonToken =
         when (val chr = data.nextNonWhitespace(peek = true)) {
             '}' -> endObject()
             ',' -> {
@@ -117,7 +117,7 @@ internal class JsonLexer(
         }
 
     // handles the [State.ObjectFieldValue] state
-    private suspend fun stateObjectFieldValue(): JsonToken =
+    private fun stateObjectFieldValue(): JsonToken =
         when (val chr = data.nextNonWhitespace(peek = true)) {
             ':' -> {
                 data.consume(':')
@@ -128,7 +128,7 @@ internal class JsonLexer(
         }
 
     // handles the [State.ArrayFirstValueOrEnd] state
-    private suspend fun stateArrayFirstValueOrEnd(): JsonToken =
+    private fun stateArrayFirstValueOrEnd(): JsonToken =
         when (data.nextNonWhitespace(peek = true)) {
             ']' -> endArray()
             else -> {
@@ -138,7 +138,7 @@ internal class JsonLexer(
         }
 
     // handles the [State.ArrayNextValueOrEnd] state
-    private suspend fun stateArrayNextValueOrEnd(): JsonToken =
+    private fun stateArrayNextValueOrEnd(): JsonToken =
         when (val chr = data.nextNonWhitespace(peek = true)) {
             ']' -> endArray()
             ',' -> {
@@ -149,14 +149,14 @@ internal class JsonLexer(
         }
 
     // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
-    private suspend fun startObject(): JsonToken {
+    private fun startObject(): JsonToken {
         data.consume('{')
         state.mutate { it.push(LexerState.ObjectFirstKeyOrEnd) }
         return JsonToken.BeginObject
     }
 
     // discards the '}' character and pops the current state
-    private suspend fun endObject(): JsonToken {
+    private fun endObject(): JsonToken {
         data.consume('}')
         val top = state.current()
         lexerCheck(top == LexerState.ObjectFirstKeyOrEnd || top == LexerState.ObjectNextKeyOrEnd) { "Unexpected close `}` encountered" }
@@ -165,14 +165,14 @@ internal class JsonLexer(
     }
 
     // discards the '[' and pushes 'ArrayFirstValueOrEnd' state
-    private suspend fun startArray(): JsonToken {
+    private fun startArray(): JsonToken {
         data.consume('[')
         state.mutate { it.push(LexerState.ArrayFirstValueOrEnd) }
         return JsonToken.BeginArray
     }
 
     // discards the '}' character and pops the current state
-    private suspend fun endArray(): JsonToken {
+    private fun endArray(): JsonToken {
         data.consume(']')
         val top = state.current()
         lexerCheck(top == LexerState.ArrayFirstValueOrEnd || top == LexerState.ArrayNextValueOrEnd) { "Unexpected close `]` encountered" }
@@ -181,7 +181,7 @@ internal class JsonLexer(
     }
 
     // read an object key
-    private suspend fun readName(): JsonToken {
+    private fun readName(): JsonToken {
         val name = when (val chr = data.peekOrThrow()) {
             '"' -> readQuoted()
             else -> throw unexpectedToken(chr, "\"")
@@ -192,7 +192,7 @@ internal class JsonLexer(
 
     // read the next token from the stream. This is only invoked from state functions which guarantees
     // the current state should be such that the next character is the start of a token
-    private suspend fun readToken(): JsonToken =
+    private fun readToken(): JsonToken =
         when (val chr = data.nextNonWhitespace(peek = true)) {
             '{' -> startObject()
             '[' -> startArray()
@@ -207,7 +207,7 @@ internal class JsonLexer(
      * Read based on the number spec : https://www.json.org/json-en.html
      * [-]0-9[.[0-9]][[E|e][+|-]0-9]
      */
-    private suspend fun readNumber(): JsonToken {
+    private fun readNumber(): JsonToken {
         val value = buildString {
             if (data.peek() == '-') {
                 append(data.nextOrThrow())
@@ -229,14 +229,14 @@ internal class JsonLexer(
         return JsonToken.Number(value)
     }
 
-    private suspend fun readDigits(appendable: Appendable) {
+    private fun readDigits(appendable: Appendable) {
         while (data.peek() in DIGITS) {
             appendable.append(data.nextOrThrow())
         }
     }
 
     // reads a quoted JSON string out of the stream
-    private suspend fun readQuoted(): String {
+    private fun readQuoted(): String {
         data.consume('"')
         // read bytes until a non-escaped end-quote
         val value = buildString {
@@ -277,7 +277,7 @@ internal class JsonLexer(
      * Read JSON unicode escape sequences (e.g. "\u1234") and append them to [sb]. Will also read an additional
      * codepoint if the first codepoint is the start of a surrogate pair
      */
-    private suspend fun readEscapedUnicode(sb: StringBuilder) {
+    private fun readEscapedUnicode(sb: StringBuilder) {
         // already consumed \u escape, take next 4 bytes as high
         val high = data.take(4).decodeEscapedCodePoint()
         if (high.isHighSurrogate()) {
@@ -291,14 +291,14 @@ internal class JsonLexer(
         }
     }
 
-    private suspend fun readKeyword(): JsonToken = when (val ch = data.peekOrThrow()) {
+    private fun readKeyword(): JsonToken = when (val ch = data.peekOrThrow()) {
         't' -> readLiteral("true", JsonToken.Bool(true))
         'f' -> readLiteral("false", JsonToken.Bool(false))
         'n' -> readLiteral("null", JsonToken.Null)
         else -> throw DeserializationException("Unable to handle keyword starting with '$ch'")
     }
 
-    private suspend fun readLiteral(expectedString: String, token: JsonToken): JsonToken {
+    private fun readLiteral(expectedString: String, token: JsonToken): JsonToken {
         data.consume(expectedString)
         return token
     }
