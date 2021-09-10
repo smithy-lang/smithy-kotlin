@@ -14,12 +14,10 @@ kotlin {
         }
 
         jvmTest.dependencies {
-            api "org.jetbrains.kotlin:kotlin-test:$kotlinVersion"
             api "org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion"
-            implementation "org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutinesVersion"
 
             implementation "org.junit.jupiter:junit-jupiter:$junitVersion"
-
+            implementation "org.jetbrains.kotlinx:kotlinx-coroutines-debug:$coroutinesVersion"
             implementation "io.kotest:kotest-assertions-core-jvm:$kotestVersion"
         }
     }
