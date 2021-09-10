@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+
 /**
  * Interface for deserializing JSON documents as a stream of tokens
  */
@@ -27,4 +29,5 @@ interface JsonStreamReader {
 /*
 * Creates a [JsonStreamReader] instance
 */
-internal expect fun jsonStreamReader(payload: ByteArray): JsonStreamReader
+@InternalApi
+expect fun jsonStreamReader(payload: ByteArray): JsonStreamReader
