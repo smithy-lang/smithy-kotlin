@@ -28,6 +28,8 @@ interface CharStream {
      */
     fun next(): Char?
 
+    fun bytes(): ByteArray
+
     companion object {
 //        operator fun invoke(bytes: ByteArray): CharStream = CharStream(SdkByteReadChannel(bytes))
         operator fun invoke(bytes: ByteArray): CharStream = ByteArrayCharStream(bytes)
@@ -35,7 +37,7 @@ interface CharStream {
     }
 }
 
-//internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : CharStream {
+// internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : CharStream {
 //    private var peeked = mutableListOf<Char>()
 //    override suspend fun peek(): Char? {
 //        if (peeked.isEmpty()) {
@@ -57,11 +59,12 @@ interface CharStream {
 //        }
 //        return peeked.removeLastOrNull()
 //    }
-//}
+// }
 
 internal class ByteArrayCharStream(private val bytes: ByteArray) : CharStream {
     private var peeked = mutableListOf<Char>()
     private var cursor = 0
+    override fun bytes(): ByteArray = bytes
 
     override fun peek(): Char? {
         if (peeked.isEmpty()) {
@@ -107,7 +110,8 @@ internal class ByteArrayCharStream(private val bytes: ByteArray) : CharStream {
         return peeked.removeLastOrNull()
     }
 }
-//internal class ByteArrayCharStream(bytes: ByteArray) : CharStream {
+
+// internal class ByteArrayCharStream(bytes: ByteArray) : CharStream {
 //    private var peeked: Char? = null
 //    private var cursor = 0
 //    private val data = bytes.decodeToString()
@@ -125,7 +129,7 @@ internal class ByteArrayCharStream(private val bytes: ByteArray) : CharStream {
 //        peeked = null
 //        return next
 //    }
-//}
+// }
 
 /**
  * Consume and return the next [Char] in the underlying [CharStream] throwing an exception if null

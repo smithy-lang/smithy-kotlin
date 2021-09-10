@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
@@ -384,7 +383,7 @@ class JsonStreamReaderTest {
 
         assertFailsWith<DeserializationException> {
             """"\uD801\u00"""".allTokens()
-        }.message.shouldContain("Unexpected end of stream")
+        }.message.shouldContain("Unexpected EOF")
 
         assertFailsWith<DeserializationException> {
             """"\uD801\u+04D"""".allTokens()
@@ -392,7 +391,7 @@ class JsonStreamReaderTest {
 
         assertFailsWith<DeserializationException> {
             """"\u00"""".allTokens()
-        }.message.shouldContain("Unexpected end of stream")
+        }.message.shouldContain("Unexpected EOF")
 
         assertFailsWith<DeserializationException> {
             """"\uD801\uC501"""".allTokens()
@@ -412,12 +411,12 @@ class JsonStreamReaderTest {
         assertFailsWith<DeserializationException> {
             """["new
 line"]""".allTokens()
-        }.message.shouldContain("Unescaped control character")
+        }.message.shouldContain("Unexpected control character")
 
         assertFailsWith<DeserializationException> {
             val tokens = """["foo	tab"]""".trimIndent().allTokens()
             println(tokens)
-        }.message.shouldContain("Unescaped control character")
+        }.message.shouldContain("Unexpected control character")
 
         // whitespace should be fine
         assertEquals("foo  space", """"foo  space"""".decodeJsonStringToken())
