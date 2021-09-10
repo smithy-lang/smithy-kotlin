@@ -9,6 +9,8 @@ import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.bytes
 import aws.smithy.kotlin.runtime.io.write
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
@@ -47,7 +49,9 @@ private class FormUrlSerializer(
     override fun serializeDouble(value: Double) = write { commonWriteNumber(value) }
     override fun serializeString(value: String) = write(value)
 
-    override fun serializeRaw(value: String) = write(value)
+    override fun serializeInstant(value: Instant, format: TimestampFormat) {
+        serializeString(value.format(format))
+    }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         value.serialize(this)
@@ -122,6 +126,10 @@ private class FormUrlStructSerializer(
         serializeString(value)
     }
 
+    override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) = writeField(descriptor) {
+        serializeInstant(value, format)
+    }
+
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {
         val nestedPrefix = "${prefix}${descriptor.serialName}."
         // prepend the current prefix if one exists (e.g. deeply nested structures)
@@ -144,10 +152,6 @@ private class FormUrlStructSerializer(
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
         val childDescriptor = descriptor.copyWithNewSerialName("${prefix}${descriptor.serialName}")
         FormUrlMapSerializer(parent, childDescriptor).apply(block)
-    }
-
-    override fun rawField(descriptor: SdkFieldDescriptor, value: String) = writeField(descriptor) {
-        serializeRaw(value)
     }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
@@ -192,7 +196,7 @@ private class FormUrlListSerializer(
     override fun serializeFloat(value: Float) = writePrefixed { commonWriteNumber(value) }
     override fun serializeDouble(value: Double) = writePrefixed { commonWriteNumber(value) }
     override fun serializeString(value: String) = writePrefixed { write(value.urlEncodeComponent()) }
-    override fun serializeRaw(value: String) = writePrefixed { write(value) }
+    override fun serializeInstant(value: Instant, format: TimestampFormat) = writePrefixed { write(value.format(format)) }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         idx++
@@ -277,16 +281,17 @@ private class FormUrlMapSerializer(
         serializeString(value)
     }
 
+    override fun entry(key: String, value: Instant?, format: TimestampFormat) = writeEntry(key) {
+        checkNotSparse(value)
+        serializeInstant(value, format)
+    }
+
     override fun entry(key: String, value: SdkSerializable?) {
         checkNotSparse(value)
         writeKey(key)
 
         val nestedPrefix = "$commonPrefix.${mapName.value}."
         value.serialize(FormUrlSerializer(buffer, nestedPrefix))
-    }
-
-    override fun rawEntry(key: String, value: String) = writeEntry(key) {
-        serializeRaw(value)
     }
 
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
