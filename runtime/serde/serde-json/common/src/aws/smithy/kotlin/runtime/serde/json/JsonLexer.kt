@@ -262,7 +262,6 @@ internal class JsonLexer(
                 }
                 else -> {
                     if (chr.isControl()) throw DeserializationException("Unexpected control character: `$chr`")
-//                    append(nextOrThrow())
                     idx++
                 }
             }
@@ -273,24 +272,6 @@ internal class JsonLexer(
         val value = data.decodeToString(start, idx)
         consume('"')
         return if (needsUnescaped) value.unescape() else value
-    }
-
-    /**
-     * Read JSON unicode escape sequences (e.g. "\u1234") and append them to [sb]. Will also read an additional
-     * codepoint if the first codepoint is the start of a surrogate pair
-     */
-    private fun readEscapedUnicode(sb: StringBuilder) {
-        // already consumed \u escape, take next 4 bytes as high
-        val high = take(4).decodeEscapedCodePoint()
-        if (high.isHighSurrogate()) {
-            val escapedLow = take(6)
-            lexerCheck(escapedLow.startsWith("\\u")) { "Expected surrogate pair, found `$escapedLow`" }
-            val low = escapedLow.substring(2).decodeEscapedCodePoint()
-            lexerCheck(low.isLowSurrogate()) { "Invalid surrogate pair: (${high.code}, ${low.code})" }
-            sb.append(high, low)
-        } else {
-            sb.append(high)
-        }
     }
 
     private fun readKeyword(): JsonToken = when (val ch = peekOrThrow()) {
@@ -305,6 +286,10 @@ internal class JsonLexer(
         return token
     }
 
+    /**
+     * Advance the cursor until next non-whitespace character is encountered
+     * @param peek Flag indicating if the next non-whitespace character should be consumed or peeked
+     */
     private fun nextNonWhitespace(peek: Boolean = false): Char? {
         while (peekChar()?.isWhitespace() == true) {
             idx++
@@ -312,51 +297,48 @@ internal class JsonLexer(
         return if (peek) peekChar() else nextOrThrow()
     }
 
+    /**
+     * Invoke [consume] for each character in [expected]
+     */
     private fun consume(expected: String) = expected.forEach { consume(it) }
 
-    private fun consume(expected: Char, optional: Boolean = false) {
+    /**
+     * Assert that the next character is [expected] and advance
+     */
+    private fun consume(expected: Char) {
         val chr = data[idx].toChar()
-        if (chr == expected) {
-            idx++
-            return
-        }
-
-        throw IllegalStateException("Unexpected char '$chr' expected '$expected'")
-    }
-
-    private fun peekByte(): Byte? {
-        if (idx >= data.size) return null
-        return data[idx]
-    }
-
-    private fun peekByteOrThrow(): Byte {
-        return peekByte() ?: throw IllegalStateException("Unexpected EOF")
-    }
-
-    private fun peekChar(): Char? {
-        // NOTE: this assumes ascii/single byte utf8. This is safe only because we use it in places where we expect to read ascii
-        return peekByte()?.toChar()
-    }
-
-    private fun peekOrThrow(): Char {
-        // NOTE: this assumes ascii/single byte utf8. This is safe only because we use it in places where we expect to read ascii
-        return peekChar() ?: throw IllegalStateException("Unexpected EOF")
-    }
-
-    private fun nextOrThrow(): Char {
-        val chr = peekOrThrow()
+        check(chr == expected) { "Unexpected char '$chr' expected '$expected'" }
         idx++
-        return chr
     }
 
-    private fun take(cnt: Int): String {
-        if (idx + cnt >= data.size) throw IllegalStateException("Unexpected EOF: expected $cnt bytes; have ${data.size - idx}")
-        val str = data.decodeToString(idx, idx + cnt)
-        idx += cnt
-        return str
-    }
+    /**
+     * Return next byte to consume or null if EOF has been reached
+     */
+    private fun peekByte(): Byte? = data.getOrNull(idx)
+
+    /**
+     * Peek the next character or return null if EOF has been reached
+     *
+     * NOTE: This assumes ascii/single byte UTF-8. This is safe because we only use it for tokenization
+     * where we expect to read ascii chars. When reading object keys or string values [readQuoted] is
+     * used which handles UTF-8.
+     */
+    private fun peekChar(): Char? = peekByte()?.toInt()?.toChar()
+
+    /**
+     * Peek the next character or throw if EOF has been reached
+     */
+    private fun peekOrThrow(): Char = peekChar() ?: throw IllegalStateException("Unexpected EOF")
+
+    /**
+     * Consume the next character and advance the index or throw if EOF has been reached
+     */
+    private fun nextOrThrow(): Char = peekOrThrow().also { idx++ }
 }
 
+/**
+ * Unescape a JSON string (either object key or string value)
+ */
 private fun String.unescape(): String {
     val str = this
     return buildString(str.length + 1) {
@@ -389,6 +371,16 @@ private fun String.unescape(): String {
         }
     }
 }
+
+/**
+ * Reads an escaped unicode code point from [s] starting at [start] offset. This assumes that '\u' has already
+ * been consumed and [start] is pointing to the first hex digit. If the code point represents a surrogate pair
+ * an additional escaped code point will be consumed from the string.
+ * @param s The string to decode from
+ * @param start The starting index to start reading from
+ * @param sb The string builder to append unescaped unicode characters to
+ * @return The number of characters consumed
+ */
 private fun readEscapedUnicode(s: String, start: Int, sb: StringBuilder): Int {
     // already consumed \u escape, take next 4 bytes as high
     val high = s.substring(start, start + 4).decodeEscapedCodePoint()
@@ -407,8 +399,10 @@ private fun readEscapedUnicode(s: String, start: Int, sb: StringBuilder): Int {
     return consumed
 }
 
-// decode an escaped unicode character to an integer code point (e.g. D801)
-// the escape characters `\u` should be stripped from the input before calling
+/**
+ * decode an escaped unicode character to an integer code point (e.g. D801)
+ * the escape characters `\u` should be stripped from the input before calling
+ */
 private fun String.decodeEscapedCodePoint(): Char {
     if (!all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) throw DeserializationException("Invalid unicode escape: `\\u$this`")
     return toInt(16).toChar()
@@ -425,7 +419,9 @@ private inline fun lexerCheck(value: Boolean, lazyMessage: () -> Any) {
     }
 }
 
-// Test whether a character is a control character (ignoring SP and DEL)
+/**
+ * Test whether a character is a control character (ignoring SP and DEL)
+ */
 private fun Char.isControl(): Boolean = code in 0x00..0x1F
 
 private fun unexpectedToken(found: Char?, vararg expected: String): DeserializationException {
