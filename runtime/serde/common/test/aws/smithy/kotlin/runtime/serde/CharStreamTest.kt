@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNull
 
 abstract class CharStreamTest {
     abstract fun newCharStream(contents: String): CharStream
@@ -71,6 +72,33 @@ abstract class CharStreamTest {
         }
 
         Unit
+    }
+
+    @Test
+    fun testUnicode(): Unit = runSuspendTest {
+        val languages = listOf(
+            "こんにちは世界",
+            "مرحبا بالعالم",
+            "Привет, мир",
+            "Γειά σου Κόσμε",
+            "नमस्ते दुनिया",
+            "you have summoned ZA̡͊͠͝LGΌ"
+        )
+
+        languages.forEachIndexed { idx, lang ->
+            val sut = newCharStream(lang)
+            lang.forEach {
+                assertEquals(it, sut.next(), "[idx=$idx] expected $it from input $lang")
+            }
+            assertNull(sut.next())
+        }
+
+        // surrogate pair
+        val sut = newCharStream("foo\uD834\uDD1Ebar")
+        assertEquals("foo", sut.take(3))
+        assertEquals('\uD834', sut.next())
+        assertEquals('\uDD1E', sut.next())
+        assertEquals("bar", sut.take(3))
     }
 
     private suspend fun CharStream.readAll(): String = buildString {

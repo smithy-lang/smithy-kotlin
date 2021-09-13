@@ -43,7 +43,9 @@ internal class ReadChannelCharStream(private val chan: SdkByteReadChannel) : Cha
             when {
                 Char.isSupplementaryCodePoint(code) -> {
                     val chars = Char.codePointToChars(code)
-                    chars.forEach(peeked::add)
+                    for (i in chars.size - 1 downTo 0) {
+                        peeked.add(chars[i])
+                    }
                 }
                 else -> peeked.add(code.toChar())
             }

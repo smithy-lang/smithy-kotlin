@@ -424,6 +424,38 @@ line"]""".allTokens()
         // delete should be fine
         assertEquals("\u007F", """""""".decodeJsonStringToken())
     }
+
+    @Test
+    fun testUnicodeTokens() = runSuspendTest {
+
+        val languages = listOf(
+            "こんにちは世界",
+            "مرحبا بالعالم",
+            "Привет, мир",
+            "Γειά σου Κόσμε",
+            "नमस्ते दुनिया",
+            "you have summoned ZA̡͊͠͝LGΌ"
+        )
+
+        languages.forEachIndexed { idx, lang ->
+            val actual = """
+                {
+                    "foo": "$lang",
+                    "$lang": "bar"
+                }
+            """.trimIndent().allTokens()
+
+            actual.shouldContainExactly(
+                JsonToken.BeginObject,
+                JsonToken.Name("foo"),
+                JsonToken.String(lang),
+                JsonToken.Name(lang),
+                JsonToken.String("bar"),
+                JsonToken.EndObject,
+                JsonToken.EndDocument
+            )
+        }
+    }
 }
 
 private suspend fun String.decodeJsonStringToken(): String {
