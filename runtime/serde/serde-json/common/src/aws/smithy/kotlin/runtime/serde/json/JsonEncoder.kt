@@ -7,6 +7,15 @@ package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.util.*
 
+// character code points
+private const val CP_QUOTATION: Int = 0x22
+private const val CP_BACKSLASH: Int = 0x5C
+private const val CP_NEWLINE: Int = 0x0A
+private const val CP_CARRIAGE_RETURN: Int = 0x0D
+private const val CP_TAB: Int = 0x09
+private const val CP_BACKSPACE: Int = 0x08
+private const val CP_FORMFEED: Int = 0x0C
+
 internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWriter {
     private val buffer = StringBuilder()
 
@@ -121,13 +130,13 @@ internal fun String.escape(): String {
     return buildString(length + 1) {
         str.forEach { chr ->
             when (chr.code) {
-                '"'.code -> append("\\\"")
-                '\\'.code -> append("\\\\")
-                '\n'.code -> append("\\n")
-                '\r'.code -> append("\\r")
-                '\t'.code -> append("\\t")
-                0x08 -> append("\\b")
-                0x0C -> append("\\f")
+                CP_QUOTATION -> append("\\\"")
+                CP_BACKSLASH -> append("\\\\")
+                CP_NEWLINE -> append("\\n")
+                CP_CARRIAGE_RETURN -> append("\\r")
+                CP_TAB -> append("\\t")
+                CP_BACKSPACE -> append("\\b")
+                CP_FORMFEED -> append("\\f")
                 in 0..0x1F -> {
                     val formatted = chr.code.toString(16)
                     append("\\u")
@@ -141,8 +150,8 @@ internal fun String.escape(): String {
 }
 
 private fun Char.needsEscaped(): Boolean = when (code) {
-    '"'.code,
-    '\\'.code,
+    CP_QUOTATION,
+    CP_BACKSLASH,
     in 0..0x1F -> true
     else -> false
 }
