@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
@@ -436,7 +435,7 @@ line"]""".allTokens()
             "you have summoned ZA̡͊͠͝LGΌ"
         )
 
-        languages.forEachIndexed { idx, lang ->
+        languages.forEach { lang ->
             val actual = """
                 {
                     "foo": "$lang",
@@ -487,4 +486,4 @@ private suspend fun String.allTokens(): List<JsonToken> {
     }
 }
 
-private fun newReader(contents: String): JsonStreamReader = JsonLexer(CharStream(contents.encodeToByteArray()))
+private fun newReader(contents: String): JsonStreamReader = JsonLexer(contents.encodeToByteArray())

@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.serde.*
 
 /**
- * Provides a deserialiser for JSON documents
+ * Provides a deserializer for JSON documents
  *
  * @param payload underlying document from which tokens are read
  */

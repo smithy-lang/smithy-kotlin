@@ -57,11 +57,10 @@ private data class StateManager(
  * Tokenizes JSON documents
  */
 internal class JsonLexer(
-    cs: CharStream
+    private val data: ByteArray
 ) : JsonStreamReader {
     private var peeked: JsonToken? = null
     private val state = StateManager()
-    private val data: ByteArray = cs.bytes()
     private var idx = 0
 
     override suspend fun nextToken(): JsonToken {
@@ -237,7 +236,9 @@ internal class JsonLexer(
         }
     }
 
-    // reads a quoted JSON string out of the stream
+    /**
+     * Read a quoted JSON string out of the stream
+     */
     private fun readQuoted(): String {
         consume('"')
         // read bytes until a non-escaped end-quote
@@ -306,7 +307,7 @@ internal class JsonLexer(
      * Assert that the next character is [expected] and advance
      */
     private fun consume(expected: Char) {
-        val chr = data[idx].toChar()
+        val chr = data[idx].toInt().toChar()
         check(chr == expected) { "Unexpected char '$chr' expected '$expected'" }
         idx++
     }
@@ -319,9 +320,12 @@ internal class JsonLexer(
     /**
      * Peek the next character or return null if EOF has been reached
      *
-     * NOTE: This assumes ascii/single byte UTF-8. This is safe because we only use it for tokenization
-     * where we expect to read ascii chars. When reading object keys or string values [readQuoted] is
-     * used which handles UTF-8.
+     * SAFETY: This assumes ASCII. This is safe because we _only_ use it for tokenization
+     * (e.g. {, }, [, ], <number>, <ws>, etc). When reading object keys or string values [readQuoted] is
+     * used which handles UTF-8. Do not use these single char related functions to directly construct a string!
+     *
+     * NOTE: [readQuoted] uses [decodeToString] which is _MUCH_ faster (~3x) than decoding bytes as
+     * UTF-8 chars one by one on the fly.
      */
     private fun peekChar(): Char? = peekByte()?.toInt()?.toChar()
 

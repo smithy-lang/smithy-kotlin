@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
-import aws.smithy.kotlin.runtime.serde.CharStream
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.util.InternalApi
 
@@ -32,8 +31,7 @@ interface JsonStreamReader {
 * Creates a [JsonStreamReader] instance
 */
 @InternalApi
-// fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(CharStream(SdkByteReadChannel(payload)))
-fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(CharStream(payload))
+fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(payload)
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
 internal suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
