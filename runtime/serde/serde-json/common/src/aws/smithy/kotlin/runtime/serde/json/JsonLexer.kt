@@ -7,8 +7,6 @@ package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.util.*
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.contract
 
 private val DIGITS = ('0'..'9').toSet()
 private val EXP = setOf('e', 'E')
@@ -102,7 +100,7 @@ internal class JsonLexer(
         when (val chr = nextNonWhitespace(peek = true)) {
             '}' -> endObject()
             '"' -> readName()
-            else -> throw unexpectedToken(chr, "\"", "}")
+            else -> unexpectedToken(chr, "\"", "}")
         }
 
     // handles the [State.ObjectNextKeyOrEnd] state
@@ -114,7 +112,7 @@ internal class JsonLexer(
                 nextNonWhitespace(peek = true)
                 readName()
             }
-            else -> throw unexpectedToken(chr, ",", "}")
+            else -> unexpectedToken(chr, ",", "}")
         }
 
     // handles the [State.ObjectFieldValue] state
@@ -125,7 +123,7 @@ internal class JsonLexer(
                 state.mutate { it.replaceTop(LexerState.ObjectNextKeyOrEnd) }
                 readToken()
             }
-            else -> throw unexpectedToken(chr, ":")
+            else -> unexpectedToken(chr, ":")
         }
 
     // handles the [State.ArrayFirstValueOrEnd] state
@@ -146,7 +144,7 @@ internal class JsonLexer(
                 consume(',')
                 readToken()
             }
-            else -> throw unexpectedToken(chr, ",", "]")
+            else -> unexpectedToken(chr, ",", "]")
         }
 
     // discards the '{' character and pushes 'ObjectFirstKeyOrEnd' state
@@ -160,7 +158,7 @@ internal class JsonLexer(
     private fun endObject(): JsonToken {
         consume('}')
         val top = state.current()
-        lexerCheck(top == LexerState.ObjectFirstKeyOrEnd || top == LexerState.ObjectNextKeyOrEnd) { "Unexpected close `}` encountered" }
+        lexerCheck(top == LexerState.ObjectFirstKeyOrEnd || top == LexerState.ObjectNextKeyOrEnd, idx - 1) { "Unexpected close `}` encountered" }
         state.mutate { it.pop() }
         return JsonToken.EndObject
     }
@@ -176,7 +174,7 @@ internal class JsonLexer(
     private fun endArray(): JsonToken {
         consume(']')
         val top = state.current()
-        lexerCheck(top == LexerState.ArrayFirstValueOrEnd || top == LexerState.ArrayNextValueOrEnd) { "Unexpected close `]` encountered" }
+        lexerCheck(top == LexerState.ArrayFirstValueOrEnd || top == LexerState.ArrayNextValueOrEnd, idx - 1) { "Unexpected close `]` encountered" }
         state.mutate { it.pop() }
         return JsonToken.EndArray
     }
@@ -185,7 +183,7 @@ internal class JsonLexer(
     private fun readName(): JsonToken {
         val name = when (val chr = peekOrThrow()) {
             '"' -> readQuoted()
-            else -> throw unexpectedToken(chr, "\"")
+            else -> unexpectedToken(chr, "\"")
         }
         state.mutate { it.replaceTop(LexerState.ObjectFieldValue) }
         return JsonToken.Name(name)
@@ -201,7 +199,7 @@ internal class JsonLexer(
             't', 'f', 'n' -> readKeyword()
             '-', in '0'..'9' -> readNumber()
             null -> JsonToken.EndDocument
-            else -> throw unexpectedToken(chr, "{", "[", "\"", "null", "true", "false", "<number>")
+            else -> unexpectedToken(chr, "{", "[", "\"", "null", "true", "false", "<number>")
         }
 
     /**
@@ -258,11 +256,11 @@ internal class JsonLexer(
                             idx += 4
                         }
                         '\\', '/', '"', 'b', 'f', 'r', 'n', 't' -> { } // already consumed
-                        else -> throw DeserializationException("Invalid escape character: `$byte`")
+                        else -> fail("Invalid escape character: `$byte`", idx - 1)
                     }
                 }
                 else -> {
-                    if (chr.isControl()) throw DeserializationException("Unexpected control character: `$chr`")
+                    if (chr.isControl()) fail("Unexpected control character: `$chr`")
                     idx++
                 }
             }
@@ -279,7 +277,7 @@ internal class JsonLexer(
         't' -> readLiteral("true", JsonToken.Bool(true))
         'f' -> readLiteral("false", JsonToken.Bool(false))
         'n' -> readLiteral("null", JsonToken.Null)
-        else -> throw DeserializationException("Unable to handle keyword starting with '$ch'")
+        else -> fail("Unable to handle keyword starting with '$ch'")
     }
 
     private fun readLiteral(expectedString: String, token: JsonToken): JsonToken {
@@ -338,6 +336,23 @@ internal class JsonLexer(
      * Consume the next character and advance the index or throw if EOF has been reached
      */
     private fun nextOrThrow(): Char = peekOrThrow().also { idx++ }
+
+    private fun unexpectedToken(found: Char?, vararg expected: String): Nothing {
+        val pluralModifier = if (expected.size > 1) " one of" else ""
+        val formatted = expected.joinToString(separator = ", ") { "'$it'" }
+        fail("found '$found', expected$pluralModifier $formatted")
+    }
+
+    private fun fail(message: String, offset: Int = idx, cause: Throwable? = null): Nothing {
+        throw DeserializationException("Unexpected JSON token at offset $offset; $message", cause)
+    }
+
+    private inline fun lexerCheck(value: Boolean, offset: Int = idx, lazyMessage: () -> Any) {
+        if (!value) {
+            val message = lazyMessage()
+            fail(message.toString(), offset)
+        }
+    }
 }
 
 /**
@@ -392,9 +407,9 @@ private fun readEscapedUnicode(s: String, start: Int, sb: StringBuilder): Int {
     if (high.isHighSurrogate()) {
         val lowStart = start + consumed
         val escapedLow = s.substring(lowStart, lowStart + 6)
-        lexerCheck(escapedLow.startsWith("\\u")) { "Expected surrogate pair, found `$escapedLow`" }
+        check(escapedLow.startsWith("\\u")) { "Expected surrogate pair, found `$escapedLow`" }
         val low = escapedLow.substring(2).decodeEscapedCodePoint()
-        lexerCheck(low.isLowSurrogate()) { "Invalid surrogate pair: (${high.code}, ${low.code})" }
+        check(low.isLowSurrogate()) { "Invalid surrogate pair: (${high.code}, ${low.code})" }
         sb.append(high, low)
         consumed += 6
     } else {
@@ -408,28 +423,11 @@ private fun readEscapedUnicode(s: String, start: Int, sb: StringBuilder): Int {
  * the escape characters `\u` should be stripped from the input before calling
  */
 private fun String.decodeEscapedCodePoint(): Char {
-    if (!all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) throw DeserializationException("Invalid unicode escape: `\\u$this`")
+    check(all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) { "Invalid unicode escape: `\\u$this`" }
     return toInt(16).toChar()
-}
-
-@OptIn(ExperimentalContracts::class)
-private inline fun lexerCheck(value: Boolean, lazyMessage: () -> Any) {
-    contract {
-        returns() implies value
-    }
-    if (!value) {
-        val message = lazyMessage()
-        throw DeserializationException(message.toString())
-    }
 }
 
 /**
  * Test whether a character is a control character (ignoring SP and DEL)
  */
 private fun Char.isControl(): Boolean = code in 0x00..0x1F
-
-private fun unexpectedToken(found: Char?, vararg expected: String): DeserializationException {
-    val pluralModifier = if (expected.size > 1) " one of" else ""
-    val formatted = expected.joinToString(separator = ", ") { "'$it'" }
-    return DeserializationException("Unexpected token '$found', expected$pluralModifier $formatted")
-}
