@@ -72,6 +72,7 @@ tasks.register('publishToAwsCodeArtifact') {
 }
 
 def isAvailableForPublication(publication) {
+    if (project.ext.has("skipPublish")) return false
     return !project.hasProperty("publishGroupName") ||
             publication.groupId.startsWith((String) project.property("publishGroupName"))
 }

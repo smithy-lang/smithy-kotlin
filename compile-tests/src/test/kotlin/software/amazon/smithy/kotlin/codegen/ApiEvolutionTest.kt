@@ -1,7 +1,6 @@
 package software.amazon.smithy.kotlin.codegen
 
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource

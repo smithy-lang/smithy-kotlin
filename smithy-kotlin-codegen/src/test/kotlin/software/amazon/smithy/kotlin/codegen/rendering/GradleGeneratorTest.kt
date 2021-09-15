@@ -68,7 +68,6 @@ class GradleGeneratorTest {
         repositories {
             mavenLocal()
             mavenCentral()
-            jcenter()
         }
         """.trimIndent()
         val expectedVersion = """

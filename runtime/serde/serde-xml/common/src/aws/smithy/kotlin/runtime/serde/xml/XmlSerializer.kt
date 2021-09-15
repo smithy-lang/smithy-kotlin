@@ -6,6 +6,8 @@ package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.xml.dom.*
+import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /**
  * Provides serialization for the XML message format.
@@ -116,7 +118,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     override fun field(descriptor: SdkFieldDescriptor, value: String) =
         tagOrAttribute(descriptor, value, ::serializeString)
 
-    override fun rawField(descriptor: SdkFieldDescriptor, value: String) = field(descriptor, value)
+    override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) = field(descriptor, value.format(format))
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
         xmlWriter.writeTag(descriptor.serialName.name) {
@@ -162,8 +164,8 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.text(value)
     }
 
-    override fun serializeRaw(value: String) {
-        xmlWriter.text(value)
+    override fun serializeInstant(value: Instant, format: TimestampFormat) {
+        xmlWriter.text(value.format(format))
     }
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(this)
@@ -230,6 +232,8 @@ private class XmlMapSerializer(
 
     override fun entry(key: String, value: Char?) = writeEntry(key) { xmlWriter.text(value.toString()) }
 
+    override fun entry(key: String, value: Instant?, format: TimestampFormat) = entry(key, value?.format(format))
+
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeEntry(key) {
             val ls = xmlSerializer.beginList(listDescriptor)
@@ -246,9 +250,6 @@ private class XmlMapSerializer(
             block.invoke(ms)
         }
     }
-
-    override fun rawEntry(key: String, value: String) =
-        entry(key, value)
 
     override fun serializeBoolean(value: Boolean) = serializePrimitive(value)
 
@@ -270,7 +271,7 @@ private class XmlMapSerializer(
 
     override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
 
-    override fun serializeRaw(value: String) = serializeString(value)
+    override fun serializeInstant(value: Instant, format: TimestampFormat) = serializeString(value.format(format))
 
     override fun serializeNull() {
         val tagName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
@@ -336,7 +337,7 @@ private class XmlListSerializer(
         xmlWriter.writeTag(memberTagName, ns)
     }
 
-    override fun serializeRaw(value: String) = serializeString(value)
+    override fun serializeInstant(value: Instant, format: TimestampFormat) = serializeString(value.format(format))
 
     private fun serializePrimitive(value: Any) {
         val ns = descriptor.findTrait<XmlCollectionValueNamespace>()
