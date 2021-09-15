@@ -8,13 +8,13 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.util.*
 
 // character code points
-private const val CP_QUOTATION: Int = 0x22
-private const val CP_BACKSLASH: Int = 0x5C
-private const val CP_NEWLINE: Int = 0x0A
-private const val CP_CARRIAGE_RETURN: Int = 0x0D
-private const val CP_TAB: Int = 0x09
-private const val CP_BACKSPACE: Int = 0x08
-private const val CP_FORMFEED: Int = 0x0C
+private const val CP_QUOTATION = 0x22
+private const val CP_BACKSLASH = 0x5C
+private const val CP_NEWLINE = 0x0A
+private const val CP_CARRIAGE_RETURN = 0x0D
+private const val CP_TAB = 0x09
+private const val CP_BACKSPACE = 0x08
+private const val CP_FORMFEED = 0x0C
 
 internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWriter {
     private val buffer = StringBuilder()
