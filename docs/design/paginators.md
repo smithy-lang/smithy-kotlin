@@ -68,70 +68,86 @@ structure FunctionConfiguration { ... }
 
 ## API
 
-The SDK runtime will provide a `Paginator` interface that represents the public API for a paginated operation.
+The SDK runtime will provide a `SdkAsyncIterable` interface that represents the public API for a paginated operation.
 
 
 ```kotlin
 /**
- * Controls automatic pagination of a set of results
+ * An asynchronous data stream. This type is an asynchronous version of [Iterable].
  */
-interface Paginator<out T> {
-    /**
-     * Flag indicating if more results are expected
-     */
-    val hasMorePages: Boolean
-
-    /**
-     * Returns the results for the next page or null when no more results are available.
-     * @throws NoSuchElementException if [hasMorePages] is false
-     */
-    suspend fun next(): T
+interface SdkAsyncIterable<out T> {
+   operator fun iterator(): SdkAsyncIterator<T>
 }
 
-// transforms implemented for paginators
-// these are used internally for generating the `items` paginator but are also
-// available for customers to use
+/**
+ * An asynchronous [Iterator].
+ */
+interface SdkAsyncIterator<out T> {
+   /**
+    * Returns true if more results are expected
+    */
+   operator fun hasNext(): Boolean
 
-inline fun<T, R> Paginator<T>.map(transform: (T) -> R): Paginator<R> = TODO("not-implemented")
-inline fun<T, R> Paginator<Iterable<T>>.flatMap(transform: (T) -> Iterable<R>): Paginator<R> = TODO("not-implemented")
-fun<T> Paginator<Iterable<T>>.flatten(): Paginator<T> = TODO("not-implemented")
-fun <T> Paginator<T?>.filterNotNull(): Paginator<T> = TODO("not-implemented")
-suspend fun<T> Paginator<T>.toList(): List<T> = TODO("not-implemented")
-suspend fun<T> Paginator<T>.toSet(): Set<T> = TODO("not-implemented")
+   /**
+    * Returns the results for the next page or null when no more results are available.
+    * @throws NoSuchElementException if [hasMorePages()] is false
+    */
+   suspend operator fun next(): T
+}
+
+inline fun<T, R> SdkAsyncIterable<T>.map(transform: (T) -> R): SdkAsyncIterable<R> = TODO("not-implemented")
+inline fun<T, R> SdkAsyncIterable<T>.mapNotNull(transform: (T) -> R?): SdkAsyncIterable<R> = TODO("not-implemented")
+inline fun<T, R> SdkAsyncIterable<Iterable<T>>.flatMap(transform: (T) -> Iterable<R>): SdkAsyncIterable<R> = TODO("not-implemented")
+
+fun<T> SdkAsyncIterable<Iterable<T>>.flatten(): SdkAsyncIterable<T> = TODO("not-implemented")
+fun <T> SdkAsyncIterable<T?>.filterNotNull(): SdkAsyncIterable<T> = TODO("not-implemented")
+
+suspend fun<T> SdkAsyncIterable<T>.toList(): List<T> = TODO("not-implemented")
+suspend fun<T> SdkAsyncIterable<T>.toSet(): Set<T> = TODO("not-implemented")
+
+/**
+ * Terminal operator that collects the given iterable and calls [action] for each result
+ */
+inline fun <T> SdkAsyncIterable<T>.collect(crossinline action: suspend (T) -> Unit):Unit = TODO()
 ```
 
-Pagination by default will always generate a paginator _over the normal operation output type_. If `items` is specified then the generated paginator will be “specialized” to have an additional field that paginates only over the member targeted by `items`. An example of this is demonstrated below:
+Pagination by default will always generate an `SdkAsyncIterable` over the normal operation output type. 
+If `items` is specified then the generated paginator will be “specialized” to have an additional field that iterates 
+only over the member targeted by `items`. The targeted type will be flattened for the user automatically.
+
+An example of this is demonstrated below:
 
 
 ```kotlin
 class ListFunctionsPaginator(
     private val client: LambdaClient,
     private val initialRequest: ListFunctionsRequest
-): Paginator<ListFunctionsResponse>{
-    private var cursor: String? = null
-    private var isFirstPage: Boolean = true
+): SdkAsyncIterable<ListFunctionsResponse>, SdkAsyncIterator<ListFunctionsResponse> {
+   private var cursor: String? = null
+   private var isFirstPage: Boolean = true
 
-    override val hasMorePages: Boolean
-        get() = isFirstPage || (cursor?.isNotEmpty() ?: false)
+   override operator fun iterator(): SdkAsyncIterator<ListFunctionsResponse> = this
 
-    override suspend fun next(): ListFunctionsResponse {
-        if (!hasMorePages) throw NoSuchElementException("no pages remaining")
+   override operator fun hasNext(): Boolean
+           = isFirstPage || (cursor?.isNotEmpty() ?: false)
 
-        val req = initialRequest.copy {
-            this.marker = cursor
-        }
+   override suspend operator fun next(): ListFunctionsResponse {
+      if (!hasNext()) throw NoSuchElementException("no pages remaining")
 
-        val result = client.listFunctions(req)
-        isFirstPage = false
-        cursor = result.nextMarker
-        return result
-    }
-    
-    // "functions" is the member targeted by the trait's `items` property
-    val functions: Paginator<List<FunctionConfiguration>?> = map(ListFunctionsResponse::functions)
+      val req = initialRequest.copy {
+         this.marker = cursor
+      }
+
+      val result = client.listFunctions(req)
+      isFirstPage = false
+      cursor = result.nextMarker
+      return result
+   }
+
+   // "functions" is the member targeted by the trait's `items` property
+   val functions: SdkAsyncIterable<FunctionConfiguration> = mapNotNull(ListFunctionsResponse::functions).flatten()
 }
 ```
-
 
 The shape targeted by `inputToken` is mapped to the `cursor` field. Each iteration the `cursor` is updated with the output field targeted by the `outputToken`.
 
@@ -162,11 +178,8 @@ An example of driving a paginator manually and processing results:
 suspend fun rawPaginationExample(client: LambdaClient) {
     val req = ListFunctionsRequest{}
     val pager = client.listFunctionsPaginated(req).functions
-    while(pager.hasMorePages) {
-        val functions = pager.next()
-        functions?.forEach {
-            println(it)
-        }
+    for (fn in pager) {
+        println(fn)
     }
 }
 ```
@@ -255,10 +268,10 @@ For better coroutine support, the runtime could provide adapters for Paginators 
 /*
  * Consume this [Paginator] as a [Flow]
  */
-fun<T> Paginator<T>.asFlow(): Flow<T> = flow {
-    while(hasMorePages) {
-        val result = next()
-         emit(result)
+fun<T> SdkAsyncIterable<T>.asFlow(): Flow<T> = flow {
+    val iter = iterator()
+    while(iter.hasNext()) { 
+        emit(iter.next())
     }
 }
 ```
@@ -270,11 +283,7 @@ suspend fun flowExample(client: LambdaClient) {
     val req = ListFunctionsRequest{}
     val functions = client.listFunctionsPaginated(req).functions.asFlow() 
     
-    functions
-        .flatMapConcat { it.asFlow() }   // not necessary - flattens the inner pages into a stream of T instead of List<T>
-        .collect { 
-            println(it)
-        }
+    functions.collect { println(it) }
 }
 ```
 
