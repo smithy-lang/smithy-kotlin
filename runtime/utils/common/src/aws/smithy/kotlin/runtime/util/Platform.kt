@@ -33,7 +33,7 @@ public expect object Platform {
      * The delimiter of segments in a path. For example in Linux: /home/user/documents
      * or Windows: C:\Program Files\Notepad.EXE
      */
-    val filePathSegment: String
+    val filePathSeparator: String
 
     fun osInfo(): OperatingSystem
 

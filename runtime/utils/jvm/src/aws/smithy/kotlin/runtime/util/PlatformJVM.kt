@@ -47,7 +47,7 @@ public actual object Platform {
      * return the platform-specific file path separator char.  Eg on Linux a path may be '/root` and the path
      * segment char is '/'.
      */
-    actual val filePathSegment: String by lazy { File.separator }
+    actual val filePathSeparator: String by lazy { File.separator }
 }
 
 private fun isAndroid(): Boolean = try {
