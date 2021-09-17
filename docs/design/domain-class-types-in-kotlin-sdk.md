@@ -18,7 +18,7 @@ implementations for model shapes.
 
 The Smithy [weather example's](https://awslabs.github.io/smithy/quickstart.html#complete-example) `GetCity` operation is
 used as an example model description. The operation takes a `GetCityInput` and returns a `GetCityOutput`. We will focus
-on the input type below to show how each approach is expressed and responds to change.
+on the input type below to show how normal and data classes would be generated and respond to model updates.
 
 ```
 structure GetCityInput {
@@ -29,140 +29,164 @@ structure GetCityInput {
 }
 ```
 
-### General class definition
+### Option - Class Sample
+
+NOTE: Some ancillary generated functions have been removed from the following snippets to keep focus.
 
 ```kotlin
-class GetCityInput private constructor(builder: BuilderImpl) {
-    val cityId: String? = builder.cityId
+class GetCityRequest private constructor(builder: BuilderImpl) {
+   val cityId: String? = builder.cityId
 
-    companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
-    }
+   companion object {
+      @JvmStatic
+      fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
+      fun builder(): DslBuilder = BuilderImpl()
 
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
+      operator fun invoke(block: DslBuilder.() -> kotlin.Unit): GetCityRequest = BuilderImpl().apply(block).build()
 
-    override fun toString(): String {
-        return super.toString()
-    }
+   }
 
-    interface Builder {
-        fun build(): GetCityImageInput
-        // TODO - Java fill in Java builder
-    }
+   fun copy(block: DslBuilder.() -> kotlin.Unit = {}): GetCityRequest = BuilderImpl(this).apply(block).build()
 
-    interface DslBuilder {
-        var cityId: String?
-    }
+   interface FluentBuilder {
+      fun build(): GetCityRequest
+      fun cityId(cityId: String): FluentBuilder
+   }
 
-    private class BuilderImpl : Builder, DslBuilder {
-        override var cityId: String? = null
+   interface DslBuilder {
+      var cityId: String?
 
-        override fun build(): GetCityImageInput = GetCityImageInput(this)
-    }
+      fun build(): GetCityRequest
+   }
+
+   private class BuilderImpl() : FluentBuilder, DslBuilder {
+      override var cityId: String? = null
+
+      constructor(x: GetCityRequest) : this() {
+         this.cityId = x.cityId
+      }
+
+      override fun build(): GetCityRequest = GetCityRequest(this)
+      override fun cityId(cityId: String): FluentBuilder = apply { this.cityId = cityId }
+   }
 }
 ```
 
 #### Usage
 
 ```kotlin
-val unit = GetCityImageInput { cityId = "asdf" }
-println(unit.cityId)
+val request = GetCityRequest { cityId = "Shimabara" }
 ```
 
-### Data class definition
+### Option - Data Class Sample
 
 ```kotlin
-data class GetCityInput private constructor(val cityId: String?) {
-    companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
-    }
+data class GetCityRequest private constructor(val cityId: String?) {
 
-    interface Builder {
-        fun build(): GetCityImageInput
-        // TODO - Java fill in Java builder
-    }
+   companion object {
+      @JvmStatic
+      fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-    interface DslBuilder {
-        var cityId: String?
-    }
+      fun builder(): DslBuilder = BuilderImpl()
 
-    private class BuilderImpl : Builder, DslBuilder {
-        override var cityId: String? = null
+      operator fun invoke(block: DslBuilder.() -> kotlin.Unit): GetCityRequest = BuilderImpl().apply(block).build()
 
-        override fun build(): GetCityImageInput = GetCityImageInput(cityId = this.cityId)
-    }
+   }
+
+   interface FluentBuilder {
+      fun build(): GetCityRequest
+      fun cityId(cityId: String): FluentBuilder
+   }
+
+   interface DslBuilder {
+      var cityId: String?
+
+      fun build(): GetCityRequest
+   }
+
+   private class BuilderImpl() : FluentBuilder, DslBuilder {
+      override var cityId: String? = null
+
+      constructor(x: GetCityRequest) : this() {
+         this.cityId = x.cityId
+      }
+
+      override fun build(): GetCityRequest = GetCityRequest(cityId = this.cityId)
+      override fun cityId(cityId: String): FluentBuilder = apply { this.cityId = cityId }
+   }
 }
 ```
 
 #### Usage
 
 ```kotlin
-val unit = GetCityImageInput { cityId = "asdf" }
-println(unit.cityId)
+val request = GetCityRequest { cityId = "Kuchinotsu" }
 ```
 
 Note that usage is the exact same as the general class.
 
-## Service API change example
+## Service API Change
 
-Suppose the Weather Example service team decides they need to add a required parameter to specify the country code. They
-produce this updated description of the `GetCityInput` structure:
+Suppose the Weather Example service team decides they need to add another parameter to specify the country code. They
+produce this updated version of the `GetCityInput` structure:
 
 ```
-structure GetCityInput {
-    @required @httpLabel
-    countryCode: CountryCode,
+string CountryCode
 
-    @required @httpLabel
-    cityId: CityId,
+structure GetCityInput {
+  @required @httpLabel
+  countryCode: CountryCode,
+
+  @required cityId: CityId
 }
 ```
 
-### Updated general class definition
+### Updated Class Sample
 
 ```kotlin
-class GetCityImageInput private constructor(builder: BuilderImpl) {
-    val countryCode: String? = builder.countryCode
-    val cityId: String? = builder.cityId
+class GetCityRequest private constructor(builder: BuilderImpl) {
+   val cityId: String? = builder.cityId
+   val countryCode: String? = builder.countryCode
 
-    companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
-    }
+   companion object {
+      @JvmStatic
+      fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-    override fun equals(other: Any?): Boolean {
-        return super.equals(other)
-    }
+      fun builder(): DslBuilder = BuilderImpl()
 
-    override fun hashCode(): Int {
-        return super.hashCode()
-    }
+      operator fun invoke(block: DslBuilder.() -> kotlin.Unit): GetCityRequest = BuilderImpl().apply(block).build()
 
-    override fun toString(): String {
-        return super.toString()
-    }
+   }
 
-    interface Builder {
-        fun build(): GetCityImageInput
-        // TODO - Java fill in Java builder
-    }
+   fun copy(block: DslBuilder.() -> kotlin.Unit = {}): GetCityRequest = BuilderImpl(this).apply(block).build()
 
-    interface DslBuilder {
-        var countryCode: String?
-        var cityId: String?
-    }
+   interface FluentBuilder {
+      fun build(): GetCityRequest
+      fun cityId(cityId: String): FluentBuilder
+      fun countryCode(countryCode: String): FluentBuilder
+   }
 
-    private class BuilderImpl : Builder, DslBuilder {
-        override var countryCode: String? = null
-        override var cityId: String? = null
+   interface DslBuilder {
+      var cityId: String?
+      var countryCode: String?
 
-        override fun build(): GetCityImageInput = GetCityImageInput(this)
-    }
+      fun build(): GetCityRequest
+   }
+
+   private class BuilderImpl() : FluentBuilder, DslBuilder {
+      override var cityId: String? = null
+      override var countryCode: String? = null
+
+      constructor(x: GetCityRequest) : this() {
+         this.cityId = x.cityId
+         this.countryCode = x.countryCode
+      }
+
+      override fun build(): GetCityRequest = GetCityRequest(this)
+      override fun cityId(cityId: String): FluentBuilder = apply { this.cityId = cityId }
+      override fun countryCode(countryCode: String): FluentBuilder = apply { this.countryCode = countryCode }
+   }
 }
 ```
 
@@ -173,48 +197,62 @@ Note the addition of new `countryCode` fields in the class and builders.
 ```kotlin
 // Legacy
 {
-    val unit = GetCityImageInput { cityId = "asdf" }
-    println(unit.cityId)
+    val request = GetCityRequest { cityId = "Shimabara" }
 }
 
 // New
 {
-    val unit = GetCityImageInput {
-        cityId = "asdf"
-        countryCode = "US"
+    val request = GetCityRequest {
+        cityId = "Shimabara"
+        countryCode = "JP"
     }
-    println(unit.cityId)
+    val request2 = request.copy { 
+       cityId = "Taira" 
+    }
 }
 ```
 
-### Updated data class definition
+### Updated Data Class Sample
 
 ```kotlin
-data class GetCityImageInput private constructor(
-    val countryCode: String?,
-    val cityId: String?
-) {
+data class GetCityRequest private constructor(val cityId: String?, val countryCode: String?) {
 
-    companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
-    }
+   companion object {
+      @JvmStatic
+      fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-    interface Builder {
-        fun build(): GetCityImageInput
-        // TODO - Java fill in Java builder
-    }
+      fun builder(): DslBuilder = BuilderImpl()
 
-    interface DslBuilder {
-        var countryCode: String?
-        var cityId: String?
-    }
+      operator fun invoke(block: DslBuilder.() -> kotlin.Unit): GetCityRequest = BuilderImpl().apply(block).build()
 
-    private class BuilderImpl : Builder, DslBuilder {
-        override var cityId: String? = null
-        override var countryCode: String? = null
+   }
 
-        override fun build(): GetCityImageInput = GetCityImageInput(countryCode = this.countryCode, cityId = this.cityId)
-    }
+   interface FluentBuilder {
+      fun build(): GetCityRequest
+      fun cityId(cityId: String): FluentBuilder
+      fun countryCode(countryCode: String): FluentBuilder
+   }
+
+   interface DslBuilder {
+      var cityId: String?
+      var countryCode: String?
+
+      fun build(): GetCityRequest
+   }
+
+   private class BuilderImpl() : FluentBuilder, DslBuilder {
+      override var cityId: String? = null
+      override var countryCode: String? = null
+
+      constructor(x: GetCityRequest) : this() {
+         this.cityId = x.cityId
+         this.countryCode = x.countryCode
+      }
+
+      override fun build(): GetCityRequest = GetCityRequest(cityId = this.cityId, countryCode = this.countryCode)
+      override fun cityId(cityId: String): FluentBuilder = apply { this.cityId = cityId }
+      override fun countryCode(countryCode: String): FluentBuilder = apply { this.countryCode = countryCode }
+   }
 }
 ```
 
@@ -225,17 +263,16 @@ Note the addition of a new `countryCode` parameter to the constructor and `count
 ```kotlin
 // Legacy
 {
-    val unit = GetCityImageInput { cityId = "asdf" }
-    println(unit.cityId)
+    val request = GetCityRequest { cityId = "Kuchinotsu" }
 }
 
 // New
 {
-    val unit = GetCityImageInput {
-        cityId = "asdf"
-        countryCode = "US"
+    val request = GetCityRequest {
+        cityId = "Kuchinotsu"
+        countryCode = "JP"
     }
-    println(unit.cityId)
+    val request2 = request.copy("Taira")
 }
 ```
 
@@ -285,4 +322,5 @@ across service versions.
 
 # Revision history
 
+* 9/17/2021 - Updates and Fixes to code snippets
 * 6/1/2021 - Initial upload
