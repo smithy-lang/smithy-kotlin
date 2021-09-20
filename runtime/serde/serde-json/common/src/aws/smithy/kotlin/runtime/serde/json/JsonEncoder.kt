@@ -27,25 +27,24 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
     private var depth: Int = 0
 
     override fun beginObject() = openStructure("{", LexerState.ObjectFirstKeyOrEnd)
-    override fun endObject() = closeStructure("}")
+    override fun endObject() = closeStructure("}", LexerState.ObjectFirstKeyOrEnd, LexerState.ObjectNextKeyOrEnd)
     override fun beginArray() = openStructure("[", LexerState.ArrayFirstValueOrEnd)
-    override fun endArray() = closeStructure("]")
+    override fun endArray() = closeStructure("]", LexerState.ArrayFirstValueOrEnd, LexerState.ArrayNextValueOrEnd)
 
     private fun openStructure(token: String, nextState: LexerState) {
         encodeValue(token)
-        if (pretty) writeNewline()
+        writeNewline()
         depth++
         state.push(nextState)
     }
 
-    private fun closeStructure(token: String) {
-        if (pretty) {
-            writeNewline()
-        }
+    private fun closeStructure(token: String, vararg allowedStates: LexerState) {
+        writeNewline()
         depth--
         writeIndent()
         buffer.append(token)
-        state.pop()
+        val last = state.pop()
+        check(last in allowedStates) { "Invalid JSON encoder state $last; expected one of ${allowedStates.joinToString()}" }
     }
 
     private fun writeIndent() {
@@ -55,10 +54,10 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
         }
     }
 
-    private fun writeNewline() = buffer.append("\n")
+    private fun writeNewline() { if (pretty) buffer.append('\n') }
     private fun writeComma() {
         buffer.append(",")
-        if (pretty) writeNewline()
+        writeNewline()
     }
 
     private fun writeColon() {
@@ -105,10 +104,7 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
 
     override fun writeValue(value: String) = encodeValue("\"${value.escape()}\"")
 
-    override fun writeValue(bool: Boolean) = when (bool) {
-        true -> encodeValue("true")
-        false -> encodeValue("false")
-    }
+    override fun writeValue(bool: Boolean) = encodeValue(bool.toString())
 
     private fun writeNumber(value: Number) = encodeValue(value.toString())
 
@@ -140,8 +136,7 @@ internal fun String.escape(): String {
                 in 0..0x1F -> {
                     val formatted = chr.code.toString(16)
                     append("\\u")
-                    repeat(4 - formatted.length) { append("0") }
-                    append(formatted)
+                    append(formatted.padStart(4, padChar = '0'))
                 }
                 else -> append(chr)
             }

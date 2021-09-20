@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.serde.json
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 @OptIn(ExperimentalStdlibApi::class)
 class JsonStreamWriterTest {
@@ -14,45 +15,71 @@ class JsonStreamWriterTest {
         // language=JSON
         val expected = """[
     {
-        "id": 912345678901,
-        "text": "How do I stream JSON in Java?",
-        "geo": null,
-        "user": {
-            "name": "json_newb",
-            "followers_count": 41
-        }
+        "id": "msg1",
+        "meta": {
+            "description": "first message"
+        },
+        "nestedArray": [
+            1,
+            2.2,
+            -3.3333
+        ],
+        "integerId": 1
     },
     {
-        "id": 912345678902,
-        "text": "@json_newb just use JsonWriter!",
-        "geo": [
-            50.454722,
-            -104.606667
+        "id": "msg2",
+        "meta": {
+            "description": "second message"
+        },
+        "nestedArray": [
+            4,
+            5
         ],
-        "user": {
-            "name": "jesse",
-            "followers_count": 2
-        }
+        "integerId": 2
     }
 ]"""
 
-        val messages = listOf(
-            Message(
-                912345678901,
-                "How do I stream JSON in Java?",
-                null,
-                User("json_newb", 41)
-            ),
-            Message(
-                912345678902,
-                "@json_newb just use JsonWriter!",
-                listOf(50.454722, -104.606667),
-                User("jesse", 2)
-            )
-        )
+        val writer = jsonStreamWriter(true).apply {
+            beginArray()
 
-        val writer = jsonStreamWriter(true)
-        val actual = requireNotNull(writeMessagesArray(writer, messages)).decodeToString()
+            beginObject()
+            writeName("id")
+            writeValue("msg1")
+            writeName("meta")
+            beginObject()
+            writeName("description")
+            writeValue("first message")
+            endObject()
+            writeName("nestedArray")
+            beginArray()
+            writeValue(1)
+            writeValue(2.2f)
+            writeValue(-3.3333)
+            endArray()
+            writeName("integerId")
+            writeValue(1)
+            endObject()
+
+            beginObject()
+            writeName("id")
+            writeValue("msg2")
+            writeName("meta")
+            beginObject()
+            writeName("description")
+            writeValue("second message")
+            endObject()
+            writeName("nestedArray")
+            beginArray()
+            writeValue(4)
+            writeValue(5)
+            endArray()
+            writeName("integerId")
+            writeValue(2)
+            endObject()
+
+            endArray()
+        }
+        val actual = writer.bytes?.decodeToString()
 
         assertEquals(expected, actual)
     }
@@ -231,53 +258,54 @@ class JsonStreamWriterTest {
             assertEquals(test.second, test.first.escape(), "[idx=$idx] escaped value not equal")
         }
     }
-}
 
-private fun writeMessagesArray(writer: JsonStreamWriter, messages: List<Message>): ByteArray? {
-    writer.beginArray()
-    for (message in messages) {
-        writeMessage(writer, message)
-    }
-    writer.endArray()
-    return writer.bytes
-}
+    @Test
+    fun testInvalidClose() {
+        assertFailsWith<IllegalStateException>("end empty array") {
+            jsonStreamWriter().apply {
+                beginArray()
+                endObject()
+            }
+        }
 
-private fun writeMessage(writer: JsonStreamWriter, message: Message) {
-    writer.beginObject()
-    writer.writeName("id")
-    writer.writeValue(message.id)
-    writer.writeName("text")
-    writer.writeValue(message.text)
-    if (message.geo != null) {
-        writer.writeName("geo")
-        writeDoublesArray(writer, message.geo)
-    } else {
-        writer.writeName("geo")
-        writer.writeNull()
-    }
-    writer.writeName("user")
-    writeUser(writer, message.user)
-    writer.endObject()
-}
+        assertFailsWith<IllegalStateException>("end non-empty array") {
+            jsonStreamWriter().apply {
+                beginArray()
+                writeValue(1)
+                endObject()
+            }
+        }
 
-private fun writeUser(writer: JsonStreamWriter, user: User) {
-    writer.beginObject()
-    writer.writeName("name")
-    writer.writeValue(user.name)
-    writer.writeName("followers_count")
-    writer.writeValue(user.followersCount)
-    writer.endObject()
-}
+        assertFailsWith<IllegalStateException>("end empty object") {
+            jsonStreamWriter().apply {
+                beginObject()
+                endArray()
+            }
+        }
 
-private fun writeDoublesArray(writer: JsonStreamWriter, doubles: List<Double>?) {
-    writer.beginArray()
-    if (doubles != null) {
-        for (value in doubles) {
-            writer.writeValue(value)
+        assertFailsWith<IllegalStateException>("end object key no value") {
+            jsonStreamWriter().apply {
+                beginObject()
+                writeName("foo")
+                endObject()
+            }
+        }
+
+        assertFailsWith<IllegalStateException>("end non empty object") {
+            jsonStreamWriter().apply {
+                beginObject()
+                writeName("foo")
+                writeValue(1)
+                endArray()
+            }
+        }
+
+        assertFailsWith<IllegalStateException>("end array without start") {
+            jsonStreamWriter().apply { endObject() }
+        }
+
+        assertFailsWith<IllegalStateException>("end object without start") {
+            jsonStreamWriter().apply { endArray() }
         }
     }
-    writer.endArray()
 }
-
-private data class Message(val id: Long, val text: String, val geo: List<Double>?, val user: User)
-private data class User(val name: String, val followersCount: Int)

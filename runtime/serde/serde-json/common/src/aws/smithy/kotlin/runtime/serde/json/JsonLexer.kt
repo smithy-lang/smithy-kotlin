@@ -33,6 +33,12 @@ private data class StateManager(
         get() = state.size
 
     /**
+     * Get the top of the state stack
+     */
+    val current: LexerState
+        get() = state.top()
+
+    /**
      * Remove all pending mutations and run them to bring state up to date
      */
     fun update() {
@@ -44,11 +50,6 @@ private data class StateManager(
      * Push a pending mutation
      */
     fun mutate(mutation: StateMutation) { pendingMutations.add(mutation) }
-
-    /**
-     * Get the top of the state stack
-     */
-    fun current(): LexerState = state.top()
 }
 
 /**
@@ -78,9 +79,9 @@ internal class JsonLexer(
         }
     }
 
-    private fun doPeek(): JsonToken {
+    private fun doPeek(): JsonToken =
         try {
-            return when (state.current()) {
+            when (state.current) {
                 LexerState.Initial -> readToken()
                 LexerState.ArrayFirstValueOrEnd -> stateArrayFirstValueOrEnd()
                 LexerState.ArrayNextValueOrEnd -> stateArrayNextValueOrEnd()
@@ -93,7 +94,6 @@ internal class JsonLexer(
         } catch (ex: Exception) {
             throw DeserializationException(cause = ex)
         }
-    }
 
     // handles the [State.ObjectFirstKeyOrEnd] state
     private fun stateObjectFirstKeyOrEnd(): JsonToken =
@@ -157,7 +157,7 @@ internal class JsonLexer(
     // discards the '}' character and pops the current state
     private fun endObject(): JsonToken {
         consume('}')
-        val top = state.current()
+        val top = state.current
         lexerCheck(top == LexerState.ObjectFirstKeyOrEnd || top == LexerState.ObjectNextKeyOrEnd, idx - 1) { "Unexpected close `}` encountered" }
         state.mutate { it.pop() }
         return JsonToken.EndObject
@@ -173,7 +173,7 @@ internal class JsonLexer(
     // discards the '}' character and pops the current state
     private fun endArray(): JsonToken {
         consume(']')
-        val top = state.current()
+        val top = state.current
         lexerCheck(top == LexerState.ArrayFirstValueOrEnd || top == LexerState.ArrayNextValueOrEnd, idx - 1) { "Unexpected close `]` encountered" }
         state.mutate { it.pop() }
         return JsonToken.EndArray
@@ -306,7 +306,7 @@ internal class JsonLexer(
      */
     private fun consume(expected: Char) {
         val chr = data[idx].toInt().toChar()
-        check(chr == expected) { "Unexpected char '$chr' expected '$expected'" }
+        lexerCheck(chr == expected) { "Unexpected char '$chr' expected '$expected'" }
         idx++
     }
 
@@ -375,7 +375,7 @@ private fun String.unescape(): String {
                         '/' -> append('/')
                         '"' -> append('"')
                         'b' -> append('\b')
-                        'f' -> append("\u000C")
+                        'f' -> append('\u000C')
                         'r' -> append('\r')
                         'n' -> append('\n')
                         't' -> append('\t')
@@ -402,6 +402,7 @@ private fun String.unescape(): String {
  */
 private fun readEscapedUnicode(s: String, start: Int, sb: StringBuilder): Int {
     // already consumed \u escape, take next 4 bytes as high
+    check(start + 4 <= s.length) { "Unexpected EOF reading escaped high surrogate" }
     val high = s.substring(start, start + 4).decodeEscapedCodePoint()
     var consumed = 4
     if (high.isHighSurrogate()) {

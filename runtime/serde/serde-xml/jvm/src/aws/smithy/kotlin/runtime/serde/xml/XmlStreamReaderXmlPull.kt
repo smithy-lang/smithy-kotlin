@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import aws.smithy.kotlin.runtime.serde.xml.dom.push
+import aws.smithy.kotlin.runtime.util.push
 import org.xmlpull.mxp1.MXParser
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserException
