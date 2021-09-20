@@ -31,7 +31,7 @@ service Lambda {
     pageSize: "MaxItems",
     items: "Functions"
 )
-@http(method: "PUT", uri: "/2015-03-31/functions", code: 200)
+@http(method: "PUT", uri: "/functions", code: 200)
 operation ListFunctions {
     input: ListFunctionsRequest,
     output: ListFunctionsResponse
@@ -56,7 +56,9 @@ list FunctionConfigurationList {
 structure FunctionConfiguration { ... }
 ```
 
-**NOTE**: The trait may be applied at the service level to set default pagination. See the trait definition and examples for the ways it can be used in a model.
+**NOTE**: The [trait](https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#paginated-trait) may apply
+at the service level to set default pagination. See the trait definition and examples for the ways it can be 
+used in a model.
 
 
 ## Considerations
@@ -68,7 +70,8 @@ structure FunctionConfiguration { ... }
 
 ## API
 
-The SDK runtime will provide a `SdkAsyncIterable` interface that represents the public API for a paginated operation.
+The SDK runtime will provide a `SdkAsyncIterable` interface that represents the public API for the response of
+a paginated operation.
 
 
 ```kotlin
@@ -86,7 +89,7 @@ interface SdkAsyncIterator<out T> {
    /**
     * Returns true if more results are expected
     */
-   operator fun hasNext(): Boolean
+   suspend operator fun hasNext(): Boolean
 
    /**
     * Returns the results for the next page or null when no more results are available.
@@ -128,7 +131,7 @@ class ListFunctionsPaginator(
 
    override operator fun iterator(): SdkAsyncIterator<ListFunctionsResponse> = this
 
-   override operator fun hasNext(): Boolean
+   override suspend operator fun hasNext(): Boolean
            = isFirstPage || (cursor?.isNotEmpty() ?: false)
 
    override suspend operator fun next(): ListFunctionsResponse {
@@ -176,8 +179,8 @@ An example of driving a paginator manually and processing results:
 
 ```kotlin
 suspend fun rawPaginationExample(client: LambdaClient) {
-    val req = ListFunctionsRequest{}
-    val pager = client.listFunctionsPaginated(req).functions
+    val req: ListFunctionsRequest = ListFunctionsRequest{}
+    val pager: SdkAsyncIterable<FunctionConfiguration> = client.listFunctionsPaginated(req).functions
     for (fn in pager) {
         println(fn)
     }
@@ -211,7 +214,7 @@ Example usage:
 
 ...
 
-val pager = ListFunctionsRequest.paginate(client)
+val pager: SdkAsyncIterable<ListFunctionsResponse> = ListFunctionsRequest.paginate(client)
 
 ...
 // usage after construction is same as before
