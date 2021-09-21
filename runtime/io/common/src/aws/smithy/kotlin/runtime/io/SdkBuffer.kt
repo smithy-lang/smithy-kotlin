@@ -144,12 +144,14 @@ public inline val SdkBuffer.canRead: Boolean
  * Creates a new, read-only byte buffer that shares this buffer's content.
  * Any attempts to write to the buffer will fail with [ReadOnlyBufferException]
  */
+@OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.asReadOnly(): SdkBuffer = if (isReadOnly) this else SdkBuffer(memory, isReadOnly = true)
 
 /**
  * Read from this buffer exactly [length] bytes and write to [dest] starting at [offset]
  * @throws IllegalArgumentException if there are not enough bytes available for read or the offset/length combination is invalid
  */
+@OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.readFully(dest: ByteArray, offset: Int = 0, length: Int = dest.size - offset) {
     require(readRemaining >= length) { "Not enough bytes to read a ByteArray of size $length" }
     require(offset >= 0) { "Invalid read offset, must be positive: $offset" }
@@ -177,6 +179,7 @@ fun SdkBuffer.readAvailable(dest: ByteArray, offset: Int = 0, length: Int = dest
  * Write [length] bytes of [src] to this buffer starting at [offset]
  * @throws IllegalArgumentException if there is insufficient space or the offset/length combination is invalid
  */
+@OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.writeFully(src: ByteArray, offset: Int = 0, length: Int = src.size - offset) {
     require(offset >= 0) { "Invalid write offset, must be positive" }
     require(offset + length <= src.size) { "Invalid write: offset + length should be less than the source size: $offset + $length < ${src.size}" }
