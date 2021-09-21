@@ -38,11 +38,30 @@ fun SdkBuffer.readShort(): Short {
 }
 
 /**
+ * Read an unsigned 16-bit integer in big-endian byte order
+ */
+@OptIn(ExperimentalIoApi::class)
+fun SdkBuffer.readUShort(): UShort {
+    val value = memory.loadUShortAt(readPosition)
+    discard(2)
+    return value
+}
+
+/**
  * Write a signed 16-bit integer in big-endian byte order
  */
 @OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.writeShort(value: Short) {
     memory.storeShortAt(writePosition, value)
+    commitWritten(2)
+}
+
+/**
+ * Write an unsigned 16-bit integer in big-endian byte order
+ */
+@OptIn(ExperimentalIoApi::class)
+fun SdkBuffer.writeUShort(value: UShort) {
+    memory.storeUShortAt(writePosition, value)
     commitWritten(2)
 }
 
@@ -57,11 +76,30 @@ fun SdkBuffer.readInt(): Int {
 }
 
 /**
+ * Read an unsigned 32-bit integer in big-endian byte order
+ */
+@OptIn(ExperimentalIoApi::class)
+fun SdkBuffer.readUInt(): UInt {
+    val value = memory.loadUIntAt(readPosition)
+    discard(4)
+    return value
+}
+
+/**
  * Write a signed 32-bit integer in big-endian byte order
  */
 @OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.writeInt(value: Int) {
     memory.storeIntAt(writePosition, value)
+    commitWritten(4)
+}
+
+/**
+ * Write an unsigned 32-bit integer in big-endian byte order
+ */
+@OptIn(ExperimentalIoApi::class)
+fun SdkBuffer.writeUInt(value: UInt) {
+    memory.storeUIntAt(writePosition, value)
     commitWritten(4)
 }
 
@@ -76,11 +114,30 @@ fun SdkBuffer.readLong(): Long {
 }
 
 /**
+ * Read an unsigned 64-bit integer in big-endian byte order
+ */
+@OptIn(ExperimentalIoApi::class)
+fun SdkBuffer.readULong(): ULong {
+    val value = memory.loadULongAt(readPosition)
+    discard(8)
+    return value
+}
+
+/**
  * Write a signed 64-bit integer in big-endian byte order
  */
 @OptIn(ExperimentalIoApi::class)
 fun SdkBuffer.writeLong(value: Long) {
     memory.storeLongAt(writePosition, value)
+    commitWritten(8)
+}
+
+/**
+ * Write an unsigned 64-bit integer in big-endian byte order
+ */
+@OptIn(ExperimentalIoApi::class)
+fun SdkBuffer.writeULong(value: ULong) {
+    memory.storeULongAt(writePosition, value)
     commitWritten(8)
 }
 

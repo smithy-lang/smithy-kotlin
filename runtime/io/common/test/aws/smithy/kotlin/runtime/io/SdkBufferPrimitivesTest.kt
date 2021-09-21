@@ -24,6 +24,13 @@ class SdkBufferPrimitivesTest {
     }
 
     @Test
+    fun readWriteUShort() {
+        val buf = SdkBuffer(8)
+        buf.writeUShort(0x0FFF.toUShort())
+        assertEquals(0x0FFF.toUShort(), buf.readUShort())
+    }
+
+    @Test
     fun readWriteInt() {
         val buf = SdkBuffer(8)
         buf.writeInt(0x0EADBEEF)
@@ -31,10 +38,24 @@ class SdkBufferPrimitivesTest {
     }
 
     @Test
+    fun readWriteUInt() {
+        val buf = SdkBuffer(8)
+        buf.writeUInt(0x0EADBEEFu)
+        assertEquals(0x0EADBEEFu, buf.readUInt())
+    }
+
+    @Test
     fun readWriteLong() {
         val buf = SdkBuffer(8)
         buf.writeLong(0xDEADBEEF)
         assertEquals(0xDEADBEEF, buf.readLong())
+    }
+
+    @Test
+    fun readWriteULong() {
+        val buf = SdkBuffer(8)
+        buf.writeULong(0xDEADBEEFu)
+        assertEquals(0xDEADBEEFu, buf.readULong())
     }
 
     @Test
