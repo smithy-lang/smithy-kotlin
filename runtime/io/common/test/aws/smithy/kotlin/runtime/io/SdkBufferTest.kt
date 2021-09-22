@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import io.kotest.matchers.string.shouldContain
 import io.ktor.utils.io.core.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -332,5 +333,25 @@ class SdkBufferTest {
 
         // original buffer should have been modified
         assertEquals("hello tests", data.decodeToString())
+
+        val buf2 = SdkBuffer.of(data, markBytesReadable = true)
+        assertEquals(data.size, buf2.capacity)
+        assertEquals(data.size, buf.readRemaining)
+        assertEquals(0, buf.writeRemaining)
+
+        val buf3 = SdkBuffer.of(data, offset = 2, length = 5, markBytesReadable = true)
+        assertEquals(5, buf3.capacity)
+        assertEquals(5, buf3.readRemaining)
+        assertEquals(0, buf.writeRemaining)
+    }
+
+    @Test
+    fun testFixedSizeBuffer() {
+        val data = "hello world".toByteArray()
+        val buf = SdkBuffer.of(data)
+        buf.write("goodbye ")
+        assertFailsWith<FixedBufferSizeException> {
+            buf.write("world")
+        }.message.shouldContain("5 bytes; writeRemaining: 3")
     }
 }

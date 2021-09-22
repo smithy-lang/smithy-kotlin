@@ -33,7 +33,8 @@ class SdkBuffer internal constructor(
     // we make use of ktor-io's `Memory` type which already implements most of the functionality in a platform
     // agnostic way. We just need to wrap some methods around it
     internal var memory: Memory,
-    val isReadOnly: Boolean = false
+    val isReadOnly: Boolean = false,
+    val allowReallocation: Boolean = true
 ) {
     constructor(initialCapacity: Int, readOnly: Boolean = false) : this(DefaultAllocator.alloc(initialCapacity), readOnly)
 
@@ -43,10 +44,27 @@ class SdkBuffer internal constructor(
     companion object {
         /**
          * Create an SdkBuffer backed by the given ByteArray.
-         * This *DOES NOT* make the bytes of [src] available for reading, call [commitWritten] to
-         * mark bytes available for read.
+         *
+         * NOTE: Care should be taken if using this as a writable buffer to not exceed the capacity. Doing so will
+         * cause a [FixedBufferSizeException] to be thrown.
+         *
+         * @param src the ByteArray to wrap
+         * @param offset the offset into the array that will mark the first byte written/read
+         * @param length the number of bytes to make available for reading/writing
+         * @param markBytesReadable flag indicating that _all_ of the bytes should be immediately marked as readable
          */
-        fun of(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): SdkBuffer = SdkBuffer(Memory.ofByteArray(src, offset, length))
+        fun of(
+            src: ByteArray,
+            offset: Int = 0,
+            length: Int = src.size - offset,
+            markBytesReadable: Boolean = false
+        ): SdkBuffer {
+            val buffer = SdkBuffer(Memory.ofByteArray(src, offset, length), allowReallocation = false)
+            if (markBytesReadable) {
+                buffer.commitWritten(length)
+            }
+            return buffer
+        }
     }
 
     private val state = SdkBufferState()
@@ -88,6 +106,7 @@ class SdkBuffer internal constructor(
      */
     fun reserve(count: Int) {
         if (writeRemaining >= count) return
+        if (!allowReallocation) throw FixedBufferSizeException("SdkBuffer is of fixed size, cannot satisfy request to reserve $count bytes; writeRemaining: $writeRemaining")
 
         val minP2 = ceilp2(count + writePosition)
         val currP2 = ceilp2(memory.size32 + writePosition + 1)
