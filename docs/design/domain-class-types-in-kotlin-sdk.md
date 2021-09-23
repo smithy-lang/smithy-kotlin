@@ -20,11 +20,11 @@ The Smithy [weather example's](https://awslabs.github.io/smithy/quickstart.html#
 used as an example model description. The operation takes a `GetCityInput` and returns a `GetCityOutput`. We will focus
 on the input type below to show how normal and data classes would be generated and respond to model updates.
 
+NOTE: The Kotlin SDK codegen generates classes with a `Request` suffix that maps to input model shapes.  This means that
+the model shape `GetCityInput` generates a class to represent the input called `GetCityRequest`.
+
 ```
 structure GetCityInput {
-    // "cityId" provides the identifier for the resource and
-    // has to be marked as required.
-    @required
     cityId: CityId
 }
 ```
