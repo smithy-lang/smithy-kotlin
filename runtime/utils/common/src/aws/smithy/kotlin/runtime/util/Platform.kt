@@ -43,7 +43,7 @@ public expect object Platform {
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
      */
-    fun readFile(path: String): String?
+    suspend fun readFileOrNull(path: String): ByteArray?
 }
 
 data class OperatingSystem(val family: OsFamily, val version: String?)

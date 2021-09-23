@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 import java.util.*
@@ -29,8 +31,10 @@ public actual object Platform {
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
      */
-    actual fun readFile(path: String): String? = try {
-        File(path).readText()
+    actual suspend fun readFileOrNull(path: String): ByteArray? = try {
+        withContext(Dispatchers.IO) {
+            File(path).readBytes()
+        }
     } catch (e: IOException) {
         null
     }
