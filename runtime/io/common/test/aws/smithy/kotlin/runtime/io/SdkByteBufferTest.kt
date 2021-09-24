@@ -12,94 +12,90 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-class SdkBufferTest {
+class SdkByteBufferTest {
     @Test
     fun testCtor() {
-        val buf = SdkBuffer(128)
-        assertEquals(128, buf.capacity)
-        assertEquals(128, buf.writeRemaining)
-        assertEquals(0, buf.readPosition)
-        assertEquals(0, buf.writePosition)
-        assertEquals(0, buf.readRemaining)
+        val buf = SdkByteBuffer(128u)
+        assertEquals(128u, buf.capacity)
+        assertEquals(128u, buf.writeRemaining)
+        assertEquals(0u, buf.readPosition)
+        assertEquals(0u, buf.writePosition)
+        assertEquals(0u, buf.readRemaining)
     }
 
     @Test
     fun testDiscard() {
-        val buf = SdkBuffer(128)
-        assertFailsWith<IllegalArgumentException>("cannot discard -12 bytes; amount must be positive") {
-            buf.discard(-12)
-        }
+        val buf = SdkByteBuffer(128u)
+        assertEquals(0u, buf.discard(12u))
+        assertEquals(0u, buf.readPosition)
 
-        assertEquals(0, buf.discard(12))
-        assertEquals(0, buf.readPosition)
-
-        buf.commitWritten(30)
-        assertEquals(12, buf.discard(12))
-        assertEquals(12, buf.readPosition)
-        assertEquals(18, buf.readRemaining)
+        buf.advance(30u)
+        assertEquals(12u, buf.discard(12u))
+        assertEquals(12u, buf.readPosition)
+        assertEquals(18u, buf.readRemaining)
     }
 
     @Test
     fun testCommitWritten() {
-        val buf = SdkBuffer(128)
-        buf.commitWritten(30)
-        buf.discard(2)
-        assertEquals(2, buf.readPosition)
-        assertEquals(28, buf.readRemaining)
-        assertEquals(98, buf.writeRemaining)
-        assertEquals(30, buf.writePosition)
+        val buf = SdkByteBuffer(128u)
+        buf.advance(30u)
+        buf.discard(2u)
+        assertEquals(2u, buf.readPosition)
+        assertEquals(28u, buf.readRemaining)
+        assertEquals(98u, buf.writeRemaining)
+        assertEquals(30u, buf.writePosition)
 
         assertFailsWith<IllegalArgumentException>("Unable to write 212 bytes; only 98 write capacity left") {
-            buf.commitWritten(212)
+            buf.advance(212u)
         }
     }
 
     @Test
     fun testRewind() {
-        val buf = SdkBuffer(128)
-        buf.commitWritten(30)
-        buf.discard(30)
-        assertEquals(0, buf.readRemaining)
-        assertEquals(30, buf.readPosition)
-        buf.rewind(10)
-        assertEquals(10, buf.readRemaining)
-        assertEquals(20, buf.readPosition)
+        val buf = SdkByteBuffer(128u)
+        buf.advance(30u)
+        buf.discard(30u)
+        assertEquals(0u, buf.readRemaining)
+        assertEquals(30u, buf.readPosition)
+        buf.rewind(10u)
+        assertEquals(10u, buf.readRemaining)
+        assertEquals(20u, buf.readPosition)
 
         // past the beginning
-        buf.rewind(1024)
-        assertEquals(30, buf.readRemaining)
-        assertEquals(0, buf.readPosition)
+        buf.rewind(1024u)
+        assertEquals(30u, buf.readRemaining)
+        assertEquals(0u, buf.readPosition)
 
         // test full rewind (default)
         buf.reset()
-        buf.commitWritten(30)
-        buf.discard(20)
-        assertEquals(10, buf.readRemaining)
-        assertEquals(20, buf.readPosition)
+        buf.advance(30u)
+        buf.discard(20u)
+        assertEquals(10u, buf.readRemaining)
+        assertEquals(20u, buf.readPosition)
         buf.rewind()
-        assertEquals(30, buf.readRemaining)
-        assertEquals(0, buf.readPosition)
+        assertEquals(30u, buf.readRemaining)
+        assertEquals(0u, buf.readPosition)
     }
 
     @Test
     fun testReset() {
-        val buf = SdkBuffer(128)
-        buf.commitWritten(30)
-        buf.discard(30)
-        assertEquals(0, buf.readRemaining)
-        assertEquals(30, buf.readPosition)
+        val buf = SdkByteBuffer(128u)
+        buf.advance(30u)
+        buf.discard(30u)
+        assertEquals(0u, buf.readRemaining)
+        assertEquals(30u, buf.readPosition)
 
         buf.reset()
-        assertEquals(0, buf.writePosition)
-        assertEquals(0, buf.readPosition)
-        assertEquals(128, buf.writeRemaining)
-        assertEquals(0, buf.readRemaining)
+        assertEquals(0u, buf.writePosition)
+        assertEquals(0u, buf.readPosition)
+        assertEquals(128u, buf.writeRemaining)
+        assertEquals(0u, buf.readRemaining)
     }
 
     @Test
     fun testReadFullyNotEnoughRemaining() {
-        val buf = SdkBuffer(16)
-        buf.commitWritten(12)
+        val buf = SdkByteBuffer(16u)
+        buf.advance(12u)
         val sink = ByteArray(32)
         assertFailsWith<IllegalArgumentException>("Not enough bytes to read a ByteArray of size 32") {
             buf.readFully(sink)
@@ -108,8 +104,8 @@ class SdkBufferTest {
 
     @Test
     fun testReadFullyInvalidOffset() {
-        val buf = SdkBuffer(16)
-        buf.commitWritten(12)
+        val buf = SdkByteBuffer(16u)
+        buf.advance(12u)
         val sink = ByteArray(32)
         assertFailsWith<IllegalArgumentException>("Invalid read offset, must be positive: -2") {
             buf.readFully(sink, offset = -2)
@@ -118,8 +114,8 @@ class SdkBufferTest {
 
     @Test
     fun testReadFullyInvalidLengthAndOffset() {
-        val buf = SdkBuffer(16)
-        buf.commitWritten(12)
+        val buf = SdkByteBuffer(16u)
+        buf.advance(12u)
         val sink = ByteArray(8)
         assertFailsWith<IllegalArgumentException>(
             "Invalid read: offset + length should be less than the destination size: 7 + 4 < 8"
@@ -130,15 +126,15 @@ class SdkBufferTest {
 
     @Test
     fun testReadFully() {
-        val buf = SdkBuffer(8)
+        val buf = SdkByteBuffer(8u)
         val contents = "Mad dog"
         buf.write(contents)
         val sink = ByteArray(8)
         buf.readFully(sink, length = 7)
-        assertEquals(0, buf.readRemaining)
-        assertEquals(7, buf.readPosition)
-        assertEquals(7, buf.writePosition)
-        assertEquals(1, buf.writeRemaining)
+        assertEquals(0u, buf.readRemaining)
+        assertEquals(7u, buf.readPosition)
+        assertEquals(7u, buf.writePosition)
+        assertEquals(1u, buf.writeRemaining)
 
         assertEquals(contents, sink.sliceArray(0..6).decodeToString())
 
@@ -151,7 +147,7 @@ class SdkBufferTest {
 
     @Test
     fun testReadAvailable() {
-        val buf = SdkBuffer(8)
+        val buf = SdkByteBuffer(8u)
         val contents = "Mad dog"
         buf.writeFully(contents.encodeToByteArray())
         val sink = ByteArray(8)
@@ -170,57 +166,57 @@ class SdkBufferTest {
 
     @Test
     fun testWriteFully() {
-        val buf = SdkBuffer(128)
+        val buf = SdkByteBuffer(128u)
         val contents = "is it morning or is it night, the software engineer doesn't know anymore"
         buf.writeFully(contents.encodeToByteArray())
-        val sink = ByteArray(buf.readRemaining)
+        val sink = ByteArray(buf.readRemaining.toInt())
         buf.readFully(sink)
         assertEquals(contents, sink.decodeToString())
     }
 
     @Test
     fun testWriteFullyInsufficientSpace() {
-        val buf = SdkBuffer(16)
+        val buf = SdkByteBuffer(16u)
         val contents = "is it morning or is it night, the software engineer doesn't know anymore"
-        assertEquals(16, buf.capacity)
+        assertEquals(16u, buf.capacity)
         buf.writeFully(contents.encodeToByteArray())
         // content is 72 bytes. next power of 2 is greater than exp growth of current buffer
-        assertEquals(128, buf.capacity)
+        assertEquals(128u, buf.capacity)
 
-        val buf2 = SdkBuffer(16)
-        assertEquals(16, buf2.capacity)
-        buf2.commitWritten(12)
+        val buf2 = SdkByteBuffer(16u)
+        assertEquals(16u, buf2.capacity)
+        buf2.advance(12u)
         val smallContent = byteArrayOf(1, 2, 3, 4, 5)
         buf2.writeFully(smallContent)
         // doubling the current capacity is greater
-        assertEquals(32, buf2.capacity)
+        assertEquals(32u, buf2.capacity)
     }
 
     @Test
     fun testReserve() {
-        val buf = SdkBuffer(8)
-        assertEquals(8, buf.capacity)
+        val buf = SdkByteBuffer(8u)
+        assertEquals(8u, buf.capacity)
         buf.reserve(5)
-        assertEquals(8, buf.capacity)
+        assertEquals(8u, buf.capacity)
         buf.reserve(12)
-        assertEquals(16, buf.capacity)
+        assertEquals(16u, buf.capacity)
 
         buf.reserve(72)
-        assertEquals(128, buf.capacity)
+        assertEquals(128u, buf.capacity)
     }
 
     @Test
     fun testReserveExistingData() {
         // https://github.com/awslabs/aws-sdk-kotlin/issues/147
-        val buf = SdkBuffer(256)
-        buf.commitWritten(138)
+        val buf = SdkByteBuffer(256u)
+        buf.advance(138u)
         buf.reserve(444)
-        assertEquals(1024, buf.capacity)
+        assertEquals(1024u, buf.capacity)
     }
 
     @Test
     fun testWriteFullyPastDestSize() {
-        val buf = SdkBuffer(16)
+        val buf = SdkByteBuffer(16u)
         val contents = byteArrayOf(1, 2, 3, 4, 5)
         assertFailsWith<IllegalArgumentException>(
             "Invalid write: offset + length should be less than the source size: 2 + 4 < 5"
@@ -231,20 +227,20 @@ class SdkBufferTest {
 
     @Test
     fun testReadWriteString() {
-        val buf = SdkBuffer(128)
+        val buf = SdkByteBuffer(128u)
         val contents = "foo bar baz"
         buf.write(contents)
-        assertEquals(contents.length, buf.readRemaining)
+        assertEquals(contents.length.toULong(), buf.readRemaining)
         val actual = buf.decodeToString()
         assertEquals(contents, actual)
     }
 
     @Test
     fun testReadAvailableSdkBuffer() {
-        val buf = SdkBuffer(8)
+        val buf = SdkByteBuffer(8u)
         val contents = "Mad dog"
         buf.writeFully(contents.encodeToByteArray())
-        val sink = SdkBuffer(8)
+        val sink = SdkByteBuffer(8u)
         val rc = buf.readAvailable(sink)
         assertEquals(7, rc)
 
@@ -254,49 +250,49 @@ class SdkBufferTest {
 
     @Test
     fun testReadFullySdkBuffer() {
-        val buf = SdkBuffer(8)
+        val buf = SdkByteBuffer(8u)
         val contents = "Mad dog"
         buf.write(contents)
-        val sink = SdkBuffer(8)
+        val sink = SdkByteBuffer(8u)
         buf.readFully(sink, length = 7)
-        assertEquals(0, buf.readRemaining)
-        assertEquals(7, buf.readPosition)
-        assertEquals(7, buf.writePosition)
-        assertEquals(1, buf.writeRemaining)
+        assertEquals(0u, buf.readRemaining)
+        assertEquals(7u, buf.readPosition)
+        assertEquals(7u, buf.writePosition)
+        assertEquals(1u, buf.writeRemaining)
 
-        assertEquals(1, sink.writeRemaining)
-        assertEquals(7, sink.writePosition)
-        assertEquals(7, sink.readRemaining)
-        assertEquals(0, sink.readPosition)
+        assertEquals(1u, sink.writeRemaining)
+        assertEquals(7u, sink.writePosition)
+        assertEquals(7u, sink.readRemaining)
+        assertEquals(0u, sink.readPosition)
     }
 
     @Test
     fun testWriteFullySdkBuffer() {
-        val src = SdkBuffer(16)
+        val src = SdkByteBuffer(16u)
         src.write("buffers are fun!")
-        assertEquals(16, src.readRemaining)
-        assertEquals(16, src.capacity)
+        assertEquals(16u, src.readRemaining)
+        assertEquals(16u, src.capacity)
 
-        val dest = SdkBuffer(8)
-        assertEquals(8, dest.capacity)
+        val dest = SdkByteBuffer(8u)
+        assertEquals(8u, dest.capacity)
 
         dest.writeFully(src)
-        assertEquals(0, src.readRemaining)
-        assertEquals(16, dest.readRemaining)
-        assertEquals(16, dest.capacity)
+        assertEquals(0u, src.readRemaining)
+        assertEquals(16u, dest.readRemaining)
+        assertEquals(16u, dest.capacity)
     }
 
     @Test
     fun testBytes() {
-        val buf = SdkBuffer(32)
-        buf.commitWritten(16)
+        val buf = SdkByteBuffer(32u)
+        buf.advance(16u)
         val bytes = buf.bytes()
         assertEquals(16, bytes.size)
     }
 
     @Test
     fun testReadOnly() {
-        val buf = SdkBuffer(16, readOnly = true)
+        val buf = SdkByteBuffer(16u, readOnly = true)
         val data = "foo"
 
         assertFailsWith<ReadOnlyBufferException> {
@@ -306,49 +302,49 @@ class SdkBufferTest {
             buf.writeFully(data.encodeToByteArray())
         }
         assertFailsWith<ReadOnlyBufferException> {
-            val src = SdkBuffer.of(data.encodeToByteArray())
+            val src = SdkByteBuffer.of(data.encodeToByteArray())
             buf.writeFully(src)
         }
 
         assertTrue(buf.isReadOnly)
-        val buf2 = SdkBuffer(16).asReadOnly()
+        val buf2 = SdkByteBuffer(16u).asReadOnly()
         assertTrue(buf2.isReadOnly)
     }
 
     @Test
     fun testOfByteArray() {
         val data = "hello world".toByteArray()
-        val buf = SdkBuffer.of(data)
-        assertEquals(data.size, buf.capacity)
+        val buf = SdkByteBuffer.of(data)
+        assertEquals(data.size.toULong(), buf.capacity)
 
         // does not automatically make the contents readable
-        assertEquals(0, buf.readRemaining)
-        buf.commitWritten(data.size)
-        assertEquals(data.size, buf.readRemaining)
+        assertEquals(0u, buf.readRemaining)
+        buf.advance(data.size.toULong())
+        assertEquals(data.size.toULong(), buf.readRemaining)
 
         buf.reset()
-        buf.commitWritten(6)
+        buf.advance(6u)
         buf.write("tests")
         assertEquals("hello tests", buf.decodeToString())
 
         // original buffer should have been modified
         assertEquals("hello tests", data.decodeToString())
 
-        val buf2 = SdkBuffer.of(data, markBytesReadable = true)
-        assertEquals(data.size, buf2.capacity)
-        assertEquals(data.size, buf.readRemaining)
-        assertEquals(0, buf.writeRemaining)
+        val buf2 = SdkByteBuffer.of(data).apply { advance(data.size.toULong()) }
+        assertEquals(data.size.toULong(), buf2.capacity)
+        assertEquals(data.size.toULong(), buf.readRemaining)
+        assertEquals(0u, buf.writeRemaining)
 
-        val buf3 = SdkBuffer.of(data, offset = 2, length = 5, markBytesReadable = true)
-        assertEquals(5, buf3.capacity)
-        assertEquals(5, buf3.readRemaining)
-        assertEquals(0, buf.writeRemaining)
+        val buf3 = SdkByteBuffer.of(data, offset = 2, length = 5).apply { advance(5u) }
+        assertEquals(5u, buf3.capacity)
+        assertEquals(5u, buf3.readRemaining)
+        assertEquals(0u, buf.writeRemaining)
     }
 
     @Test
     fun testFixedSizeBuffer() {
         val data = "hello world".toByteArray()
-        val buf = SdkBuffer.of(data)
+        val buf = SdkByteBuffer.of(data)
         buf.write("goodbye ")
         assertFailsWith<FixedBufferSizeException> {
             buf.write("world")
