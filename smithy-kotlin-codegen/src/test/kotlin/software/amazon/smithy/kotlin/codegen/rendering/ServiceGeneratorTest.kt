@@ -5,7 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings

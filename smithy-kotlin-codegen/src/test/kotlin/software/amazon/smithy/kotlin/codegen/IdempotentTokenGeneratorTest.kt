@@ -4,7 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model

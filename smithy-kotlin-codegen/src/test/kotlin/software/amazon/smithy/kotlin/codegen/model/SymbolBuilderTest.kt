@@ -4,8 +4,8 @@
  */
 package software.amazon.smithy.kotlin.codegen.model
 
-import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Test
+import kotlin.test.*
+import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 
 class SymbolBuilderTest {

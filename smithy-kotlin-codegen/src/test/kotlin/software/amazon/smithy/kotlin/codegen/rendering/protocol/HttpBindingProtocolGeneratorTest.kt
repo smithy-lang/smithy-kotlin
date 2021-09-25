@@ -6,8 +6,8 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import kotlin.test.assertTrue
+import kotlin.test.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource

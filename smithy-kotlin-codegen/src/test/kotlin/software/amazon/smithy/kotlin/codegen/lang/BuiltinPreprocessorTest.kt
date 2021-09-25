@@ -7,7 +7,7 @@ package software.amazon.smithy.kotlin.codegen.lang
 
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldNotContainAll
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel

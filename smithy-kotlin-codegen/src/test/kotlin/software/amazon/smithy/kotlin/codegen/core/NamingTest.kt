@@ -5,7 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.core
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel

@@ -4,9 +4,9 @@
  */
 package software.amazon.smithy.kotlin.codegen.core
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import kotlin.test.assertEquals
 import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -257,7 +257,7 @@ class SymbolProviderTest {
         assertEquals("java.math", bigSymbol.namespace)
         assertEquals("null", bigSymbol.defaultValue())
         assertEquals(true, bigSymbol.isBoxed)
-        assertEquals("$type", bigSymbol.name)
+        assertEquals(type, bigSymbol.name)
     }
 
     @Test

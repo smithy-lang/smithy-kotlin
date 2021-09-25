@@ -5,13 +5,13 @@
 
 package software.amazon.smithy.kotlin.codegen.core
 
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class KotlinWriterTest {
 
@@ -20,7 +20,7 @@ class KotlinWriterTest {
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         writer.dokka("These are the docs.\nMore.")
         val result = writer.toString()
-        Assertions.assertTrue(result.contains("/**\n * These are the docs.\n * More.\n */\n"))
+        assertTrue(result.contains("/**\n * These are the docs.\n * More.\n */\n"))
     }
 
     @Test
@@ -29,7 +29,7 @@ class KotlinWriterTest {
         val docs = "This is $ valid documentation."
         writer.dokka(docs)
         val result = writer.toString()
-        Assertions.assertTrue(result.contains("/**\n * " + docs + "\n */\n"))
+        assertTrue(result.contains("/**\n * " + docs + "\n */\n"))
     }
 
     /**
@@ -92,7 +92,7 @@ class KotlinWriterTest {
 
         val actual = unit.toString()
 
-        Assertions.assertEquals(expected, actual)
+        assertEquals(expected, actual)
     }
 
     @Test
@@ -132,7 +132,7 @@ class KotlinWriterTest {
 
         val actual = unit.toString()
 
-        Assertions.assertEquals(expected, actual)
+        assertEquals(expected, actual)
     }
 
     object TestId : SectionId {

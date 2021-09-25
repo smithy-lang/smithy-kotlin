@@ -6,14 +6,14 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import kotlin.test.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.StringShape
+import kotlin.test.assertFailsWith
 
 class EnumGeneratorTest {
 
@@ -254,7 +254,7 @@ sealed class Baz {
         val provider = KotlinCodegenPlugin.createSymbolProvider(model)
         val symbol = provider.toSymbol(shape)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val ex = assertThrows<CodegenException> {
+        val ex = assertFailsWith<CodegenException> {
             EnumGenerator(shape, symbol, writer).render()
         }
 

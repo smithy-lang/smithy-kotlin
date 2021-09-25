@@ -6,8 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldNotContain
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
+import kotlin.test.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -168,7 +167,7 @@ class ExceptionGeneratorTest {
         val struct = model.expectShape<StructureShape>("com.error.test#InternalServerException")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
 
-        val e = assertThrows<CodegenException> {
+        val e = assertFailsWith<CodegenException> {
             StructureGenerator(renderingCtx).render()
         }
         e.message.shouldContainOnlyOnceWithDiff("Message is a reserved name for exception types and cannot be used for any other property")

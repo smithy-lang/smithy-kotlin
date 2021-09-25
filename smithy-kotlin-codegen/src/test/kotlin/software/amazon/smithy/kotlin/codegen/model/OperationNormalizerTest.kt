@@ -6,7 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.model
 
 import io.kotest.matchers.string.shouldContain
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput

@@ -4,7 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.test.*
 
 class SerializeUnionGeneratorTest {

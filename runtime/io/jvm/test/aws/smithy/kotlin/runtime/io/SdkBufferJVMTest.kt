@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import java.nio.ByteBuffer
 import kotlin.test.assertEquals
 

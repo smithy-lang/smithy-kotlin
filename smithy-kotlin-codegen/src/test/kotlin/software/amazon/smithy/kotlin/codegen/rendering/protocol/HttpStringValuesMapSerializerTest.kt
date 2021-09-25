@@ -5,7 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.expectShape

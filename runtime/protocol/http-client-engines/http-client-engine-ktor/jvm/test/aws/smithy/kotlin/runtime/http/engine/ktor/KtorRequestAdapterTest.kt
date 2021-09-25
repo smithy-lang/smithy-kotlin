@@ -15,7 +15,7 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import java.nio.ByteBuffer
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

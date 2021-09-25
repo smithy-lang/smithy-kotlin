@@ -5,7 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 import software.amazon.smithy.kotlin.codegen.test.*
