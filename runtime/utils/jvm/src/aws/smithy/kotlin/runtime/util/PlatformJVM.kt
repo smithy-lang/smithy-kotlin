@@ -26,7 +26,7 @@ public actual object Platform {
     actual fun osInfo(): OperatingSystem = getOsInfo()
 
     /**
-     * Read the contents of a file as a [String] or return null on any error.
+     * Read the contents of a file as a [String] or return null on any IO error.
      *
      * @param path fully qualified path encoded specifically to the target platform's filesystem.
      * @return contents of file or null if error (file does not exist, etc.)
