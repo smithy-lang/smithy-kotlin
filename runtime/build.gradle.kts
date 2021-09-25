@@ -77,7 +77,7 @@ subprojects {
                 kotlin.srcDir("$platform/$srcDir")
                 resources.srcDir("$platform/${resourcesPrefix}resources")
                 languageSettings.progressiveMode = true
-                experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) }
+                experimentalAnnotations.forEach { languageSettings.optIn(it) }
             }
         }
     }
