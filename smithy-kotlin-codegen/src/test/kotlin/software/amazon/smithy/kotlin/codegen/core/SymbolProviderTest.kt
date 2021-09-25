@@ -4,9 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.core
 
-import kotlin.test.assertEquals
 import org.junit.jupiter.api.DisplayName
-import kotlin.test.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.junit.jupiter.params.provider.ValueSource
@@ -21,6 +19,8 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.EnumDefinition
 import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SymbolProviderTest {
     @Test

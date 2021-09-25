@@ -4,10 +4,10 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import kotlin.test.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
+import kotlin.test.Test
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class IdempotentTokenGeneratorTest {

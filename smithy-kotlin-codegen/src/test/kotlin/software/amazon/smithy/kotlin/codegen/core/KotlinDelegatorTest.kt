@@ -6,13 +6,13 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
-import kotlin.test.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.model.node.Node
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class KotlinDelegatorTest {

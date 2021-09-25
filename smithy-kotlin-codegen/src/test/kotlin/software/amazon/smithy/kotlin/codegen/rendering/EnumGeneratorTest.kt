@@ -6,13 +6,13 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import kotlin.test.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.StringShape
+import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class EnumGeneratorTest {

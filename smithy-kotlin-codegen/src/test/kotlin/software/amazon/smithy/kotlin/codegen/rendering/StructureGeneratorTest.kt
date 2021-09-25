@@ -5,9 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import kotlin.test.assertTrue
 import org.junit.jupiter.api.TestInstance
-import kotlin.test.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
@@ -16,6 +14,8 @@ import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.StructureShape
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StructureGeneratorTest {

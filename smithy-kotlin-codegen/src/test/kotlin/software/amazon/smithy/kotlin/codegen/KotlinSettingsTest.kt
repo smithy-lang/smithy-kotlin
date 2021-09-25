@@ -5,12 +5,12 @@
 
 package software.amazon.smithy.kotlin.codegen
 
-import kotlin.test.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.ShapeId
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse

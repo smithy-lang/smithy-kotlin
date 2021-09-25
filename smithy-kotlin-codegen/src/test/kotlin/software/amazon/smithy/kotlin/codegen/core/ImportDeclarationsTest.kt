@@ -4,9 +4,9 @@
  */
 package software.amazon.smithy.kotlin.codegen.core
 
-import kotlin.test.assertEquals
-import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ImportDeclarationsTest {
     @Test

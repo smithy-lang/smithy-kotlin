@@ -4,8 +4,8 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
-import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.test.*
+import kotlin.test.Test
 
 class SerializeUnionGeneratorTest {
     private val modelPrefix = """

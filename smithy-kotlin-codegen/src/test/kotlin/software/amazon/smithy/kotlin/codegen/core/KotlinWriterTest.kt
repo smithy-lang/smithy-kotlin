@@ -5,11 +5,11 @@
 
 package software.amazon.smithy.kotlin.codegen.core
 
-import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 

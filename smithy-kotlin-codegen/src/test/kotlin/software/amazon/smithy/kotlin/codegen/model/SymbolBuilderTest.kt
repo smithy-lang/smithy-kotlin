@@ -4,9 +4,9 @@
  */
 package software.amazon.smithy.kotlin.codegen.model
 
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import kotlin.test.*
 import kotlin.test.Test
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 
 class SymbolBuilderTest {
 

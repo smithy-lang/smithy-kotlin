@@ -4,11 +4,11 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
-import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import kotlin.test.Test
 
 class DeserializeUnionGeneratorTest {
 

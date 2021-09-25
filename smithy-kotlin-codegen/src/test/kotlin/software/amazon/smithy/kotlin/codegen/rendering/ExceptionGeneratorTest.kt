@@ -6,7 +6,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldNotContain
-import kotlin.test.Test
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -18,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProto
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
+import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class ExceptionGeneratorTest {

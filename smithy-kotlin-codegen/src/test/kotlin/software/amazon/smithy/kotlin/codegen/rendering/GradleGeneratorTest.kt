@@ -5,13 +5,13 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContain
-import kotlin.test.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.model.node.Node
+import kotlin.test.Test
 
 class GradleGeneratorTest {
 
