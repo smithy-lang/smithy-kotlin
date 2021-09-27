@@ -5,16 +5,20 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.test.*
+import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
+import software.amazon.smithy.kotlin.codegen.test.createSymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.shouldContainWithDiff
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.UnionShape
-import java.lang.IllegalStateException
+import kotlin.test.Test
+import kotlin.test.assertFailsWith
 
 class UnionGeneratorTest {
     @Test
@@ -91,7 +95,7 @@ class UnionGeneratorTest {
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val generator = UnionGenerator(model, provider, writer, union)
 
-        Assertions.assertThrows(IllegalStateException::class.java) {
+        assertFailsWith<IllegalStateException> {
             generator.render()
         }
     }

@@ -4,13 +4,13 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String

@@ -6,13 +6,13 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import io.kotest.matchers.string.shouldNotContain
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.core.RUNTIME_ROOT_NS
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class HttpBindingProtocolGeneratorTest {

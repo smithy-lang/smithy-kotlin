@@ -5,12 +5,12 @@
 
 package software.amazon.smithy.kotlin.codegen.lang
 
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.DocumentationTrait
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DocumentationPreprocessorTest {
