@@ -254,7 +254,7 @@ class ExceptionGeneratorTest {
             val writer = KotlinWriter(TestModelDefault.NAMESPACE)
             val ctx = GenerationContext(model, provider, model.defaultSettings())
 
-            val e = assertThrows<CodegenException> {
+            val e = assertFailsWith<CodegenException> {
                 ExceptionBaseClassGenerator.render(ctx, writer)
             }
             e.message.shouldContainOnlyOnceWithDiff("Generated base error type 'TestException' collides with com.test#TestException.")
