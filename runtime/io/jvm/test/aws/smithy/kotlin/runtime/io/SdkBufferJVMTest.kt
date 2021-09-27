@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import org.junit.jupiter.api.Test
 import java.nio.ByteBuffer
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SdkBufferJVMTest {
