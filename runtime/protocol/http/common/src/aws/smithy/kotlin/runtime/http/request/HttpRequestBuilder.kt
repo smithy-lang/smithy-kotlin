@@ -48,6 +48,20 @@ class HttpRequestBuilder {
 fun HttpRequestBuilder.url(block: UrlBuilder.() -> Unit) = url.apply(block)
 
 /**
+ * Set values from an existing [Url] instance
+ */
+fun HttpRequestBuilder.url(value: Url) = url.apply {
+    scheme = value.scheme
+    host = value.host
+    port = value.port
+    path = value.path
+    parameters.appendAll(value.parameters)
+    fragment = value.fragment
+    userInfo = value.userInfo
+    forceQuery = value.forceQuery
+}
+
+/**
  * Modify the headers inside the given block
  */
 fun HttpRequestBuilder.headers(block: HeadersBuilder.() -> Unit) = headers.apply(block)
