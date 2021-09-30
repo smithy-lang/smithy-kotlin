@@ -21,10 +21,18 @@ open class ErrorMetadata {
          * Set if an error is retryable
          */
         val Retryable: AttributeKey<Boolean> = AttributeKey("Retryable")
+
+        /**
+         * Set if an error represents a throttling condition
+         */
+        val Throttling: AttributeKey<Boolean> = AttributeKey("Throttling")
     }
 
     val isRetryable: Boolean
         get() = attributes.getOrNull(Retryable) ?: false
+
+    val isThrottling: Boolean
+        get() = attributes.getOrNull(Throttling) ?: false
 }
 
 /**
