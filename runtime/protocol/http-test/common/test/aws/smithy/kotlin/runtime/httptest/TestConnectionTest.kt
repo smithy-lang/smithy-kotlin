@@ -123,4 +123,38 @@ class TestConnectionTest {
             engine.assertRequests()
         }.message.shouldContain("body mismatch")
     }
+
+    @Test
+    fun testAssertRequestsAny() = runSuspendTest {
+        val engine = buildTestConnection {
+            expect {
+                request {
+                    url.host = "test.com"
+                    url.path = "/turtles-all-the-way-down"
+                    headers.append("x-foo", "bar")
+                    body = ByteArrayContent("tests for your tests".encodeToByteArray())
+                }
+            }
+            // ANY request
+            expect()
+        }
+
+        val client = sdkHttpClient(engine)
+
+        val req = HttpRequestBuilder().apply {
+            url.host = "test.com"
+            url.path = "/turtles-all-the-way-down"
+            headers.append("x-foo", "bar")
+            headers.append("x-qux", "quux")
+            body = ByteArrayContent("tests for your tests".encodeToByteArray())
+        }
+        client.call(req).complete()
+        client.call(
+            HttpRequestBuilder().apply {
+                url.host = "test-anything.com"
+            }
+        )
+
+        engine.assertRequests()
+    }
 }

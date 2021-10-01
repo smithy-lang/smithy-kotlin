@@ -21,18 +21,21 @@ import kotlin.test.assertTrue
 
 /**
  * An expected HttpRequest with the response that should be returned by the engine
+ * @param request the expected request. If null no assertions are made on the request
+ * @param response the response to return for this request. If null it defaults to an empty 200-OK response
  */
-data class ExpectedHttpRequest(val request: HttpRequest, val response: HttpResponse? = null)
+data class ExpectedHttpRequest(val request: HttpRequest?, val response: HttpResponse? = null)
 
 /**
  * Actual and expected [HttpRequest] pair
  */
-data class CapturedRequest(val expected: HttpRequest, val actual: HttpRequest) {
+data class CapturedRequest(val expected: HttpRequest?, val actual: HttpRequest) {
     /**
      * Assert that all of the components set on [expected] are also the same on [actual]. The actual request
      * may have additional headers, only the ones set in [expected] are compared.
      */
     internal suspend fun assertRequest(idx: Int) {
+        if (expected == null) return
         assertEquals(expected.url.toString(), actual.url.toString(), "[request#$idx]: URL mismatch")
         expected.headers.forEach { name, values ->
             values.forEach {
@@ -107,6 +110,10 @@ class HttpTestConnectionBuilder {
 
     fun expect(request: HttpRequest, response: HttpResponse? = null) {
         requests.add(ExpectedHttpRequest(request, response))
+    }
+
+    fun expect(response: HttpResponse? = null) {
+        requests.add(ExpectedHttpRequest(null, response))
     }
 }
 
