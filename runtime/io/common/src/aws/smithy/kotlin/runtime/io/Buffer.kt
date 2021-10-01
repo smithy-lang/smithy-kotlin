@@ -87,7 +87,7 @@ interface Buffer {
  */
 fun Buffer.readFully(dst: SdkByteBuffer, length: Long = dst.writeRemaining.toLong()): Long {
     if (this is SdkByteBuffer) return this.readFully(dst, length)
-    TODO("readFully fallback not implemented")
+    TODO("Buffer.readFully fallback not implemented for ${this::class}")
 }
 
 /**
@@ -96,5 +96,5 @@ fun Buffer.readFully(dst: SdkByteBuffer, length: Long = dst.writeRemaining.toLon
  */
 fun Buffer.readAvailable(dst: SdkByteBuffer, length: Long = dst.writeRemaining.toLong()): Long {
     if (this is SdkByteBuffer) return this.readAvailable(dst, length)
-    TODO("readAvailable fallback not implemented")
+    TODO("Buffer.readAvailable fallback not implemented for ${this::class}")
 }

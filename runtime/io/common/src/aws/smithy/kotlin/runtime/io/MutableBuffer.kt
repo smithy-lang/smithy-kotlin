@@ -86,5 +86,5 @@ fun MutableBuffer.writeFully(src: SdkByteBuffer, length: ULong = src.readRemaini
     }
     if (this is SdkByteBuffer) return this.writeFully(src, length)
 
-    TODO("writeFully fallback not implemented")
+    TODO("Buffer.writeFully fallback not implemented for ${this::class}")
 }
