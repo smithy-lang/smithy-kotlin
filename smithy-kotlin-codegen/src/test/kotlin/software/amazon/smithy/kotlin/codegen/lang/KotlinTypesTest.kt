@@ -4,7 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.lang
 
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 

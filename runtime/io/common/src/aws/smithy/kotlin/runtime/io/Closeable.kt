@@ -8,10 +8,21 @@ package aws.smithy.kotlin.runtime.io
 // this really should live in the stdlib...
 // https://youtrack.jetbrains.com/issue/KT-31066
 
+/**
+ * A resource than can be closed. The [close] method is invoked to release resources
+ * an object is holding (e.g. such as open files)
+ */
 public expect interface Closeable {
+    /**
+     * Release any resources held by this object
+     */
     public fun close()
 }
 
+/**
+ * Executes the given [block] on this resource and then closes it whether an exception has
+ * occurred or not.
+ */
 public inline fun <C : Closeable, R> C.use(block: (C) -> R): R {
     var closed = false
 
@@ -22,7 +33,7 @@ public inline fun <C : Closeable, R> C.use(block: (C) -> R): R {
             closed = true
             close()
         } catch (second: Throwable) {
-            first.addSuppressedInternal(second)
+            first.addSuppressed(second)
         }
 
         throw first
@@ -32,6 +43,3 @@ public inline fun <C : Closeable, R> C.use(block: (C) -> R): R {
         }
     }
 }
-
-@PublishedApi
-internal expect fun Throwable.addSuppressedInternal(other: Throwable)

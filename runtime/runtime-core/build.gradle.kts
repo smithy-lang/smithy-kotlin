@@ -12,6 +12,7 @@ kotlin {
         commonMain {
             dependencies {
                 // io types are exposed as part of content/*
+                // SdkClient also implements Closeable
                 api(project(":runtime:io"))
                 // Attributes property bag is exposed as client options
                 api(project(":runtime:utils"))

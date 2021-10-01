@@ -1,9 +1,9 @@
 package software.amazon.smithy.kotlin.codegen
 
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import kotlin.test.Test
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.testModelChangeAgainstSource
+import kotlin.test.assertTrue
 
 /**
  * These tests cover Smithy model changes that, by policy, are considered backward compatible against
