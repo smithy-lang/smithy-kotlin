@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries
 
+import aws.smithy.kotlin.runtime.ClientException
+
 /**
  * Indicates some failure happened while retrying.
  * @param message A message indicating the failure mode.
@@ -20,7 +22,7 @@ sealed class RetryException(
     val attempts: Int,
     val lastResponse: Any?,
     val lastException: Throwable?,
-) : Exception(message, cause)
+) : ClientException(message, cause)
 
 /**
  * Indicates that retrying has failed because too many attempts have completed unsuccessfully.
@@ -32,10 +34,11 @@ sealed class RetryException(
  */
 class TooManyAttemptsException(
     message: String,
+    cause: Throwable?,
     attempts: Int,
     lastResponse: Any?,
     lastException: Throwable?,
-) : RetryException(message, null, attempts, lastResponse, lastException)
+) : RetryException(message, cause, attempts, lastResponse, lastException)
 
 /**
  * Indicates that retrying has failed because too much time has elapsed.

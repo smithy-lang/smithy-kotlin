@@ -5,13 +5,14 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
-import aws.smithy.kotlin.runtime.retries.BackoffDelayer
+import aws.smithy.kotlin.runtime.retries.DelayProvider
 import kotlinx.coroutines.delay
+import kotlin.math.min
 import kotlin.math.pow
 import kotlin.random.Random
 
 /**
- * A [BackoffDelayer] that implements exponentially increasing delays and jitter (i.e., randomization of delay amount).
+ * A [DelayProvider] that implements exponentially increasing delays and jitter (i.e., randomization of delay amount).
  * This delayer calculates a maximum delay time from the initial delay amount, the scale factor, and the attempt number.
  * It then randomly reduces that time down to something less based on the jitter configuration.
  *
@@ -22,7 +23,7 @@ import kotlin.random.Random
  *
  * @param options The configuration to use for this delayer.
  */
-class ExponentialBackoffWithJitter(val options: ExponentialBackoffWithJitterOptions) : BackoffDelayer {
+class ExponentialBackoffWithJitter(val options: ExponentialBackoffWithJitterOptions) : DelayProvider {
     private val random = Random.Default
 
     /**
@@ -30,7 +31,8 @@ class ExponentialBackoffWithJitter(val options: ExponentialBackoffWithJitterOpti
      */
     override suspend fun backoff(attempt: Int) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
-        val maxDelayMs = options.initialDelayMs * options.scaleFactor.pow(attempt - 1)
+        val calculatedDelayMs = options.initialDelayMs * options.scaleFactor.pow(attempt - 1)
+        val maxDelayMs = min(calculatedDelayMs, options.maxBackoffMs.toDouble())
         val jitterProportion = if (options.jitter > 0.0) random.nextDouble(options.jitter) else 0.0
         val delayMs = maxDelayMs * (1.0 - jitterProportion)
         delay(delayMs.toLong())
@@ -38,18 +40,20 @@ class ExponentialBackoffWithJitter(val options: ExponentialBackoffWithJitterOpti
 }
 
 /**
- * The configuration options for a [BackoffDelayer].
+ * The configuration options for a [DelayProvider].
  * @param initialDelayMs The initial amount of delay
  */
 data class ExponentialBackoffWithJitterOptions(
     val initialDelayMs: Int,
     val scaleFactor: Double,
     val jitter: Double,
+    val maxBackoffMs: Int,
 ) {
     init {
         require(initialDelayMs > 0) { "initialDelayMs must be at least 0" }
         require(scaleFactor >= 1.0) { "scaleFactor must be at least 1" }
         require(jitter in 0.0..1.0) { "jitter must be between 0 and 1" }
+        require(maxBackoffMs >= 0) { "maxBackoffMs must be at least 0" }
     }
 
     companion object {
@@ -59,7 +63,8 @@ data class ExponentialBackoffWithJitterOptions(
         val Default = ExponentialBackoffWithJitterOptions(
             initialDelayMs = 10, // start with 10ms
             scaleFactor = 1.5, // 10ms -> 15ms -> 22.5ms -> 33.8ms -> 50.6ms -> …
-            jitter = 1.0, // Full jitter
+            jitter = 1.0, // Full jitter,
+            maxBackoffMs = 20_000, // 20s
         )
     }
 }

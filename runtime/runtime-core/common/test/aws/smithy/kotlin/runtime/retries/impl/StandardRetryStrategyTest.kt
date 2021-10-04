@@ -6,11 +6,13 @@
 package aws.smithy.kotlin.runtime.retries.impl
 
 import aws.smithy.kotlin.runtime.retries.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runBlockingTest
 import kotlin.test.*
 
 class StandardRetryStrategyTest {
+    @ExperimentalCoroutinesApi
     @Test
     fun testInitialSuccess() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default
@@ -26,9 +28,10 @@ class StandardRetryStrategyTest {
         assertTrue(token.isSuccess)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun testRetryableFailures() = runBlockingTest {
-        val options = StandardRetryStrategyOptions.Default
+        val options = StandardRetryStrategyOptions.Default.copy(maxAttempts = 10)
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
         val retryer = StandardRetryStrategy(options, bucket, delayer)
@@ -53,6 +56,7 @@ class StandardRetryStrategyTest {
         assertTrue(token.nextToken!!.nextToken!!.nextToken!!.nextToken!!.isSuccess)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun testNonretryableFailure() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default
@@ -65,7 +69,7 @@ class StandardRetryStrategyTest {
             retryer.retry(policy, block(policy, bucket, delayer, "fail"))
         }
 
-        val ex = result.exceptionOrNull() as RetryFailureException
+        val ex = assertIs<RetryFailureException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
         assertEquals(1, ex.attempts)
         assertEquals("fail", ex.lastResponse)
 
@@ -73,9 +77,10 @@ class StandardRetryStrategyTest {
         assertTrue(token.isFailure)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun testTooManyAttempts() = runBlockingTest {
-        val options = StandardRetryStrategyOptions.Default.copy(maxAttempts = 3)
+        val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
         val retryer = StandardRetryStrategy(options, bucket, delayer)
@@ -95,7 +100,7 @@ class StandardRetryStrategyTest {
             )
         }
 
-        val ex = result.exceptionOrNull() as TooManyAttemptsException
+        val ex = assertIs<TooManyAttemptsException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
         assertEquals(3, ex.attempts)
         assertEquals("timeout", ex.lastResponse)
 
@@ -103,6 +108,7 @@ class StandardRetryStrategyTest {
         assertTrue(token.nextToken!!.nextToken!!.isFailure)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun testTooLong() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default.copy(maxTimeMs = 1_000)
@@ -118,7 +124,7 @@ class StandardRetryStrategyTest {
             }
         }
 
-        val ex = result.exceptionOrNull() as TimedOutException
+        val ex = assertIs<TimedOutException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
         assertEquals(1, ex.attempts)
         assertNull(ex.lastResponse)
         assertNull(ex.lastException)
@@ -146,8 +152,11 @@ fun block(
                 bucket.lastTokenAcquired!!
             } else {
                 val expectedRetryDirective = retryPolicy.evaluate(Result.success(results[index - 1]))
-                val expectedRetryError = (expectedRetryDirective as RetryDirective.RetryError).reason
-                assertEquals(expectedRetryError, lastToken!!.retryReason)
+                val expectedRetryError = assertIs<RetryDirective.RetryError>(
+                    expectedRetryDirective,
+                    "Unexpected $expectedRetryDirective"
+                )
+                assertEquals(expectedRetryError.reason, lastToken!!.retryReason)
                 lastToken!!.nextToken!!
             }
 
@@ -194,7 +203,7 @@ class RecordingToken : RetryToken {
     }
 }
 
-class RecordingDelayer : BackoffDelayer {
+class RecordingDelayer : DelayProvider {
     var lastAttempt: Int? = null
     override suspend fun backoff(attempt: Int) {
         val expectedLastAttempt = if (attempt == 1) null else attempt - 1

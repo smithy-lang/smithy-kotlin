@@ -109,7 +109,7 @@ The standard SDK retry strategy is implemented by `StandardRetryStrategy`:
 class StandardRetryStrategy(
     val options: StandardRetryStrategyOptions,
     private val tokenBucket: RetryTokenBucket,
-    private val backoffDelayer: BackoffDelayer,
+    private val delayProvider: DelayProvider,
 ) : RetryStrategy {
 
     override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): R =
@@ -142,7 +142,7 @@ class StandardRetryStrategy(
                         throwTooManyAttempts(fromToken, attempt, callResult)
                     } else {
                         // Prep for another loop
-                        backoffDelayer.backoff(attempt)
+                        delayProvider.backoff(attempt)
                         fromToken.scheduleRetry(evaluation.reason)
                     }
             }
@@ -163,7 +163,7 @@ class StandardRetryStrategy(
 ```
 
 The retry strategy takes as input an `StandardRetryOptions` with configuration parameters, a `RetryTokenBucket` that
-handles the bucket implementation and delays, and `BackoffDelayer` that handles backoff delays.
+handles the bucket implementation and delays, and `DelayProvider` that handles backoff delays.
 
 ## Retry token bucket
 
@@ -193,12 +193,12 @@ above methods again.
 
 The specific implementation utilized by the **smithy-kotlin** is not given here.
 
-## Backoff delayer
+## Delay provider
 
 The strategy's backoff implementation is provided via an interface:
 
 ```kotlin
-interface BackoffDelayer {
+interface DelayProvider {
     suspend fun backoff(attempt: Int)
 }
 ```

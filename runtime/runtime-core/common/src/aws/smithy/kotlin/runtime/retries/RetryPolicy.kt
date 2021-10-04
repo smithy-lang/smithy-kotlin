@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.retries
 
 /**
- * A policy that evaluates a [Result] from a retry attempt and indicates action a [RetryStrategy] should take next.
+ * A policy that evaluates a [Result] from a retry attempt and indicates the action a [RetryStrategy] should take next.
  */
 interface RetryPolicy<in R> {
     /**

@@ -23,7 +23,7 @@ class StandardRetryPolicyTest {
     @Test
     fun testThrottling() {
         val ex = SdkBaseException()
-        ex.sdkErrorMetadata.attributes[ErrorMetadata.Throttling] = true
+        ex.sdkErrorMetadata.attributes[ErrorMetadata.ThrottlingError] = true
         val result = test(ex)
         assertEquals(RetryDirective.RetryError(RetryErrorType.Throttling), result)
     }

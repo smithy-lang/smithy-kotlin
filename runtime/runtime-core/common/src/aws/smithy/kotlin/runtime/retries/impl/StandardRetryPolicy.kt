@@ -12,11 +12,25 @@ import aws.smithy.kotlin.runtime.ServiceException.*
 import aws.smithy.kotlin.runtime.retries.RetryDirective
 import aws.smithy.kotlin.runtime.retries.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.RetryPolicy
+import kotlin.reflect.KClass
+import kotlin.reflect.safeCast
 
 /**
  * A standard retry policy which attempts to derive information from the Smithy exception hierarchy.
  */
 open class StandardRetryPolicy : RetryPolicy<Any?> {
+    companion object {
+        val Default = StandardRetryPolicy()
+    }
+
+    private val evaluationStrategies = sequenceOf(
+        EvaluationStrategy(::evaluateBaseException),
+        EvaluationStrategy(::evaluateServiceException),
+        EvaluationStrategy(::evaluateClientException),
+        EvaluationStrategy(::evaluateNonSdkException),
+        EvaluationStrategy(::evaluateOtherExceptions),
+    )
+
     /**
      * Evaluate the given retry attempt.
      */
@@ -26,12 +40,7 @@ open class StandardRetryPolicy : RetryPolicy<Any?> {
     }
 
     private fun evaluate(ex: Throwable): RetryDirective =
-        (ex as? SdkBaseException)?.run(::evaluateBaseException)
-            ?: (ex as? ServiceException)?.run(::evaluateServiceException)
-            ?: (ex as? ClientException)?.run { RetryDirective.RetryError(RetryErrorType.ClientSide) }
-            ?: evaluateNonSdkException(ex)
-            ?: evaluateOtherExceptions(ex)
-            ?: RetryDirective.TerminateAndFail
+        evaluationStrategies.firstNotNullOfOrNull { it.evaluate(ex) } ?: RetryDirective.TerminateAndFail
 
     private fun evaluateBaseException(ex: SdkBaseException): RetryDirective? = with(ex.sdkErrorMetadata) {
         when {
@@ -39,6 +48,10 @@ open class StandardRetryPolicy : RetryPolicy<Any?> {
             else -> null
         }
     }
+
+    @Suppress("UNUSED_PARAMETER") // `ex` is mandated by `EvaluationStrategy` but not required by method body
+    private fun evaluateClientException(ex: ClientException): RetryDirective? =
+        RetryDirective.RetryError(RetryErrorType.ClientSide)
 
     private fun evaluateServiceException(ex: ServiceException): RetryDirective? = with(ex.sdkErrorMetadata) {
         when {
@@ -50,7 +63,17 @@ open class StandardRetryPolicy : RetryPolicy<Any?> {
 
     protected open fun evaluateOtherExceptions(ex: Throwable): RetryDirective? = null
 
+    @Suppress("UNUSED_PARAMETER") // Until method is implemented
     private fun evaluateNonSdkException(ex: Throwable): RetryDirective? =
         // TODO Write logic to find connection errors, timeouts, stream faults, etc.
         null
+}
+
+private class EvaluationStrategy<T : Throwable>(val clazz: KClass<T>, private val evaluator: (T) -> RetryDirective?) {
+    companion object {
+        inline operator fun <reified T : Throwable> invoke(noinline evaluator: (T) -> RetryDirective?) =
+            EvaluationStrategy(T::class, evaluator)
+    }
+
+    fun evaluate(ex: Throwable) = clazz.safeCast(ex)?.run(evaluator)
 }

@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.retries.impl
 
 import aws.smithy.kotlin.runtime.retries.*
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
 
@@ -16,19 +17,19 @@ import kotlinx.coroutines.withTimeout
  * @param options The options that control the functionality of this strategy.
  * @param tokenBucket The token bucket instance. Utilizing an existing token bucket will share call capacity between
  * those scopes.
- * @param backoffDelayer A delayer that can back off after the initial try to spread out the retries.
+ * @param delayProvider A delayer that can back off after the initial try to spread out the retries.
  */
 class StandardRetryStrategy(
     val options: StandardRetryStrategyOptions,
     private val tokenBucket: RetryTokenBucket,
-    private val backoffDelayer: BackoffDelayer,
+    private val delayProvider: DelayProvider,
 ) : RetryStrategy {
     /**
      * Retry the given block of code until it's successful. Note this method throws exceptions for non-successful
      * outcomes from retrying.
      */
     override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): R =
-        withTimeout(options.maxTimeMs) {
+        withTimeout(options.maxTimeMs.toLong()) {
             doTryLoop(block, policy, 1, tokenBucket.acquireToken(), null)
         }
 
@@ -52,8 +53,9 @@ class StandardRetryStrategy(
         previousResult: Result<R>?,
     ): R {
         val callResult = runCatching { block() }
-        if (callResult.exceptionOrNull() is TimeoutCancellationException) {
-            throwTimeOut(fromToken, attempt, previousResult)
+        when (val ex = callResult.exceptionOrNull()) {
+            is TimeoutCancellationException -> throwTimeOut(fromToken, attempt, previousResult)
+            is CancellationException -> throw ex
         }
 
         val nextToken = try {
@@ -62,19 +64,24 @@ class StandardRetryStrategy(
                     return success(fromToken, callResult)
 
                 is RetryDirective.TerminateAndFail ->
-                    throwFailure(fromToken, attempt, callResult)
+                    throwFailure(attempt, callResult)
 
                 is RetryDirective.RetryError ->
                     if (attempt >= options.maxAttempts) {
-                        throwTooManyAttempts(fromToken, attempt, callResult)
+                        throwTooManyAttempts(attempt, callResult)
                     } else {
                         // Prep for another loop
-                        backoffDelayer.backoff(attempt)
+                        delayProvider.backoff(attempt)
                         fromToken.scheduleRetry(evaluation.reason)
                     }
             }
-        } catch (e: TimeoutCancellationException) {
+        } catch (ex: TimeoutCancellationException) {
             throwTimeOut(fromToken, attempt, callResult)
+        } catch (ex: RetryCapacityExceededException) {
+            throwCapacityExceeded(ex, attempt, callResult)
+        } catch (ex: Throwable) {
+            fromToken.notifyFailure()
+            throw ex
         }
 
         return doTryLoop(block, policy, attempt + 1, nextToken, callResult)
@@ -92,22 +99,28 @@ class StandardRetryStrategy(
         return result.getOrNull()!!
     }
 
+    private fun <R> throwCapacityExceeded(cause: Throwable, attempt: Int, result: Result<R>): Nothing =
+        throw TooManyAttemptsException(
+            cause.message!!,
+            cause,
+            attempt,
+            result.getOrNull(),
+            result.exceptionOrNull(),
+        )
+
     /**
-     * Handles the termination of the retry loop because of a non-retryable failure by marking the [RetryToken] as
-     * failed and throwing a [RetryFailureException].
-     * @param token The [RetryToken] used in the attempt that was unsuccessful.
+     * Handles the termination of the retry loop because of a non-retryable failure by throwing a
+     * [RetryFailureException].
      * @param attempt The number of attempts completed.
      * @param result The [Result] that yielded the non-retryable condition.
      */
-    private suspend fun <R> throwFailure(token: RetryToken, attempt: Int, result: Result<R>): Nothing {
-        token.notifyFailure()
+    private fun <R> throwFailure(attempt: Int, result: Result<R>): Nothing =
         throw RetryFailureException(
-            "The operation failed",
+            "The operation resulted in a non-retryable failure",
             result.exceptionOrNull(),
             attempt,
             result.getOrNull(),
         )
-    }
 
     /**
      * Handles the termination of the retry loop because too much time has elapsed by marking the [RetryToken] as failed
@@ -127,22 +140,21 @@ class StandardRetryStrategy(
     }
 
     /**
-     * Handles the termination of the retry loop because too many attempts have been made by marking the [RetryToken] as
-     * failed and throwing a [TimedOutException].
+     * Handles the termination of the retry loop because too many attempts have been made by throwing a
+     * [TimedOutException].
      * @param token The [RetryToken] used in the attempt that was unsuccessful.
      * @param attempt The number of attempts completed.
      * @param result The [Result] that yielded a retryable condition (but which won't be retried because we've already
      * tried too many times).
      */
-    private suspend fun <R> throwTooManyAttempts(token: RetryToken, attempt: Int, result: Result<R>): Nothing {
-        token.notifyFailure()
+    private fun <R> throwTooManyAttempts(attempt: Int, result: Result<R>): Nothing =
         throw TooManyAttemptsException(
             "Took more than ${options.maxAttempts} to get a successful response",
+            null,
             attempt,
             result.getOrNull(),
             result.exceptionOrNull(),
         )
-    }
 }
 
 /**
@@ -150,11 +162,11 @@ class StandardRetryStrategy(
  * @param maxTimeMs The maximum amount of time to retry (in milliseconds).
  * @param maxAttempts The maximum number of attempts to make (including the first attempt).
  */
-data class StandardRetryStrategyOptions(val maxTimeMs: Long, val maxAttempts: Int) {
+data class StandardRetryStrategyOptions(val maxTimeMs: Int, val maxAttempts: Int) {
     companion object {
         /**
          * The default retry strategy configuration.
          */
-        val Default = StandardRetryStrategyOptions(maxTimeMs = 10_000, maxAttempts = 10)
+        val Default = StandardRetryStrategyOptions(maxTimeMs = 20_000, maxAttempts = 3)
     }
 }

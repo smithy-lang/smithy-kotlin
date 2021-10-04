@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries
 
+import aws.smithy.kotlin.runtime.ClientException
+
 /**
  * A rate-limiting token bucket for use in a client-throttled retry strategy.
  */
@@ -41,3 +43,9 @@ interface RetryToken {
      */
     suspend fun scheduleRetry(reason: RetryErrorType): RetryToken
 }
+
+/**
+ * Indicates that the token bucket has exhausted its capacity and was configured to throw exceptions (vs delay).
+ * @param message A message indicating the failure mode.
+ */
+class RetryCapacityExceededException(message: String) : ClientException(message)

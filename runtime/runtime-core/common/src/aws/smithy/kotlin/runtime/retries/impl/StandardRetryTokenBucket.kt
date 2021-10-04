@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
+import aws.smithy.kotlin.runtime.retries.RetryCapacityExceededException
 import aws.smithy.kotlin.runtime.retries.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.RetryToken
 import aws.smithy.kotlin.runtime.retries.RetryTokenBucket
@@ -17,12 +18,15 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.min
 
+private const val MS_PER_S = 1_000
+
 /**
  * The standard implementation of a [RetryTokenBucket].
  * @param options The configuration to use for this bucket.
+ * @param clock A clock to use for time calculations.
  */
 class StandardRetryTokenBucket(
-    private val options: StandardRetryTokenBucketOptions,
+    val options: StandardRetryTokenBucketOptions,
     private val clock: Clock = Clock.System,
 ) : RetryTokenBucket {
     internal var capacity = options.maxCapacity
@@ -30,10 +34,6 @@ class StandardRetryTokenBucket(
 
     private var lastTimestamp = now()
     private val mutex = Mutex()
-
-    companion object {
-        private const val MS_PER_S = 1_000
-    }
 
     /**
      * Acquire a token from the token bucket. This method should be called before the initial retry attempt for a block
@@ -51,11 +51,16 @@ class StandardRetryTokenBucket(
         if (size <= capacity) {
             capacity -= size
         } else {
+            if (options.circuitBreakerMode) {
+                throw RetryCapacityExceededException("Insufficient capacity to attempt another retry")
+            }
+
             val extraRequiredCapacity = size - capacity
             val delayMs = ceil(extraRequiredCapacity.toDouble() / options.refillUnitsPerSecond * MS_PER_S).toLong()
             delay(delayMs)
             capacity = 0
         }
+
         lastTimestamp = now()
     }
 
@@ -112,6 +117,9 @@ class StandardRetryTokenBucket(
  * The configuration options for a [StandardRetryTokenBucket].
  * @param maxCapacity The maximum capacity for the bucket.
  * @param refillUnitsPerSecond The amount of capacity to return per second.
+ * @param circuitBreakerMode When true, indicates that attempts to acquire tokens or schedule retries should fail if all
+ * capacity has been depleted. When false, calls to acquire tokens or schedule retries will delay until sufficient
+ * capacity is available.
  * @param retryCost The amount of capacity to decrement for standard retries.
  * @param timeoutRetryCost The amount of capacity to decrement for timeout or throttling retries.
  * @param initialTryCost The amount of capacity to decrement for the initial try.
@@ -120,6 +128,7 @@ class StandardRetryTokenBucket(
 data class StandardRetryTokenBucketOptions(
     val maxCapacity: Int,
     val refillUnitsPerSecond: Int,
+    val circuitBreakerMode: Boolean,
     val retryCost: Int,
     val timeoutRetryCost: Int,
     val initialTryCost: Int,
@@ -132,6 +141,7 @@ data class StandardRetryTokenBucketOptions(
         val Default = StandardRetryTokenBucketOptions(
             maxCapacity = 500,
             refillUnitsPerSecond = 10,
+            circuitBreakerMode = false,
             retryCost = 5,
             timeoutRetryCost = 10,
             initialTryCost = 0,
