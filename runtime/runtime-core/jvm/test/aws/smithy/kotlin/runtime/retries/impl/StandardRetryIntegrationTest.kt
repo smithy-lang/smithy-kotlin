@@ -17,7 +17,7 @@ import kotlinx.serialization.Serializable
 import kotlin.test.*
 
 class StandardRetryIntegrationTest {
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testIntegrationCases() = runBlockingTest {
         val testCases = standardRetryIntegrationTestCases
@@ -58,10 +58,21 @@ class StandardRetryIntegrationTest {
                 else -> fail("Unexpected outcome for $name: ${finalState.outcome}")
             }
 
-            if (finalState.outcome != Outcome.RetryQuotaExceeded) {
-                val expectedDelayMs = tc.responses.map { it.expected.delay ?: 0 }.sum()
+            val expectedDelayMs = tc.responses.map { it.expected.delay ?: 0 }.sum()
+            if (finalState.outcome == Outcome.RetryQuotaExceeded) {
+                // The retry quota exceeded tests assume that the delayer won't be called when the bucket's out of
+                // capacity but that assumes no refill which is not the case most of the time. Rather than add
+                // specialized handling in the strategy, simplify verify that we saw *at least* as much delay as
+                // expected, rather than exactly an amount that presumes some obscure optimization.
+                assertTrue(
+                    expectedDelayMs <= totalDelayMs.toInt(),
+                    "Unexpected delay for $name. Expected at least $expectedDelayMs but was $totalDelayMs"
+                )
+            } else {
                 assertEquals(expectedDelayMs, totalDelayMs.toInt(), "Unexpected delay for $name")
             }
+
+            assertEquals(finalState.retryQuota, tokenBucket.capacity)
         }
     }
 }

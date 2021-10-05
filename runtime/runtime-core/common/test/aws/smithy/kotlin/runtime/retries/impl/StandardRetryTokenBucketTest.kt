@@ -29,7 +29,7 @@ class StandardRetryTokenBucketTest {
         )
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testWaitForCapacity() = runBlockingTest {
         // A bucket that only allows one initial try per second
@@ -41,7 +41,7 @@ class StandardRetryTokenBucketTest {
         assertTime(1000) { bucket.acquireToken() }
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testReturnCapacityOnSuccess() = runBlockingTest {
         // A bucket that costs capacity for an initial try and doesn't return the same capacity (for easy measuring)
@@ -54,7 +54,7 @@ class StandardRetryTokenBucketTest {
         assertEquals(8, bucket.capacity)
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testNoCapacityChangeOnFailure() = runBlockingTest {
         // A bucket that costs capacity for an initial try
@@ -67,7 +67,7 @@ class StandardRetryTokenBucketTest {
         assertEquals(9, bucket.capacity)
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testRetryCapacityAdjustments() = runBlockingTest {
         mapOf(
@@ -86,8 +86,7 @@ class StandardRetryTokenBucketTest {
         }
     }
 
-    @ExperimentalCoroutinesApi
-    @ExperimentalTime
+    @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
     @Test
     fun testRefillOverTime() = runBlockingTest {
         val clock = ManualClock()
@@ -106,7 +105,7 @@ class StandardRetryTokenBucketTest {
         assertEquals(2, bucket.capacity) // We had 5, 2 refilled, and then we decremented 5 more.
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testCircuitBreakerMode() = runBlockingTest {
         // A bucket that only allows one initial try per second

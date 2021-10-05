@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 class ExponentialBackoffWithJitterTest {
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testScaling() = runBlockingTest {
         val options = ExponentialBackoffWithJitterOptions(
@@ -25,7 +25,7 @@ class ExponentialBackoffWithJitterTest {
         assertEquals(listOf(10, 20, 40, 80, 160, 320), backoffSeries(6, options))
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testJitter() = runBlockingTest {
         val options = ExponentialBackoffWithJitterOptions(
@@ -41,7 +41,7 @@ class ExponentialBackoffWithJitterTest {
             }
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testMaxBackoff() = runBlockingTest {
         val options = ExponentialBackoffWithJitterOptions(
@@ -54,7 +54,7 @@ class ExponentialBackoffWithJitterTest {
     }
 }
 
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalCoroutinesApi::class)
 private suspend fun TestCoroutineScope.backoffSeries(
     times: Int,
     options: ExponentialBackoffWithJitterOptions,

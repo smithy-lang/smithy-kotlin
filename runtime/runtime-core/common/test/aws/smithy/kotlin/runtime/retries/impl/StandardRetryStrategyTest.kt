@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import kotlin.test.*
 
 class StandardRetryStrategyTest {
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testInitialSuccess() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default
@@ -28,7 +28,7 @@ class StandardRetryStrategyTest {
         assertTrue(token.isSuccess)
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testRetryableFailures() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default.copy(maxAttempts = 10)
@@ -56,7 +56,7 @@ class StandardRetryStrategyTest {
         assertTrue(token.nextToken!!.nextToken!!.nextToken!!.nextToken!!.isSuccess)
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testNonretryableFailure() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default
@@ -77,7 +77,7 @@ class StandardRetryStrategyTest {
         assertTrue(token.isFailure)
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testTooManyAttempts() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default
@@ -108,7 +108,7 @@ class StandardRetryStrategyTest {
         assertTrue(token.nextToken!!.nextToken!!.isFailure)
     }
 
-    @ExperimentalCoroutinesApi
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testTooLong() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default.copy(maxTimeMs = 1_000)

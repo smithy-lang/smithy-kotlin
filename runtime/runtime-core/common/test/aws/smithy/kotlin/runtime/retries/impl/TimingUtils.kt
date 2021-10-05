@@ -11,7 +11,7 @@ import kotlin.test.assertTrue
 
 private const val timeToleranceMs = 20
 
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalCoroutinesApi::class)
 suspend fun <T> TestCoroutineScope.assertTime(expectedMs: Int, block: suspend () -> T): T {
     val (actualMs, result) = measure(block)
 
@@ -21,7 +21,7 @@ suspend fun <T> TestCoroutineScope.assertTime(expectedMs: Int, block: suspend ()
     return result
 }
 
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalCoroutinesApi::class)
 suspend fun <T> TestCoroutineScope.measure(block: suspend () -> T): Pair<Int, T> {
     val start = currentTime
     val result = block()
