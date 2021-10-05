@@ -8,11 +8,11 @@ package aws.smithy.kotlin.runtime.io
 import io.ktor.utils.io.bits.*
 import java.nio.ByteBuffer
 
-internal fun SdkBuffer.hasArray() = memory.buffer.hasArray() && !memory.buffer.isReadOnly
+internal fun SdkByteBuffer.hasArray() = memory.buffer.hasArray() && !memory.buffer.isReadOnly
 
-actual fun SdkBuffer.bytes(): ByteArray = when (hasArray()) {
-    true -> memory.buffer.array().sliceArray(readPosition until readRemaining)
-    false -> ByteArray(readRemaining).apply { readFully(this) }
+actual fun SdkByteBuffer.bytes(): ByteArray = when (hasArray()) {
+    true -> memory.buffer.array().sliceArray(readPosition.toInt() until readRemaining.toInt())
+    false -> ByteArray(readRemaining.toInt()).apply { readFully(this) }
 }
 
 internal actual fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int, length: Int): Memory =
@@ -21,13 +21,13 @@ internal actual fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int, le
 /**
  * Create a new SdkBuffer using the given [ByteBuffer] as the contents
  */
-fun SdkBuffer.Companion.of(byteBuffer: ByteBuffer): SdkBuffer = SdkBuffer(Memory.of(byteBuffer))
+fun SdkByteBuffer.Companion.of(byteBuffer: ByteBuffer): SdkByteBuffer = SdkByteBuffer(Memory.of(byteBuffer))
 
 /**
  * Read the buffer's content to the [dst] buffer moving its position.
  */
-fun SdkBuffer.readFully(dst: ByteBuffer) {
-    val length = dst.remaining()
+fun SdkByteBuffer.readFully(dst: ByteBuffer) {
+    val length = dst.remaining().toLong()
     read { memory, readStart, _ ->
         memory.copyTo(dst, readStart)
         length
@@ -37,8 +37,8 @@ fun SdkBuffer.readFully(dst: ByteBuffer) {
 /**
  * Read as much from this buffer as possible to [dst] buffer moving its position
  */
-fun SdkBuffer.readAvailable(dst: ByteBuffer) {
-    val wc = minOf(readRemaining, dst.remaining())
+fun SdkByteBuffer.readAvailable(dst: ByteBuffer) {
+    val wc = minOf(readRemaining.toInt(), dst.remaining())
     if (wc == 0) return
     val dstCopy = dst.duplicate().apply {
         limit(position() + wc)

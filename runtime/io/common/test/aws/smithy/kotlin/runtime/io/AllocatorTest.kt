@@ -14,9 +14,9 @@ class AllocatorTest {
     @Test
     fun testRealloc() {
         val contents = byteArrayOf(5, 6, 7)
-        val m1 = DefaultAllocator.alloc(128)
+        val m1 = DefaultAllocator.alloc(128u)
         m1.storeByteArray(2, contents)
-        val m2 = DefaultAllocator.realloc(m1, 512)
+        val m2 = DefaultAllocator.realloc(m1, 512u)
         val buf = ByteArray(3)
         m2.loadByteArray(2, buf)
         assertTrue { buf.contentEquals(contents) }
@@ -34,6 +34,6 @@ class AllocatorTest {
             5 to 8,
             17 to 32
         )
-        tests.forEach { (input, expected) -> assertEquals(expected, ceilp2(input)) }
+        tests.forEach { (input, expected) -> assertEquals(expected.toULong(), ceilp2(input.toULong())) }
     }
 }

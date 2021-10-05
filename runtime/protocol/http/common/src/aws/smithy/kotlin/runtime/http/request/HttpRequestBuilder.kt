@@ -65,7 +65,7 @@ fun HttpRequestBuilder.header(name: String, value: String) = headers.append(name
  */
 @InternalApi
 suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
-    val buffer = SdkBuffer(256)
+    val buffer = SdkByteBuffer(256u)
 
     // TODO - we have no way to know the http version at this level to set HTTP/x.x
     buffer.write("${request.method} ${request.url.encodedPath}\r\n")

@@ -148,13 +148,24 @@ class InstantTest {
 
     @Test
     fun testGetEpochMilliseconds() {
-        val instant = Instant.fromEpochSeconds(1602878160, 2_000_00)
+        val instant = Instant.fromEpochSeconds(1602878160, 200_000)
         val expected = 1602878160000L
         assertEquals(expected, instant.epochMilliseconds)
 
         val instantWithMilli = Instant.fromEpochSeconds(1602878160, 2_000_000)
         val expected2 = 1602878160002L
         assertEquals(expected2, instantWithMilli.epochMilliseconds)
+    }
+
+    @Test
+    fun testFromEpochMilliseconds() {
+        val ts1 = 1602878160000L
+        val expected = Instant.fromEpochSeconds(1602878160, 0)
+        assertEquals(expected, Instant.fromEpochMilliseconds(ts1))
+
+        val ts2 = 1602878160002L
+        val expected2 = Instant.fromEpochSeconds(1602878160, 2_000_000)
+        assertEquals(expected2, Instant.fromEpochMilliseconds(ts2))
     }
 
     // Select tests pulled from edge cases/tickets in the V2 Java SDK.

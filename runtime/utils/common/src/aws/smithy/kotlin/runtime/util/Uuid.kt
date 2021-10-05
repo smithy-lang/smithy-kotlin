@@ -53,7 +53,7 @@ data class Uuid(val high: Long, val low: Long) {
         }
 
         /**
-         * Write hexademical digits to a character array from a source [Long].
+         * Write hexadecimal digits to a character array from a source [Long].
          * @param src The source bits as a [Long].
          * @param srcOffset The offset (in bytes, from the left) within [src]. This offset should be between 0 and 8
          * exclusive (since that's how many bytes are in a [Long]).
