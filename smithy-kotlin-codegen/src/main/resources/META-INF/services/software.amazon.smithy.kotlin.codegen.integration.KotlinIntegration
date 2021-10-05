@@ -1,2 +1,3 @@
 software.amazon.smithy.kotlin.codegen.lang.BuiltinPreprocessor
 software.amazon.smithy.kotlin.codegen.lang.DocumentationPreprocessor
+software.amazon.smithy.kotlin.codegen.retries.StandardRetryIntegration

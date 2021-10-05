@@ -47,10 +47,18 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     init {
         val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
         LOGGER.info("Discovering KotlinIntegration providers...")
-        integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
-            .also { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
+
+        val integrationsBeforeReplacement = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
+            .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
             .filter { integration -> integration.enabledForService(context.model, settings) }
-            .also { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
+            .onEach { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
+
+        val replaceIntegrations = integrationsBeforeReplacement
+            .flatMap { it.replacesIntegrations }
+            .onEach { integration -> LOGGER.info("Replacing KotlinIntegration: ${integration.javaClass.name}") }
+
+        integrations = integrationsBeforeReplacement
+            .filter { integration -> integration.javaClass !in replaceIntegrations }
             .sortedBy(KotlinIntegration::order)
             .toList()
 

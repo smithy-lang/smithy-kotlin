@@ -48,6 +48,10 @@ object RuntimeTypes {
             val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.HTTP, "response")
         }
 
+        object Retries {
+            val StandardRetryFeature = runtimeSymbol("StandardRetryFeature", KotlinDependency.HTTP, "retries")
+        }
+
         object Operation {
             val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.HTTP, "operation")
             val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.HTTP, "operation")
@@ -77,6 +81,18 @@ object RuntimeTypes {
             val StringContent = runtimeSymbol("StringContent", KotlinDependency.CORE, "content")
             val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CORE, "content")
             val decodeToString = runtimeSymbol("decodeToString", KotlinDependency.CORE, "content")
+        }
+
+        object Retries {
+            object Impl {
+                val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.impl")
+                val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryPolicy = runtimeSymbol("StandardRetryPolicy", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryStrategy = runtimeSymbol("StandardRetryStrategy", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryStrategyOptions = runtimeSymbol("StandardRetryStrategyOptions", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryTokenBucket = runtimeSymbol("StandardRetryTokenBucket", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryTokenBucketOptions = runtimeSymbol("StandardRetryTokenBucketOptions", KotlinDependency.CORE, "retries.impl")
+            }
         }
     }
 

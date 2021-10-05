@@ -44,6 +44,12 @@ interface KotlinIntegration {
         get() = listOf()
 
     /**
+     * Get the list of other integrations to replace (i.e., removed from codegen when _this_ integration is present).
+     */
+    val replacesIntegrations: Set<Class<out KotlinIntegration>>
+        get() = setOf()
+
+    /**
      * Allows integration to specify [SectionWriterBinding]s to
      * override or change codegen at specific, defined points.
      * See [SectionWriter] for more details.
