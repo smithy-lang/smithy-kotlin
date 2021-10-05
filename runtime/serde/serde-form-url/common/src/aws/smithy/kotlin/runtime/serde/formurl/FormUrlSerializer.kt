@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde.formurl
 
-import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.SdkByteBuffer
 import aws.smithy.kotlin.runtime.io.bytes
 import aws.smithy.kotlin.runtime.io.write
 import aws.smithy.kotlin.runtime.serde.*
@@ -15,10 +15,10 @@ import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer(256))
+fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkByteBuffer(256u))
 
 private class FormUrlSerializer(
-    val buffer: SdkBuffer,
+    val buffer: SdkByteBuffer,
     val prefix: String = ""
 ) : Serializer {
 
@@ -33,7 +33,7 @@ private class FormUrlSerializer(
 
     override fun toByteArray(): ByteArray = buffer.bytes()
 
-    private fun write(block: SdkBuffer.() -> Unit) {
+    private fun write(block: SdkByteBuffer.() -> Unit) {
         buffer.apply(block)
     }
 
@@ -81,7 +81,7 @@ private class FormUrlStructSerializer(
     }
 
     private fun writeField(descriptor: SdkFieldDescriptor, block: () -> Unit) {
-        if (buffer.writePosition> 0) {
+        if (buffer.writePosition> 0u) {
             buffer.write("&")
         }
         if (prefix.isNotBlank()) buffer.write(prefix)
@@ -178,9 +178,9 @@ private class FormUrlListSerializer(
         }
     }
 
-    private fun writePrefixed(block: SdkBuffer.() -> Unit) {
+    private fun writePrefixed(block: SdkByteBuffer.() -> Unit) {
         idx++
-        if (buffer.writePosition > 0) buffer.write("&")
+        if (buffer.writePosition > 0u) buffer.write("&")
         buffer.write(prefix())
         buffer.write("=")
         buffer.apply(block)
@@ -223,7 +223,7 @@ private class FormUrlMapSerializer(
 
     private fun writeKey(key: String) {
         idx++
-        if (buffer.writePosition > 0) buffer.write("&")
+        if (buffer.writePosition > 0u) buffer.write("&")
 
         val encodedKey = key.urlEncodeComponent()
         buffer.write("$commonPrefix.${mapName.key}=$encodedKey")
@@ -311,7 +311,7 @@ private class FormUrlMapSerializer(
     override fun endMap() {}
 }
 
-private fun SdkBuffer.commonWriteNumber(value: Number): Unit = write(value.toString())
+private fun SdkByteBuffer.commonWriteNumber(value: Number): Unit = write(value.toString())
 
 // like checkNotNull() but throws the correct serialization exception
 @OptIn(ExperimentalContracts::class)
