@@ -85,16 +85,16 @@ interface Buffer {
  * Reads at most [length] bytes from this buffer into the [dst] buffer
  * @return the number of bytes read
  */
-fun Buffer.readFully(dst: SdkByteBuffer, length: Long = dst.writeRemaining.toLong()): Long {
+fun Buffer.readFully(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong {
     if (this is SdkByteBuffer) return this.readFully(dst, length)
     TODO("Buffer.readFully fallback not implemented for ${this::class}")
 }
 
 /**
  * Reads at most [length] bytes from this buffer or `-1` if no bytes are available for read.
- * @return the number of bytes read or -1 if the buffer is empty
+ * @return the number of bytes read or null if the buffer is empty
  */
-fun Buffer.readAvailable(dst: SdkByteBuffer, length: Long = dst.writeRemaining.toLong()): Long {
+fun Buffer.readAvailable(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong? {
     if (this is SdkByteBuffer) return this.readAvailable(dst, length)
     TODO("Buffer.readAvailable fallback not implemented for ${this::class}")
 }

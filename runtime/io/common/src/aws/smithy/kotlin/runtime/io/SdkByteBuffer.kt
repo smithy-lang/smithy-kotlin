@@ -368,15 +368,16 @@ fun SdkByteBuffer.asReadOnly(): SdkByteBuffer = if (isReadOnly) this else SdkByt
  * @return the number of bytes read
  */
 @OptIn(ExperimentalIoApi::class)
-fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: Long = dst.writeRemaining.toLong()): Long {
-    val rc = minOf(readRemaining.toLong(), length)
-    if (rc == 0L) return 0
+fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong {
+    require(length <= Int.MAX_VALUE.toULong()) { "Unable to satisfy read request for $length bytes" }
+    val rc = minOf(readRemaining, length).toLong()
+    if (rc == 0L) return 0UL
     return read { memory, readStart, _ ->
         dst.reserve(rc)
         memory.copyTo(dst.memory, readStart, rc, dst.writePosition.toLong())
         dst.advance(rc.toULong())
         rc
-    }
+    }.toULong()
 }
 
 /**
@@ -384,9 +385,9 @@ fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: Long = dst.writeRemainin
  * @return the number of bytes read or -1 if the buffer is empty
  */
 @OptIn(ExperimentalIoApi::class)
-fun SdkByteBuffer.readAvailable(dst: SdkByteBuffer, length: Long = dst.writeRemaining.toLong()): Long {
-    if (!canRead) return -1
-    val rc = minOf(readRemaining.toLong(), length)
+fun SdkByteBuffer.readAvailable(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong? {
+    if (!canRead) return null
+    val rc = minOf(readRemaining, length)
     return readFully(dst, rc)
 }
 

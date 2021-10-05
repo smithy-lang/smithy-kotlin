@@ -7,10 +7,7 @@ package aws.smithy.kotlin.runtime.io
 
 import io.kotest.matchers.string.shouldContain
 import io.ktor.utils.io.core.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class SdkByteBufferTest {
     @Test
@@ -242,10 +239,10 @@ class SdkByteBufferTest {
         buf.writeFully(contents.encodeToByteArray())
         val sink = SdkByteBuffer(8u)
         val rc = buf.readAvailable(sink)
-        assertEquals(7, rc)
+        assertEquals(7UL, rc)
 
         // nothing left to read
-        assertEquals(-1, buf.readAvailable(sink))
+        assertNull(buf.readAvailable(sink))
     }
 
     @Test
@@ -254,7 +251,7 @@ class SdkByteBufferTest {
         val contents = "Mad dog"
         buf.write(contents)
         val sink = SdkByteBuffer(8u)
-        buf.readFully(sink, length = 7)
+        buf.readFully(sink, length = 7u)
         assertEquals(0u, buf.readRemaining)
         assertEquals(7u, buf.readPosition)
         assertEquals(7u, buf.writePosition)
