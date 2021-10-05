@@ -67,3 +67,12 @@ fun Instant.toEpochDouble(): Double = epochSeconds.toDouble() + (nanosecondsOfSe
  */
 val Instant.epochMilliseconds: Long
     get() = epochSeconds * MILLISEC_PER_SEC + (nanosecondsOfSecond / NS_PER_MILLISEC)
+
+/**
+ * Create an [Instant] from epoch millisecond timestamp
+ */
+fun Instant.Companion.fromEpochMilliseconds(milliseconds: Long): Instant {
+    val secs = milliseconds / MILLISEC_PER_SEC
+    val ns = (milliseconds - secs * MILLISEC_PER_SEC) * NS_PER_MILLISEC
+    return fromEpochSeconds(secs, ns.toInt())
+}

@@ -9,6 +9,9 @@ import io.ktor.utils.io.bits.*
 import java.nio.ByteBuffer
 
 internal actual object DefaultAllocator : Allocator {
-    override fun alloc(size: Int): Memory = Memory.of(ByteBuffer.allocate(size))
+    override fun alloc(size: ULong): Memory {
+        require(size <= Int.MAX_VALUE.toULong()) { "Unable to allocate $size bytes" }
+        return Memory.of(ByteBuffer.allocate(size.toInt()))
+    }
     override fun free(instance: Memory) {}
 }

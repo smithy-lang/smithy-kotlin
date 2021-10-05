@@ -10,7 +10,7 @@ import io.ktor.utils.io.core.*
 
 @OptIn(ExperimentalIoApi::class)
 internal interface Allocator {
-    fun alloc(size: Int): Memory
+    fun alloc(size: ULong): Memory
     // FIXME - we should revisit this - Kotlin/Native is only place where we would actually be manually managing memory
     // and that story may change to the point where a free() function isn't even necessary
     fun free(instance: Memory)
@@ -22,15 +22,14 @@ internal expect object DefaultAllocator : Allocator
 /**
  * Round up to the next power of 2. [size] should be non-negative
  */
-internal fun ceilp2(size: Int): Int {
-    require(size >= 0) { "must be positive integer" }
-    var x = size - 1
+internal fun ceilp2(size: ULong): ULong {
+    var x = size - 1u
     x = x or (x shr 1)
     x = x or (x shr 2)
     x = x or (x shr 4)
     x = x or (x shr 8)
     x = x or (x shr 16)
-    return x + 1
+    return x + 1u
 }
 
 /**
@@ -40,8 +39,8 @@ internal fun ceilp2(size: Int): Int {
  * The memory of [instance] should no longer be used after calling.
  */
 @OptIn(ExperimentalIoApi::class)
-internal fun Allocator.realloc(instance: Memory, newSize: Int): Memory {
-    require(newSize >= instance.size32)
+internal fun Allocator.realloc(instance: Memory, newSize: ULong): Memory {
+    require(newSize >= instance.size.toULong())
     val newInstance = alloc(newSize)
     instance.copyTo(newInstance, 0, instance.size32, 0)
     free(instance)
