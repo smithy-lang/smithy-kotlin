@@ -7,10 +7,14 @@ package aws.smithy.kotlin.runtime.httptest
 
 import aws.smithy.kotlin.runtime.logging.Logger
 import io.ktor.server.engine.*
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import java.net.*
 import java.util.concurrent.*
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 /**
  * Spin up a local server using ktor-server to test real requests against. This can used in integration tests where
@@ -24,23 +28,26 @@ public abstract class TestWithLocalServer {
 
     private val logger = Logger.getLogger<TestWithLocalServer>()
 
+    @OptIn(ExperimentalTime::class)
     @BeforeTest
-    public fun startServer() {
-        var attempt = 0
+    public fun startServer() = runBlocking {
+        withTimeout(Duration.seconds(5)) {
+            var attempt = 0
 
-        do {
-            attempt++
-            try {
-                server.start()
-                logger.info { "test server listening on: $testHost:$serverPort" }
-                break
-            } catch (cause: Throwable) {
-                if (attempt >= 10) throw cause
-                Thread.sleep(250L * attempt)
-            }
-        } while (true)
+            do {
+                attempt++
+                try {
+                    server.start()
+                    logger.info { "test server listening on: $testHost:$serverPort" }
+                    break
+                } catch (cause: Throwable) {
+                    if (attempt >= 10) throw cause
+                    Thread.sleep(250L * attempt)
+                }
+            } while (true)
 
-        ensureServerRunning()
+            ensureServerRunning()
+        }
     }
 
     @AfterTest

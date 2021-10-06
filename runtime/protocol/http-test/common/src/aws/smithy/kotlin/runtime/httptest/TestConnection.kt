@@ -21,15 +21,15 @@ import kotlin.test.assertTrue
 
 /**
  * An expected HttpRequest with the response that should be returned by the engine
- * @param request the expected request. If null no assertions are made on the request
- * @param response the response to return for this request. If null it defaults to an empty 200-OK response
+ * @param expected the expected request. If null no assertions are made on the request
+ * @param respondWith the response to return for this request. If null it defaults to an empty 200-OK response
  */
-data class ExpectedHttpRequest(val request: HttpRequest?, val response: HttpResponse? = null)
+data class MockRoundTrip(val expected: HttpRequest?, val respondWith: HttpResponse? = null)
 
 /**
  * Actual and expected [HttpRequest] pair
  */
-data class CapturedRequest(val expected: HttpRequest?, val actual: HttpRequest) {
+data class CallAssertion(val expected: HttpRequest?, val actual: HttpRequest) {
     /**
      * Assert that all of the components set on [expected] are also the same on [actual]. The actual request
      * may have additional headers, only the ones set in [expected] are compared.
@@ -60,32 +60,32 @@ data class CapturedRequest(val expected: HttpRequest?, val actual: HttpRequest) 
  * NOTE: This engine is only capable of modeling request/response pairs. More complicated interactions such as duplex
  * streaming are not implemented.
  */
-class TestConnection(expected: List<ExpectedHttpRequest> = emptyList()) : HttpClientEngineBase("TestConnection") {
-    private val expected = expected.toMutableList()
+class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) : HttpClientEngineBase("TestConnection") {
     // expected is mutated in-flight, store original size
-    private val expectedCount = expected.size
-    private var captured = mutableListOf<CapturedRequest>()
+    private val iter = expected.iterator()
+    private var calls = mutableListOf<CallAssertion>()
 
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
-        val next = expected.removeFirstOrNull() ?: error("TestConnection has no remaining expected requests")
-        captured.add(CapturedRequest(next.request, request))
+        check(iter.hasNext()) { "TestConnection has no remaining expected requests" }
+        val next = iter.next()
+        calls.add(CallAssertion(next.expected, request))
 
-        val response = next.response ?: HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
+        val response = next.respondWith ?: HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
         val now = Instant.now()
         return HttpCall(request, response, now, now, callContext())
     }
 
     /**
-     * Get the list of captured requests so far
+     * Get the list of captured HTTP requests so far
      */
-    fun requests(): List<CapturedRequest> = captured
+    fun requests(): List<CallAssertion> = calls
 
     /**
      * Assert that each captured request matches the expected
      */
     suspend fun assertRequests() {
-        assertEquals(expectedCount, captured.size)
-        captured.forEachIndexed { idx, captured ->
+        assertEquals(expected.size, calls.size)
+        calls.forEachIndexed { idx, captured ->
             captured.assertRequest(idx)
         }
     }
@@ -95,7 +95,7 @@ class TestConnection(expected: List<ExpectedHttpRequest> = emptyList()) : HttpCl
  * DSL builder for [TestConnection]
  */
 class HttpTestConnectionBuilder {
-    val requests = mutableListOf<ExpectedHttpRequest>()
+    val requests = mutableListOf<MockRoundTrip>()
 
     class HttpRequestResponsePairBuilder {
         internal val requestBuilder = HttpRequestBuilder()
@@ -105,15 +105,15 @@ class HttpTestConnectionBuilder {
 
     fun expect(block: HttpRequestResponsePairBuilder.() -> Unit) {
         val builder = HttpRequestResponsePairBuilder().apply(block)
-        requests.add(ExpectedHttpRequest(builder.requestBuilder.build(), builder.response))
+        requests.add(MockRoundTrip(builder.requestBuilder.build(), builder.response))
     }
 
     fun expect(request: HttpRequest, response: HttpResponse? = null) {
-        requests.add(ExpectedHttpRequest(request, response))
+        requests.add(MockRoundTrip(request, response))
     }
 
     fun expect(response: HttpResponse? = null) {
-        requests.add(ExpectedHttpRequest(null, response))
+        requests.add(MockRoundTrip(null, response))
     }
 }
 

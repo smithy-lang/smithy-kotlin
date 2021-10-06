@@ -50,12 +50,10 @@ public abstract class ManualDispatchTestBase {
      * will not be executed immediately and instead be scheduled for dispatch. Explicit calls to `yield()`
      * will advance the dispatcher.
      */
-    protected fun runTest(block: suspend TestCoroutineScope.() -> Unit) {
-        runBlockingTest {
-            // ensure launch/async calls are coordinated with yield() points
-            pauseDispatcher()
-            block()
-        }
+    protected fun runTest(block: suspend TestCoroutineScope.() -> Unit) = runBlockingTest {
+        // ensure launch/async calls are coordinated with yield() points
+        pauseDispatcher()
+        block()
     }
 
     /**

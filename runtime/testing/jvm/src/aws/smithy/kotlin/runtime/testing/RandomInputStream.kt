@@ -11,12 +11,12 @@ import kotlin.random.Random
 /**
  * Test utility InputStream implementation that generates random ASCII data when
  * read, up to the size specified when constructed.
+ *
+ * @param lengthInBytes The requested amount of data contained in this random stream.
+ * @param binaryData Flag controlling whether binary or character data is used.
  */
-public class RandomInputStream constructor(
-    /** The requested amount of data contained in this random stream.  */
+public class RandomInputStream(
     private val lengthInBytes: Long,
-
-    /** Flag controlling whether binary or character data is used.  */
     private val binaryData: Boolean = false
 ) : InputStream() {
 

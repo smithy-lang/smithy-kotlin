@@ -16,7 +16,7 @@ import kotlin.test.assertFails
 
 class TestConnectionTest {
     @Test
-    fun testAssertRequestsSuccess() = runSuspendTest {
+    fun testAssertRequestsSuccess(): Unit = runSuspendTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -43,7 +43,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsUrlDifferent() = runSuspendTest {
+    fun testAssertRequestsUrlDifferent(): Unit = runSuspendTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -70,7 +70,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsMissingHeader() = runSuspendTest {
+    fun testAssertRequestsMissingHeader(): Unit = runSuspendTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -86,7 +86,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = "test.com"
-            url.path = "/tests-for-your-tests"
+            url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
         }
         client.call(req).complete()
@@ -97,7 +97,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsBodyDifferent() = runSuspendTest {
+    fun testAssertRequestsBodyDifferent(): Unit = runSuspendTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -113,7 +113,7 @@ class TestConnectionTest {
 
         val req = HttpRequestBuilder().apply {
             url.host = "test.com"
-            url.path = "/tests-for-your-tests"
+            url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             body = ByteArrayContent("tests are good".encodeToByteArray())
         }
@@ -125,7 +125,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsAny() = runSuspendTest {
+    fun testAssertRequestsAny(): Unit = runSuspendTest {
         val engine = buildTestConnection {
             expect {
                 request {

@@ -16,37 +16,19 @@ import java.util.*
  * file is immediately filled with a specified amount of random ASCII data.
  *
  * @see RandomInputStream
+ *
+ * @param sizeInBytes The amount of random ASCII data, in bytes, for the new temp
+ * @param filename The name for the new temporary file, within the Java temp
+ * directory as declared in the JRE's system properties.
+ * @param binaryData Flag controlling whether binary or character data is used.
  */
-public class RandomTempFile : File {
-    /** Flag controlling whether binary or character data is used.  */
-    private val binaryData: Boolean
+public class RandomTempFile(
+    sizeInBytes: Long,
+    filename: String = UUID.randomUUID().toString(),
+    private val binaryData: Boolean = false
+) : File(TEMP_DIR + separator + System.currentTimeMillis().toString() + "-" + filename) {
 
-    /**
-     * Creates, and fills, a temp file with a randomly generated name and specified size of random ASCII data.
-     *
-     * @param sizeInBytes The amount of random ASCII data, in bytes, for the new temp
-     * file.
-     * @throws IOException If any problems were encountered creating the new temp file.
-     */
-    public constructor(sizeInBytes: Long) : this(UUID.randomUUID().toString(), sizeInBytes, false)
-
-    /**
-     * Creates, and fills, a temp file with the specified name and specified
-     * size of random data.
-     *
-     * @param filename The name for the new temporary file, within the Java temp
-     * directory as declared in the JRE's system properties.
-     * @param sizeInBytes The amount of random ASCII data, in bytes, for the new temp
-     * file.
-     * @param binaryData Whether to fill the file with binary or character data.
-     *
-     * @throws IOException
-     * If any problems were encountered creating the new temp file.
-     */
-    public constructor(filename: String, sizeInBytes: Long, binaryData: Boolean = false) : super(
-        TEMP_DIR + separator + System.currentTimeMillis().toString() + "-" + filename
-    ) {
-        this.binaryData = binaryData
+    init {
         createFile(sizeInBytes)
     }
 
