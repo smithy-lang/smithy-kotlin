@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
 import aws.smithy.kotlin.runtime.serde.xml.xmlStreamReader
-import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.util.*
 
 /**
  * DOM representation of an XML document
@@ -60,14 +60,14 @@ class XmlNode {
 // parse a string into a dom representation
 suspend fun parseDom(reader: XmlStreamReader): XmlNode {
 
-    val nodeStack: Stack<XmlNode> = mutableListOf()
+    val nodeStack: ListStack<XmlNode> = mutableListOf()
 
     loop@while (true) {
         when (val token = reader.nextToken()) {
             is XmlToken.BeginElement -> {
                 val newNode = XmlNode.fromToken(token)
                 if (nodeStack.isNotEmpty()) {
-                    val curr = nodeStack.peek()
+                    val curr = nodeStack.top()
                     curr.addChild(newNode)
                     newNode.parent = curr
                 }
@@ -75,7 +75,7 @@ suspend fun parseDom(reader: XmlStreamReader): XmlNode {
                 nodeStack.push(newNode)
             }
             is XmlToken.EndElement -> {
-                val curr = nodeStack.peek()
+                val curr = nodeStack.top()
 
                 if (curr.name != token.name) {
                     throw DeserializationException("expected end of element: `${curr.name}`, found: `${token.name}`")
@@ -87,7 +87,7 @@ suspend fun parseDom(reader: XmlStreamReader): XmlNode {
                 }
             }
             is XmlToken.Text -> {
-                val curr = nodeStack.peek()
+                val curr = nodeStack.top()
                 curr.text = token.value
             }
             null,
@@ -99,13 +99,6 @@ suspend fun parseDom(reader: XmlStreamReader): XmlNode {
     check(nodeStack.count() == 1) { "invalid XML document, node stack size > 1" }
     return nodeStack.pop()
 }
-
-fun <T> MutableList<T>.push(item: T) = add(item)
-fun <T> MutableList<T>.pop(): T = removeLast()
-fun <T> MutableList<T>.popOrNull(): T? = removeLastOrNull()
-fun <T> MutableList<T>.peek(): T = this[count() - 1]
-fun <T> MutableList<T>.peekOrNull(): T? = if (isNotEmpty()) peek() else null
-typealias Stack<T> = MutableList<T>
 
 fun XmlNode.toXmlString(pretty: Boolean = false): String {
     val sb = StringBuilder()

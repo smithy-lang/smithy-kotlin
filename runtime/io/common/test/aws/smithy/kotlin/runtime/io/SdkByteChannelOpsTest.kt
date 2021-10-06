@@ -131,4 +131,36 @@ class SdkByteChannelOpsTest {
         yield()
         assertFalse(awaitingContent)
     }
+
+    @Test
+    fun testReadUtf8Chars() = runSuspendTest {
+        val chan = SdkByteReadChannel("hello".encodeToByteArray())
+        assertEquals('h', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('e', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('l', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('l', chan.readUtf8CodePoint()?.toChar())
+        assertEquals('o', chan.readUtf8CodePoint()?.toChar())
+        assertNull(chan.readUtf8CodePoint())
+    }
+
+    @Test
+    fun testReadMultibyteUtf8Chars(): Unit = runSuspendTest {
+        // https://www.fileformat.info/info/unicode/char/1d122/index.htm
+        // $ - 1 byte, cent sign - 2bytes, euro sign - 3 bytes, musical clef - 4 points (surrogate pair)
+        val content = "$¢€\uD834\uDD22"
+        val chan = SdkByteReadChannel(content.encodeToByteArray())
+
+        val expected = listOf(
+            36, // $
+            162, // ¢
+            8364, // €
+            119074 // musical F clef
+        )
+
+        expected.forEachIndexed { i, exp ->
+            val code = chan.readUtf8CodePoint()
+            assertEquals(exp, code, "[i=$i] expected $exp, found $code ")
+        }
+        assertNull(chan.readUtf8CodePoint())
+    }
 }

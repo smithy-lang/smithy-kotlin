@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.serde.json
 import aws.smithy.kotlin.runtime.serde.*
 
 /**
- * Provides a deserialiser for JSON documents
+ * Provides a deserializer for JSON documents
  *
  * @param payload underlying document from which tokens are read
  */
@@ -65,11 +65,11 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator =
         when (reader.peek()) {
-            RawJsonToken.BeginObject -> {
+            JsonToken.BeginObject -> {
                 reader.nextTokenOf<JsonToken.BeginObject>()
                 JsonFieldIterator(reader, descriptor, this)
             }
-            RawJsonToken.Null -> JsonNullFieldIterator(this)
+            JsonToken.Null -> JsonNullFieldIterator(this)
             else -> throw DeserializationException("Unexpected token type ${reader.peek()}")
         }
 
@@ -88,28 +88,28 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    override suspend fun nextHasValue(): Boolean = reader.peek() != RawJsonToken.Null
+    override suspend fun nextHasValue(): Boolean = reader.peek() != JsonToken.Null
 
     override suspend fun hasNextEntry(): Boolean =
         when (reader.peek()) {
-            RawJsonToken.EndObject -> {
+            JsonToken.EndObject -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndObject>()
                 false
             }
-            RawJsonToken.Null,
-            RawJsonToken.EndDocument -> false
+            JsonToken.Null,
+            JsonToken.EndDocument -> false
             else -> true
         }
 
     override suspend fun hasNextElement(): Boolean =
         when (reader.peek()) {
-            RawJsonToken.EndArray -> {
+            JsonToken.EndArray -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndArray>()
                 false
             }
-            RawJsonToken.EndDocument -> false
+            JsonToken.EndDocument -> false
             else -> true
         }
 }
@@ -131,13 +131,13 @@ private class JsonFieldIterator(
 
     override suspend fun findNextFieldIndex(): Int? {
         val candidate = when (reader.peek()) {
-            RawJsonToken.EndObject -> {
+            JsonToken.EndObject -> {
                 // consume the token
                 reader.nextTokenOf<JsonToken.EndObject>()
                 null
             }
-            RawJsonToken.EndDocument -> null
-            RawJsonToken.Null -> {
+            JsonToken.EndDocument -> null
+            JsonToken.Null -> {
                 reader.nextTokenOf<JsonToken.Null>()
                 null
             }
@@ -151,7 +151,7 @@ private class JsonFieldIterator(
 
         if (candidate != null) {
             // found a field
-            if (reader.peek() == RawJsonToken.Null) {
+            if (reader.peek() == JsonToken.Null) {
                 // skip explicit nulls
                 reader.nextTokenOf<JsonToken.Null>()
                 return findNextFieldIndex()
@@ -164,19 +164,5 @@ private class JsonFieldIterator(
     override suspend fun skipValue() {
         // stream reader skips the *next* token
         reader.skipNext()
-    }
-}
-
-// return the next token and require that it be of type [TExpected] or else throw an exception
-private suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
-    val token = this.nextToken()
-    requireToken<TExpected>(token)
-    return token as TExpected
-}
-
-// require that the given token be of type [TExpected] or else throw an exception
-private inline fun <reified TExpected> requireToken(token: JsonToken) {
-    if (token::class != TExpected::class) {
-        throw DeserializationException("expected ${TExpected::class}; found ${token::class}")
     }
 }
