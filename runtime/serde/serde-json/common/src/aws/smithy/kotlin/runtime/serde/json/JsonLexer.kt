@@ -252,7 +252,7 @@ internal class JsonLexer(
                     nextOrThrow()
                     when (val byte = nextOrThrow()) {
                         'u' -> {
-                            if (idx + 4 >= data.size) throw DeserializationException("Unexpected EOF")
+                            if (idx + 4 >= data.size) fail("Unexpected EOF reading escaped unicode string", idx)
                             idx += 4
                         }
                         '\\', '/', '"', 'b', 'f', 'r', 'n', 't' -> { } // already consumed
@@ -270,7 +270,16 @@ internal class JsonLexer(
 
         val value = data.decodeToString(start, idx)
         consume('"')
-        return if (needsUnescaped) value.unescape() else value
+        return if (needsUnescaped) {
+            try {
+                value.unescape()
+            } catch (ex: Exception) {
+                // use offset of the start of the entire string (including starting quotation mark)
+                fail(ex.message ?: "Invalid escaped string", start - 1)
+            }
+        } else {
+            value
+        }
     }
 
     private fun readKeyword(): JsonToken = when (val ch = peekOrThrow()) {
@@ -340,7 +349,7 @@ internal class JsonLexer(
     private fun unexpectedToken(found: Char?, vararg expected: String): Nothing {
         val pluralModifier = if (expected.size > 1) " one of" else ""
         val formatted = expected.joinToString(separator = ", ") { "`$it`" }
-        fail("found '$found', expected$pluralModifier $formatted")
+        fail("found `$found`, expected$pluralModifier $formatted")
     }
 
     private fun fail(message: String, offset: Int = idx, cause: Throwable? = null): Nothing {
