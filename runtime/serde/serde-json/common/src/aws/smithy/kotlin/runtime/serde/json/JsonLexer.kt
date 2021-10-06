@@ -224,7 +224,7 @@ internal class JsonLexer(
                 readDigits(this)
             }
         }
-        lexerCheck(value.isNotEmpty()) { "Invalid number, expected '-' || 0..9, found ${peekChar()}" }
+        lexerCheck(value.isNotEmpty()) { "Invalid number, expected `-` || 0..9, found `${peekChar()}`" }
         return JsonToken.Number(value)
     }
 
@@ -306,7 +306,7 @@ internal class JsonLexer(
      */
     private fun consume(expected: Char) {
         val chr = data[idx].toInt().toChar()
-        lexerCheck(chr == expected) { "Unexpected char '$chr' expected '$expected'" }
+        lexerCheck(chr == expected) { "Unexpected char `$chr` expected `$expected`" }
         idx++
     }
 
@@ -339,7 +339,7 @@ internal class JsonLexer(
 
     private fun unexpectedToken(found: Char?, vararg expected: String): Nothing {
         val pluralModifier = if (expected.size > 1) " one of" else ""
-        val formatted = expected.joinToString(separator = ", ") { "'$it'" }
+        val formatted = expected.joinToString(separator = ", ") { "`$it`" }
         fail("found '$found', expected$pluralModifier $formatted")
     }
 
