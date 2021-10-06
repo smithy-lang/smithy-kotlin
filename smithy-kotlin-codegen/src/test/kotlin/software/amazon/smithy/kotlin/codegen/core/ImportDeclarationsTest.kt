@@ -4,9 +4,9 @@
  */
 package software.amazon.smithy.kotlin.codegen.core
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ImportDeclarationsTest {
     @Test

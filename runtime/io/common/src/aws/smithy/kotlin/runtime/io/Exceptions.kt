@@ -17,3 +17,16 @@ class ReadOnlyBufferException : UnsupportedOperationException {
 
     constructor(cause: Throwable?) : super(cause)
 }
+
+/**
+ * Exception thrown when a content-mutation method such as `write` is invoked upon a buffer that cannot grow
+ */
+class FixedBufferSizeException : UnsupportedOperationException {
+    constructor() : super()
+
+    constructor(message: String?) : super(message)
+
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+
+    constructor(cause: Throwable?) : super(cause)
+}

@@ -84,7 +84,7 @@ class SdkByteChannelOpsTest {
     @Test
     fun testReadAvailableNoSuspend() = runSuspendTest {
         val chan = SdkByteReadChannel("world!".encodeToByteArray())
-        val buffer = SdkBuffer(16)
+        val buffer = SdkByteBuffer(16u)
         buffer.write("hello, ")
 
         val rc = chan.readAvailable(buffer)
@@ -97,7 +97,7 @@ class SdkByteChannelOpsTest {
     fun testReadAvailableSuspend() = runSuspendTest {
         val chan = SdkByteChannel()
         val job = launch {
-            val buffer = SdkBuffer(16)
+            val buffer = SdkByteBuffer(16u)
             buffer.write("hello, ")
 
             // should suspend

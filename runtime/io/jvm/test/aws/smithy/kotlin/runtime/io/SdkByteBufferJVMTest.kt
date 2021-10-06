@@ -5,14 +5,14 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import org.junit.jupiter.api.Test
 import java.nio.ByteBuffer
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class SdkBufferJVMTest {
+class SdkByteBufferJVMTest {
     @Test
     fun testReadFully() {
-        val src = SdkBuffer.of(byteArrayOf(1, 2, 3, 4, 5))
+        val src = SdkByteBuffer.of(byteArrayOf(1, 2, 3, 4, 5))
         val dest = ByteBuffer.allocate(3)
         src.readFully(dest)
 
@@ -26,7 +26,7 @@ class SdkBufferJVMTest {
 
     @Test
     fun testReadAvailable() {
-        val src = SdkBuffer.of(byteArrayOf(1, 2, 3, 4, 5)).apply { commitWritten(5) }
+        val src = SdkByteBuffer.of(byteArrayOf(1, 2, 3, 4, 5)).apply { advance(5u) }
         val dest = ByteBuffer.allocate(16)
         src.readAvailable(dest)
 

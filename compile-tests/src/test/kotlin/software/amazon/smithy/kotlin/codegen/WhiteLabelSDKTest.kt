@@ -1,15 +1,16 @@
 package software.amazon.smithy.kotlin.codegen
 
 import com.tschuchort.compiletesting.KotlinCompilation
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.lang.hardReservedWords
 import software.amazon.smithy.kotlin.codegen.util.asSmithy
 import software.amazon.smithy.kotlin.codegen.util.compileSdkAndTest
 import software.amazon.smithy.model.Model
 import java.io.ByteArrayOutputStream
 import java.net.URL
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 /**
  * Tests that validate the generated source for a white-label SDK
@@ -26,12 +27,12 @@ class WhiteLabelSDKTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(compilationResult.exitCode, KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
     }
 
     // FIXME - disabled until we invest time into improving the extraneous warnings we get for things like parameter never used, etc
     @Test
-    @Disabled
+    @Ignore
     fun `white label sdk compiles without breaching warning threshold`() {
         val model = javaClass.getResource("/kitchen-sink-model.smithy").asSmithy()
 

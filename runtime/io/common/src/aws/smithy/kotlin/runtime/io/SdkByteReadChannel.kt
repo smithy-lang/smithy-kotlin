@@ -137,29 +137,29 @@ public suspend fun SdkByteReadChannel.readByte(): Byte {
  * Reads all available bytes to [dest] buffer and returns immediately or suspends if no bytes available
  */
 @OptIn(ExperimentalIoApi::class)
-public suspend fun SdkByteReadChannel.readAvailable(dest: SdkBuffer, limit: Int = dest.writeRemaining): Int {
+public suspend fun SdkByteReadChannel.readAvailable(dest: SdkByteBuffer, limit: Long = dest.writeRemaining.toLong()): Long {
     if (this is KtorReadChannel) {
         return chan.read { source, start, endExclusive ->
-            val rc = (endExclusive - start).toInt()
+            val rc = minOf(endExclusive - start, limit)
             if (rc > 0) {
                 dest.reserve(rc)
-                source.copyTo(dest.memory, start.toInt(), rc, dest.writePosition)
-                dest.commitWritten(rc)
+                source.copyTo(dest.memory, start, rc, dest.writePosition.toLong())
+                dest.advance(rc.toULong())
             }
-            return@read rc
-        }
+            return@read rc.toInt()
+        }.toLong()
     }
 
     return readAvailableFallback(dest, limit)
 }
 
-internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, limit: Int): Int {
+internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkByteBuffer, limit: Long): Long {
     if (availableForRead == 0) awaitContent()
     // channel was closed while waiting and no further content was made available
     if (availableForRead == 0 && isClosedForRead) return -1
-    val tmp = ByteArray(minOf(availableForRead, limit))
+    val tmp = ByteArray(minOf(availableForRead.toLong(), limit, Int.MAX_VALUE.toLong()).toInt())
     dest.writeFully(tmp)
-    return tmp.size
+    return tmp.size.toLong()
 }
 
 /**
