@@ -93,7 +93,7 @@ class TestConnectionTest {
 
         assertFails {
             engine.assertRequests()
-        }.message.shouldContain("header x-baz missing value qux")
+        }.message.shouldContain("header `x-baz` missing value `qux`")
     }
 
     @Test

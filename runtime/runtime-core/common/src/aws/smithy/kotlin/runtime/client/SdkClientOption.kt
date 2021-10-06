@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.config.IdempotencyTokenProvider
-import aws.smithy.kotlin.runtime.time.Clock
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -33,11 +32,6 @@ public object SdkClientOption {
      * The client logging mode (see [SdkLogMode]
      */
     public val LogMode: ClientOption<SdkLogMode> = ClientOption("LogMode")
-
-    /**
-     * The source of time for an operation
-     */
-    public val Clock: ClientOption<Clock> = ClientOption("Clock")
 }
 
 /**

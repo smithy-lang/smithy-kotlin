@@ -39,7 +39,7 @@ data class CallAssertion(val expected: HttpRequest?, val actual: HttpRequest) {
         assertEquals(expected.url.toString(), actual.url.toString(), "[request#$idx]: URL mismatch")
         expected.headers.forEach { name, values ->
             values.forEach {
-                assertTrue(actual.headers.contains(name, it), "[request#$idx]: header $name missing value $it")
+                assertTrue(actual.headers.contains(name, it), "[request#$idx]: header `$name` missing value `$it`")
             }
         }
 
