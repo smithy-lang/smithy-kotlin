@@ -5,11 +5,21 @@
 
 description = "Internal test utilities"
 
+val coroutinesVersion: String by project
+val kotlinVersion: String by project
+
 kotlin {
     sourceSets {
-        metadata {
+        commonMain {
             dependencies {
-                commonMainApi(project(":runtime:utils"))
+                implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
+                implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
             }
         }
     }
