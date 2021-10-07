@@ -4,6 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.time
 
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+
 // FIXME - remove in favor of kotlinx-datetime before GA (assuming it's available). For now
 // we are stubbing this out for codegen purposes and supporting the various timestamp format parsers.
 // the actual `Instant` class has additional methods users would actually want/need.
@@ -28,6 +31,20 @@ expect class Instant : Comparable<Instant> {
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
      */
     fun format(fmt: TimestampFormat): String
+
+    /**
+     * Returns an instant that is the result of adding the specified [duration] to this instant.
+     * NOTE: Duration may be negative in which case the returned Instant will be earlier than this Instant.
+     */
+    @ExperimentalTime
+    public operator fun plus(duration: Duration): Instant
+
+    /**
+     * Returns an instant that is the result of subtracting the specified [duration] from this instant.
+     * NOTE: Duration may be negative in which case the returned Instant will be later than this Instant.
+     */
+    @ExperimentalTime
+    public operator fun minus(duration: Duration): Instant
 
     companion object {
         /**

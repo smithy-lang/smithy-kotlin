@@ -20,6 +20,8 @@ import java.time.format.DateTimeFormatterBuilder
 import java.time.format.SignStyle
 import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 import java.time.Instant as jtInstant
 
 actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
@@ -36,6 +38,26 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
         (this === other) || (other is Instant && this.value == other.value)
 
     override fun toString(): String = format(TimestampFormat.ISO_8601)
+
+    /**
+     * Returns an instant that is the result of adding the specified [duration] to this instant.
+     *
+     * If the [duration] is positive, the returned instant is later than this instant.
+     * If the [duration] is negative, the returned instant is earlier than this instant.
+     */
+    @ExperimentalTime
+    actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
+        fromEpochSeconds(epochSeconds + seconds, nanosecondsOfSecond + nanoseconds)
+    }
+
+    /**
+     * Returns an instant that is the result of subtracting the specified [duration] from this instant.
+     *
+     * If the [duration] is positive, the returned instant is earlier than this instant.
+     * If the [duration] is negative, the returned instant is later than this instant.
+     */
+    @ExperimentalTime
+    actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
