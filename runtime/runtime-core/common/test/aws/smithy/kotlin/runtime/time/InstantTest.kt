@@ -7,6 +7,8 @@ package aws.smithy.kotlin.runtime.time
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
 
 // tests for conversion from a parsed representation into an Instant instance
 
@@ -204,5 +206,15 @@ class InstantTest {
         // (1) - That issue is about round tripping values between SDK versions
         // (2) - The input year in those tests is NOT valid and should never have
         //       been accepted by the parser.
+    }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun testPlusMinusDuration() {
+        val start = Instant.fromEpochSeconds(1000, 1000)
+
+        val offset = Duration.seconds(10) + Duration.nanoseconds(1000)
+        assertEquals(Instant.fromEpochSeconds(1010, 2000), start + offset)
+        assertEquals(Instant.fromEpochSeconds(990, 0), start - offset)
     }
 }

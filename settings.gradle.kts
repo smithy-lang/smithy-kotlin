@@ -41,6 +41,7 @@ include(":runtime:serde:serde-json")
 include(":runtime:serde:serde-xml")
 include(":runtime:serde:serde-form-url")
 include(":runtime:protocol:http")
+include(":runtime:protocol:http-test")
 include(":runtime:protocol:http-client-engines:http-client-engine-ktor")
 
 include(":compile-tests")
