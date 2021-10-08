@@ -53,7 +53,7 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
     /**
      * Set the ALPN protocol list when a TLS connection starts
      */
-    val alpn: List<String> = builder.alpn
+    val alpn: List<AlpnId> = builder.alpn
 
     companion object {
         operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig = HttpClientEngineConfig(Builder().apply(block))
@@ -94,7 +94,7 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
         /**
          * Set the ALPN protocol list when a TLS connection starts
          */
-        var alpn: List<String> = emptyList()
+        var alpn: List<AlpnId> = emptyList()
     }
 }
 
