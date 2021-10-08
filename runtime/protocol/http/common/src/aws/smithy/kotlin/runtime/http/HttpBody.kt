@@ -5,12 +5,17 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 
 /**
  * HTTP payload to be sent to a peer
  */
-sealed class HttpBody {
+sealed class HttpBody : CanDeepCopy<HttpBody> {
+    /**
+     * Flag indicating the body can be consumed multiple times.
+     */
+    open val isReplayable: Boolean = true
 
     /**
      * Specifies the length of this [HttpBody] content
@@ -23,6 +28,7 @@ sealed class HttpBody {
      */
     object Empty : HttpBody() {
         override val contentLength: Long = 0
+        override fun deepCopy(): HttpBody = this // Deep copies are unnecessary for empty bodies
     }
 
     /**
@@ -35,6 +41,12 @@ sealed class HttpBody {
          * Provides [ByteArray] to be sent to peer
          */
         abstract fun bytes(): ByteArray
+
+        override fun deepCopy(): Bytes = object : Bytes() {
+            private val copiedBytes = this@Bytes.bytes().copyOf()
+            override fun bytes(): ByteArray = copiedBytes
+            override val contentLength: Long? = copiedBytes.size.toLong()
+        }
     }
 
     /**
@@ -52,14 +64,20 @@ sealed class HttpBody {
          * Flag indicating the stream can be consumed multiple times. If `false` [reset] will throw an
          * [UnsupportedOperationException].
          */
-        open val isReplayable: Boolean = false
+        override val isReplayable: Boolean = false
 
         /**
          * Reset the stream such that the next call to [readFrom] provides a fresh channel.
          * @throws UnsupportedOperationException if the stream can only be consumed once. Consumers can check
          * [isReplayable] before calling
          */
-        open fun reset() { throw UnsupportedOperationException("${this::class.simpleName} can only be consumed once") }
+        open fun reset() { throwSingleConsumptionException() }
+
+        /**
+         * Throw a general exception upon attempting to consume the stream more than once.
+         */
+        protected fun throwSingleConsumptionException(): Nothing =
+            throw UnsupportedOperationException("${this::class.simpleName} can only be consumed once")
     }
 }
 
@@ -73,11 +91,13 @@ fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
     }
     is ByteStream.OneShotStream -> object : HttpBody.Streaming() {
         override val contentLength: Long? = byteStream.contentLength
+        override fun deepCopy(): Streaming = throwSingleConsumptionException()
         override fun readFrom(): SdkByteReadChannel = byteStream.readFrom()
     }
     is ByteStream.ReplayableStream -> object : HttpBody.Streaming() {
         private var channel: SdkByteReadChannel? = null
         override val contentLength: Long? = byteStream.contentLength
+        override fun deepCopy(): Streaming = this // Replayable streams copy themselves by default
         override fun readFrom(): SdkByteReadChannel = channel ?: byteStream.newReader().also { channel = it }
         override val isReplayable: Boolean = true
         override fun reset() {

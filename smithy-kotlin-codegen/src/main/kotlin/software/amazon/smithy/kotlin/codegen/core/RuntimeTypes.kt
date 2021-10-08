@@ -22,11 +22,9 @@ object RuntimeTypes {
         val SdkHttpClient = runtimeSymbol("SdkHttpClient", KotlinDependency.HTTP)
         val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.HTTP)
         val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.HTTP, "content")
-        val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
         val QueryParameters = runtimeSymbol("QueryParameters", KotlinDependency.HTTP)
         val QueryParametersBuilder = runtimeSymbol("QueryParametersBuilder", KotlinDependency.HTTP)
         val toQueryParameters = runtimeSymbol("toQueryParameters", KotlinDependency.HTTP)
-        val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
         val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
         val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
@@ -48,8 +46,10 @@ object RuntimeTypes {
             val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.HTTP, "response")
         }
 
-        object Retries {
-            val StandardRetryFeature = runtimeSymbol("StandardRetryFeature", KotlinDependency.HTTP, "retries")
+        object Middlware {
+            val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
+            val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
+            val RetryFeature = runtimeSymbol("RetryFeature", KotlinDependency.HTTP, "middleware")
         }
 
         object Operation {

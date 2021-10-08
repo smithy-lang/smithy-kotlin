@@ -3,35 +3,44 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.http.retries
+package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.http.Feature
 import aws.smithy.kotlin.runtime.http.FeatureKey
 import aws.smithy.kotlin.runtime.http.HttpClientFeatureFactory
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
+import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 
-class StandardRetryFeature(private val strategy: RetryStrategy, private val policy: RetryPolicy<Any?>) : Feature {
+class RetryFeature(private val strategy: RetryStrategy, private val policy: RetryPolicy<Any?>) : Feature {
     class Config {
         var strategy: RetryStrategy? = null
         var policy: RetryPolicy<Any?>? = null
     }
 
-    companion object Feature : HttpClientFeatureFactory<Config, StandardRetryFeature> {
-        override val key: FeatureKey<StandardRetryFeature> = FeatureKey("StandardRetryFeature")
+    companion object Feature : HttpClientFeatureFactory<Config, RetryFeature> {
+        override val key: FeatureKey<RetryFeature> = FeatureKey("RetryFeature")
 
-        override fun create(block: Config.() -> Unit): StandardRetryFeature {
+        override fun create(block: Config.() -> Unit): RetryFeature {
             val config = Config().apply(block)
             val strategy = requireNotNull(config.strategy) { "strategy is required" }
             val policy = requireNotNull(config.policy) { "policy is required" }
-            return StandardRetryFeature(strategy, policy)
+            return RetryFeature(strategy, policy)
         }
     }
 
     override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
         operation.execution.finalize.intercept { req, next ->
-            strategy.retry(policy) { next.call(req) }
+            if (req.subject.isRetryable) {
+                strategy.retry(policy) {
+                    // Deep copy the request because later middlewares (e.g., signing) mutate it
+                    val reqCopy = req.deepCopy()
+                    next.call(reqCopy)
+                }
+            } else {
+                next.call(req)
+            }
         }
     }
 }

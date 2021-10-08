@@ -54,6 +54,7 @@ class Md5ChecksumTest {
     fun itOnlySetsHeaderForBytesContent() = runSuspendTest {
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.Streaming() {
+                override fun deepCopy(): HttpBody = throwSingleConsumptionException()
                 override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel("fooey".encodeToByteArray())
             }
         }

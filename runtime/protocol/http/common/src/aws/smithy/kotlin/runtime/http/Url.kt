@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
 
@@ -105,7 +106,7 @@ data class UserInfo(val username: String, val password: String)
 /**
  * Construct a URL by it's individual components
  */
-class UrlBuilder {
+class UrlBuilder : CanDeepCopy<UrlBuilder> {
     var scheme = Protocol.HTTPS
     var host: String = ""
     var port: Int? = null
@@ -129,6 +130,17 @@ class UrlBuilder {
         userInfo,
         forceQuery
     )
+
+    override fun deepCopy(): UrlBuilder = UrlBuilder().apply {
+        scheme = this@UrlBuilder.scheme
+        host = this@UrlBuilder.host
+        port = this@UrlBuilder.port
+        path = this@UrlBuilder.path
+        parameters = this@UrlBuilder.parameters.deepCopy()
+        fragment = this@UrlBuilder.fragment
+        userInfo = this@UrlBuilder.userInfo?.copy()
+        forceQuery = this@UrlBuilder.forceQuery
+    }
 
     override fun toString(): String =
         "UrlBuilder(scheme=$scheme, host='$host', port=$port, path='$path', parameters=$parameters, fragment=$fragment, userInfo=$userInfo, forceQuery=$forceQuery)"

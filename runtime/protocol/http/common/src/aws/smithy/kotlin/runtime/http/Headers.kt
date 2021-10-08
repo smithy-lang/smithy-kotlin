@@ -4,8 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import aws.smithy.kotlin.runtime.http.util.StringValuesMap
-import aws.smithy.kotlin.runtime.http.util.StringValuesMapBuilder
+import aws.smithy.kotlin.runtime.http.util.*
 import aws.smithy.kotlin.runtime.http.util.StringValuesMapImpl
 
 /**
@@ -35,13 +34,12 @@ private object EmptyHeaders : Headers {
 /**
  * Build an immutable HTTP header map
  */
-class HeadersBuilder : StringValuesMapBuilder(true, 8) {
+class HeadersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<HeadersBuilder> {
     override fun toString(): String = "HeadersBuilder ${entries()} "
-    override fun build(): Headers {
-        require(!built) { "HeadersBuilder can only build a single Headers instance" }
-        built = true
-        return HeadersImpl(values)
-    }
+    override fun build(): Headers = HeadersImpl(values)
+
+    override fun deepCopy(): HeadersBuilder =
+        HeadersBuilder().apply { values.putAll(this@HeadersBuilder.values.deepCopy()) }
 }
 
 private class HeadersImpl(

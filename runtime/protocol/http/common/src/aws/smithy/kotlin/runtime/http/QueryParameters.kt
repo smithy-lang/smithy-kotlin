@@ -4,9 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import aws.smithy.kotlin.runtime.http.util.StringValuesMap
-import aws.smithy.kotlin.runtime.http.util.StringValuesMapBuilder
-import aws.smithy.kotlin.runtime.http.util.StringValuesMapImpl
+import aws.smithy.kotlin.runtime.http.util.*
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 /**
@@ -33,13 +31,12 @@ private object EmptyQueryParameters : QueryParameters {
     override fun isEmpty(): Boolean = true
 }
 
-class QueryParametersBuilder : StringValuesMapBuilder(true, 8) {
+class QueryParametersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<QueryParametersBuilder> {
     override fun toString(): String = "QueryParametersBuilder ${entries()} "
-    override fun build(): QueryParameters {
-        require(!built) { "QueryParametersBuilder can only build a single instance" }
-        built = true
-        return QueryParametersImpl(values)
-    }
+    override fun build(): QueryParameters = QueryParametersImpl(values)
+
+    override fun deepCopy(): QueryParametersBuilder =
+        QueryParametersBuilder().apply { values.putAll(this@QueryParametersBuilder.values.deepCopy()) }
 }
 
 fun Map<String, String>.toQueryParameters(): QueryParameters {
