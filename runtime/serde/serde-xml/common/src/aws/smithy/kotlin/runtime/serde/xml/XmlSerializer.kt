@@ -8,6 +8,7 @@ import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.serde.xml.dom.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
+import aws.smithy.kotlin.runtime.util.*
 
 /**
  * Provides serialization for the XML message format.
@@ -17,8 +18,8 @@ import aws.smithy.kotlin.runtime.time.TimestampFormat
 class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
     // FIXME - clean up stack to distinguish between mutable/immutable and move to utils? (e.g. MutableStack<T> = mutableStackOf())
-    private var nodeStack: Stack<String> = mutableListOf()
-    internal var parentDescriptorStack: Stack<SdkFieldDescriptor> = mutableListOf()
+    private var nodeStack: ListStack<String> = mutableListOf()
+    internal var parentDescriptorStack: ListStack<SdkFieldDescriptor> = mutableListOf()
 
     override fun toByteArray(): ByteArray = xmlWriter.bytes
 
@@ -28,7 +29,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         // use the parent descriptor instead of the object descriptor passed to us.
         // The object descriptor is for root nodes, nested structures have their own field descriptor
         // that describes the referred to struct
-        val structDescriptor = parentDescriptorStack.peekOrNull() ?: descriptor
+        val structDescriptor = parentDescriptorStack.topOrNull() ?: descriptor
 
         // Serialize top-level (root node) ns declarations and non-default declarations.
         val isRoot = nodeStack.isEmpty()
@@ -74,7 +75,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         check(nodeStack.isNotEmpty()) { "Expected nodeStack to have a value, but was empty." }
         val tagName = nodeStack.pop()
 
-        if (parentDescriptorStack.isNotEmpty() && !parentDescriptorStack.peek().isMapOrList) {
+        if (parentDescriptorStack.isNotEmpty() && !parentDescriptorStack.top().isMapOrList) {
             xmlWriter.endTag(tagName)
         }
     }
