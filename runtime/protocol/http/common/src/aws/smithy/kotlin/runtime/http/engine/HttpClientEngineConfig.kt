@@ -19,6 +19,16 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalTime::class)
 open class HttpClientEngineConfig constructor(builder: Builder) {
     constructor() : this(Builder())
+
+    companion object {
+        operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig = HttpClientEngineConfig(Builder().apply(block))
+
+        /**
+         * Default client engine config
+         */
+        val Default: HttpClientEngineConfig = HttpClientEngineConfig(Builder())
+    }
+
     /**
      * Timeout for each read to an underlying socket
      */
@@ -54,10 +64,6 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
      * Set the ALPN protocol list when a TLS connection starts
      */
     val alpn: List<AlpnId> = builder.alpn
-
-    companion object {
-        operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig = HttpClientEngineConfig(Builder().apply(block))
-    }
 
     open class Builder {
         /**

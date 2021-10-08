@@ -32,7 +32,9 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 /**
  * JVM [HttpClientEngine] backed by Ktor
  */
-class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("ktor") {
+class KtorEngine(
+    private val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+) : HttpClientEngineBase("ktor-okhttp") {
     @OptIn(ExperimentalTime::class)
     val client: HttpClient = HttpClient(OkHttp) {
         engine {
