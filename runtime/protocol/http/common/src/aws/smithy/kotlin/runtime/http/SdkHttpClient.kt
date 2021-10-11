@@ -8,6 +8,7 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineClosedException
 import aws.smithy.kotlin.runtime.http.engine.SdkRequestContextElement
 import aws.smithy.kotlin.runtime.http.engine.createCallContext
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.Handler
@@ -21,15 +22,10 @@ typealias HttpHandler = Handler<HttpRequestBuilder, HttpCall>
  * Create an [SdkHttpClient] with the given engine, and optionally configure it
  * This will **not** manage the engine lifetime, the caller is expected to close it.
  */
-@HttpClientDsl
 fun sdkHttpClient(
     engine: HttpClientEngine,
-    configure: HttpClientConfig.() -> Unit = {},
     manageEngine: Boolean = false,
-): SdkHttpClient {
-    val config = HttpClientConfig().apply(configure)
-    return SdkHttpClient(engine, config, manageEngine)
-}
+): SdkHttpClient = SdkHttpClient(engine, manageEngine)
 
 /**
  * An HTTP client capable of round tripping requests and responses
@@ -38,19 +34,20 @@ fun sdkHttpClient(
  */
 class SdkHttpClient(
     val engine: HttpClientEngine,
-    val config: HttpClientConfig,
     private val manageEngine: Boolean = false
 ) : HttpHandler {
     private val closed = atomic(false)
 
-    override suspend fun call(request: HttpRequestBuilder): HttpCall = executeWithCallContext(request)
+    suspend fun call(request: HttpRequest): HttpCall = executeWithCallContext(request)
+    override suspend fun call(request: HttpRequestBuilder): HttpCall = executeWithCallContext(request.build())
 
-    private suspend fun executeWithCallContext(request: HttpRequestBuilder): HttpCall {
+    // FIXME - can we relocate to engine?
+    private suspend fun executeWithCallContext(request: HttpRequest): HttpCall {
         if (!engine.coroutineContext.job.isActive) throw HttpClientEngineClosedException()
         val callContext = engine.createCallContext(coroutineContext)
         val context = callContext + SdkRequestContextElement(callContext)
         return withContext(context) {
-            engine.roundTrip(request.build())
+            engine.roundTrip(request)
         }
     }
 

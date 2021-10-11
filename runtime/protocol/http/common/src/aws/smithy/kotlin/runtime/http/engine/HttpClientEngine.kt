@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -22,6 +23,12 @@ interface HttpClientEngine : Closeable, CoroutineScope {
      * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
      */
     suspend fun roundTrip(request: HttpRequest): HttpCall
+
+    /**
+     * Execute a single HTTP request and return the response
+     * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
+     */
+    suspend fun roundTrip(request: HttpRequestBuilder): HttpCall = roundTrip(request.build())
 
     /**
      * Shutdown and cleanup any resources
