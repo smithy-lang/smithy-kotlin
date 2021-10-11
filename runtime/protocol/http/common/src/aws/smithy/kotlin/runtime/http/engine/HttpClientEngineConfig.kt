@@ -52,7 +52,7 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
     /**
      * The amount of time to wait for an already-established connection from a connection pool
      */
-    var connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
+    val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
 
     /**
      * The amount of time before an idle connection should be reaped from a connection pool. Zero indicates that
