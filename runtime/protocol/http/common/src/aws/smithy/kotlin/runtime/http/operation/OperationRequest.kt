@@ -24,5 +24,5 @@ data class OperationRequest<T>(val context: ExecutionContext, val subject: T)
  * transient and is not part of the copy. The subject itself, however, is deeply copied.
  * @return A new [OperationRequest] with the same context and a deeply-copied subject.
  */
-fun <T : CanDeepCopy<T>> OperationRequest<T>.deepCopy(): OperationRequest<T> =
+internal fun <T : CanDeepCopy<T>> OperationRequest<T>.deepCopy(): OperationRequest<T> =
     OperationRequest(context, subject.deepCopy())

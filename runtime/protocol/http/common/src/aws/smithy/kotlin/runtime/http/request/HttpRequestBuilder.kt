@@ -23,13 +23,6 @@ class HttpRequestBuilder private constructor(
     val headers: HeadersBuilder,
     var body: HttpBody,
 ) : CanDeepCopy<HttpRequestBuilder> {
-    /**
-     * Indicates whether this HTTP request could be retried. Some requests with streaming bodies are unsuitable for
-     * retries.
-     */
-    val isRetryable: Boolean
-        get() = body.isReplayable
-
     constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty)
 
     fun build(): HttpRequest = HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)

@@ -38,8 +38,10 @@ class HeadersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<HeadersBuild
     override fun toString(): String = "HeadersBuilder ${entries()} "
     override fun build(): Headers = HeadersImpl(values)
 
-    override fun deepCopy(): HeadersBuilder =
-        HeadersBuilder().apply { values.putAll(this@HeadersBuilder.values.deepCopy()) }
+    override fun deepCopy(): HeadersBuilder {
+        val originalValues = values.deepCopy()
+        return HeadersBuilder().apply { values.putAll(originalValues) }
+    }
 }
 
 private class HeadersImpl(

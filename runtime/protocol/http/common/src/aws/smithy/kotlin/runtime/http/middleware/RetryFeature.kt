@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.FeatureKey
 import aws.smithy.kotlin.runtime.http.HttpClientFeatureFactory
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 
@@ -36,6 +37,10 @@ class RetryFeature(private val strategy: RetryStrategy, private val policy: Retr
                 strategy.retry(policy) {
                     // Deep copy the request because later middlewares (e.g., signing) mutate it
                     val reqCopy = req.deepCopy()
+
+                    // Reset bodies back to beginning (mainly for streaming bodies)
+                    reqCopy.subject.body.reset()
+
                     next.call(reqCopy)
                 }
             } else {
@@ -44,3 +49,10 @@ class RetryFeature(private val strategy: RetryStrategy, private val policy: Retr
         }
     }
 }
+
+/**
+ * Indicates whether this HTTP request could be retried. Some requests with streaming bodies are unsuitable for
+ * retries.
+ */
+val HttpRequestBuilder.isRetryable: Boolean
+    get() = body.isReplayable

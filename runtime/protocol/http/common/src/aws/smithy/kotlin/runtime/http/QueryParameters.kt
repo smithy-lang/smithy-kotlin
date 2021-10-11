@@ -35,8 +35,10 @@ class QueryParametersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<Quer
     override fun toString(): String = "QueryParametersBuilder ${entries()} "
     override fun build(): QueryParameters = QueryParametersImpl(values)
 
-    override fun deepCopy(): QueryParametersBuilder =
-        QueryParametersBuilder().apply { values.putAll(this@QueryParametersBuilder.values.deepCopy()) }
+    override fun deepCopy(): QueryParametersBuilder {
+        val originalValues = values.deepCopy()
+        return QueryParametersBuilder().apply { values.putAll(originalValues) }
+    }
 }
 
 fun Map<String, String>.toQueryParameters(): QueryParameters {

@@ -23,12 +23,15 @@ sealed class HttpBody : CanDeepCopy<HttpBody> {
      */
     open val contentLength: Long? = null
 
+    abstract fun reset()
+
     /**
      * Variant of a [HttpBody] without a payload
      */
     object Empty : HttpBody() {
         override val contentLength: Long = 0
         override fun deepCopy(): HttpBody = this // Deep copies are unnecessary for empty bodies
+        override fun reset() { } // Resets are unnecessary for empty bodies
     }
 
     /**
@@ -47,6 +50,8 @@ sealed class HttpBody : CanDeepCopy<HttpBody> {
             override fun bytes(): ByteArray = copiedBytes
             override val contentLength: Long? = copiedBytes.size.toLong()
         }
+
+        override fun reset() { } // Resets are unnecessary for byte bodies
     }
 
     /**
@@ -71,7 +76,7 @@ sealed class HttpBody : CanDeepCopy<HttpBody> {
          * @throws UnsupportedOperationException if the stream can only be consumed once. Consumers can check
          * [isReplayable] before calling
          */
-        open fun reset() { throwSingleConsumptionException() }
+        open override fun reset() { throwSingleConsumptionException() }
 
         /**
          * Throw a general exception upon attempting to consume the stream more than once.
