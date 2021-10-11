@@ -51,6 +51,7 @@ class ClientConfigGenerator(
         if (ctx.shape != null && ctx.shape.hasIdempotentTokenMember(ctx.model)) {
             props.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
         }
+        props.add(KotlinClientRuntimeConfigProperty.RetryStrategy)
     }
 
     fun render() {

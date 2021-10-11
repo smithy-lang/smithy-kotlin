@@ -44,6 +44,12 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
+    val retryStrategy: RetryStrategy = run {
+        val strategyOptions = StandardRetryStrategyOptions.Default
+        val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default)
+        val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitterOptions.Default)
+        StandardRetryStrategy(strategyOptions, tokenBucket, delayer)
+    }
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
 """
         contents.shouldContain(expectedProps)

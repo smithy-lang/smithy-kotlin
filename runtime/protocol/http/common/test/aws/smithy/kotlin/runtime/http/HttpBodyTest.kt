@@ -57,21 +57,4 @@ class HttpBodyTest {
         body.reset()
         assertEquals("foobar", body.readAll()!!.decodeToString())
     }
-
-    @Test
-    fun testDeepCopyEmpty() {
-        assertEquals(HttpBody.Empty, HttpBody.Empty.deepCopy())
-    }
-
-    @Test
-    fun testDeepCopyBytes() {
-        val mutableBytes = byteArrayOf(1, 2, 3, 4, 5)
-        val body1 = ByteStream.fromBytes(mutableBytes).toHttpBody() as HttpBody.Bytes
-
-        val body2 = body1.deepCopy()
-        mutableBytes[0] = -1
-
-        assertEquals(-1, body1.bytes()[0])
-        assertEquals(1, body2.bytes()[0])
-    }
 }

@@ -97,7 +97,6 @@ internal class KtorContentStream(private val channel: ByteReadChannel) : SdkByte
 // wrapper around a ByteReadChannel that implements the content as an SDK (streaming) HttpBody
 internal class KtorHttpBody(channel: ByteReadChannel) : HttpBody.Streaming() {
     private val source = KtorContentStream(channel)
-    override fun deepCopy(): HttpBody = throwSingleConsumptionException()
     override fun readFrom(): SdkByteReadChannel = source
 }
 

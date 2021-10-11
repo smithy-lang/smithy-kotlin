@@ -131,15 +131,18 @@ class UrlBuilder : CanDeepCopy<UrlBuilder> {
         forceQuery
     )
 
-    override fun deepCopy(): UrlBuilder = UrlBuilder().apply {
-        scheme = this@UrlBuilder.scheme
-        host = this@UrlBuilder.host
-        port = this@UrlBuilder.port
-        path = this@UrlBuilder.path
-        parameters = this@UrlBuilder.parameters.deepCopy()
-        fragment = this@UrlBuilder.fragment
-        userInfo = this@UrlBuilder.userInfo?.copy()
-        forceQuery = this@UrlBuilder.forceQuery
+    override fun deepCopy(): UrlBuilder {
+        val builder = this
+        return UrlBuilder().apply {
+            scheme = builder.scheme
+            host = builder.host
+            port = builder.port
+            path = builder.path
+            parameters = builder.parameters.deepCopy()
+            fragment = builder.fragment
+            userInfo = builder.userInfo?.copy()
+            forceQuery = builder.forceQuery
+        }
     }
 
     override fun toString(): String =

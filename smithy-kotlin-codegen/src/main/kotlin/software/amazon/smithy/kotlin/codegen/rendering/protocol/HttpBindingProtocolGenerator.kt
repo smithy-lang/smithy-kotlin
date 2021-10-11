@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.retries.StandardRetryMiddleware
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
@@ -60,7 +61,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Template method function that generators can override to return the _default_ set of middleware for the protocol
      */
-    protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> = listOf()
+    protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> =
+        listOf(
+            StandardRetryMiddleware(),
+        )
 
     /**
      * Render serialize implementation for the given operation's input shape.
