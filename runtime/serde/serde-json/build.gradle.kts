@@ -16,10 +16,5 @@ kotlin {
                 api(project(":runtime:serde"))
             }
         }
-        jvmMain {
-            dependencies {
-                implementation("com.google.code.gson:gson:$gsonVersion")
-            }
-        }
     }
 }
