@@ -7,9 +7,11 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldContain
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
 import software.amazon.smithy.kotlin.codegen.test.*
@@ -42,6 +44,12 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
+    val retryStrategy: RetryStrategy = run {
+        val strategyOptions = StandardRetryStrategyOptions.Default
+        val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default)
+        val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitterOptions.Default)
+        StandardRetryStrategy(strategyOptions, tokenBucket, delayer)
+    }
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
 """
         contents.shouldContain(expectedProps)
@@ -201,5 +209,45 @@ class Config private constructor(builder: BuilderImpl) {
         """.toSmithyModel()
 
         model.expectShape<ServiceShape>("com.test#ResourceService").hasIdempotentTokenMember(model) shouldBe true
+    }
+
+    @Test
+    fun `it imports references`() {
+        val model = getModel()
+
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
+
+        val testCtx = model.newTestContext()
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
+
+        val customProps = arrayOf(
+            ClientConfigProperty {
+                name = "complexProp"
+                symbol = buildSymbol {
+                    name = "ComplexType"
+                    namespace = "test.complex"
+                    reference(
+                        buildSymbol { name = "SubTypeA"; namespace = "test.complex" },
+                        SymbolReference.ContextOption.USE
+                    )
+                    reference(
+                        buildSymbol { name = "SubTypeB"; namespace = "test.complex" },
+                        SymbolReference.ContextOption.USE
+                    )
+                }
+            }
+        )
+
+        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        val contents = writer.toString()
+
+        listOf(
+            "test.complex.ComplexType",
+            "test.complex.SubTypeA",
+            "test.complex.SubTypeB",
+        )
+            .map { "import $it" }
+            .forEach(contents::shouldContain)
     }
 }

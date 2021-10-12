@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
@@ -50,6 +51,7 @@ class ClientConfigGenerator(
         if (ctx.shape != null && ctx.shape.hasIdempotentTokenMember(ctx.model)) {
             props.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
         }
+        props.add(KotlinClientRuntimeConfigProperty.RetryStrategy)
     }
 
     fun render() {
@@ -98,6 +100,7 @@ class ClientConfigGenerator(
                 ctx.writer.addImport(baseClass)
             }
             ctx.writer.addImport(it.symbol)
+            ctx.writer.addImportReferences(it.symbol, SymbolReference.ContextOption.USE)
         }
     }
 

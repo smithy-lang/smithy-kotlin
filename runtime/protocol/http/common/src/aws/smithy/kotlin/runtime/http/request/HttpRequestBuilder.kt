@@ -6,34 +6,29 @@ package aws.smithy.kotlin.runtime.http.request
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
+import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Used to construct an HTTP request
+ * @param method The HTTP method (verb) to use when making the request
+ * @param url Endpoint to make request to
+ * @param headers HTTP headers
+ * @param body Outgoing payload. Initially empty
  */
-class HttpRequestBuilder {
-    /**
-     * The HTTP method (verb) to use when making the request
-     */
-    var method: HttpMethod = HttpMethod.GET
-
-    /**
-     * Endpoint to make request to
-     */
-    val url: UrlBuilder = UrlBuilder()
-
-    /**
-     * HTTP headers
-     */
-    val headers: HeadersBuilder = HeadersBuilder()
-
-    /**
-     * Outgoing payload. Initially empty
-     */
-    var body: HttpBody = HttpBody.Empty
+class HttpRequestBuilder private constructor(
+    var method: HttpMethod,
+    val url: UrlBuilder,
+    val headers: HeadersBuilder,
+    var body: HttpBody,
+) : CanDeepCopy<HttpRequestBuilder> {
+    constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty)
 
     fun build(): HttpRequest = HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)
+
+    override fun deepCopy(): HttpRequestBuilder =
+        HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body)
 
     override fun toString(): String = buildString {
         append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body)")

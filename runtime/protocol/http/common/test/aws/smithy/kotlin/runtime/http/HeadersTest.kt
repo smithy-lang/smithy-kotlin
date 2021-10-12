@@ -28,4 +28,31 @@ class HeadersTest {
         }
         assertEquals("Headers [key=[value]]", "$actual2")
     }
+
+    @Test
+    fun testSubsequentModificationsDontAffectOriginal() {
+        val builder = HeadersBuilder()
+
+        builder.append("a", "alligator")
+        builder.append("b", "bunny")
+        builder.append("c", "chinchilla")
+        val first = builder.build()
+        val firstExpected = mapOf(
+            "a" to listOf("alligator"),
+            "b" to listOf("bunny"),
+            "c" to listOf("chinchilla"),
+        )
+
+        builder.append("a", "anteater")
+        builder.remove("b")
+        builder["c"] = "crocodile"
+        val second = builder.build()
+        val secondExpected = mapOf(
+            "a" to listOf("alligator", "anteater"),
+            "c" to listOf("crocodile"),
+        )
+
+        assertEquals(firstExpected.entries, first.entries())
+        assertEquals(secondExpected.entries, second.entries())
+    }
 }

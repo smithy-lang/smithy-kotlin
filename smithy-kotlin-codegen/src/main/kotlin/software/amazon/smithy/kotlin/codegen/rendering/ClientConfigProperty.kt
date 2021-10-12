@@ -5,6 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.boxed
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
@@ -169,6 +170,7 @@ private fun builtInProperty(name: String, symbol: Symbol, documentation: String?
 object KotlinClientRuntimeConfigProperty {
     val HttpClientEngine: ClientConfigProperty
     val IdempotencyTokenProvider: ClientConfigProperty
+    val RetryStrategy: ClientConfigProperty
     val SdkLogMode: ClientConfigProperty
 
     init {
@@ -203,6 +205,35 @@ object KotlinClientRuntimeConfigProperty {
             Override the default idempotency token generator. SDK clients will generate tokens for members
             that represent idempotent tokens when not explicitly set by the caller using this generator.
             """.trimIndent()
+        }
+
+        RetryStrategy = ClientConfigProperty {
+            val retryStrategyBlock = """
+                run {
+                    val strategyOptions = StandardRetryStrategyOptions.Default
+                    val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default)
+                    val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitterOptions.Default)
+                    StandardRetryStrategy(strategyOptions, tokenBucket, delayer)
+                }
+            """.trimIndent()
+
+            symbol = buildSymbol {
+                name = "RetryStrategy"
+                namespace(KotlinDependency.CORE, "retries")
+                nullable = false
+                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryStrategy, SymbolReference.ContextOption.USE)
+                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryStrategyOptions, SymbolReference.ContextOption.USE)
+                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucket, SymbolReference.ContextOption.USE)
+                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucketOptions, SymbolReference.ContextOption.USE)
+                reference(RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitter, SymbolReference.ContextOption.USE)
+                reference(RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitterOptions, SymbolReference.ContextOption.USE)
+            }
+            name = "retryStrategy"
+            documentation = """
+                The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
+                strategy.
+            """.trimIndent()
+            constantValue = retryStrategyBlock
         }
 
         SdkLogMode = ClientConfigProperty {

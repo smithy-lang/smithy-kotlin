@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
  * HTTP payload to be sent to a peer
  */
 sealed class HttpBody {
-
     /**
      * Specifies the length of this [HttpBody] content
      * If null it is assumed to be a streaming source using e.g. `Transfer-Encoding: Chunked`

@@ -31,7 +31,9 @@ kotlin {
             dependencies {
                 // Coroutines' locking features are used in retry token bucket implementations
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation("com.charleskorn.kaml:kaml:0.36.0")
+
+                val kamlVersion: String by project
+                implementation("com.charleskorn.kaml:kaml:$kamlVersion")
             }
         }
     }
