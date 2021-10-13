@@ -115,12 +115,15 @@ class StandardRetryStrategy(
      * @param result The [Result] that yielded the non-retryable condition.
      */
     private fun <R> throwFailure(attempt: Int, result: Result<R>): Nothing =
-        throw RetryFailureException(
-            "The operation resulted in a non-retryable failure",
-            result.exceptionOrNull(),
-            attempt,
-            result.getOrNull(),
-        )
+        when (val ex = result.exceptionOrNull()) {
+            null -> throw RetryFailureException(
+                "The operation resulted in a non-retryable failure",
+                null,
+                attempt,
+                result.getOrNull(),
+            )
+            else -> throw ex
+        }
 
     /**
      * Handles the termination of the retry loop because too much time has elapsed by marking the [RetryToken] as failed
@@ -131,12 +134,15 @@ class StandardRetryStrategy(
      */
     private suspend fun <R> throwTimeOut(token: RetryToken, attempt: Int, previousResult: Result<R>?): Nothing {
         token.notifyFailure()
-        throw TimedOutException(
-            "Took more than ${options.maxTimeMs}ms to yield a result",
-            attempt,
-            previousResult?.getOrNull(),
-            previousResult?.exceptionOrNull(),
-        )
+        when (val ex = previousResult?.exceptionOrNull()) {
+            null -> throw TimedOutException(
+                "Took more than ${options.maxTimeMs}ms to yield a result",
+                attempt,
+                previousResult?.getOrNull(),
+                previousResult?.exceptionOrNull(),
+            )
+            else -> throw ex
+        }
     }
 
     /**
@@ -148,13 +154,16 @@ class StandardRetryStrategy(
      * tried too many times).
      */
     private fun <R> throwTooManyAttempts(attempt: Int, result: Result<R>): Nothing =
-        throw TooManyAttemptsException(
-            "Took more than ${options.maxAttempts} to get a successful response",
-            null,
-            attempt,
-            result.getOrNull(),
-            result.exceptionOrNull(),
-        )
+        when (val ex = result.exceptionOrNull()) {
+            null -> throw TooManyAttemptsException(
+                "Took more than ${options.maxAttempts} to get a successful response",
+                null,
+                attempt,
+                result.getOrNull(),
+                result.exceptionOrNull(),
+            )
+            else -> throw ex
+        }
 }
 
 /**

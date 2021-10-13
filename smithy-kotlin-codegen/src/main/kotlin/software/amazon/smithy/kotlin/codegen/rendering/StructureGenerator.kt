@@ -8,10 +8,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.expectTrait
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.isBoxed
-import software.amazon.smithy.kotlin.codegen.model.isError
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -302,7 +299,10 @@ class StructureGenerator(
      */
     private fun renderError() {
         val errorTrait: ErrorTrait = shape.expectTrait()
-        val isRetryable = shape.hasTrait<RetryableTrait>()
+        val (isRetryable, isThrottling) = shape
+            .getTrait<RetryableTrait>()
+            ?.let { true to it.throttling }
+            ?: false to false
 
         checkForConflictsInHierarchy()
 
@@ -316,7 +316,7 @@ class StructureGenerator(
             .withBlock("init {", "}") {
                 // initialize error metadata
                 if (isRetryable) {
-                    call { renderRetryable() }
+                    call { renderRetryable(isThrottling) }
                 }
                 call { renderErrorType(errorTrait) }
             }
@@ -333,8 +333,9 @@ class StructureGenerator(
             .write("")
     }
 
-    private fun renderRetryable() {
+    private fun renderRetryable(isThrottling: Boolean) {
         writer.write("sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true")
+        writer.write("sdkErrorMetadata.attributes[ErrorMetadata.ThrottlingError] = #L", isThrottling)
         writer.addImport(RuntimeTypes.Core.ErrorMetadata)
     }
 

@@ -58,7 +58,26 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testNonretryableFailure() = runBlockingTest {
+    fun testNonretryableFailureFromException() = runBlockingTest {
+        val options = StandardRetryStrategyOptions.Default
+        val bucket = RecordingTokenBucket()
+        val delayer = RecordingDelayer()
+        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val policy = StringRetryPolicy()
+
+        val result = runCatching {
+            retryer.retry(policy, block(policy, bucket, delayer, IllegalStateException()))
+        }
+
+        assertIs<IllegalStateException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
+
+        val token = bucket.lastTokenAcquired!!
+        assertTrue(token.isFailure)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testNonretryableFailureFromResult() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -79,7 +98,36 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testTooManyAttempts() = runBlockingTest {
+    fun testTooManyAttemptsFromException() = runBlockingTest {
+        val options = StandardRetryStrategyOptions.Default
+        val bucket = RecordingTokenBucket()
+        val delayer = RecordingDelayer()
+        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val policy = StringRetryPolicy()
+
+        val result = runCatching {
+            retryer.retry(
+                policy,
+                block(
+                    policy,
+                    bucket,
+                    delayer,
+                    ConcurrentModificationException(),
+                    ConcurrentModificationException(),
+                    ConcurrentModificationException(),
+                )
+            )
+        }
+
+        assertIs<ConcurrentModificationException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
+
+        val token = bucket.lastTokenAcquired!!
+        assertTrue(token.nextToken!!.nextToken!!.isFailure)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testTooManyAttemptsFromResult() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -110,7 +158,29 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testTooLong() = runBlockingTest {
+    fun testTooLongFromException() = runBlockingTest {
+        val options = StandardRetryStrategyOptions.Default.copy(maxTimeMs = 1_500)
+        val bucket = RecordingTokenBucket()
+        val delayer = RecordingDelayer()
+        val retryer = StandardRetryStrategy(options, bucket, delayer)
+        val policy = StringRetryPolicy()
+
+        val result = runCatching {
+            retryer.retry(policy) {
+                delay(1_000)
+                throw ConcurrentModificationException()
+            }
+        }
+
+        assertIs<ConcurrentModificationException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
+
+        val token = bucket.lastTokenAcquired!!
+        assertTrue(token.nextToken!!.isFailure)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun testTooLongFromResult() = runBlockingTest {
         val options = StandardRetryStrategyOptions.Default.copy(maxTimeMs = 1_000)
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -138,20 +208,20 @@ fun block(
     retryPolicy: RetryPolicy<String>,
     bucket: RecordingTokenBucket,
     delayer: RecordingDelayer,
-    vararg results: String,
+    vararg results: Any,
 ): suspend () -> String {
     val container = object {
-        var index = 0
+        var currentIndex = 0
         var lastToken: RecordingToken? = null
 
         suspend fun doIt(): String {
-            val expectedDelayAttempt = if (index < 1) null else index
+            val expectedDelayAttempt = if (currentIndex < 1) null else currentIndex
             assertEquals(expectedDelayAttempt, delayer.lastAttempt)
 
-            lastToken = if (index == 0) {
+            lastToken = if (currentIndex == 0) {
                 bucket.lastTokenAcquired!!
             } else {
-                val expectedRetryDirective = retryPolicy.evaluate(Result.success(results[index - 1]))
+                val expectedRetryDirective = retryPolicy.evaluate(wrap(currentIndex - 1))
                 val expectedRetryError = assertIs<RetryDirective.RetryError>(
                     expectedRetryDirective,
                     "Unexpected $expectedRetryDirective"
@@ -160,7 +230,12 @@ fun block(
                 lastToken!!.nextToken!!
             }
 
-            return results[index++]
+            return wrap(currentIndex++).getOrThrow()
+        }
+
+        private fun wrap(atIndex: Int): Result<String> {
+            val result = results[atIndex]
+            return if (result is Throwable) Result.failure(result) else Result.success(result.toString())
         }
     }
 
@@ -222,6 +297,13 @@ class StringRetryPolicy : RetryPolicy<String> {
         "server-error" -> RetryDirective.RetryError(RetryErrorType.ServerSide)
         "timeout" -> RetryDirective.RetryError(RetryErrorType.Timeout)
         "throttled" -> RetryDirective.RetryError(RetryErrorType.Throttling)
+        null -> {
+            assertNotNull(result.exceptionOrNull()) // If the value is null, this must be an exception
+            when (result.exceptionOrNull()) {
+                is ConcurrentModificationException -> RetryDirective.RetryError(RetryErrorType.ClientSide)
+                else -> RetryDirective.TerminateAndFail
+            }
+        }
         else -> throw IllegalArgumentException("Bad value in policy evaluation: $result", result.exceptionOrNull())
     }
 }
