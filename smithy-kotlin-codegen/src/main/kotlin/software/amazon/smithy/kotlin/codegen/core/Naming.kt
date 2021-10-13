@@ -25,14 +25,24 @@ import java.util.logging.Logger
 fun Shape.defaultName(serviceShape: ServiceShape): String = id.getName(serviceShape).toPascalCase()
 
 /**
- * Get the default name for a member shape (for code generation)
+ * Get the default name for a member shape (for code generation), e.g., "bucketName"
  */
 fun MemberShape.defaultName(): String = memberName.toCamelCase()
 
 /**
- * Get the default name for an operation shape
+ * Get the default name for a member shape (for code generation), e.g., "BucketName"
+ */
+fun MemberShape.capitalizedDefaultName(): String = defaultName().replaceFirstChar(Char::uppercaseChar)
+
+/**
+ * Get the default name for an operation shape, e.g., "listOperations"
  */
 fun OperationShape.defaultName(): String = id.name.toCamelCase()
+
+/**
+ * Get the capitalized default name for an operation shape, e.g., "ListOperations"
+ */
+fun OperationShape.capitalizedDefaultName(): String = defaultName().replaceFirstChar(Char::uppercaseChar)
 
 private fun String.sanitizeClientName(): String =
     replace(Regex("(API|Client|Service)\$", setOf(RegexOption.IGNORE_CASE)), "")
@@ -87,4 +97,4 @@ fun MemberShape.unionVariantName(): String = this.memberName.toPascalCase()
  * Get the name of the middleware registration function for an operation
  * e.g. `register{OperationName}Middleware
  */
-fun OperationShape.registerMiddlewareName(): String = "register${this.defaultName().replaceFirstChar(Char::uppercase)}Middleware"
+fun OperationShape.registerMiddlewareName(): String = "register${this.capitalizedDefaultName()}Middleware"
