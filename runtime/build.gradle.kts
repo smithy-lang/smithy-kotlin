@@ -67,11 +67,6 @@ subprojects {
         }
     }
 
-    fun doesDependOn(name: String) =
-        configurations.any { cfg ->
-            cfg.dependencies.any { name == "${it.group}:${it.name}" }
-        }
-
     kotlin {
         sourceSets {
             all {
