@@ -27,7 +27,7 @@ platforms.forEach { platform ->
     apply(from = rootProject.file("gradle/${platform}.gradle"))
 }
 
-val experimentalAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.util.InternalApi")
+val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.util.InternalApi")
 
 kotlin {
     sourceSets {
@@ -39,7 +39,7 @@ kotlin {
             kotlin.srcDir("$platform/$srcDir")
             resources.srcDir("$platform/${resourcesPrefix}resources")
             languageSettings.progressiveMode = true
-            experimentalAnnotations.forEach { languageSettings.optIn(it) }
+            optinAnnotations.forEach { languageSettings.optIn(it) }
         }
 
         val kotlinxBenchmarkVersion: String by project

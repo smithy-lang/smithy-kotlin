@@ -36,5 +36,9 @@ kotlin {
                 implementation("com.charleskorn.kaml:kaml:$kamlVersion")
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+        }
     }
 }

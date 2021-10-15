@@ -20,7 +20,6 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                api(project(":runtime:utils"))
             }
         }
     }

@@ -51,7 +51,7 @@ fun writeGradleBuild(
 
     val annotations = settings.build.optInAnnotations
     if (annotations != null && annotations.isNotEmpty()) {
-        writer.openBlock("val experimentalAnnotations = listOf(")
+        writer.openBlock("val optinAnnotations = listOf(")
             .call {
                 val formatted = annotations.joinToString(
                     separator = ",\n",
@@ -65,7 +65,7 @@ fun writeGradleBuild(
             .closeBlock(")")
 
         writer.openBlock("kotlin.sourceSets.all {")
-            .write("experimentalAnnotations.forEach { languageSettings.useExperimentalAnnotation(it) } ")
+            .write("optinAnnotations.forEach { languageSettings.optIn(it) } ")
             .closeBlock("}")
     }
 
