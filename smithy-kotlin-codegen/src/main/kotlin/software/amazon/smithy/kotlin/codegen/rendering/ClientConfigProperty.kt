@@ -186,7 +186,7 @@ object KotlinClientRuntimeConfigProperty {
             }
             baseClass = httpClientConfigSymbol
             documentation = """
-            Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)    
+            Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)    
             """.trimIndent()
         }
 

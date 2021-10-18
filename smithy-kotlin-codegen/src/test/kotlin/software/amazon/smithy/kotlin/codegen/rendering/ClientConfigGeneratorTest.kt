@@ -67,7 +67,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         val expectedDslBuilderInterface = """
     interface DslBuilder {
         /**
-         * Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)
+         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)
          */
         var httpClientEngine: HttpClientEngine?
 
