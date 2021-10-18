@@ -81,12 +81,19 @@ class ClientConfigGenerator(
     }
 
     private fun renderCompanionObject() {
-        if (builderReturnType != null) {
-            ctx.writer.withBlock("companion object {", "}") {
-                write("@JvmStatic")
-                write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
-                write("fun builder(): DslBuilder = BuilderImpl()")
-                write("operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()", builderReturnType)
+        ctx.writer.withBlock("companion object {", "}") {
+            write("@JvmStatic")
+            write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
+            write("")
+            write("fun builder(): DslBuilder = BuilderImpl()")
+            write("")
+            if (builderReturnType != null) {
+                write(
+                    "operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()",
+                    builderReturnType
+                )
+            } else {
+                write("operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #configClass.name:L = BuilderImpl().apply(block).build()")
             }
         }
     }

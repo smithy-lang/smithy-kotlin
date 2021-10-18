@@ -250,4 +250,31 @@ class Config private constructor(builder: BuilderImpl) {
             .map { "import $it" }
             .forEach(contents::shouldContain)
     }
+
+    @Test
+    fun `it renders a companion object`() {
+        val model = getModel()
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
+
+        val testCtx = model.newTestContext()
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
+
+        ClientConfigGenerator(renderingCtx).render()
+        val contents = writer.toString()
+
+        contents.assertBalancedBracesAndParens()
+
+        val expectedCompanion = """
+    companion object {
+        @JvmStatic
+        fun fluentBuilder(): FluentBuilder = BuilderImpl()
+
+        fun builder(): DslBuilder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Config = BuilderImpl().apply(block).build()
+    }
+"""
+        contents.shouldContainWithDiff(expectedCompanion)
+    }
 }

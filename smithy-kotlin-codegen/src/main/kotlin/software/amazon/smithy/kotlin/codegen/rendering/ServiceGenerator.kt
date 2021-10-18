@@ -93,12 +93,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      * ```
      */
     private fun renderCompanionObject() {
-        writer.openBlock("companion object {")
-            .openBlock("operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ${serviceSymbol.name} {")
-            .write("val config = Config.BuilderImpl().apply(block).build()")
-            .write("return Default${serviceSymbol.name}(config)")
-            .closeBlock("}")
-            .closeBlock("}")
+        writer.withBlock("companion object {", "}") {
+            withBlock("operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
+                write("val config = Config.BuilderImpl().apply(block).build()")
+                write("return Default${serviceSymbol.name}(config)")
+            }
+        }
     }
 
     private fun importExternalSymbols() {
