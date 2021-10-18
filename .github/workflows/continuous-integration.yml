@@ -34,6 +34,7 @@ jobs:
       run: |
         python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
         chmod a+x builder.pyz
+        echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
         ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
 
   macos-compat:
@@ -53,6 +54,7 @@ jobs:
       run: |
         python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder.pyz')"
         chmod a+x builder.pyz
+        echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
         ./builder.pyz build -p ${{ env.PACKAGE_NAME }}
 
   windows-compat:
@@ -82,4 +84,5 @@ jobs:
       run: |
         python3 -c "from urllib.request import urlretrieve; urlretrieve('${{ env.BUILDER_HOST }}/${{ env.BUILDER_SOURCE }}/${{ env.BUILDER_VERSION }}/builder.pyz?run=${{ env.RUN }}', 'builder')"
         chmod a+x builder
+        echo "kotlinWarningsAsErrors=true" >> $GITHUB_WORKSPACE/local.properties
         ./builder build -p ${{ env.PACKAGE_NAME }} --spec downstream

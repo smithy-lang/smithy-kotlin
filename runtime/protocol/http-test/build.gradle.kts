@@ -31,5 +31,9 @@ kotlin {
                 api("io.ktor:ktor-server-cio:$ktorVersion")
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+        }
     }
 }

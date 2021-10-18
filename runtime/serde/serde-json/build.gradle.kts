@@ -16,5 +16,9 @@ kotlin {
                 api(project(":runtime:serde"))
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+        }
     }
 }

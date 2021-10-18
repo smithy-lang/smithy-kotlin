@@ -37,5 +37,9 @@ kotlin {
                 implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+        }
     }
 }

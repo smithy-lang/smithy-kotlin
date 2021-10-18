@@ -34,5 +34,9 @@ kotlin {
                 implementation("io.ktor:ktor-utils:$ktorVersion")
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+        }
     }
 }

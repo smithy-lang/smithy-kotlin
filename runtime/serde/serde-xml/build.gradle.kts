@@ -32,5 +32,9 @@ kotlin {
                 implementation("org.slf4j:slf4j-api:$slf4jVersion")
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+        }
     }
 }

@@ -668,7 +668,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .call {
                     writer.write("")
                         .openBlock(
-                            "private suspend fun throw${op.defaultName().capitalize()}Error(context: #T, response: #T): #Q {", "}",
+                            "private suspend fun throw${op.capitalizedDefaultName()}Error(context: #T, response: #T): #Q {", "}",
                             RuntimeTypes.Core.ExecutionContext,
                             RuntimeTypes.Http.Response.HttpResponse,
                             KotlinTypes.Nothing
@@ -685,7 +685,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected open fun renderIsHttpError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Http.isSuccess)
         writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
-            write("throw${op.defaultName().capitalize()}Error(context, response)")
+            write("throw${op.capitalizedDefaultName()}Error(context, response)")
         }
     }
 
