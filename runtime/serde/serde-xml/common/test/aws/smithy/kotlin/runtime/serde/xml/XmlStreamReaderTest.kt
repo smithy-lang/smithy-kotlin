@@ -130,6 +130,19 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun itHandlesWhitespaceValues() = runSuspendTest {
+        val payload = """<string>  </string>""".encodeToByteArray()
+        val actual = xmlStreamReader(payload).allTokens()
+        val expected = listOf(
+            XmlToken.BeginElement(1, "string"),
+            XmlToken.Text(1, "  "),
+            XmlToken.EndElement(1, "string"),
+        )
+
+        assertEquals(expected, actual)
+    }
+
+    @Test
     fun kitchenSink() = runSuspendTest {
         val payload = """
         <root>
