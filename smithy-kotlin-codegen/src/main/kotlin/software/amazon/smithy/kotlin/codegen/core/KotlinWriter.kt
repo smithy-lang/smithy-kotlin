@@ -121,6 +121,10 @@ fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> 
 private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
     context.keys.forEach { key -> removeContext(key) }
 
+/**
+ * Convenience function to get a typed value out of the context or throw if the key doesn't exist
+ * or the type is wrong
+ */
 inline fun <reified T> CodeWriter.getContextValue(key: String): T = checkNotNull(getContext(key) as? T) {
     "Expected `$key` in CodeWriter context"
 }
