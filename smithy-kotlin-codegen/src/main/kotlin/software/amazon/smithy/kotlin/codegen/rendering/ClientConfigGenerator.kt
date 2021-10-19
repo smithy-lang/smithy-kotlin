@@ -85,8 +85,6 @@ class ClientConfigGenerator(
             write("@JvmStatic")
             write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
             write("")
-            write("fun builder(): DslBuilder = BuilderImpl()")
-            write("")
             if (builderReturnType != null) {
                 write(
                     "operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()",

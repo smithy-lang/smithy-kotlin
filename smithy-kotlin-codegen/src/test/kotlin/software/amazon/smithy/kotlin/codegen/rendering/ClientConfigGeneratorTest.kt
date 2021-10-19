@@ -270,8 +270,6 @@ class Config private constructor(builder: BuilderImpl) {
         @JvmStatic
         fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-        fun builder(): DslBuilder = BuilderImpl()
-
         operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Config = BuilderImpl().apply(block).build()
     }
 """

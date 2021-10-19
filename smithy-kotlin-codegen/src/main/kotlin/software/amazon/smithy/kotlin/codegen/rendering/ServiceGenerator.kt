@@ -85,10 +85,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      * e.g.
      * ```
      * companion object {
-     *     fun build(block: Configuration.() -> Unit = {}): LambdaClient {
-     *         val config = Configuration().apply(block)
+     *     operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): LambdaClient {
+     *         val config = Config.BuilderImpl().apply(block).build()
      *         return DefaultLambdaClient(config)
      *     }
+     *
+     *     operator fun invoke(config: Config): LambdaClient = DefaultLambdaClient(config)
      * }
      * ```
      */
