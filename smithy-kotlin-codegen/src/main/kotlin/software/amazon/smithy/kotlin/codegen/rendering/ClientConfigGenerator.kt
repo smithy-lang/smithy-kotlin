@@ -163,8 +163,6 @@ class ClientConfigGenerator(
                         write("var #L: #P", prop.propertyName, prop.symbol)
                         write("")
                     }
-                write("")
-                write("fun build(): #configClass.name:L")
             }
     }
 

@@ -23,7 +23,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     /**
      * SectionId used when rendering the service interface companion object
      */
-    object ServiceInterfaceCompanionObject : SectionId
+    object ServiceInterfaceCompanionObject : SectionId {
+        /**
+         * Context key for the service symbol
+         */
+        const val ServiceSymbol = "ServiceSymbol"
+    }
 
     /**
      * SectionId used when rendering the service configuration object
@@ -58,7 +63,10 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
             .call {
                 // allow integrations to add additional fields to companion object or configuration
                 writer.write("")
-                writer.declareSection(ServiceInterfaceCompanionObject) {
+                writer.declareSection(
+                    ServiceInterfaceCompanionObject,
+                    context = mapOf(ServiceInterfaceCompanionObject.ServiceSymbol to serviceSymbol)
+                ) {
                     renderCompanionObject()
                 }
                 writer.write("")

@@ -85,7 +85,6 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
          */
         var sdkLogMode: SdkLogMode
 
-        fun build(): Config
     }
 """
         contents.shouldContainWithDiff(expectedDslBuilderInterface)

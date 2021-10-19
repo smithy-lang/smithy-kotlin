@@ -121,6 +121,10 @@ fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> 
 private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
     context.keys.forEach { key -> removeContext(key) }
 
+inline fun <reified T> CodeWriter.getContextValue(key: String): T = checkNotNull(getContext(key) as? T) {
+    "Expected `$key` in CodeWriter context"
+}
+
 /**
  * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
  * [SectionWriter.write] to be called at the point in which the section is declared via
