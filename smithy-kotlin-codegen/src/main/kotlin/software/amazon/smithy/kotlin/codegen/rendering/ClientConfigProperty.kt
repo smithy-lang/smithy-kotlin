@@ -59,14 +59,10 @@ class ClientConfigProperty private constructor(builder: Builder) {
     val baseClass: Symbol? = builder.baseClass
 
     /**
-     * If the property is not provided in the builder then a ClientException is thrown
+     * The configuration property type. This controls how the property is constructed and rendered
      */
-    val required: Boolean = builder.required
+    val propertyType: ClientConfigPropertyType = builder.propertyType
 
-    /**
-     * Specifies that the value should be populated with a constant value that cannot be overridden in the builder.
-     */
-    val constantValue: String? = builder.constantValue
     /**
      * Flag indicating if this property stems from some base class and needs an override modifier when rendered
      */
@@ -90,7 +86,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
             name: String,
             defaultValue: Int? = null,
             documentation: String? = null,
-            baseClass: Symbol? = null
+            baseClass: Symbol? = null,
         ): ClientConfigProperty =
             builtInProperty(name, builtInSymbol("Int", defaultValue?.toString()), documentation, baseClass)
 
@@ -107,7 +103,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
             name: String,
             defaultValue: Boolean? = null,
             documentation: String? = null,
-            baseClass: Symbol? = null
+            baseClass: Symbol? = null,
         ): ClientConfigProperty =
             builtInProperty(name, builtInSymbol("Boolean", defaultValue?.toString()), documentation, baseClass)
 
@@ -124,7 +120,7 @@ class ClientConfigProperty private constructor(builder: Builder) {
             name: String,
             defaultValue: String? = null,
             documentation: String? = null,
-            baseClass: Symbol? = null
+            baseClass: Symbol? = null,
         ): ClientConfigProperty =
             builtInProperty(name, builtInSymbol("String", defaultValue), documentation, baseClass)
     }
@@ -137,11 +133,45 @@ class ClientConfigProperty private constructor(builder: Builder) {
 
         var baseClass: Symbol? = null
 
-        var required: Boolean = false
-        var constantValue: String? = null
+        var propertyType: ClientConfigPropertyType = ClientConfigPropertyType.SymbolDefault
 
         fun build(): ClientConfigProperty = ClientConfigProperty(this)
     }
+}
+
+/**
+ * Descriptor for how a configuration property is rendered when the configuration is built
+ */
+sealed class ClientConfigPropertyType {
+    /**
+     * A property type that uses the symbol type and builder symbol directly
+     */
+    object SymbolDefault : ClientConfigPropertyType()
+
+    /**
+     * Specifies that the value should be populated with a constant value that cannot be overridden in the builder.
+     * These are effectively read-only properties that will show up in the configuration type but not the builder.
+     *
+     * @param value the value to assign to the property at construction time
+     */
+    data class ConstantValue(val value: String) : ClientConfigPropertyType()
+
+    /**
+     * A configuration property that is required to be set (i.e. not null).
+     * If the property is not provided in the builder then an IllegalArgumentException is thrown
+     *
+     * @param message The exception message to throw if the property is null, if not set a message is generated
+     * automatically based on the property name
+     */
+    data class Required(val message: String? = null) : ClientConfigPropertyType()
+
+    /**
+     * A configuration property that is required but has a default value. This has the same semantics of [Required]
+     * but instead of an exception the default value will be used when not provided in the builder.
+     *
+     * @param default the value to assign if the corresponding builder property is null
+     */
+    data class RequiredWithDefault(val default: String) : ClientConfigPropertyType()
 }
 
 private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
@@ -156,7 +186,12 @@ private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
     return builder.build()
 }
 
-private fun builtInProperty(name: String, symbol: Symbol, documentation: String?, baseClass: Symbol?): ClientConfigProperty =
+private fun builtInProperty(
+    name: String,
+    symbol: Symbol,
+    documentation: String?,
+    baseClass: Symbol?,
+): ClientConfigProperty =
     ClientConfigProperty {
         this.symbol = symbol
         this.name = name
@@ -233,7 +268,8 @@ object KotlinClientRuntimeConfigProperty {
                 The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
                 strategy.
             """.trimIndent()
-            constantValue = retryStrategyBlock
+
+            propertyType = ClientConfigPropertyType.ConstantValue(retryStrategyBlock)
         }
 
         SdkLogMode = ClientConfigProperty {
