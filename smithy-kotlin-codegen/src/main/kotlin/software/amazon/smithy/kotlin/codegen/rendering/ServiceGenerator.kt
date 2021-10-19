@@ -108,6 +108,9 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 write("val config = Config.BuilderImpl().apply(block).build()")
                 write("return Default${serviceSymbol.name}(config)")
             }
+
+            write("")
+            write("operator fun invoke(config: Config): ${serviceSymbol.name} = Default${serviceSymbol.name}(config)")
         }
     }
 
