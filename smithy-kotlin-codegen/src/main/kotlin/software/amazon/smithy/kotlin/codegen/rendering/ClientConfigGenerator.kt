@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -47,6 +48,7 @@ class ClientConfigGenerator(
         props.add(KotlinClientRuntimeConfigProperty.SdkLogMode)
         if (ctx.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
             props.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
+            props.add(KotlinClientRuntimeConfigProperty.EndpointResolver)
         }
         if (ctx.shape != null && ctx.shape.hasIdempotentTokenMember(ctx.model)) {
             props.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
@@ -113,6 +115,7 @@ class ClientConfigGenerator(
                     ctx.writer.write("${override}val #1L: #2T = #3L", prop.propertyName, prop.symbol, prop.constantValue)
                 }
                 prop.required -> {
+                    ctx.writer.addImport(RuntimeTypes.Core.ClientException)
                     ctx.writer.write("${override}val #1L: #2T = builder.#1L ?: throw ClientException(\"#1L must be set\")", prop.propertyName, prop.symbol)
                 }
                 else -> {

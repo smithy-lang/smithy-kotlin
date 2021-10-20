@@ -42,6 +42,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         contents.shouldContain(expectedCtor)
 
         val expectedProps = """
+    val endpointResolver: EndpointResolver = builder.endpointResolver ?: throw ClientException("endpointResolver must be set")
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     val retryStrategy: RetryStrategy = run {
@@ -52,10 +53,11 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
     }
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
 """
-        contents.shouldContain(expectedProps)
+        contents.shouldContainOnlyOnceWithDiff(expectedProps)
 
         val expectedJavaBuilderInterface = """
     interface FluentBuilder {
+        fun endpointResolver(endpointResolver: EndpointResolver): FluentBuilder
         fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder
         fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder
         fun sdkLogMode(sdkLogMode: SdkLogMode): FluentBuilder
@@ -66,6 +68,12 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
         val expectedDslBuilderInterface = """
     interface DslBuilder {
+        /**
+         * Set the [aws.smithy.kotlin.runtime.http.operation.EndpointResolver] used to resolve service endpoints. Operation requests will be
+         * made against the endpoint returned by the resolver.
+         */
+        var endpointResolver: EndpointResolver?
+
         /**
          * Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)
          */
@@ -94,11 +102,13 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
         val expectedBuilderImpl = """
     internal class BuilderImpl() : FluentBuilder, DslBuilder {
+        override var endpointResolver: EndpointResolver? = null
         override var httpClientEngine: HttpClientEngine? = null
         override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
         override var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
         override fun build(): Config = Config(this)
+        override fun endpointResolver(endpointResolver: EndpointResolver): FluentBuilder = apply { this.endpointResolver = endpointResolver }
         override fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder = apply { this.httpClientEngine = httpClientEngine }
         override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
         override fun sdkLogMode(sdkLogMode: SdkLogMode): FluentBuilder = apply { this.sdkLogMode = sdkLogMode }
@@ -107,8 +117,9 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         contents.shouldContainWithDiff(expectedBuilderImpl)
 
         val expectedImports = listOf(
+            "import ${RuntimeTypes.Http.Operation.EndpointResolver.fullName}",
+            "import ${RuntimeTypes.Http.Engine.HttpClientEngine.fullName}",
             "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
-            "import ${KotlinDependency.HTTP.namespace}.engine.HttpClientEngine",
             "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenConfig",
             "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenProvider",
             "import ${KotlinDependency.CORE.namespace}.config.SdkClientConfig",

@@ -172,6 +172,7 @@ object KotlinClientRuntimeConfigProperty {
     val IdempotencyTokenProvider: ClientConfigProperty
     val RetryStrategy: ClientConfigProperty
     val SdkLogMode: ClientConfigProperty
+    val EndpointResolver: ClientConfigProperty
 
     init {
         val httpClientConfigSymbol = buildSymbol {
@@ -180,10 +181,7 @@ object KotlinClientRuntimeConfigProperty {
         }
 
         HttpClientEngine = ClientConfigProperty {
-            symbol = buildSymbol {
-                name = "HttpClientEngine"
-                namespace(KotlinDependency.HTTP, "engine")
-            }
+            symbol = RuntimeTypes.Http.Engine.HttpClientEngine
             baseClass = httpClientConfigSymbol
             documentation = """
             Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)    
@@ -258,6 +256,15 @@ object KotlinClientRuntimeConfigProperty {
             **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
             performance considerations when dumping the request/response body. This is primarily a tool for
             debug purposes.
+            """.trimIndent()
+        }
+
+        EndpointResolver = ClientConfigProperty {
+            symbol = RuntimeTypes.Http.Operation.EndpointResolver
+            required = true
+            documentation = """
+            Set the [${symbol!!.fullName}] used to resolve service endpoints. Operation requests will be 
+            made against the endpoint returned by the resolver.
             """.trimIndent()
         }
     }
