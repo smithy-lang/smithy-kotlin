@@ -91,10 +91,10 @@ fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runSusp
                 // emulate a real response stream which typically can only be consumed once
                 // see: https://github.com/awslabs/aws-sdk-kotlin/issues/356
                 object : HttpBody.Streaming() {
-                    private var cnt = 0
+                    private var consumed = false
                     override fun readFrom(): SdkByteReadChannel {
-                        val content = if (cnt > 0) ByteArray(0) else it.encodeToByteArray()
-                        cnt++
+                        val content = if (consumed) ByteArray(0) else it.encodeToByteArray()
+                        consumed = true
                         return SdkByteReadChannel(content)
                     }
                 }
