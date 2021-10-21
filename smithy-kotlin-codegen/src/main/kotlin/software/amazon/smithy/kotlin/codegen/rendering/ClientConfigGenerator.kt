@@ -106,6 +106,9 @@ class ClientConfigGenerator(
             }
             ctx.writer.addImport(it.symbol)
             ctx.writer.addImportReferences(it.symbol, SymbolReference.ContextOption.USE)
+            it.additionalImports.forEach { symbol ->
+                ctx.writer.addImport(symbol)
+            }
         }
     }
 

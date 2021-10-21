@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.boxed
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
@@ -62,6 +61,13 @@ class ClientConfigProperty private constructor(builder: Builder) {
      * The configuration property type. This controls how the property is constructed and rendered
      */
     val propertyType: ClientConfigPropertyType = builder.propertyType
+
+    /**
+     * Additional symbols that should be imported when this property is generated. This is useful for
+     * example when the [symbol] type has is an interface and has a default or constant value that
+     * implements that type. The default value symbol also needs imported.
+     */
+    val additionalImports: List<Symbol> = builder.additionalImports
 
     /**
      * Flag indicating if this property stems from some base class and needs an override modifier when rendered
@@ -134,6 +140,8 @@ class ClientConfigProperty private constructor(builder: Builder) {
         var baseClass: Symbol? = null
 
         var propertyType: ClientConfigPropertyType = ClientConfigPropertyType.SymbolDefault
+
+        var additionalImports: List<Symbol> = emptyList()
 
         fun build(): ClientConfigProperty = ClientConfigProperty(this)
     }
@@ -215,10 +223,7 @@ object KotlinClientRuntimeConfigProperty {
         }
 
         HttpClientEngine = ClientConfigProperty {
-            symbol = buildSymbol {
-                name = "HttpClientEngine"
-                namespace(KotlinDependency.HTTP, "engine")
-            }
+            symbol = RuntimeTypes.Http.Engine.HttpClientEngine
             baseClass = httpClientConfigSymbol
             documentation = """
             Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)    
@@ -243,6 +248,13 @@ object KotlinClientRuntimeConfigProperty {
         }
 
         RetryStrategy = ClientConfigProperty {
+            symbol = RuntimeTypes.Core.Retries.RetryStrategy
+            name = "retryStrategy"
+            documentation = """
+                The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
+                strategy.
+            """.trimIndent()
+
             val retryStrategyBlock = """
                 run {
                     val strategyOptions = StandardRetryStrategyOptions.Default
@@ -251,25 +263,16 @@ object KotlinClientRuntimeConfigProperty {
                     StandardRetryStrategy(strategyOptions, tokenBucket, delayer)
                 }
             """.trimIndent()
-
-            symbol = buildSymbol {
-                name = "RetryStrategy"
-                namespace(KotlinDependency.CORE, "retries")
-                nullable = false
-                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryStrategy, SymbolReference.ContextOption.USE)
-                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryStrategyOptions, SymbolReference.ContextOption.USE)
-                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucket, SymbolReference.ContextOption.USE)
-                reference(RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucketOptions, SymbolReference.ContextOption.USE)
-                reference(RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitter, SymbolReference.ContextOption.USE)
-                reference(RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitterOptions, SymbolReference.ContextOption.USE)
-            }
-            name = "retryStrategy"
-            documentation = """
-                The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
-                strategy.
-            """.trimIndent()
-
             propertyType = ClientConfigPropertyType.ConstantValue(retryStrategyBlock)
+
+            additionalImports = listOf(
+                RuntimeTypes.Core.Retries.Impl.StandardRetryStrategy,
+                RuntimeTypes.Core.Retries.Impl.StandardRetryStrategyOptions,
+                RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucket,
+                RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucketOptions,
+                RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitter,
+                RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitterOptions,
+            )
         }
 
         SdkLogMode = ClientConfigProperty {
