@@ -7,12 +7,12 @@ package aws.smithy.kotlin.runtime.smithy.test
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
 
@@ -88,7 +88,16 @@ fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runSusp
             }
 
             val body: HttpBody = testBuilder.expected.body?.let {
-                ByteArrayContent(it.encodeToByteArray())
+                // emulate a real response stream which typically can only be consumed once
+                // see: https://github.com/awslabs/aws-sdk-kotlin/issues/356
+                object : HttpBody.Streaming() {
+                    private var consumed = false
+                    override fun readFrom(): SdkByteReadChannel {
+                        val content = if (consumed) ByteArray(0) else it.encodeToByteArray()
+                        consumed = true
+                        return SdkByteReadChannel(content)
+                    }
+                }
             } ?: HttpBody.Empty
 
             val resp = HttpResponse(testBuilder.expected.statusCode, headers, body)
