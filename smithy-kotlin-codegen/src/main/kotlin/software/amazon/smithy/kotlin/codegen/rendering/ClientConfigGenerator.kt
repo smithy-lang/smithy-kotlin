@@ -27,32 +27,38 @@ class ClientConfigGenerator(
     vararg properties: ClientConfigProperty
 ) {
 
+    companion object {
+        /**
+         * Attempt to detect and register properties automatically based on the model
+         */
+        fun detectDefaultProps(context: RenderingContext<ServiceShape>): List<ClientConfigProperty> {
+            val defaultProps = mutableListOf<ClientConfigProperty>()
+            defaultProps.add(KotlinClientRuntimeConfigProperty.SdkLogMode)
+            if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
+                defaultProps.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
+                defaultProps.add(KotlinClientRuntimeConfigProperty.EndpointResolver)
+            }
+            if (context.shape != null && context.shape.hasIdempotentTokenMember(context.model)) {
+                defaultProps.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
+            }
+            defaultProps.add(KotlinClientRuntimeConfigProperty.RetryStrategy)
+            return defaultProps
+        }
+    }
+
     private val props = mutableListOf<ClientConfigProperty>()
 
     init {
         props.addAll(properties)
         if (detectDefaultProps) {
-            registerDefaultProps()
+            // register auto detected properties
+            val autoDetectedProps = detectDefaultProps(ctx)
+            props.addAll(autoDetectedProps)
         }
 
         // register properties from integrations
         val integrationProps = ctx.integrations.flatMap { it.additionalServiceConfigProps(ctx) }
         props.addAll(integrationProps)
-    }
-
-    /**
-     * Attempt to detect and register properties automatically based on the model
-     */
-    private fun registerDefaultProps() {
-        props.add(KotlinClientRuntimeConfigProperty.SdkLogMode)
-        if (ctx.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
-            props.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
-            props.add(KotlinClientRuntimeConfigProperty.EndpointResolver)
-        }
-        if (ctx.shape != null && ctx.shape.hasIdempotentTokenMember(ctx.model)) {
-            props.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
-        }
-        props.add(KotlinClientRuntimeConfigProperty.RetryStrategy)
     }
 
     fun render() {

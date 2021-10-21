@@ -96,13 +96,13 @@ class ServiceGeneratorTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val service = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
-        writer.registerSectionWriter(ServiceGenerator.ServiceInterfaceCompanionObject) { codeWriter, _ ->
+        writer.registerSectionWriter(ServiceGenerator.SectionServiceCompanionObject) { codeWriter, _ ->
             codeWriter.openBlock("companion object {")
                 .write("fun foo(): Int = 1")
                 .closeBlock("}")
         }
 
-        writer.registerSectionWriter(ServiceGenerator.SectionServiceInterfaceConfig) { codeWriter, _ ->
+        writer.registerSectionWriter(ServiceGenerator.SectionServiceConfig) { codeWriter, _ ->
             codeWriter.openBlock("class Config {")
                 .write("var bar: Int = 2")
                 .closeBlock("}")

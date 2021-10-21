@@ -30,4 +30,6 @@ import aws.smithy.kotlin.runtime.http.Url
 data class Endpoint(
     val uri: Url,
     val isHostnameImmutable: Boolean = false,
-)
+) {
+    constructor(uri: String) : this(Url.parse(uri))
+}
