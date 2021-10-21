@@ -94,7 +94,7 @@ class StructureGeneratorTest {
                 @JvmStatic
                 fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-                fun builder(): DslBuilder = BuilderImpl()
+                internal fun builder(): DslBuilder = BuilderImpl()
 
                 operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
                 

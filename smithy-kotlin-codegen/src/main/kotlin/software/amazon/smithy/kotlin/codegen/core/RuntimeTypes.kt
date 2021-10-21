@@ -88,6 +88,7 @@ object RuntimeTypes {
         }
 
         object Retries {
+            val RetryStrategy = runtimeSymbol("RetryStrategy", KotlinDependency.CORE, "retries")
             object Impl {
                 val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.impl")
                 val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.impl")

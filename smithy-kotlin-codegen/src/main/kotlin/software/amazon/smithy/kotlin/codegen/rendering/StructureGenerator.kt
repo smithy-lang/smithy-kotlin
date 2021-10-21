@@ -93,7 +93,9 @@ class StructureGenerator(
             write("@JvmStatic")
             write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
             write("")
-            write("fun builder(): DslBuilder = BuilderImpl()")
+            // the manual construction of a DslBuilder is mostly to support serde, end users should go through
+            // invoke syntax for kotlin or fluentBuilder for Java consumers
+            write("internal fun builder(): DslBuilder = BuilderImpl()")
             write("")
             write("operator fun invoke(block: DslBuilder.() -> #Q): #class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
             write("")

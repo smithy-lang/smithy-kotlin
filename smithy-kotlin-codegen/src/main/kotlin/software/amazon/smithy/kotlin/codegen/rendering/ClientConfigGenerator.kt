@@ -8,7 +8,6 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -83,12 +82,17 @@ class ClientConfigGenerator(
     }
 
     private fun renderCompanionObject() {
-        if (builderReturnType != null) {
-            ctx.writer.withBlock("companion object {", "}") {
-                write("@JvmStatic")
-                write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
-                write("fun builder(): DslBuilder = BuilderImpl()")
-                write("operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()", builderReturnType)
+        ctx.writer.withBlock("companion object {", "}") {
+            write("@JvmStatic")
+            write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
+            write("")
+            if (builderReturnType != null) {
+                write(
+                    "operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()",
+                    builderReturnType
+                )
+            } else {
+                write("operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #configClass.name:L = BuilderImpl().apply(block).build()")
             }
         }
     }
@@ -103,6 +107,9 @@ class ClientConfigGenerator(
             }
             ctx.writer.addImport(it.symbol)
             ctx.writer.addImportReferences(it.symbol, SymbolReference.ContextOption.USE)
+            it.additionalImports.forEach { symbol ->
+                ctx.writer.addImport(symbol)
+            }
         }
     }
 
@@ -110,16 +117,28 @@ class ClientConfigGenerator(
         props.forEach { prop ->
             val override = if (prop.requiresOverride) "override " else ""
 
-            when {
-                prop.constantValue != null -> {
-                    ctx.writer.write("${override}val #1L: #2T = #3L", prop.propertyName, prop.symbol, prop.constantValue)
-                }
-                prop.required -> {
-                    ctx.writer.addImport(RuntimeTypes.Core.ClientException)
-                    ctx.writer.write("${override}val #1L: #2T = builder.#1L ?: throw ClientException(\"#1L must be set\")", prop.propertyName, prop.symbol)
-                }
-                else -> {
+            when (prop.propertyType) {
+                is ClientConfigPropertyType.SymbolDefault -> {
                     ctx.writer.write("${override}val #1L: #2P = builder.#1L", prop.propertyName, prop.symbol)
+                }
+                is ClientConfigPropertyType.ConstantValue -> {
+                    ctx.writer.write("${override}val #1L: #2T = #3L", prop.propertyName, prop.symbol, prop.propertyType.value)
+                }
+                is ClientConfigPropertyType.Required -> {
+                    ctx.writer.write(
+                        "${override}val #1L: #2T = requireNotNull(builder.#1L) { #3S }",
+                        prop.propertyName,
+                        prop.symbol,
+                        prop.propertyType.message ?: "${prop.propertyName} is a required configuration property"
+                    )
+                }
+                is ClientConfigPropertyType.RequiredWithDefault -> {
+                    ctx.writer.write(
+                        "${override}val #1L: #2T = builder.#1L ?: #3L",
+                        prop.propertyName,
+                        prop.symbol,
+                        prop.propertyType.default
+                    )
                 }
             }
         }
@@ -129,7 +148,7 @@ class ClientConfigGenerator(
         ctx.writer.write("")
             .withBlock("interface FluentBuilder {", "}") {
                 props
-                    .filter { it.constantValue == null }
+                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
                         // we want the type names sans nullability (?) for arguments
                         write("fun #1L(#1L: #2L): FluentBuilder", prop.propertyName, prop.symbol.name)
@@ -142,14 +161,12 @@ class ClientConfigGenerator(
         ctx.writer.write("")
             .withBlock("interface DslBuilder {", "}") {
                 props
-                    .filter { it.constantValue == null }
+                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
                         prop.documentation?.let { ctx.writer.dokka(it) }
                         write("var #L: #P", prop.propertyName, prop.symbol)
                         write("")
                     }
-                write("")
-                write("fun build(): #configClass.name:L")
             }
     }
 
@@ -158,7 +175,7 @@ class ClientConfigGenerator(
             .withBlock("internal class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
                 // override DSL properties
                 props
-                    .filter { it.constantValue == null }
+                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
                         write("override var #L: #D", prop.propertyName, prop.symbol)
                     }
@@ -167,7 +184,7 @@ class ClientConfigGenerator(
                 write("")
                 write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
                 props
-                    .filter { it.constantValue == null }
+                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
                         // we want the type names sans nullability (?) for arguments
                         write("override fun #1L(#1L: #2L): FluentBuilder = apply { this.#1L = #1L }", prop.propertyName, prop.symbol.name)

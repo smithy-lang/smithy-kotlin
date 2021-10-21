@@ -89,7 +89,6 @@ abstract class HttpProtocolClientGenerator(
         val defaultClientSymbols = setOf(
             RuntimeTypes.Http.Operation.SdkHttpOperation,
             RuntimeTypes.Http.Operation.context,
-            RuntimeTypes.Http.Engine.HttpClientEngineConfig,
             RuntimeTypes.Http.SdkHttpClient,
             RuntimeTypes.Http.SdkHttpClientFn
         )
