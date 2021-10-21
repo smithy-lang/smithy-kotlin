@@ -11,9 +11,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
@@ -39,7 +37,7 @@ class ClientConfigGeneratorTest {
         val expectedCtor = """
 class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
 """
-        contents.shouldContain(expectedCtor)
+        contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
@@ -52,7 +50,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
     }
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
 """
-        contents.shouldContain(expectedProps)
+        contents.shouldContainWithDiff(expectedProps)
 
         val expectedJavaBuilderInterface = """
     interface FluentBuilder {
@@ -67,7 +65,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
         val expectedDslBuilderInterface = """
     interface DslBuilder {
         /**
-         * Override the default HTTP client configuration (e.g. configure proxy behavior, concurrency, etc)
+         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)
          */
         var httpClientEngine: HttpClientEngine?
 
@@ -87,7 +85,6 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
          */
         var sdkLogMode: SdkLogMode
 
-        fun build(): Config
     }
 """
         contents.shouldContainWithDiff(expectedDslBuilderInterface)
@@ -249,5 +246,94 @@ class Config private constructor(builder: BuilderImpl) {
         )
             .map { "import $it" }
             .forEach(contents::shouldContain)
+    }
+
+    @Test
+    fun `it renders a companion object`() {
+        val model = getModel()
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
+
+        val testCtx = model.newTestContext()
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
+
+        ClientConfigGenerator(renderingCtx).render()
+        val contents = writer.toString()
+
+        contents.assertBalancedBracesAndParens()
+
+        val expectedCompanion = """
+    companion object {
+        @JvmStatic
+        fun fluentBuilder(): FluentBuilder = BuilderImpl()
+
+        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Config = BuilderImpl().apply(block).build()
+    }
+"""
+        contents.shouldContainWithDiff(expectedCompanion)
+    }
+
+    @Test
+    fun testPropertyTypesRenderCorrectly() {
+        val model = getModel()
+
+        val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
+
+        val testCtx = model.newTestContext()
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
+
+        val customProps = arrayOf(
+            ClientConfigProperty {
+                name = "nullFoo"
+                symbol = buildSymbol { name = "Foo" }
+            },
+            ClientConfigProperty {
+                name = "defaultFoo"
+                symbol = buildSymbol { name = "Foo"; defaultValue = "DefaultFoo"; nullable = false }
+            },
+            ClientConfigProperty {
+                name = "constFoo"
+                symbol = buildSymbol { name = "Foo" }
+                propertyType = ClientConfigPropertyType.ConstantValue("ConstantFoo")
+            },
+            ClientConfigProperty {
+                name = "requiredFoo"
+                symbol = buildSymbol { name = "Foo" }
+                propertyType = ClientConfigPropertyType.Required()
+            },
+            ClientConfigProperty {
+                name = "requiredFoo2"
+                symbol = buildSymbol { name = "Foo" }
+                propertyType = ClientConfigPropertyType.Required("override message")
+            },
+            ClientConfigProperty {
+                name = "requiredDefaultedFoo"
+                symbol = buildSymbol { name = "Foo" }
+                propertyType = ClientConfigPropertyType.RequiredWithDefault("DefaultedFoo()")
+            },
+        )
+
+        ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()
+        val contents = writer.toString()
+
+        val expectedProps = """
+    val constFoo: Foo = ConstantFoo
+    val defaultFoo: Foo = builder.defaultFoo
+    val nullFoo: Foo? = builder.nullFoo
+    val requiredDefaultedFoo: Foo = builder.requiredDefaultedFoo ?: DefaultedFoo()
+    val requiredFoo: Foo = requireNotNull(builder.requiredFoo) { "requiredFoo is a required configuration property" }
+    val requiredFoo2: Foo = requireNotNull(builder.requiredFoo2) { "override message" }
+"""
+        contents.shouldContainWithDiff(expectedProps)
+
+        val expectedImplProps = """
+        override var defaultFoo: Foo = DefaultFoo
+        override var nullFoo: Foo? = null
+        override var requiredDefaultedFoo: Foo? = null
+        override var requiredFoo: Foo? = null
+        override var requiredFoo2: Foo? = null
+"""
+        contents.shouldContainWithDiff(expectedImplProps)
     }
 }

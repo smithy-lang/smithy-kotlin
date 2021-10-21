@@ -23,7 +23,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     /**
      * SectionId used when rendering the service interface companion object
      */
-    object ServiceInterfaceCompanionObject : SectionId
+    object ServiceInterfaceCompanionObject : SectionId {
+        /**
+         * Context key for the service symbol
+         */
+        const val ServiceSymbol = "ServiceSymbol"
+    }
 
     /**
      * SectionId used when rendering the service configuration object
@@ -58,7 +63,10 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
             .call {
                 // allow integrations to add additional fields to companion object or configuration
                 writer.write("")
-                writer.declareSection(ServiceInterfaceCompanionObject) {
+                writer.declareSection(
+                    ServiceInterfaceCompanionObject,
+                    context = mapOf(ServiceInterfaceCompanionObject.ServiceSymbol to serviceSymbol)
+                ) {
                     renderCompanionObject()
                 }
                 writer.write("")
@@ -85,20 +93,25 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      * e.g.
      * ```
      * companion object {
-     *     fun build(block: Configuration.() -> Unit = {}): LambdaClient {
-     *         val config = Configuration().apply(block)
+     *     operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): LambdaClient {
+     *         val config = Config.BuilderImpl().apply(block).build()
      *         return DefaultLambdaClient(config)
      *     }
+     *
+     *     operator fun invoke(config: Config): LambdaClient = DefaultLambdaClient(config)
      * }
      * ```
      */
     private fun renderCompanionObject() {
-        writer.openBlock("companion object {")
-            .openBlock("operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ${serviceSymbol.name} {")
-            .write("val config = Config.BuilderImpl().apply(block).build()")
-            .write("return Default${serviceSymbol.name}(config)")
-            .closeBlock("}")
-            .closeBlock("}")
+        writer.withBlock("companion object {", "}") {
+            withBlock("operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
+                write("val config = Config.BuilderImpl().apply(block).build()")
+                write("return Default${serviceSymbol.name}(config)")
+            }
+
+            write("")
+            write("operator fun invoke(config: Config): ${serviceSymbol.name} = Default${serviceSymbol.name}(config)")
+        }
     }
 
     private fun importExternalSymbols() {
