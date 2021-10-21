@@ -70,6 +70,8 @@ class ServiceGeneratorTest {
                     val config = Config.BuilderImpl().apply(block).build()
                     return DefaultTestClient(config)
                 }
+
+                operator fun invoke(config: Config): TestClient = DefaultTestClient(config)
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)

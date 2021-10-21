@@ -64,6 +64,7 @@ object RuntimeTypes {
 
         object Engine {
             val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.HTTP, "engine")
+            val HttpClientEngine = runtimeSymbol("HttpClientEngine", KotlinDependency.HTTP, "engine")
         }
     }
 
@@ -84,6 +85,7 @@ object RuntimeTypes {
         }
 
         object Retries {
+            val RetryStrategy = runtimeSymbol("RetryStrategy", KotlinDependency.CORE, "retries")
             object Impl {
                 val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.impl")
                 val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.impl")
