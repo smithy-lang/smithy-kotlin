@@ -29,7 +29,7 @@ open class HttpOperationContext {
 
         /**
          * A prefix to prepend the resolved hostname with.
-         * See: https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#endpoint-trait
+         * See [endpointTrait](https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#endpoint-trait)
          */
         val HostPrefix: AttributeKey<String> = AttributeKey("HostPrefix")
 

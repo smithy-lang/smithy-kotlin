@@ -63,6 +63,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> =
         listOf(
+            ResolveEndpointMiddleware(),
             StandardRetryMiddleware(),
         )
 
