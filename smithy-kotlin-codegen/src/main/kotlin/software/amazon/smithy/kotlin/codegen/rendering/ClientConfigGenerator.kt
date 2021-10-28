@@ -29,7 +29,7 @@ class ClientConfigGenerator(
 
     companion object {
         /**
-         * Attempt to detect and register properties automatically based on the model
+         * Attempt to detect configuration properties automatically based on the model
          */
         fun detectDefaultProps(context: RenderingContext<ServiceShape>): List<ClientConfigProperty> {
             val defaultProps = mutableListOf<ClientConfigProperty>()
@@ -52,8 +52,7 @@ class ClientConfigGenerator(
         props.addAll(properties)
         if (detectDefaultProps) {
             // register auto detected properties
-            val autoDetectedProps = detectDefaultProps(ctx)
-            props.addAll(autoDetectedProps)
+            props.addAll(detectDefaultProps(ctx))
         }
 
         // register properties from integrations

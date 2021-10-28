@@ -32,4 +32,7 @@ data class Endpoint(
     val isHostnameImmutable: Boolean = false,
 ) {
     constructor(uri: String) : this(Url.parse(uri))
+    init {
+        require(uri.parameters.isEmpty()) { "Query parameters are not currently supported by endpoint resolution" }
+    }
 }
