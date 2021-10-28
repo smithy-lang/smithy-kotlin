@@ -62,7 +62,7 @@ class HttpBindingProtocolGeneratorTest {
         contents.assertBalancedBracesAndParens()
         val label1 = "\${input.label1}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
+internal open class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
     override suspend fun serialize(context: ExecutionContext, input: SmokeTestRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -103,7 +103,7 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
         val contents = getTransformFileContents("ExplicitStringOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class ExplicitStringOperationSerializer: HttpSerialize<ExplicitStringRequest> {
+internal open class ExplicitStringOperationSerializer: HttpSerialize<ExplicitStringRequest> {
     override suspend fun serialize(context: ExecutionContext, input: ExplicitStringRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -130,7 +130,7 @@ internal class ExplicitStringOperationSerializer: HttpSerialize<ExplicitStringRe
         val contents = getTransformFileContents("ExplicitBlobOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class ExplicitBlobOperationSerializer: HttpSerialize<ExplicitBlobRequest> {
+internal open class ExplicitBlobOperationSerializer: HttpSerialize<ExplicitBlobRequest> {
     override suspend fun serialize(context: ExecutionContext, input: ExplicitBlobRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -157,7 +157,7 @@ internal class ExplicitBlobOperationSerializer: HttpSerialize<ExplicitBlobReques
         val contents = getTransformFileContents("ExplicitBlobStreamOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlobStreamRequest> {
+internal open class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlobStreamRequest> {
     override suspend fun serialize(context: ExecutionContext, input: ExplicitBlobStreamRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -184,7 +184,7 @@ internal class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlob
         val contents = getTransformFileContents("ExplicitStructOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRequest> {
+internal open class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRequest> {
     override suspend fun serialize(context: ExecutionContext, input: ExplicitStructRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -223,7 +223,7 @@ internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRe
         val contents = getTransformFileContents("EnumInputOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
+internal open class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
     override suspend fun serialize(context: ExecutionContext, input: EnumInputRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -254,7 +254,7 @@ internal class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
         contents.assertBalancedBracesAndParens()
         val tsLabel = "\${input.tsLabel?.format(TimestampFormat.ISO_8601)}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRequest> {
+internal open class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRequest> {
     override suspend fun serialize(context: ExecutionContext, input: TimestampInputRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -298,7 +298,7 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
         val contents = getTransformFileContents("BlobInputOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class BlobInputOperationSerializer: HttpSerialize<BlobInputRequest> {
+internal open class BlobInputOperationSerializer: HttpSerialize<BlobInputRequest> {
     override suspend fun serialize(context: ExecutionContext, input: BlobInputRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -331,7 +331,7 @@ internal class BlobInputOperationSerializer: HttpSerialize<BlobInputRequest> {
         contents.assertBalancedBracesAndParens()
         val label1 = "\${input.hello}" // workaround for raw strings not being able to contain escapes
         val expectedContents = """
-internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQueryStringRequest> {
+internal open class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQueryStringRequest> {
     override suspend fun serialize(context: ExecutionContext, input: ConstantQueryStringRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.GET

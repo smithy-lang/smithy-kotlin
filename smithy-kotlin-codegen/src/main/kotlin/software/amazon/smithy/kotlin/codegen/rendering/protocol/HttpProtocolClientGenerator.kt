@@ -27,6 +27,10 @@ abstract class HttpProtocolClientGenerator(
     protected val middleware: List<ProtocolMiddleware>,
     protected val httpBindingResolver: HttpBindingResolver
 ) {
+    object OperationSerializerBinding : SectionId {
+        // Context for operation being codegened at the time of section invocation
+        const val Operation = "Operation"
+    }
 
     object OperationDeserializerBinding : SectionId {
         // Context for operation being codegened at the time of section invocation
@@ -147,25 +151,27 @@ abstract class HttpProtocolClientGenerator(
             inputSymbolName,
             outputSymbolName
         ) {
-            if (inputShape.isPresent) {
-                writer.write("serializer = ${op.serializerName()}()")
-            } else {
-                // no serializer implementation is generated for operations with no input, inline the HTTP
-                // protocol request from the operation itself
-                // NOTE: this will never be triggered for AWS models where we preprocess operations to always have inputs/outputs
-                writer.addImport(RuntimeTypes.Http.Request.HttpRequestBuilder)
-                writer.addImport(RuntimeTypes.Core.ExecutionContext)
-                writer.openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
-                    writer.openBlock(
-                        "override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {",
-                        "}",
-                        KotlinTypes.Unit
-                    ) {
-                        writer.write("val builder = HttpRequestBuilder()")
-                        writer.write("builder.method = HttpMethod.#L", httpTrait.method.uppercase())
-                        // NOTE: since there is no input the URI can only be a literal (no labels to fill)
-                        writer.write("builder.url.path = #S", httpTrait.uri.toString())
-                        writer.write("return builder")
+            writer.declareSection(OperationSerializerBinding, mapOf(OperationSerializerBinding.Operation to op)) {
+                if (inputShape.isPresent) {
+                    write("serializer = ${op.serializerName()}()")
+                } else {
+                    // no serializer implementation is generated for operations with no input, inline the HTTP
+                    // protocol request from the operation itself
+                    // NOTE: this will never be triggered for AWS models where we preprocess operations to always have inputs/outputs
+                    addImport(RuntimeTypes.Http.Request.HttpRequestBuilder)
+                    addImport(RuntimeTypes.Core.ExecutionContext)
+                    openBlock("serializer = object : HttpSerialize<#Q> {", "}", KotlinTypes.Unit) {
+                        openBlock(
+                            "override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {",
+                            "}",
+                            KotlinTypes.Unit
+                        ) {
+                            write("val builder = HttpRequestBuilder()")
+                            write("builder.method = HttpMethod.#L", httpTrait.method.uppercase())
+                            // NOTE: since there is no input the URI can only be a literal (no labels to fill)
+                            write("builder.url.path = #S", httpTrait.uri.toString())
+                            write("return builder")
+                        }
                     }
                 }
             }

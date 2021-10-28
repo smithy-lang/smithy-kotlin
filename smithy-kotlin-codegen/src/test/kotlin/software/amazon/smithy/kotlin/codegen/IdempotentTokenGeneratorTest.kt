@@ -32,7 +32,7 @@ class IdempotentTokenGeneratorTest {
         val contents = getTransformFileContents("AllocateWidgetOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-            internal class AllocateWidgetOperationSerializer: HttpSerialize<AllocateWidgetRequest> {
+            internal open class AllocateWidgetOperationSerializer: HttpSerialize<AllocateWidgetRequest> {
                 override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetRequest): HttpRequestBuilder {
                     val builder = HttpRequestBuilder()
                     builder.method = HttpMethod.POST
@@ -58,7 +58,7 @@ class IdempotentTokenGeneratorTest {
         val contents = getTransformFileContents("AllocateWidgetQueryOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWidgetQueryRequest> {
+internal open class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWidgetQueryRequest> {
     override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetQueryRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST
@@ -82,7 +82,7 @@ internal class AllocateWidgetQueryOperationSerializer: HttpSerialize<AllocateWid
         val contents = getTransformFileContents("AllocateWidgetHeaderOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-internal class AllocateWidgetHeaderOperationSerializer: HttpSerialize<AllocateWidgetHeaderRequest> {
+internal open class AllocateWidgetHeaderOperationSerializer: HttpSerialize<AllocateWidgetHeaderRequest> {
     override suspend fun serialize(context: ExecutionContext, input: AllocateWidgetHeaderRequest): HttpRequestBuilder {
         val builder = HttpRequestBuilder()
         builder.method = HttpMethod.POST

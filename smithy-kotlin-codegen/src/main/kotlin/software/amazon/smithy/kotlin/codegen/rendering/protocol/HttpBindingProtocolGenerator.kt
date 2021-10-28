@@ -316,7 +316,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             writer
                 .addImport(operationSerializerSymbols)
                 .write("")
-                .openBlock("internal class #T: #T<#T> {", serializerSymbol, RuntimeTypes.Http.Operation.HttpSerialize, inputSymbol)
+                .openBlock("internal open class #T: #T<#T> {", serializerSymbol, RuntimeTypes.Http.Operation.HttpSerialize, inputSymbol)
                 .call {
                     writer.openBlock("override suspend fun serialize(context: #T, input: #T): #T {", RuntimeTypes.Core.ExecutionContext, inputSymbol, RuntimeTypes.Http.Request.HttpRequestBuilder)
                         .write("val builder = #T()", RuntimeTypes.Http.Request.HttpRequestBuilder)
