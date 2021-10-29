@@ -83,13 +83,16 @@ subprojects {
     }
 
     apply(from = rootProject.file("gradle/publish.gradle"))
+
+    dependencies {
+        dokkaPlugin(project(":dokka-smithy"))
+    }
 }
 
 task<org.jetbrains.kotlin.gradle.testing.internal.KotlinTestReport>("rootAllTest"){
     destinationDir = File(project.buildDir, "reports/tests/rootAllTest")
     val rootAllTest = this
     subprojects {
-        val proj = this
         afterEvaluate {
             if (tasks.findByName("allTests") != null) {
                 val provider = tasks.named("allTests")

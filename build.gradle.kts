@@ -29,6 +29,27 @@ allprojects {
         mavenCentral()
         google()
     }
+
+    tasks.withType<org.jetbrains.dokka.gradle.AbstractDokkaTask>().configureEach {
+        val sdkVersion: String by project
+        moduleVersion.set(sdkVersion)
+
+        val year = java.time.LocalDate.now().year
+        val pluginConfigMap = mapOf(
+            "org.jetbrains.dokka.base.DokkaBase" to """
+                {
+                    "customStyleSheets": ["${rootProject.file("docs/dokka-presets/css/logo-styles.css")}"],
+                    "customAssets": [
+                        "${rootProject.file("docs/dokka-presets/assets/logo-icon.svg")}",
+                        "${rootProject.file("docs/dokka-presets/assets/aws_logo_white_59x35.png")}"
+                    ],
+                    "footerMessage": "© $year, Amazon Web Services, Inc. or its affiliates. All rights reserved.",
+                    "separateInheritedMembers" : true
+                }
+            """
+        )
+        pluginsMapConfiguration.set(pluginConfigMap)
+    }
 }
 
 val localProperties: Map<String, Any> by lazy {
@@ -55,6 +76,22 @@ if (project.prop("kotlinWarningsAsErrors")?.toString()?.toBoolean() == true) {
             kotlinOptions.allWarningsAsErrors = true
         }
     }
+}
+
+// configure the root multimodule docs
+tasks.dokkaHtmlMultiModule.configure {
+    moduleName.set("Smithy SDK")
+
+    includes.from(
+        // NOTE: these get concatenated
+        rootProject.file("docs/dokka-presets/README.md"),
+    )
+
+    val excludeFromDocumentation = listOf(
+        project(":runtime:testing"),
+        project(":runtime:smithy-test"),
+    )
+    removeChildTasks(excludeFromDocumentation)
 }
 
 apply(from = rootProject.file("gradle/codecoverage.gradle"))
