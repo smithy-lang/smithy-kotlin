@@ -16,7 +16,7 @@ const val RUNTIME_ROOT_NS = "aws.smithy.kotlin.runtime"
  * Test if a string represents a valid artifact version string
  */
 fun isValidVersion(version: String): Boolean {
-    val re = Regex("\\d\\.\\d\\.\\d[a-z0-9A-Z.-]*\$")
+    val re = Regex("\\d+\\.\\d+\\.\\d[a-z0-9A-Z.-]*\$")
     return re.matches(version)
 }
 

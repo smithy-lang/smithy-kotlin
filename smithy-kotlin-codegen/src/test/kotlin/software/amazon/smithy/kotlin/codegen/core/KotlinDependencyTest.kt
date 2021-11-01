@@ -15,7 +15,9 @@ class KotlinDependencyTest {
         val validVersions = listOf(
             "0.1.0",
             "0.1.0-alpha",
-            "1.2.3.4-beta.zulu-x"
+            "1.2.3.4-beta.zulu-x",
+            "0.10.0-alpha",
+            "2342.138234952342.234238234-boo"
         )
         validVersions.forEach {
             assertTrue(isValidVersion(it))
