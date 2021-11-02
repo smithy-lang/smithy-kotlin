@@ -23,7 +23,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     /**
      * SectionId used when rendering the service interface companion object
      */
-    object ServiceInterfaceCompanionObject : SectionId {
+    object SectionServiceCompanionObject : SectionId {
         /**
          * Context key for the service symbol
          */
@@ -33,7 +33,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     /**
      * SectionId used when rendering the service configuration object
      */
-    object SectionServiceInterfaceConfig : SectionId
+    object SectionServiceConfig : SectionId {
+        /**
+         * The current rendering context for the service generator
+         */
+        const val RenderingContext = "RenderingContext"
+    }
 
     init {
         require(ctx.shape is ServiceShape) { "ServiceShape is required for generating a service interface; was: ${ctx.shape}" }
@@ -64,8 +69,8 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 // allow integrations to add additional fields to companion object or configuration
                 writer.write("")
                 writer.declareSection(
-                    ServiceInterfaceCompanionObject,
-                    context = mapOf(ServiceInterfaceCompanionObject.ServiceSymbol to serviceSymbol)
+                    SectionServiceCompanionObject,
+                    context = mapOf(SectionServiceCompanionObject.ServiceSymbol to serviceSymbol)
                 ) {
                     renderCompanionObject()
                 }
@@ -82,7 +87,10 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     }
 
     private fun renderServiceConfig() {
-        writer.declareSection(SectionServiceInterfaceConfig) {
+        writer.declareSection(
+            SectionServiceConfig,
+            context = mapOf(SectionServiceConfig.RenderingContext to ctx)
+        ) {
             ClientConfigGenerator(ctx).render()
         }
     }

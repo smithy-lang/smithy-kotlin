@@ -50,6 +50,7 @@ object RuntimeTypes {
             val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
             val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
             val RetryFeature = runtimeSymbol("RetryFeature", KotlinDependency.HTTP, "middleware")
+            val ResolveEndpoint = runtimeSymbol("ResolveEndpoint", KotlinDependency.HTTP, "middleware")
         }
 
         object Operation {
@@ -60,11 +61,12 @@ object RuntimeTypes {
             val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
             val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
+            val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "operation")
         }
 
         object Engine {
-            val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.HTTP, "engine")
             val HttpClientEngine = runtimeSymbol("HttpClientEngine", KotlinDependency.HTTP, "engine")
+            val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.HTTP, "engine")
         }
     }
 
@@ -75,6 +77,7 @@ object RuntimeTypes {
         val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CORE)
         val Instant = runtimeSymbol("Instant", KotlinDependency.CORE, "time")
         val TimestampFormat = runtimeSymbol("TimestampFormat", KotlinDependency.CORE, "time")
+        val ClientException = runtimeSymbol("ClientException", KotlinDependency.CORE)
 
         object Content {
             val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CORE, "content")
