@@ -55,10 +55,18 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             .toList()
 
         LOGGER.info("Preprocessing model")
+        // Model pre-processing:
+        // 1. Start with the model from the plugin context
+        // 2. Apply integrations
+        // 3. Flatten error shapes (see: https://github.com/awslabs/smithy/pull/919)
+        // 4. Normalize the operations
         var resolvedModel = context.model
         for (integration in integrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
+
+        resolvedModel = ModelTransformer.create()
+            .copyServiceErrorsToOperations(resolvedModel, settings.getService(resolvedModel))
 
         // normalize operations
         model = OperationNormalizer.transform(resolvedModel, settings.service)
