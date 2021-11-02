@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0-alpha] - 10/28/2021
+
+**WARNING: Alpha releases may contain bugs and no guarantee is made about API stability. They are not recommended for production use!**
+
+### New Features
+
+* add endpoint configuration and middleware by default [#507](https://github.com/awslabs/smithy-kotlin/pull/507)
+ 
 ## [0.6.0-alpha] - 10/21/2021
 
 **WARNING: Alpha releases may contain bugs and no guarantee is made about API stability. They are not recommended for production use!**
