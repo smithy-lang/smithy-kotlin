@@ -4,7 +4,6 @@
  */
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.dokka")
     jacoco
     `maven-publish`
 }
