@@ -47,3 +47,10 @@ val ExecutionContext.idempotencyTokenProvider: IdempotencyTokenProvider
 @InternalApi
 val ExecutionContext.sdkLogMode: SdkLogMode
     get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.Default
+
+/**
+ * Get the [OperationName] from the context.
+ */
+@InternalApi
+val ExecutionContext.operationName: String?
+    get() = getOrNull(SdkClientOption.OperationName)

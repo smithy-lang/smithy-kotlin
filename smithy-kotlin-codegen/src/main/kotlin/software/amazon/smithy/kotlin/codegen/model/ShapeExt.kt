@@ -161,3 +161,9 @@ val Shape.isNumberShape: Boolean
  */
 val Shape.isSparse: Boolean
     get() = hasTrait<SparseTrait>()
+
+/**
+ * Test if a shape has the streaming trait applied.
+ */
+val Shape.isStreaming: Boolean
+    get() = hasTrait<StreamingTrait>()
