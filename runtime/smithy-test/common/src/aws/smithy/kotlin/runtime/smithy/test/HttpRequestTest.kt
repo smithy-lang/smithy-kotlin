@@ -59,11 +59,12 @@ fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runSuspendTest {
             }
 
             // capture the request that was built by the service operation
-            if (request.body.contentLength != null) {
+            val contentLength = request.body.contentLength
+            if (contentLength != null && contentLength > 0) {
                 // Content-Length header is not expected to be set by serialize implementations. It is expected
                 // to be read from [HttpBody::contentLength] by the underlying engine and set appropriately
                 // add it in here so tests that define it can pass
-                testHeaders["Content-Length"] = request.body.contentLength.toString()
+                testHeaders["Content-Length"] = contentLength.toString()
             }
 
             actual = request.copy(headers = testHeaders.build())
