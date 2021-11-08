@@ -13,11 +13,8 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpFeatureMiddl
  * Adds retry wrappers around operation invocations.
  */
 class StandardRetryMiddleware : HttpFeatureMiddleware() {
-    companion object {
-        const val name: String = "RetryFeature"
-    }
 
-    override val name: String = Companion.name
+    override val name: String = RuntimeTypes.Http.Middlware.Retry.name
 
     override fun renderConfigure(writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Http.Middlware.Retry)

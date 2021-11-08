@@ -64,7 +64,7 @@ class Retry(
         operation.execution.finalize.intercept { req, next ->
             if (req.subject.isRetryable) {
                 var attempt = 1
-                val logger = req.context.getLogger("RetryFeature")
+                val logger = req.context.getLogger("Retry")
                 val wrappedPolicy = PolicyLogger(policy, logger)
 
                 strategy.retry(wrappedPolicy) {
