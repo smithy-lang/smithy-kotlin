@@ -20,7 +20,7 @@ class StandardRetryMiddleware : HttpFeatureMiddleware() {
     override val name: String = Companion.name
 
     override fun renderConfigure(writer: KotlinWriter) {
-        writer.addImport(RuntimeTypes.Http.Middlware.RetryFeature)
+        writer.addImport(RuntimeTypes.Http.Middlware.Retry)
         writer.addImport(RuntimeTypes.Core.Retries.Impl.StandardRetryPolicy)
 
         writer.write("strategy = config.retryStrategy")

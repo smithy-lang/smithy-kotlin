@@ -50,13 +50,6 @@ sealed class SdkLogMode(private val mask: Int) {
         override fun toString(): String = "LogResponseWithBody"
     }
 
-    /**
-     * Log retry attempts
-     */
-    object LogRetries : SdkLogMode(0x10) {
-        override fun toString(): String = "LogRetries"
-    }
-
     internal class Composite(mask: Int) : SdkLogMode(mask)
 
     operator fun plus(mode: SdkLogMode): SdkLogMode = Composite(mask or mode.mask)
@@ -76,7 +69,6 @@ sealed class SdkLogMode(private val mask: Int) {
             LogRequestWithBody,
             LogResponse,
             LogResponseWithBody,
-            LogRetries
         )
     }
     override fun toString(): String =
