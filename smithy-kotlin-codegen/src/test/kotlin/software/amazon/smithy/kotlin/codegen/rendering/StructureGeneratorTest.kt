@@ -5,8 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
@@ -16,6 +14,8 @@ import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.StructureShape
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StructureGeneratorTest {
@@ -94,7 +94,7 @@ class StructureGeneratorTest {
                 @JvmStatic
                 fun fluentBuilder(): FluentBuilder = BuilderImpl()
 
-                fun builder(): DslBuilder = BuilderImpl()
+                internal fun builder(): DslBuilder = BuilderImpl()
 
                 operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
                 
@@ -516,6 +516,86 @@ class StructureGeneratorTest {
         )
     }
 
+    @Test
+    fun `it renders client errors`() {
+        testErrorShape(
+            "client",
+            null,
+            null,
+            null,
+            "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client",
+        )
+    }
+
+    @Test
+    fun `it renders server errors`() {
+        testErrorShape(
+            "server",
+            null,
+            null,
+            null,
+            "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Server",
+        )
+    }
+
+    @Test
+    fun `it renders retryable errors`() {
+        testErrorShape(
+            "client",
+            "@retryable",
+            "sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true",
+            "sdkErrorMetadata.attributes[ErrorMetadata.ThrottlingError] = false",
+            "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client",
+        )
+    }
+
+    @Test
+    fun `it renders retryable throttling errors`() {
+        testErrorShape(
+            "client",
+            "@retryable(throttling: true)",
+            "sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true",
+            "sdkErrorMetadata.attributes[ErrorMetadata.ThrottlingError] = true",
+            "sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client",
+        )
+    }
+
+    private fun testErrorShape(
+        errorType: String,
+        retryableTrait: String?,
+        initRetryableLine: String?,
+        initThrottlingLine: String?,
+        initErrorTypeLine: String?,
+    ) {
+        val model = listOfNotNull(
+            "@error(\"$errorType\")",
+            retryableTrait,
+            "structure FooError { }",
+        )
+            .joinToString("\n")
+            .prependNamespaceAndService()
+            .toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val struct = model.expectShape<StructureShape>("com.test#FooError")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
+        val contents = writer.toString()
+
+        val expectedInit = listOfNotNull(
+            "init {",
+            initRetryableLine.indent(),
+            initThrottlingLine.indent(),
+            initErrorTypeLine.indent(),
+            "}",
+        )
+            .joinToString("\n")
+            .formatForTest()
+
+        contents.shouldContainOnlyOnceWithDiff(expectedInit)
+    }
+
     private fun generateStructure(model: String): String {
         val fullModel = model.prependNamespaceAndService().toSmithyModel()
 
@@ -529,3 +609,5 @@ class StructureGeneratorTest {
         return writer.toString()
     }
 }
+
+private fun String?.indent(indentation: String = "    "): String? = if (this == null) null else "$indentation$this"

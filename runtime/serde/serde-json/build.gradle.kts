@@ -16,10 +16,9 @@ kotlin {
                 api(project(":runtime:serde"))
             }
         }
-        jvmMain {
-            dependencies {
-                implementation("com.google.code.gson:gson:$gsonVersion")
-            }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
         }
     }
 }

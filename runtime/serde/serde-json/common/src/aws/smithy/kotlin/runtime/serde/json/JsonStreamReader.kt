@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.serde.json
 
+import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -23,11 +24,25 @@ interface JsonStreamReader {
     /**
      * Peek at the next token type
      */
-    suspend fun peek(): RawJsonToken
+    suspend fun peek(): JsonToken
 }
 
 /*
 * Creates a [JsonStreamReader] instance
 */
 @InternalApi
-expect fun jsonStreamReader(payload: ByteArray): JsonStreamReader
+fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(payload)
+
+// return the next token and require that it be of type [TExpected] or else throw an exception
+internal suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
+    val token = this.nextToken()
+    requireToken<TExpected>(token)
+    return token as TExpected
+}
+
+// require that the given token be of type [TExpected] or else throw an exception
+internal inline fun <reified TExpected> requireToken(token: JsonToken) {
+    if (token::class != TExpected::class) {
+        throw DeserializationException("expected ${TExpected::class}; found ${token::class}")
+    }
+}

@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.testing.runSuspendTest
@@ -63,6 +64,30 @@ class HttpRequestBuilderTest {
         val actual = dumpRequest(builder, true)
         assertTrue(builder.body is HttpBody.Bytes)
         val expected = "GET /debug/test?foo=bar\r\nHost: test.amazon.com\r\nContent-Length: ${content.length}\r\nx-baz: quux;qux\r\n\r\n$content"
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun testRequestToBuilder() = runSuspendTest {
+        val req = HttpRequest(
+            method = HttpMethod.POST,
+            url = Url(
+                Protocol.HTTPS,
+                "test.amazon.com",
+                path = "/debug/test",
+                parameters = QueryParameters {
+                    append("q1", "foo")
+                }
+            ),
+            headers = Headers {
+                append("x-baz", "bar")
+                append("x-quux", "qux")
+            },
+            body = ByteArrayContent("foobar".encodeToByteArray())
+        )
+
+        val actual = dumpRequest(req.toBuilder(), true)
+        val expected = "POST /debug/test?q1=foo\r\nHost: test.amazon.com\r\nContent-Length: 6\r\nx-baz: bar\r\nx-quux: qux\r\n\r\nfoobar"
         assertEquals(expected, actual)
     }
 }

@@ -22,11 +22,9 @@ object RuntimeTypes {
         val SdkHttpClient = runtimeSymbol("SdkHttpClient", KotlinDependency.HTTP)
         val SdkHttpClientFn = runtimeSymbol("sdkHttpClient", KotlinDependency.HTTP)
         val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.HTTP, "content")
-        val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
         val QueryParameters = runtimeSymbol("QueryParameters", KotlinDependency.HTTP)
         val QueryParametersBuilder = runtimeSymbol("QueryParametersBuilder", KotlinDependency.HTTP)
         val toQueryParameters = runtimeSymbol("toQueryParameters", KotlinDependency.HTTP)
-        val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
         val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
         val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
@@ -48,6 +46,13 @@ object RuntimeTypes {
             val HttpResponse = runtimeSymbol("HttpResponse", KotlinDependency.HTTP, "response")
         }
 
+        object Middlware {
+            val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
+            val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
+            val RetryFeature = runtimeSymbol("RetryFeature", KotlinDependency.HTTP, "middleware")
+            val ResolveEndpoint = runtimeSymbol("ResolveEndpoint", KotlinDependency.HTTP, "middleware")
+        }
+
         object Operation {
             val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.HTTP, "operation")
             val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.HTTP, "operation")
@@ -56,9 +61,11 @@ object RuntimeTypes {
             val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
             val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
+            val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "operation")
         }
 
         object Engine {
+            val HttpClientEngine = runtimeSymbol("HttpClientEngine", KotlinDependency.HTTP, "engine")
             val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.HTTP, "engine")
         }
     }
@@ -70,6 +77,7 @@ object RuntimeTypes {
         val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CORE)
         val Instant = runtimeSymbol("Instant", KotlinDependency.CORE, "time")
         val TimestampFormat = runtimeSymbol("TimestampFormat", KotlinDependency.CORE, "time")
+        val ClientException = runtimeSymbol("ClientException", KotlinDependency.CORE)
 
         object Content {
             val ByteArrayContent = runtimeSymbol("ByteArrayContent", KotlinDependency.CORE, "content")
@@ -78,10 +86,24 @@ object RuntimeTypes {
             val toByteArray = runtimeSymbol("toByteArray", KotlinDependency.CORE, "content")
             val decodeToString = runtimeSymbol("decodeToString", KotlinDependency.CORE, "content")
         }
+
+        object Retries {
+            val RetryStrategy = runtimeSymbol("RetryStrategy", KotlinDependency.CORE, "retries")
+            object Impl {
+                val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.impl")
+                val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryPolicy = runtimeSymbol("StandardRetryPolicy", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryStrategy = runtimeSymbol("StandardRetryStrategy", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryStrategyOptions = runtimeSymbol("StandardRetryStrategyOptions", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryTokenBucket = runtimeSymbol("StandardRetryTokenBucket", KotlinDependency.CORE, "retries.impl")
+                val StandardRetryTokenBucketOptions = runtimeSymbol("StandardRetryTokenBucketOptions", KotlinDependency.CORE, "retries.impl")
+            }
+        }
     }
 
     object Utils {
         val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
+        val Sha256 = runtimeSymbol("Sha256", KotlinDependency.UTILS)
         val urlEncodeComponent = runtimeSymbol("urlEncodeComponent", KotlinDependency.UTILS, "text")
     }
 

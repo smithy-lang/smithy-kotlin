@@ -19,7 +19,7 @@ kotlin {
     }
 }
 
-subprojects {
+allprojects {
     kotlin {
         sourceSets {
             commonTest {

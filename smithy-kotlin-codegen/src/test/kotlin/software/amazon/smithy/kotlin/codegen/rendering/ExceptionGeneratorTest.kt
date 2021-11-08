@@ -6,8 +6,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldNotContain
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
@@ -19,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProto
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
+import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
 class ExceptionGeneratorTest {
@@ -168,7 +167,7 @@ class ExceptionGeneratorTest {
         val struct = model.expectShape<StructureShape>("com.error.test#InternalServerException")
         val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
 
-        val e = assertThrows<CodegenException> {
+        val e = assertFailsWith<CodegenException> {
             StructureGenerator(renderingCtx).render()
         }
         e.message.shouldContainOnlyOnceWithDiff("Message is a reserved name for exception types and cannot be used for any other property")
@@ -255,7 +254,7 @@ class ExceptionGeneratorTest {
             val writer = KotlinWriter(TestModelDefault.NAMESPACE)
             val ctx = GenerationContext(model, provider, model.defaultSettings())
 
-            val e = assertThrows<CodegenException> {
+            val e = assertFailsWith<CodegenException> {
                 ExceptionBaseClassGenerator.render(ctx, writer)
             }
             e.message.shouldContainOnlyOnceWithDiff("Generated base error type 'TestException' collides with com.test#TestException.")

@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
+import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 
 /**
  * Wrapper around a type [subject] with an execution context.
@@ -17,3 +18,11 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
  * @param subject The input type
  */
 data class OperationRequest<T>(val context: ExecutionContext, val subject: T)
+
+/**
+ * Deep copy an [OperationRequest] to a new request. Note that, because [context] is...well, context...it's considered
+ * transient and is not part of the copy. The subject itself, however, is deeply copied.
+ * @return A new [OperationRequest] with the same context and a deeply-copied subject.
+ */
+internal fun <T : CanDeepCopy<T>> OperationRequest<T>.deepCopy(): OperationRequest<T> =
+    OperationRequest(context, subject.deepCopy())

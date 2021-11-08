@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContainOnlyOnce
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
@@ -16,6 +15,7 @@ import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.ShapeId
+import kotlin.test.Test
 
 class ServiceGeneratorTest {
     private val commonTestContents: String
@@ -70,6 +70,8 @@ class ServiceGeneratorTest {
                     val config = Config.BuilderImpl().apply(block).build()
                     return DefaultTestClient(config)
                 }
+
+                operator fun invoke(config: Config): TestClient = DefaultTestClient(config)
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -94,13 +96,13 @@ class ServiceGeneratorTest {
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val service = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
-        writer.registerSectionWriter(ServiceGenerator.ServiceInterfaceCompanionObject) { codeWriter, _ ->
+        writer.registerSectionWriter(ServiceGenerator.SectionServiceCompanionObject) { codeWriter, _ ->
             codeWriter.openBlock("companion object {")
                 .write("fun foo(): Int = 1")
                 .closeBlock("}")
         }
 
-        writer.registerSectionWriter(ServiceGenerator.SectionServiceInterfaceConfig) { codeWriter, _ ->
+        writer.registerSectionWriter(ServiceGenerator.SectionServiceConfig) { codeWriter, _ ->
             codeWriter.openBlock("class Config {")
                 .write("var bar: Int = 2")
                 .closeBlock("}")

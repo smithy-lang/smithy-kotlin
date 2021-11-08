@@ -122,6 +122,14 @@ private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
     context.keys.forEach { key -> removeContext(key) }
 
 /**
+ * Convenience function to get a typed value out of the context or throw if the key doesn't exist
+ * or the type is wrong
+ */
+inline fun <reified T> CodeWriter.getContextValue(key: String): T = checkNotNull(getContext(key) as? T) {
+    "Expected `$key` in CodeWriter context"
+}
+
+/**
  * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
  * [SectionWriter.write] to be called at the point in which the section is declared via
  * the [CodeWriter.declareSection] function.

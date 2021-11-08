@@ -89,7 +89,6 @@ abstract class HttpProtocolClientGenerator(
         val defaultClientSymbols = setOf(
             RuntimeTypes.Http.Operation.SdkHttpOperation,
             RuntimeTypes.Http.Operation.context,
-            RuntimeTypes.Http.Engine.HttpClientEngineConfig,
             RuntimeTypes.Http.SdkHttpClient,
             RuntimeTypes.Http.SdkHttpClientFn
         )
@@ -98,6 +97,10 @@ abstract class HttpProtocolClientGenerator(
     }
 
     //  defaults to Ktor since it's the only available engine in smithy-kotlin runtime
+    /**
+     * The client engine to default to when one is not given in config. This type *MUST* be default constructable
+     * or else you need to override [renderInit] and construct it manually
+     */
     protected open val defaultHttpClientEngineSymbol: Symbol = buildSymbol {
         name = "KtorEngine"
         namespace(KotlinDependency.HTTP_KTOR_ENGINE)
@@ -109,7 +112,7 @@ abstract class HttpProtocolClientGenerator(
     protected open fun renderInit(writer: KotlinWriter) {
         writer.addImport(defaultHttpClientEngineSymbol)
         writer.openBlock("init {", "}") {
-            writer.write("val httpClientEngine = config.httpClientEngine ?: #T(HttpClientEngineConfig())", defaultHttpClientEngineSymbol)
+            writer.write("val httpClientEngine = config.httpClientEngine ?: #T()", defaultHttpClientEngineSymbol)
             writer.write("client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)")
         }
     }
@@ -276,8 +279,8 @@ abstract class HttpProtocolClientGenerator(
                         middleware.render(ctx, op, writer)
                     }
                 if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-                    writer.addImport(RuntimeTypes.Http.Md5ChecksumMiddleware)
-                    writer.write("op.install(#T)", RuntimeTypes.Http.Md5ChecksumMiddleware)
+                    writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+                    writer.write("op.install(#T)", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
                 }
             }
             .closeBlock("}")

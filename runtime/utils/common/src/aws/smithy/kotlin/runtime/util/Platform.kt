@@ -5,20 +5,24 @@
 
 package aws.smithy.kotlin.runtime.util
 
-@InternalApi
-public expect object Platform {
+public interface PlatformEnvironProvider : EnvironmentProvider, PropertyProvider
+public interface PlatformProvider : PlatformEnvironProvider, Filesystem {
     /**
-     * Get an environment variable or null
+     * Get the operating system info
      */
-    fun getenv(key: String): String?
+    fun osInfo(): OperatingSystem
+}
 
+/**
+ * System default implementation of [PlatformProvider]
+ */
+@InternalApi
+public expect object Platform : PlatformProvider {
     val isJvm: Boolean
     val isAndroid: Boolean
     val isBrowser: Boolean
     val isNode: Boolean
     val isNative: Boolean
-
-    fun osInfo(): OperatingSystem
 }
 
 data class OperatingSystem(val family: OsFamily, val version: String?)

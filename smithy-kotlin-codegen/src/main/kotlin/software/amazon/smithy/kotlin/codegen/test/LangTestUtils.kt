@@ -4,7 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.test
 
-import org.junit.jupiter.api.Assertions
+import kotlin.test.assertEquals
 
 /**
  * This file houses test functions specific to Kotlin language particulars.
@@ -24,6 +24,6 @@ internal fun String.assertBalancedBracesAndParens() {
             ')' -> closedParens++
         }
     }
-    Assertions.assertEquals(openBraces, closedBraces, "unmatched open/closed braces:\n$this")
-    Assertions.assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
+    assertEquals(openBraces, closedBraces, "unmatched open/closed braces:\n$this")
+    assertEquals(openParens, closedParens, "unmatched open/close parens:\n$this")
 }

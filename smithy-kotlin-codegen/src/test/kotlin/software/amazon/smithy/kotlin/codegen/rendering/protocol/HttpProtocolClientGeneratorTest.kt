@@ -4,13 +4,13 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class HttpProtocolClientGeneratorTest {
     private val commonTestContents: String
@@ -39,7 +39,6 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.engine.HttpClientEngineConfig")
     }
 
     @Test
@@ -52,7 +51,7 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("val client: SdkHttpClient")
         val expected = """
     init {
-        val httpClientEngine = config.httpClientEngine ?: KtorEngine(HttpClientEngineConfig())
+        val httpClientEngine = config.httpClientEngine ?: KtorEngine()
         client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)
     }
 """

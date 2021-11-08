@@ -5,7 +5,6 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.expectShape
@@ -16,6 +15,7 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import kotlin.test.Test
 
 class HttpStringValuesMapSerializerTest {
     private val defaultModel = loadModelFromResource("http-binding-protocol-generator-test.smithy")

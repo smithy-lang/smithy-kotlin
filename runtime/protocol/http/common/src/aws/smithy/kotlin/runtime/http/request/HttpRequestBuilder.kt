@@ -6,34 +6,29 @@ package aws.smithy.kotlin.runtime.http.request
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
+import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * Used to construct an HTTP request
+ * @param method The HTTP method (verb) to use when making the request
+ * @param url Endpoint to make request to
+ * @param headers HTTP headers
+ * @param body Outgoing payload. Initially empty
  */
-class HttpRequestBuilder {
-    /**
-     * The HTTP method (verb) to use when making the request
-     */
-    var method: HttpMethod = HttpMethod.GET
-
-    /**
-     * Endpoint to make request to
-     */
-    val url: UrlBuilder = UrlBuilder()
-
-    /**
-     * HTTP headers
-     */
-    val headers: HeadersBuilder = HeadersBuilder()
-
-    /**
-     * Outgoing payload. Initially empty
-     */
-    var body: HttpBody = HttpBody.Empty
+class HttpRequestBuilder private constructor(
+    var method: HttpMethod,
+    val url: UrlBuilder,
+    val headers: HeadersBuilder,
+    var body: HttpBody,
+) : CanDeepCopy<HttpRequestBuilder> {
+    constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty)
 
     fun build(): HttpRequest = HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)
+
+    override fun deepCopy(): HttpRequestBuilder =
+        HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body)
 
     override fun toString(): String = buildString {
         append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body)")
@@ -46,6 +41,20 @@ class HttpRequestBuilder {
  * Modify the URL inside the block
  */
 fun HttpRequestBuilder.url(block: UrlBuilder.() -> Unit) = url.apply(block)
+
+/**
+ * Set values from an existing [Url] instance
+ */
+fun HttpRequestBuilder.url(value: Url) = url.apply {
+    scheme = value.scheme
+    host = value.host
+    port = value.port
+    path = value.path
+    parameters.appendAll(value.parameters)
+    fragment = value.fragment
+    userInfo = value.userInfo
+    forceQuery = value.forceQuery
+}
 
 /**
  * Modify the headers inside the given block
@@ -65,7 +74,7 @@ fun HttpRequestBuilder.header(name: String, value: String) = headers.append(name
  */
 @InternalApi
 suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
-    val buffer = SdkBuffer(256)
+    val buffer = SdkByteBuffer(256u)
 
     // TODO - we have no way to know the http version at this level to set HTTP/x.x
     buffer.write("${request.method} ${request.url.encodedPath}\r\n")

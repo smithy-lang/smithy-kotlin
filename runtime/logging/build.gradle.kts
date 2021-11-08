@@ -18,5 +18,9 @@ kotlin {
                 implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
             }
         }
+
+        all {
+            languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
+        }
     }
 }

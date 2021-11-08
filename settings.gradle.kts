@@ -41,6 +41,7 @@ include(":runtime:serde:serde-json")
 include(":runtime:serde:serde-xml")
 include(":runtime:serde:serde-form-url")
 include(":runtime:protocol:http")
+include(":runtime:protocol:http-test")
 include(":runtime:protocol:http-client-engines:http-client-engine-ktor")
 
 include(":compile-tests")
@@ -48,6 +49,7 @@ include(":benchmarks")
 include(":benchmarks:serde-benchmarks-codegen")
 include(":benchmarks:serde-benchmarks")
 
+include(":dokka-smithy")
 
 // FIXME - intellij DOES NOT like this project included. Everything builds fine but intellij 2020.x
 // will not resolve symbols from dependencies in any other subproject once included. 2019.x seems to work fine

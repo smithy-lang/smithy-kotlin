@@ -5,13 +5,18 @@
 
 package aws.smithy.kotlin.runtime.util
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.IOException
+import java.nio.file.Path
 import java.util.*
 
-public actual object Platform {
+public actual object Platform : PlatformProvider {
     /**
      * Get an environment variable or null
      */
-    actual fun getenv(key: String): String? = System.getenv()[key]
+    override fun getenv(key: String): String? = System.getenv()[key]
 
     actual val isJvm: Boolean = true
     actual val isAndroid: Boolean by lazy { isAndroid() }
@@ -19,7 +24,38 @@ public actual object Platform {
     actual val isNode: Boolean = false
     actual val isNative: Boolean = false
 
-    actual fun osInfo(): OperatingSystem = getOsInfo()
+    override fun osInfo(): OperatingSystem = getOsInfo()
+
+    /**
+     * Read the contents of a file as a [String] or return null on any IO error.
+     *
+     * @param path fully qualified path encoded specifically to the target platform's filesystem.
+     * @return contents of file or null if error (file does not exist, etc.)
+     */
+    override suspend fun readFileOrNull(path: String): ByteArray? = try {
+        withContext(Dispatchers.IO) {
+            File(path).readBytes()
+        }
+    } catch (e: IOException) {
+        null
+    }
+
+    suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
+    suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
+
+    /**
+     * Get a system property or null
+     *
+     * @param key name of environment variable
+     * @return value of system property or null if undefined or platform does not support properties
+     */
+    override fun getProperty(key: String): String? = System.getProperty(key)
+
+    /**
+     * return the platform-specific file path separator char.  Eg on Linux a path may be '/root` and the path
+     * segment char is '/'.
+     */
+    override val filePathSeparator: String by lazy { File.separator }
 }
 
 private fun isAndroid(): Boolean = try {

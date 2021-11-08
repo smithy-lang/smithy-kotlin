@@ -186,4 +186,27 @@ class UrlTest {
         }
         assertEquals("/foo/bar", noParams.encodedPath)
     }
+
+    @Test
+    fun testDeepCopy() {
+        val builder1 = UrlBuilder().apply {
+            host = "foo.com"
+            port = 1234
+            parameters {
+                append("a", "alligator")
+                append("b", "bear")
+            }
+        }
+
+        val builder2 = builder1.deepCopy()
+
+        builder1.host = "bar.org"
+        builder1.port = 4321
+        builder1.parameters.append("c", "chinchilla")
+
+        val url1 = builder1.build().toString()
+        assertEquals("https://bar.org:4321?a=alligator&b=bear&c=chinchilla", url1)
+        val url2 = builder2.build().toString()
+        assertEquals("https://foo.com:1234?a=alligator&b=bear", url2)
+    }
 }

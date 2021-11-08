@@ -4,7 +4,6 @@
  */
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.dokka")
     jacoco
     `maven-publish`
 }
@@ -42,6 +41,8 @@ val generateSdkRuntimeVersion by tasks.registering {
     // this keeps us from having to manually change version numbers in multiple places
     val resourcesDir = "$buildDir/resources/main/software/amazon/smithy/kotlin/codegen/core"
     val versionFile = file("$resourcesDir/sdk-version.txt")
+    val gradlePropertiesFile = rootProject.file("gradle.properties")
+    inputs.file(gradlePropertiesFile)
     outputs.file(versionFile)
     sourceSets.main.get().output.dir(resourcesDir)
     doLast {

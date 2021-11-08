@@ -48,17 +48,25 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
         LOGGER.info("Discovering KotlinIntegration providers...")
         integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
-            .also { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
+            .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
             .filter { integration -> integration.enabledForService(context.model, settings) }
-            .also { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
+            .onEach { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
             .sortedBy(KotlinIntegration::order)
             .toList()
 
         LOGGER.info("Preprocessing model")
+        // Model pre-processing:
+        // 1. Start with the model from the plugin context
+        // 2. Apply integrations
+        // 3. Flatten error shapes (see: https://github.com/awslabs/smithy/pull/919)
+        // 4. Normalize the operations
         var resolvedModel = context.model
         for (integration in integrations) {
             resolvedModel = integration.preprocessModel(resolvedModel, settings)
         }
+
+        resolvedModel = ModelTransformer.create()
+            .copyServiceErrorsToOperations(resolvedModel, settings.getService(resolvedModel))
 
         // normalize operations
         model = OperationNormalizer.transform(resolvedModel, settings.service)

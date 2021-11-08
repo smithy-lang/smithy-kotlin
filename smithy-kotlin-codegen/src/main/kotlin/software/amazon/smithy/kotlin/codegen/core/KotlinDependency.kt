@@ -16,7 +16,7 @@ const val RUNTIME_ROOT_NS = "aws.smithy.kotlin.runtime"
  * Test if a string represents a valid artifact version string
  */
 fun isValidVersion(version: String): Boolean {
-    val re = Regex("\\d\\.\\d\\.\\d[a-z0-9A-Z.-]*\$")
+    val re = Regex("\\d+\\.\\d+\\.\\d[a-z0-9A-Z.-]*\$")
     return re.matches(version)
 }
 
@@ -34,7 +34,7 @@ private fun getDefaultRuntimeVersion(): String {
 // publishing info
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
-val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.5.30")
+val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.5.31")
 
 // See: https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
 enum class GradleConfiguration {

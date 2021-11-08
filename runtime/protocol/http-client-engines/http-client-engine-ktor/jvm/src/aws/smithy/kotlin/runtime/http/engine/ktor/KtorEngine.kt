@@ -6,10 +6,7 @@ package aws.smithy.kotlin.runtime.http.engine.ktor
 
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
-import aws.smithy.kotlin.runtime.http.engine.callContext
+import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.*
@@ -24,15 +21,46 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import okhttp3.ConnectionPool
+import okhttp3.Protocol
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.ExperimentalTime
+import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 
 /**
  * JVM [HttpClientEngine] backed by Ktor
  */
-class KtorEngine(val config: HttpClientEngineConfig) : HttpClientEngineBase("ktor") {
+class KtorEngine(
+    private val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+) : HttpClientEngineBase("ktor-okhttp") {
+    @OptIn(ExperimentalTime::class)
     val client: HttpClient = HttpClient(OkHttp) {
-        // TODO - propagate applicable client engine config to OkHttp engine
+        engine {
+            config {
+                connectTimeout(config.connectTimeout.toJavaDuration())
+                readTimeout(config.socketReadTimeout.toJavaDuration())
+                writeTimeout(config.socketWriteTimeout.toJavaDuration())
+                val pool = ConnectionPool(
+                    maxIdleConnections = config.maxConnections.toInt(),
+                    keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
+                    TimeUnit.MILLISECONDS
+                )
+                connectionPool(pool)
+
+                if (config.alpn.isNotEmpty()) {
+                    val protocols = config.alpn.mapNotNull {
+                        when (it) {
+                            AlpnId.HTTP1_1 -> Protocol.HTTP_1_1
+                            AlpnId.HTTP2 -> Protocol.HTTP_2
+                            else -> null
+                        }
+                    }
+                    protocols(protocols)
+                }
+            }
+        }
 
         // do not throw exceptions if status code < 300, error handling is expected by generated clients
         expectSuccess = false

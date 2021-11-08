@@ -4,10 +4,10 @@
  */
 package software.amazon.smithy.kotlin.codegen
 
-import org.junit.jupiter.api.Test
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
+import kotlin.test.Test
 
 // NOTE: protocol conformance is mostly handled by the protocol tests suite
 class IdempotentTokenGeneratorTest {
@@ -43,9 +43,7 @@ class IdempotentTokenGeneratorTest {
             
                     val payload = serializeAllocateWidgetOperationBody(context, input)
                     builder.body = ByteArrayContent(payload)
-                    if (builder.body !is HttpBody.Empty) {
-                        builder.headers.setMissing("Content-Type", "application/json")
-                    }
+                    builder.headers.setMissing("Content-Type", "application/json")
                     return builder
                 }
             }

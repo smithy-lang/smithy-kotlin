@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
+import software.amazon.smithy.kotlin.codegen.retries.StandardRetryMiddleware
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
@@ -60,7 +61,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     /**
      * Template method function that generators can override to return the _default_ set of middleware for the protocol
      */
-    protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> = listOf()
+    protected open fun getDefaultHttpMiddleware(ctx: ProtocolGenerator.GenerationContext): List<ProtocolMiddleware> =
+        listOf(
+            ResolveEndpointMiddleware(),
+            StandardRetryMiddleware(),
+        )
 
     /**
      * Render serialize implementation for the given operation's input shape.
@@ -410,8 +415,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
         }
 
-        writer.openBlock("if (builder.body !is #T.Empty) {", "}", RuntimeTypes.Http.HttpBody) {
-            val contentType = resolver.determineRequestContentType(op)
+        resolver.determineRequestContentType(op)?.let { contentType ->
             writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
         }
     }
@@ -664,7 +668,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 .call {
                     writer.write("")
                         .openBlock(
-                            "private suspend fun throw${op.defaultName().capitalize()}Error(context: #T, response: #T): #Q {", "}",
+                            "private suspend fun throw${op.capitalizedDefaultName()}Error(context: #T, response: #T): #Q {", "}",
                             RuntimeTypes.Core.ExecutionContext,
                             RuntimeTypes.Http.Response.HttpResponse,
                             KotlinTypes.Nothing
@@ -681,7 +685,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected open fun renderIsHttpError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Http.isSuccess)
         writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
-            write("throw${op.defaultName().capitalize()}Error(context, response)")
+            write("throw${op.capitalizedDefaultName()}Error(context, response)")
         }
     }
 

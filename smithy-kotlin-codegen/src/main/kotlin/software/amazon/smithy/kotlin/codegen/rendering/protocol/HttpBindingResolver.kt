@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
@@ -68,9 +69,9 @@ interface HttpBindingResolver {
      * Determine the request content type for the protocol.
      *
      * @param operationShape [OperationShape] associated with content type
-     * @return content type
+     * @return content type or null if no content-type header should be set
      */
-    fun determineRequestContentType(operationShape: OperationShape): String
+    fun determineRequestContentType(operationShape: OperationShape): String?
 
     /**
      * Determine the timestamp format depending on input parameter values.
@@ -140,9 +141,9 @@ class HttpTraitResolver(
         else -> error { "Unimplemented resolving bindings for ${shape.javaClass.canonicalName}" }
     }
 
-    override fun determineRequestContentType(operationShape: OperationShape): String = bindingIndex
+    override fun determineRequestContentType(operationShape: OperationShape): String? = bindingIndex
         .determineRequestContentType(operationShape, defaultContentType)
-        .orElse(defaultContentType)
+        .getOrNull()
 
     override fun determineTimestampFormat(
         member: ToShapeId,

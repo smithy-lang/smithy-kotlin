@@ -1,0 +1,45 @@
+name: API Docs Generation
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to generate API docs from'
+        required: true
+
+env:
+  PACKAGE_NAME: smithy-kotlin
+  DOC_LOCATION: build/dokka/htmlMultiModule
+  GH_PAGES_BRANCH: api-docs
+
+jobs:
+  api-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.inputs.tag }}
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: ${{ runner.os }}-gradle-
+      - name: Generate API Docs for ${{ env.PACKAGE_NAME }}
+        run: |
+          ./gradlew dokkaHtmlMultiModule
+      - name: Stage in branch
+        uses: peaceiris/actions-gh-pages@v3.7.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: ${{ env.GH_PAGES_BRANCH }}
+          publish_dir: ${{ env.DOC_LOCATION }}
+          destination_dir: .
+          allow_empty_commit: false # optional, default is false
+          user_name: AWS CI
+          user_email: nobody@amazonaws.com
+          commit_message: Update docs
+          disable_nojekyll: true

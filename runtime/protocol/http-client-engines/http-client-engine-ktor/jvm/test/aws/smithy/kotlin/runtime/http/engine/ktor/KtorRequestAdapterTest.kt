@@ -15,8 +15,8 @@ import io.ktor.http.content.OutgoingContent
 import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.*
-import org.junit.jupiter.api.Test
 import java.nio.ByteBuffer
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import io.ktor.content.ByteArrayContent as KtorByteArrayContent

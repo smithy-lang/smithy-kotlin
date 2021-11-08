@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.text.byteCountUtf8
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 
@@ -136,27 +137,57 @@ public suspend fun SdkByteReadChannel.readByte(): Byte {
  * Reads all available bytes to [dest] buffer and returns immediately or suspends if no bytes available
  */
 @OptIn(ExperimentalIoApi::class)
-public suspend fun SdkByteReadChannel.readAvailable(dest: SdkBuffer, limit: Int = dest.writeRemaining): Int {
+public suspend fun SdkByteReadChannel.readAvailable(dest: SdkByteBuffer, limit: Long = dest.writeRemaining.toLong()): Long {
     if (this is KtorReadChannel) {
         return chan.read { source, start, endExclusive ->
-            val rc = (endExclusive - start).toInt()
+            val rc = minOf(endExclusive - start, limit)
             if (rc > 0) {
                 dest.reserve(rc)
-                source.copyTo(dest.memory, start.toInt(), rc, dest.writePosition)
-                dest.commitWritten(rc)
+                source.copyTo(dest.memory, start, rc, dest.writePosition.toLong())
+                dest.advance(rc.toULong())
             }
-            return@read rc
-        }
+            return@read rc.toInt()
+        }.toLong()
     }
 
     return readAvailableFallback(dest, limit)
 }
 
-internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkBuffer, limit: Int): Int {
+internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkByteBuffer, limit: Long): Long {
     if (availableForRead == 0) awaitContent()
     // channel was closed while waiting and no further content was made available
     if (availableForRead == 0 && isClosedForRead) return -1
-    val tmp = ByteArray(minOf(availableForRead, limit))
+    val tmp = ByteArray(minOf(availableForRead.toLong(), limit, Int.MAX_VALUE.toLong()).toInt())
     dest.writeFully(tmp)
-    return tmp.size
+    return tmp.size.toLong()
+}
+
+/**
+ * Reads a UTF-8 code point from the channel. Returns `null` if closed
+ */
+suspend fun SdkByteReadChannel.readUtf8CodePoint(): Int? {
+    awaitContent()
+    if (availableForRead == 0 && isClosedForRead) return null
+
+    val firstByte = readByte()
+    val cnt = byteCountUtf8(firstByte)
+    var code = when (cnt) {
+        1 -> firstByte.toInt()
+        2 -> firstByte.toInt() and 0x1f
+        3 -> firstByte.toInt() and 0x0f
+        4 -> firstByte.toInt() and 0x07
+        else -> throw IllegalStateException("Invalid UTF-8 start sequence: $firstByte")
+    }
+
+    for (i in 1 until cnt) {
+        awaitContent()
+        if (availableForRead == 0 && isClosedForRead) throw IllegalStateException("unexpected EOF: expected ${cnt - i} bytes")
+        val byte = readByte()
+        val bint = byte.toInt()
+        if (bint and 0xc0 != 0x80) throw IllegalStateException("invalid UTF-8 successor byte: $byte")
+
+        code = (code shl 6) or (bint and 0x3f)
+    }
+
+    return code
 }

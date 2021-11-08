@@ -64,8 +64,10 @@ internal open class StringValuesMapImpl(
     override val caseInsensitiveName: Boolean = false,
     initialValues: Map<String, List<String>> = emptyMap()
 ) : StringValuesMap {
-    protected val values: Map<String, List<String>> by lazy {
-        if (caseInsensitiveName) CaseInsensitiveMap<List<String>>().apply { putAll(initialValues) } else values.toMap()
+    protected val values: Map<String, List<String>> = run {
+        // Make a defensive copy so modifications to the initialValues don't mutate our internal copy
+        val copiedValues = initialValues.deepCopy()
+        if (caseInsensitiveName) CaseInsensitiveMap<List<String>>().apply { putAll(copiedValues) } else copiedValues
     }
 
     override fun getAll(name: String): List<String>? = values[name]
@@ -81,12 +83,16 @@ internal open class StringValuesMapImpl(
     override fun isEmpty(): Boolean = values.isEmpty()
 }
 
+/**
+ * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
+ * @return A new map instance with copied value lists.
+ */
+internal fun Map<String, List<String>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
+
 @InternalApi
 open class StringValuesMapBuilder(val caseInsensitiveName: Boolean = false, size: Int = 8) {
     protected val values: MutableMap<String, MutableList<String>> =
         if (caseInsensitiveName) CaseInsensitiveMap() else LinkedHashMap(size)
-
-    protected var built = false
 
     fun getAll(name: String): List<String>? = values[name]
 
@@ -154,16 +160,8 @@ open class StringValuesMapBuilder(val caseInsensitiveName: Boolean = false, size
 
     fun clear() = values.clear()
 
-    open fun build(): StringValuesMap {
-        require(!built) { "StringValuesMapBuilder can only build a single instance" }
-        built = true
-        return StringValuesMapImpl(caseInsensitiveName, values)
-    }
+    open fun build(): StringValuesMap = StringValuesMapImpl(caseInsensitiveName, values)
 
-    private fun ensureListForKey(name: String, size: Int): MutableList<String> {
-        if (built) {
-            throw IllegalStateException("Cannot modify a builder when final structure has already been built")
-        }
-        return values[name] ?: ArrayList<String>(size).also { values[name] = it }
-    }
+    private fun ensureListForKey(name: String, size: Int): MutableList<String> =
+        values[name] ?: ArrayList<String>(size).also { values[name] = it }
 }
