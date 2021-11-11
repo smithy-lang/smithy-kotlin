@@ -7,6 +7,7 @@ description = "Internal test utilities"
 
 val coroutinesVersion: String by project
 val kotlinVersion: String by project
+val junitVersion: String by project
 
 kotlin {
     sourceSets {
@@ -18,6 +19,7 @@ kotlin {
         }
         jvmMain {
             dependencies {
+                api("org.junit.jupiter:junit-jupiter:$junitVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
             }
