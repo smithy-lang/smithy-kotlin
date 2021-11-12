@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.*
@@ -67,7 +66,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesObjects() = runSuspendTest {
+    fun itDeserializesObjects() {
         // language=JSON
         val actual = """ 
             {
@@ -88,7 +87,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun isDeserializesArrays() = runSuspendTest {
+    fun isDeserializesArrays() {
         // language=JSON
         val actual = """[ "hello", "world" ]""".allTokens()
 
@@ -102,14 +101,14 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itFailsOnUnclosedArrays(): Unit = runSuspendTest {
+    fun itFailsOnUnclosedArrays() {
         assertFailsWith<DeserializationException> {
             """[ "hello", "world" """.allTokens()
         }.message.shouldContain("expected one of `,`, `]`")
     }
 
     @Test
-    fun itFailsOnNaN(): Unit = runSuspendTest {
+    fun itFailsOnNaN() {
         assertFailsWith<DeserializationException>("Invalid number") {
             // language=JSON
             """[NaN]""".allTokens()
@@ -117,14 +116,14 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itFailsOnMissingComma(): Unit = runSuspendTest {
+    fun itFailsOnMissingComma() {
         assertFailsWith<DeserializationException> {
             """[3[4]]""".allTokens()
         }.message.shouldContain("Unexpected JSON token at offset 2; found `[`, expected one of `,`, `]`")
     }
 
     @Test
-    fun itFailsOnTrailingComma(): Unit = runSuspendTest {
+    fun itFailsOnTrailingComma() {
         assertFailsWith<DeserializationException> {
             """["",]""".allTokens()
         }.message.shouldContain("Unexpected JSON token at offset 4; found `]`, expected one of `{`, `[`")
@@ -135,7 +134,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesSingleScalarStrings() = runSuspendTest {
+    fun itDeserializesSingleScalarStrings() {
         // language=JSON
         val actual = "\"hello\"".allTokens()
         actual.shouldContainExactly(
@@ -145,7 +144,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesSingleScalarNumbers() = runSuspendTest {
+    fun itDeserializesSingleScalarNumbers() {
         // language=JSON
         val actual = "1.2".allTokens()
         actual.shouldContainExactly(
@@ -155,7 +154,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itCanHandleAllDataTypes() = runSuspendTest {
+    fun itCanHandleAllDataTypes() {
         // language=JSON
         val actual = """[ "hello", true, false, 1.0, 1, -34.234e3, null ]""".allTokens()
 
@@ -174,7 +173,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun canHandleNesting() = runSuspendTest {
+    fun canHandleNesting() {
         // language=JSON
         val actual = """
         [
@@ -208,7 +207,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itSkipsValuesRecursively() = runSuspendTest {
+    fun itSkipsValuesRecursively() {
         val payload = """
         {
             "x": 1,
@@ -241,7 +240,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itSkipsValuesRecursivelyAfterPeek() = runSuspendTest {
+    fun itSkipsValuesRecursivelyAfterPeek() {
         val payload = """
         {
             "x": 1,
@@ -293,7 +292,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun testPeek() = runSuspendTest {
+    fun testPeek() {
         val reader = newReader(KitchenSink.payload)
         KitchenSink.tokens.forEachIndexed { idx, expectedToken ->
             repeat(2) {
@@ -304,7 +303,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun itSkipsSimpleValues() = runSuspendTest {
+    fun itSkipsSimpleValues() {
         val payload = """
         {
             "x": 1,
@@ -329,13 +328,13 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun kitchenSink() = runSuspendTest {
+    fun kitchenSink() {
         val actual = KitchenSink.payload.allTokens()
         actual.shouldContainExactly(KitchenSink.tokens)
     }
 
     @Test
-    fun itHandlesEscapes() = runSuspendTest {
+    fun itHandlesEscapes() {
         val tests = listOf(
             """\"quote""" to "\"quote",
             """\/forward-slash""" to "/forward-slash",
@@ -366,7 +365,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun testUnescapeControls(): Unit = runSuspendTest {
+    fun testUnescapeControls() {
         assertEquals("\"test\"", """"\"test\""""".decodeJsonStringToken())
         assertEquals("foo\rbar", """"foo\rbar"""".decodeJsonStringToken())
         assertEquals("foo\r\n", """"foo\r\n"""".decodeJsonStringToken())
@@ -375,7 +374,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun testUnicodeUnescape(): Unit = runSuspendTest {
+    fun testUnicodeUnescape() {
         assertFailsWith<DeserializationException> {
             """"\uD801\nasdf"""".allTokens()
         }.message.shouldContain("Expected surrogate pair")
@@ -406,7 +405,7 @@ class JsonStreamReaderTest {
     }
 
     @Test
-    fun testUnescapedControlChars() = runSuspendTest {
+    fun testUnescapedControlChars() {
         assertFailsWith<DeserializationException> {
             """["new
 line"]""".allTokens()
@@ -424,7 +423,7 @@ line"]""".allTokens()
     }
 
     @Test
-    fun testUnicodeTokens() = runSuspendTest {
+    fun testUnicodeTokens() {
 
         val languages = listOf(
             "こんにちは世界",
@@ -456,7 +455,7 @@ line"]""".allTokens()
     }
 }
 
-private suspend fun String.decodeJsonStringToken(): String {
+private fun String.decodeJsonStringToken(): String {
     val reader = newReader(this)
     val tokens = mutableListOf<JsonToken>()
     while (true) {
@@ -474,7 +473,7 @@ private suspend fun String.decodeJsonStringToken(): String {
     return token.value
 }
 
-private suspend fun String.allTokens(): List<JsonToken> {
+private fun String.allTokens(): List<JsonToken> {
     val reader = newReader(this)
     val tokens = mutableListOf<JsonToken>()
     while (true) {

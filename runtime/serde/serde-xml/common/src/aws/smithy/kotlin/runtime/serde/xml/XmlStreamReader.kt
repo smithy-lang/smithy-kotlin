@@ -34,26 +34,26 @@ interface XmlStreamReader {
      * current level + 1 (CHILD), starting at the next node to be read from the stream.
      * @param subtreeStartDepth Determines minimum depth of the subtree
      */
-    suspend fun subTreeReader(subtreeStartDepth: SubtreeStartDepth = SubtreeStartDepth.CHILD): XmlStreamReader
+    fun subTreeReader(subtreeStartDepth: SubtreeStartDepth = SubtreeStartDepth.CHILD): XmlStreamReader
 
     /**
      * Return the next actionable token or null if stream is exhausted.
      *
      * @throws XmlGenerationException upon any error.
      */
-    suspend fun nextToken(): XmlToken?
+    fun nextToken(): XmlToken?
 
     /**
      * Recursively skip the next token. Meant for discarding unwanted/unrecognized nodes in an XML document
      */
-    suspend fun skipNext()
+    fun skipNext()
 
     /**
      * Peek at the next token type.  Successive calls will return the same value, meaning there is only one
      * look-ahead at any given time during the parsing of input data.
      * @param index a positive integer representing index of node from current to peek.  Index of 1 is the next node.
      */
-    suspend fun peek(index: Int = 1): XmlToken?
+    fun peek(index: Int = 1): XmlToken?
 }
 
 /**
@@ -61,7 +61,7 @@ interface XmlStreamReader {
  *
  * @param selectionPredicate predicate that evaluates nodes of the required type to match
  */
-suspend inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicate: (T) -> Boolean = { true }): T? {
+inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicate: (T) -> Boolean = { true }): T? {
     var token: XmlToken? = lastToken
     var foundMatch = false
 

@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -14,7 +13,7 @@ import kotlin.test.assertEquals
 class XmlDeserializerNamespaceTest {
 
     @Test
-    fun `it handles struct with namespace declarations but default tags`() = runSuspendTest {
+    fun `it handles struct with namespace declarations but default tags`() {
         val payload = """
            <MyStructure xmlns="http://foo.com">
                 <foo xmlns:bar="http://foo2.com">example1</foo>
@@ -43,7 +42,7 @@ class XmlDeserializerNamespaceTest {
                 field(BAR_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): NamespaceStructTest {
+            fun deserialize(deserializer: Deserializer): NamespaceStructTest {
                 val result = NamespaceStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -61,7 +60,7 @@ class XmlDeserializerNamespaceTest {
     }
 
     @Test
-    fun `it handles struct with node namespace`() = runSuspendTest {
+    fun `it handles struct with node namespace`() {
         val payload = """
            <MyStructure xmlns:baz="http://foo.com">
                 <foo>example1</foo>
@@ -90,7 +89,7 @@ class XmlDeserializerNamespaceTest {
                 field(BAR_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): NodeNamespaceStructTest {
+            fun deserialize(deserializer: Deserializer): NodeNamespaceStructTest {
                 val result = NodeNamespaceStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
