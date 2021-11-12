@@ -13,7 +13,6 @@
     ],
     "build_dir": "target/build",
     "build_steps": [
-        "pwd",
         "{gradlew} assemble --parallel" 
     ],
     "post_build_steps": [
