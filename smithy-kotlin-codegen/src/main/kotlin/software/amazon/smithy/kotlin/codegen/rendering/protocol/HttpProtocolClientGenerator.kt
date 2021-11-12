@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -54,19 +53,12 @@ abstract class HttpProtocolClientGenerator(
                     middleware.filterTo(appliedMiddleware) { it.isEnabledFor(ctx, op) }
                 }
 
-                operations.first().let { op ->
-                    ctx.delegator.useSymbolWriter(op.registerMiddlewareSymbol(ctx.settings)) { middlewareWriter ->
-                        appliedMiddleware.forEach { it.renderProperties(middlewareWriter) }
-                    }
-                }
+                // render properties from middleware to service client
+                appliedMiddleware.forEach { it.renderProperties(writer) }
             }
             .call {
                 operations.forEach { op ->
                     renderOperationBody(writer, operationsIndex, op)
-
-                    ctx.delegator.useSymbolWriter(op.registerMiddlewareSymbol(ctx.settings)) { middlewareWriter ->
-                        renderOperationMiddleware(op, middlewareWriter)
-                    }
                 }
             }
             .call { renderClose(writer) }
@@ -127,6 +119,7 @@ abstract class HttpProtocolClientGenerator(
         val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op)
         writer.openBlock("override #L {", signature)
             .call { renderOperationSetup(writer, opIndex, op) }
+            .call { renderOperationMiddleware(op, writer) }
             .call { renderOperationExecute(writer, opIndex, op) }
             .closeBlock("}")
     }
@@ -202,8 +195,6 @@ abstract class HttpProtocolClientGenerator(
                 }
             }
         }
-
-        writer.write("#T(config, op)", op.registerMiddlewareSymbol(ctx.settings))
     }
 
     /**
@@ -243,49 +234,24 @@ abstract class HttpProtocolClientGenerator(
     }
 
     /**
-     * Renders the operation specific middleware registration function
+     * Renders the operation specific middleware
      *
+     * Example:
      * ```
-     * internal fun register{OperationName}Middleware(config: Service.Config, op: SdkHttpOperation<Input, Output>) {
-     *     ...
-     * }
+     * op.install(<Middleware>)
      * ```
      */
     protected open fun renderOperationMiddleware(op: OperationShape, writer: KotlinWriter) {
-        writer.write("")
-
-        val registerFnSymbol = op.registerMiddlewareSymbol(ctx.settings)
-        val (inputSymbolName, outputSymbolName) = ioSymbolNames(op)
-
-        writer.addImport("${ctx.settings.pkg.name}.model", "*")
-        writer.addImport(RuntimeTypes.Http.Operation.SdkHttpOperation)
-
-        val service = ctx.symbolProvider.toSymbol(ctx.service)
-
-        writer.openBlock(
-            "internal fun #T(config: #T.Config, op: #T<#L,#L>) {",
-            registerFnSymbol,
-            service,
-            RuntimeTypes.Http.Operation.SdkHttpOperation,
-            inputSymbolName,
-            outputSymbolName
-        )
-            .openBlock("op.apply {")
-            .call {
-                middleware
-                    .filter { it.isEnabledFor(ctx, op) }
-                    .sortedBy(ProtocolMiddleware::order)
-                    .forEach { middleware ->
-                        middleware.render(ctx, op, writer)
-                    }
-                if (op.hasTrait<HttpChecksumRequiredTrait>()) {
-                    writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
-                    writer.write("op.install(#T)", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
-                }
+        middleware
+            .filter { it.isEnabledFor(ctx, op) }
+            .sortedBy(ProtocolMiddleware::order)
+            .forEach { middleware ->
+                middleware.render(ctx, op, writer)
             }
-            .closeBlock("}")
-            .closeBlock("}")
-            .write("")
+        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+            writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+            writer.write("op.install(#T)", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+        }
     }
 
     protected open fun renderClose(writer: KotlinWriter) {
@@ -300,13 +266,4 @@ abstract class HttpProtocolClientGenerator(
      * Render any additional methods to support client operation
      */
     protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
-}
-
-fun OperationShape.registerMiddlewareSymbol(settings: KotlinSettings): Symbol {
-    val op = this
-    return buildSymbol {
-        name = op.registerMiddlewareName()
-        definitionFile = "OperationMiddleware.kt"
-        namespace = settings.pkg.name
-    }
 }
