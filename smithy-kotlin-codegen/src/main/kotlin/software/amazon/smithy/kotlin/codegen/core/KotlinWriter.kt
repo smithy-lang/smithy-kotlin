@@ -101,7 +101,6 @@ fun <T : CodeWriter> T.closeAndOpenBlock(
 ): T = apply {
     dedent()
     openBlock(textBeforeNewLine, *args)
-    indent()
 }
 
 /**

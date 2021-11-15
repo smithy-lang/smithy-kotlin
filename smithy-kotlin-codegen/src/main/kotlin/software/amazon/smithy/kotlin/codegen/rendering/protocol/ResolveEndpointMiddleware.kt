@@ -7,15 +7,16 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.model.shapes.OperationShape
 
 /**
  * Default endpoint resolver middleware
  */
-class ResolveEndpointMiddleware : HttpFeatureMiddleware() {
+class ResolveEndpointMiddleware : ProtocolMiddleware {
     override val name: String = "ResolveEndpoint"
 
-    override fun renderConfigure(writer: KotlinWriter) {
+    override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Http.Middlware.ResolveEndpoint)
-        writer.write("resolver = config.endpointResolver")
+        writer.write("op.install(#T(config.endpointResolver))", RuntimeTypes.Http.Middlware.ResolveEndpoint)
     }
 }

@@ -9,6 +9,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
+import software.amazon.smithy.model.shapes.OperationShape
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -17,10 +18,11 @@ class HttpProtocolClientGeneratorTest {
     private val deprecatedTestContents: String
     private val writer: KotlinWriter = KotlinWriter(TestModelDefault.NAMESPACE)
 
-    class MockProtocolMiddleware1 : HttpFeatureMiddleware() {
+    class MockProtocolMiddleware1 : ProtocolMiddleware {
         override val name: String = "MockProtocolMiddleware1"
-        override fun renderConfigure(writer: KotlinWriter) {
-            writer.write("configurationField1 = \"testing\"")
+
+        override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+            writer.write("op.install(MockMiddleware(configurationField1 = \"testing\"))")
         }
     }
 
@@ -82,9 +84,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFoo"
             }
         }
-        op.install(MockProtocolMiddleware1) {
-            configurationField1 = "testing"
-        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
         return op.roundTrip(client, input)
     }
 """,
@@ -99,9 +99,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoInput"
             }
         }
-        op.install(MockProtocolMiddleware1) {
-            configurationField1 = "testing"
-        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
         return op.roundTrip(client, input)
     }
 """,
@@ -116,9 +114,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoOutput"
             }
         }
-        op.install(MockProtocolMiddleware1) {
-            configurationField1 = "testing"
-        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
         return op.roundTrip(client, input)
     }
 """,
@@ -133,9 +129,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInput"
             }
         }
-        op.install(MockProtocolMiddleware1) {
-            configurationField1 = "testing"
-        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
         return op.roundTrip(client, input)
     }
 """,
@@ -150,9 +144,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutput"
             }
         }
-        op.install(MockProtocolMiddleware1) {
-            configurationField1 = "testing"
-        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
         return op.execute(client, input, block)
     }
 """,
@@ -167,9 +159,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutputNoInput"
             }
         }
-        op.install(MockProtocolMiddleware1) {
-            configurationField1 = "testing"
-        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
         return op.execute(client, input, block)
     }
 """,
@@ -184,9 +174,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInputNoOutput"
             }
         }
-        op.install(MockProtocolMiddleware1) {
-            configurationField1 = "testing"
-        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
         return op.roundTrip(client, input)
     }
 """
