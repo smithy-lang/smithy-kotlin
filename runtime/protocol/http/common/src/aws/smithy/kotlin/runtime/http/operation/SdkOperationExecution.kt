@@ -26,11 +26,30 @@ import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
 typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
+/**
+ * Middleware that intercepts the [SdkOperationExecution.initialize] phase
+ */
+typealias InitializeMiddleware<Request, Response> = Middleware<OperationRequest<Request>, Response>
+
+/**
+ * Middleware that intercepts the [SdkOperationExecution.mutate] phase
+ */
+typealias MutateMiddleware<Response> = Middleware<SdkHttpRequest, Response>
+
+/**
+ * Middleware that intercepts the [SdkOperationExecution.finalize] phase
+ */
+typealias FinalizeMiddleware<Response> = Middleware<SdkHttpRequest, Response>
+
+/**
+ * Middleware that intercepts the [SdkOperationExecution.receive] phase
+ */
+typealias ReceiveMiddleware = Middleware<SdkHttpRequest, HttpCall>
 
 /**
  * Configure the execution of an operation from [Request] to [Response]
  *
- * An operation has several "phases" of it's lifecycle that can be intercepted and customized.
+ * An operation has several "phases" of its lifecycle that can be intercepted and customized.
  */
 @InternalApi
 class SdkOperationExecution<Request, Response> {
@@ -77,7 +96,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     }
 
     // ensure http calls are tracked
-    receive.register(Phase.Order.After, HttpCallMiddleware())
+    receive.register(HttpCallMiddleware())
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(inner, receive)

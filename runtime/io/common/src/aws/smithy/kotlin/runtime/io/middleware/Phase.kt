@@ -27,13 +27,13 @@ class Phase<Request, Response> : Middleware<Request, Response> {
      */
     fun intercept(order: Order = Order.After, interceptor: suspend (req: Request, next: Handler<Request, Response>) -> Response) {
         val wrapped = MiddlewareLambda(interceptor)
-        register(order, wrapped)
+        register(wrapped, order)
     }
 
     /**
      * Register a middleware in a specific order
      */
-    fun register(order: Order, middleware: Middleware<Request, Response>) {
+    fun register(middleware: Middleware<Request, Response>, order: Order = Order.After) {
         when (order) {
             Order.Before -> middlewares.add(0, middleware)
             Order.After -> middlewares.add(middleware)

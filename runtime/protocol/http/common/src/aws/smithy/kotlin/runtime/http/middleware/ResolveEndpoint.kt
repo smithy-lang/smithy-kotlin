@@ -5,44 +5,28 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
+import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
- *  Http feature for resolving the service endpoint.
+ *  Http middleware for resolving the service endpoint.
  */
 @InternalApi
-public class ResolveEndpoint(
-    config: Config
-) : Feature {
+class ResolveEndpoint<I, O>(
+    private val resolver: EndpointResolver
+) : MutateMiddleware<O>, AutoInstall<I, O> {
 
-    private val resolver: EndpointResolver = requireNotNull(config.resolver) { "EndpointResolver must not be null" }
-
-    public class Config {
-        /**
-         * The resolver to use
-         */
-        public var resolver: EndpointResolver? = null
+    override fun install(op: SdkHttpOperation<I, O>) {
+        op.execution.mutate.register(this)
     }
 
-    public companion object Feature : HttpClientFeatureFactory<Config, ResolveEndpoint> {
-        override val key: FeatureKey<ResolveEndpoint> = FeatureKey("ResolveEndpoint")
-
-        override fun create(block: Config.() -> Unit): ResolveEndpoint {
-            val config = Config().apply(block)
-            return ResolveEndpoint(config)
-        }
-    }
-
-    override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
-        operation.execution.mutate.intercept { req, next ->
-            val endpoint = resolver.resolve()
-            setRequestEndpoint(req, endpoint)
-            val logger = req.context.getLogger("ResolveEndpoint")
-            logger.debug { "resolved endpoint: $endpoint" }
-            next.call(req)
-        }
+    override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O {
+        val endpoint = resolver.resolve()
+        setRequestEndpoint(request, endpoint)
+        val logger = request.context.getLogger("ResolveEndpoint")
+        logger.debug { "resolved endpoint: $endpoint" }
+        return next.call(request)
     }
 }
 

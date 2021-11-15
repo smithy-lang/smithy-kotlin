@@ -42,6 +42,7 @@ class SdkHttpOperation<I, O>(
         )
     }
 
+    // FIXME - remove the feature concept
     /**
      * Install a specific [feature] and optionally [configure] it.
      */
@@ -54,6 +55,11 @@ class SdkHttpOperation<I, O>(
         features[feature.key] = instance
         instance.install(this)
     }
+
+    /**
+     * Install a middleware into this operations execution stack
+     */
+    fun install(middleware: AutoInstall<I, O>) { middleware.install(this) }
 
     companion object {
         inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =

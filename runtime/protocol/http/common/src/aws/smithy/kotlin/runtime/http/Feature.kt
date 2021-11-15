@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
 
+// FIXME - delete
 /**
  * Used to identify a particular feature
  */
