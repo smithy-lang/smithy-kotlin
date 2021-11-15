@@ -70,7 +70,7 @@ class ApiEvolutionTest {
             }
         """.trimIndent()
 
-        testModelChangeAgainstSource(modelV1, modelV2, customerCode, Debug.emitSourcesToTemp).let { result ->
+        testModelChangeAgainstSource(modelV1, modelV2, customerCode, true).let { result ->
             assertTrue(result.compileSuccess, result.compileOutput)
         }
     }

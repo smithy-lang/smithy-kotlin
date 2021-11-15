@@ -101,8 +101,8 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      * e.g.
      * ```
      * companion object {
-     *     operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): LambdaClient {
-     *         val config = Config.BuilderImpl().apply(block).build()
+     *     operator fun invoke(block: Config.Builder.() -> Unit = {}): LambdaClient {
+     *         val config = Config.Builder().apply(block).build()
      *         return DefaultLambdaClient(config)
      *     }
      *
@@ -112,8 +112,8 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      */
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            withBlock("operator fun invoke(block: Config.DslBuilder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
-                write("val config = Config.BuilderImpl().apply(block).build()")
+            withBlock("operator fun invoke(block: Config.Builder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
+                write("val config = Config.Builder().apply(block).build()")
                 write("return Default${serviceSymbol.name}(config)")
             }
 
@@ -162,7 +162,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 writer.write("")
                 writer.renderDocumentation(op)
                 writer.renderAnnotations(op)
-                val signature = "suspend fun $operationName(block: $input.DslBuilder.() -> Unit)"
+                val signature = "suspend fun $operationName(block: $input.Builder.() -> Unit)"
                 val impl = "$operationName($input.builder().apply(block).build())"
                 writer.write("$signature = $impl")
             }

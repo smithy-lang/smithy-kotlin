@@ -35,7 +35,7 @@ class ClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-class Config private constructor(builder: BuilderImpl): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
+class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
@@ -53,65 +53,17 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 """
         contents.shouldContainWithDiff(expectedProps)
 
-        val expectedJavaBuilderInterface = """
-    interface FluentBuilder {
-        fun endpointResolver(endpointResolver: EndpointResolver): FluentBuilder
-        fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder
-        fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder
-        fun sdkLogMode(sdkLogMode: SdkLogMode): FluentBuilder
-        fun build(): Config
+        val expectedBuilder = """
+    public class Builder() {
+        var endpointResolver: EndpointResolver? = null
+        var httpClientEngine: HttpClientEngine? = null
+        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+        var sdkLogMode: SdkLogMode = SdkLogMode.Default
+
+        fun build(): Config = Config(this)
     }
 """
-        contents.shouldContainOnlyOnceWithDiff(expectedJavaBuilderInterface)
-
-        val expectedDslBuilderInterface = """
-    interface DslBuilder {
-        /**
-         * Set the [aws.smithy.kotlin.runtime.http.operation.EndpointResolver] used to resolve service endpoints. Operation requests will be
-         * made against the endpoint returned by the resolver.
-         */
-        var endpointResolver: EndpointResolver?
-
-        /**
-         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)
-         */
-        var httpClientEngine: HttpClientEngine?
-
-        /**
-         * Override the default idempotency token generator. SDK clients will generate tokens for members
-         * that represent idempotent tokens when not explicitly set by the caller using this generator.
-         */
-        var idempotencyTokenProvider: IdempotencyTokenProvider?
-
-        /**
-         * Configure events that will be logged. By default clients will not output
-         * raw requests or responses. Use this setting to opt-in to additional debug logging.
-         * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
-         * **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
-         * performance considerations when dumping the request/response body. This is primarily a tool for
-         * debug purposes.
-         */
-        var sdkLogMode: SdkLogMode
-
-    }
-"""
-        contents.shouldContainWithDiff(expectedDslBuilderInterface)
-
-        val expectedBuilderImpl = """
-    internal class BuilderImpl() : FluentBuilder, DslBuilder {
-        override var endpointResolver: EndpointResolver? = null
-        override var httpClientEngine: HttpClientEngine? = null
-        override var idempotencyTokenProvider: IdempotencyTokenProvider? = null
-        override var sdkLogMode: SdkLogMode = SdkLogMode.Default
-
-        override fun build(): Config = Config(this)
-        override fun endpointResolver(endpointResolver: EndpointResolver): FluentBuilder = apply { this.endpointResolver = endpointResolver }
-        override fun httpClientEngine(httpClientEngine: HttpClientEngine): FluentBuilder = apply { this.httpClientEngine = httpClientEngine }
-        override fun idempotencyTokenProvider(idempotencyTokenProvider: IdempotencyTokenProvider): FluentBuilder = apply { this.idempotencyTokenProvider = idempotencyTokenProvider }
-        override fun sdkLogMode(sdkLogMode: SdkLogMode): FluentBuilder = apply { this.sdkLogMode = sdkLogMode }
-    }
-"""
-        contents.shouldContainWithDiff(expectedBuilderImpl)
+        contents.shouldContainWithDiff(expectedBuilder)
 
         val expectedImports = listOf(
             "import ${RuntimeTypes.Http.Operation.EndpointResolver.fullName}",
@@ -149,7 +101,7 @@ class Config private constructor(builder: BuilderImpl): HttpClientConfig, Idempo
 
         // we should have no base classes when not using the default and no inheritFrom specified
         val expectedCtor = """
-class Config private constructor(builder: BuilderImpl) {
+class Config private constructor(builder: Builder) {
 """
         contents.shouldContain(expectedCtor)
 
@@ -161,13 +113,13 @@ class Config private constructor(builder: BuilderImpl) {
 """
         contents.shouldContain(expectedProps)
 
-        val expectedDslProps = """
-        override var boolProp: Boolean? = null
-        override var intProp: Int = 1
-        override var nullIntProp: Int? = null
-        override var stringProp: String? = null
+        val expectedBuilderProps = """
+        var boolProp: Boolean? = null
+        var intProp: Int = 1
+        var nullIntProp: Int? = null
+        var stringProp: String? = null
 """
-        contents.shouldContain(expectedDslProps)
+        contents.shouldContain(expectedBuilderProps)
     }
 
     @Test
@@ -275,10 +227,7 @@ class Config private constructor(builder: BuilderImpl) {
 
         val expectedCompanion = """
     companion object {
-        @JvmStatic
-        fun fluentBuilder(): FluentBuilder = BuilderImpl()
-
-        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): Config = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> kotlin.Unit): Config = Builder().apply(block).build()
     }
 """
         contents.shouldContainWithDiff(expectedCompanion)
@@ -339,11 +288,11 @@ class Config private constructor(builder: BuilderImpl) {
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedImplProps = """
-        override var defaultFoo: Foo = DefaultFoo
-        override var nullFoo: Foo? = null
-        override var requiredDefaultedFoo: Foo? = null
-        override var requiredFoo: Foo? = null
-        override var requiredFoo2: Foo? = null
+        var defaultFoo: Foo = DefaultFoo
+        var nullFoo: Foo? = null
+        var requiredDefaultedFoo: Foo? = null
+        var requiredFoo: Foo? = null
+        var requiredFoo2: Foo? = null
 """
         contents.shouldContainWithDiff(expectedImplProps)
     }

@@ -75,10 +75,10 @@ class ClientConfigGenerator(
             .joinToString(", ")
 
         val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
-        ctx.writer.openBlock("class #configClass.name:L private constructor(builder: BuilderImpl)$formattedBaseClasses {")
+        ctx.writer.openBlock("class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {")
             .call { renderImmutableProperties() }
             .call { renderCompanionObject() }
-            .call { renderBuilderImpl() }
+            .call { renderBuilder() }
             .closeBlock("}")
 
         ctx.writer.removeContext("configClass.name")
@@ -88,11 +88,11 @@ class ClientConfigGenerator(
         ctx.writer.withBlock("companion object {", "}") {
             if (builderReturnType != null) {
                 write(
-                    "operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()",
+                    "operator fun invoke(block: Builder.() -> kotlin.Unit): #T = Builder().apply(block).build()",
                     builderReturnType
                 )
             } else {
-                write("operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #configClass.name:L = BuilderImpl().apply(block).build()")
+                write("operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
             }
         }
     }
@@ -144,9 +144,9 @@ class ClientConfigGenerator(
         }
     }
 
-    private fun renderBuilderImpl() {
+    private fun renderBuilder() {
         ctx.writer.write("")
-            .withBlock("internal class Builder() {", "}") {
+            .withBlock("public class Builder() {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
@@ -156,7 +156,7 @@ class ClientConfigGenerator(
                 write("")
 
                 write("")
-                write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
+                write("fun build(): #configClass.name:L = #configClass.name:L(this)")
             }
     }
 }

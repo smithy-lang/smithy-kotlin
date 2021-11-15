@@ -54,7 +54,7 @@ class StructureGenerator(
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
-        writer.openBlock("class #class.name:L private constructor(builder: BuilderImpl) {")
+        writer.openBlock("class #class.name:L private constructor(builder: Builder) {")
             .call { renderImmutableProperties() }
             .write("")
             .call { renderCompanionObject() }
@@ -62,7 +62,7 @@ class StructureGenerator(
             .call { renderHashCode() }
             .call { renderEquals() }
             .call { renderCopy() }
-            .call { renderBuilderImpl() }
+            .call { renderBuilder() }
             .closeBlock("}")
             .write("")
     }
@@ -90,9 +90,9 @@ class StructureGenerator(
         writer.withBlock("companion object {", "}") {
             // the manual construction of a DslBuilder is mostly to support serde, end users should go through
             // invoke syntax
-            write("internal fun builder(): DslBuilder = BuilderImpl()")
+            write("internal fun builder(): Builder = Builder()")
             write("")
-            write("operator fun invoke(block: DslBuilder.() -> #Q): #class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
+            write("operator fun invoke(block: Builder.() -> #Q): #class.name:L = Builder().apply(block).build()", KotlinTypes.Unit)
             write("")
         }
     }
@@ -211,11 +211,11 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-            .write("fun copy(block: DslBuilder.() -> #Q = {}): #class.name:L = BuilderImpl(this).apply(block).build()", KotlinTypes.Unit)
+            .write("fun copy(block: Builder.() -> #Q = {}): #class.name:L = Builder(this).apply(block).build()", KotlinTypes.Unit)
             .write("")
     }
 
-    private fun renderBuilderImpl() {
+    private fun renderBuilder() {
         writer.write("")
             .withBlock("public class Builder() {", "}") {
                 // override DSL properties
@@ -223,7 +223,6 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     write("var #L: #D", memberName, memberSymbol)
                 }
-
                 write("")
 
                 // generate the constructor that converts from the underlying immutable class to a builder instance
@@ -234,11 +233,8 @@ class StructureGenerator(
                     }
                 }
 
-                // generate the Java builder overrides
-                // NOTE: The enum overloads are the same in both the Java and DslBuilder interfaces, generating
-                // the Java builder implementation will satisfy the DslInterface w.r.t enum overloads
                 write("")
-                write("override fun build(): #class.name:L = #class.name:L(this)")
+                write("fun build(): #class.name:L = #class.name:L(this)")
             }
     }
 
@@ -257,7 +253,7 @@ class StructureGenerator(
         val exceptionBaseClass = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
         writer.addImport(exceptionBaseClass)
 
-        writer.openBlock("class #class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
+        writer.openBlock("class #class.name:L private constructor(builder: Builder) : ${exceptionBaseClass.name}() {")
             .write("")
             .call { renderImmutableProperties() }
             .write("")
@@ -274,7 +270,7 @@ class StructureGenerator(
             .call { renderHashCode() }
             .call { renderEquals() }
             .call { renderCopy() }
-            .call { renderBuilderImpl() }
+            .call { renderBuilder() }
             .closeBlock("}")
             .write("")
     }

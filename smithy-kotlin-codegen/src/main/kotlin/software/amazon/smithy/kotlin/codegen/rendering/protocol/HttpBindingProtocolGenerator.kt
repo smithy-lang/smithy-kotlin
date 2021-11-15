@@ -92,7 +92,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the deserialize function which has the following signature:
      *
      * ```
-     * fun deserializeFooOperationBody(builder: Foo.DslBuilder, payload: ByteArray) {
+     * fun deserializeFooOperationBody(builder: Foo.Builder, payload: ByteArray) {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -151,7 +151,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the deserialize function which has the following signature:
      *
      * ```
-     * fun deserializeFooError(builder: FooError.DslBuilder, payload: ByteArray) {
+     * fun deserializeFooError(builder: FooError.Builder, payload: ByteArray) {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -661,7 +661,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // render a function responsible for deserializing the members bound to the payload
                     // this function is delegated to by the `HttpDeserialize` implementation generated
                     writer.write("")
-                        .openBlock("private suspend fun #L(builder: #T.DslBuilder, payload: ByteArray) {", "}", op.bodyDeserializerName(), outputSymbol) {
+                        .openBlock("private suspend fun #L(builder: #T.Builder, payload: ByteArray) {", "}", op.bodyDeserializerName(), outputSymbol) {
                             renderDeserializeOperationBody(ctx, op, writer)
                         }
                 }
@@ -732,7 +732,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .openBlock(
                             "private suspend fun #L(builder: #L, payload: ByteArray) {", "}",
                             outputSymbol.errorDeserializerName(),
-                            "${outputSymbol.name}.DslBuilder",
+                            "${outputSymbol.name}.Builder",
                         ) {
                             renderDeserializeException(ctx, shape, writer)
                         }

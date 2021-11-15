@@ -454,7 +454,7 @@ internal class FooOperationDeserializer {
             field(LIST_DESCRIPTOR)
         }
 
-        val builder = FooResponse.dslBuilder()
+        val builder = FooResponse.Builder()
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
@@ -506,15 +506,13 @@ internal class PayloadStructDocumentDeserializer {
     }
 }
 
-class FooResponse private constructor(builder: BuilderImpl) {
+class FooResponse private constructor(builder: Builder) {
     val parentList: List<PayloadStruct>? = builder.parentList
 
     companion object {
-        fun builder(): Builder = BuilderImpl()
+        fun builder(): Builder = Builder()
 
-        fun dslBuilder(): DslBuilder = BuilderImpl()
-
-        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): FooResponse = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> kotlin.Unit): FooResponse = Builder().apply(block).build()
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -537,28 +535,16 @@ class FooResponse private constructor(builder: BuilderImpl) {
         return true
     }
 
-    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): FooResponse = BuilderImpl(this).apply(block).build()
+    fun copy(block: Builder.() -> kotlin.Unit = {}): FooResponse = Builder(this).apply(block).build()
 
-    interface Builder {
-        fun build(): FooResponse
-        fun parentList(parentList: List<PayloadStruct>): Builder
-    }
-
-    interface DslBuilder {
-        var parentList: List<PayloadStruct>?
-
-        fun build(): FooResponse
-    }
-
-    private class BuilderImpl() : Builder, DslBuilder {
-        override var parentList: List<PayloadStruct>? = null
+    public class Builder()  {
+        var parentList: List<PayloadStruct>? = null
 
         constructor(x: FooResponse) : this() {
             this.parentList = x.parentList
         }
 
-        override fun build(): FooResponse = FooResponse(this)
-        override fun parentList(parentList: List<PayloadStruct>): Builder = apply { this.parentList = parentList }
+        fun build(): FooResponse = FooResponse(this)
     }
 }
 

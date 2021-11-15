@@ -79,13 +79,13 @@ class ExceptionGeneratorTest {
     @Test
     fun `error generator extends correctly`() {
         val expectedClientClassDecl = """
-            class ValidationException private constructor(builder: BuilderImpl) : TestException() {
+            class ValidationException private constructor(builder: Builder) : TestException() {
         """.trimIndent()
 
         clientErrorTestContents.shouldContainWithDiff(expectedClientClassDecl)
 
         val expectedServerClassDecl = """
-            class InternalServerException private constructor(builder: BuilderImpl) : TestException() {
+            class InternalServerException private constructor(builder: Builder) : TestException() {
         """.trimIndent()
 
         serverErrorTestContents.shouldContainWithDiff(expectedServerClassDecl)
