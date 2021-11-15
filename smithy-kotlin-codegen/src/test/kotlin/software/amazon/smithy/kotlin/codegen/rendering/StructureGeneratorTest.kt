@@ -168,6 +168,9 @@ class StructureGeneratorTest {
     fun `it renders a builder impl`() {
         val expected = """
             public class Builder() {
+                /**
+                 * This *is* documentation about the member.
+                 */
                 var bar: Int = 0
                 var baz: Int? = null
                 var byteValue: Byte? = null
@@ -433,27 +436,12 @@ class StructureGeneratorTest {
         )
     }
 
-    @Ignore //FIXME don't checkin
     @Test
-    fun `it annotates deprecated DSL builder members`() {
-        println("KGHW -------------------")
-        println(deprecatedTestContents)
-        println("KGHW -------------------")
+    fun `it annotates deprecated builder members`() {
         deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 var baz: Qux?
-            """.trimIndent()
-        )
-    }
-
-    @Ignore //FIXME don't checkin
-    @Test
-    fun `it annotates deprecated DSL builder member struct functions`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
-            """
-                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                fun baz(block: Qux.Builder.() -> kotlin.Unit) {
             """.trimIndent()
         )
     }

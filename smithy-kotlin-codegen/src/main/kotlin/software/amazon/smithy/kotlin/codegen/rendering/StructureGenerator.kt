@@ -88,8 +88,7 @@ class StructureGenerator(
 
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            // the manual construction of a DslBuilder is mostly to support serde, end users should go through
-            // invoke syntax
+            // the static construction of a Builder is mostly to support serde, users should go through invoke syntax
             write("internal fun builder(): Builder = Builder()")
             write("")
             write("operator fun invoke(block: Builder.() -> #Q): #class.name:L = Builder().apply(block).build()", KotlinTypes.Unit)
@@ -221,6 +220,9 @@ class StructureGenerator(
                 // override DSL properties
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
+                    // we want the type names sans nullability (?) for arguments
+                    writer.renderMemberDocumentation(model, member)
+                    writer.renderAnnotations(member)
                     write("var #L: #D", memberName, memberSymbol)
                 }
                 write("")
