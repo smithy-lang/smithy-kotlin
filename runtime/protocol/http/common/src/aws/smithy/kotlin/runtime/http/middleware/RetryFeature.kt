@@ -13,14 +13,10 @@ import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 
-class RetryFeature<I, O>(
+class RetryFeature<O>(
     private val strategy: RetryStrategy,
     private val policy: RetryPolicy<Any?>
-) : MutateMiddleware<O>, AutoInstall<I, O> {
-
-    override fun install(op: SdkHttpOperation<I, O>) {
-        op.execution.finalize.register(this)
-    }
+) : MutateMiddleware<O> {
 
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
         if (request.subject.isRetryable) {

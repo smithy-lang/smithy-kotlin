@@ -7,8 +7,6 @@ package aws.smithy.kotlin.runtime.io.middleware
 
 import aws.smithy.kotlin.runtime.io.Handler
 
-// FIXME - these all probably belong as their own type in the core middleware package
-
 /**
  * A specific point in the lifecycle of executing a request where the input and output type(s)
  * are known / the same.

@@ -30,12 +30,20 @@ typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
 /**
  * Middleware that intercepts the [SdkOperationExecution.initialize] phase
  */
-typealias InitializeMiddleware<Request, Response> = Middleware<OperationRequest<Request>, Response>
+interface InitializeMiddleware<Request, Response> : Middleware<OperationRequest<Request>, Response> {
+    fun install(op: SdkHttpOperation<Request, Response>) {
+        op.execution.initialize.register(this)
+    }
+}
 
 /**
  * Middleware that intercepts the [SdkOperationExecution.mutate] phase
  */
-typealias MutateMiddleware<Response> = Middleware<SdkHttpRequest, Response>
+interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
+    fun install(op: SdkHttpOperation<*, Response>) {
+        op.execution.mutate.register(this)
+    }
+}
 
 /**
  * A middleware that only mutates the outgoing [SdkHttpRequest].
@@ -49,12 +57,39 @@ interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
 /**
  * Middleware that intercepts the [SdkOperationExecution.finalize] phase
  */
-typealias FinalizeMiddleware<Response> = Middleware<SdkHttpRequest, Response>
+interface FinalizeMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
+    fun install(op: SdkHttpOperation<*, Response>) {
+        op.execution.finalize.register(this)
+    }
+}
 
 /**
  * Middleware that intercepts the [SdkOperationExecution.receive] phase
  */
-typealias ReceiveMiddleware = Middleware<SdkHttpRequest, HttpCall>
+interface ReceiveMiddleware : Middleware<SdkHttpRequest, HttpCall> {
+    fun install(op: SdkHttpOperation<*, *>) {
+        op.execution.receive.register(this)
+    }
+}
+
+/**
+ * A middleware that directly registers interceptors onto an operation inline in install.
+ * This can be useful for example if a middleware needs to hook into multiple phases:
+ *
+ * ```
+ * class MyMiddleware<I, O> : InlineMiddleware<I, O> {
+ *     override fun install(op: SdkHttpOperation<I, O> {
+ *         op.execution.initialize.intercept { req, next -> ... }
+ *
+ *         op.execution.mutate.intercept { req, next -> ... }
+ *     }
+ * }
+ *
+ * ```
+ */
+interface InlineMiddleware<I, O> {
+    fun install(op: SdkHttpOperation<I, O>)
+}
 
 /**
  * Configure the execution of an operation from [Request] to [Response]

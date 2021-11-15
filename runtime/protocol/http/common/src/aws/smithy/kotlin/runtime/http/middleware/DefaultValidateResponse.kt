@@ -6,9 +6,7 @@ package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.operation.AutoInstall
 import aws.smithy.kotlin.runtime.http.operation.ReceiveMiddleware
-import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -56,10 +54,7 @@ class HttpResponseException : SdkBaseException {
  * so all we can do is throw a generic exception with the code and let the user figure out what modeled error it was
  * using whatever matching mechanism they want.
  */
-class DefaultValidateResponse<I, O> : ReceiveMiddleware, AutoInstall<I, O> {
-    override fun install(op: SdkHttpOperation<I, O>) {
-        op.execution.receive.register(this)
-    }
+class DefaultValidateResponse : ReceiveMiddleware {
 
     override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {
         val call = next.call(request)
