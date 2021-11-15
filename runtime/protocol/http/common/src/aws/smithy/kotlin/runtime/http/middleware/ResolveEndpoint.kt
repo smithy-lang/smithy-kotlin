@@ -6,27 +6,26 @@
 package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.http.operation.*
-import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  *  Http middleware for resolving the service endpoint.
  */
 @InternalApi
-class ResolveEndpoint<I, O>(
+class ResolveEndpoint(
     private val resolver: EndpointResolver
-) : MutateMiddleware<O>, AutoInstall<I, O> {
+) : ModifyRequestMiddleware {
 
-    override fun install(op: SdkHttpOperation<I, O>) {
+    override fun install(op: SdkHttpOperation<*, *>) {
         op.execution.mutate.register(this)
     }
 
-    override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O {
+    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val endpoint = resolver.resolve()
-        setRequestEndpoint(request, endpoint)
-        val logger = request.context.getLogger("ResolveEndpoint")
+        setRequestEndpoint(req, endpoint)
+        val logger = req.context.getLogger("ResolveEndpoint")
         logger.debug { "resolved endpoint: $endpoint" }
-        return next.call(request)
+        return req
     }
 }
 

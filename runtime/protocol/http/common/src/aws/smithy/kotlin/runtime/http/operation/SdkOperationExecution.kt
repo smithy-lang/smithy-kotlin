@@ -18,6 +18,7 @@ import aws.smithy.kotlin.runtime.http.response.dumpResponse
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.MapRequest
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
+import aws.smithy.kotlin.runtime.io.middleware.ModifyRequest
 import aws.smithy.kotlin.runtime.io.middleware.Phase
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -35,6 +36,15 @@ typealias InitializeMiddleware<Request, Response> = Middleware<OperationRequest<
  * Middleware that intercepts the [SdkOperationExecution.mutate] phase
  */
 typealias MutateMiddleware<Response> = Middleware<SdkHttpRequest, Response>
+
+/**
+ * A middleware that only mutates the outgoing [SdkHttpRequest].
+ *
+ * NOTE: This can be applied to any phase that uses [SdkHttpRequest] as it's input type (e.g. mutate, finalize, receive)
+ */
+interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
+    fun install(op: SdkHttpOperation<*, *>)
+}
 
 /**
  * Middleware that intercepts the [SdkOperationExecution.finalize] phase

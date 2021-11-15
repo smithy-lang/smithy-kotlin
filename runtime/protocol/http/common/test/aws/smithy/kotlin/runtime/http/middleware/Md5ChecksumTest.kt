@@ -42,7 +42,7 @@ class Md5ChecksumTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(Md5Checksum)
+        op.install(Md5Checksum())
 
         val expected = "RG22oBSZFmabBbkzVGRi4w=="
         op.roundTrip(client, Unit)
@@ -59,7 +59,7 @@ class Md5ChecksumTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(Md5Checksum)
+        op.install(Md5Checksum())
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()

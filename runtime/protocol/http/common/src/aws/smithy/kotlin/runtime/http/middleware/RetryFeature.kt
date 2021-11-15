@@ -5,52 +5,39 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.http.Feature
-import aws.smithy.kotlin.runtime.http.FeatureKey
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.HttpClientFeatureFactory
-import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
+import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 
-class RetryFeature(private val strategy: RetryStrategy, private val policy: RetryPolicy<Any?>) : Feature {
-    class Config {
-        var strategy: RetryStrategy? = null
-        var policy: RetryPolicy<Any?>? = null
+class RetryFeature<I, O>(
+    private val strategy: RetryStrategy,
+    private val policy: RetryPolicy<Any?>
+) : MutateMiddleware<O>, AutoInstall<I, O> {
+
+    override fun install(op: SdkHttpOperation<I, O>) {
+        op.execution.finalize.register(this)
     }
 
-    companion object Feature : HttpClientFeatureFactory<Config, RetryFeature> {
-        override val key: FeatureKey<RetryFeature> = FeatureKey("RetryFeature")
+    override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
+        if (request.subject.isRetryable) {
+            strategy.retry(policy) {
+                // Deep copy the requestuest because later middlewares (e.g., signing) mutate it
+                val requestCopy = request.deepCopy()
 
-        override fun create(block: Config.() -> Unit): RetryFeature {
-            val config = Config().apply(block)
-            val strategy = requireNotNull(config.strategy) { "strategy is required" }
-            val policy = requireNotNull(config.policy) { "policy is required" }
-            return RetryFeature(strategy, policy)
-        }
-    }
-
-    override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
-        operation.execution.finalize.intercept { req, next ->
-            if (req.subject.isRetryable) {
-                strategy.retry(policy) {
-                    // Deep copy the request because later middlewares (e.g., signing) mutate it
-                    val reqCopy = req.deepCopy()
-
-                    when (val body = reqCopy.subject.body) {
-                        // Reset streaming bodies back to beginning
-                        is HttpBody.Streaming -> body.reset()
-                    }
-
-                    next.call(reqCopy)
+                when (val body = requestCopy.subject.body) {
+                    // Reset streaming bodies back to beginning
+                    is HttpBody.Streaming -> body.reset()
                 }
-            } else {
-                next.call(req)
+
+                next.call(requestCopy)
             }
+        } else {
+            next.call(request)
         }
-    }
 }
 
 /**

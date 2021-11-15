@@ -35,7 +35,7 @@ class DefaultValidateResponseTest {
         val client = sdkHttpClient(mockEngine)
 
         val op = newTestOperation<String, String>(HttpRequestBuilder(), "bar")
-        op.install(DefaultValidateResponse)
+        op.install(DefaultValidateResponse())
 
         assertFailsWith(HttpResponseException::class) {
             op.roundTrip(client, "foo")
@@ -60,7 +60,7 @@ class DefaultValidateResponseTest {
         val client = sdkHttpClient(mockEngine)
 
         val op = newTestOperation<String, String>(HttpRequestBuilder(), "bar")
-        op.install(DefaultValidateResponse)
+        op.install(DefaultValidateResponse())
         val actual = op.roundTrip(client, "foo")
         assertEquals("bar", actual)
 

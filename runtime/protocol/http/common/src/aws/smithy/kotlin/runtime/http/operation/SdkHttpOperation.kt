@@ -57,9 +57,10 @@ class SdkHttpOperation<I, O>(
     }
 
     /**
-     * Install a middleware into this operations execution stack
+     * Install a middleware into this operation's execution stack
      */
     fun install(middleware: AutoInstall<I, O>) { middleware.install(this) }
+    fun install(middleware: ModifyRequestMiddleware) { middleware.install(this) }
 
     companion object {
         inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =

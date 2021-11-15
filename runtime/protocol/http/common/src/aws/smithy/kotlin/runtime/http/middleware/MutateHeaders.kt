@@ -6,15 +6,25 @@
 package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
+import aws.smithy.kotlin.runtime.http.operation.*
 
 /**
  * HTTP middleware feature that allows mutation of in-flight request headers
  */
-class MutateHeaders : Feature {
+class MutateHeaders(
+    overrides: Map<String, String> = emptyMap(),
+    additional: Map<String, String> = emptyMap(),
+    setMissing: Map<String, String> = emptyMap(),
+) : ModifyRequestMiddleware {
     private val overrides = HeadersBuilder()
     private val additional = HeadersBuilder()
     private val conditionallySet = HeadersBuilder()
+
+    init {
+        overrides.forEach { (key, value) -> set(key, value) }
+        additional.forEach { (key, value) -> append(key, value) }
+        setMissing.forEach { (key, value) -> setIfMissing(key, value) }
+    }
 
     /**
      * Set a header in the request, overriding any existing key of the same name
@@ -33,29 +43,25 @@ class MutateHeaders : Feature {
      */
     fun setIfMissing(name: String, value: String) = conditionallySet.append(name, value)
 
-    companion object Feature : HttpClientFeatureFactory<MutateHeaders, MutateHeaders> {
-        override val key: FeatureKey<MutateHeaders> = FeatureKey("AddHeaders")
-        override fun create(block: MutateHeaders.() -> Unit): MutateHeaders =
-            MutateHeaders().apply(block)
+    override fun install(op: SdkHttpOperation<*, *>) {
+        op.execution.mutate.register(this)
     }
 
-    override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
-        operation.execution.mutate.intercept { req, next ->
-            additional.entries().forEach { (key, values) ->
-                req.subject.headers.appendAll(key, values)
-            }
+    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
+        additional.entries().forEach { (key, values) ->
+            req.subject.headers.appendAll(key, values)
+        }
 
-            overrides.entries().forEach { (key, values) ->
+        overrides.entries().forEach { (key, values) ->
+            req.subject.headers[key] = values.last()
+        }
+
+        conditionallySet.entries().forEach { (key, values) ->
+            if (!req.subject.headers.contains(key)) {
                 req.subject.headers[key] = values.last()
             }
-
-            conditionallySet.entries().forEach { (key, values) ->
-                if (!req.subject.headers.contains(key)) {
-                    req.subject.headers[key] = values.last()
-                }
-            }
-
-            next.call(req)
         }
+
+        return req
     }
 }

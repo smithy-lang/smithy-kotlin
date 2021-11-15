@@ -6,8 +6,13 @@ package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.operation.AutoInstall
+import aws.smithy.kotlin.runtime.http.operation.ReceiveMiddleware
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpOperation
+import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.io.Handler
 
 /**
  * Generic HTTP service exception
@@ -51,29 +56,25 @@ class HttpResponseException : SdkBaseException {
  * so all we can do is throw a generic exception with the code and let the user figure out what modeled error it was
  * using whatever matching mechanism they want.
  */
-class DefaultValidateResponse : Feature {
-    companion object Feature : HttpClientFeatureFactory<DefaultValidateResponse, DefaultValidateResponse> {
-        override val key: FeatureKey<DefaultValidateResponse> = FeatureKey("DefaultValidateResponse")
-        override fun create(block: DefaultValidateResponse.() -> Unit): DefaultValidateResponse =
-            DefaultValidateResponse().apply(block)
+class DefaultValidateResponse<I, O> : ReceiveMiddleware, AutoInstall<I, O> {
+    override fun install(op: SdkHttpOperation<I, O>) {
+        op.execution.receive.register(this)
     }
 
-    override fun <I, O> install(operation: SdkHttpOperation<I, O>) {
-        operation.execution.receive.intercept { req, next ->
-            val call = next.call(req)
-            if (call.response.status.isSuccess()) {
-                return@intercept call
-            }
-
-            val message = "received unsuccessful HTTP call.response: ${call.response.status}"
-            val httpException = HttpResponseException(message).apply {
-                statusCode = call.response.status
-                headers = call.response.headers
-                body = call.response.body.readAll()
-                request = call.request
-            }
-
-            throw httpException
+    override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {
+        val call = next.call(request)
+        if (call.response.status.isSuccess()) {
+            return call
         }
+
+        val message = "received unsuccessful HTTP call.response: ${call.response.status}"
+        val httpException = HttpResponseException(message).apply {
+            statusCode = call.response.status
+            headers = call.response.headers
+            body = call.response.body.readAll()
+            this.request = call.request
+        }
+
+        throw httpException
     }
 }
