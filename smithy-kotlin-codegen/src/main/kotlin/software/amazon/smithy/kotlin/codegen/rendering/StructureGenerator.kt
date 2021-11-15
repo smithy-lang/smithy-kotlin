@@ -62,8 +62,6 @@ class StructureGenerator(
             .call { renderHashCode() }
             .call { renderEquals() }
             .call { renderCopy() }
-            .call { renderJavaBuilderInterface() }
-            .call { renderDslBuilderInterface() }
             .call { renderBuilderImpl() }
             .closeBlock("}")
             .write("")
@@ -90,11 +88,8 @@ class StructureGenerator(
 
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            write("@JvmStatic")
-            write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
-            write("")
             // the manual construction of a DslBuilder is mostly to support serde, end users should go through
-            // invoke syntax for kotlin or fluentBuilder for Java consumers
+            // invoke syntax
             write("internal fun builder(): DslBuilder = BuilderImpl()")
             write("")
             write("operator fun invoke(block: DslBuilder.() -> #Q): #class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
@@ -220,57 +215,13 @@ class StructureGenerator(
             .write("")
     }
 
-    private fun renderJavaBuilderInterface() {
-        writer.write("")
-            .withBlock("interface FluentBuilder {", "}") {
-                write("fun build(): #class.name:L")
-                for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    // we want the type names sans nullability (?) for arguments
-                    writer.renderMemberDocumentation(model, member)
-                    writer.renderAnnotations(member)
-                    write("fun #1L(#1L: #2T): FluentBuilder", memberName, memberSymbol)
-                }
-            }
-    }
-
-    private fun renderDslBuilderInterface() {
-        writer.write("")
-            .withBlock("interface DslBuilder {", "}") {
-                val structMembers: MutableList<MemberShape> = mutableListOf()
-
-                for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    val targetShape = model.getShape(member.target).get()
-                    when {
-                        targetShape.isStructureShape -> structMembers.add(member)
-                    }
-
-                    writer.renderMemberDocumentation(model, member)
-                    writer.renderAnnotations(member)
-                    write("var #L: #P", memberName, memberSymbol)
-                }
-
-                write("")
-                write("fun build(): #class.name:L")
-                for (member in structMembers) {
-                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
-                    writer.renderAnnotations(member)
-                    openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
-                        .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
-                        .closeBlock("}")
-                }
-            }
-    }
-
     private fun renderBuilderImpl() {
         writer.write("")
-            .withBlock("private class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
+            .withBlock("public class Builder() {", "}") {
                 // override DSL properties
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    write("override var #L: #D", memberName, memberSymbol)
+                    write("var #L: #D", memberName, memberSymbol)
                 }
 
                 write("")
@@ -288,11 +239,6 @@ class StructureGenerator(
                 // the Java builder implementation will satisfy the DslInterface w.r.t enum overloads
                 write("")
                 write("override fun build(): #class.name:L = #class.name:L(this)")
-                for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    // we want the type names sans nullability (?) for arguments
-                    write("override fun #1L(#1L: #2T): FluentBuilder = apply { this.#1L = #1L }", memberName, memberSymbol)
-                }
             }
     }
 
@@ -304,7 +250,7 @@ class StructureGenerator(
         val (isRetryable, isThrottling) = shape
             .getTrait<RetryableTrait>()
             ?.let { true to it.throttling }
-            ?: false to false
+            ?: (false to false)
 
         checkForConflictsInHierarchy()
 
@@ -328,8 +274,6 @@ class StructureGenerator(
             .call { renderHashCode() }
             .call { renderEquals() }
             .call { renderCopy() }
-            .call { renderJavaBuilderInterface() }
-            .call { renderDslBuilderInterface() }
             .call { renderBuilderImpl() }
             .closeBlock("}")
             .write("")

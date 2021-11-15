@@ -78,8 +78,6 @@ class ClientConfigGenerator(
         ctx.writer.openBlock("class #configClass.name:L private constructor(builder: BuilderImpl)$formattedBaseClasses {")
             .call { renderImmutableProperties() }
             .call { renderCompanionObject() }
-            .call { renderJavaBuilderInterface() }
-            .call { renderDslBuilderInterface() }
             .call { renderBuilderImpl() }
             .closeBlock("}")
 
@@ -88,9 +86,6 @@ class ClientConfigGenerator(
 
     private fun renderCompanionObject() {
         ctx.writer.withBlock("companion object {", "}") {
-            write("@JvmStatic")
-            write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
-            write("")
             if (builderReturnType != null) {
                 write(
                     "operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()",
@@ -149,51 +144,19 @@ class ClientConfigGenerator(
         }
     }
 
-    private fun renderJavaBuilderInterface() {
-        ctx.writer.write("")
-            .withBlock("interface FluentBuilder {", "}") {
-                props
-                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
-                    .forEach { prop ->
-                        // we want the type names sans nullability (?) for arguments
-                        write("fun #1L(#1L: #2L): FluentBuilder", prop.propertyName, prop.symbol.name)
-                    }
-                write("fun build(): #configClass.name:L")
-            }
-    }
-
-    private fun renderDslBuilderInterface() {
-        ctx.writer.write("")
-            .withBlock("interface DslBuilder {", "}") {
-                props
-                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
-                    .forEach { prop ->
-                        prop.documentation?.let { ctx.writer.dokka(it) }
-                        write("var #L: #P", prop.propertyName, prop.symbol)
-                        write("")
-                    }
-            }
-    }
-
     private fun renderBuilderImpl() {
         ctx.writer.write("")
-            .withBlock("internal class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
+            .withBlock("internal class Builder() {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
-                        write("override var #L: #D", prop.propertyName, prop.symbol)
+                        write("var #L: #D", prop.propertyName, prop.symbol)
                     }
                 write("")
 
                 write("")
                 write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
-                props
-                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
-                    .forEach { prop ->
-                        // we want the type names sans nullability (?) for arguments
-                        write("override fun #1L(#1L: #2L): FluentBuilder = apply { this.#1L = #1L }", prop.propertyName, prop.symbol.name)
-                    }
             }
     }
 }
