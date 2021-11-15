@@ -82,7 +82,9 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFoo"
             }
         }
-        registerGetFooMiddleware(config, op)
+        op.install(MockProtocolMiddleware1) {
+            configurationField1 = "testing"
+        }
         return op.roundTrip(client, input)
     }
 """,
@@ -97,7 +99,9 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoInput"
             }
         }
-        registerGetFooNoInputMiddleware(config, op)
+        op.install(MockProtocolMiddleware1) {
+            configurationField1 = "testing"
+        }
         return op.roundTrip(client, input)
     }
 """,
@@ -112,7 +116,9 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoOutput"
             }
         }
-        registerGetFooNoOutputMiddleware(config, op)
+        op.install(MockProtocolMiddleware1) {
+            configurationField1 = "testing"
+        }
         return op.roundTrip(client, input)
     }
 """,
@@ -127,7 +133,9 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInput"
             }
         }
-        registerGetFooStreamingInputMiddleware(config, op)
+        op.install(MockProtocolMiddleware1) {
+            configurationField1 = "testing"
+        }
         return op.roundTrip(client, input)
     }
 """,
@@ -142,7 +150,9 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutput"
             }
         }
-        registerGetFooStreamingOutputMiddleware(config, op)
+        op.install(MockProtocolMiddleware1) {
+            configurationField1 = "testing"
+        }
         return op.execute(client, input, block)
     }
 """,
@@ -157,7 +167,9 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutputNoInput"
             }
         }
-        registerGetFooStreamingOutputNoInputMiddleware(config, op)
+        op.install(MockProtocolMiddleware1) {
+            configurationField1 = "testing"
+        }
         return op.execute(client, input, block)
     }
 """,
@@ -172,7 +184,9 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInputNoOutput"
             }
         }
-        registerGetFooStreamingInputNoOutputMiddleware(config, op)
+        op.install(MockProtocolMiddleware1) {
+            configurationField1 = "testing"
+        }
         return op.roundTrip(client, input)
     }
 """

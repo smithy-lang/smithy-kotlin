@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.test.Test
 
@@ -13,7 +12,7 @@ import kotlin.test.Test
 class XmlDeserializerMapTest {
 
     @Test
-    fun itHandlesMapsWithDefaultNodeNames() = runSuspendTest {
+    fun itHandlesMapsWithDefaultNodeNames() {
         val payload = """
             <object>
                 <values>
@@ -60,7 +59,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesMapsWithCustomNodeNames() = runSuspendTest {
+    fun itHandlesMapsWithCustomNodeNames() {
         val payload = """
             <object>
                 <mymap>
@@ -108,7 +107,7 @@ class XmlDeserializerMapTest {
 
     // https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html#flattened-map-serialization
     @Test
-    fun itHandlesFlatMaps() = runSuspendTest {
+    fun itHandlesFlatMaps() {
         val payload = """
             <object>
                 <flatMap>
@@ -157,7 +156,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesEmptyMaps() = runSuspendTest {
+    fun itHandlesEmptyMaps() {
         val payload = """
             <object>
                 <map />
@@ -197,7 +196,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesSparseMaps() = runSuspendTest {
+    fun itHandlesSparseMaps() {
         val payload = """
             <object>
                 <values>
@@ -249,7 +248,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesCheckingMapValuesForNull() = runSuspendTest {
+    fun itHandlesCheckingMapValuesForNull() {
         val payload = """
             <object>
                 <values>
@@ -297,7 +296,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesNestedMap() = runSuspendTest {
+    fun itHandlesNestedMap() {
         val payload = """
             <object>
                 <map>
@@ -380,7 +379,7 @@ class XmlDeserializerMapTest {
     }
 
     @Test
-    fun itHandlesNestedStructAsValue() = runSuspendTest {
+    fun itHandlesNestedStructAsValue() {
 
         val payload = """
             <XmlMapsInputOutput>
@@ -418,7 +417,7 @@ internal class XmlMapsOperationDeserializer() {
         }
     }
 
-    suspend fun deserialize(deserializer: XmlDeserializer): XmlMapsInputOutput {
+    fun deserialize(deserializer: XmlDeserializer): XmlMapsInputOutput {
         val builder = XmlMapsInputOutput.dslBuilder()
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -455,7 +454,7 @@ internal class GreetingStructDocumentDeserializer {
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): GreetingStruct {
+    fun deserialize(deserializer: Deserializer): GreetingStruct {
         val builder = GreetingStruct.dslBuilder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {

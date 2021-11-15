@@ -26,4 +26,5 @@ private data class SdkSerializableLambda<T>(
     }
 }
 
+// FIXME - this causes backing classes to be generated behind the scenes and contributes to the overall jar size
 fun <T> asSdkSerializable(input: T, serializeFn: SerializeFn<T>): SdkSerializable = SdkSerializableLambda(input, serializeFn)

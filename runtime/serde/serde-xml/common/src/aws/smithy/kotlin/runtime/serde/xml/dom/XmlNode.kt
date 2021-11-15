@@ -35,7 +35,7 @@ class XmlNode {
 
     companion object {
 
-        suspend fun parse(xmlpayload: ByteArray): XmlNode {
+        fun parse(xmlpayload: ByteArray): XmlNode {
             val reader = xmlStreamReader(xmlpayload)
             return parseDom(reader)
         }
@@ -58,7 +58,7 @@ class XmlNode {
 }
 
 // parse a string into a dom representation
-suspend fun parseDom(reader: XmlStreamReader): XmlNode {
+fun parseDom(reader: XmlStreamReader): XmlNode {
 
     val nodeStack: ListStack<XmlNode> = mutableListOf()
 

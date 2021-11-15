@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -24,7 +23,7 @@ class XmlDeserializerAWSTest {
                 field(COMMENT_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): HostedZoneConfig {
+            fun deserialize(deserializer: Deserializer): HostedZoneConfig {
                 val builder = BuilderImpl()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -77,7 +76,7 @@ class XmlDeserializerAWSTest {
                 field(HOSTED_ZONE_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): CreateHostedZoneRequest {
+            fun deserialize(deserializer: Deserializer): CreateHostedZoneRequest {
                 val builder = BuilderImpl()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -119,7 +118,7 @@ class XmlDeserializerAWSTest {
     }
 
     @Test
-    fun itHandlesRoute53XML() = runSuspendTest {
+    fun itHandlesRoute53XML() {
         val testXml = """
                <?xml version="1.0" encoding="UTF-8"?><!--
                  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.

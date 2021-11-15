@@ -48,7 +48,7 @@ internal class XmlStreamReaderXmlPull(
     override val lastToken: XmlToken?
         get() = _lastToken
 
-    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader {
+    override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader {
         val currentReader = this
         val previousToken = lastToken
         val nextToken = internalPeek(1)
@@ -68,7 +68,7 @@ internal class XmlStreamReaderXmlPull(
         return SubTreeReader(this, subtreeStartDepth, subTreeDepth)
     }
 
-    override suspend fun nextToken(): XmlToken? {
+    override fun nextToken(): XmlToken? {
         if (!hasNext()) return null
 
         return when (peekStack.isEmpty()) {
@@ -84,13 +84,13 @@ internal class XmlStreamReaderXmlPull(
     // 1: if the next token is BeginElement, then that node is skipped
     // 2: if the next token is Text or EndElement, read tokens until the end of the current node is exited
     // 3: if the next token is EndDocument, NOP
-    override suspend fun skipNext() {
+    override fun skipNext() {
         if (internalPeek(1).isTerminal()) return
 
         traverseNode(nextToken() ?: error("nextToken() unexpectedly returned null"), parser.depth)
     }
 
-    override suspend fun peek(index: Int): XmlToken? {
+    override fun peek(index: Int): XmlToken? {
         val peekState = internalPeek(index)
 
         return if (peekState.isTerminal(minimumDepth)) null else peekState
@@ -111,7 +111,7 @@ internal class XmlStreamReaderXmlPull(
         return lastToken.isNotTerminal() && nextToken.isNotTerminal(minimumDepth)
     }
 
-    private tailrec suspend fun traverseNode(st: XmlToken, startDepth: Int) {
+    private tailrec fun traverseNode(st: XmlToken, startDepth: Int) {
         if (st == XmlToken.EndDocument) return
         if (st is XmlToken.EndElement && parser.depth == startDepth) return
         val next = nextToken() ?: return
@@ -196,10 +196,10 @@ private class SubTreeReader(
     override val lastToken: XmlToken?
         get() = currentReader.lastToken
 
-    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
+    override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader =
         currentReader.subTreeReader(subtreeStartDepth)
 
-    override suspend fun nextToken(): XmlToken? {
+    override fun nextToken(): XmlToken? {
         var peekToken = currentReader.peek(1) ?: return null
 
         if (subtreeStartDepth == XmlStreamReader.SubtreeStartDepth.CHILD && peekToken.depth < minimumDepth) {
@@ -213,11 +213,11 @@ private class SubTreeReader(
         return if (peekToken.depth >= minimumDepth) currentReader.nextToken() else null
     }
 
-    override suspend fun skipNext() {
+    override fun skipNext() {
         currentReader.skipNext()
     }
 
-    override suspend fun peek(index: Int): XmlToken? {
+    override fun peek(index: Int): XmlToken? {
         val peekToken = currentReader.peek(index) ?: return null
 
         return if (peekToken.depth >= minimumDepth) peekToken else null
@@ -231,13 +231,13 @@ private class TerminalReader(private val parent: XmlStreamReader) : XmlStreamRea
     override val lastToken: XmlToken?
         get() = parent.lastToken
 
-    override suspend fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = this
+    override fun subTreeReader(subtreeStartDepth: XmlStreamReader.SubtreeStartDepth): XmlStreamReader = this
 
-    override suspend fun nextToken(): XmlToken? = null
+    override fun nextToken(): XmlToken? = null
 
-    override suspend fun skipNext() = Unit
+    override fun skipNext() = Unit
 
-    override suspend fun peek(index: Int): XmlToken? = null
+    override fun peek(index: Int): XmlToken? = null
 }
 
 private fun XmlPullParser.qualifiedName(): XmlToken.QualifiedName =
