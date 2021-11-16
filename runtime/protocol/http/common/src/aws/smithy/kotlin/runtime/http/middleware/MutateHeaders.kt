@@ -43,10 +43,6 @@ class MutateHeaders(
      */
     fun setIfMissing(name: String, value: String) = conditionallySet.append(name, value)
 
-    override fun install(op: SdkHttpOperation<*, *>) {
-        op.execution.mutate.register(this)
-    }
-
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         additional.entries().forEach { (key, values) ->
             req.subject.headers.appendAll(key, values)

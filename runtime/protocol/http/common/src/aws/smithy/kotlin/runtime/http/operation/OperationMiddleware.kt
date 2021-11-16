@@ -33,7 +33,14 @@ interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
  * NOTE: This can be applied to any phase that uses [SdkHttpRequest] as it's input type (e.g. mutate, finalize, receive)
  */
 interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
-    fun install(op: SdkHttpOperation<*, *>)
+    /**
+     * Register this transform with the operation's execution
+     *
+     * NOTE: the default implementation will register with the [SdkOperationExecution.mutate] phase.
+     */
+    fun install(op: SdkHttpOperation<*, *>) {
+        op.execution.mutate.register(this)
+    }
 }
 
 /**

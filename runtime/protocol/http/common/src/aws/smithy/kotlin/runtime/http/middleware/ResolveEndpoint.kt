@@ -16,10 +16,6 @@ class ResolveEndpoint(
     private val resolver: EndpointResolver
 ) : ModifyRequestMiddleware {
 
-    override fun install(op: SdkHttpOperation<*, *>) {
-        op.execution.mutate.register(this)
-    }
-
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val endpoint = resolver.resolve()
         setRequestEndpoint(req, endpoint)

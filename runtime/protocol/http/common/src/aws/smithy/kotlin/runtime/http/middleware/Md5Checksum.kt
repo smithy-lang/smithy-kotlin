@@ -18,9 +18,6 @@ import aws.smithy.kotlin.runtime.util.md5
  *   - https://datatracker.ietf.org/doc/html/rfc1864.html
  */
 class Md5Checksum : ModifyRequestMiddleware {
-    override fun install(op: SdkHttpOperation<*, *>) {
-        op.execution.mutate.register(this)
-    }
 
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val checksum = when (val body = req.subject.body) {
