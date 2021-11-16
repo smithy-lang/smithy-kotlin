@@ -92,10 +92,7 @@ class StructureGeneratorTest {
     fun `it renders a companion object`() {
         val expected = """
             companion object {
-                internal fun builder(): Builder = Builder()
-
                 operator fun invoke(block: Builder.() -> kotlin.Unit): MyStruct = Builder().apply(block).build()
-                
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -178,6 +175,7 @@ class StructureGeneratorTest {
                 var `object`: String? = null
                 var quux: Qux? = null
         
+                internal constructor()
                 constructor(x: MyStruct) : this() {
                     this.bar = x.bar
                     this.baz = x.baz
