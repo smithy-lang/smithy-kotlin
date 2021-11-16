@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.io.middleware
 import aws.smithy.kotlin.runtime.io.Handler
 
 /**
- * A type that only modifies the input type
+ * A transform that only modifies the input type
  */
 interface ModifyRequest<Request> {
     suspend fun modifyRequest(req: Request): Request
@@ -18,8 +18,8 @@ interface ModifyRequest<Request> {
  * Adapter for [ModifyRequest] to implement middleware
  */
 internal class ModifyRequestMiddleware<Request, Response>(
-    private val fn: ModifyRequest<Request>
+    private val transform: ModifyRequest<Request>
 ) : Middleware<Request, Response> {
     override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response =
-        next.call(fn.modifyRequest(request))
+        next.call(transform.modifyRequest(request))
 }

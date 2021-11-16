@@ -12,8 +12,8 @@ import aws.smithy.kotlin.runtime.http.operation.*
  * HTTP middleware feature that allows mutation of in-flight request headers
  */
 class MutateHeaders(
-    overrides: Map<String, String> = emptyMap(),
-    additional: Map<String, String> = emptyMap(),
+    override: Map<String, String> = emptyMap(),
+    append: Map<String, String> = emptyMap(),
     setMissing: Map<String, String> = emptyMap(),
 ) : ModifyRequestMiddleware {
     private val overrides = HeadersBuilder()
@@ -21,8 +21,8 @@ class MutateHeaders(
     private val conditionallySet = HeadersBuilder()
 
     init {
-        overrides.forEach { (key, value) -> set(key, value) }
-        additional.forEach { (key, value) -> append(key, value) }
+        override.forEach { (key, value) -> set(key, value) }
+        append.forEach { (key, value) -> append(key, value) }
         setMissing.forEach { (key, value) -> setIfMissing(key, value) }
     }
 

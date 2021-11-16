@@ -40,15 +40,15 @@ class SdkHttpOperation<I, O>(
     /**
      * Install a middleware into this operation's execution stack
      */
-    fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
+    fun install(middleware: ModifyRequestMiddleware) { middleware.install(this) }
 
     // Convenience overloads for various types of middleware that target different phases
     // NOTE: Using install isn't strictly necessary, it's just a pattern for self registration
-    fun install(middleware: ModifyRequestMiddleware) { middleware.install(this) }
     fun install(middleware: InitializeMiddleware<I, O>) { middleware.install(this) }
     fun install(middleware: MutateMiddleware<O>) { middleware.install(this) }
     fun install(middleware: FinalizeMiddleware<O>) { middleware.install(this) }
     fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
+    fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
     companion object {
         inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =

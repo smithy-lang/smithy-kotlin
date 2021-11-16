@@ -18,7 +18,6 @@ import aws.smithy.kotlin.runtime.http.response.dumpResponse
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.MapRequest
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
-import aws.smithy.kotlin.runtime.io.middleware.ModifyRequest
 import aws.smithy.kotlin.runtime.io.middleware.Phase
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -27,69 +26,6 @@ import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
 typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
-/**
- * Middleware that intercepts the [SdkOperationExecution.initialize] phase
- */
-interface InitializeMiddleware<Request, Response> : Middleware<OperationRequest<Request>, Response> {
-    fun install(op: SdkHttpOperation<Request, Response>) {
-        op.execution.initialize.register(this)
-    }
-}
-
-/**
- * Middleware that intercepts the [SdkOperationExecution.mutate] phase
- */
-interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
-    fun install(op: SdkHttpOperation<*, Response>) {
-        op.execution.mutate.register(this)
-    }
-}
-
-/**
- * A middleware that only mutates the outgoing [SdkHttpRequest].
- *
- * NOTE: This can be applied to any phase that uses [SdkHttpRequest] as it's input type (e.g. mutate, finalize, receive)
- */
-interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
-    fun install(op: SdkHttpOperation<*, *>)
-}
-
-/**
- * Middleware that intercepts the [SdkOperationExecution.finalize] phase
- */
-interface FinalizeMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
-    fun install(op: SdkHttpOperation<*, Response>) {
-        op.execution.finalize.register(this)
-    }
-}
-
-/**
- * Middleware that intercepts the [SdkOperationExecution.receive] phase
- */
-interface ReceiveMiddleware : Middleware<SdkHttpRequest, HttpCall> {
-    fun install(op: SdkHttpOperation<*, *>) {
-        op.execution.receive.register(this)
-    }
-}
-
-/**
- * A middleware that directly registers interceptors onto an operation inline in install.
- * This can be useful for example if a middleware needs to hook into multiple phases:
- *
- * ```
- * class MyMiddleware<I, O> : InlineMiddleware<I, O> {
- *     override fun install(op: SdkHttpOperation<I, O> {
- *         op.execution.initialize.intercept { req, next -> ... }
- *
- *         op.execution.mutate.intercept { req, next -> ... }
- *     }
- * }
- *
- * ```
- */
-interface InlineMiddleware<I, O> {
-    fun install(op: SdkHttpOperation<I, O>)
-}
 
 /**
  * Configure the execution of an operation from [Request] to [Response]

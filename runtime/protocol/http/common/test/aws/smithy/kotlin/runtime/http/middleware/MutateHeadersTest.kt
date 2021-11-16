@@ -45,7 +45,7 @@ class MutateHeadersTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         val m = MutateHeaders(
-            overrides = mapOf(
+            override = mapOf(
                 "foo" to "override",
                 "z" to "zebra",
             )
@@ -77,7 +77,7 @@ class MutateHeadersTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         val m = MutateHeaders(
-            additional = mapOf(
+            append = mapOf(
                 "foo" to "appended",
                 "z" to "zebra",
             )
