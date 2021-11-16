@@ -13,12 +13,12 @@ class SdkObjectDescriptor private constructor(builder: Builder) : SdkFieldDescri
     val fields: List<SdkFieldDescriptor> = builder.fields
 
     companion object {
-        fun build(block: Builder.() -> Unit): SdkObjectDescriptor = Builder().apply(block).build()
+        inline fun build(block: Builder.() -> Unit): SdkObjectDescriptor = Builder().apply(block).build()
     }
 
-    public class Builder {
-        val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
-        val traits: MutableSet<FieldTrait> = mutableSetOf()
+    class Builder {
+        internal val fields: MutableList<SdkFieldDescriptor> = mutableListOf()
+        internal val traits: MutableSet<FieldTrait> = mutableSetOf()
 
         fun field(field: SdkFieldDescriptor) {
             field.index = fields.size
@@ -29,6 +29,7 @@ class SdkObjectDescriptor private constructor(builder: Builder) : SdkFieldDescri
             traits.add(trait)
         }
 
-        fun build(): SdkObjectDescriptor = SdkObjectDescriptor(this)
+        @PublishedApi
+        internal fun build(): SdkObjectDescriptor = SdkObjectDescriptor(this)
     }
 }

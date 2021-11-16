@@ -112,7 +112,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the serialize function which has the following signature:
      *
      * ```
-     * suspend fun serializeFooDocumentBody(serializer: Serializer, input: Foo) {
+     * fun serializeFooDocumentBody(serializer: Serializer, input: Foo) {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -131,7 +131,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the deserialize function which has the following signature:
      *
      * ```
-     * suspend fun deserializeFooDocumentBody(deserializer: Deserializer): Foo {
+     * fun deserializeFooDocumentBody(deserializer: Deserializer): Foo {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -661,7 +661,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // render a function responsible for deserializing the members bound to the payload
                     // this function is delegated to by the `HttpDeserialize` implementation generated
                     writer.write("")
-                        .openBlock("private suspend fun #L(builder: #T.Builder, payload: ByteArray) {", "}", op.bodyDeserializerName(), outputSymbol) {
+                        .openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", op.bodyDeserializerName(), outputSymbol) {
                             renderDeserializeOperationBody(ctx, op, writer)
                         }
                 }
@@ -730,7 +730,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // shape can be re-used as a document member.
                     writer.write("")
                         .openBlock(
-                            "private suspend fun #L(builder: #L, payload: ByteArray) {", "}",
+                            "private fun #L(builder: #L, payload: ByteArray) {", "}",
                             outputSymbol.errorDeserializerName(),
                             "${outputSymbol.name}.Builder",
                         ) {
@@ -797,8 +797,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .map { it.member }
 
                     if (documentMembers.isNotEmpty()) {
-                        // TODO - we should not be slurping the entire contents into memory, instead our deserializers
-                        // should work off of an SdkByteReadChannel
                         writer
                             .addImport(RuntimeTypes.Http.readAll)
                             .write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
@@ -1114,7 +1112,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         writer
             .addImport(documentDeserializerSymbols)
             .write("")
-            .openBlock("internal suspend fun #T(deserializer: #T): #T {", deserializerSymbol, RuntimeTypes.Serde.Deserializer, symbol)
+            .openBlock("internal fun #T(deserializer: #T): #T {", deserializerSymbol, RuntimeTypes.Serde.Deserializer, symbol)
             .call {
                 if (shape.isUnionShape) {
                     writer.write("var value: #T? = null", symbol)

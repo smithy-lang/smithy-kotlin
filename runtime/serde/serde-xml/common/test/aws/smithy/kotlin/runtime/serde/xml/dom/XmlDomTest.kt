@@ -6,14 +6,13 @@
 package aws.smithy.kotlin.runtime.serde.xml.dom
 
 import aws.smithy.kotlin.runtime.serde.xml.XmlToken
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class XmlDomTest {
     @Test
-    fun smokeTest() = runSuspendTest {
+    fun smokeTest() {
         val payload = """
             <Foo>
                 <Bar>b1</Bar>
@@ -36,7 +35,7 @@ class XmlDomTest {
     }
 
     @Test
-    fun testBasicRoundTripToXmlString() = runSuspendTest {
+    fun testBasicRoundTripToXmlString() {
         val payload = "<Foo><Bar>b1</Bar><Bar>b2</Bar></Foo>"
         val dom = XmlNode.parse(payload.encodeToByteArray())
         val actual = dom.toXmlString(false)
@@ -44,7 +43,7 @@ class XmlDomTest {
     }
 
     @Test
-    fun testBasicToXmlStringPretty() = runSuspendTest {
+    fun testBasicToXmlStringPretty() {
         val expected = """
             <Foo>
                 <Bar>b1</Bar>
@@ -58,7 +57,7 @@ class XmlDomTest {
     }
 
     @Test
-    fun testToXmlStringPretty() = runSuspendTest {
+    fun testToXmlStringPretty() {
         val expected = """
             <Foo>
                 <Bar>b1</Bar>
@@ -79,7 +78,7 @@ class XmlDomTest {
     }
 
     @Test
-    fun xmlNamespaceTest() = runSuspendTest {
+    fun xmlNamespaceTest() {
         val payload = """
             <Foo xmlns="http://foo.com">
                 <Bar>b1</Bar>
@@ -96,7 +95,7 @@ class XmlDomTest {
     }
 
     @Test
-    fun xmlNamespacePrefixTest() = runSuspendTest {
+    fun xmlNamespacePrefixTest() {
         val payload = """
             <Foo xmlns:baz="http://foo.com">
                 <baz:Bar>b1</baz:Bar>
@@ -113,7 +112,7 @@ class XmlDomTest {
     }
 
     @Test
-    fun xmlNamespaceAttributeTest() = runSuspendTest {
+    fun xmlNamespaceAttributeTest() {
         val payload = """
             <Foo xmlns:baz="http://foo.com">
                 <Bar baz:k1="v1"></Bar>

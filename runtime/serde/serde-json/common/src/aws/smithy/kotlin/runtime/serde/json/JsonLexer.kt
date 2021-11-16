@@ -62,16 +62,16 @@ internal class JsonLexer(
     private val state = StateManager()
     private var idx = 0
 
-    override suspend fun nextToken(): JsonToken {
+    override fun nextToken(): JsonToken {
         val next = peek()
         peeked = null
         state.update()
         return next
     }
 
-    override suspend fun peek(): JsonToken = peeked ?: doPeek().also { peeked = it }
+    override fun peek(): JsonToken = peeked ?: doPeek().also { peeked = it }
 
-    override suspend fun skipNext() {
+    override fun skipNext() {
         val startDepth = state.size
         nextToken()
         while (state.size > startDepth) {

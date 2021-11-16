@@ -5,13 +5,12 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.*
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlStreamReaderTest {
     @Test
-    fun itDeserializesXml() = runSuspendTest {
+    fun itDeserializesXml() {
         val payload = """
             <root>
                 <x>1</x>
@@ -34,7 +33,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesXmlWithEscapedCharacters() = runSuspendTest {
+    fun itDeserializesXmlWithEscapedCharacters() {
         val payload = """<root>&lt;string&gt;</root>""".trimIndent().encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
 
@@ -47,7 +46,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesXmlTextWithAmpersands() = runSuspendTest {
+    fun itDeserializesXmlTextWithAmpersands() {
         val payload = """             
             <value>{&quot;Version&quot;:&quot;2008-10-17&quot;,&quot;Id&quot;:&quot;__default_policy_ID&quot;,&quot;Statement&quot;:[{&quot;Sid&quot;:&quot;__default_statement_ID&quot;,&quot;Effect&quot;:&quot;Allow&quot;,&quot;Principal&quot;:{&quot;AWS&quot;:&quot;*&quot;},&quot;Action&quot;:[&quot;SNS:GetTopicAttributes&quot;,&quot;SNS:SetTopicAttributes&quot;,&quot;SNS:AddPermission&quot;,&quot;SNS:RemovePermission&quot;,&quot;SNS:DeleteTopic&quot;,&quot;SNS:Subscribe&quot;,&quot;SNS:ListSubscriptionsByTopic&quot;,&quot;SNS:Publish&quot;,&quot;SNS:Receive&quot;],&quot;Resource&quot;:&quot;arn:aws:sns:us-west-2:406669096152:kg-test&quot;,&quot;Condition&quot;:{&quot;StringEquals&quot;:{&quot;AWS:SourceOwner&quot;:&quot;406669096152&quot;}}}]}</value>            
         """.trimIndent().encodeToByteArray()
@@ -62,7 +61,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itDeserializesXmlWithAttributes() = runSuspendTest {
+    fun itDeserializesXmlWithAttributes() {
         val payload = """
             <batch>
                 <add id="tt0484562">
@@ -89,13 +88,13 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun garbageInGarbageOut() = runSuspendTest {
+    fun garbageInGarbageOut() {
         val payload = """you try to parse me once, jokes on me..try twice jokes on you bucko.""".trimIndent().encodeToByteArray()
         assertFailsWith(DeserializationException::class) { xmlStreamReader(payload).allTokens() }
     }
 
     @Test
-    fun itIgnoresXmlComments() = runSuspendTest {
+    fun itIgnoresXmlComments() {
         val payload = """
                <?xml version="1.0" encoding="UTF-8"?>
                <!--
@@ -118,7 +117,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesNilNodeValues() = runSuspendTest {
+    fun itHandlesNilNodeValues() {
         val payload = """<null></null>""".encodeToByteArray()
         val actual = xmlStreamReader(payload).allTokens()
         val expected = listOf(
@@ -130,7 +129,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun kitchenSink() = runSuspendTest {
+    fun kitchenSink() {
         val payload = """
         <root>
           <num>1</num>    
@@ -196,7 +195,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itSkipsValuesRecursively() = runSuspendTest {
+    fun itSkipsValuesRecursively() {
         val payload = """
             <payload>
                 <x>1></x>
@@ -238,7 +237,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itSkipsSimpleValues() = runSuspendTest {
+    fun itSkipsSimpleValues() {
         val payload = """
             <payload>
                 <x>1</x>
@@ -265,7 +264,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesNestedNodesOfSameName() = runSuspendTest {
+    fun itHandlesNestedNodesOfSameName() {
         val payload = """
             <Response>
                <Response>abc</Response>
@@ -287,7 +286,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itPeeksWithoutImpactingNestingLevel() = runSuspendTest {
+    fun itPeeksWithoutImpactingNestingLevel() {
         val payload = """
            <l1>
                <l2>
@@ -320,7 +319,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesNamespaceDefaults() = runSuspendTest {
+    fun itHandlesNamespaceDefaults() {
         val payload = """
             <MyStructure xmlns="http://foo.com">
                 <foo>bar</foo>
@@ -341,7 +340,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesNamespacePrefixes() = runSuspendTest {
+    fun itHandlesNamespacePrefixes() {
         val payload = """
             <MyStructure xmlns:baz="http://foo.com">
                 <foo>what</foo>
@@ -365,7 +364,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesNamespacedAttributes() = runSuspendTest {
+    fun itHandlesNamespacedAttributes() {
         val payload = """
             <MyStructure xmlns:baz="http://foo.com">
                 <foo baz:k1="v1"></foo>
@@ -384,7 +383,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itSubTrees() = runSuspendTest {
+    fun itSubTrees() {
         val payload = """
             <root>
                 <a>
@@ -450,7 +449,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesPeekingMultipleLevels() = runSuspendTest {
+    fun itHandlesPeekingMultipleLevels() {
         val payload = """
             <r>
                 <a>
@@ -492,7 +491,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itHandlesSeekingToNodes() = runSuspendTest {
+    fun itHandlesSeekingToNodes() {
         val payload = """
             <r>
                 <a a1="asdf">
@@ -528,7 +527,7 @@ class XmlStreamReaderTest {
     }
 
     @Test
-    fun itThrowsErrorsOnInvalidXmlSequences() = runSuspendTest {
+    fun itThrowsErrorsOnInvalidXmlSequences() {
         val invalidTextList = listOf(
             """&lte;""",
             "&lte;",
@@ -551,7 +550,7 @@ class XmlStreamReaderTest {
     }
 }
 
-suspend fun XmlStreamReader.allTokens(): List<XmlToken> {
+fun XmlStreamReader.allTokens(): List<XmlToken> {
     val tokenList = mutableListOf<XmlToken>()
     var nextToken: XmlToken?
     do {
