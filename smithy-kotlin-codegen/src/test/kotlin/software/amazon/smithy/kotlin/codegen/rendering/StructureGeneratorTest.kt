@@ -14,7 +14,6 @@ import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.StructureShape
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

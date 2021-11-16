@@ -536,7 +536,7 @@ class FooResponse private constructor(builder: Builder) {
 
     fun copy(block: Builder.() -> kotlin.Unit = {}): FooResponse = Builder(this).apply(block).build()
 
-    public class Builder()  {
+    public class Builder() {
         var parentList: List<PayloadStruct>? = null
 
         constructor(x: FooResponse) : this() {
