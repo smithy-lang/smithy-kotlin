@@ -146,7 +146,7 @@ class ClientConfigGenerator(
 
     private fun renderBuilder() {
         ctx.writer.write("")
-            .withBlock("public class Builder() {", "}") {
+            .withBlock("class Builder {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }

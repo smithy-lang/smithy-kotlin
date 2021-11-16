@@ -54,7 +54,7 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    public class Builder() {
+    class Builder {
         var endpointResolver: EndpointResolver? = null
         var httpClientEngine: HttpClientEngine? = null
         var idempotencyTokenProvider: IdempotencyTokenProvider? = null

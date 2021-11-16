@@ -167,7 +167,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a builder impl`() {
         val expected = """
-            public class Builder() {
+            class Builder {
                 /**
                  * This *is* documentation about the member.
                  */

@@ -216,7 +216,7 @@ class StructureGenerator(
 
     private fun renderBuilder() {
         writer.write("")
-            .withBlock("public class Builder() {", "}") {
+            .withBlock("class Builder {", "}") {
                 // override DSL properties
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
