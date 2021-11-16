@@ -763,7 +763,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderIsHttpError(ctx, op, writer)
                 }
             }
-            .write("val builder = #T.builder()", outputSymbol)
+            .write("val builder = #T.Builder()", outputSymbol)
             .write("")
             .call {
                 // headers
@@ -1121,7 +1121,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .addImport(RuntimeTypes.Serde.DeserializationException)
                         .write("return value ?: throw #T(\"Deserialized value unexpectedly null: ${symbol.name}\")", RuntimeTypes.Serde.DeserializationException)
                 } else {
-                    writer.write("val builder = #T.builder()", symbol)
+                    writer.write("val builder = #T.Builder()", symbol)
                     renderDeserializeDocumentBody(ctx, shape, writer)
                     writer.write("return builder.build()")
                 }

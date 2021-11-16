@@ -152,11 +152,11 @@ class ServiceGeneratorTest {
     @Test
     fun `it adds DSL overloads for operations`() {
         val expectedSignatures = listOf(
-            "suspend fun getFoo(block: GetFooRequest.Builder.() -> Unit) = getFoo(GetFooRequest.builder().apply(block).build())",
-            "suspend fun getFooNoInput(block: GetFooNoInputRequest.Builder.() -> Unit) = getFooNoInput(GetFooNoInputRequest.builder().apply(block).build())",
-            "suspend fun getFooNoOutput(block: GetFooNoOutputRequest.Builder.() -> Unit) = getFooNoOutput(GetFooNoOutputRequest.builder().apply(block).build())",
-            "suspend fun getFooStreamingInput(block: GetFooStreamingInputRequest.Builder.() -> Unit) = getFooStreamingInput(GetFooStreamingInputRequest.builder().apply(block).build())",
-            "suspend fun getFooStreamingInputNoOutput(block: GetFooStreamingInputNoOutputRequest.Builder.() -> Unit) = getFooStreamingInputNoOutput(GetFooStreamingInputNoOutputRequest.builder().apply(block).build())",
+            "suspend fun getFoo(block: GetFooRequest.Builder.() -> Unit) = getFoo(GetFooRequest.Builder().apply(block).build())",
+            "suspend fun getFooNoInput(block: GetFooNoInputRequest.Builder.() -> Unit) = getFooNoInput(GetFooNoInputRequest.Builder().apply(block).build())",
+            "suspend fun getFooNoOutput(block: GetFooNoOutputRequest.Builder.() -> Unit) = getFooNoOutput(GetFooNoOutputRequest.Builder().apply(block).build())",
+            "suspend fun getFooStreamingInput(block: GetFooStreamingInputRequest.Builder.() -> Unit) = getFooStreamingInput(GetFooStreamingInputRequest.Builder().apply(block).build())",
+            "suspend fun getFooStreamingInputNoOutput(block: GetFooStreamingInputNoOutputRequest.Builder.() -> Unit) = getFooStreamingInputNoOutput(GetFooStreamingInputNoOutputRequest.Builder().apply(block).build())",
         )
         expectedSignatures.forEach {
             commonTestContents.shouldContainOnlyOnceWithDiff(it)

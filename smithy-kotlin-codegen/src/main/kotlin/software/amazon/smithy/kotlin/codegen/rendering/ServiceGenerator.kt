@@ -163,7 +163,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 writer.renderDocumentation(op)
                 writer.renderAnnotations(op)
                 val signature = "suspend fun $operationName(block: $input.Builder.() -> Unit)"
-                val impl = "$operationName($input.builder().apply(block).build())"
+                val impl = "$operationName($input.Builder().apply(block).build())"
                 writer.write("$signature = $impl")
             }
         }

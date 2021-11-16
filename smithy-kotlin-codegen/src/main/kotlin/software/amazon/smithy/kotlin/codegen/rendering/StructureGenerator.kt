@@ -88,11 +88,7 @@ class StructureGenerator(
 
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            // the static construction of a Builder is mostly to support serde, users should go through invoke syntax
-            write("internal fun builder(): Builder = Builder()")
-            write("")
             write("operator fun invoke(block: Builder.() -> #Q): #class.name:L = Builder().apply(block).build()", KotlinTypes.Unit)
-            write("")
         }
     }
 
@@ -227,6 +223,8 @@ class StructureGenerator(
                 }
                 write("")
 
+                // generate the constructor used internally by serde
+                write("internal constructor()")
                 // generate the constructor that converts from the underlying immutable class to a builder instance
                 withBlock("constructor(x: #class.name:L) : this() {", "}") {
                     for (member in sortedMembers) {
