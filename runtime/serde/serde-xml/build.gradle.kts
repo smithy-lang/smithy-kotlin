@@ -16,7 +16,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:serde"))
-                implementation(project(":runtime:logging"))
             }
         }
         jvmMain {
@@ -24,12 +23,6 @@ kotlin {
                 implementation("xmlpull:xmlpull:$xmlpullVersion")
                 // https://mvnrepository.com/artifact/org.ogce/xpp3
                 implementation("org.ogce:xpp3:$xpp3Version")
-            }
-        }
-        jvmTest {
-            dependencies {
-                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
-                implementation("org.slf4j:slf4j-api:$slf4jVersion")
             }
         }
 
