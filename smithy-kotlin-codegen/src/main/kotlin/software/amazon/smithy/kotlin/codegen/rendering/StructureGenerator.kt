@@ -28,12 +28,9 @@ class StructureGenerator(
     private val writer = ctx.writer
     private val symbolProvider = ctx.symbolProvider
     private val model = ctx.model
+    private val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
 
     fun render() {
-        val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
-        // push context to be used throughout generation of the class
-        writer.putContext("class.name", symbol.name)
-
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
         if (!shape.isError) {
@@ -41,20 +38,19 @@ class StructureGenerator(
         } else {
             renderError()
         }
-        writer.removeContext("class.name")
     }
 
     private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { it.defaultName() }
     private val memberNameSymbolIndex: Map<MemberShape, Pair<String, Symbol>> =
-        sortedMembers
-            .map { member -> member to Pair(symbolProvider.toMemberName(member), symbolProvider.toSymbol(member)) }
-            .toMap()
+        sortedMembers.associateWith { member ->
+            Pair(symbolProvider.toMemberName(member), symbolProvider.toSymbol(member))
+        }
 
     /**
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
-        writer.openBlock("class #class.name:L private constructor(builder: Builder) {")
+        writer.openBlock("class #T private constructor(builder: Builder) {", symbol)
             .call { renderImmutableProperties() }
             .write("")
             .call { renderCompanionObject() }
@@ -88,7 +84,7 @@ class StructureGenerator(
 
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            write("operator fun invoke(block: Builder.() -> #Q): #class.name:L = Builder().apply(block).build()", KotlinTypes.Unit)
+            write("operator fun invoke(block: Builder.() -> #Q): #Q = Builder().apply(block).build()", KotlinTypes.Unit, symbol)
         }
     }
 
@@ -96,7 +92,7 @@ class StructureGenerator(
     private fun renderToString() {
         writer.write("")
         writer.withBlock("override fun toString(): #Q = buildString {", "}", KotlinTypes.String) {
-            write("append(\"#class.name:L(\")")
+            write("append(\"#T(\")", symbol)
 
             when {
                 sortedMembers.isEmpty() -> write("append(\")\")")
@@ -176,7 +172,7 @@ class StructureGenerator(
             write("if (this === other) return true")
             write("if (javaClass != other?.javaClass) return false")
             write("")
-            write("other as #class.name:L")
+            write("other as #T", symbol)
             write("")
 
             for (memberShape in sortedMembers) {
@@ -206,7 +202,7 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-            .write("fun copy(block: Builder.() -> #Q = {}): #class.name:L = Builder(this).apply(block).build()", KotlinTypes.Unit)
+            .write("fun copy(block: Builder.() -> #Q = {}): #Q = Builder(this).apply(block).build()", KotlinTypes.Unit, symbol)
             .write("")
     }
 
@@ -226,7 +222,7 @@ class StructureGenerator(
                 // generate the constructor used internally by serde
                 write("internal constructor()")
                 // generate the constructor that converts from the underlying immutable class to a builder instance
-                withBlock("constructor(x: #class.name:L) : this() {", "}") {
+                withBlock("constructor(x: #Q) : this() {", "}", symbol) {
                     for (member in sortedMembers) {
                         val (memberName, _) = memberNameSymbolIndex[member]!!
                         write("this.#1L = x.#1L", memberName)
@@ -234,7 +230,7 @@ class StructureGenerator(
                 }
 
                 write("")
-                write("fun build(): #class.name:L = #class.name:L(this)")
+                write("fun build(): #Q = #T(this)", symbol)
             }
     }
 
@@ -253,7 +249,7 @@ class StructureGenerator(
         val exceptionBaseClass = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
         writer.addImport(exceptionBaseClass)
 
-        writer.openBlock("class #class.name:L private constructor(builder: Builder) : ${exceptionBaseClass.name}() {")
+        writer.openBlock("class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {", symbol)
             .write("")
             .call { renderImmutableProperties() }
             .write("")
