@@ -230,7 +230,7 @@ class StructureGenerator(
                 }
 
                 write("")
-                write("fun build(): #Q = #T(this)", symbol)
+                write("fun build(): #1Q = #1T(this)", symbol)
             }
     }
 
