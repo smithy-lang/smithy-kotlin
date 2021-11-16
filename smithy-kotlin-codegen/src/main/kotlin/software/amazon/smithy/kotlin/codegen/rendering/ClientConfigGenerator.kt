@@ -88,11 +88,11 @@ class ClientConfigGenerator(
         ctx.writer.withBlock("companion object {", "}") {
             if (builderReturnType != null) {
                 write(
-                    "operator fun invoke(block: Builder.() -> kotlin.Unit): #T = Builder().apply(block).build()",
+                    "inline operator fun invoke(block: Builder.() -> kotlin.Unit): #T = Builder().apply(block).build()",
                     builderReturnType
                 )
             } else {
-                write("operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
+                write("inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
             }
         }
     }
@@ -156,7 +156,7 @@ class ClientConfigGenerator(
                 write("")
 
                 write("")
-                write("fun build(): #configClass.name:L = #configClass.name:L(this)")
+                write("internal fun build(): #configClass.name:L = #configClass.name:L(this)")
             }
     }
 }
