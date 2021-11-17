@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
-import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.TestInstance
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
@@ -76,12 +75,12 @@ class StructureGeneratorTest {
                 /**
                  * This *is* documentation about the member.
                  */
-                val bar: Int = builder.bar
-                val baz: Int? = builder.baz
-                val byteValue: Byte? = builder.byteValue
-                val foo: String? = builder.foo
-                val `object`: String? = builder.`object`
-                val quux: Qux? = builder.quux
+                val bar: kotlin.Int = builder.bar
+                val baz: kotlin.Int? = builder.baz
+                val byteValue: kotlin.Byte? = builder.byteValue
+                val foo: kotlin.String? = builder.foo
+                val `object`: kotlin.String? = builder.`object`
+                val quux: com.test.model.Qux? = builder.quux
         """.formatForTest(indent = "")
 
         commonTestContents.shouldContainOnlyOnceWithDiff(expectedClassDecl)
@@ -91,7 +90,7 @@ class StructureGeneratorTest {
     fun `it renders a companion object`() {
         val expected = """
             companion object {
-                operator fun invoke(block: Builder.() -> kotlin.Unit): MyStruct = Builder().apply(block).build()
+                operator fun invoke(block: Builder.() -> kotlin.Unit): com.test.model.MyStruct = Builder().apply(block).build()
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -155,7 +154,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a copy implementation`() {
         val expected = """
-            fun copy(block: Builder.() -> kotlin.Unit = {}): MyStruct = Builder(this).apply(block).build()
+            fun copy(block: Builder.() -> kotlin.Unit = {}): com.test.model.MyStruct = Builder(this).apply(block).build()
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -167,15 +166,15 @@ class StructureGeneratorTest {
                 /**
                  * This *is* documentation about the member.
                  */
-                var bar: Int = 0
-                var baz: Int? = null
-                var byteValue: Byte? = null
-                var foo: String? = null
-                var `object`: String? = null
-                var quux: Qux? = null
+                var bar: kotlin.Int = 0
+                var baz: kotlin.Int? = null
+                var byteValue: kotlin.Byte? = null
+                var foo: kotlin.String? = null
+                var `object`: kotlin.String? = null
+                var quux: com.test.model.Qux? = null
         
                 internal constructor()
-                constructor(x: MyStruct) : this() {
+                constructor(x: com.test.model.MyStruct) : this() {
                     this.bar = x.bar
                     this.baz = x.baz
                     this.byteValue = x.byteValue
@@ -184,7 +183,7 @@ class StructureGeneratorTest {
                     this.quux = x.quux
                 }
         
-                fun build(): MyStruct = MyStruct(this)
+                fun build(): com.test.model.MyStruct = MyStruct(this)
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -415,7 +414,7 @@ class StructureGeneratorTest {
 
     @Test
     fun `it annotates deprecated structures`() {
-        deprecatedTestContents.shouldContainOnlyOnce(
+        deprecatedTestContents.shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 class MyStruct private constructor(builder: Builder) {
@@ -425,20 +424,21 @@ class StructureGeneratorTest {
 
     @Test
     fun `it annotates deprecated members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+        println(deprecatedTestContents)
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                val baz: Qux? = builder.baz
+                val baz: com.test.model.Qux? = builder.baz
             """.trimIndent()
         )
     }
 
     @Test
     fun `it annotates deprecated builder members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                var baz: Qux?
+                val baz: com.test.model.Qux? = builder.baz
             """.trimIndent()
         )
     }

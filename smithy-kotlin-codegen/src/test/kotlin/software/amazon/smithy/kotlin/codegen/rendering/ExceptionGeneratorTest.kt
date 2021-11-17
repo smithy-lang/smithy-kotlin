@@ -111,7 +111,7 @@ class ExceptionGeneratorTest {
     @Test
     fun `error generator renders override with message member`() {
         val expected = """
-    override val message: String? = builder.message
+    override val message: kotlin.String? = builder.message
 """
 
         serverErrorTestContents.shouldContainWithDiff(expected)

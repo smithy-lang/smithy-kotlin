@@ -60,7 +60,8 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
         var idempotencyTokenProvider: IdempotencyTokenProvider? = null
         var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
-        fun build(): Config = Config(this)
+        @PublishedApi
+        internal fun build(): Config = Config(this)
     }
 """
         contents.shouldContainWithDiff(expectedBuilder)
@@ -227,7 +228,7 @@ class Config private constructor(builder: Builder) {
 
         val expectedCompanion = """
     companion object {
-        operator fun invoke(block: Builder.() -> kotlin.Unit): Config = Builder().apply(block).build()
+        inline operator fun invoke(block: Builder.() -> kotlin.Unit): Config = Builder().apply(block).build()
     }
 """
         contents.shouldContainWithDiff(expectedCompanion)
