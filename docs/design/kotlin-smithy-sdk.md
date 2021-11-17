@@ -103,31 +103,20 @@ class Baz private constructor(builder: Builder) {
     override fun toString(): String = "Baz(quux=$quux)"
 
     companion object {
-        operator fun invoke(block: Builder.() -> Unit): Baz = Builder().apply(block).build()
-
+        inline operator fun invoke(block: Builder.() -> Unit): Baz = Builder().apply(block).build()
     }
 
-    fun toBuilder(): Builder = Builder(this)
+    fun copy(block: Builder.() -> kotlin.Unit = {}): Baz = Builder(this).apply(block).build()
+    
+    class Builder {
+        var quux: String? = null
 
-    fun copy(quux: String? = this.quux): Baz {
-        val builder = Builder(this)
-        builder.quux = quux
-        return builder.build()
-    }
-
-    // Kotlin specific DSL builder
-    interface Builder {
-        var quux: String?
-    }
-
-    public class Builder {
-        override var quux: String? = null
-        override fun build(): Baz = Baz(this)
-        override fun quux(quux: String): Builder = apply { this.quux = quux }
-
+        internal constructor()
         constructor(baz: Baz): this() {
             this.quux = baz.quux
         }
+
+        internal fun build(): Baz = Baz(this)
     }
 }
 
@@ -141,53 +130,22 @@ class MyStruct private constructor(builder: Builder) {
         return "MyStruct(foo=$foo, bar=$bar, baz=$baz, yesno=$yesno)"
     }
 
-    fun toBuilder(): Builder = Builder(this)
-
-    fun copy(foo: String? = this.foo,
-             bar: Int = this.bar,
-             baz: Baz? = this.baz,
-             yesno: SimpleYesNo? = this.yesno): MyStruct {
-        val builder = Builder(this)
-        builder.foo = foo
-        builder.bar = bar
-        builder.baz = baz
-        builder.yesNoAsString = yesno?.toString()
-        return builder.build()
-    }
-
     fun copy(block: Builder.() -> Unit = {}): MyStruct = Builder(this).apply(block).build()
 
     companion object {
-        operator fun invoke(block: Builder.() -> Unit): MyStruct {
+        inline operator fun invoke(block: Builder.() -> Unit): MyStruct {
             val builder = Builder()
             builder.block()
             return builder.build()
         }
     }
 
-    // Kotlin specific DSL builder
-    interface Builder {
-        var foo: String?
-        var bar: Int
-        var baz: Baz?
-
-        var yesno: SimpleYesNo?
-
-        // generated for any member shapes that target a StructureShape
-        fun baz(block: Baz.Builder.() -> Unit) {
-            this.baz = Baz.invoke(block)
-        }
-
-        // TODO - will consider additional extension functions for setting map types or lists, etc
-    }
-
-    public class Builder {
-        override var foo: String? = null
-        override var bar: Int = 0
-        override var baz: Baz? = null
-        override var yesno: SimpleYesNo? = null
-
-
+    class Builder {
+        var foo: String? = null
+        var bar: Int = 0
+        var baz: Baz? = null
+        var yesno: SimpleYesNo? = null
+        
         constructor(mystruct: MyStruct): this() {
             this.foo = mystruct.foo
             this.bar = mystruct.bar
@@ -195,12 +153,7 @@ class MyStruct private constructor(builder: Builder) {
             this.yesno = mystruct.yesno
         }
 
-        override fun build(): MyStruct = MyStruct(this)
-        override fun foo(foo: String) = apply { this.foo = foo }
-        override fun bar(bar: Int) = apply { this.bar = bar }
-        override fun baz(baz: Baz): Builder = apply { this.baz = baz }
-
-        override fun yesno(yesno: SimpleYesNo): Builder = apply { this.yesno = yesno }
+        internal fun build(): MyStruct = MyStruct(this)
     }
 }
 ```
@@ -239,9 +192,8 @@ Notes:
     * [Kotlin coding conventions](https://kotlinlang.org/docs/reference/coding-conventions.html#immutability)
     * [Smart casting](https://kotlinlang.org/docs/reference/typecasts.html#smart-casts) with immutable objects
     * Mutable vs immutable collection interfaces (e.g. `List` vs `MutableList`)
-* For each structure shape builders are provided for constructing immutable objects using both a Kotlin DSL approach as
-  well as a traditional builder for Java interop
-* `copy` functions will be generated in a similar fashion to how data classes work
+* For each structure shape a builder is provided for constructing immutable objects using a Kotlin DSL approach
+* For each structure shape a `copy` function is generated, providing similar functionality available in data classes
 * Why not data classes?
     * A data class is a normal class where the compiler generates `hashCode`, `equals`, and `copy`/`componentN`
       functions for you. For this to work though the properties must show up in the default constructor. Even though
