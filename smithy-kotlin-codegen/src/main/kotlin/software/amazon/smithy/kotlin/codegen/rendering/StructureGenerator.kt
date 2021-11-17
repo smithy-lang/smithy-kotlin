@@ -75,9 +75,9 @@ class StructureGenerator(
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
                 }
                 // override Throwable's message property
-                writer.write("override val #1L: #2P = builder.#1L", memberName, memberSymbol)
+                writer.write("override val #1L: #2F = builder.#1L", memberName, memberSymbol)
             } else {
-                writer.write("val #1L: #2P = builder.#1L", memberName, memberSymbol)
+                writer.write("val #1L: #2F = builder.#1L", memberName, memberSymbol)
             }
         }
     }
@@ -215,7 +215,7 @@ class StructureGenerator(
                     // we want the type names sans nullability (?) for arguments
                     writer.renderMemberDocumentation(model, member)
                     writer.renderAnnotations(member)
-                    write("var #L: #D", memberName, memberSymbol)
+                    write("var #L: #E", memberName, memberSymbol)
                 }
                 write("")
 

@@ -195,8 +195,14 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         // when formatting properties
         putFormatter('P', KotlinPropertyFormatter())
 
+        // like `P` but fully qualified
+        putFormatter('F', KotlinPropertyFormatter(fullyQualifiedNames = true))
+
         // like `P` but with default set (if applicable): `aws.sdk.kotlin.model.Foo = 1`
         putFormatter('D', KotlinPropertyFormatter(setDefault = true))
+
+        // like `D` but fully qualified
+        putFormatter('E', KotlinPropertyFormatter(setDefault = true, fullyQualifiedNames = true))
     }
 
     fun addImport(symbol: Symbol, alias: String = symbol.name): KotlinWriter {
