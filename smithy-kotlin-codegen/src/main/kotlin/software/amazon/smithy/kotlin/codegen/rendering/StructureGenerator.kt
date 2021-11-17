@@ -202,14 +202,13 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-            .write("fun copy(block: Builder.() -> #Q = {}): #Q = Builder(this).apply(block).build()", KotlinTypes.Unit, symbol)
+            .write("inline fun copy(block: Builder.() -> #Q = {}): #Q = Builder(this).apply(block).build()", KotlinTypes.Unit, symbol)
             .write("")
     }
 
     private fun renderBuilder() {
         writer.write("")
             .withBlock("class Builder {", "}") {
-                // override DSL properties
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
@@ -230,7 +229,8 @@ class StructureGenerator(
                 }
 
                 write("")
-                write("fun build(): #1Q = #1T(this)", symbol)
+                write("@PublishedApi")
+                write("internal fun build(): #1Q = #1T(this)", symbol)
             }
     }
 

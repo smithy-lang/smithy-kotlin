@@ -151,6 +151,7 @@ class ClientConfigGenerator(
                 props
                     .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
+                        prop.documentation?.let { ctx.writer.dokka(it) }
                         write("var #L: #D", prop.propertyName, prop.symbol)
                     }
                 write("")

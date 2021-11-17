@@ -55,9 +55,28 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
 
         val expectedBuilder = """
     class Builder {
+        /**
+         * Set the [aws.smithy.kotlin.runtime.http.operation.EndpointResolver] used to resolve service endpoints. Operation requests will be
+         * made against the endpoint returned by the resolver.
+         */
         var endpointResolver: EndpointResolver? = null
+        /**
+         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)
+         */
         var httpClientEngine: HttpClientEngine? = null
+        /**
+         * Override the default idempotency token generator. SDK clients will generate tokens for members
+         * that represent idempotent tokens when not explicitly set by the caller using this generator.
+         */
         var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+        /**
+         * Configure events that will be logged. By default clients will not output
+         * raw requests or responses. Use this setting to opt-in to additional debug logging.
+         * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
+         * **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
+         * performance considerations when dumping the request/response body. This is primarily a tool for
+         * debug purposes.
+         */
         var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
         @PublishedApi
@@ -107,20 +126,26 @@ class Config private constructor(builder: Builder) {
         contents.shouldContain(expectedCtor)
 
         val expectedProps = """
-    val boolProp: Boolean? = builder.boolProp
-    val intProp: Int = builder.intProp
-    val nullIntProp: Int? = builder.nullIntProp
-    val stringProp: String? = builder.stringProp
-"""
-        contents.shouldContain(expectedProps)
-
-        val expectedBuilderProps = """
         var boolProp: Boolean? = null
+        /**
+         * non-null-int
+         */
         var intProp: Int = 1
         var nullIntProp: Int? = null
         var stringProp: String? = null
 """
-        contents.shouldContain(expectedBuilderProps)
+        contents.shouldContainWithDiff(expectedProps)
+
+        val expectedBuilderProps = """
+        var boolProp: Boolean? = null
+        /**
+         * non-null-int
+         */
+        var intProp: Int = 1
+        var nullIntProp: Int? = null
+        var stringProp: String? = null
+"""
+        contents.shouldContainWithDiff(expectedBuilderProps)
     }
 
     @Test

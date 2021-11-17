@@ -154,7 +154,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a copy implementation`() {
         val expected = """
-            fun copy(block: Builder.() -> kotlin.Unit = {}): com.test.model.MyStruct = Builder(this).apply(block).build()
+            inline fun copy(block: Builder.() -> kotlin.Unit = {}): com.test.model.MyStruct = Builder(this).apply(block).build()
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -183,7 +183,8 @@ class StructureGeneratorTest {
                     this.quux = x.quux
                 }
         
-                fun build(): com.test.model.MyStruct = MyStruct(this)
+                @PublishedApi
+                internal fun build(): com.test.model.MyStruct = MyStruct(this)
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
