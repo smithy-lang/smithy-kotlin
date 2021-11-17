@@ -88,7 +88,7 @@ class ClientConfigGenerator(
 
     private fun renderCompanionObject() {
         ctx.writer.withBlock("companion object {", "}") {
-            write("@JvmStatic")
+//            write("@JvmStatic")
             write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
             write("")
             if (builderReturnType != null) {

@@ -90,7 +90,7 @@ class StructureGenerator(
 
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            write("@JvmStatic")
+//            write("@JvmStatic")
             write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
             write("")
             // the manual construction of a DslBuilder is mostly to support serde, end users should go through
@@ -132,7 +132,7 @@ class StructureGenerator(
         writer.write("")
         writer.withBlock("override fun hashCode(): #Q {", "}", KotlinTypes.Int) {
             when {
-                sortedMembers.isEmpty() -> write("var result = javaClass.hashCode()")
+                sortedMembers.isEmpty() -> write("return this::class.hashCode()")
                 else -> {
                     write("var result = #1L#2L", memberNameSymbolIndex[sortedMembers[0]]!!.first, selectHashFunctionForShape(sortedMembers[0]))
                     if (sortedMembers.size > 1) {
@@ -140,9 +140,9 @@ class StructureGenerator(
                             write("result = 31 * result + (#1L#2L)", memberNameSymbolIndex[memberShape]!!.first, selectHashFunctionForShape(memberShape))
                         }
                     }
+                    write("return result")
                 }
             }
-            write("return result")
         }
     }
 
@@ -184,7 +184,7 @@ class StructureGenerator(
         writer.write("")
         writer.withBlock("override fun equals(other: #Q?): #Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
-            write("if (javaClass != other?.javaClass) return false")
+            write("if (other == null || this::class != other::class) return false")
             write("")
             write("other as #class.name:L")
             write("")
