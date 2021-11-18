@@ -89,7 +89,7 @@ struct GetObjectResponse {
 ```
 
 
-The following types and service would be generated (note the Java `Builder` implementation has been left off for brevity).
+The following types and service would be generated.
 
 ### Put Object
 See the Appendix for an overview of the `ByteStream` type.
@@ -98,50 +98,32 @@ See the Appendix for an overview of the `ByteStream` type.
 
 import software.aws.clientrt.content.ByteStream
 
-class PutObjectRequest private constructor(builder: BuilderImpl){
+class PutObjectRequest private constructor(builder: Builder){
     val bucket: String? = builder.bucket
     val key: String? = builder.key
     val body: ByteStream? = builder.body
 
     companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> Unit) = Builder().apply(block).build()
     }
 
-    interface Builder {
-        fun build(): PutObjectRequest
-    }
-
-    interface DslBuilder {
-        var body: ByteStream?
-        var bucket: String?
-        var key: String?
-    }
-
-    private class BuilderImpl : Builder, DslBuilder {
-        override var body: ByteStream? = null
-        override var bucket: String? = null
-        override var key: String? = null
-        override fun build(): PutObjectRequest = PutObjectRequest(this)
+    public class Builder {
+        var body: ByteStream? = null
+        var bucket: String? = null
+        var key: String? = null
+        fun build(): PutObjectRequest = PutObjectRequest(this)
     }
 }
 
 
-class PutObjectResponse private constructor(builder: BuilderImpl){
+class PutObjectResponse private constructor(builder: Builder){
     val versionId: String? = builder.versionId
 
     companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> Unit) = Builder().apply(block).build()
     }
 
-    interface Builder {
-        fun build(): PutObjectResponse
-    }
-
-    interface DslBuilder {
-        var versionId: String?
-    }
-
-    private class BuilderImpl : Builder, DslBuilder {
+    public class Builder {
         override var versionId: String? = null
         override fun build(): PutObjectResponse = PutObjectResponse(this)
     }
@@ -156,55 +138,37 @@ class PutObjectResponse private constructor(builder: BuilderImpl){
 ```kt
 package com.amazonaws.service.s3.model
 
-class GetObjectRequest private constructor(builder: BuilderImpl){
+class GetObjectRequest private constructor(builder: Builder){
     val bucket: String? = builder.bucket
     val key: String? = builder.key
 
     companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> Unit) = Builder().apply(block).build()
     }
-
-    interface Builder {
-        fun build(): GetObjectRequest
-    }
-
-    interface DslBuilder {
-        var bucket: String?
-        var key: String?
-    }
-
-    private class BuilderImpl : Builder, DslBuilder {
-        override var bucket: String? = null
-        override var key: String? = null
-        override fun build(): GetObjectRequest = GetObjectRequest(this)
+    
+    public class Builder  {
+        var bucket: String? = null
+        var key: String? = null
+        fun build(): GetObjectRequest = GetObjectRequest(this)
     }
 }
 
 
 import software.aws.clientrt.content.ByteStream
 
-class GetObjectResponse private constructor(builder: BuilderImpl){
+class GetObjectResponse private constructor(builder: Builder){
 
     val body: ByteStream? = builder.body
     val versionId: String? = builder.versionId
 
     companion object {
-        operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> Unit) = Builder().apply(block).build()
     }
 
-    interface Builder {
-        fun build(): GetObjectResponse
-    }
-
-    interface DslBuilder {
-        var body: ByteStream?
-        var versionId: String?
-    }
-
-    private class BuilderImpl : Builder, DslBuilder {
-        override var body: ByteStream? = null
-        override var versionId: String? = null
-        override fun build(): GetObjectResponse = GetObjectResponse(this)
+    public class Builder  {
+        var body: ByteStream? = null
+        var versionId: String? = null
+        fun build(): GetObjectResponse = GetObjectResponse(this)
     }
 }
 
@@ -336,7 +300,7 @@ e.g.
 ```kt
 suspend fun getObject(input: GetObjectRequest): GetObjectResponse { ... }
 
-suspend fun getObject(block: GetObjectRequest.DslBuilder.() -> Unit): GetObjectResponse {
+suspend fun getObject(block: GetObjectRequest.Builder.() -> Unit): GetObjectResponse {
     val input = GetObjectRequest.invoke(block)    
     return getObject(input)
 }
@@ -552,12 +516,12 @@ A simplified example of the request/response would look like:
 
 
 ```kt
-class PutObjectRequest private constructor(builder: BuilderImpl) {
+class PutObjectRequest private constructor(builder: Builder) {
     val body: Flow<ByteArray>? = builder.body
 }
 
 
-class GetObjectResponse private constructor(builder: BuilderImpl) {
+class GetObjectResponse private constructor(builder: Builder) {
     val body: Flow<ByteArray>? = builder.body
 }
 
@@ -647,5 +611,6 @@ The issue with going that route is two fold:
 
 # Revision history
 
+* 11/15/2021 - Update code snippets from builder refactoring
 * 6/03/2021 - Initial upload
 * 6/11/2020 - Created

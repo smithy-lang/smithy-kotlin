@@ -92,7 +92,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the deserialize function which has the following signature:
      *
      * ```
-     * fun deserializeFooOperationBody(builder: Foo.DslBuilder, payload: ByteArray) {
+     * fun deserializeFooOperationBody(builder: Foo.Builder, payload: ByteArray) {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -151,7 +151,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * This function is invoked inside the body of the deserialize function which has the following signature:
      *
      * ```
-     * fun deserializeFooError(builder: FooError.DslBuilder, payload: ByteArray) {
+     * fun deserializeFooError(builder: FooError.Builder, payload: ByteArray) {
      *     <-- CURRENT WRITER CONTEXT -->
      * }
      * ```
@@ -661,7 +661,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // render a function responsible for deserializing the members bound to the payload
                     // this function is delegated to by the `HttpDeserialize` implementation generated
                     writer.write("")
-                        .openBlock("private fun #L(builder: #T.DslBuilder, payload: ByteArray) {", "}", op.bodyDeserializerName(), outputSymbol) {
+                        .openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", "}", op.bodyDeserializerName(), outputSymbol) {
                             renderDeserializeOperationBody(ctx, op, writer)
                         }
                 }
@@ -732,7 +732,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .openBlock(
                             "private fun #L(builder: #L, payload: ByteArray) {", "}",
                             outputSymbol.errorDeserializerName(),
-                            "${outputSymbol.name}.DslBuilder",
+                            "${outputSymbol.name}.Builder",
                         ) {
                             renderDeserializeException(ctx, shape, writer)
                         }
@@ -763,7 +763,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderIsHttpError(ctx, op, writer)
                 }
             }
-            .write("val builder = #T.builder()", outputSymbol)
+            .write("val builder = #T.Builder()", outputSymbol)
             .write("")
             .call {
                 // headers
@@ -1121,7 +1121,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         .addImport(RuntimeTypes.Serde.DeserializationException)
                         .write("return value ?: throw #T(\"Deserialized value unexpectedly null: ${symbol.name}\")", RuntimeTypes.Serde.DeserializationException)
                 } else {
-                    writer.write("val builder = #T.builder()", symbol)
+                    writer.write("val builder = #T.Builder()", symbol)
                     renderDeserializeDocumentBody(ctx, shape, writer)
                     writer.write("return builder.build()")
                 }
