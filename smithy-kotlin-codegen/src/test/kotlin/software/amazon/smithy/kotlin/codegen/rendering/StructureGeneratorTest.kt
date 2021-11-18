@@ -185,6 +185,13 @@ class StructureGeneratorTest {
         
                 @PublishedApi
                 internal fun build(): com.test.model.MyStruct = MyStruct(this)
+                
+                /**
+                 * construct an [com.test.model.Qux] inside the given [block]
+                 */
+                fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
+                    this.quux = Qux.invoke(block)
+                }
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)

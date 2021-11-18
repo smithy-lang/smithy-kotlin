@@ -231,6 +231,21 @@ class StructureGenerator(
                 write("")
                 write("@PublishedApi")
                 write("internal fun build(): #1Q = #1T(this)", symbol)
+
+                val structMembers = sortedMembers.filter { member ->
+                    val targetShape = model.getShape(member.target).get()
+                    targetShape.isStructureShape
+                }
+
+                for (member in structMembers) {
+                    writer.write("")
+                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
+                    writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
+                    writer.renderAnnotations(member)
+                    openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
+                        .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
+                        .closeBlock("}")
+                }
             }
     }
 
