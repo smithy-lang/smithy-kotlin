@@ -89,7 +89,7 @@ class WhiteLabelSDKTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertEquals(compilationResult.exitCode, KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
     @Test
@@ -127,7 +127,7 @@ class WhiteLabelSDKTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertEquals(compilationResult.exitCode, KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
     @Test
@@ -167,7 +167,7 @@ class WhiteLabelSDKTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertEquals(compilationResult.exitCode, KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 }
 
