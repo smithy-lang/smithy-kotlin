@@ -221,7 +221,8 @@ class StructureGenerator(
                 // generate the constructor used internally by serde
                 write("internal constructor()")
                 // generate the constructor that converts from the underlying immutable class to a builder instance
-                withBlock("constructor(x: #Q) : this() {", "}", symbol) {
+                writer.write("@PublishedApi")
+                withBlock("internal constructor(x: #Q) : this() {", "}", symbol) {
                     for (member in sortedMembers) {
                         val (memberName, _) = memberNameSymbolIndex[member]!!
                         write("this.#1L = x.#1L", memberName)

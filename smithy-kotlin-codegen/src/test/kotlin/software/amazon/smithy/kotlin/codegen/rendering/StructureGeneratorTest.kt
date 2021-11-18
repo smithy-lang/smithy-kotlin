@@ -174,7 +174,8 @@ class StructureGeneratorTest {
                 var quux: com.test.model.Qux? = null
         
                 internal constructor()
-                constructor(x: com.test.model.MyStruct) : this() {
+                @PublishedApi
+                internal constructor(x: com.test.model.MyStruct) : this() {
                     this.bar = x.bar
                     this.baz = x.baz
                     this.byteValue = x.byteValue
