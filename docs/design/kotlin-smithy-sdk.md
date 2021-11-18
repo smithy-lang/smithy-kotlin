@@ -154,6 +154,11 @@ class MyStruct private constructor(builder: Builder) {
         }
 
         internal fun build(): MyStruct = MyStruct(this)
+
+        // generated for any member shapes that target a StructureShape
+        fun baz(block: Baz.Builder.() -> Unit) {
+            this.baz = Baz.invoke(block)
+        }
     }
 }
 ```
