@@ -242,7 +242,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
                     writer.renderAnnotations(member)
-                    openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
+                    openBlock("fun #L(block: #L.Builder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
                         .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
                         .closeBlock("}")
                 }
