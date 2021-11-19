@@ -56,7 +56,7 @@ class SdkHttpOperation<I, O>(
     }
 
     companion object {
-        fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
+        inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
             SdkHttpOperationBuilder<I, O>().apply(block).build()
     }
 }
@@ -109,4 +109,4 @@ class SdkHttpOperationBuilder<I, O> {
 /**
  * Configure HTTP operation context elements
  */
-fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) = context.apply(block)
+inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) = context.apply(block)

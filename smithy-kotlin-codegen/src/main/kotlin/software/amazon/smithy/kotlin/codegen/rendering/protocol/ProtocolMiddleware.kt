@@ -64,11 +64,11 @@ abstract class HttpFeatureMiddleware : ProtocolMiddleware {
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         if (needsConfiguration) {
-            writer.openBlock("install(#L) {", name)
+            writer.openBlock("op.install(#L) {", name)
                 .call { renderConfigure(writer) }
                 .closeBlock("}")
         } else {
-            writer.write("install(#L)", name)
+            writer.write("op.install(#L)", name)
         }
     }
 

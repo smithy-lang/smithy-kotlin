@@ -28,12 +28,9 @@ class StructureGenerator(
     private val writer = ctx.writer
     private val symbolProvider = ctx.symbolProvider
     private val model = ctx.model
+    private val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
 
     fun render() {
-        val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
-        // push context to be used throughout generation of the class
-        writer.putContext("class.name", symbol.name)
-
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
         if (!shape.isError) {
@@ -41,20 +38,19 @@ class StructureGenerator(
         } else {
             renderError()
         }
-        writer.removeContext("class.name")
     }
 
     private val sortedMembers: List<MemberShape> = shape.allMembers.values.sortedBy { it.defaultName() }
     private val memberNameSymbolIndex: Map<MemberShape, Pair<String, Symbol>> =
-        sortedMembers
-            .map { member -> member to Pair(symbolProvider.toMemberName(member), symbolProvider.toSymbol(member)) }
-            .toMap()
+        sortedMembers.associateWith { member ->
+            Pair(symbolProvider.toMemberName(member), symbolProvider.toSymbol(member))
+        }
 
     /**
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
-        writer.openBlock("class #class.name:L private constructor(builder: BuilderImpl) {")
+        writer.openBlock("class #T private constructor(builder: Builder) {", symbol)
             .call { renderImmutableProperties() }
             .write("")
             .call { renderCompanionObject() }
@@ -62,9 +58,7 @@ class StructureGenerator(
             .call { renderHashCode() }
             .call { renderEquals() }
             .call { renderCopy() }
-            .call { renderJavaBuilderInterface() }
-            .call { renderDslBuilderInterface() }
-            .call { renderBuilderImpl() }
+            .call { renderBuilder() }
             .closeBlock("}")
             .write("")
     }
@@ -81,24 +75,16 @@ class StructureGenerator(
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
                 }
                 // override Throwable's message property
-                writer.write("override val #1L: #2P = builder.#1L", memberName, memberSymbol)
+                writer.write("override val #1L: #2F = builder.#1L", memberName, memberSymbol)
             } else {
-                writer.write("val #1L: #2P = builder.#1L", memberName, memberSymbol)
+                writer.write("val #1L: #2F = builder.#1L", memberName, memberSymbol)
             }
         }
     }
 
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            write("@JvmStatic")
-            write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
-            write("")
-            // the manual construction of a DslBuilder is mostly to support serde, end users should go through
-            // invoke syntax for kotlin or fluentBuilder for Java consumers
-            write("internal fun builder(): DslBuilder = BuilderImpl()")
-            write("")
-            write("operator fun invoke(block: DslBuilder.() -> #Q): #class.name:L = BuilderImpl().apply(block).build()", KotlinTypes.Unit)
-            write("")
+            write("operator fun invoke(block: Builder.() -> #Q): #Q = Builder().apply(block).build()", KotlinTypes.Unit, symbol)
         }
     }
 
@@ -106,7 +92,7 @@ class StructureGenerator(
     private fun renderToString() {
         writer.write("")
         writer.withBlock("override fun toString(): #Q = buildString {", "}", KotlinTypes.String) {
-            write("append(\"#class.name:L(\")")
+            write("append(\"#T(\")", symbol)
 
             when {
                 sortedMembers.isEmpty() -> write("append(\")\")")
@@ -186,7 +172,7 @@ class StructureGenerator(
             write("if (this === other) return true")
             write("if (javaClass != other?.javaClass) return false")
             write("")
-            write("other as #class.name:L")
+            write("other as #T", symbol)
             write("")
 
             for (memberShape in sortedMembers) {
@@ -216,82 +202,50 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-            .write("fun copy(block: DslBuilder.() -> #Q = {}): #class.name:L = BuilderImpl(this).apply(block).build()", KotlinTypes.Unit)
+            .write("inline fun copy(block: Builder.() -> #Q = {}): #Q = Builder(this).apply(block).build()", KotlinTypes.Unit, symbol)
             .write("")
     }
 
-    private fun renderJavaBuilderInterface() {
+    private fun renderBuilder() {
         writer.write("")
-            .withBlock("interface FluentBuilder {", "}") {
-                write("fun build(): #class.name:L")
+            .withBlock("class Builder {", "}") {
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
                     writer.renderMemberDocumentation(model, member)
                     writer.renderAnnotations(member)
-                    write("fun #1L(#1L: #2T): FluentBuilder", memberName, memberSymbol)
+                    write("var #L: #E", memberName, memberSymbol)
                 }
-            }
-    }
-
-    private fun renderDslBuilderInterface() {
-        writer.write("")
-            .withBlock("interface DslBuilder {", "}") {
-                val structMembers: MutableList<MemberShape> = mutableListOf()
-
-                for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    val targetShape = model.getShape(member.target).get()
-                    when {
-                        targetShape.isStructureShape -> structMembers.add(member)
-                    }
-
-                    writer.renderMemberDocumentation(model, member)
-                    writer.renderAnnotations(member)
-                    write("var #L: #P", memberName, memberSymbol)
-                }
-
-                write("")
-                write("fun build(): #class.name:L")
-                for (member in structMembers) {
-                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
-                    writer.renderAnnotations(member)
-                    openBlock("fun #L(block: #L.DslBuilder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
-                        .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
-                        .closeBlock("}")
-                }
-            }
-    }
-
-    private fun renderBuilderImpl() {
-        writer.write("")
-            .withBlock("private class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
-                // override DSL properties
-                for (member in sortedMembers) {
-                    val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    write("override var #L: #D", memberName, memberSymbol)
-                }
-
                 write("")
 
+                // generate the constructor used internally by serde
+                write("internal constructor()")
                 // generate the constructor that converts from the underlying immutable class to a builder instance
-                withBlock("constructor(x: #class.name:L) : this() {", "}") {
+                writer.write("@PublishedApi")
+                withBlock("internal constructor(x: #Q) : this() {", "}", symbol) {
                     for (member in sortedMembers) {
                         val (memberName, _) = memberNameSymbolIndex[member]!!
                         write("this.#1L = x.#1L", memberName)
                     }
                 }
 
-                // generate the Java builder overrides
-                // NOTE: The enum overloads are the same in both the Java and DslBuilder interfaces, generating
-                // the Java builder implementation will satisfy the DslInterface w.r.t enum overloads
                 write("")
-                write("override fun build(): #class.name:L = #class.name:L(this)")
-                for (member in sortedMembers) {
+                write("@PublishedApi")
+                write("internal fun build(): #1Q = #1T(this)", symbol)
+
+                val structMembers = sortedMembers.filter { member ->
+                    val targetShape = model.getShape(member.target).get()
+                    targetShape.isStructureShape
+                }
+
+                for (member in structMembers) {
+                    writer.write("")
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
-                    // we want the type names sans nullability (?) for arguments
-                    write("override fun #1L(#1L: #2T): FluentBuilder = apply { this.#1L = #1L }", memberName, memberSymbol)
+                    writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
+                    writer.renderAnnotations(member)
+                    openBlock("fun #L(block: #L.Builder.() -> #Q) {", memberName, memberSymbol.name, KotlinTypes.Unit)
+                        .write("this.#L = #L.invoke(block)", memberName, memberSymbol.name)
+                        .closeBlock("}")
                 }
             }
     }
@@ -304,14 +258,14 @@ class StructureGenerator(
         val (isRetryable, isThrottling) = shape
             .getTrait<RetryableTrait>()
             ?.let { true to it.throttling }
-            ?: false to false
+            ?: (false to false)
 
         checkForConflictsInHierarchy()
 
         val exceptionBaseClass = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
         writer.addImport(exceptionBaseClass)
 
-        writer.openBlock("class #class.name:L private constructor(builder: BuilderImpl) : ${exceptionBaseClass.name}() {")
+        writer.openBlock("class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {", symbol)
             .write("")
             .call { renderImmutableProperties() }
             .write("")
@@ -328,9 +282,7 @@ class StructureGenerator(
             .call { renderHashCode() }
             .call { renderEquals() }
             .call { renderCopy() }
-            .call { renderJavaBuilderInterface() }
-            .call { renderDslBuilderInterface() }
-            .call { renderBuilderImpl() }
+            .call { renderBuilder() }
             .closeBlock("}")
             .write("")
     }

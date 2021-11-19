@@ -5,14 +5,13 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerStructTest {
     @Test
-    fun `it handles basic structs with attribs`() = runSuspendTest {
+    fun `it handles basic structs with attribs`() {
         val payload = """
                <?xml version="1.0" encoding="UTF-8"?>
                <!--
@@ -31,7 +30,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun `it handles basic structs with multi attribs and text`() = runSuspendTest {
+    fun `it handles basic structs with multi attribs and text`() {
         val payload = """
                <?xml version="1.0" encoding="UTF-8"?>
                <!--
@@ -53,7 +52,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesBasicStructsWithAttribsAndText() = runSuspendTest {
+    fun itHandlesBasicStructsWithAttribsAndText() {
         val payload = """
             <payload xa="1" ya="2">
                 <x>x1</x>
@@ -91,7 +90,7 @@ class XmlDeserializerStructTest {
                 field(Z_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): BasicAttribTextStructTest {
+            fun deserialize(deserializer: Deserializer): BasicAttribTextStructTest {
                 val result = BasicAttribTextStructTest()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -115,7 +114,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesBasicStructs() = runSuspendTest {
+    fun itHandlesBasicStructs() {
         val payload = """
             <payload>
                 <x>1</x>
@@ -131,7 +130,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesBasicStructsWithNullValues() = runSuspendTest {
+    fun itHandlesBasicStructsWithNullValues() {
         val payload1 = """
             <payload>
                 <x>a</x>
@@ -160,7 +159,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itEnumeratesUnknownStructFields() = runSuspendTest {
+    fun itEnumeratesUnknownStructFields() {
         val payload = """
                <payload z="strval">
                    <x>1</x>
@@ -177,7 +176,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesNestedXmlStructures() = runSuspendTest {
+    fun itHandlesNestedXmlStructures() {
         val payload = """
             <RecursiveShapesInputOutput>
                 <nested>
@@ -226,7 +225,7 @@ class XmlDeserializerStructTest {
                 field(ATTRIBUTE_DESCRIPTOR)
             }
 
-            suspend fun deserialize(deserializer: Deserializer): AliasStruct {
+            fun deserialize(deserializer: Deserializer): AliasStruct {
                 val result = AliasStruct()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
@@ -244,7 +243,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesAliasMatchingOnElements() = runSuspendTest {
+    fun itHandlesAliasMatchingOnElements() {
         val tests = listOf(
             "<Struct><Message>Hi there</Message></Struct>",
             "<Struct><message>Hi there</message></Struct>",
@@ -259,7 +258,7 @@ class XmlDeserializerStructTest {
     }
 
     @Test
-    fun itHandlesAliasMatchingOnAttributes() = runSuspendTest {
+    fun itHandlesAliasMatchingOnAttributes() {
         val tests = listOf(
             """<Struct Attribute="Hi there"></Struct>""",
             """<Struct attribute="Hi there"></Struct>""",
@@ -283,8 +282,8 @@ internal class RecursiveShapesOperationDeserializer {
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutput {
-        val builder = RecursiveShapesInputOutput.dslBuilder()
+    fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutput {
+        val builder = RecursiveShapesInputOutput.Builder()
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
@@ -311,7 +310,7 @@ internal class RecursiveShapesInputOutputNested1DocumentDeserializer {
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested1 {
+    fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested1 {
         val builder = RecursiveShapesInputOutputNested1.dslBuilder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
@@ -338,7 +337,7 @@ internal class RecursiveShapesInputOutputNested2DocumentDeserializer {
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested2 {
+    fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutputNested2 {
         val builder = RecursiveShapesInputOutputNested2.dslBuilder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {

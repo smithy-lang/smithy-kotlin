@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.serde.*
 
 // Represents aspects of SdkFieldDescriptor that are particular to the Xml format
@@ -33,12 +32,9 @@ class XmlDeserializer(
 
     constructor(input: ByteArray, validateRootElement: Boolean = false) : this(xmlStreamReader(input), validateRootElement)
 
-    private val logger = Logger.getLogger<XmlDeserializer>()
     private var firstStructCall = true
 
-    override suspend fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        logger.trace { "Deserializing struct $descriptor under ${reader.lastToken}" }
-
+    override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
         if (firstStructCall) {
             if (!descriptor.hasTrait<XmlSerialName>()) throw DeserializationException("Top-level struct $descriptor requires a XmlSerialName trait but has none.")
 
@@ -71,9 +67,7 @@ class XmlDeserializer(
         return XmlStructDeserializer(descriptor, reader.subTreeReader(), parentToken, attribFields)
     }
 
-    override suspend fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        logger.trace { "Deserializing list $descriptor under ${reader.lastToken}" }
-
+    override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
         val depth = when (descriptor.hasTrait<Flattened>()) {
             true -> XmlStreamReader.SubtreeStartDepth.CURRENT
             else -> XmlStreamReader.SubtreeStartDepth.CHILD
@@ -82,11 +76,8 @@ class XmlDeserializer(
         return XmlListDeserializer(reader.subTreeReader(depth), descriptor)
     }
 
-    override suspend fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
-        logger.trace { "Deserializing map $descriptor under ${reader.lastToken}" }
-
-        return XmlMapDeserializer(reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT), descriptor)
-    }
+    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator =
+        XmlMapDeserializer(reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT), descriptor)
 }
 
 /**
@@ -103,7 +94,7 @@ internal class XmlMapDeserializer(
 ) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.EntryIterator {
     private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.Default
 
-    override suspend fun hasNextEntry(): Boolean {
+    override fun hasNextEntry(): Boolean {
         // Seek to either the entry or key token depending on the flatness of the map
         val nextEntryToken = when (descriptor.hasTrait<Flattened>()) {
             true -> reader.seek<XmlToken.BeginElement> { it.name.local == mapTrait.key }
@@ -113,7 +104,7 @@ internal class XmlMapDeserializer(
         return nextEntryToken != null
     }
 
-    override suspend fun key(): String {
+    override fun key(): String {
         // Seek to the key begin token
         reader.seek<XmlToken.BeginElement> { it.name.local == mapTrait.key }
             ?: error("Unable to find key $mapTrait.key in $descriptor")
@@ -124,7 +115,7 @@ internal class XmlMapDeserializer(
         return keyValueToken.value ?: throw DeserializationException("Key unspecified in $descriptor")
     }
 
-    override suspend fun nextHasValue(): Boolean {
+    override fun nextHasValue(): Boolean {
         // Expect a begin and value (or another begin) token if Map entry has a value
         val peekBeginToken = reader.peek(1) ?: throw DeserializationException("Unexpected termination of token stream in $descriptor")
         val peekValueToken = reader.peek(2) ?: throw DeserializationException("Unexpected termination of token stream in $descriptor")
@@ -149,7 +140,7 @@ internal class XmlListDeserializer(
     private val flattened = descriptor.hasTrait<Flattened>()
     private val elementName = (descriptor.findTrait<XmlCollectionName>() ?: XmlCollectionName.Default).element
 
-    override suspend fun hasNextElement(): Boolean {
+    override fun hasNextElement(): Boolean {
         if (!flattened && firstCall) {
             val nextToken = reader.peek()
             val matchedListDescriptor = nextToken is XmlToken.BeginElement && descriptor.nameMatches(nextToken.name.tag)
@@ -195,7 +186,7 @@ internal class XmlListDeserializer(
         }
     }
 
-    override suspend fun nextHasValue(): Boolean = reader.peek() !is XmlToken.EndElement
+    override fun nextHasValue(): Boolean = reader.peek() !is XmlToken.EndElement
 }
 
 /**
@@ -215,7 +206,7 @@ internal class XmlStructDeserializer(
     // Used to track direct deserialization or further nesting between calls to findNextFieldIndex() and deserialize<Type>()
     private var reentryFlag: Boolean = false
 
-    override suspend fun findNextFieldIndex(): Int? {
+    override fun findNextFieldIndex(): Int? {
         if (inNestedMode()) {
             // Returning from a nested struct call.  Nested deserializer consumed
             // tokens so clear them here to avoid processing stale state
@@ -243,7 +234,7 @@ internal class XmlStructDeserializer(
         return parsedFieldLocations.firstOrNull()?.fieldIndex ?: Deserializer.FieldIterator.UNKNOWN_FIELD
     }
 
-    private suspend fun <T> deserializeValue(transform: ((String) -> T)): T {
+    private fun <T> deserializeValue(transform: ((String) -> T)): T {
         // Set and validate mode
         reentryFlag = false
         if (parsedFieldLocations.isEmpty()) throw DeserializationException("matchedFields is empty, was findNextFieldIndex() called?")
@@ -269,25 +260,25 @@ internal class XmlStructDeserializer(
         }
     }
 
-    override suspend fun skipValue() = reader.skipNext()
+    override fun skipValue() = reader.skipNext()
 
-    override suspend fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeByte(): Byte = deserializeValue { it.toIntOrNull()?.toByte() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override suspend fun deserializeInt(): Int = deserializeValue { it.toIntOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeInt(): Int = deserializeValue { it.toIntOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override suspend fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort() ?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeShort(): Short = deserializeValue { it.toIntOrNull()?.toShort() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override suspend fun deserializeLong(): Long = deserializeValue { it.toLongOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeLong(): Long = deserializeValue { it.toLongOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override suspend fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeFloat(): Float = deserializeValue { it.toFloatOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override suspend fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
+    override fun deserializeDouble(): Double = deserializeValue { it.toDoubleOrNull() ?: throw DeserializationException("Unable to deserialize $it") }
 
-    override suspend fun deserializeString(): String = deserializeValue { it }
+    override fun deserializeString(): String = deserializeValue { it }
 
-    override suspend fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
+    override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
-    override suspend fun deserializeNull(): Nothing? {
+    override fun deserializeNull(): Nothing? {
         reader.takeNextAs<XmlToken.EndElement>()
         return null
     }
@@ -308,7 +299,7 @@ internal class XmlStructDeserializer(
 }
 
 // Extract the attributes from the last-read token and match them to [FieldLocation] on the [SdkObjectDescriptor].
-private suspend fun XmlStreamReader.tokenAttributesToFieldLocations(descriptor: SdkObjectDescriptor): MutableList<FieldLocation> =
+private fun XmlStreamReader.tokenAttributesToFieldLocations(descriptor: SdkObjectDescriptor): MutableList<FieldLocation> =
     if (descriptor.hasXmlAttributes && lastToken is XmlToken.BeginElement) {
         val attribFields = descriptor.fields.filter { it.hasTrait<XmlAttribute>() }
         val matchedAttribFields = attribFields.filter { it.findFieldLocation(lastToken as XmlToken.BeginElement, peek() ?: throw DeserializationException("Unexpected end of tokens")) != null }
@@ -363,7 +354,7 @@ private fun SdkObjectDescriptor.fieldTokenMatcher(fieldDescriptor: SdkFieldDescr
 }
 
 // Return the next token of the specified type or throw [DeserializerStateException] if incorrect type.
-internal suspend inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
+internal inline fun <reified TExpected : XmlToken> XmlStreamReader.takeNextAs(): TExpected {
     val token = this.nextToken() ?: throw DeserializationException("Expected ${TExpected::class} but instead found null")
     requireToken<TExpected>(token)
     return token as TExpected

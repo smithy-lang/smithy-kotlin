@@ -14,17 +14,17 @@ interface JsonStreamReader {
     /**
      * Grab the next token in the stream
      */
-    suspend fun nextToken(): JsonToken
+    fun nextToken(): JsonToken
 
     /**
      * Recursively skip the next token. Meant for discarding unwanted/unrecognized properties in a JSON document
      */
-    suspend fun skipNext()
+    fun skipNext()
 
     /**
      * Peek at the next token type
      */
-    suspend fun peek(): JsonToken
+    fun peek(): JsonToken
 }
 
 /*
@@ -34,7 +34,7 @@ interface JsonStreamReader {
 fun jsonStreamReader(payload: ByteArray): JsonStreamReader = JsonLexer(payload)
 
 // return the next token and require that it be of type [TExpected] or else throw an exception
-internal suspend inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
+internal inline fun <reified TExpected : JsonToken> JsonStreamReader.nextTokenOf(): TExpected {
     val token = this.nextToken()
     requireToken<TExpected>(token)
     return token as TExpected

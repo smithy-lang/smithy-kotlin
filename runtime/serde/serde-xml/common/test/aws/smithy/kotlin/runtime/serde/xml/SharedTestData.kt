@@ -26,7 +26,7 @@ class SimpleStructClass {
             field(Z_DESCRIPTOR)
         }
 
-        suspend fun deserialize(deserializer: Deserializer): SimpleStructClass {
+        fun deserialize(deserializer: Deserializer): SimpleStructClass {
             val result = SimpleStructClass()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
@@ -60,7 +60,7 @@ class SimpleStructOfStringsClass {
             field(Y_DESCRIPTOR)
         }
 
-        suspend fun deserialize(deserializer: Deserializer): SimpleStructOfStringsClass {
+        fun deserialize(deserializer: Deserializer): SimpleStructOfStringsClass {
             val result = SimpleStructOfStringsClass()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
@@ -91,7 +91,7 @@ class StructWithAttribsClass {
             field(Y_DESCRIPTOR)
         }
 
-        suspend fun deserialize(deserializer: Deserializer): StructWithAttribsClass {
+        fun deserialize(deserializer: Deserializer): StructWithAttribsClass {
             val result = StructWithAttribsClass()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
@@ -129,7 +129,7 @@ class StructWithMultiAttribsAndTextValClass {
             field(Y_DESCRIPTOR)
         }
 
-        suspend fun deserialize(deserializer: Deserializer): StructWithMultiAttribsAndTextValClass {
+        fun deserialize(deserializer: Deserializer): StructWithMultiAttribsAndTextValClass {
             val result = StructWithMultiAttribsAndTextValClass()
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                 loop@ while (true) {
@@ -151,15 +151,11 @@ class StructWithMultiAttribsAndTextValClass {
     }
 }
 
-class RecursiveShapesInputOutput private constructor(builder: BuilderImpl) {
+class RecursiveShapesInputOutput private constructor(builder: Builder) {
     val nested: RecursiveShapesInputOutputNested1? = builder.nested
 
     companion object {
-        fun builder(): Builder = BuilderImpl()
-
-        fun dslBuilder(): DslBuilder = BuilderImpl()
-
-        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutput = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> kotlin.Unit): RecursiveShapesInputOutput = Builder().apply(block).build()
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -182,44 +178,27 @@ class RecursiveShapesInputOutput private constructor(builder: BuilderImpl) {
         return true
     }
 
-    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): RecursiveShapesInputOutput = BuilderImpl(this).apply(block).build()
+    fun copy(block: Builder.() -> kotlin.Unit = {}): RecursiveShapesInputOutput = Builder(this).apply(block).build()
 
-    interface Builder {
-        fun build(): RecursiveShapesInputOutput
-        fun nested(nested: RecursiveShapesInputOutputNested1): Builder
-    }
-
-    interface DslBuilder {
-        var nested: RecursiveShapesInputOutputNested1?
-
-        fun build(): RecursiveShapesInputOutput
-        fun nested(block: RecursiveShapesInputOutputNested1.DslBuilder.() -> kotlin.Unit) {
-            this.nested = RecursiveShapesInputOutputNested1.invoke(block)
-        }
-    }
-
-    private class BuilderImpl() : Builder, DslBuilder {
-        override var nested: RecursiveShapesInputOutputNested1? = null
+    public class Builder() {
+        var nested: RecursiveShapesInputOutputNested1? = null
 
         constructor(x: RecursiveShapesInputOutput) : this() {
             this.nested = x.nested
         }
 
-        override fun build(): RecursiveShapesInputOutput = RecursiveShapesInputOutput(this)
-        override fun nested(nested: RecursiveShapesInputOutputNested1): Builder = apply { this.nested = nested }
+        fun build(): RecursiveShapesInputOutput = RecursiveShapesInputOutput(this)
     }
 }
 
-class RecursiveShapesInputOutputNested1 private constructor(builder: BuilderImpl) {
+class RecursiveShapesInputOutputNested1 private constructor(builder: Builder) {
     val foo: String? = builder.foo
     val nested: RecursiveShapesInputOutputNested2? = builder.nested
 
     companion object {
-        fun builder(): Builder = BuilderImpl()
+        fun dslBuilder(): Builder = Builder()
 
-        fun dslBuilder(): DslBuilder = BuilderImpl()
-
-        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutputNested1 = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> kotlin.Unit): RecursiveShapesInputOutputNested1 = Builder().apply(block).build()
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -245,49 +224,29 @@ class RecursiveShapesInputOutputNested1 private constructor(builder: BuilderImpl
         return true
     }
 
-    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): RecursiveShapesInputOutputNested1 = BuilderImpl(this).apply(block).build()
+    fun copy(block: Builder.() -> kotlin.Unit = {}): RecursiveShapesInputOutputNested1 = Builder(this).apply(block).build()
 
-    interface Builder {
-        fun build(): RecursiveShapesInputOutputNested1
-        fun foo(foo: String): Builder
-        fun nested(nested: RecursiveShapesInputOutputNested2): Builder
-    }
-
-    interface DslBuilder {
-        var foo: String?
-        var nested: RecursiveShapesInputOutputNested2?
-
-        fun build(): RecursiveShapesInputOutputNested1
-        fun nested(block: RecursiveShapesInputOutputNested2.DslBuilder.() -> kotlin.Unit) {
-            this.nested = RecursiveShapesInputOutputNested2.invoke(block)
-        }
-    }
-
-    private class BuilderImpl() : Builder, DslBuilder {
-        override var foo: String? = null
-        override var nested: RecursiveShapesInputOutputNested2? = null
+    public class Builder() {
+        var foo: String? = null
+        var nested: RecursiveShapesInputOutputNested2? = null
 
         constructor(x: RecursiveShapesInputOutputNested1) : this() {
             this.foo = x.foo
             this.nested = x.nested
         }
 
-        override fun build(): RecursiveShapesInputOutputNested1 = RecursiveShapesInputOutputNested1(this)
-        override fun foo(foo: String): Builder = apply { this.foo = foo }
-        override fun nested(nested: RecursiveShapesInputOutputNested2): Builder = apply { this.nested = nested }
+        fun build(): RecursiveShapesInputOutputNested1 = RecursiveShapesInputOutputNested1(this)
     }
 }
 
-class RecursiveShapesInputOutputNested2 private constructor(builder: BuilderImpl) {
+class RecursiveShapesInputOutputNested2 private constructor(builder: Builder) {
     val bar: String? = builder.bar
     val recursiveMember: RecursiveShapesInputOutputNested1? = builder.recursiveMember
 
     companion object {
-        fun builder(): Builder = BuilderImpl()
+        fun dslBuilder(): Builder = Builder()
 
-        fun dslBuilder(): DslBuilder = BuilderImpl()
-
-        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): RecursiveShapesInputOutputNested2 = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> kotlin.Unit): RecursiveShapesInputOutputNested2 = Builder().apply(block).build()
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -313,36 +272,18 @@ class RecursiveShapesInputOutputNested2 private constructor(builder: BuilderImpl
         return true
     }
 
-    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): RecursiveShapesInputOutputNested2 = BuilderImpl(this).apply(block).build()
+    fun copy(block: Builder.() -> kotlin.Unit = {}): RecursiveShapesInputOutputNested2 = Builder(this).apply(block).build()
 
-    interface Builder {
-        fun build(): RecursiveShapesInputOutputNested2
-        fun bar(bar: String): Builder
-        fun recursiveMember(recursiveMember: RecursiveShapesInputOutputNested1): Builder
-    }
-
-    interface DslBuilder {
-        var bar: String?
-        var recursiveMember: RecursiveShapesInputOutputNested1?
-
-        fun build(): RecursiveShapesInputOutputNested2
-        fun recursiveMember(block: RecursiveShapesInputOutputNested1.DslBuilder.() -> kotlin.Unit) {
-            this.recursiveMember = RecursiveShapesInputOutputNested1.invoke(block)
-        }
-    }
-
-    private class BuilderImpl() : Builder, DslBuilder {
-        override var bar: String? = null
-        override var recursiveMember: RecursiveShapesInputOutputNested1? = null
+    public class Builder() {
+        var bar: String? = null
+        var recursiveMember: RecursiveShapesInputOutputNested1? = null
 
         constructor(x: RecursiveShapesInputOutputNested2) : this() {
             this.bar = x.bar
             this.recursiveMember = x.recursiveMember
         }
 
-        override fun build(): RecursiveShapesInputOutputNested2 = RecursiveShapesInputOutputNested2(this)
-        override fun bar(bar: String): Builder = apply { this.bar = bar }
-        override fun recursiveMember(recursiveMember: RecursiveShapesInputOutputNested1): Builder = apply { this.recursiveMember = recursiveMember }
+        fun build(): RecursiveShapesInputOutputNested2 = RecursiveShapesInputOutputNested2(this)
     }
 }
 

@@ -350,7 +350,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         if (!response.status.isSuccess()) {
             throwSmokeTestError(context, response)
         }
-        val builder = SmokeTestResponse.builder()
+        val builder = SmokeTestResponse.Builder()
 
         builder.intHeader = response.headers["X-Header2"]?.toInt()
         builder.strHeader = response.headers["X-Header1"]

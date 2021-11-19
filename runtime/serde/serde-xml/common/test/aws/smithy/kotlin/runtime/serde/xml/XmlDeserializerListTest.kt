@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.collections.shouldContainExactly
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -22,7 +21,7 @@ class XmlDeserializerListTest {
             operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
-            suspend fun deserialize(
+            fun deserialize(
                 deserializer: Deserializer,
                 OBJ_DESCRIPTOR: SdkObjectDescriptor,
                 ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor
@@ -70,7 +69,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListSingleElement() = runSuspendTest {
+    fun itHandlesListSingleElement() {
         val payload = """
             <object>
                 <list>
@@ -92,7 +91,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListMultipleElementsAndCustomMemberName() = runSuspendTest {
+    fun itHandlesListMultipleElementsAndCustomMemberName() {
         val payload = """
             <object>
                 <list>
@@ -122,7 +121,7 @@ class XmlDeserializerListTest {
             operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
             fun dslBuilder(): DslBuilder = BuilderImpl()
 
-            suspend fun deserialize(
+            fun deserialize(
                 deserializer: Deserializer,
                 OBJ_DESCRIPTOR: SdkObjectDescriptor,
                 ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor
@@ -175,7 +174,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesSparseLists() = runSuspendTest {
+    fun itHandlesSparseLists() {
         val payload = """
             <object>
                 <list>
@@ -200,7 +199,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesEmptyLists() = runSuspendTest {
+    fun itHandlesEmptyLists() {
         val payload = """
             <object>
                 <list>                    
@@ -221,7 +220,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesFlatLists() = runSuspendTest {
+    fun itHandlesFlatLists() {
         val payload = """
             <object>
                 <element>1</element>
@@ -242,7 +241,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListOfObjectsWithMissingFields() = runSuspendTest {
+    fun itHandlesListOfObjectsWithMissingFields() {
         val payload = """
             <object>
                <list>
@@ -293,7 +292,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListOfObjectsWithEmptyValues() = runSuspendTest {
+    fun itHandlesListOfObjectsWithEmptyValues() {
         val payload = """
             <object>
                <list>
@@ -339,7 +338,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesNestedLists() = runSuspendTest {
+    fun itHandlesNestedLists() {
         val payload = """
             <NestedListResponse>
                 <parentList>
@@ -384,7 +383,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesListsOfStructs() = runSuspendTest {
+    fun itHandlesListsOfStructs() {
         val payload = """
             <FooResponse>
                 <parentList>
@@ -412,7 +411,7 @@ class XmlDeserializerListTest {
     }
 
     @Test
-    fun itHandlesFlatListsOfStructs() = runSuspendTest {
+    fun itHandlesFlatListsOfStructs() {
         val payload = """
             <FooResponse>
                 <flatList>
@@ -445,7 +444,7 @@ class XmlDeserializerListTest {
 
 internal class FooOperationDeserializer {
 
-    suspend fun deserialize(
+    fun deserialize(
         deserializer: Deserializer,
         LIST_DESCRIPTOR: SdkFieldDescriptor
     ): FooResponse {
@@ -454,7 +453,7 @@ internal class FooOperationDeserializer {
             field(LIST_DESCRIPTOR)
         }
 
-        val builder = FooResponse.dslBuilder()
+        val builder = FooResponse.Builder()
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
@@ -490,7 +489,7 @@ internal class PayloadStructDocumentDeserializer {
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): PayloadStruct {
+    fun deserialize(deserializer: Deserializer): PayloadStruct {
         val builder = PayloadStruct.dslBuilder()
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {
@@ -506,15 +505,13 @@ internal class PayloadStructDocumentDeserializer {
     }
 }
 
-class FooResponse private constructor(builder: BuilderImpl) {
+class FooResponse private constructor(builder: Builder) {
     val parentList: List<PayloadStruct>? = builder.parentList
 
     companion object {
-        fun builder(): Builder = BuilderImpl()
+        fun builder(): Builder = Builder()
 
-        fun dslBuilder(): DslBuilder = BuilderImpl()
-
-        operator fun invoke(block: DslBuilder.() -> kotlin.Unit): FooResponse = BuilderImpl().apply(block).build()
+        operator fun invoke(block: Builder.() -> kotlin.Unit): FooResponse = Builder().apply(block).build()
     }
 
     override fun toString(): kotlin.String = buildString {
@@ -537,28 +534,16 @@ class FooResponse private constructor(builder: BuilderImpl) {
         return true
     }
 
-    fun copy(block: DslBuilder.() -> kotlin.Unit = {}): FooResponse = BuilderImpl(this).apply(block).build()
+    fun copy(block: Builder.() -> kotlin.Unit = {}): FooResponse = Builder(this).apply(block).build()
 
-    interface Builder {
-        fun build(): FooResponse
-        fun parentList(parentList: List<PayloadStruct>): Builder
-    }
-
-    interface DslBuilder {
-        var parentList: List<PayloadStruct>?
-
-        fun build(): FooResponse
-    }
-
-    private class BuilderImpl() : Builder, DslBuilder {
-        override var parentList: List<PayloadStruct>? = null
+    public class Builder() {
+        var parentList: List<PayloadStruct>? = null
 
         constructor(x: FooResponse) : this() {
             this.parentList = x.parentList
         }
 
-        override fun build(): FooResponse = FooResponse(this)
-        override fun parentList(parentList: List<PayloadStruct>): Builder = apply { this.parentList = parentList }
+        fun build(): FooResponse = FooResponse(this)
     }
 }
 
@@ -694,7 +679,7 @@ internal class NestedListOperationOperationDeserializer {
         }
     }
 
-    suspend fun deserialize(deserializer: Deserializer): NestedListResponse {
+    fun deserialize(deserializer: Deserializer): NestedListResponse {
         val builder = NestedListResponse.dslBuilder()
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {

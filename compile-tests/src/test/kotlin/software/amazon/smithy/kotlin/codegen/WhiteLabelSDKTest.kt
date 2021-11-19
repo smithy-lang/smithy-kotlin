@@ -21,7 +21,7 @@ class WhiteLabelSDKTest {
 
     @Test
     fun `white label sdk compiles without errors`() {
-        val model = javaClass.getResource("/kitchen-sink-model.smithy").asSmithy()
+        val model = javaClass.getResource("/kitchen-sink-model.smithy")!!.asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
@@ -34,7 +34,7 @@ class WhiteLabelSDKTest {
     @Test
     @Ignore
     fun `white label sdk compiles without breaching warning threshold`() {
-        val model = javaClass.getResource("/kitchen-sink-model.smithy").asSmithy()
+        val model = javaClass.getResource("/kitchen-sink-model.smithy")!!.asSmithy()
 
         val compileOutputStream = ByteArrayOutputStream()
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
@@ -89,7 +89,7 @@ class WhiteLabelSDKTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
     @Test
@@ -127,7 +127,7 @@ class WhiteLabelSDKTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
     @Test
@@ -167,7 +167,7 @@ class WhiteLabelSDKTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertTrue(compilationResult.exitCode == KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 }
 
