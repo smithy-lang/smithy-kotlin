@@ -190,8 +190,8 @@ class StructureGeneratorTest {
                 /**
                  * construct an [com.test.model.Qux] inside the given [block]
                  */
-                fun quux(block: Qux.Builder.() -> kotlin.Unit) {
-                    this.quux = Qux.invoke(block)
+                fun quux(block: com.test.model.Qux.Builder.() -> kotlin.Unit) {
+                    this.quux = com.test.model.Qux.invoke(block)
                 }
             }
         """.formatForTest()
