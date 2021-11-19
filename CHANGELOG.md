@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.2-alpha] - 11/19/2021
+
+**WARNING: Alpha releases may contain bugs and no guarantee is made about API stability. They are not recommended for production use!**
+
+### Fixes
+* Fix nested struct dsl builder function codegen [#538](https://github.com/awslabs/smithy-kotlin/pull/538)
+* remove leaky trace logging from XML serde [#537](https://github.com/awslabs/smithy-kotlin/pull/537)
+* fix rendering of middleware without configure [#535](https://github.com/awslabs/smithy-kotlin/pull/535)
+
 ## [0.7.1-alpha] - 11/04/2021
 
 **WARNING: Alpha releases may contain bugs and no guarantee is made about API stability. They are not recommended for production use!**
