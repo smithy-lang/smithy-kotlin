@@ -49,7 +49,7 @@ object RuntimeTypes {
         object Middlware {
             val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
             val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
-            val RetryFeature = runtimeSymbol("RetryFeature", KotlinDependency.HTTP, "middleware")
+            val Retry = runtimeSymbol("Retry", KotlinDependency.HTTP, "middleware")
             val ResolveEndpoint = runtimeSymbol("ResolveEndpoint", KotlinDependency.HTTP, "middleware")
         }
 
