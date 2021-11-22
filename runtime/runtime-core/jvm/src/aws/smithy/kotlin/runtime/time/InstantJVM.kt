@@ -22,6 +22,8 @@ import java.time.temporal.ChronoField
 import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime
+import kotlin.time.toKotlinDuration
+import java.time.Duration as jtDuration
 import java.time.Instant as jtInstant
 
 actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
@@ -58,6 +60,15 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
      */
     @ExperimentalTime
     actual operator fun minus(duration: Duration): Instant = plus(-duration)
+
+    /**
+     * Returns a duration that is the difference in time between this Instant and [other].
+     *
+     * If the result is positive, this Instant is later than [other].
+     * If the result is negative, this Instant is earlier than [other].
+     */
+    @ExperimentalTime
+    actual operator fun minus(other: Instant): Duration = jtDuration.between(other.value, value).toKotlinDuration()
 
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]

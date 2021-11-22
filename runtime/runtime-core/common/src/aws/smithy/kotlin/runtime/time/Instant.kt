@@ -46,6 +46,13 @@ expect class Instant : Comparable<Instant> {
     @ExperimentalTime
     public operator fun minus(duration: Duration): Instant
 
+    /**
+     * Returns the difference between this instant and [other]. NOTE: The result may be negative in which case [other]
+     * is later than this Instant.
+     */
+    @ExperimentalTime
+    public operator fun minus(other: Instant): Duration
+
     companion object {
         /**
          * Parse an ISO-8601 formatted string into an [Instant]

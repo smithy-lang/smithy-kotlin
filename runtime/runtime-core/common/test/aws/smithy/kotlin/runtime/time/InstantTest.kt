@@ -217,4 +217,13 @@ class InstantTest {
         assertEquals(Instant.fromEpochSeconds(1010, 2000), start + offset)
         assertEquals(Instant.fromEpochSeconds(990, 0), start - offset)
     }
+
+    @OptIn(ExperimentalTime::class)
+    @Test
+    fun testMinusInstant() {
+        val end = Instant.fromEpochSeconds(1000, 50_000_000)
+        val start = Instant.fromEpochSeconds(999, 25_000_000)
+        val duration = end - start
+        assertEquals(1025, duration.inWholeMilliseconds)
+    }
 }

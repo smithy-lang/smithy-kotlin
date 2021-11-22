@@ -47,6 +47,7 @@ object RuntimeTypes {
         }
 
         object Middlware {
+            val CallLogging = runtimeSymbol("CallLogging", KotlinDependency.HTTP, "middleware")
             val Md5ChecksumMiddleware = runtimeSymbol("Md5Checksum", KotlinDependency.HTTP, "middleware")
             val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
             val Retry = runtimeSymbol("Retry", KotlinDependency.HTTP, "middleware")
