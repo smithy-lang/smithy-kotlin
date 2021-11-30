@@ -15,10 +15,6 @@ import software.amazon.smithy.model.shapes.OperationShape
  * Adds retry wrappers around operation invocations.
  */
 class StandardRetryMiddleware : ProtocolMiddleware {
-    companion object {
-        const val name: String = "RetryFeature"
-    }
-
     override val name: String = RuntimeTypes.Http.Middlware.Retry.name
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
