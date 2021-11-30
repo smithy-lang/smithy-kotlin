@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.serde.*
 
 // Represents aspects of SdkFieldDescriptor that are particular to the Xml format
@@ -33,12 +32,9 @@ class XmlDeserializer(
 
     constructor(input: ByteArray, validateRootElement: Boolean = false) : this(xmlStreamReader(input), validateRootElement)
 
-    private val logger = Logger.getLogger<XmlDeserializer>()
     private var firstStructCall = true
 
     override fun deserializeStruct(descriptor: SdkObjectDescriptor): Deserializer.FieldIterator {
-        logger.trace { "Deserializing struct $descriptor under ${reader.lastToken}" }
-
         if (firstStructCall) {
             if (!descriptor.hasTrait<XmlSerialName>()) throw DeserializationException("Top-level struct $descriptor requires a XmlSerialName trait but has none.")
 
@@ -72,8 +68,6 @@ class XmlDeserializer(
     }
 
     override fun deserializeList(descriptor: SdkFieldDescriptor): Deserializer.ElementIterator {
-        logger.trace { "Deserializing list $descriptor under ${reader.lastToken}" }
-
         val depth = when (descriptor.hasTrait<Flattened>()) {
             true -> XmlStreamReader.SubtreeStartDepth.CURRENT
             else -> XmlStreamReader.SubtreeStartDepth.CHILD
@@ -82,11 +76,8 @@ class XmlDeserializer(
         return XmlListDeserializer(reader.subTreeReader(depth), descriptor)
     }
 
-    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator {
-        logger.trace { "Deserializing map $descriptor under ${reader.lastToken}" }
-
-        return XmlMapDeserializer(reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT), descriptor)
-    }
+    override fun deserializeMap(descriptor: SdkFieldDescriptor): Deserializer.EntryIterator =
+        XmlMapDeserializer(reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CURRENT), descriptor)
 }
 
 /**

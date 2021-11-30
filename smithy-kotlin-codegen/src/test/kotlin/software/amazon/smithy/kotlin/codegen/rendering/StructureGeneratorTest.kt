@@ -4,7 +4,6 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
-import io.kotest.matchers.string.shouldContainOnlyOnce
 import org.junit.jupiter.api.TestInstance
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
@@ -72,16 +71,16 @@ class StructureGeneratorTest {
     @Test
     fun `it renders constructors`() {
         val expectedClassDecl = """
-            class MyStruct private constructor(builder: BuilderImpl) {
+            class MyStruct private constructor(builder: Builder) {
                 /**
                  * This *is* documentation about the member.
                  */
-                val bar: Int = builder.bar
-                val baz: Int? = builder.baz
-                val byteValue: Byte? = builder.byteValue
-                val foo: String? = builder.foo
-                val `object`: String? = builder.`object`
-                val quux: Qux? = builder.quux
+                val bar: kotlin.Int = builder.bar
+                val baz: kotlin.Int? = builder.baz
+                val byteValue: kotlin.Byte? = builder.byteValue
+                val foo: kotlin.String? = builder.foo
+                val `object`: kotlin.String? = builder.`object`
+                val quux: com.test.model.Qux? = builder.quux
         """.formatForTest(indent = "")
 
         commonTestContents.shouldContainOnlyOnceWithDiff(expectedClassDecl)
@@ -91,13 +90,7 @@ class StructureGeneratorTest {
     fun `it renders a companion object`() {
         val expected = """
             companion object {
-                @JvmStatic
-                fun fluentBuilder(): FluentBuilder = BuilderImpl()
-
-                internal fun builder(): DslBuilder = BuilderImpl()
-
-                operator fun invoke(block: DslBuilder.() -> kotlin.Unit): MyStruct = BuilderImpl().apply(block).build()
-                
+                operator fun invoke(block: Builder.() -> kotlin.Unit): com.test.model.MyStruct = Builder().apply(block).build()
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -161,52 +154,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a copy implementation`() {
         val expected = """
-            fun copy(block: DslBuilder.() -> kotlin.Unit = {}): MyStruct = BuilderImpl(this).apply(block).build()
-        """.formatForTest()
-        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
-    }
-
-    @Test
-    fun `it renders a java builder`() {
-        val expected = """
-            interface FluentBuilder {
-                fun build(): MyStruct
-                /**
-                 * This *is* documentation about the member.
-                 */
-                fun bar(bar: Int): FluentBuilder
-                fun baz(baz: Int): FluentBuilder
-                fun byteValue(byteValue: Byte): FluentBuilder
-                fun foo(foo: String): FluentBuilder
-                fun `object`(`object`: String): FluentBuilder
-                fun quux(quux: Qux): FluentBuilder
-            }
-        """.formatForTest()
-        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
-    }
-
-    @Test
-    fun `it renders a dsl builder`() {
-        val expected = """
-            interface DslBuilder {
-                /**
-                 * This *is* documentation about the member.
-                 */
-                var bar: Int
-                var baz: Int?
-                var byteValue: Byte?
-                var foo: String?
-                var `object`: String?
-                var quux: Qux?
-        
-                fun build(): MyStruct
-                /**
-                 * construct an [com.test.model.Qux] inside the given [block]
-                 */
-                fun quux(block: Qux.DslBuilder.() -> kotlin.Unit) {
-                    this.quux = Qux.invoke(block)
-                }
-            }
+            inline fun copy(block: Builder.() -> kotlin.Unit = {}): com.test.model.MyStruct = Builder(this).apply(block).build()
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -214,15 +162,20 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a builder impl`() {
         val expected = """
-            private class BuilderImpl() : FluentBuilder, DslBuilder {
-                override var bar: Int = 0
-                override var baz: Int? = null
-                override var byteValue: Byte? = null
-                override var foo: String? = null
-                override var `object`: String? = null
-                override var quux: Qux? = null
+            class Builder {
+                /**
+                 * This *is* documentation about the member.
+                 */
+                var bar: kotlin.Int = 0
+                var baz: kotlin.Int? = null
+                var byteValue: kotlin.Byte? = null
+                var foo: kotlin.String? = null
+                var `object`: kotlin.String? = null
+                var quux: com.test.model.Qux? = null
         
-                constructor(x: MyStruct) : this() {
+                internal constructor()
+                @PublishedApi
+                internal constructor(x: com.test.model.MyStruct) : this() {
                     this.bar = x.bar
                     this.baz = x.baz
                     this.byteValue = x.byteValue
@@ -231,13 +184,15 @@ class StructureGeneratorTest {
                     this.quux = x.quux
                 }
         
-                override fun build(): MyStruct = MyStruct(this)
-                override fun bar(bar: Int): FluentBuilder = apply { this.bar = bar }
-                override fun baz(baz: Int): FluentBuilder = apply { this.baz = baz }
-                override fun byteValue(byteValue: Byte): FluentBuilder = apply { this.byteValue = byteValue }
-                override fun foo(foo: String): FluentBuilder = apply { this.foo = foo }
-                override fun `object`(`object`: String): FluentBuilder = apply { this.`object` = `object` }
-                override fun quux(quux: Qux): FluentBuilder = apply { this.quux = quux }
+                @PublishedApi
+                internal fun build(): com.test.model.MyStruct = MyStruct(this)
+                
+                /**
+                 * construct an [com.test.model.Qux] inside the given [block]
+                 */
+                fun quux(block: com.test.model.Qux.Builder.() -> kotlin.Unit) {
+                    this.quux = com.test.model.Qux.invoke(block)
+                }
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -413,7 +368,7 @@ class StructureGeneratorTest {
 
         listOf(
             "val enumMap: Map<String, MyEnum>? = builder.enumMap",
-            "override var enumMap: Map<String, MyEnum>? = null"
+            "var enumMap: Map<String, MyEnum>? = null"
         ).forEach { line ->
             contents.shouldContainOnlyOnceWithDiff(line)
         }
@@ -460,7 +415,7 @@ class StructureGeneratorTest {
 
         listOf(
             "val enumMap: Map<String, MyEnum?>? = builder.enumMap",
-            "override var enumMap: Map<String, MyEnum?>? = null"
+            "var enumMap: Map<String, MyEnum?>? = null"
         ).forEach { line ->
             contents.shouldContainOnlyOnceWithDiff(line)
         }
@@ -468,50 +423,31 @@ class StructureGeneratorTest {
 
     @Test
     fun `it annotates deprecated structures`() {
-        deprecatedTestContents.shouldContainOnlyOnce(
+        deprecatedTestContents.shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                class MyStruct private constructor(builder: BuilderImpl) {
+                class MyStruct private constructor(builder: Builder) {
             """.trimIndent()
         )
     }
 
     @Test
     fun `it annotates deprecated members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+        println(deprecatedTestContents)
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                val baz: Qux? = builder.baz
+                val baz: com.test.model.Qux? = builder.baz
             """.trimIndent()
         )
     }
 
     @Test
-    fun `it annotates deprecated Java builder members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
+    fun `it annotates deprecated builder members`() {
+        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                fun baz(baz: Qux): FluentBuilder
-            """.trimIndent()
-        )
-    }
-
-    @Test
-    fun `it annotates deprecated DSL builder members`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
-            """
-                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                var baz: Qux?
-            """.trimIndent()
-        )
-    }
-
-    @Test
-    fun `it annotates deprecated DSL builder member struct functions`() {
-        deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
-            """
-                @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                fun baz(block: Qux.DslBuilder.() -> kotlin.Unit) {
+                val baz: com.test.model.Qux? = builder.baz
             """.trimIndent()
         )
     }

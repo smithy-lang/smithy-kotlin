@@ -10,30 +10,62 @@ import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.Handler
+import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.retries.RetryDirective
 import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
+import aws.smithy.kotlin.runtime.util.InternalApi
 
-class RetryFeature<O>(
+/**
+ * Retry requests with the given strategy and policy
+ * @param strategy the [RetryStrategy] to retry failed requests with
+ * @param policy the [RetryPolicy] used to determine when to retry
+ */
+@InternalApi
+class Retry<O>(
     private val strategy: RetryStrategy,
     private val policy: RetryPolicy<Any?>
 ) : MutateMiddleware<O> {
 
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
         if (request.subject.isRetryable) {
-            strategy.retry(policy) {
-                // Deep copy the requestuest because later middlewares (e.g., signing) mutate it
+            var attempt = 1
+            val logger = request.context.getLogger("Retry")
+            val wrappedPolicy = PolicyLogger(policy, logger)
+            strategy.retry(wrappedPolicy) {
+                if (attempt > 1) {
+                    logger.debug { "retrying request, attempt $attempt" }
+                }
+
+                // Deep copy the request because later middlewares (e.g., signing) mutate it
                 val requestCopy = request.deepCopy()
 
                 when (val body = requestCopy.subject.body) {
                     // Reset streaming bodies back to beginning
                     is HttpBody.Streaming -> body.reset()
+                    else -> {}
                 }
 
+                attempt++
                 next.call(requestCopy)
             }
         } else {
             next.call(request)
         }
+}
+
+/**
+ * Wrapper around [policy] that logs termination decisions
+ */
+private class PolicyLogger(
+    private val policy: RetryPolicy<Any?>,
+    private val logger: Logger,
+) : RetryPolicy<Any?> {
+    override fun evaluate(result: Result<Any?>): RetryDirective = policy.evaluate(result).also {
+        if (it is RetryDirective.TerminateAndFail) {
+            logger.debug { "request failed with non-retryable error" }
+        }
+    }
 }
 
 /**

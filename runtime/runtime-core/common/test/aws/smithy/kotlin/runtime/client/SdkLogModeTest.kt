@@ -31,7 +31,7 @@ class SdkLogModeTest {
     fun testToString() {
         val mode = SdkLogMode.allModes().reduce { acc, curr -> acc + curr }
         assertTrue { SdkLogMode.allModes().all { mode.isEnabled(it) } }
-        val expected = "SdkLogMode(LogRequest|LogRequestWithBody|LogResponse|LogResponseWithBody|LogRetries)"
+        val expected = "SdkLogMode(LogRequest|LogRequestWithBody|LogResponse|LogResponseWithBody)"
         assertEquals(expected, mode.toString())
     }
 }

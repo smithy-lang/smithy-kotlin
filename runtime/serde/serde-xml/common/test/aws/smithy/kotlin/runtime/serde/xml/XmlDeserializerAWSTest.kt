@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalStdlibApi::class)
 class XmlDeserializerAWSTest {
 
-    class HostedZoneConfig private constructor(builder: BuilderImpl) {
+    class HostedZoneConfig private constructor(builder: Builder) {
         val comment: String? = builder.comment
 
         companion object {
@@ -24,7 +24,8 @@ class XmlDeserializerAWSTest {
             }
 
             fun deserialize(deserializer: Deserializer): HostedZoneConfig {
-                val builder = BuilderImpl()
+                val builder = Builder()
+
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
@@ -39,26 +40,17 @@ class XmlDeserializerAWSTest {
                 return HostedZoneConfig(builder)
             }
 
-            operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+            operator fun invoke(block: Builder.() -> Unit) = Builder().apply(block).build()
         }
 
-        interface Builder {
-            fun build(): HostedZoneConfig
-            // TODO - Java fill in Java builder
-        }
+        public class Builder {
+            var comment: String? = null
 
-        interface DslBuilder {
-            var comment: String?
-        }
-
-        private class BuilderImpl : Builder, DslBuilder {
-            override var comment: String? = null
-
-            override fun build(): HostedZoneConfig = HostedZoneConfig(this)
+            fun build(): HostedZoneConfig = HostedZoneConfig(this)
         }
     }
 
-    class CreateHostedZoneRequest private constructor(builder: BuilderImpl) {
+    class CreateHostedZoneRequest private constructor(builder: Builder) {
         val name: String? = builder.name
         val callerReference: String? = builder.callerReference
         val hostedZoneConfig: HostedZoneConfig? = builder.hostedZoneConfig
@@ -77,7 +69,7 @@ class XmlDeserializerAWSTest {
             }
 
             fun deserialize(deserializer: Deserializer): CreateHostedZoneRequest {
-                val builder = BuilderImpl()
+                val builder = Builder()
                 deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
                     loop@ while (true) {
                         when (findNextFieldIndex()) {
@@ -94,26 +86,15 @@ class XmlDeserializerAWSTest {
                 return builder.build()
             }
 
-            operator fun invoke(block: DslBuilder.() -> Unit) = BuilderImpl().apply(block).build()
+            operator fun invoke(block: Builder.() -> Unit) = Builder().apply(block).build()
         }
 
-        interface Builder {
-            fun build(): CreateHostedZoneRequest
-            // TODO - Java fill in Java builder
-        }
+        public class Builder {
+            var name: String? = null
+            var callerReference: String? = null
+            var hostedZoneConfig: HostedZoneConfig? = null
 
-        interface DslBuilder {
-            var name: String?
-            var callerReference: String?
-            var hostedZoneConfig: HostedZoneConfig?
-        }
-
-        private class BuilderImpl : Builder, DslBuilder {
-            override var name: String? = null
-            override var callerReference: String? = null
-            override var hostedZoneConfig: HostedZoneConfig? = null
-
-            override fun build(): CreateHostedZoneRequest = CreateHostedZoneRequest(this)
+            fun build(): CreateHostedZoneRequest = CreateHostedZoneRequest(this)
         }
     }
 

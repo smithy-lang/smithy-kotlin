@@ -19,15 +19,15 @@ class StandardRetryMiddleware : ProtocolMiddleware {
         const val name: String = "RetryFeature"
     }
 
-    override val name: String = Companion.name
+    override val name: String = RuntimeTypes.Http.Middlware.Retry.name
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        writer.addImport(RuntimeTypes.Http.Middlware.RetryFeature)
+        writer.addImport(RuntimeTypes.Http.Middlware.Retry)
         writer.addImport(RuntimeTypes.Core.Retries.Impl.StandardRetryPolicy)
 
         writer.write(
             "op.install(#T(config.retryStrategy, StandardRetryPolicy.Default))",
-            RuntimeTypes.Http.Middlware.RetryFeature
+            RuntimeTypes.Http.Middlware.Retry
         )
     }
 }

@@ -283,7 +283,7 @@ internal class RecursiveShapesOperationDeserializer {
     }
 
     fun deserialize(deserializer: Deserializer): RecursiveShapesInputOutput {
-        val builder = RecursiveShapesInputOutput.dslBuilder()
+        val builder = RecursiveShapesInputOutput.Builder()
 
         deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
             loop@while (true) {

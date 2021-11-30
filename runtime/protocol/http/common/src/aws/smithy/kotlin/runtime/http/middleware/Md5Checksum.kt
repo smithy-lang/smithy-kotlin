@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.middleware
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.header
+import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.encodeBase64String
 import aws.smithy.kotlin.runtime.util.md5
 
@@ -17,6 +18,7 @@ import aws.smithy.kotlin.runtime.util.md5
  *   - https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#httpchecksumrequired-trait
  *   - https://datatracker.ietf.org/doc/html/rfc1864.html
  */
+@InternalApi
 class Md5Checksum : ModifyRequestMiddleware {
 
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {

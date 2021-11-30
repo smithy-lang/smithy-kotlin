@@ -7,10 +7,12 @@ package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * HTTP middleware feature that allows mutation of in-flight request headers
  */
+@InternalApi
 class MutateHeaders(
     override: Map<String, String> = emptyMap(),
     append: Map<String, String> = emptyMap(),

@@ -63,7 +63,7 @@ class RetryTest {
             delayProvider
         )
 
-        op.install(RetryFeature(strategy, policy))
+        op.install(Retry(strategy, policy))
 
         op.roundTrip(client, Unit)
         val attempts = op.context.attributes[HttpOperationContext.HttpCallList].size
