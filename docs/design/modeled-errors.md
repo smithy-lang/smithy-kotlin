@@ -93,7 +93,7 @@ the following code would be generated:
 
 
 ```kotlin
-class InvalidParameterValueException private constructor(builder: BuilderImpl): ServiceException {
+class InvalidParameterValueException private constructor(builder: Builder): ServiceException {
     override val message: String? = builder.message
     var type: String? = builder.type
 
@@ -101,7 +101,7 @@ class InvalidParameterValueException private constructor(builder: BuilderImpl): 
     // builder interfaces + impl
 }
 
-class ProxyTimedOut private constructor(builder: BuilderImpl): ServiceException {
+class ProxyTimedOut private constructor(builder: Builder): ServiceException {
     override val message: String? = builder.message
 
 
@@ -357,7 +357,7 @@ Example of an exception inheriting from this hierarchy (slightly simplified):
 /**
  * Returned if the access point you are trying to create already exists
  */
-class AccessPointAlreadyExistsException private constructor(builder: BuilderImpl) : AwsServiceException() {
+class AccessPointAlreadyExistsException private constructor(builder: Builder) : AwsServiceException() {
 
     val errorCode: String? = builder.errorCode
     val errorMessage: String? = builder.errorMessage
@@ -368,21 +368,13 @@ class AccessPointAlreadyExistsException private constructor(builder: BuilderImpl
         errorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ErrorType.Client
     }
 
-    interface DslBuilder {
-        var errorCode: String?
-        var errorMessage: String?
-        var accessPointId: String?
+    private class Builder {
+        var errorCode: String? = ""
+        var errorMessage: String? = ""
+        var accessPointId: String? = ""
 
-        fun build(): AccessPointAlreadyExistsException
-    }
-
-    private class BuilderImpl : DslBuilder {
-        override var errorCode: String? = ""
-        override var errorMessage: String? = ""
-        override var accessPointId: String? = ""
-
-        constructor(): super()
-        constructor(ex: AccessPointAlreadyExistsException) : super() {
+        internal constructor()
+        constructor(ex: AccessPointAlreadyExistsException) : this() {
             this.errorCode = ex.errorCode
             this.errorMessage = ex.errorMessage
             this.accessPointId = ex.accessPointId

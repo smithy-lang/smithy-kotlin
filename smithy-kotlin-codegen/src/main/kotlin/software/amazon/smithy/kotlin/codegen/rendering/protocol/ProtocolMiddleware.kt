@@ -68,7 +68,7 @@ abstract class HttpFeatureMiddleware : ProtocolMiddleware {
                 .call { renderConfigure(writer) }
                 .closeBlock("}")
         } else {
-            writer.write("install(#L)", name)
+            writer.write("op.install(#L)", name)
         }
     }
 

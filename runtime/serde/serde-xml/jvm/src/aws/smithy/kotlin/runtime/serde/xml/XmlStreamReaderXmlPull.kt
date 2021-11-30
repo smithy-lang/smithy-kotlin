@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.util.push
 import org.xmlpull.mxp1.MXParser
@@ -33,7 +32,6 @@ internal class XmlStreamReaderXmlPull(
         }
     }
 
-    private val logger = Logger.getLogger<XmlStreamReaderXmlPull>()
     private val peekStack = mutableListOf(parser.takeNextValidToken())
     private var _lastToken = parser.lastToken()
 
@@ -63,8 +61,6 @@ internal class XmlStreamReaderXmlPull(
             XmlStreamReader.SubtreeStartDepth.CURRENT -> _lastToken?.depth
         } ?: throw DeserializationException("Unable to determine last node depth in $this")
 
-        logger.trace { "Creating subtree at $subTreeDepth next token: ${internalPeek(1)}" }
-
         return SubTreeReader(this, subtreeStartDepth, subTreeDepth)
     }
 
@@ -76,7 +72,6 @@ internal class XmlStreamReaderXmlPull(
             false -> peekStack.removeAt(0)
         }.also { token ->
             this._lastToken = token
-            logger.trace { "${token.depth.indent()}$token" }
         }
     }
 

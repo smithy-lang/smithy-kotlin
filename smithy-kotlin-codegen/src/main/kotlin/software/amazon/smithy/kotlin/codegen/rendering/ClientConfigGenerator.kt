@@ -75,12 +75,10 @@ class ClientConfigGenerator(
             .joinToString(", ")
 
         val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
-        ctx.writer.openBlock("class #configClass.name:L private constructor(builder: BuilderImpl)$formattedBaseClasses {")
+        ctx.writer.openBlock("class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {")
             .call { renderImmutableProperties() }
             .call { renderCompanionObject() }
-            .call { renderJavaBuilderInterface() }
-            .call { renderDslBuilderInterface() }
-            .call { renderBuilderImpl() }
+            .call { renderBuilder() }
             .closeBlock("}")
 
         ctx.writer.removeContext("configClass.name")
@@ -88,16 +86,13 @@ class ClientConfigGenerator(
 
     private fun renderCompanionObject() {
         ctx.writer.withBlock("companion object {", "}") {
-//            write("@JvmStatic")
-            write("fun fluentBuilder(): FluentBuilder = BuilderImpl()")
-            write("")
             if (builderReturnType != null) {
                 write(
-                    "operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #T = BuilderImpl().apply(block).build()",
+                    "inline operator fun invoke(block: Builder.() -> kotlin.Unit): #T = Builder().apply(block).build()",
                     builderReturnType
                 )
             } else {
-                write("operator fun invoke(block: DslBuilder.() -> kotlin.Unit): #configClass.name:L = BuilderImpl().apply(block).build()")
+                write("inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
             }
         }
     }
@@ -149,51 +144,20 @@ class ClientConfigGenerator(
         }
     }
 
-    private fun renderJavaBuilderInterface() {
+    private fun renderBuilder() {
         ctx.writer.write("")
-            .withBlock("interface FluentBuilder {", "}") {
-                props
-                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
-                    .forEach { prop ->
-                        // we want the type names sans nullability (?) for arguments
-                        write("fun #1L(#1L: #2L): FluentBuilder", prop.propertyName, prop.symbol.name)
-                    }
-                write("fun build(): #configClass.name:L")
-            }
-    }
-
-    private fun renderDslBuilderInterface() {
-        ctx.writer.write("")
-            .withBlock("interface DslBuilder {", "}") {
-                props
-                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
-                    .forEach { prop ->
-                        prop.documentation?.let { ctx.writer.dokka(it) }
-                        write("var #L: #P", prop.propertyName, prop.symbol)
-                        write("")
-                    }
-            }
-    }
-
-    private fun renderBuilderImpl() {
-        ctx.writer.write("")
-            .withBlock("internal class BuilderImpl() : FluentBuilder, DslBuilder {", "}") {
+            .withBlock("class Builder {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
-                        write("override var #L: #D", prop.propertyName, prop.symbol)
+                        prop.documentation?.let { ctx.writer.dokka(it) }
+                        write("var #L: #D", prop.propertyName, prop.symbol)
                     }
                 write("")
 
-                write("")
-                write("override fun build(): #configClass.name:L = #configClass.name:L(this)")
-                props
-                    .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
-                    .forEach { prop ->
-                        // we want the type names sans nullability (?) for arguments
-                        write("override fun #1L(#1L: #2L): FluentBuilder = apply { this.#1L = #1L }", prop.propertyName, prop.symbol.name)
-                    }
+                write("@PublishedApi")
+                write("internal fun build(): #configClass.name:L = #configClass.name:L(this)")
             }
     }
 }
