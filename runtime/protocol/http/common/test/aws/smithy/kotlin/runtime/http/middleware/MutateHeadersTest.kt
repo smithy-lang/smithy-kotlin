@@ -44,10 +44,13 @@ class MutateHeadersTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(MutateHeaders) {
-            set("foo", "override")
-            set("z", "zebra")
-        }
+        val m = MutateHeaders(
+            override = mapOf(
+                "foo" to "override",
+                "z" to "zebra",
+            )
+        )
+        op.install(m)
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpCallList].first()
@@ -73,10 +76,13 @@ class MutateHeadersTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(MutateHeaders) {
-            append("foo", "appended")
-            append("z", "zebra")
-        }
+        val m = MutateHeaders(
+            append = mapOf(
+                "foo" to "appended",
+                "z" to "zebra",
+            )
+        )
+        op.install(m)
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpCallList].first()
@@ -102,10 +108,13 @@ class MutateHeadersTest {
         }
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
-        op.install(MutateHeaders) {
-            setIfMissing("foo", "nope")
-            setIfMissing("z", "zebra")
-        }
+        val m = MutateHeaders(
+            setMissing = mapOf(
+                "foo" to "nope",
+                "z" to "zebra",
+            )
+        )
+        op.install(m)
 
         op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpCallList].first()

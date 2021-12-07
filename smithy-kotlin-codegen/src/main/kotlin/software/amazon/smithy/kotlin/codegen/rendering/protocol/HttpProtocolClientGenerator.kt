@@ -250,7 +250,7 @@ abstract class HttpProtocolClientGenerator(
             }
         if (op.hasTrait<HttpChecksumRequiredTrait>()) {
             writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
-            writer.write("op.install(#T)", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+            writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
         }
     }
 

@@ -52,36 +52,3 @@ interface ProtocolMiddleware {
 fun <T : ProtocolMiddleware> List<T>.replace(newValue: T, block: (T) -> Boolean) = map {
     if (block(it)) newValue else it
 }
-
-/**
- * Base class for middleware that implements `aws.smithy.kotlin.runtime.http.Feature`
- */
-abstract class HttpFeatureMiddleware : ProtocolMiddleware {
-
-    // flag that controls whether renderConfigure() needs called
-    open val needsConfiguration: Boolean
-        get() = true
-
-    override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        if (needsConfiguration) {
-            writer.openBlock("op.install(#L) {", name)
-                .call { renderConfigure(writer) }
-                .closeBlock("}")
-        } else {
-            writer.write("op.install(#L)", name)
-        }
-    }
-
-    /**
-     * Render the body of the install step which configures this middleware. Implementations do not need to open
-     * the surrounding block.
-     *
-     * Example
-     * ```
-     * install(MyFeature) {
-     *     // this is the renderConfigure() entry point
-     * }
-     * ```
-     */
-    open fun renderConfigure(writer: KotlinWriter) {}
-}

@@ -35,9 +35,8 @@ class ResolveEndpointTest {
     fun testHostIsSet(): Unit = runSuspendTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com"))
-        op.install(ResolveEndpoint) {
-            resolver = EndpointResolver { endpoint }
-        }
+        val resolver = EndpointResolver { endpoint }
+        op.install(ResolveEndpoint(resolver))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
@@ -51,9 +50,8 @@ class ResolveEndpointTest {
     fun testHostWithPort(): Unit = runSuspendTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080"))
-        op.install(ResolveEndpoint) {
-            resolver = EndpointResolver { endpoint }
-        }
+        val resolver = EndpointResolver { endpoint }
+        op.install(ResolveEndpoint(resolver))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
@@ -67,9 +65,8 @@ class ResolveEndpointTest {
     fun testHostWithBasePath(): Unit = runSuspendTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080/foo/bar"))
-        op.install(ResolveEndpoint) {
-            resolver = EndpointResolver { endpoint }
-        }
+        val resolver = EndpointResolver { endpoint }
+        op.install(ResolveEndpoint(resolver))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
@@ -84,9 +81,8 @@ class ResolveEndpointTest {
     fun testHostPrefix(): Unit = runSuspendTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com"))
-        op.install(ResolveEndpoint) {
-            resolver = EndpointResolver { endpoint }
-        }
+        val resolver = EndpointResolver { endpoint }
+        op.install(ResolveEndpoint(resolver))
         op.context[HttpOperationContext.HostPrefix] = "prefix."
 
         op.roundTrip(client, Unit)

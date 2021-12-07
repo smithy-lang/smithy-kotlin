@@ -7,9 +7,6 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkClientOption
-import aws.smithy.kotlin.runtime.http.Feature
-import aws.smithy.kotlin.runtime.http.FeatureKey
-import aws.smithy.kotlin.runtime.http.HttpClientFeatureFactory
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -30,8 +27,6 @@ class SdkHttpOperation<I, O>(
     internal val deserializer: HttpDeserialize<O>,
 ) {
 
-    private val features: MutableMap<FeatureKey<*>, Feature> = mutableMapOf()
-
     init {
         val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
@@ -43,17 +38,17 @@ class SdkHttpOperation<I, O>(
     }
 
     /**
-     * Install a specific [feature] and optionally [configure] it.
+     * Install a middleware into this operation's execution stack
      */
-    fun <TConfig : Any, TFeature : Feature> install(
-        feature: HttpClientFeatureFactory<TConfig, TFeature>,
-        configure: TConfig.() -> Unit = {}
-    ) {
-        require(!features.contains(feature.key)) { "feature $feature has already been installed and configured" }
-        val instance = feature.create(configure)
-        features[feature.key] = instance
-        instance.install(this)
-    }
+    fun install(middleware: ModifyRequestMiddleware) { middleware.install(this) }
+
+    // Convenience overloads for various types of middleware that target different phases
+    // NOTE: Using install isn't strictly necessary, it's just a pattern for self registration
+    fun install(middleware: InitializeMiddleware<I, O>) { middleware.install(this) }
+    fun install(middleware: MutateMiddleware<O>) { middleware.install(this) }
+    fun install(middleware: FinalizeMiddleware<O>) { middleware.install(this) }
+    fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
+    fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
     companion object {
         inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =

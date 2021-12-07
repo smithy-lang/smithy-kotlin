@@ -20,23 +20,37 @@ class Phase<Request, Response> : Middleware<Request, Response> {
         Before, After
     }
 
-    private val middlewares = mutableListOf<Middleware<Request, Response>>()
+    private val middlewares = ArrayDeque<Middleware<Request, Response>>()
 
     /**
      * Insert [interceptor] in a specific order into the set of interceptors for this phase
      */
     fun intercept(order: Order = Order.After, interceptor: suspend (req: Request, next: Handler<Request, Response>) -> Response) {
         val wrapped = MiddlewareLambda(interceptor)
-        register(order, wrapped)
+        register(wrapped, order)
+    }
+
+    /**
+     * Insert a [transform] that only modifies the request of this phase
+     */
+    fun register(transform: ModifyRequest<Request>, order: Order = Order.After) {
+        register(ModifyRequestMiddleware(transform), order)
+    }
+
+    /**
+     * Insert a [transform] that only modifies the response of this phase
+     */
+    fun register(transform: ModifyResponse<Response>, order: Order = Order.After) {
+        register(ModifyResponseMiddleware(transform), order)
     }
 
     /**
      * Register a middleware in a specific order
      */
-    fun register(order: Order, middleware: Middleware<Request, Response>) {
+    fun register(middleware: Middleware<Request, Response>, order: Order = Order.After) {
         when (order) {
-            Order.Before -> middlewares.add(0, middleware)
-            Order.After -> middlewares.add(middleware)
+            Order.Before -> middlewares.addFirst(middleware)
+            Order.After -> middlewares.addLast(middleware)
         }
     }
 

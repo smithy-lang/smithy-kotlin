@@ -30,7 +30,7 @@ typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
 /**
  * Configure the execution of an operation from [Request] to [Response]
  *
- * An operation has several "phases" of it's lifecycle that can be intercepted and customized.
+ * An operation has several "phases" of its lifecycle that can be intercepted and customized.
  */
 @InternalApi
 class SdkOperationExecution<Request, Response> {
@@ -77,7 +77,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     }
 
     // ensure http calls are tracked
-    receive.register(Phase.Order.After, HttpCallMiddleware())
+    receive.register(HttpCallMiddleware())
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(inner, receive)
