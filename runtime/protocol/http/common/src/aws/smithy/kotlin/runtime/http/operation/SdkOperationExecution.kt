@@ -191,10 +191,13 @@ private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<S
 
     var call = next.call(request)
 
+    val statusMsg = "HttpResponse: Status ${call.response.status}"
     if (logMode.isEnabled(SdkLogMode.LogResponse) || logMode.isEnabled(SdkLogMode.LogResponseWithBody)) {
         val (resp, formattedResp) = dumpResponse(call.response, logMode.isEnabled(SdkLogMode.LogResponseWithBody))
         call = call.copy(response = resp)
-        logger.debug { "HttpResponse:\n$formattedResp" }
+        logger.debug { "$statusMsg\n$formattedResp" }
+    } else {
+        logger.debug { statusMsg }
     }
 
     return call
