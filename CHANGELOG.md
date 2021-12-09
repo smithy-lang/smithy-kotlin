@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.0-beta] - 12/09/2021
+
+**WARNING: Beta releases may contain bugs and no guarantee is made about API stability. They are not recommended for production use!**
+
+### New features
+* add call logging at DEBUG level [#547](https://github.com/awslabs/smithy-kotlin/pull/547)
+
 ## [0.7.3-beta] - 12/01/2021
 
 **WARNING: Beta releases may contain bugs and no guarantee is made about API stability. They are not recommended for production use!**
