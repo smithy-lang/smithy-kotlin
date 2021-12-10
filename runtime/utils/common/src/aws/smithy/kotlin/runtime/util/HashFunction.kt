@@ -41,9 +41,20 @@ expect class Sha256() : HashFunction
 expect class Md5() : HashFunction
 
 /**
+ * Implementation of SHA-1 (Secure Hash Algorithm 1) hash function
+ * https://csrc.nist.gov/projects/hash-functions
+ */
+expect class Sha1() : HashFunction
+
+/**
  * Compute the SHA-256 hash of the current [ByteArray]
  */
 fun ByteArray.sha256(): ByteArray = hash(Sha256(), this)
+
+/**
+ * Compute the SHA-1 hash of the current [ByteArray]
+ */
+fun ByteArray.sha1(): ByteArray = hash(Sha1(), this)
 
 /**
  * Compute the MD5 hash of the current [ByteArray]
