@@ -39,6 +39,10 @@ fun setRequestEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
     if (endpoint.uri.path.isNotBlank()) {
         val pathPrefix = endpoint.uri.path.removeSuffix("/")
         val original = req.subject.url.path.removePrefix("/")
-        req.subject.url.path = "$pathPrefix/$original"
+        req.subject.url.path = if (original.isNotBlank()) "$pathPrefix/$original" else pathPrefix
+    }
+
+    if (!endpoint.uri.parameters.isEmpty()) {
+        req.subject.url.parameters.appendAll(endpoint.uri.parameters)
     }
 }

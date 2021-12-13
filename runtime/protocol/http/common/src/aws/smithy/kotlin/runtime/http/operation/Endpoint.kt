@@ -13,7 +13,7 @@ import aws.smithy.kotlin.runtime.http.Url
  * The SDK will automatically resolve these endpoints per API client using an internal resolver.
  *
  * @property uri The base URL endpoint clients will use to make API calls to e.g. "api.myservice.com".
- * NOTE: Only `scheme`, `port`, `host` and `path` are valid. Other URL elements like query parameters are ignored.
+ * NOTE: Only `scheme`, `port`, `host` `path`, and `parameters` are valid. Other URL elements are ignored.
 
  * @property isHostnameImmutable Flag indicating that the hostname can be modified by the SDK client.
  *
@@ -32,7 +32,4 @@ data class Endpoint(
     val isHostnameImmutable: Boolean = false,
 ) {
     constructor(uri: String) : this(Url.parse(uri))
-    init {
-        require(uri.parameters.isEmpty()) { "Query parameters are not currently supported by endpoint resolution" }
-    }
 }
