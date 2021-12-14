@@ -7,7 +7,8 @@ package aws.smithy.kotlin.runtime.time
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)
@@ -18,15 +19,15 @@ class ManualClockTest {
         val clock = ManualClock(epoch = Instant.fromEpochSeconds(epoch))
         assertEquals(epoch, clock.now().epochSeconds)
 
-        clock.advance(Duration.seconds(20))
+        clock.advance(20.seconds)
         assertEquals(epoch + 20, clock.now().epochSeconds)
 
         // negative duration
-        clock.advance(Duration.seconds(-20))
+        clock.advance(-20.seconds)
         assertEquals(epoch, clock.now().epochSeconds)
 
         // ns
-        clock.advance(Duration.milliseconds(10_500))
+        clock.advance(10_500.milliseconds)
         assertEquals(Instant.fromEpochSeconds(epoch + 10, 500_000_000), clock.now())
     }
 }

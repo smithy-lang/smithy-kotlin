@@ -7,7 +7,8 @@ package aws.smithy.kotlin.runtime.time
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 // tests for conversion from a parsed representation into an Instant instance
@@ -213,7 +214,7 @@ class InstantTest {
     fun testPlusMinusDuration() {
         val start = Instant.fromEpochSeconds(1000, 1000)
 
-        val offset = Duration.seconds(10) + Duration.nanoseconds(1000)
+        val offset = 10.seconds + 1000.nanoseconds
         assertEquals(Instant.fromEpochSeconds(1010, 2000), start + offset)
         assertEquals(Instant.fromEpochSeconds(990, 0), start - offset)
     }
