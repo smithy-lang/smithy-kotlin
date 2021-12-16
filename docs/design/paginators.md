@@ -69,16 +69,11 @@ used in a model.
 
 ## API
 
-The SDK codegen will render a [Kotlin Flow](https://kotlinlang.org/docs/flow.html) that represents the public API for the response of
-a paginated operation.  Runtime library code is not required for `Flow`-based paginators, as all functionality
-will be provided by the Kotlin standard lib and the `kotlinx-coroutines-core` library.
+The SDK codegen will render a [Kotlin Flow](https://kotlinlang.org/docs/flow.html) that represents the public API for the response of a paginated operation.  Runtime library code is not required for `Flow`-based paginators, as all functionality will be provided by the Kotlin standard lib and the `kotlinx-coroutines-core` library.
 
 Pagination by default will always generate an extension function that returns a `Flow` over the normal operation output type. 
-If `items` is specified then a `Flow` transform function (extending the return type of it's parent) will be generated that 
-allows the nested item to be paginated over.
-The targeted type will provide iteration to the `item` element for the user automatically.
 
-An example of this is demonstrated below:
+An example of this is demonstrated below (codegen):
 
 ```kotlin
 fun LambdaClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
@@ -97,7 +92,19 @@ fun LambdaClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Fl
       }
    }
 }
+```
 
+The shape targeted by `inputToken` is mapped to the `cursor` field. Each iteration the `cursor` is updated with the output field targeted by the `outputToken`.
+
+### Pagination over Nested Item
+
+If `items` is specified in the model for a given operation, then a `Flow` transform function (extending the return type of it's parent) will be generated that 
+allows the nested item to be paginated over by producing another flow that works from the base response flow.
+The targeted type will provide iteration to the `item` element for the user automatically.
+
+Here is an example that follows from the previous example (codegen):
+
+```kotlin
 fun Flow<ListFunctionsResponse>.onFunctionConfiguration(): Flow<FunctionConfiguration> =
    transform() { response ->
       response.functions?.forEach {
@@ -106,11 +113,16 @@ fun Flow<ListFunctionsResponse>.onFunctionConfiguration(): Flow<FunctionConfigur
    }
 ```
 
-The shape targeted by `inputToken` is mapped to the `cursor` field. Each iteration the `cursor` is updated with the output field targeted by the `outputToken`.
 
 ### Creating a Paginator
 
-Each operation that supports pagination would receive an extension function to create a paginator. Using the model in the introduction would produce the following:
+Each operation that supports pagination would receive an extension function (based from the service client interface) to create a paginator. 
+The function generated always begins with the prefix `paginate`, helping with the `discoverablity` design consideration, by allowing users to quickly 
+view all paginatable operations by specifing this literal prefix in the IDE.  In a similar way, extension functions that provide direct access to a paginator's
+nested member will always begin with the prefix `on`.  Once customers are familiar with these two prefixes, discovering what pagination options are available for a given
+client or paginated response is simple and consistent.
+
+Using the model in the introduction would produce the following:
 
 ### Examples
 
@@ -156,8 +168,8 @@ lambdaClient
 ApiGatewayClient.fromEnvironment().use { apiGatewayClient ->
   apiGatewayClient
       .paginateGetUsage(GetUsageRequest { })
-      .onMapOfKeyUsages().collect { entry -> // Map.Entry<String, List<List<Long>>>
-          println("${entry.key}: ${entry.value}")
+      .onMapOfKeyUsages().collect { (key, value) -> // Map.Entry<String, List<List<Long>>>
+          println("${key}: ${value}")
       }
 }
 ```
