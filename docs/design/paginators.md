@@ -80,11 +80,11 @@ fun LambdaClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Fl
    return flow {
       var cursor: kotlin.String? = null
       var isFirstPage: Boolean = true
-      val req = initialRequest.copy {
-         this.marker = cursor
-      }
 
       while (isFirstPage || (cursor?.isNotEmpty() == true)) {
+         val req = initialRequest.copy {
+            this.marker = cursor
+         }
          val result = this@paginateListFunctions.listFunctions(req)
          isFirstPage = false
          cursor = result.nextMarker
@@ -126,7 +126,7 @@ Using the model in the introduction would produce the following:
 
 ### Examples
 
-#### Usage - Manual Pagination
+#### Usage
 
 An example of driving a paginator manually and processing results:
 
