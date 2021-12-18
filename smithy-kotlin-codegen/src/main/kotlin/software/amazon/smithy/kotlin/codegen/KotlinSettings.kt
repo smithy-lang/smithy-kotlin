@@ -31,7 +31,7 @@ private const val SDK_ID = "sdkId"
 /**
  * Settings used by [KotlinCodegenPlugin]
  */
-class KotlinSettings(
+data class KotlinSettings(
     val service: ShapeId,
     val pkg: PackageSettings,
     val sdkId: String,
