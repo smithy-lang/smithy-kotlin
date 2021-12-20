@@ -92,4 +92,51 @@ class ResolveEndpointTest {
         assertEquals(Protocol.HTTP, actual.url.scheme)
         assertEquals("/operation", actual.url.path)
     }
+
+    @Test
+    fun testEndpointPathPrefixWithNonEmptyPath(): Unit = runSuspendTest {
+        val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
+        val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix/"))
+        val resolver = EndpointResolver { endpoint }
+        op.install(ResolveEndpoint(resolver))
+
+        op.roundTrip(client, Unit)
+        val actual = op.context[HttpOperationContext.HttpCallList].first().request
+
+        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Protocol.HTTP, actual.url.scheme)
+        assertEquals("/path/prefix/operation", actual.url.path)
+    }
+
+    @Test
+    fun testEndpointPathPrefixWithEmptyPath(): Unit = runSuspendTest {
+        val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "" }, Unit)
+        val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix"))
+        val resolver = EndpointResolver { endpoint }
+        op.install(ResolveEndpoint(resolver))
+
+        op.roundTrip(client, Unit)
+        val actual = op.context[HttpOperationContext.HttpCallList].first().request
+
+        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Protocol.HTTP, actual.url.scheme)
+        assertEquals("/path/prefix", actual.url.path)
+    }
+
+    @Test
+    fun testQueryParameters(): Unit = runSuspendTest {
+        val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
+        val endpoint = Endpoint(uri = Url.parse("http://api.test.com?foo=bar&baz=qux"))
+        val resolver = EndpointResolver { endpoint }
+        op.install(ResolveEndpoint(resolver))
+
+        op.roundTrip(client, Unit)
+        val actual = op.context[HttpOperationContext.HttpCallList].first().request
+
+        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Protocol.HTTP, actual.url.scheme)
+        assertEquals("/operation", actual.url.path)
+        assertEquals("bar", actual.url.parameters["foo"])
+        assertEquals("qux", actual.url.parameters["baz"])
+    }
 }
