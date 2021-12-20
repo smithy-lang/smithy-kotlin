@@ -29,6 +29,9 @@ object SymbolProperty {
 
     // Immutable collection type
     const val IMMUTABLE_COLLECTION_FUNCTION: String = "immutableCollectionType"
+
+    // Entry type for Maps
+    const val ENTRY_EXPRESSION: String = "entryExpression"
 }
 
 /**
