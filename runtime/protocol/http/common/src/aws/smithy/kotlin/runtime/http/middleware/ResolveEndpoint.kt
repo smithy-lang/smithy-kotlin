@@ -47,7 +47,5 @@ fun setRequestEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
         }
     }
 
-    if (!endpoint.uri.parameters.isEmpty()) {
-        req.subject.url.parameters.appendAll(endpoint.uri.parameters)
-    }
+    req.subject.url.parameters.appendAll(endpoint.uri.parameters)
 }
