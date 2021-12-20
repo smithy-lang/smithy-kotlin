@@ -169,6 +169,12 @@ class UrlTest {
     }
 
     @Test
+    fun itParsesIpv6Hosts() {
+        val actual = Url.parse("http://[2001:db8::1]:80")
+        assertEquals("[2001:db8::1]", actual.host)
+    }
+
+    @Test
     fun testEncodePath() {
         val url = UrlBuilder()
         url.parameters {
