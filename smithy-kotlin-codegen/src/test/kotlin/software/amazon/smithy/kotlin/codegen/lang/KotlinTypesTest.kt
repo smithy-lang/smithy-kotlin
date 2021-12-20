@@ -32,7 +32,7 @@ class KotlinTypesTest {
             name = "String"
             namespace = "kotlin"
         }
-        assertEquals( true, testSymbol.isBuiltIn)
+        assertEquals(true, testSymbol.isBuiltIn)
     }
 
     @Test
@@ -41,6 +41,6 @@ class KotlinTypesTest {
             name = "Duration"
             namespace = "kotlin.time"
         }
-        assertEquals( true, testSymbol.isBuiltIn)
+        assertEquals(true, testSymbol.isBuiltIn)
     }
 }

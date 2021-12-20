@@ -42,7 +42,7 @@ class SymbolBuilderTest {
     @Test
     fun `it builds symbol from String`() {
         val expected = buildSymbol {
-            name="Foo"
+            name = "Foo"
             namespace = "x.y.z"
         }
 
@@ -52,7 +52,7 @@ class SymbolBuilderTest {
     @Test
     fun `it builds symbol without namespace String`() {
         val expected = buildSymbol {
-            name="Foo"
+            name = "Foo"
         }
 
         assertEquals(expected.namespace, "Foo".toSymbol().namespace)
