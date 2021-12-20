@@ -96,7 +96,7 @@ fun isValidKotlinIdentifier(s: String): Boolean {
  * Flag indicating if this symbol is a Kotlin built-in symbol
  */
 val Symbol.isBuiltIn: Boolean
-    get() = namespace.startsWith("kotlin.")
+    get() = namespace == "kotlin" || namespace.startsWith("kotlin.")
 
 /**
  * Escape characters in strings to ensure they are treated as pure literals.
