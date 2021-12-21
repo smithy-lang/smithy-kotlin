@@ -1,244 +1,219 @@
 package software.amazon.smithy.kotlin.codegen.rendering
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.transform
-import kotlinx.coroutines.runBlocking
+import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.codegen.core.SymbolProvider
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.test.newTestContext
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
+import software.amazon.smithy.model.Model
 import kotlin.test.Test
 
 class PaginatorGeneratorTest {
+    private val testModelWithItems = """
+        namespace com.test
+        
+        use aws.protocols#restJson1
+        
+        service Lambda {
+            operations: [ListFunctions]
+        }
+        
+        @paginated(
+            inputToken: "Marker",
+            outputToken: "NextMarker",
+            pageSize: "MaxItems",
+            items: "Functions"
+        )
+        
+        @readonly
+        @http(method: "GET", uri: "/functions", code: 200)
+        operation ListFunctions {
+            input: ListFunctionsRequest,
+            output: ListFunctionsResponse
+        }
+        
+        structure ListFunctionsRequest {
+            @httpQuery("FunctionVersion")
+            FunctionVersion: String,
+            @httpQuery("Marker")
+            Marker: String,
+            @httpQuery("MasterRegion")
+            MasterRegion: String,
+            @httpQuery("MaxItems")
+            MaxItems: Integer
+        }
+        
+        structure ListFunctionsResponse {
+            Functions: FunctionConfigurationList,
+            NextMarker: String
+        }
+        
+        list FunctionConfigurationList {
+            member: FunctionConfiguration
+        }
+        
+        structure FunctionConfiguration {
+            FunctionName: String
+        }
+        """.toSmithyModel()
+    private val testContextWithItems = testModelWithItems.newTestContext("Lambda", "com.test")
+
+    private val codegenContextWithItems = object : CodegenContext {
+        override val model: Model = testContextWithItems.generationCtx.model
+        override val symbolProvider: SymbolProvider = testContextWithItems.generationCtx.symbolProvider
+        override val settings: KotlinSettings = testContextWithItems.generationCtx.settings
+        override val protocolGenerator: ProtocolGenerator? = testContextWithItems.generator
+        override val integrations: List<KotlinIntegration> = testContextWithItems.generationCtx.integrations
+    }
+
+    private val testModelNoItem = """
+        namespace com.test
+        
+        use aws.protocols#restJson1
+        
+        service Lambda {
+            operations: [ListFunctions]
+        }
+        
+        @paginated(
+            inputToken: "Marker",
+            outputToken: "NextMarker",
+            pageSize: "MaxItems"
+        )
+        
+        @readonly
+        @http(method: "GET", uri: "/functions", code: 200)
+        operation ListFunctions {
+            input: ListFunctionsRequest,
+            output: ListFunctionsResponse
+        }
+        
+        structure ListFunctionsRequest {
+            @httpQuery("FunctionVersion")
+            FunctionVersion: String,
+            @httpQuery("Marker")
+            Marker: String,
+            @httpQuery("MasterRegion")
+            MasterRegion: String,
+            @httpQuery("MaxItems")
+            MaxItems: Integer
+        }
+        
+        structure ListFunctionsResponse {
+            Functions: FunctionConfigurationList,
+            NextMarker: String
+        }
+        
+        list FunctionConfigurationList {
+            member: FunctionConfiguration
+        }
+        
+        structure FunctionConfiguration {
+            FunctionName: String
+        }
+        """.toSmithyModel()
+    private val testContextNoItem = testModelNoItem.newTestContext("Lambda", "com.test")
+
+    private val codegenContextNoItem = object : CodegenContext {
+        override val model: Model = testContextNoItem.generationCtx.model
+        override val symbolProvider: SymbolProvider = testContextNoItem.generationCtx.symbolProvider
+        override val settings: KotlinSettings = testContextNoItem.generationCtx.settings
+        override val protocolGenerator: ProtocolGenerator? = testContextNoItem.generator
+        override val integrations: List<KotlinIntegration> = testContextNoItem.generationCtx.integrations
+    }
 
     @Test
-    fun testCanPaginateOnResponse() = runBlocking {
-        val unit = ClientImpl()
+    fun testRenderPaginatorNoItem() {
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContextNoItem, testContextNoItem.generationCtx.delegator)
 
-        unit.paginateListFunctions(ListFunctionsRequest {}).collect { resp ->
-            println(resp.functions)
-        }
-    }
+        testContextNoItem.generationCtx.delegator.flushWriters()
+        val testManifest = testContextNoItem.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/Paginators.kt")
 
-    @Test
-    fun testCanPaginateOnItem() = runBlocking {
-        val unit = ClientImpl()
-
-        unit
-            .paginateListFunctions(ListFunctionsRequest {})
-            .onFunctionConfiguration().collect { functionConfiguration ->
-                println(functionConfiguration.functionName)
+        val expected = """
+            /**
+             * Paginate over [ListFunctionsResponse]
+             */
+            fun TestClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
+                return flow {
+                    var cursor: kotlin.String? = null
+                    var isFirstPage: Boolean = true
+            
+                    while (isFirstPage || (cursor?.isNotEmpty() == true)) {
+                        val req = initialRequest.copy {
+                            this.marker = cursor
+                        }
+                        val result = this@paginateListFunctions.listFunctions(req)
+                        isFirstPage = false
+                        cursor = result.nextMarker
+                        emit(result)
+                    }
+                }
             }
+        """.trimIndent()
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
     }
-}
 
-/**
- * Paginate over [ListFunctionsResponse]
- */
-fun TestClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
-    return flow {
-        var cursor: kotlin.String? = null
-        var isFirstPage: Boolean = true
+        @Test
+    fun testRenderPaginatorWithItem() {
+        val unit = PaginatorGenerator()
+        unit.writeAdditionalFiles(codegenContextWithItems, testContextWithItems.generationCtx.delegator)
 
-        while (isFirstPage || (cursor?.isNotEmpty() == true)) {
-            val req = initialRequest.copy {
-                this.marker = cursor
+        testContextWithItems.generationCtx.delegator.flushWriters()
+        val testManifest = testContextWithItems.generationCtx.delegator.fileManifest as MockManifest
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/Paginators.kt")
+
+        val expectedCode = """
+            /**
+             * Paginate over [ListFunctionsResponse]
+             */
+            fun TestClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
+                return flow {
+                    var cursor: kotlin.String? = null
+                    var isFirstPage: Boolean = true
+            
+                    while (isFirstPage || (cursor?.isNotEmpty() == true)) {
+                        val req = initialRequest.copy {
+                            this.marker = cursor
+                        }
+                        val result = this@paginateListFunctions.listFunctions(req)
+                        isFirstPage = false
+                        cursor = result.nextMarker
+                        emit(result)
+                    }
+                }
             }
+            
+            /**
+             * Paginate over [ListFunctionsResponse.functions]
+             */
+            @JvmName("listFunctionsResponseFunctionConfiguration")
+            fun Flow<ListFunctionsResponse>.onFunctionConfiguration(): Flow<FunctionConfiguration> =
+                transform() { response ->
+                    response.functions?.forEach {
+                        emit(it)
+                    }
+                }
+        """.trimIndent()
 
-            val result = this@paginateListFunctions.listFunctions(req)
-            isFirstPage = false
-            cursor = result.nextMarker
-            emit(result)
-        }
-    }
-}
+        actual.shouldContainOnlyOnceWithDiff(expectedCode)
 
-/**
- * Paginate over [ListFunctionsResponse.functions]
- */
-@JvmName("listFunctionsResponseFunctionConfiguration")
-fun Flow<ListFunctionsResponse>.onFunctionConfiguration(): Flow<FunctionConfiguration> =
-    transform() { response ->
-        response.functions?.forEach {
-            emit(it)
-        }
-    }
+        val expectedImports = """
+            import com.test.model.FunctionConfiguration
+            import com.test.model.ListFunctionsRequest
+            import com.test.model.ListFunctionsResponse
+            import kotlinx.coroutines.flow.Flow
+            import kotlinx.coroutines.flow.flow
+            import kotlinx.coroutines.flow.map
+            import kotlinx.coroutines.flow.transform
+        """.trimIndent()
 
-interface TestClient  {
-    suspend fun listFunctions(input: ListFunctionsRequest): ListFunctionsResponse
-}
-
-class ClientImpl : TestClient {
-    override suspend fun listFunctions(input: ListFunctionsRequest): ListFunctionsResponse {
-        return ListFunctionsResponse.invoke {
-            nextMarker = when {
-                input.marker == null -> "."
-                input.marker.length > 10 -> null
-                else -> "${input.marker}."
-            }
-
-            val index = if (input.marker == null) 0 else input.marker.length
-
-            functions = listOf(
-                FunctionConfiguration { functionName = "Function ${index}.a" },
-                FunctionConfiguration { functionName = "Function ${index}.b" },
-                FunctionConfiguration { functionName = "Function ${index}.c" },
-            )
-        }
-    }
-}
-
-class ListFunctionsRequest private constructor(builder: Builder) {
-    val functionVersion: kotlin.String? = builder.functionVersion
-    val marker: kotlin.String? = builder.marker
-    val masterRegion: kotlin.String? = builder.masterRegion
-    val maxItems: kotlin.Int? = builder.maxItems
-
-    companion object {
-        operator fun invoke(block: Builder.() -> kotlin.Unit): ListFunctionsRequest = Builder().apply(block).build()
-    }
-
-    override fun toString(): kotlin.String = buildString {
-        append("ListFunctionsRequest(")
-        append("functionVersion=$functionVersion,")
-        append("marker=$marker,")
-        append("masterRegion=$masterRegion,")
-        append("maxItems=$maxItems)")
-    }
-
-    override fun hashCode(): kotlin.Int {
-        var result = functionVersion?.hashCode() ?: 0
-        result = 31 * result + (marker?.hashCode() ?: 0)
-        result = 31 * result + (masterRegion?.hashCode() ?: 0)
-        result = 31 * result + (maxItems ?: 0)
-        return result
-    }
-
-    override fun equals(other: kotlin.Any?): kotlin.Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as ListFunctionsRequest
-
-        if (functionVersion != other.functionVersion) return false
-        if (marker != other.marker) return false
-        if (masterRegion != other.masterRegion) return false
-        if (maxItems != other.maxItems) return false
-
-        return true
-    }
-
-    inline fun copy(block: Builder.() -> kotlin.Unit = {}): ListFunctionsRequest = Builder(this).apply(block).build()
-
-    class Builder {
-        var functionVersion: kotlin.String? = null
-        var marker: kotlin.String? = null
-        var masterRegion: kotlin.String? = null
-        var maxItems: kotlin.Int? = null
-
-        internal constructor()
-        @PublishedApi
-        internal constructor(x: ListFunctionsRequest) : this() {
-            this.functionVersion = x.functionVersion
-            this.marker = x.marker
-            this.masterRegion = x.masterRegion
-            this.maxItems = x.maxItems
-        }
-
-        @PublishedApi
-        internal fun build(): ListFunctionsRequest = ListFunctionsRequest(this)
-    }
-}
-
-class FunctionConfiguration private constructor(builder: Builder) {
-    val functionName: kotlin.String? = builder.functionName
-
-    companion object {
-        operator fun invoke(block: Builder.() -> kotlin.Unit): FunctionConfiguration = Builder().apply(block).build()
-    }
-
-    override fun toString(): kotlin.String = buildString {
-        append("FunctionConfiguration(")
-        append("functionName=$functionName)")
-    }
-
-    override fun hashCode(): kotlin.Int {
-        var result = functionName?.hashCode() ?: 0
-        return result
-    }
-
-    override fun equals(other: kotlin.Any?): kotlin.Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as FunctionConfiguration
-
-        if (functionName != other.functionName) return false
-
-        return true
-    }
-
-    inline fun copy(block: Builder.() -> kotlin.Unit = {}): FunctionConfiguration = Builder(this).apply(block).build()
-
-    class Builder {
-        var functionName: kotlin.String? = null
-
-        internal constructor()
-        @PublishedApi
-        internal constructor(x: FunctionConfiguration) : this() {
-            this.functionName = x.functionName
-        }
-
-        @PublishedApi
-        internal fun build(): FunctionConfiguration = FunctionConfiguration(this)
-    }
-}
-
-
-class ListFunctionsResponse private constructor(builder: Builder) {
-    val functions: List<FunctionConfiguration>? = builder.functions
-    val nextMarker: kotlin.String? = builder.nextMarker
-
-    companion object {
-        operator fun invoke(block: Builder.() -> kotlin.Unit): ListFunctionsResponse = Builder().apply(block).build()
-    }
-
-    override fun toString(): kotlin.String = buildString {
-        append("ListFunctionsResponse(")
-        append("functions=$functions,")
-        append("nextMarker=$nextMarker)")
-    }
-
-    override fun hashCode(): kotlin.Int {
-        var result = functions?.hashCode() ?: 0
-        result = 31 * result + (nextMarker?.hashCode() ?: 0)
-        return result
-    }
-
-    override fun equals(other: kotlin.Any?): kotlin.Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
-
-        other as ListFunctionsResponse
-
-        if (functions != other.functions) return false
-        if (nextMarker != other.nextMarker) return false
-
-        return true
-    }
-
-    inline fun copy(block: Builder.() -> kotlin.Unit = {}): ListFunctionsResponse = Builder(this).apply(block).build()
-
-    class Builder {
-        var functions: List<FunctionConfiguration>? = null
-        var nextMarker: kotlin.String? = null
-
-        internal constructor()
-        @PublishedApi
-        internal constructor(x: ListFunctionsResponse) : this() {
-            this.functions = x.functions
-            this.nextMarker = x.nextMarker
-        }
-
-        @PublishedApi
-        internal fun build(): ListFunctionsResponse = ListFunctionsResponse(this)
+        actual.shouldContainOnlyOnceWithDiff(expectedImports)
     }
 }
