@@ -85,7 +85,7 @@ tasks["smithyBuildJar"].enabled = false
 val codegen by configurations.creating
 
 dependencies {
-    codegen(project(":benchmarks:serde-benchmarks-codegen"))
+    codegen(project(":tests:benchmarks:serde-benchmarks-codegen"))
 }
 
 val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
