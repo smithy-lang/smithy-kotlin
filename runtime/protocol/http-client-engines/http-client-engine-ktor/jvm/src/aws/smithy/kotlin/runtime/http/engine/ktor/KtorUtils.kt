@@ -101,6 +101,7 @@ internal class KtorHttpBody(channel: ByteReadChannel) : HttpBody.Streaming() {
 }
 
 // convert ktor Http response to an (SDK) Http response
+@OptIn(InternalAPI::class)
 fun HttpResponse.toSdkHttpResponse(): SdkHttpResponse = SdkHttpResponse(
     HttpStatusCode.fromValue(status.value),
     KtorHeaders(headers),

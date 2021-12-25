@@ -7,14 +7,12 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 import io.ktor.utils.io.bits.*
-import io.ktor.utils.io.core.*
 
 private class SdkBufferState {
     var writeHead: ULong = 0u
     var readHead: ULong = 0u
 }
 
-@OptIn(ExperimentalIoApi::class)
 internal expect fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): Memory
 
 /**
@@ -27,7 +25,6 @@ internal expect fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int = 0
  *
  * **concurrent unsafe**: Do not read/write using the same [SdkByteBuffer] instance from different threads.
  */
-@OptIn(ExperimentalIoApi::class)
 @InternalApi
 class SdkByteBuffer internal constructor(
     // we make use of ktor-io's `Memory` type which already implements most of the functionality in a platform
@@ -141,7 +138,6 @@ class SdkByteBuffer internal constructor(
      * Read from this buffer exactly [length] bytes and write to [dest] starting at [offset]
      * @throws IllegalArgumentException if there are not enough bytes available for read or the offset/length combination is invalid
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readFully(dest: ByteArray, offset: Int, length: Int) {
         require(readRemaining >= length.toULong()) { "Not enough bytes to read a ByteArray of size $length" }
         require(offset >= 0) { "Invalid read offset, must be positive: $offset" }
@@ -169,7 +165,6 @@ class SdkByteBuffer internal constructor(
      * Write [length] bytes of [src] to this buffer starting at [offset]
      * @throws IllegalArgumentException if there is insufficient space or the offset/length combination is invalid
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeFully(src: ByteArray, offset: Int, length: Int) {
         require(offset >= 0) { "Invalid write offset, must be positive" }
         require(offset + length <= src.size) { "Invalid write: offset + length should be less than the source size: $offset + $length < ${src.size}" }
@@ -182,7 +177,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read a single byte from the buffer
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readByte(): Byte {
         val value = memory.loadAt(readPosition.toLong())
         discard(1u)
@@ -192,7 +186,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write a single byte to the buffer
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeByte(value: Byte) {
         memory.storeAt(writePosition.toLong(), value)
         advance(1u)
@@ -201,7 +194,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read a signed 16-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readShort(): Short {
         val value = memory.loadShortAt(readPosition.toLong())
         discard(2u)
@@ -211,7 +203,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read an unsigned 16-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readUShort(): UShort {
         val value = memory.loadUShortAt(readPosition.toLong())
         discard(2u)
@@ -221,7 +212,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write a signed 16-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeShort(value: Short) {
         memory.storeShortAt(writePosition.toLong(), value)
         advance(2u)
@@ -230,7 +220,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write an unsigned 16-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeUShort(value: UShort) {
         memory.storeUShortAt(writePosition.toLong(), value)
         advance(2u)
@@ -239,7 +228,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read a signed 32-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readInt(): Int {
         val value = memory.loadIntAt(readPosition.toLong())
         discard(4u)
@@ -249,7 +237,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read an unsigned 32-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readUInt(): UInt {
         val value = memory.loadUIntAt(readPosition.toLong())
         discard(4u)
@@ -259,7 +246,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write a signed 32-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeInt(value: Int) {
         memory.storeIntAt(writePosition.toLong(), value)
         advance(4u)
@@ -268,7 +254,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write an unsigned 32-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeUInt(value: UInt) {
         memory.storeUIntAt(writePosition.toLong(), value)
         advance(4u)
@@ -277,7 +262,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read a signed 64-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readLong(): Long {
         val value = memory.loadLongAt(readPosition.toLong())
         discard(8u)
@@ -287,7 +271,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read an unsigned 64-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readULong(): ULong {
         val value = memory.loadULongAt(readPosition.toLong())
         discard(8u)
@@ -297,7 +280,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write a signed 64-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeLong(value: Long) {
         memory.storeLongAt(writePosition.toLong(), value)
         advance(8u)
@@ -306,7 +288,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write an unsigned 64-bit integer in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeULong(value: ULong) {
         memory.storeULongAt(writePosition.toLong(), value)
         advance(8u)
@@ -315,7 +296,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read a 32-bit float in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readFloat(): Float {
         val value = memory.loadFloatAt(readPosition.toLong())
         discard(4u)
@@ -325,7 +305,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write a 32-bit float in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeFloat(value: Float) {
         memory.storeFloatAt(writePosition.toLong(), value)
         advance(4u)
@@ -334,7 +313,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Read a 64-bit double in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun readDouble(): Double {
         val value = memory.loadDoubleAt(readPosition.toLong())
         discard(8u)
@@ -343,7 +321,6 @@ class SdkByteBuffer internal constructor(
     /**
      * Write a 32-bit float in big-endian byte order
      */
-    @OptIn(ExperimentalIoApi::class)
     override fun writeDouble(value: Double) {
         memory.storeDoubleAt(writePosition.toLong(), value)
         advance(8u)
@@ -360,14 +337,12 @@ public inline val SdkByteBuffer.canRead: Boolean
  * Creates a new, read-only byte buffer that shares this buffer's content.
  * Any attempts to write to the buffer will fail with [ReadOnlyBufferException]
  */
-@OptIn(ExperimentalIoApi::class)
 fun SdkByteBuffer.asReadOnly(): SdkByteBuffer = if (isReadOnly) this else SdkByteBuffer(memory, isReadOnly = true)
 
 /**
  * Reads at most [length] bytes from this buffer into the [dst] buffer
  * @return the number of bytes read
  */
-@OptIn(ExperimentalIoApi::class)
 fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong {
     require(length <= Int.MAX_VALUE.toULong()) { "Unable to satisfy read request for $length bytes" }
     val rc = minOf(readRemaining, length).toLong()
@@ -384,7 +359,6 @@ fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: ULong = dst.writeRemaini
  * Reads at most [length] bytes from this buffer or `-1` if no bytes are available for read.
  * @return the number of bytes read or -1 if the buffer is empty
  */
-@OptIn(ExperimentalIoApi::class)
 fun SdkByteBuffer.readAvailable(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong? {
     if (!canRead) return null
     val rc = minOf(readRemaining, length)
@@ -394,7 +368,6 @@ fun SdkByteBuffer.readAvailable(dst: SdkByteBuffer, length: ULong = dst.writeRem
 /**
  * Write exactly [length] bytes from [src] to this buffer
  */
-@OptIn(ExperimentalIoApi::class)
 fun SdkByteBuffer.writeFully(src: SdkByteBuffer, length: ULong = src.readRemaining) {
     require(length <= src.readRemaining) {
         "not enough bytes in source buffer to read $length bytes (${src.readRemaining} remaining)"
@@ -428,14 +401,12 @@ fun SdkByteBuffer.decodeToString() = bytes().decodeToString(0, readRemaining.toI
  */
 expect fun SdkByteBuffer.bytes(): ByteArray
 
-@OptIn(ExperimentalIoApi::class)
 internal inline fun SdkByteBuffer.read(block: (memory: Memory, readStart: Long, endExclusive: Long) -> Long): Long {
     val rc = block(memory, readPosition.toLong(), writePosition.toLong())
     discard(rc.toULong())
     return rc
 }
 
-@OptIn(ExperimentalIoApi::class)
 internal inline fun SdkByteBuffer.write(block: (memory: Memory, writeStart: Long, endExclusive: Long) -> Long): Long {
     if (isReadOnly) throw ReadOnlyBufferException("attempt to write to readOnly buffer at index: $writePosition")
 
@@ -444,7 +415,6 @@ internal inline fun SdkByteBuffer.write(block: (memory: Memory, writeStart: Long
     return wc
 }
 
-@OptIn(ExperimentalIoApi::class)
 internal inline fun SdkByteBuffer.writeSized(count: Long, block: (memory: Memory, writeStart: Long) -> Long): Long {
     reserve(count)
     return write { memory, writeStart, _ ->

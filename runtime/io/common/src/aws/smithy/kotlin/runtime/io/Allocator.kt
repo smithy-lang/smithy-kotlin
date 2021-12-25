@@ -6,9 +6,7 @@
 package aws.smithy.kotlin.runtime.io
 
 import io.ktor.utils.io.bits.*
-import io.ktor.utils.io.core.*
 
-@OptIn(ExperimentalIoApi::class)
 internal interface Allocator {
     fun alloc(size: ULong): Memory
     // FIXME - we should revisit this - Kotlin/Native is only place where we would actually be manually managing memory
@@ -38,7 +36,6 @@ internal fun ceilp2(size: ULong): ULong {
  *
  * The memory of [instance] should no longer be used after calling.
  */
-@OptIn(ExperimentalIoApi::class)
 internal fun Allocator.realloc(instance: Memory, newSize: ULong): Memory {
     require(newSize >= instance.size.toULong())
     val newInstance = alloc(newSize)

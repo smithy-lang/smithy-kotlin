@@ -15,6 +15,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpStatement
+import io.ktor.client.statement.request
 import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -96,6 +97,7 @@ class KtorEngine(
         }
     }
 
+    @OptIn(InternalAPI::class)
     private suspend fun execute(
         callContext: CoroutineContext,
         sdkRequest: HttpRequest,
@@ -104,7 +106,8 @@ class KtorEngine(
         val builder = KtorRequestAdapter(sdkRequest, callContext).toBuilder()
         val waiter = Waiter()
         val reqTime = Instant.now()
-        client.request<HttpStatement>(builder).execute { httpResp ->
+        client.request(builder = builder).let { httpResp ->
+
             val respTime = Instant.now()
             // we have a lifetime problem here...the stream (and HttpResponse instance) are only valid
             // until the end of this block. We don't know if the consumer wants to read the content fully or

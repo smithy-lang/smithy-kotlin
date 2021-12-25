@@ -71,7 +71,6 @@ suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
  * The response and any resources will remain open until the end of the [block]. This facilitates streaming
  * output responses where the underlying raw HTTP connection needs to remain open
  */
-@InternalApi
 suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     httpHandler: HttpHandler,
     input: I,
