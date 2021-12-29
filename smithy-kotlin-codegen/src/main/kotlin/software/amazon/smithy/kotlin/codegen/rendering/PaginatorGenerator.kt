@@ -93,12 +93,8 @@ class PaginatorGenerator : KotlinIntegration {
             renderItemPaginator(
                 writer,
                 service,
-                itemDesc.itemLiteral,
-                outputSymbol,
-                itemDesc.itemSymbol,
-                itemDesc.itemPathLiteral,
-                itemDesc.targetMember,
-                itemDesc.collectionLiteral
+                itemDesc,
+                outputSymbol
             )
         }
     }
@@ -161,35 +157,30 @@ class PaginatorGenerator : KotlinIntegration {
     private fun renderItemPaginator(
         writer: KotlinWriter,
         serviceShape: ServiceShape,
-        itemLiteral: String,
+        itemDesc: ItemDescriptor,
         outputSymbol: Symbol,
-        paginatedTypeSymbol: Symbol,
-        itemPathLiteral: String,
-        targetMember: Shape,
-        targetTypeLiteral: String
     ) {
         writer.write("")
-        writer.dokka("Paginate over [${outputSymbol.name}.$itemLiteral]")
+        writer.dokka("Paginate over [${outputSymbol.name}.${itemDesc.itemLiteral}]")
         writer
             .addImport(kotlinxFlowMapSymbol)
             .addImport(kotlinxFlowTransformSymbol)
-            .addImport(paginatedTypeSymbol)
-            .addImportReferences(paginatedTypeSymbol, SymbolReference.ContextOption.USE)
+            .addImport(itemDesc.itemSymbol)
+            .addImportReferences(itemDesc.itemSymbol, SymbolReference.ContextOption.USE)
             .write(
                 """@JvmName("#L#L")""",
                 outputSymbol.name.toggleFirstCharacterCase(),
-                targetMember.defaultName(serviceShape)
+                itemDesc.targetMember.defaultName(serviceShape)
             )
             .withBlock(
-                "fun #T<#T>.on#L(): #T<#L> =", "",
+                "fun #T<#T>.items(): #T<#L> =", "",
                 kotlinxFlowSymbol,
                 outputSymbol,
-                targetMember.defaultName(serviceShape),
                 kotlinxFlowSymbol,
-                targetTypeLiteral
+                itemDesc.collectionLiteral
             ) {
                 withBlock("transform() { response -> ", "}") {
-                    withBlock("response.#L?.forEach {", "}", itemPathLiteral) {
+                    withBlock("response.#L?.forEach {", "}", itemDesc.itemPathLiteral) {
                         write("emit(it)")
                     }
                 }

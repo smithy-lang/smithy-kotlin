@@ -198,7 +198,7 @@ class PaginatorGeneratorTest {
              * Paginate over [ListFunctionsResponse.functions]
              */
             @JvmName("listFunctionsResponseFunctionConfiguration")
-            fun Flow<ListFunctionsResponse>.onFunctionConfiguration(): Flow<FunctionConfiguration> =
+            fun Flow<ListFunctionsResponse>.items(): Flow<FunctionConfiguration> =
                 transform() { response ->
                     response.functions?.forEach {
                         emit(it)
