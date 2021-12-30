@@ -5,7 +5,7 @@
 
 # Abstract
 
-This document presents a design for how paginated operations will be generated.
+This document presents a design for how paginated operations are generated.
 
 Smithy services and operations can be marked with the [paginated trait](https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#paginated-trait) which 
 
@@ -105,7 +105,7 @@ The targeted type will provide iteration to the `item` element for the user auto
 Here is an example that follows from the previous example (codegen):
 
 ```kotlin
-fun Flow<ListFunctionsResponse>.onFunctionConfiguration(): Flow<FunctionConfiguration> =
+fun Flow<ListFunctionsResponse>.items(): Flow<FunctionConfiguration> =
    transform() { response ->
       response.functions?.forEach {
          emit(it)
@@ -128,7 +128,7 @@ Using the model in the introduction would produce the following:
 
 #### Usage
 
-An example of driving a paginator manually and processing results:
+An example of driving a paginator and processing response instances:
 
 ```kotlin
 suspend fun rawPaginationExample(client: LambdaClient) {
@@ -151,12 +151,12 @@ their own flow transforms.
 Additionally, the `item` specified in the model may be deeply nested and involve operations and types with many words.  Generating a
 single function that combines the operation, some word to indicate pagination, plus the nested item's name often produces
 unreadable function signatures.  In this approach, we generate more legible API by breaking the extraction of the nested
-items into a separate function.
+items into a separate function, which is always called `items()`.
 
 ```kotlin
 lambdaClient
   .paginateListFunctions(ListFunctionsRequest {})
-  .onFunctionConfiguration()
+  .items()
   .collect { functionConfiguration ->
       println(functionConfiguration.functionName)
   }
@@ -168,8 +168,9 @@ lambdaClient
 ApiGatewayClient.fromEnvironment().use { apiGatewayClient ->
   apiGatewayClient
       .paginateGetUsage(GetUsageRequest { })
-      .onMapOfKeyUsages().collect { (key, value) -> // Map.Entry<String, List<List<Long>>>
-          println("${key}: ${value}")
+      .items()
+      .collect { entry -> // Map.Entry<String, List<List<Long>>>
+          println("${entry.key}: ${entry.value}")
       }
 }
 ```
@@ -206,7 +207,7 @@ val pager: SdkAsyncIterable<ListFunctionsResponse> = ListFunctionsRequest.pagina
 
 ```
 
-This alternative was deemed less discoverable. Also having the extension on the service client is more likely to provide IDE suggestions next to eachother like:
+This alternative was deemed less discoverable. Also having the extension on the service client is more likely to provide IDE suggestions next to each other like:
 
 ```
 fun listFunctions(...)
