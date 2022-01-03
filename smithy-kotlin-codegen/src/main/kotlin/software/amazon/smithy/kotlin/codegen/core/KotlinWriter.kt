@@ -224,14 +224,25 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
         return this
     }
 
-    fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption) {
-        symbol.references.forEach { reference ->
+    fun addImportReferences(symbol: Symbol, vararg options: SymbolReference.ContextOption): KotlinWriter {
+        val allRefs = mutableSetOf<SymbolReference>()
+        findAllReferences(symbol, allRefs)
+
+        allRefs.forEach { reference ->
             for (option in options) {
                 if (reference.hasOption(option)) {
                     addImport(reference.symbol, reference.alias)
                     break
                 }
             }
+        }
+        return this
+    }
+
+    private fun findAllReferences(symbol: Symbol, allRefs: MutableSet<SymbolReference>) {
+        symbol.references.forEach { ref ->
+            allRefs.add(ref)
+            findAllReferences(ref.symbol, allRefs)
         }
     }
 
@@ -274,16 +285,18 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
      *  */
      * ```
      */
-    fun dokka(block: KotlinWriter.() -> Unit) {
+    fun dokka(block: KotlinWriter.() -> Unit): KotlinWriter {
         pushState()
         write("/**")
         setNewlinePrefix(" * ")
         block(this)
         popState()
         write(" */")
+
+        return this
     }
 
-    fun dokka(docs: String) {
+    fun dokka(docs: String): KotlinWriter =
         dokka {
             write(
                 formatDocumentation(
@@ -291,7 +304,6 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
                 )
             )
         }
-    }
 
     /**
      * Adds appropriate annotations to generated declarations.
