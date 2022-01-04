@@ -80,6 +80,7 @@ suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpRe
                     respCopy = response.copy(body = newBody)
                 }
             }
+            is HttpBody.Empty -> { } // nothing to dump
         }
     }
 

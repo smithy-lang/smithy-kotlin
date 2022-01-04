@@ -13,7 +13,7 @@ import kotlinx.coroutines.test.runBlockingTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.ExperimentalTime
 
 class StandardRetryTokenBucketTest {
@@ -99,7 +99,7 @@ class StandardRetryTokenBucketTest {
         assertEquals(5, bucket.capacity)
 
         // Refill rate is 10/s == 1/100ms so after 250ms we should have 2 more tokens.
-        clock.advance(Duration.milliseconds(250))
+        clock.advance(250.milliseconds)
 
         assertTime(0) { bucket.acquireToken() }
         assertEquals(2, bucket.capacity) // We had 5, 2 refilled, and then we decremented 5 more.
