@@ -92,6 +92,7 @@ fun parseDom(reader: XmlStreamReader): XmlNode {
             }
             null,
             is XmlToken.EndDocument -> break@loop
+            else -> continue // ignore unknown token types
         }
     }
 

@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 // See https://github.com/aws/aws-sdk-java-v2/blob/master/http-client-spi/src/main/java/software/amazon/awssdk/http/SdkHttpConfigurationOption.java
@@ -69,12 +70,12 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
         /**
          * Timeout for each read to an underlying socket
          */
-        var socketReadTimeout: Duration = Duration.seconds(30)
+        var socketReadTimeout: Duration = 30.seconds
 
         /**
          * Timeout for each write to an underlying socket
          */
-        var socketWriteTimeout: Duration = Duration.seconds(30)
+        var socketWriteTimeout: Duration = 30.seconds
 
         /**
          * Maximum number of open connections
@@ -84,18 +85,18 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
         /**
          * The amount of time to wait for a connection to be established
          */
-        var connectTimeout: Duration = Duration.seconds(2)
+        var connectTimeout: Duration = 2.seconds
 
         /**
          * The amount of time to wait for an already-established connection from a connection pool
          */
-        var connectionAcquireTimeout: Duration = Duration.seconds(10)
+        var connectionAcquireTimeout: Duration = 10.seconds
 
         /**
          * The amount of time before an idle connection should be reaped from a connection pool. Zero indicates that
          * idle connections should never be reaped.
          */
-        var connectionIdleTimeout: Duration = Duration.seconds(60)
+        var connectionIdleTimeout: Duration = 60.seconds
 
         /**
          * Set the ALPN protocol list when a TLS connection starts
