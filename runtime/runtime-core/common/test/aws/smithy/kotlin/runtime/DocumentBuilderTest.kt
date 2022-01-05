@@ -5,7 +5,8 @@
 
 package aws.smithy.kotlin.runtime
 
-import aws.smithy.kotlin.runtime.smithy.*
+import aws.smithy.kotlin.runtime.smithy.document
+import aws.smithy.kotlin.runtime.smithy.documentArray
 import kotlin.test.*
 
 class DocumentBuilderTest {

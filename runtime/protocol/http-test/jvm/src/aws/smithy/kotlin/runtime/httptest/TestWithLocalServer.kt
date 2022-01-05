@@ -13,7 +13,7 @@ import java.net.*
 import java.util.concurrent.*
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
-import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.ExperimentalTime
 
 /**
@@ -31,7 +31,7 @@ public abstract class TestWithLocalServer {
     @OptIn(ExperimentalTime::class)
     @BeforeTest
     public fun startServer() = runBlocking {
-        withTimeout(Duration.seconds(5)) {
+        withTimeout(5.seconds) {
             var attempt = 0
 
             do {

@@ -105,6 +105,7 @@ suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String 
                     request.body = ByteArrayContent(content)
                 }
             }
+            is HttpBody.Empty -> { } // nothing to dump
         }
     }
 
