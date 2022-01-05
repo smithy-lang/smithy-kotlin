@@ -38,10 +38,18 @@ class StandardRetryPolicyTest {
     }
 
     @Test
-    fun testRetryableClientException() {
+    fun testClientSideException() {
         val ex = ServiceException()
         ex.sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
         ex.sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ServiceException.ErrorType.Client
+        val result = test(ex)
+        assertEquals(RetryDirective.RetryError(RetryErrorType.ClientSide), result)
+    }
+
+    @Test
+    fun testRetryableClientException() {
+        val ex = ClientException()
+        ex.sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
         val result = test(ex)
         assertEquals(RetryDirective.RetryError(RetryErrorType.ClientSide), result)
     }
