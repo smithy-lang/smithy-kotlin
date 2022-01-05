@@ -159,7 +159,7 @@ fun Model.newTestContext(
  *  	}
  *  }
  */
-internal fun Model.defaultSettings(
+fun Model.defaultSettings(
     serviceName: String? = null,
     packageName: String = TestModelDefault.NAMESPACE,
     packageVersion: String = TestModelDefault.MODEL_VERSION,
