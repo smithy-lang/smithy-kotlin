@@ -49,9 +49,11 @@ open class StandardRetryPolicy : RetryPolicy<Any?> {
         }
     }
 
-    @Suppress("UNUSED_PARAMETER") // `ex` is mandated by `EvaluationStrategy` but not required by method body
-    private fun evaluateClientException(ex: ClientException): RetryDirective? =
+    private fun evaluateClientException(ex: ClientException): RetryDirective? = if (ex.sdkErrorMetadata.isRetryable) {
         RetryDirective.RetryError(RetryErrorType.ClientSide)
+    } else {
+        null
+    }
 
     private fun evaluateServiceException(ex: ServiceException): RetryDirective? = with(ex.sdkErrorMetadata) {
         when {
