@@ -11,7 +11,6 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.core.capitalizedDefaultName
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
@@ -38,7 +37,6 @@ import software.amazon.smithy.model.traits.PaginatedTrait
 class PaginatorGenerator : KotlinIntegration {
     private val kotlinxFlowSymbol = "kotlinx.coroutines.flow.Flow".toSymbol()
     private val kotlinxFlowGeneratorSymbol = "kotlinx.coroutines.flow.flow".toSymbol()
-    private val kotlinxFlowMapSymbol = "kotlinx.coroutines.flow.map".toSymbol()
     private val kotlinxFlowTransformSymbol = "kotlinx.coroutines.flow.transform".toSymbol()
 
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
@@ -48,7 +46,7 @@ class PaginatorGenerator : KotlinIntegration {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 
-        delegator.useFileWriter("Paginators.kt", ctx.settings.pkg.name) { writer ->
+        delegator.useFileWriter("Paginators.kt", "${ctx.settings.pkg.name}.paginator") { writer ->
             val paginatedOperations = service.allOperations
                 .map { ctx.model.expectShape<OperationShape>(it) }
                 .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
@@ -119,16 +117,16 @@ class PaginatorGenerator : KotlinIntegration {
         writer
             .addImport(kotlinxFlowSymbol)
             .addImport(kotlinxFlowGeneratorSymbol)
-            .addImport(kotlinxFlowMapSymbol)
+            .addImport(serviceSymbol)
             .addImport(inputSymbol)
             .addImport(outputSymbol)
             .addImport(cursorSymbol)
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
-                "fun #T.paginate#L(initialRequest: #T): Flow<#T> {",
+                "fun #T.#LPaginated(initialRequest: #T): Flow<#T> {",
                 "}",
                 serviceSymbol,
-                operationShape.capitalizedDefaultName(),
+                operationShape.defaultName(),
                 inputSymbol,
                 outputSymbol
             ) {
@@ -141,8 +139,7 @@ class PaginatorGenerator : KotlinIntegration {
                             write("this.$markerLiteral = cursor")
                         }
                         write(
-                            "val result = this@paginate#L.#L(req)",
-                            operationShape.capitalizedDefaultName(),
+                            "val result = this@#1LPaginated.#1L(req)",
                             operationShape.defaultName()
                         )
                         write("isFirstPage = false")
@@ -163,7 +160,6 @@ class PaginatorGenerator : KotlinIntegration {
         writer.write("")
         writer.dokka("Paginate over [${outputSymbol.name}.${itemDesc.itemLiteral}]")
         writer
-            .addImport(kotlinxFlowMapSymbol)
             .addImport(kotlinxFlowTransformSymbol)
             .addImport(itemDesc.itemSymbol)
             .addImportReferences(itemDesc.itemSymbol, SymbolReference.ContextOption.USE)
@@ -173,9 +169,10 @@ class PaginatorGenerator : KotlinIntegration {
                 itemDesc.targetMember.defaultName(serviceShape)
             )
             .withBlock(
-                "fun #T<#T>.items(): #T<#L> =", "",
+                "fun #T<#T>.#L(): #T<#L> =", "",
                 kotlinxFlowSymbol,
                 outputSymbol,
+                itemDesc.itemLiteral,
                 kotlinxFlowSymbol,
                 itemDesc.collectionLiteral
             ) {
@@ -191,7 +188,7 @@ class PaginatorGenerator : KotlinIntegration {
 /**
  * Model info necessary to codegen paginator item
  */
-data class ItemDescriptor(
+private data class ItemDescriptor(
     val collectionLiteral: String,
     val targetMember: Shape,
     val itemLiteral: String,

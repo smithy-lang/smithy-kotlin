@@ -137,13 +137,13 @@ class PaginatorGeneratorTest {
 
         testContextNoItem.generationCtx.delegator.flushWriters()
         val testManifest = testContextNoItem.generationCtx.delegator.fileManifest as MockManifest
-        val actual = testManifest.expectFileString("src/main/kotlin/com/test/Paginators.kt")
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginator/Paginators.kt")
 
         val expected = """
             /**
              * Paginate over [ListFunctionsResponse]
              */
-            fun TestClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
+            fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
                 return flow {
                     var cursor: kotlin.String? = null
                     var isFirstPage: Boolean = true
@@ -152,7 +152,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@paginateListFunctions.listFunctions(req)
+                        val result = this@listFunctionsPaginated.listFunctions(req)
                         isFirstPage = false
                         cursor = result.nextMarker
                         emit(result)
@@ -171,13 +171,13 @@ class PaginatorGeneratorTest {
 
         testContextWithItems.generationCtx.delegator.flushWriters()
         val testManifest = testContextWithItems.generationCtx.delegator.fileManifest as MockManifest
-        val actual = testManifest.expectFileString("src/main/kotlin/com/test/Paginators.kt")
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginator/Paginators.kt")
 
         val expectedCode = """
             /**
              * Paginate over [ListFunctionsResponse]
              */
-            fun TestClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
+            fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
                 return flow {
                     var cursor: kotlin.String? = null
                     var isFirstPage: Boolean = true
@@ -186,7 +186,7 @@ class PaginatorGeneratorTest {
                         val req = initialRequest.copy {
                             this.marker = cursor
                         }
-                        val result = this@paginateListFunctions.listFunctions(req)
+                        val result = this@listFunctionsPaginated.listFunctions(req)
                         isFirstPage = false
                         cursor = result.nextMarker
                         emit(result)
@@ -198,7 +198,7 @@ class PaginatorGeneratorTest {
              * Paginate over [ListFunctionsResponse.functions]
              */
             @JvmName("listFunctionsResponseFunctionConfiguration")
-            fun Flow<ListFunctionsResponse>.items(): Flow<FunctionConfiguration> =
+            fun Flow<ListFunctionsResponse>.functions(): Flow<FunctionConfiguration> =
                 transform() { response ->
                     response.functions?.forEach {
                         emit(it)
@@ -214,7 +214,6 @@ class PaginatorGeneratorTest {
             import com.test.model.ListFunctionsResponse
             import kotlinx.coroutines.flow.Flow
             import kotlinx.coroutines.flow.flow
-            import kotlinx.coroutines.flow.map
             import kotlinx.coroutines.flow.transform
         """.trimIndent()
 

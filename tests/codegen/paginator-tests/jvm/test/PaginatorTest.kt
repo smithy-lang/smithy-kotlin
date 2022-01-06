@@ -1,8 +1,8 @@
 import com.test.DefaultLambdaClient
 import com.test.LambdaClient
-import com.test.items
+import com.test.paginator.functions
 import com.test.model.ListFunctionsRequest
-import com.test.paginateListFunctions
+import com.test.paginator.listFunctionsPaginated
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
@@ -19,7 +19,7 @@ class PaginatorTest {
         val fnNames = mutableListOf<String>()
 
         unit
-            .paginateListFunctions(ListFunctionsRequest {})
+            .listFunctionsPaginated(ListFunctionsRequest {})
             .collect { resp ->
                 fnNames.addAll(resp.functions?.mapNotNull { it.functionName } ?: emptyList())
             }
@@ -40,8 +40,8 @@ class PaginatorTest {
         val fnNames = mutableListOf<String>()
 
         unit
-            .paginateListFunctions(ListFunctionsRequest {})
-            .items()
+            .listFunctionsPaginated(ListFunctionsRequest {})
+            .functions()
             .collect { functionConfiguration ->
                 functionConfiguration.functionName?.let { it -> fnNames.add(it) }
             }
@@ -60,7 +60,7 @@ class PaginatorTest {
         unit.pageCount = 1
         unit.itemsPerPage = 10
         val fnNames = mutableListOf<String>()
-        unit.paginateListFunctions(ListFunctionsRequest {}).collect { resp ->
+        unit.listFunctionsPaginated(ListFunctionsRequest {}).collect { resp ->
             fnNames.addAll(resp.functions?.mapNotNull { it.functionName } ?: emptyList())
         }
 
@@ -80,8 +80,8 @@ class PaginatorTest {
         val fnNames = mutableListOf<String>()
 
         unit
-            .paginateListFunctions(ListFunctionsRequest {})
-            .items()
+            .listFunctionsPaginated(ListFunctionsRequest {})
+            .functions()
             .collect { functionConfiguration ->
                 functionConfiguration.functionName?.let { name -> fnNames.add(name) }
             }
@@ -102,7 +102,7 @@ class PaginatorTest {
         val fnNames = mutableListOf<String>()
 
         unit
-            .paginateListFunctions(ListFunctionsRequest {})
+            .listFunctionsPaginated(ListFunctionsRequest {})
             .collect { resp ->
                 fnNames.addAll(resp.functions?.mapNotNull { it.functionName } ?: emptyList())
             }
@@ -120,8 +120,8 @@ class PaginatorTest {
         val fnNames = mutableListOf<String>()
 
         unit
-            .paginateListFunctions(ListFunctionsRequest {})
-            .items()
+            .listFunctionsPaginated(ListFunctionsRequest {})
+            .functions()
             .collect { functionConfiguration ->
                 functionConfiguration.functionName?.let { name -> fnNames.add(name) }
             }
@@ -139,7 +139,7 @@ class PaginatorTest {
         val fnNames = mutableListOf<String>()
 
         unit
-            .paginateListFunctions(ListFunctionsRequest {})
+            .listFunctionsPaginated(ListFunctionsRequest {})
             .collect { resp ->
                 fnNames.addAll(resp.functions?.mapNotNull { it.functionName } ?: emptyList())
             }
@@ -159,8 +159,8 @@ class PaginatorTest {
         unit.itemsPerPage = 2
         val fnNames = mutableListOf<String>()
         unit
-            .paginateListFunctions(ListFunctionsRequest {})
-            .items()
+            .listFunctionsPaginated(ListFunctionsRequest {})
+            .functions()
             .collect { functionConfiguration ->
                 functionConfiguration.functionName?.let { name -> fnNames.add(name) }
             }
