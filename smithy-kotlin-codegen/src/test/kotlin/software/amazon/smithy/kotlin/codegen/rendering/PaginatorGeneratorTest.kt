@@ -152,7 +152,7 @@ class PaginatorGeneratorTest {
              */
             fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: String? = null
                     var isFirstPage: Boolean = true
             
                     while (isFirstPage || (cursor?.isNotEmpty() == true)) {
@@ -192,7 +192,7 @@ class PaginatorGeneratorTest {
              */
             fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
-                    var cursor: kotlin.String? = null
+                    var cursor: String? = null
                     var isFirstPage: Boolean = true
             
                     while (isFirstPage || (cursor?.isNotEmpty() == true)) {

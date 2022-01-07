@@ -132,7 +132,7 @@ class PaginatorGenerator : KotlinIntegration {
                 outputSymbol
             ) {
                 withBlock("flow {", "}") {
-                    write("var cursor: String = null")
+                    write("var cursor: String? = null")
                     write("var isFirstPage: Boolean = true")
                     write("")
                     withBlock("while (isFirstPage || (cursor?.isNotEmpty() == true)) {", "}") {
