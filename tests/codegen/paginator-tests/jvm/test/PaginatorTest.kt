@@ -1,8 +1,8 @@
 import com.test.DefaultLambdaClient
 import com.test.LambdaClient
-import com.test.paginator.functions
+import com.test.paginators.functions
 import com.test.model.ListFunctionsRequest
-import com.test.paginator.listFunctionsPaginated
+import com.test.paginators.listFunctionsPaginated
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test

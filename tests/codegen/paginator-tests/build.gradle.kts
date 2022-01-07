@@ -5,6 +5,7 @@
 import software.amazon.smithy.gradle.tasks.SmithyBuild
 
 plugins {
+    // TODO ~ This build file does not need to be multiplatform.  Simplify by refactoring as a jvm module.
     kotlin("multiplatform")
     id("software.amazon.smithy")
 }
@@ -16,9 +17,7 @@ buildscript {
     }
 }
 
-
 extra.set("skipPublish", true)
-
 
 val platforms = listOf("common", "jvm")
 
@@ -46,7 +45,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-                implementation("aws.smithy.kotlin:runtime-core:$sdkVersion")
+                implementation(project(":runtime:runtime-core"))
             }
         }
         val jvmMain by getting {
@@ -75,7 +74,6 @@ data class CodegenSourceInfo(val name: String) {
 }
 
 val codegenSourceInfo = listOf("paginator-tests").map{ CodegenSourceInfo(it) }
-
 
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"

@@ -18,9 +18,7 @@ import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.toSymbol
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
-import software.amazon.smithy.kotlin.codegen.utils.toggleFirstCharacterCase
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.PaginatedIndex
 import software.amazon.smithy.model.knowledge.PaginationInfo
@@ -43,7 +41,7 @@ class PaginatorGenerator : KotlinIntegration {
         val service = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
         val paginatedIndex = PaginatedIndex.of(ctx.model)
 
-        delegator.useFileWriter("Paginators.kt", "${ctx.settings.pkg.name}.paginator") { writer ->
+        delegator.useFileWriter("Paginators.kt", "${ctx.settings.pkg.name}.paginators") { writer ->
             val paginatedOperations = service.allOperations
                 .map { ctx.model.expectShape<OperationShape>(it) }
                 .filter { operationShape -> operationShape.hasTrait(PaginatedTrait.ID) }
@@ -71,7 +69,6 @@ class PaginatorGenerator : KotlinIntegration {
         val outputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.output)
         val inputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.input)
         val cursorMember = ctx.model.getShape(paginationInfo.inputTokenMember.target).get()
-        val cursorSymbol = ctx.symbolProvider.toSymbol(cursorMember)
 
         renderResponsePaginator(
             writer,
@@ -79,8 +76,7 @@ class PaginatorGenerator : KotlinIntegration {
             paginatedOperation,
             inputSymbol,
             outputSymbol,
-            paginationInfo,
-            cursorSymbol
+            paginationInfo
         )
 
         // Optionally generate paginator when nested item is specified on the trait.
@@ -102,8 +98,7 @@ class PaginatorGenerator : KotlinIntegration {
         operationShape: OperationShape,
         inputSymbol: Symbol,
         outputSymbol: Symbol,
-        paginationInfo: PaginationInfo,
-        cursorSymbol: Symbol
+        paginationInfo: PaginationInfo
     ) {
         val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
             it.defaultName()
@@ -120,7 +115,7 @@ class PaginatorGenerator : KotlinIntegration {
                   pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
                   collection.
                   @param initialRequest A [${inputSymbol.name}] to start pagination
-                  @return a [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]
+                  @return A [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]
             """.trimIndent()
         )
         writer
@@ -129,8 +124,6 @@ class PaginatorGenerator : KotlinIntegration {
             .addImport(serviceSymbol)
             .addImport(inputSymbol)
             .addImport(outputSymbol)
-            .addImport(cursorSymbol)
-            .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
                 "fun #T.#LPaginated(initialRequest: #T): Flow<#T> =",
                 "",
@@ -140,7 +133,7 @@ class PaginatorGenerator : KotlinIntegration {
                 outputSymbol
             ) {
                 withBlock("flow {", "}") {
-                    write("var cursor: #F = null", cursorSymbol)
+                    write("var cursor: String = null")
                     write("var isFirstPage: Boolean = true")
                     write("")
                     withBlock("while (isFirstPage || (cursor?.isNotEmpty() == true)) {", "}") {
@@ -170,11 +163,11 @@ class PaginatorGenerator : KotlinIntegration {
         writer.write("")
         writer.dokka(
             """
-                 This paginator transforms the flow returned by [${operationShape.defaultName()}Paginated] to access the nested member [${itemDesc.targetMember.defaultName(serviceShape)}]
-                 @return a [kotlinx.coroutines.flow.Flow] that can collect [${itemDesc.targetMember.defaultName(serviceShape)}]
+                This paginator transforms the flow returned by [${operationShape.defaultName()}Paginated] 
+                to access the nested member [${itemDesc.targetMember.defaultName(serviceShape)}]
+                @return A [kotlinx.coroutines.flow.Flow] that can collect [${itemDesc.targetMember.defaultName(serviceShape)}]
             """.trimIndent()
         )
-        writer.dokka("Paginate over [${outputSymbol.name}.${itemDesc.itemLiteral}]")
         writer
             .addImport(ExternalTypes.KotlinxCoroutines.FlowTransform)
             .addImport(itemDesc.itemSymbol)
@@ -184,7 +177,7 @@ class PaginatorGenerator : KotlinIntegration {
             // NOTE: This does not mean these functions are callable from Java.
             .write(
                 """@JvmName("#L#L")""",
-                outputSymbol.name.toggleFirstCharacterCase(),
+                outputSymbol.name.replaceFirstChar(Char::lowercaseChar),
                 itemDesc.targetMember.defaultName(serviceShape)
             )
             .withBlock(

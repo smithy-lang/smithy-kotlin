@@ -137,7 +137,7 @@ class PaginatorGeneratorTest {
 
         testContextNoItem.generationCtx.delegator.flushWriters()
         val testManifest = testContextNoItem.generationCtx.delegator.fileManifest as MockManifest
-        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginator/Paginators.kt")
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
 
         val expected = """
             /**
@@ -148,7 +148,7 @@ class PaginatorGeneratorTest {
              * pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
              * collection.
              * @param initialRequest A [ListFunctionsRequest] to start pagination
-             * @return a [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
             fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
@@ -177,7 +177,7 @@ class PaginatorGeneratorTest {
 
         testContextWithItems.generationCtx.delegator.flushWriters()
         val testManifest = testContextWithItems.generationCtx.delegator.fileManifest as MockManifest
-        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginator/Paginators.kt")
+        val actual = testManifest.expectFileString("src/main/kotlin/com/test/paginators/Paginators.kt")
 
         val expectedCode = """
             /**
@@ -188,7 +188,7 @@ class PaginatorGeneratorTest {
              * pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
              * collection.
              * @param initialRequest A [ListFunctionsRequest] to start pagination
-             * @return a [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
             fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
@@ -207,11 +207,9 @@ class PaginatorGeneratorTest {
                 }
             
             /**
-             * This paginator transforms the flow returned by [listFunctionsPaginated] to access the nested member [FunctionConfiguration]
-             * @return a [kotlinx.coroutines.flow.Flow] that can collect [FunctionConfiguration]
-             */
-            /**
-             * Paginate over [ListFunctionsResponse.functions]
+             * This paginator transforms the flow returned by [listFunctionsPaginated]
+             * to access the nested member [FunctionConfiguration]
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [FunctionConfiguration]
              */
             @JvmName("listFunctionsResponseFunctionConfiguration")
             fun Flow<ListFunctionsResponse>.functions(): Flow<FunctionConfiguration> =
