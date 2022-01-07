@@ -111,16 +111,18 @@ class PaginatorGenerator : KotlinIntegration {
         val markerLiteral = paginationInfo.inputTokenMember.defaultName()
 
         writer.write("")
-        writer.dokka("""
-              Paginate over [${outputSymbol.name}] results.
-              When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are 
-              made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once 
-              you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no 
-              pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
-              collection.
-              @param initialRequest A [${inputSymbol.name}] to start pagination
-              @return a [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]
-        """.trimIndent())
+        writer.dokka(
+            """
+                  Paginate over [${outputSymbol.name}] results.
+                  When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are 
+                  made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once 
+                  you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no 
+                  pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
+                  collection.
+                  @param initialRequest A [${inputSymbol.name}] to start pagination
+                  @return a [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]
+            """.trimIndent()
+        )
         writer
             .addImport(ExternalTypes.KotlinxCoroutines.Flow)
             .addImport(ExternalTypes.KotlinxCoroutines.FlowGenerator)
@@ -166,10 +168,12 @@ class PaginatorGenerator : KotlinIntegration {
         outputSymbol: Symbol,
     ) {
         writer.write("")
-        writer.dokka("""
-             This paginator transforms the flow returned by [${operationShape.defaultName()}Paginated] to access the nested member [${itemDesc.targetMember.defaultName(serviceShape)}]
-             @return a [kotlinx.coroutines.flow.Flow] that can collect [${itemDesc.targetMember.defaultName(serviceShape)}]
-        """.trimIndent())
+        writer.dokka(
+            """
+                 This paginator transforms the flow returned by [${operationShape.defaultName()}Paginated] to access the nested member [${itemDesc.targetMember.defaultName(serviceShape)}]
+                 @return a [kotlinx.coroutines.flow.Flow] that can collect [${itemDesc.targetMember.defaultName(serviceShape)}]
+            """.trimIndent()
+        )
         writer.dokka("Paginate over [${outputSymbol.name}.${itemDesc.itemLiteral}]")
         writer
             .addImport(ExternalTypes.KotlinxCoroutines.FlowTransform)
