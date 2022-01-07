@@ -68,7 +68,6 @@ class PaginatorGenerator : KotlinIntegration {
         val serviceSymbol = ctx.symbolProvider.toSymbol(service)
         val outputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.output)
         val inputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.input)
-        val cursorMember = ctx.model.getShape(paginationInfo.inputTokenMember.target).get()
 
         renderResponsePaginator(
             writer,
