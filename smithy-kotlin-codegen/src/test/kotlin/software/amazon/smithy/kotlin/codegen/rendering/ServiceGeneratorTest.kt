@@ -63,7 +63,7 @@ class ServiceGeneratorTest {
     }
 
     @Test
-    fun `it renders a companion object`() {
+    fun `it renders a companion object with default client factory if protocol generator`() {
         val expected = """
             companion object {
                 operator fun invoke(block: Config.Builder.() -> Unit = {}): TestClient {
@@ -75,6 +75,16 @@ class ServiceGeneratorTest {
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it renders a companion object without default client factory if no protocol generator`() {
+        val expected = """
+            companion object {
+            }
+        """.formatForTest()
+        val testContents = generateService("service-generator-test-operations.smithy", false)
+        testContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -164,14 +174,15 @@ class ServiceGeneratorTest {
     }
 
     // Produce the generated service code given model inputs.
-    private fun generateService(modelResourceName: String): String {
+    private fun generateService(modelResourceName: String, withProtocolGenerator: Boolean = true): String {
         val model = loadModelFromResource(modelResourceName)
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val service = model.getShape(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID)).get().asServiceShape().get()
         val settings = KotlinSettings(service.id, KotlinSettings.PackageSettings(TestModelDefault.NAMESPACE, TestModelDefault.MODEL_VERSION), sdkId = service.id.name)
-        val renderingCtx = RenderingContext(writer, service, model, provider, settings)
+        val protocolGenerator = if (withProtocolGenerator) MockHttpProtocolGenerator() else null
+        val renderingCtx = RenderingContext(writer, service, model, provider, settings, protocolGenerator)
         val generator = ServiceGenerator(renderingCtx)
 
         generator.render()
