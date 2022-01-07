@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.util.decodeBase64Bytes
 import kotlinx.serialization.json.*
 
 internal fun parseHttpTraffic(json: String) = buildTestConnection {
+    require(json.isNotEmpty()) { "invalid HTTP traffic JSON document" }
     val traffic = Json.parseToJsonElement(json).jsonArray
     for (call in traffic.map { it.jsonObject }) {
         val reqObj = call["request"] ?: error("expected `request` in document")
@@ -58,10 +59,8 @@ private fun parseRequest(req: JsonElement): HttpRequest? = when (req) {
         builder.method = HttpMethod.parse(method)
         builder.url(Url.parse(uri))
 
-        if (headersObj != null) {
-            val headers = convertHeaders(headersObj)
-            builder.headers.appendAll(headers)
-        }
+        val headers = headersObj?.let(::convertHeaders) ?: Headers.Empty
+        builder.headers.appendAll(headers)
 
         if (body != null) {
             builder.body = convertBody(body, bodyContentType)
@@ -74,16 +73,11 @@ private fun parseRequest(req: JsonElement): HttpRequest? = when (req) {
 
 private fun parseResponse(resp: JsonObject): HttpResponse {
     val status = resp["status"]?.jsonPrimitive?.intOrNull ?: error("expected http status in response object")
-    // val version = resp["version"]?.jsonPrimitive?.content ?: "HTTP/1.1"
     val headersObj = resp["headers"]?.jsonObject
     val bodyContentType = resp["bodyContentType"]?.let { BodyContentType.fromValue(it.jsonPrimitive.content) } ?: BodyContentType.UTF_8
     val body = resp["body"]?.jsonPrimitive?.content
 
-    val headers = if (headersObj != null) {
-        convertHeaders(headersObj)
-    } else {
-        Headers.Empty
-    }
+    val headers = headersObj?.let(::convertHeaders) ?: Headers.Empty
 
     val httpBody = if (body != null) {
         convertBody(body, bodyContentType)
