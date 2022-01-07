@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.core.ExternalTypes
 import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.defaultName
@@ -35,10 +36,6 @@ import software.amazon.smithy.model.traits.PaginatedTrait
  * https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#paginated-trait for details.
  */
 class PaginatorGenerator : KotlinIntegration {
-    private val kotlinxFlowSymbol = "kotlinx.coroutines.flow.Flow".toSymbol()
-    private val kotlinxFlowGeneratorSymbol = "kotlinx.coroutines.flow.flow".toSymbol()
-    private val kotlinxFlowTransformSymbol = "kotlinx.coroutines.flow.transform".toSymbol()
-
     override fun enabledForService(model: Model, settings: KotlinSettings): Boolean =
         model.operationShapes.any { it.hasTrait<PaginatedTrait>() }
 
@@ -91,6 +88,7 @@ class PaginatorGenerator : KotlinIntegration {
             renderItemPaginator(
                 writer,
                 service,
+                paginatedOperation,
                 itemDesc,
                 outputSymbol
             )
@@ -113,24 +111,33 @@ class PaginatorGenerator : KotlinIntegration {
         val markerLiteral = paginationInfo.inputTokenMember.defaultName()
 
         writer.write("")
-        writer.dokka("Paginate over [${outputSymbol.name}]")
+        writer.dokka("""
+              Paginate over [${outputSymbol.name}] results.
+              When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are 
+              made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once 
+              you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no 
+              pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
+              collection.
+              @param initialRequest A [${inputSymbol.name}] to start pagination
+              @return a [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]
+        """.trimIndent())
         writer
-            .addImport(kotlinxFlowSymbol)
-            .addImport(kotlinxFlowGeneratorSymbol)
+            .addImport(ExternalTypes.KotlinxCoroutines.Flow)
+            .addImport(ExternalTypes.KotlinxCoroutines.FlowGenerator)
             .addImport(serviceSymbol)
             .addImport(inputSymbol)
             .addImport(outputSymbol)
             .addImport(cursorSymbol)
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
-                "fun #T.#LPaginated(initialRequest: #T): Flow<#T> {",
-                "}",
+                "fun #T.#LPaginated(initialRequest: #T): Flow<#T> =",
+                "",
                 serviceSymbol,
                 operationShape.defaultName(),
                 inputSymbol,
                 outputSymbol
             ) {
-                withBlock("return flow {", "}") {
+                withBlock("flow {", "}") {
                     write("var cursor: #F = null", cursorSymbol)
                     write("var isFirstPage: Boolean = true")
                     write("")
@@ -154,15 +161,23 @@ class PaginatorGenerator : KotlinIntegration {
     private fun renderItemPaginator(
         writer: KotlinWriter,
         serviceShape: ServiceShape,
+        operationShape: OperationShape,
         itemDesc: ItemDescriptor,
         outputSymbol: Symbol,
     ) {
         writer.write("")
+        writer.dokka("""
+             This paginator transforms the flow returned by [${operationShape.defaultName()}Paginated] to access the nested member [${itemDesc.targetMember.defaultName(serviceShape)}]
+             @return a [kotlinx.coroutines.flow.Flow] that can collect [${itemDesc.targetMember.defaultName(serviceShape)}]
+        """.trimIndent())
         writer.dokka("Paginate over [${outputSymbol.name}.${itemDesc.itemLiteral}]")
         writer
-            .addImport(kotlinxFlowTransformSymbol)
+            .addImport(ExternalTypes.KotlinxCoroutines.FlowTransform)
             .addImport(itemDesc.itemSymbol)
             .addImportReferences(itemDesc.itemSymbol, SymbolReference.ContextOption.USE)
+            // @JvmName is required due to Java interop compatibility in the compiler.
+            // Multiple functions may have the same name and the generic does not disambiguate the type in Java.
+            // NOTE: This does not mean these functions are callable from Java.
             .write(
                 """@JvmName("#L#L")""",
                 outputSymbol.name.toggleFirstCharacterCase(),
@@ -170,10 +185,10 @@ class PaginatorGenerator : KotlinIntegration {
             )
             .withBlock(
                 "fun #T<#T>.#L(): #T<#L> =", "",
-                kotlinxFlowSymbol,
+                ExternalTypes.KotlinxCoroutines.Flow,
                 outputSymbol,
                 itemDesc.itemLiteral,
-                kotlinxFlowSymbol,
+                ExternalTypes.KotlinxCoroutines.Flow,
                 itemDesc.collectionLiteral
             ) {
                 withBlock("transform() { response -> ", "}") {
