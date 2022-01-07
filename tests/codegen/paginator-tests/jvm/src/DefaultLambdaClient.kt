@@ -11,7 +11,7 @@ import com.test.model.ListFunctionsResponse
  */
 class DefaultLambdaClient(config: LambdaClient.Config) : LambdaClient {
     override val config: LambdaClient.Config
-        get() = TODO("Unneeded for test")
+        get() = error("Unneeded for test")
 
     // Number of pages to generate
     var pageCount: Int = 10

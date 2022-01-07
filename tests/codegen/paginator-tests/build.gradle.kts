@@ -62,7 +62,6 @@ val codegen by configurations.creating
 val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
     group = "codegen"
     classpath = configurations.getByName("codegen")
-    println(configurations.getByName("codegen"))
     inputs.file(projectDir.resolve("smithy-build.json"))
     inputs.files(configurations.getByName("codegen"))
 }
@@ -95,6 +94,9 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
     dependsOn(stageGeneratedSources)
 }
 
+val smithyCliConfig = configurations.maybeCreate("smithyCli")
+val smithyVersion: String by project
 dependencies {
+    smithyCliConfig("software.amazon.smithy:smithy-cli:$smithyVersion")
     implementation(project(":smithy-kotlin-codegen"))
 }
