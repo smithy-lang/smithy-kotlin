@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.5] - 01/06/2022
+
+### New features
+* upgrade to Kotlin 1.6.10 [#551](https://github.com/awslabs/smithy-kotlin/pull/551)
+* allow query params to be set from resolved endpoints [#554](https://github.com/awslabs/smithy-kotlin/pull/554)
+* sha1 hash; expose json utils [#548](https://github.com/awslabs/smithy-kotlin/pull/548)
+
+### Fixes
+* only retry client errors if metadata allows [#560](https://github.com/awslabs/smithy-kotlin/pull/560)
+
 ## [0.7.4-beta] - 12/09/2021
 
 **WARNING: Beta releases may contain bugs and no guarantee is made about API stability. They are not recommended for production use!**

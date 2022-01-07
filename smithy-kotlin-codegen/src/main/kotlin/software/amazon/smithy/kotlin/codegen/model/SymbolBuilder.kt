@@ -98,3 +98,19 @@ fun SymbolBuilder.namespace(dependency: KotlinDependency, subpackage: String = "
 
     dependency(dependency)
 }
+
+/**
+ * Convert a String in "<package>.<name>" format to a symbol where the last segment of a '.' delimited list becomes
+ * the name and the rest becomes the namespace.
+ *
+ * ex: com.foo.bar.Thing -> (name=Thing, namespace=com.foo.bar)
+ */
+fun String.toSymbol(): Symbol =
+    buildSymbol {
+        require(this@toSymbol.isNotBlank()) { "Invalid string to convert to symbol" }
+        val segments = split(".")
+        name = segments.last()
+        namespace = segments
+            .dropLast(1)
+            .joinToString(separator = ".") { it }
+    }

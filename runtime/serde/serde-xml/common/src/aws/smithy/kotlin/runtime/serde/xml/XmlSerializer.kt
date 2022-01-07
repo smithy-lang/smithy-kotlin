@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
-import aws.smithy.kotlin.runtime.serde.xml.dom.*
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.*

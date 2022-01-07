@@ -38,4 +38,24 @@ class SymbolBuilderTest {
         assertEquals(1, x.references.size)
         assertEquals(1, x.dependencies.size)
     }
+
+    @Test
+    fun `it builds symbol from String`() {
+        val expected = buildSymbol {
+            name = "Foo"
+            namespace = "x.y.z"
+        }
+
+        assertEquals(expected, "x.y.z.Foo".toSymbol())
+    }
+
+    @Test
+    fun `it builds symbol without namespace String`() {
+        val expected = buildSymbol {
+            name = "Foo"
+        }
+
+        assertEquals(expected.namespace, "Foo".toSymbol().namespace)
+        assertEquals(expected.name, "Foo".toSymbol().name)
+    }
 }

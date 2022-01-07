@@ -148,7 +148,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
         return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
-            .addReference(reference)
+            .addReferences(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
             .build()
@@ -159,9 +159,10 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
 
         return createSymbolBuilder(shape, "Map<String, $valueType>", boxed = true)
-            .addReference(reference)
+            .addReferences(reference)
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
+            .putProperty(SymbolProperty.ENTRY_EXPRESSION, "Map.Entry<String, $valueType>")
             .build()
     }
 
@@ -258,4 +259,11 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         namespace: String,
         boxed: Boolean = false
     ): Symbol.Builder = createSymbolBuilder(shape, typeName, boxed).namespace(namespace, ".")
+}
+
+// Add a reference and it's children
+private fun Symbol.Builder.addReferences(ref: Symbol): Symbol.Builder {
+    addReference(ref)
+    ref.references.forEach { addReference(it) }
+    return this
 }
