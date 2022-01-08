@@ -74,7 +74,8 @@ class ServiceGeneratorTest {
                 operator fun invoke(config: Config): TestClient = DefaultTestClient(config)
             }
         """.formatForTest()
-        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
+        val testContents = generateService("service-generator-test-operations.smithy", true)
+        testContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -83,8 +84,7 @@ class ServiceGeneratorTest {
             companion object {
             }
         """.formatForTest()
-        val testContents = generateService("service-generator-test-operations.smithy", false)
-        testContents.shouldContainOnlyOnceWithDiff(expected)
+        commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
 
     @Test
@@ -174,7 +174,7 @@ class ServiceGeneratorTest {
     }
 
     // Produce the generated service code given model inputs.
-    private fun generateService(modelResourceName: String, withProtocolGenerator: Boolean = true): String {
+    private fun generateService(modelResourceName: String, withProtocolGenerator: Boolean = false): String {
         val model = loadModelFromResource(modelResourceName)
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
