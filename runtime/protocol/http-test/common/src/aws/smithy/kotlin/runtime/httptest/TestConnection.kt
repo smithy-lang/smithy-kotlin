@@ -65,6 +65,53 @@ class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) : 
     private val iter = expected.iterator()
     private var calls = mutableListOf<CallAssertion>()
 
+    companion object {
+        /**
+         * Construct a [TestConnection] from a JSON payload. The payload should be an array of request-response object
+         * pairs.
+         *
+         * e.g.
+         *
+         * ```json
+         * [
+         *   {
+         *     "request": {
+         *       "method": "GET",
+         *       "uri": "http://foo.com/path/to/xyz",
+         *       // required headers, header and value(s) must be present.
+         *       // No assertion will be made about other headers or values if they exist
+         *       "headers": {
+         *         "single": "foo",
+         *         // multi-value headers can be present as a list
+         *         "multiple": ["foo", "bar"]
+         *       },
+         *       "bodyContentType": oneOf("utf8", "binary")
+         *       // By default body is interpreted as a UTF8 string. When not set it is assumed empty.
+         *       // Content type of `binary` is interpreted as a base64 encoded string of bytes. In which
+         *       // case the decoded value will be used.
+         *       "body": "",
+         *     },
+         *     "response": {
+         *       "status": 200,
+         *       "version": "HTTP/1.1", // this is the default
+         *       "headers": {
+         *         "foo": "bar",
+         *         "multivalue": ["baz", "qux"]
+         *       },
+         *       "body": "foobar"
+         *     }
+         *   },
+         *   {
+         *     "request": {...},
+         *     "response": {...}
+         *   }
+         * ]
+         *
+         * ```
+         */
+        fun fromJson(payload: String): TestConnection = parseHttpTraffic(payload)
+    }
+
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
         check(iter.hasNext()) { "TestConnection has no remaining expected requests" }
         val next = iter.next()

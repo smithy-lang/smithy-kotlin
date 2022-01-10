@@ -8,6 +8,7 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.httptest"
 
 val kotlinVersion: String by project
 val ktorVersion: String by project
+val kotlinxSerializationVersion: String by project
 
 kotlin {
     sourceSets {
@@ -18,6 +19,7 @@ kotlin {
                 implementation(project(":runtime:logging"))
                 implementation("org.jetbrains.kotlin:kotlin-test-common:$kotlinVersion")
                 implementation("org.jetbrains.kotlin:kotlin-test-annotations-common:$kotlinVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
             }
         }
         commonTest {
