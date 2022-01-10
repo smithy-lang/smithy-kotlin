@@ -29,18 +29,22 @@ interface LazyAsyncValue<out T> {
  */
 public fun <T> asyncLazy(initializer: suspend () -> T): LazyAsyncValue<T> = LazyAsyncValueImpl(initializer)
 
+internal object UNINITIALIZED_VALUE
+
 /**
  * A value that is initialized asynchronously and cached after it is initialized. Loading/access is thread safe.
  */
-private class LazyAsyncValueImpl<T> (initializer: suspend () -> T) : LazyAsyncValue<T> {
+private class LazyAsyncValueImpl<out T> (initializer: suspend () -> T) : LazyAsyncValue<T> {
     private val mu = Mutex()
     private var initializer: (suspend () -> T)? = initializer
-    private var value: T? = null
+    private var value: Any? = UNINITIALIZED_VALUE
 
     override suspend fun get(): T = mu.withLock {
-        if (value != null) return value!!
-        value = initializer!!()
-        initializer = null
-        return value!!
+        if (value === UNINITIALIZED_VALUE) {
+            value = initializer!!()
+            initializer = null
+        }
+        @Suppress("UNCHECKED_CAST")
+        return value as T
     }
 }
