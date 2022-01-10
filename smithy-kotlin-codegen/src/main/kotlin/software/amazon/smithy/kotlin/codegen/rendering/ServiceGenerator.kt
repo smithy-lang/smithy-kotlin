@@ -44,7 +44,8 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         require(ctx.shape is ServiceShape) { "ServiceShape is required for generating a service interface; was: ${ctx.shape}" }
     }
 
-    private val service: ServiceShape = requireNotNull(ctx.shape) { "ServiceShape is required to render a service client" }
+    private val service: ServiceShape =
+        requireNotNull(ctx.shape) { "ServiceShape is required to render a service client" }
     private val serviceSymbol = ctx.symbolProvider.toSymbol(service)
     private val writer = ctx.writer
 
@@ -112,13 +113,16 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      */
     private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            withBlock("operator fun invoke(block: Config.Builder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
-                write("val config = Config.Builder().apply(block).build()")
-                write("return Default${serviceSymbol.name}(config)")
+            val hasProtocolGenerator = ctx.protocolGenerator != null
+            // If there is no ProtocolGenerator, do not codegen references to the non-existent default client.
+            callIf(hasProtocolGenerator) {
+                withBlock("operator fun invoke(block: Config.Builder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
+                    write("val config = Config.Builder().apply(block).build()")
+                    write("return Default${serviceSymbol.name}(config)")
+                }
+                write("")
+                write("operator fun invoke(config: Config): ${serviceSymbol.name} = Default${serviceSymbol.name}(config)")
             }
-
-            write("")
-            write("operator fun invoke(config: Config): ${serviceSymbol.name} = Default${serviceSymbol.name}(config)")
         }
     }
 
