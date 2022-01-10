@@ -171,4 +171,26 @@ class PaginatorTest {
             run { fnNames.sort(); fnNames }.toString()
         )
     }
+
+    @Test
+    fun handleServiceReturningEmptyStringForTerminus() = runBlocking {
+        val unit = DefaultLambdaClient(LambdaClient.Config {})
+
+        unit.pageCount = 2
+        unit.itemsPerPage = 2
+        unit.exhaustedVal = ""
+        val fnNames = mutableListOf<String>()
+        unit
+            .listFunctionsPaginated(ListFunctionsRequest {})
+            .functions()
+            .collect { functionConfiguration ->
+                functionConfiguration.functionName?.let { name -> fnNames.add(name) }
+            }
+
+        assertEquals(unit.pageCount * unit.itemsPerPage, fnNames.size)
+        assertEquals(
+            "[Function page(0) item(0), Function page(0) item(1), Function page(1) item(0), Function page(1) item(1)]",
+            run { fnNames.sort(); fnNames }.toString()
+        )
+    }
 }

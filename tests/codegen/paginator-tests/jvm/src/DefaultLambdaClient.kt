@@ -24,13 +24,15 @@ class DefaultLambdaClient(config: LambdaClient.Config) : LambdaClient {
     var pageCount: Int = 10
     // Number of items to generate per page
     var itemsPerPage: Int = 3
+    // Value quantifying exhaustion
+    var exhaustedVal: String? = null
 
     override suspend fun listFunctions(input: ListFunctionsRequest): ListFunctionsResponse {
         return ListFunctionsResponse.invoke {
             nextMarker = when {
-                (input.marker?.length ?: 0) == (pageCount - 1) -> null     // Exhausted pages
-                input.marker == null -> "."                                // First page
-                else -> "${input.marker}."                                 // Next page adds a dot to the marker
+                (input.marker?.length ?: 0) == (pageCount - 1) -> exhaustedVal  // Exhausted pages
+                input.marker == null -> "."                                     // First page
+                else -> "${input.marker}."                                      // Next page adds a dot to the marker
             }
 
             val index = input.marker?.length ?: 0
