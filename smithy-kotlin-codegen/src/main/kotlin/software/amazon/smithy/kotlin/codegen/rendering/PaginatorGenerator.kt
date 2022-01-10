@@ -68,6 +68,8 @@ class PaginatorGenerator : KotlinIntegration {
         val serviceSymbol = ctx.symbolProvider.toSymbol(service)
         val outputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.output)
         val inputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.input)
+        val cursorMember = ctx.model.getShape(paginationInfo.inputTokenMember.target).get()
+        val cursorSymbol = ctx.symbolProvider.toSymbol(cursorMember)
 
         renderResponsePaginator(
             writer,
@@ -75,7 +77,8 @@ class PaginatorGenerator : KotlinIntegration {
             paginatedOperation,
             inputSymbol,
             outputSymbol,
-            paginationInfo
+            paginationInfo,
+            cursorSymbol
         )
 
         // Optionally generate paginator when nested item is specified on the trait.
@@ -97,7 +100,8 @@ class PaginatorGenerator : KotlinIntegration {
         operationShape: OperationShape,
         inputSymbol: Symbol,
         outputSymbol: Symbol,
-        paginationInfo: PaginationInfo
+        paginationInfo: PaginationInfo,
+        cursorSymbol: Symbol
     ) {
         val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
             it.defaultName()
@@ -123,6 +127,8 @@ class PaginatorGenerator : KotlinIntegration {
             .addImport(serviceSymbol)
             .addImport(inputSymbol)
             .addImport(outputSymbol)
+            .addImport(cursorSymbol)
+            .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
                 "fun #T.#LPaginated(initialRequest: #T): Flow<#T> =",
                 "",
@@ -132,7 +138,7 @@ class PaginatorGenerator : KotlinIntegration {
                 outputSymbol
             ) {
                 withBlock("flow {", "}") {
-                    write("var cursor: String? = null")
+                    write("var cursor: #F = null", cursorSymbol)
                     write("var isFirstPage: Boolean = true")
                     write("")
                     withBlock("while (isFirstPage || (cursor?.isNotEmpty() == true)) {", "}") {
