@@ -23,7 +23,7 @@ kotlin {
                 // Attributes property bag is exposed as client options
                 api(project(":runtime:utils"))
                 // Coroutines' locking features are used in retry token bucket implementations
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
         }
 

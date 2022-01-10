@@ -5,12 +5,11 @@
 
 # Abstract
 
-This document presents a design for how paginated operations will be generated.
+This document presents a design for how paginated operations are generated.
 
 Smithy services and operations can be marked with the [paginated trait](https://awslabs.github.io/smithy/1.0/spec/core/behavior-traits.html#paginated-trait) which 
 
-> indicates that an operation intentionally limits the number of results returned in a single response an that multiple invocations might be necessary to retrieve all results
-
+> indicates that an operation intentionally limits the number of results returned in a single response and that multiple invocations might be necessary to retrieve all results
 
 Pagination works off of a cursor convention where one of the operational input fields is an optional cursor the service 
 uses to produce the next set of results not yet seen. The operation output has a field that marks the cursor position 
@@ -70,10 +69,144 @@ used in a model.
 
 ## API
 
-The SDK runtime will provide a `SdkAsyncIterable` interface that represents the public API for the response of
-a paginated operation.
+The SDK codegen will render a [Kotlin Flow](https://kotlinlang.org/docs/flow.html) that represents the public API for the response of
+a paginated operation.  Runtime library code is not required for `Flow`-based paginators, as all functionality
+will be provided by the Kotlin standard lib and the `kotlinx-coroutines-core` library.
 
+Pagination by default will always generate an extension function that returns a `Flow` over the normal operation output type. 
+If `items` is specified then a `Flow` transform function (extending the return type of it's parent) will be generated that 
+allows the nested item to be paginated over.
+The targeted type will provide iteration to the `item` element for the user automatically.
 
+An example of this is demonstrated below:
+
+```kotlin
+fun LambdaClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> {
+   return flow {
+      var cursor: kotlin.String? = null
+      var isFirstPage: Boolean = true
+      val req = initialRequest.copy {
+         this.marker = cursor
+      }
+
+      while (isFirstPage || (cursor?.isNotEmpty() == true)) {
+         val result = this@paginateListFunctions.listFunctions(req)
+         isFirstPage = false
+         cursor = result.nextMarker
+         emit(result)
+      }
+   }
+}
+
+fun Flow<ListFunctionsResponse>.items(): Flow<FunctionConfiguration> =
+   transform() { response ->
+      response.functions?.forEach {
+         emit(it)
+      }
+   }
+```
+
+The shape targeted by `inputToken` is mapped to the `cursor` field. Each iteration the `cursor` is updated with the output field targeted by the `outputToken`.
+
+### Creating a Paginator
+
+Each operation that supports pagination would receive an extension function to create a paginator. Using the model in the introduction would produce the following:
+
+### Examples
+
+#### Usage
+
+An example of driving a paginator and processing response instances:
+
+```kotlin
+suspend fun rawPaginationExample(client: LambdaClient) {
+   lambdaClient
+      .paginateListFunctions(ListFunctionsRequest {})
+      .collect { response ->
+         response.functions?.forEach { functionConfiguration ->
+            println(functionConfiguration.functionName) 
+         }
+      }
+}
+```
+
+#### Usage - Iterating over Modeled Item
+
+Notice that this example is a superset of the previous.  Simply by providing a transform we are able to iterate over the 
+nested element.  A key design feature of this approach is that users may extend the abstraction as needed simply by providing
+their own flow transforms.  
+
+Additionally, the `item` specified in the model may be deeply nested and involve operations and types with many words.  Generating a
+single function that combines the operation, some word to indicate pagination, plus the nested item's name often produces
+unreadable function signatures.  In this approach, we generate more legible API by breaking the extraction of the nested
+items into a separate function, which is always called `items()`.
+
+```kotlin
+lambdaClient
+  .paginateListFunctions(ListFunctionsRequest {})
+  .items()
+  .collect { functionConfiguration ->
+      println(functionConfiguration.functionName)
+  }
+```
+
+#### Usage - Iterating over Maps
+
+```kotlin
+ApiGatewayClient.fromEnvironment().use { apiGatewayClient ->
+  apiGatewayClient
+      .paginateGetUsage(GetUsageRequest { })
+      .items()
+      .collect { entry -> // Map.Entry<String, List<List<Long>>>
+          println("${entry.key}: ${entry.value}")
+      }
+}
+```
+
+## Alternatives Considered
+
+### Construction ALT 1 - Extension on the operation input
+
+```kotlin
+// file: Paginators.kt
+package aws.sdk.kotlin.services.lambda
+
+import aws.sdk.kotlin.services.lambda.model.FunctionConfiguration
+import aws.sdk.kotlin.services.lambda.model.ListFunctionsRequest
+
+fun ListFunctionsRequest.paginate(client: LambdaClient): ListFunctionsPaginator
+    = ListFunctionsPaginator(client, this)
+```
+
+In this alternative the extension would be on the operation input instead of the service client.
+
+Example usage:
+
+```kotlin
+
+...
+
+val pager: SdkAsyncIterable<ListFunctionsResponse> = ListFunctionsRequest.paginate(client)
+
+...
+// usage after construction is same as before
+
+```
+
+This alternative was deemed less discoverable. Also having the extension on the service client is more likely to provide IDE suggestions next to each other like:
+
+```
+fun listFunctions(...)
+fun listFunctionsPaginated(...)
+```
+
+### API/Codegen ALT 1 - Async Iterator Runtime
+
+An alternative design is to implement an async iterator abstraction in our runtime library. The primary advantage to this 
+approach is complete control over the API and no reliance on the `Flow` abstraction that is provided by JetBrains but not
+supplied in the standard library.
+
+The runtime abstraction would provide the following functions:
 ```kotlin
 /**
  * An asynchronous data stream. This type is an asynchronous version of [Iterable].
@@ -114,12 +247,7 @@ suspend fun<T> SdkAsyncIterable<T>.toSet(): Set<T> = TODO("not-implemented")
 inline fun <T> SdkAsyncIterable<T>.collect(crossinline action: suspend (T) -> Unit):Unit = TODO()
 ```
 
-Pagination by default will always generate an `SdkAsyncIterable` over the normal operation output type. 
-If `items` is specified then the generated paginator will be “specialized” to have an additional field that iterates 
-only over the member targeted by `items`. The targeted type will be flattened for the user automatically.
-
-An example of this is demonstrated below:
-
+Then at codegen time, paginators would be generated like:
 
 ```kotlin
 class ListFunctionsPaginator(
@@ -152,13 +280,7 @@ class ListFunctionsPaginator(
 }
 ```
 
-The shape targeted by `inputToken` is mapped to the `cursor` field. Each iteration the `cursor` is updated with the output field targeted by the `outputToken`.
-
-
-### Creating a Paginator
-
 Each operation that supports pagination would receive an extension function to create a paginator. Using the model in the introduction would produce the following:
-
 
 ```kotlin
 // file: Paginators.kt
@@ -171,130 +293,28 @@ fun LambdaClient.listFunctionsPaginated(request: ListFunctionsRequest): ListFunc
     = ListFunctionsPaginator(this, request)
 ```
 
-
-
-### Example Usage - Manual Pagination
-
-An example of driving a paginator manually and processing results:
-
+Example usage:
 ```kotlin
 suspend fun rawPaginationExample(client: LambdaClient) {
-    val req: ListFunctionsRequest = ListFunctionsRequest{}
-    val pager: SdkAsyncIterable<FunctionConfiguration> = client.listFunctionsPaginated(req).functions
-    for (fn in pager) {
-        println(fn)
-    }
+   val req: ListFunctionsRequest = ListFunctionsRequest{}
+   val pager: SdkAsyncIterable<FunctionConfiguration> = client.listFunctionsPaginated(req).functions
+   for (fn in pager) {
+      println(fn)
+   }
 }
 ```
 
-
-## Alternatives Considered
-
-
-### Construction ALT 1 - Extension on the operation input
-
-```kotlin
-// file: Paginators.kt
-package aws.sdk.kotlin.services.lambda
-
-import aws.sdk.kotlin.services.lambda.model.FunctionConfiguration
-import aws.sdk.kotlin.services.lambda.model.ListFunctionsRequest
-
-
-fun ListFunctionsRequest.paginate(client: LambdaClient): ListFunctionsPaginator
-    = ListFunctionsPaginator(client, this)
-
-```
-
-In this alternative the extension would be on the operation input instead of the service client.
-
-Example usage:
-
-```kotlin
-
-...
-
-val pager: SdkAsyncIterable<ListFunctionsResponse> = ListFunctionsRequest.paginate(client)
-
-...
-// usage after construction is same as before
-
-```
-
-This alternative was deemed less discoverable. Also having the extension on the service client is more likely to provide IDE suggestions next to eachother like:
-
-```
-fun listFunctions(...)
-fun listFunctionsPaginated(...)
-```
-
-### API ALT 1 - Expose Paginators as Flows
-
-An alternative design would be to just expose paginators as flows rather than creating a new `Paginator` interface. 
-
-
-```kotlin
-
-package aws.sdk.kotlin.services.lambda
-
-import aws.sdk.kotlin.services.lambda.model.FunctionConfiguration
-import aws.sdk.kotlin.services.lambda.model.ListFunctionsRequest
-
-fun LambdaClient.listFunctionsPaginated(request: ListFunctionsRequest): Flow<ListFunctionsResponse>
-```
-
-
-Example usage:
-```kotlin
- val functions = client.listFunctionsPaginated(ListFunctionsRequest { maxItems = 10 } )
-   .map { it.functions }
-   .filterNotNull()
-   .flatMapConcat{ it.asFlow() }
-   .collect { fn -> println(fn) }
-```
-
-A few issues with this approach:
-
-1. This would expose the [Flow](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html) type which is not defined in the `stdlib` but rather in `kotlinx-coroutines-core`.
-2. `Flow` is not a type we control which could present forwards compatibility issues if the `paginated` trait changes in ways that we can't support.
-
-Due to (2) it is not desirable to expose `Flow` as the type for pagination. See the flow extension section below.
-
-## Additional Considerations
-
-### Flow Extension
-
-For better coroutine support, the runtime could provide adapters for Paginators that expose paginated results as a [Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html):
-
-
-```kotlin
-/*
- * Consume this [Paginator] as a [Flow]
- */
-fun<T> SdkAsyncIterable<T>.asFlow(): Flow<T> = flow {
-    val iter = iterator()
-    while(iter.hasNext()) { 
-        emit(iter.next())
-    }
-}
-```
-
-An example of consuming a paginator using flows:
-
-```kotlin
-suspend fun flowExample(client: LambdaClient) {
-    val req = ListFunctionsRequest{}
-    val functions = client.listFunctionsPaginated(req).functions.asFlow() 
-    
-    functions.collect { println(it) }
-}
-```
-
-
-This extension would be provided by the runtime but it requires exposing a 3P type not defined in the stdlib ([Flow](https://kotlin.github.io/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html) is defined in `kotlinx-coroutines-core`) as an `api()` dependency.
+While this approach is functionally complete, the introduction of a non-standard async iterator that is not directly 
+compatible with `Iterator`, `Iterable`, or collection types, as well as support for Kotlin's async iterator
+abstraction, `Flow`, presents usability issues to the customer.  Per our tenet 1, we work to provide customers
+with APIs that are simple and work in obvious, familiar ways.  Developers familiar with Kotlin's concurrency patterns 
+in general and flows in particular would likely find a `Flow`-based solution more natural to work with.  Additionally,
+`Flow`s offer rich composition capabilities.  Due to these reasons, the advantage to using Flow is deemed to outweigh the
+risks of Flow API deprecation in the future.
 
 # Revision history
 
+* 12/15/2021 - Adapted to favor Flow
 * 8/23/2021 - Initial upload
 * 2/05/2021 - Created
 
