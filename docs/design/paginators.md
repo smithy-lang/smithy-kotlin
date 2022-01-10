@@ -164,6 +164,13 @@ suspend fun rawPaginationExample(client: LambdaClient) {
             }
         }
 }
+
+fun Flow<ListFunctionsResponse>.items(): Flow<FunctionConfiguration> =
+   transform() { response ->
+      response.functions?.forEach {
+         emit(it)
+      }
+   }
 ```
 
 #### Usage - Iterating over Modeled Item
@@ -213,7 +220,6 @@ package aws.sdk.kotlin.services.lambda
 import aws.sdk.kotlin.services.lambda.model.FunctionConfiguration
 import aws.sdk.kotlin.services.lambda.model.ListFunctionsRequest
 
-
 fun ListFunctionsRequest.paginate(client: LambdaClient): ListFunctionsPaginator =
     ListFunctionsPaginator(client, this)
 ```
@@ -245,14 +251,12 @@ fun listFunctionsPaginated(...)
 ```
 
 ### API/Codegen ALT 1 - Async Iterator Runtime
-
 An alternative design is to implement an async iterator abstraction in our
 runtime library. The primary advantage to this approach is complete control over
 the API and no reliance on the `Flow` abstraction that is provided by JetBrains
 but not supplied in the standard library.
 
 The runtime abstraction would provide the following functions:
-
 ```kotlin
 /**
  * An asynchronous data stream. This type is an asynchronous version of [Iterable].
