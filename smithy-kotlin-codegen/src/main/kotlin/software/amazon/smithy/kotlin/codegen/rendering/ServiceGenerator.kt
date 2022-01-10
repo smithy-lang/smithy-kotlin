@@ -73,7 +73,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                     SectionServiceCompanionObject,
                     context = mapOf(SectionServiceCompanionObject.ServiceSymbol to serviceSymbol)
                 ) {
-                    renderCompanionObject(ctx.protocolGenerator != null)
+                    renderCompanionObject()
                 }
                 writer.write("")
                 renderServiceConfig()
@@ -110,13 +110,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      *     operator fun invoke(config: Config): LambdaClient = DefaultLambdaClient(config)
      * }
      * ```
-     * @param hasProtocolGenerator true if there is a [ProtocolGenerator] set on the [RenderingContext].  This
-     * determines if the SDK will generate a default client implementation. If there is no [ProtocolGenerator], do not
-     * codegen references to the non-existent default client.
      */
-    private fun renderCompanionObject(hasProtocolGenerator: Boolean) {
+    private fun renderCompanionObject() {
         writer.withBlock("companion object {", "}") {
-            this.callIf(hasProtocolGenerator) {
+            val hasProtocolGenerator = ctx.protocolGenerator != null
+            // If there is no ProtocolGenerator, do not codegen references to the non-existent default client.
+            callIf(hasProtocolGenerator) {
                 withBlock("operator fun invoke(block: Config.Builder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
                     write("val config = Config.Builder().apply(block).build()")
                     write("return Default${serviceSymbol.name}(config)")
