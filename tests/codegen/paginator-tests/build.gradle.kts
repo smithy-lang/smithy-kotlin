@@ -41,16 +41,6 @@ val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
     inputs.files(configurations.getByName("codegen"))
 }
 
-data class CodegenSourceInfo(val name: String) {
-    val projectionRootDir: File
-        get() = project.file("${project.buildDir}/smithyprojections/${project.name}/$name/kotlin-codegen/src/main/kotlin").absoluteFile
-
-    val sourceSetRootDir: File
-        get() = project.file("${project.buildDir}/generated-src/src").absoluteFile
-}
-
-val codegenSourceInfo = listOf("paginator-tests").map { CodegenSourceInfo(it) }
-
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"
     dependsOn(generateSdk)
