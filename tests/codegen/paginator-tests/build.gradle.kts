@@ -10,9 +10,12 @@ plugins {
 }
 
 buildscript {
-    val smithyVersion: String by project
     dependencies {
+        val smithyVersion: String by project
+        val smithyCliConfig = configurations.maybeCreate("smithyCli")
+
         classpath("software.amazon.smithy:smithy-cli:$smithyVersion")
+        smithyCliConfig("software.amazon.smithy:smithy-cli:$smithyVersion")
     }
 }
 
@@ -27,9 +30,6 @@ kotlin.sourceSets.getByName("main") {
     kotlin.srcDir("${project.buildDir}/generated-src/src")
     kotlin.srcDir("${project.buildDir}/smithyprojections/paginator-tests/paginator-tests/kotlin-codegen")
 }
-
-val coroutinesVersion: String by project
-val sdkVersion: String by project
 
 tasks["smithyBuildJar"].enabled = false
 
@@ -59,13 +59,11 @@ tasks.test {
 }
 
 dependencies {
-    val smithyCliConfig = configurations.maybeCreate("smithyCli")
     val kotlinVersion: String by project
-    val smithyVersion: String by project
+    val coroutinesVersion: String by project
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
-    smithyCliConfig("software.amazon.smithy:smithy-cli:$smithyVersion")
     implementation(project(":smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
 
