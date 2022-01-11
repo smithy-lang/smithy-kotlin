@@ -5,8 +5,7 @@
 import software.amazon.smithy.gradle.tasks.SmithyBuild
 
 plugins {
-    // TODO ~ This build file does not need to be multiplatform.  Simplify by refactoring as a jvm module.
-    kotlin("multiplatform")
+    kotlin("jvm")
     id("software.amazon.smithy")
 }
 
@@ -19,45 +18,22 @@ buildscript {
 
 extra.set("skipPublish", true)
 
-val platforms = listOf("common", "jvm")
-
-platforms.forEach { platform ->
-    apply(from = rootProject.file("gradle/${platform}.gradle"))
-}
-
 val optinAnnotations = listOf("kotlin.RequiresOptIn", "aws.smithy.kotlin.runtime.util.InternalApi")
-
-kotlin {
-    sourceSets {
-        all {
-            val srcDir = if (name.endsWith("Main")) "src" else "test"
-            val resourcesPrefix = if (name.endsWith("Test")) "test-" else  ""
-            // the name is always the platform followed by a suffix of either "Main" or "Test" (e.g. jvmMain, commonTest, etc)
-            val platform = name.substring(0, name.length - 4)
-            kotlin.srcDir("$platform/$srcDir")
-            resources.srcDir("$platform/${resourcesPrefix}resources")
-            languageSettings.progressiveMode = true
-            optinAnnotations.forEach { languageSettings.optIn(it) }
-        }
-
-        val coroutinesVersion: String by project
-        val sdkVersion: String by project
-        commonMain {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-                implementation(project(":runtime:runtime-core"))
-            }
-        }
-        val jvmMain by getting {
-            kotlin.srcDir("${project.buildDir}/generated-src/src")
-        }
-    }
+kotlin.sourceSets.all {
+    optinAnnotations.forEach { languageSettings.optIn(it) }
 }
+
+kotlin.sourceSets.getByName("main") {
+    kotlin.srcDir("${project.buildDir}/generated-src/src")
+    kotlin.srcDir("${project.buildDir}/smithyprojections/paginator-tests/paginator-tests/kotlin-codegen")
+}
+
+val coroutinesVersion: String by project
+val sdkVersion: String by project
 
 tasks["smithyBuildJar"].enabled = false
 
-val codegen by configurations.creating
-
+val codegen: Configuration by configurations.creating
 val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
     group = "codegen"
     classpath = configurations.getByName("codegen")
@@ -73,28 +49,35 @@ data class CodegenSourceInfo(val name: String) {
         get() = project.file("${project.buildDir}/generated-src/src").absoluteFile
 }
 
-val codegenSourceInfo = listOf("paginator-tests").map{ CodegenSourceInfo(it) }
+val codegenSourceInfo = listOf("paginator-tests").map { CodegenSourceInfo(it) }
 
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     group = "codegen"
     dependsOn(generateSdk)
-    doLast {
-        codegenSourceInfo.forEach {
-            copy {
-                from("${it.projectionRootDir}")
-                into("${it.sourceSetRootDir}")
-            }
-        }
-    }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
     dependsOn(stageGeneratedSources)
 }
 
-val smithyCliConfig = configurations.maybeCreate("smithyCli")
-val smithyVersion: String by project
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+    }
+}
+
 dependencies {
+    val smithyCliConfig = configurations.maybeCreate("smithyCli")
+    val kotlinVersion: String by project
+    val smithyVersion: String by project
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+
     smithyCliConfig("software.amazon.smithy:smithy-cli:$smithyVersion")
     implementation(project(":smithy-kotlin-codegen"))
+    implementation(project(":runtime:runtime-core"))
+
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
