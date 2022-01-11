@@ -62,8 +62,9 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
-    project(":smithy-kotlin-codegen")
+    implementation(project(":smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
+
