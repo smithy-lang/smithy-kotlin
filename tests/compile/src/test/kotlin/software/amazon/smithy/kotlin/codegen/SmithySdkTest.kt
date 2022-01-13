@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 /**
  * Tests that validate the generated source for a white-label SDK
  */
-class WhiteLabelSDKTest {
+class SmithySdkTest {
     // Max number of warnings the compiler can issue as a result of compiling SDK with kitchen sink model.
     private val warningThreshold = 3
 
