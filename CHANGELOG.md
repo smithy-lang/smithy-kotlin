@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.6] - 01/13/2022
+
+### New features
+* Paginator codegen using Kotlin Flow [#557](https://github.com/awslabs/smithy-kotlin/pull/557)
+* allow nullable LazyAsyncValue; add test utils for constructing http traffic from JSON [#561](https://github.com/awslabs/smithy-kotlin/pull/561)
+
+### Fixes
+* paginator generation for models that specify non-string cursor [#566](https://github.com/awslabs/smithy-kotlin/pull/566)
+* Fix smithy sdk no default client [#564](https://github.com/awslabs/smithy-kotlin/pull/564)
+
 ## [0.7.5] - 01/06/2022
 
 ### New features
