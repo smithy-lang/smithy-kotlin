@@ -33,19 +33,20 @@ kotlin.sourceSets.getByName("main") {
 
 tasks["smithyBuildJar"].enabled = false
 
-val generateSdk = tasks.create<SmithyBuild>("generateSdk") {
-    group = "codegen"
-    addRuntimeClasspath = true
-    inputs.file(projectDir.resolve("smithy-build.json"))
+val codegen by configurations.creating
+dependencies {
+    codegen(project(":smithy-kotlin-codegen"))
 }
 
-val stageGeneratedSources = tasks.register("stageGeneratedSources") {
+val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
     group = "codegen"
-    dependsOn(generateSdk)
+    classpath = configurations.getByName("codegen")
+    inputs.file(projectDir.resolve("smithy-build.json"))
+    inputs.files(configurations.getByName("codegen"))
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
-    dependsOn(stageGeneratedSources)
+    dependsOn(generateSdk)
 }
 
 tasks.test {
@@ -62,7 +63,7 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
-    implementation(project(":smithy-kotlin-codegen"))
+    compileOnly(project(":smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
