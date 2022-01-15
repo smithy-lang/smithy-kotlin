@@ -35,6 +35,7 @@ private fun getDefaultRuntimeVersion(): String {
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
 val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.6.10")
+val JVM_TARGET_VERSION: String = System.getProperty("smithy.kotlin.codegen.jvmTargetVersion", "1.8")
 
 // See: https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
 enum class GradleConfiguration {
@@ -54,6 +55,12 @@ enum class GradleConfiguration {
     TestRuntimeOnly;
 
     override fun toString(): String = StringUtils.uncapitalize(this.name)
+
+    /**
+     * Return true if the dependency is in the test scope
+     */
+    val isTestScope
+        get() = this == TestImplementation || this == TestCompileOnly || this == TestRuntimeOnly
 }
 
 data class KotlinDependency(

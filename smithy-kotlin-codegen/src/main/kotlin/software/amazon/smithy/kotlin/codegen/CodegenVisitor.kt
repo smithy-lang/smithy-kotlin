@@ -14,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import software.amazon.smithy.kotlin.codegen.core.toRenderingContext
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
+import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
@@ -29,8 +30,15 @@ import java.util.logging.Logger
 
 /**
  * Orchestrates Kotlin code generation
+ *
+ * @param context The [PluginContext] associated with the codegen run
+ * @param integrationCurator allows clients to make changes to integrations after
+ *  classpath discovery has occurred. Provided for testing purposes.
  */
-class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
+class CodegenVisitor(
+    context: PluginContext,
+    integrationCurator: (List<KotlinIntegration>) -> List<KotlinIntegration> = { it }
+) : ShapeVisitor.Default<Unit>() {
 
     private val LOGGER = Logger.getLogger(javaClass.name)
     private val model: Model
@@ -47,12 +55,14 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     init {
         val classLoader = context.pluginClassLoader.orElse(javaClass.classLoader)
         LOGGER.info("Discovering KotlinIntegration providers...")
-        integrations = ServiceLoader.load(KotlinIntegration::class.java, classLoader)
-            .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
-            .filter { integration -> integration.enabledForService(context.model, settings) }
-            .onEach { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
-            .sortedBy(KotlinIntegration::order)
-            .toList()
+        integrations = integrationCurator(
+            ServiceLoader.load(KotlinIntegration::class.java, classLoader)
+                .onEach { integration -> LOGGER.info("Loaded KotlinIntegration: ${integration.javaClass.name}") }
+                .filter { integration -> integration.enabledForService(context.model, settings) }
+                .onEach { integration -> LOGGER.info("Enabled KotlinIntegration: ${integration.javaClass.name}") }
+                .sortedBy(KotlinIntegration::order)
+                .toList()
+        )
 
         LOGGER.info("Preprocessing model")
         // Model pre-processing:
@@ -82,7 +92,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         writers = KotlinDelegator(settings, model, fileManifest, symbolProvider, integrations)
 
         protocolGenerator = resolveProtocolGenerator(integrations, model, service, settings)
-        applicationProtocol = protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
+        applicationProtocol =
+            protocolGenerator?.applicationProtocol ?: ApplicationProtocol.createDefaultHttpApplicationProtocol()
 
         baseGenerationContext = GenerationContext(model, symbolProvider, settings, protocolGenerator, integrations)
     }

@@ -174,6 +174,12 @@ fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
     return this
 }
 
+/**
+ * Provides capability of writing Kotlin source code. An instance of a KotlinWriter corresponds to a file emitted
+ * from codegen.
+ *
+ * @param fullPackageName package namespace associated with the file
+ */
 class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     private val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf()
     val dependencies: MutableSet<SymbolDependency> = mutableSetOf()

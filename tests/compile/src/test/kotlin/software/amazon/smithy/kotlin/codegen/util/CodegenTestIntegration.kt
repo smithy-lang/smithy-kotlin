@@ -55,7 +55,7 @@ class RestJsonTestProtocolGenerator(
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        writer.write("""TODO("not-implemented - compile only test")""")
+        writer.write("""error("not-implemented - compile only test")""")
     }
 
     override fun renderDeserializeOperationBody(
@@ -63,7 +63,7 @@ class RestJsonTestProtocolGenerator(
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        writer.write("""TODO("not-implemented - compile only test")""")
+        writer.write("""error("not-implemented - compile only test")""")
     }
 
     override fun renderSerializeDocumentBody(
@@ -71,7 +71,7 @@ class RestJsonTestProtocolGenerator(
         shape: Shape,
         writer: KotlinWriter
     ) {
-        writer.write("""TODO("not-implemented - compile only test")""")
+        writer.write("""error("not-implemented - compile only test")""")
     }
 
     override fun renderDeserializeDocumentBody(
@@ -79,7 +79,7 @@ class RestJsonTestProtocolGenerator(
         shape: Shape,
         writer: KotlinWriter
     ) {
-        writer.write("""TODO("not-implemented - compile only test")""")
+        writer.write("""error("not-implemented - compile only test")""")
     }
 
     override fun renderDeserializeException(
@@ -87,7 +87,7 @@ class RestJsonTestProtocolGenerator(
         shape: Shape,
         writer: KotlinWriter
     ) {
-        writer.write("""TODO("not-implemented - compile only test")""")
+        writer.write("""error("not-implemented - compile only test")""")
     }
 
     override fun renderThrowOperationError(
@@ -95,7 +95,7 @@ class RestJsonTestProtocolGenerator(
         op: OperationShape,
         writer: KotlinWriter
     ) {
-        writer.write("""TODO("not-implemented - compile only test")""")
+        writer.write("""error("not-implemented - compile only test")""")
     }
 
 }
@@ -104,6 +104,4 @@ class MockRestJsonProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     middleware: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver
-) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver) {
-
-}
+) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver)

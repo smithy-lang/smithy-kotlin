@@ -24,11 +24,17 @@ fun writeGradleBuild(
         expressionStart = '#'
     }
 
+    val isKmp = settings.build.generateMultiplatformProject
+
     writer.withBlock("plugins {", "}\n") {
+        val projectModuleType = when (isKmp) {
+            true -> "multiplatform"
+            false -> "jvm"
+        }
         if (settings.build.generateFullProject) {
-            write("kotlin(\"jvm\") version #S", KOTLIN_COMPILER_VERSION)
+            write("kotlin(\"$projectModuleType\") version #S", KOTLIN_COMPILER_VERSION)
         } else {
-            write("kotlin(\"jvm\")")
+            write("kotlin(\"$projectModuleType\")")
         }
     }
 
@@ -39,20 +45,57 @@ fun writeGradleBuild(
         }
     }
 
-    writer.withBlock("dependencies {", "}\n") {
-        write("implementation(kotlin(\"stdlib\"))")
-        // TODO - can we make kotlin dependencies not specify a version e.g. kotlin("kotlin-test")
-        // TODO - Kotlin MPP setup (pass through KotlinSettings) - maybe separate gradle writers
-        val orderedDependencies = dependencies.sortedWith(compareBy({ it.config }, { it.artifact }))
-        for (dependency in orderedDependencies) {
-            write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
+    if (isKmp) { // In KMP projects the following generated code lives within a 'kotlin' block.
+        writer.withBlock("kotlin {", "}") {
+            withBlock("jvm {", "}") {
+                withBlock("compilations.all {", "}") {
+                    write("""kotlinOptions.jvmTarget = "$JVM_TARGET_VERSION"""")
+                }
+                withBlock("testRuns[\"test\"].executionTask.configure {", "}") {
+                    write("useJUnit()")
+                }
+            }
+            withBlock("sourceSets {", "}") {
+                withBlock("val commonMain by getting {", "}") {
+                    renderDependencies(writer, dependencies, isKmp) { !it.config.isTestScope }
+                }
+                if (dependencies.any { it.config.isTestScope }) {
+                    withBlock("val commonTest by getting {", "}") {
+                        renderDependencies(writer, dependencies, isKmp) { it.config.isTestScope }
+                    }
+                }
+                write("val jvmMain by getting")
+            }
+            renderAnnotations(writer, settings.build.optInAnnotations ?: emptyList())
         }
+    } else {
+        renderDependencies(writer, dependencies, isKmp)
+        renderAnnotations(writer, settings.build.optInAnnotations ?: emptyList())
     }
 
-    val annotations = settings.build.optInAnnotations
-    if (annotations != null && annotations.isNotEmpty()) {
-        writer.openBlock("val optinAnnotations = listOf(")
-            .call {
+    if (!isKmp) {
+        writer
+            .write("")
+            .withBlock("tasks.test {", "}") {
+                write("useJUnitPlatform()")
+                withBlock("testLogging {", "}") {
+                    write("""events("passed", "skipped", "failed")""")
+                    write("showStandardStreams = true")
+                }
+            }
+    }
+
+    val contents = writer.toString()
+    manifest.writeFile("build.gradle.kts", contents)
+    if (settings.build.generateFullProject) {
+        manifest.writeFile("settings.gradle.kts", "")
+    }
+}
+
+fun renderAnnotations(writer: CodeWriter, annotations: List<String>) {
+    if (annotations.isNotEmpty()) {
+        writer.withBlock("val optinAnnotations = listOf(", ")") {
+            call {
                 val formatted = annotations.joinToString(
                     separator = ",\n",
                     transform = {
@@ -62,25 +105,32 @@ fun writeGradleBuild(
 
                 writer.write(formatted)
             }
-            .closeBlock(")")
+        }
 
-        writer.openBlock("kotlin.sourceSets.all {")
-            .write("optinAnnotations.forEach { languageSettings.optIn(it) } ")
-            .closeBlock("}")
+        writer.withBlock("kotlin.sourceSets.all {", "}") {
+            write("optinAnnotations.forEach { languageSettings.optIn(it) } ")
+        }
     }
+}
 
-    writer.write("")
-        .openBlock("tasks.test {")
-        .write("useJUnitPlatform()")
-        .openBlock("testLogging {")
-        .write("""events("passed", "skipped", "failed")""")
-        .write("showStandardStreams = true")
-        .closeBlock("}")
-        .closeBlock("}")
+fun renderDependencies(
+    writer: CodeWriter,
+    dependencies: List<KotlinDependency>,
+    isKmp: Boolean,
+    filter: (KotlinDependency) -> Boolean = { true }
+) {
+    writer.withBlock("dependencies {", "}") {
+        if (!isKmp) {
+            write("implementation(kotlin(\"stdlib\"))")
+        }
 
-    val contents = writer.toString()
-    manifest.writeFile("build.gradle.kts", contents)
-    if (settings.build.generateFullProject) {
-        manifest.writeFile("settings.gradle.kts", "")
+        // TODO - can we make kotlin dependencies not specify a version e.g. kotlin("kotlin-test")
+        // TODO - Kotlin MPP setup (pass through KotlinSettings) - maybe separate gradle writers
+        val orderedDependencies = dependencies.sortedWith(compareBy({ it.config }, { it.artifact }))
+        orderedDependencies
+            .filter(filter)
+            .forEach { dependency ->
+                write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
+            }
     }
 }

@@ -11,6 +11,11 @@ val ktorVersion: String by project
 
 kotlin {
     sourceSets {
+        commonMain {
+            dependencies {
+                api(project(":runtime:protocol:http"))
+            }
+        }
         jvmMain {
             dependencies {
                 api(project(":runtime:protocol:http"))

@@ -18,7 +18,10 @@ import com.tschuchort.compiletesting.KotlinCompilation
 import com.tschuchort.compiletesting.SourceFile
 import software.amazon.smithy.build.MockManifest
 import software.amazon.smithy.build.PluginContext
+import software.amazon.smithy.kotlin.codegen.BuildSettings
 import software.amazon.smithy.kotlin.codegen.CodegenVisitor
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
@@ -94,7 +97,7 @@ fun compileSdkAndTest(
     model: Model,
     testSource: String? = null,
     outputSink: OutputStream = System.out,
-    emitSourcesToTmp: Boolean = false
+    emitSourcesToTmp: Boolean = false,
 ): KotlinCompilation.Result {
     val sdkFileManifest = generateSdk(model)
 
@@ -138,17 +141,53 @@ fun MockManifest.toSourceFileList() =
         .filter { file -> file.toString().endsWith(".kt") }
         .map { file -> SourceFile.kotlin(file.fileName.toString(), expectFileString(file)) }
 
-// Produce the generated service code given model inputs.
-fun generateSdk(
-    model: Model,
-    manifest: MockManifest = MockManifest(),
-    settings: ObjectNode = Node.objectNodeBuilder()
+
+private fun defaultSettings() = Node.objectNodeBuilder()
         .withMember(
             "package", Node.objectNode()
                 .withMember("name", Node.from("test"))
                 .withMember("version", Node.from("1.0.0"))
         )
+        .withMember(
+            "build", Node.objectNode()
+                .withMember("rootProject", Node.from(true))
+                .withMember("generateDefaultBuildFiles", Node.from(true))
+                .withMember("multiplatform", Node.from(true))
+                .withMember(
+                    "optInAnnotations", Node.arrayNode(
+                        Node.from("kotlin.RequiresOptIn"),
+                        Node.from("aws.smithy.kotlin.runtime.util.InternalApi")
+                    )
+                )
+        )
         .build()
+
+// Convert KotlinSettings into JSON form for PluginContext interop
+fun KotlinSettings.toObjectNode() = Node.objectNodeBuilder()
+    .withMember(
+        "package", Node.objectNode()
+            .withMember("name", Node.from(pkg.name))
+            .withMember("version", Node.from(pkg.version))
+    )
+    .withMember(
+        "build", Node.objectNode()
+            .withMember("rootProject", Node.from(build.generateFullProject))
+            .withMember("generateDefaultBuildFiles", Node.from(build.generateDefaultBuildFiles))
+            .withMember("multiplatform", Node.from(build.generateMultiplatformProject))
+            .withMember(
+                "optInAnnotations",
+                Node.arrayNode(*(build.optInAnnotations?.map { Node.from(it) } ?: emptyList<Node>()).toTypedArray())
+            )
+    )
+    .build()
+
+
+// Produce the generated service code given model inputs.
+fun generateSdk(
+    model: Model,
+    manifest: MockManifest = MockManifest(),
+    settings: ObjectNode = defaultSettings(),
+    integrationCurator: (List<KotlinIntegration>) -> List<KotlinIntegration> = { it }
 ): MockManifest {
     // Initialize context
     val pluginContext = PluginContext
@@ -159,7 +198,29 @@ fun generateSdk(
         .build()
 
     // Generate SDK
-    CodegenVisitor(pluginContext).execute()
+    CodegenVisitor(pluginContext, integrationCurator).execute()
 
     return manifest
+}
+
+// Find the root directory of the source project
+fun findProjectRoot(projectDirectoryName: String = "smithy-kotlin"): String {
+    val currentPath = System.getProperty("user.dir")
+        .split(File.separator)
+        .filterNot { it.isEmpty() }
+        .toMutableList()
+
+    var projectDirFound = false
+    val projectRootPath = StringBuilder()
+    while(!projectDirFound && currentPath.isNotEmpty()) {
+        val ns = currentPath.removeFirst()
+        if (ns == projectDirectoryName) projectDirFound = true
+        projectRootPath.append(File.separator)
+        projectRootPath.append(ns)
+    }
+
+    if (!projectDirFound) error("Unexpectedly unable to find project root")
+    if (projectRootPath.isEmpty()) error("Unable to determine project root path")
+
+    return projectRootPath.toString()
 }
