@@ -20,7 +20,7 @@ Reference the additional documents listed in the Appendix for surrounding contex
 We will use the examples from the event stream spec to explore the client interfaces to be generated:
 
 
-** Event stream on an input **
+**Event stream on an input**
 
 ```
 namespace smithy.example
@@ -48,7 +48,7 @@ structure Message {
 structure LeaveEvent {}
 ```
 
-** Event stream on an output **
+**Event stream on an output**
 
 ```
 namespace smithy.example
@@ -90,8 +90,10 @@ structure ThrottlingError {}
 ### Event Stream Type Representation
 
 The members of an operation input or output that target a stream will be represented using by an asynchronous [Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) 
-from the `kotlinx-coroutines-core` library. This was chosen for pagination and already in use as part of our public API contract.
+from the `kotlinx-coroutines-core` library. `Flow` is a natural fit for representing asynchronous streams. 
 
+`Flow` was chosen for pagination and already in use as part of our public API contract. Any alternative to this would require a custom but similar type that doesn't play well with
+the rest of the coroutine ecosystem. There is also prior art for representing streaming requests and responses, see [gRPC Kotlin](https://github.com/grpc/grpc-kotlin).
 
 The following types and service would be generated. 
 
@@ -215,6 +217,10 @@ fun main() = runBlocking{
 
 private fun handleMovement(event: MovementEvents) { ... }
 ```
+
+Accepting a lambda matches what is generated for binary streams (see [binary-streaming design](binary-streaming.md)) and will provide a consistent API experience as well
+as the same benefits to the SDK (properly scoped lifetime for resources). 
+
 
 # Appendix
 
