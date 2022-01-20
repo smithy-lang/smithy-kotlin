@@ -8,8 +8,7 @@
 This document covers the client interfaces to be generated for requests/responses with streaming binary payloads 
 (`@streaming` Smithy trait applied to a `blob` shape). 
 
-The design of generic streams (streams that target a `union` shape) will be covered separately by the 
-[event stream spec](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#event-streams) *in a future design document.*
+The design of generic streams (streams that target a `union` shape) are covered in [Event Streams](event-streams.md).
 
 Reference the additional documents listed in the Appendix for surrounding context on Smithy.
 
