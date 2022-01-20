@@ -5,10 +5,7 @@
 
 package aws.smithy.kotlin.runtime.retries.impl
 
-import aws.smithy.kotlin.runtime.retries.RetryDirective
-import aws.smithy.kotlin.runtime.retries.RetryErrorType
-import aws.smithy.kotlin.runtime.retries.RetryPolicy
-import aws.smithy.kotlin.runtime.retries.TooManyAttemptsException
+import aws.smithy.kotlin.runtime.retries.*
 import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -52,14 +49,14 @@ class StandardRetryIntegrationTest {
 
             val finalState = tc.responses.last().expected
             when (finalState.outcome) {
-                Outcome.Success -> assertEquals(200, result.getOrNull(), "Unexpected outcome for $name")
-                Outcome.MaxAttemptsExceeded -> assertIs<TooManyAttemptsException>(result.exceptionOrNull())
-                Outcome.RetryQuotaExceeded -> assertIs<TooManyAttemptsException>(result.exceptionOrNull())
+                TestOutcome.Success -> assertEquals(200, result.getOrNull()?.getOrThrow(), "Unexpected outcome for $name")
+                TestOutcome.MaxAttemptsExceeded -> assertIs<TooManyAttemptsException>(result.exceptionOrNull())
+                TestOutcome.RetryQuotaExceeded -> assertIs<TooManyAttemptsException>(result.exceptionOrNull())
                 else -> fail("Unexpected outcome for $name: ${finalState.outcome}")
             }
 
             val expectedDelayMs = tc.responses.map { it.expected.delay ?: 0 }.sum()
-            if (finalState.outcome == Outcome.RetryQuotaExceeded) {
+            if (finalState.outcome == TestOutcome.RetryQuotaExceeded) {
                 // The retry quota exceeded tests assume that the delayer won't be called when the bucket's out of
                 // capacity but that assumes no refill which is not the case most of the time. Rather than add
                 // specialized handling in the strategy, simplify verify that we saw *at least* as much delay as
@@ -104,10 +101,10 @@ data class ResponseAndExpectation(val response: Response, val expected: Expectat
 data class Response(@SerialName("status_code") val statusCode: Int)
 
 @Serializable
-data class Expectation(val outcome: Outcome, @SerialName("retry_quota") val retryQuota: Int, val delay: Int? = null)
+data class Expectation(val outcome: TestOutcome, @SerialName("retry_quota") val retryQuota: Int, val delay: Int? = null)
 
 @Serializable
-enum class Outcome {
+enum class TestOutcome {
     @SerialName("max_attempts_exceeded") MaxAttemptsExceeded,
     @SerialName("retry_quota_exceeded") RetryQuotaExceeded,
     @SerialName("retry_request") RetryRequest,

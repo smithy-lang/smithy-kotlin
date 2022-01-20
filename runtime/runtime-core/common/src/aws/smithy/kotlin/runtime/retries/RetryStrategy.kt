@@ -14,7 +14,7 @@ interface RetryStrategy {
      * outcomes from retrying.
      * @param policy A [RetryPolicy] that can be used to evaluate the outcome of each retry attempt.
      * @param block The block of code to retry.
-     * @return The successful result of the final retry attempt.
+     * @return The successful [Outcome] of the final retry attempt.
      */
-    suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): R
+    suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R>
 }

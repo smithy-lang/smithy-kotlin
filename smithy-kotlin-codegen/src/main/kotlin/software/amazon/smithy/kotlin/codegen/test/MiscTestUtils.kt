@@ -38,5 +38,7 @@ fun String.formatForTest(indent: String = "    ") =
         .map { if (it.isBlank()) "" else it }
         .joinToString(separator = "\n") { it }
 
-internal fun String.stripCodegenPrefix() =
-    this.substring(this.indexOf("package test") + "package test".length).trim()
+internal fun String.stripCodegenPrefix(packageName: String = "test"): String {
+    val packageDirective = "package $packageName"
+    return this.substring(this.indexOf(packageDirective) + packageDirective.length).trim()
+}

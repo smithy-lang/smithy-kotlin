@@ -88,15 +88,29 @@ object RuntimeTypes {
         }
 
         object Retries {
+            val Outcome = runtimeSymbol("Outcome", KotlinDependency.CORE, "retries")
+            val RetryDirective = runtimeSymbol("RetryDirective", KotlinDependency.CORE, "retries")
+            val RetryErrorType = runtimeSymbol("RetryErrorType", KotlinDependency.CORE, "retries")
             val RetryStrategy = runtimeSymbol("RetryStrategy", KotlinDependency.CORE, "retries")
+
             object Impl {
                 val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.impl")
                 val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.impl")
+                val NoOpTokenBucket = runtimeSymbol("NoOpTokenBucket", KotlinDependency.CORE, "retries.impl")
                 val StandardRetryPolicy = runtimeSymbol("StandardRetryPolicy", KotlinDependency.CORE, "retries.impl")
                 val StandardRetryStrategy = runtimeSymbol("StandardRetryStrategy", KotlinDependency.CORE, "retries.impl")
                 val StandardRetryStrategyOptions = runtimeSymbol("StandardRetryStrategyOptions", KotlinDependency.CORE, "retries.impl")
                 val StandardRetryTokenBucket = runtimeSymbol("StandardRetryTokenBucket", KotlinDependency.CORE, "retries.impl")
                 val StandardRetryTokenBucketOptions = runtimeSymbol("StandardRetryTokenBucketOptions", KotlinDependency.CORE, "retries.impl")
+
+                object Waiters {
+                    val Acceptor = runtimeSymbol("Acceptor", KotlinDependency.CORE, "retries.impl.waiters")
+                    val AcceptorRetryPolicy = runtimeSymbol("AcceptorRetryPolicy", KotlinDependency.CORE, "retries.impl.waiters")
+                    val ErrorTypeAcceptor = runtimeSymbol("ErrorTypeAcceptor", KotlinDependency.CORE, "retries.impl.waiters")
+                    val InputOutputAcceptor = runtimeSymbol("InputOutputAcceptor", KotlinDependency.CORE, "retries.impl.waiters")
+                    val OutputAcceptor = runtimeSymbol("OutputAcceptor", KotlinDependency.CORE, "retries.impl.waiters")
+                    val SuccessAcceptor = runtimeSymbol("SuccessAcceptor", KotlinDependency.CORE, "retries.impl.waiters")
+                }
             }
         }
     }

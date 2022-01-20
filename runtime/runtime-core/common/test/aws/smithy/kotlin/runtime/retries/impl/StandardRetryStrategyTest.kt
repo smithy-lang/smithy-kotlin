@@ -23,7 +23,7 @@ class StandardRetryStrategyTest {
 
         val result = retryer.retry(policy, block(policy, bucket, delayer, "success"))
 
-        assertEquals("success", result)
+        assertEquals(Outcome.ResponseOutcome(1, "success"), result)
         val token = bucket.lastTokenAcquired!!
         assertTrue(token.isSuccess)
     }
@@ -51,7 +51,7 @@ class StandardRetryStrategyTest {
             )
         )
 
-        assertEquals("success", result)
+        assertEquals(Outcome.ResponseOutcome(5, "success"), result)
         val token = bucket.lastTokenAcquired!!
         assertTrue(token.nextToken!!.nextToken!!.nextToken!!.nextToken!!.isSuccess)
     }
