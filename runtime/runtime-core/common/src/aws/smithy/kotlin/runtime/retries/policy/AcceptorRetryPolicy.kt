@@ -3,11 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl.waiters
-
-import aws.smithy.kotlin.runtime.retries.RetryDirective
-import aws.smithy.kotlin.runtime.retries.RetryErrorType
-import aws.smithy.kotlin.runtime.retries.RetryPolicy
+package aws.smithy.kotlin.runtime.retries.policy
 
 /**
  * A [RetryPolicy] that iterates through a list of [Acceptor] instances to determine the appropriate [RetryDirective].

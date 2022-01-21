@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.waiters
 
+import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
@@ -16,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.createSymbolProvider
+import software.amazon.smithy.kotlin.codegen.test.formatForTest
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
@@ -26,7 +28,7 @@ class WaiterGeneratorTest {
     @Test
     fun testDefaultDelays() {
         val expected = """
-            private val defaultDelaysRetryStrategy = run {
+            val strategy = run {
                 val delayOptions = ExponentialBackoffWithJitterOptions(
                     initialDelayMs = 2_000,
                     scaleFactor = 1.5,
@@ -36,16 +38,16 @@ class WaiterGeneratorTest {
                 val delay = ExponentialBackoffWithJitter(delayOptions)
 
                 val waiterOptions = StandardRetryStrategyOptions(maxTimeMs = 300_000, maxAttempts = 20)
-                StandardRetryStrategy(waiterOptions, NoOpTokenBucket, delay)
+                StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)
             }
-        """.trimIndent()
-        generated.shouldContainOnlyOnce(expected)
+        """.formatForTest()
+        generated.shouldContain(expected)
     }
 
     @Test
     fun testCustomDelays() {
         val expected = """
-            private val customDelaysRetryStrategy = run {
+            val strategy = run {
                 val delayOptions = ExponentialBackoffWithJitterOptions(
                     initialDelayMs = 5_000,
                     scaleFactor = 1.5,
@@ -55,9 +57,9 @@ class WaiterGeneratorTest {
                 val delay = ExponentialBackoffWithJitter(delayOptions)
 
                 val waiterOptions = StandardRetryStrategyOptions(maxTimeMs = 300_000, maxAttempts = 20)
-                StandardRetryStrategy(waiterOptions, NoOpTokenBucket, delay)
+                StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)
             }
-        """.trimIndent()
+        """.formatForTest()
         generated.shouldContainOnlyOnce(expected)
     }
 

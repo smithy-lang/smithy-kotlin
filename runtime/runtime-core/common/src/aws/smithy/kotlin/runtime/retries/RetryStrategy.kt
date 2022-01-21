@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries
 
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
+
 /**
  * A strategy for trying a block of code one or more times.
  */

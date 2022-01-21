@@ -22,20 +22,20 @@ sealed class Outcome<out T> {
      * @param attempts The number of attempts executed in order to reach the outcome. Starts at 1.
      * @param response The response to an operation.
      */
-    data class ResponseOutcome<out T>(override val attempts: Int, val response: T) : Outcome<T>()
+    data class Response<out T>(override val attempts: Int, val response: T) : Outcome<T>()
 
     /**
      * An outcome that includes an exception.
      * @param attempts The number of attempts executed in order to reach the outcome. Starts at 1.
      * @param exception The exception resulting from the operation.
      */
-    data class ExceptionOutcome(override val attempts: Int, val exception: Throwable) : Outcome<Nothing>()
+    data class Exception(override val attempts: Int, val exception: Throwable) : Outcome<Nothing>()
 }
 
 /**
  * Gets the non-exceptional response in this outcome if it exists. Otherwise, throws the exception in this outcome.
  */
 fun <T> Outcome<T>.getOrThrow(): T = when (this) {
-    is Outcome.ResponseOutcome -> response
-    is Outcome.ExceptionOutcome -> throw exception
+    is Outcome.Response -> response
+    is Outcome.Exception -> throw exception
 }

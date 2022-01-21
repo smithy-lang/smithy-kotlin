@@ -6,6 +6,13 @@
 package aws.smithy.kotlin.runtime.retries.impl
 
 import aws.smithy.kotlin.runtime.retries.*
+import aws.smithy.kotlin.runtime.retries.delay.ExponentialBackoffWithJitter
+import aws.smithy.kotlin.runtime.retries.delay.ExponentialBackoffWithJitterOptions
+import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucket
+import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucketOptions
+import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
+import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest

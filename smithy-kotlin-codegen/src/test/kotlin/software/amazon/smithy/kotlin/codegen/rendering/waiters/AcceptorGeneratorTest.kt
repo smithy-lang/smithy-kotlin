@@ -21,12 +21,13 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 
 class AcceptorGeneratorTest {
+    val acceptorListName = "acceptorList"
     val generated = generateService("waiter-tests.smithy")
 
     @Test
     fun testSuccessAcceptors() {
         val expected = """
-            private val successAcceptorsAcceptorList: List<Acceptor<DescribeFooRequest, DescribeFooResponse>> = listOf(
+            val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 SuccessAcceptor(RetryDirective.TerminateAndSucceed, true),
                 SuccessAcceptor(RetryDirective.TerminateAndFail, false),
             )
@@ -37,7 +38,7 @@ class AcceptorGeneratorTest {
     @Test
     fun testErrorTypeAcceptors() {
         val expected = """
-            private val errorTypeAcceptorsAcceptorList: List<Acceptor<DescribeFooRequest, DescribeFooResponse>> = listOf(
+            val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 ErrorTypeAcceptor(RetryDirective.TerminateAndSucceed, SuccessError::class),
                 ErrorTypeAcceptor(RetryDirective.RetryError(RetryErrorType.ServerSide), RetryError::class),
                 ErrorTypeAcceptor(RetryDirective.TerminateAndFail, FailureError::class),
@@ -49,7 +50,7 @@ class AcceptorGeneratorTest {
     @Test
     fun testOutputAcceptor() {
         val expected = """
-            private val outputAcceptorAcceptorList: List<Acceptor<DescribeFooRequest, DescribeFooResponse>> = listOf(
+            val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 OutputAcceptor(RetryDirective.TerminateAndSucceed) {
                     val name = it.name
                     name?.toString() == "foo"
@@ -62,7 +63,7 @@ class AcceptorGeneratorTest {
     @Test
     fun testInputOutputAcceptors() {
         val expected = """
-            private val inputOutputAcceptorsAcceptorList: List<Acceptor<DescribeFooRequest, DescribeFooResponse>> = listOf(
+            val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
                     val input = it.input
                     val id = input?.id
@@ -103,7 +104,7 @@ class AcceptorGeneratorTest {
         }
 
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        ctx.allWaiters().forEach(writer::renderAcceptorList)
+        ctx.allWaiters().forEach { writer.renderAcceptorList(it, acceptorListName) }
         return writer.toString()
     }
 }

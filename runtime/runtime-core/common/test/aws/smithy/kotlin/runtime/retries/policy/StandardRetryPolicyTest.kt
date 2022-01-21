@@ -3,11 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries.policy
 
 import aws.smithy.kotlin.runtime.*
-import aws.smithy.kotlin.runtime.retries.RetryDirective
-import aws.smithy.kotlin.runtime.retries.RetryErrorType
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

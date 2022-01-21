@@ -33,7 +33,7 @@ class ServiceWaitersGenerator : KotlinIntegration {
  * Gets all the waiters in this [CodegenContext].
  * @return A list of [WaiterInfo] objects.
  */
-fun CodegenContext.allWaiters(): List<WaiterInfo> {
+internal fun CodegenContext.allWaiters(): List<WaiterInfo> {
     val service = model.expectShape<ServiceShape>(settings.service)
 
     fun operationWaiters(op: OperationShape): List<WaiterInfo> =

@@ -3,9 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries
 
-import aws.smithy.kotlin.runtime.retries.*
+import aws.smithy.kotlin.runtime.retries.delay.DelayProvider
+import aws.smithy.kotlin.runtime.retries.delay.RetryCapacityExceededException
+import aws.smithy.kotlin.runtime.retries.delay.RetryToken
+import aws.smithy.kotlin.runtime.retries.delay.RetryTokenBucket
+import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
@@ -98,8 +103,8 @@ class StandardRetryStrategy(
     private suspend fun <R> success(token: RetryToken, attempt: Int, result: Result<R>): Outcome<R> {
         token.notifySuccess()
         return when (val response = result.getOrNull()) {
-            null -> Outcome.ExceptionOutcome(attempt, result.exceptionOrNull()!!)
-            else -> Outcome.ResponseOutcome(attempt, response)
+            null -> Outcome.Exception(attempt, result.exceptionOrNull()!!)
+            else -> Outcome.Response(attempt, response)
         }
     }
 

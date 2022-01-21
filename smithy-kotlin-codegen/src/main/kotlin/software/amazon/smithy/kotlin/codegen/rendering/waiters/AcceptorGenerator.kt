@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.jmespath.JmespathExpression
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.utils.dq
 import software.amazon.smithy.model.shapes.ShapeId
@@ -18,20 +19,20 @@ import software.amazon.smithy.waiters.*
  * Renders an individual acceptor for a waiter.
  */
 private fun KotlinWriter.renderAcceptor(wi: WaiterInfo, acceptor: Acceptor) {
-    addImport(RuntimeTypes.Core.Retries.RetryDirective)
+    addImport(RuntimeTypes.Core.Retries.Policy.RetryDirective)
 
     val directive = when (acceptor.state!!) {
         AcceptorState.SUCCESS -> "TerminateAndSucceed"
         AcceptorState.FAILURE -> "TerminateAndFail"
         AcceptorState.RETRY -> {
-            addImport(RuntimeTypes.Core.Retries.RetryErrorType)
+            addImport(RuntimeTypes.Core.Retries.Policy.RetryErrorType)
             "RetryError(RetryErrorType.ServerSide)"
         }
     }
 
     when (val matcher = acceptor.matcher) {
         is Matcher.SuccessMember -> {
-            addImport(RuntimeTypes.Core.Retries.Impl.Waiters.SuccessAcceptor)
+            addImport(RuntimeTypes.Core.Retries.Policy.SuccessAcceptor)
             write("SuccessAcceptor(RetryDirective.#L, #L),", directive, matcher.value)
         }
 
@@ -45,13 +46,12 @@ private fun KotlinWriter.renderAcceptor(wi: WaiterInfo, acceptor: Acceptor) {
 /**
  * Render the top-level list of acceptors for a waiter.
  */
-fun KotlinWriter.renderAcceptorList(wi: WaiterInfo) {
-    addImport(RuntimeTypes.Core.Retries.Impl.Waiters.Acceptor)
+internal fun KotlinWriter.renderAcceptorList(wi: WaiterInfo, asValName: String) {
+    addImport(RuntimeTypes.Core.Retries.Policy.Acceptor)
 
-    write("")
     withBlock(
-        "private val #L: List<Acceptor<#T, #T>> = listOf(", ")",
-        wi.acceptorListName,
+        "val #L = listOf<Acceptor<#T, #T>>(", ")",
+        asValName,
         wi.inputSymbol,
         wi.outputSymbol,
     ) {
@@ -73,8 +73,10 @@ private fun KotlinWriter.renderErrorAcceptor(
     }
     val errorSymbol = wi.ctx.symbolProvider.toSymbol(errorShape)
 
-    addImport(RuntimeTypes.Core.Retries.Impl.Waiters.ErrorTypeAcceptor)
-    addImport(errorSymbol)
+    addImport(
+        RuntimeTypes.Core.Retries.Policy.ErrorTypeAcceptor,
+        errorSymbol,
+    )
 
     write("ErrorTypeAcceptor(RetryDirective.#L, #T::class),", directive, errorSymbol)
 }
@@ -89,10 +91,10 @@ private fun KotlinWriter.renderPathAcceptor(
     matcher: PathMatcher,
 ) {
     val acceptorType = if (includeInput) {
-        addImport(RuntimeTypes.Core.Retries.Impl.Waiters.InputOutputAcceptor)
+        addImport(RuntimeTypes.Core.Retries.Policy.InputOutputAcceptor)
         "InputOutputAcceptor"
     } else {
-        addImport(RuntimeTypes.Core.Retries.Impl.Waiters.OutputAcceptor)
+        addImport(RuntimeTypes.Core.Retries.Policy.OutputAcceptor)
         "OutputAcceptor"
     }
 

@@ -15,9 +15,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
-import software.amazon.smithy.kotlin.codegen.test.createSymbolProvider
-import software.amazon.smithy.kotlin.codegen.test.newTestContext
+import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ShapeId
 import kotlin.test.Test
@@ -40,18 +38,26 @@ class ServiceWaitersGeneratorTest {
 
     @Test
     fun testMainWaiterMethod() {
-        val expected = """
+        val methodHeader = """
+            /**
+             * Wait until a foo exists
+             */
             suspend fun TestClient.waitUntilFooExists(request: DescribeFooRequest): Outcome<DescribeFooResponse> {
-                val policy = AcceptorRetryPolicy(request, fooExistsAcceptorList)
-                return fooExistsRetryStrategy.retry(policy) { describeFoo(request) }
+        """.trimIndent()
+        val methodFooter = """
+                val policy = AcceptorRetryPolicy(request, acceptors)
+                return strategy.retry(policy) { describeFoo(request) }
             }
         """.trimIndent()
-        generated.shouldContainOnlyOnce(expected)
+        generated.shouldContain(methodHeader, methodFooter)
     }
 
     @Test
     fun testConvenienceWaiterMethod() {
         val expected = """
+            /**
+             * Wait until a foo exists
+             */
             suspend fun TestClient.waitUntilFooExists(block: DescribeFooRequest.Builder.() -> Unit): Outcome<DescribeFooResponse> =
                 waitUntilFooExists(DescribeFooRequest.Builder().apply(block).build())
         """.trimIndent()
@@ -61,18 +67,18 @@ class ServiceWaitersGeneratorTest {
     @Test
     fun testAcceptorList() {
         val expected = """
-            private val fooExistsAcceptorList: List<Acceptor<DescribeFooRequest, DescribeFooResponse>> = listOf(
+            val acceptors = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 SuccessAcceptor(RetryDirective.TerminateAndSucceed, true),
                 ErrorTypeAcceptor(RetryDirective.RetryError(RetryErrorType.ServerSide), NotFound::class),
             )
-        """.trimIndent()
+        """.formatForTest()
         generated.shouldContainOnlyOnce(expected)
     }
 
     @Test
     fun testRetryStrategy() {
         val expected = """
-            private val fooExistsRetryStrategy = run {
+            val strategy = run {
                 val delayOptions = ExponentialBackoffWithJitterOptions(
                     initialDelayMs = 2_000,
                     scaleFactor = 1.5,
@@ -82,9 +88,9 @@ class ServiceWaitersGeneratorTest {
                 val delay = ExponentialBackoffWithJitter(delayOptions)
             
                 val waiterOptions = StandardRetryStrategyOptions(maxTimeMs = 300_000, maxAttempts = 20)
-                StandardRetryStrategy(waiterOptions, NoOpTokenBucket, delay)
+                StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)
             }
-        """.trimIndent()
+        """.formatForTest()
         generated.shouldContainOnlyOnce(expected)
     }
 

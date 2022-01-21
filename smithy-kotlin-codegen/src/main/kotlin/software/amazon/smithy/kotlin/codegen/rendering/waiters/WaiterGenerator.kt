@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.waiters
 
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -14,17 +15,16 @@ import java.text.DecimalFormatSymbols
 /**
  * Renders the top-level retry strategy for a waiter.
  */
-private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo) {
-    setOf(
-        RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitterOptions,
-        RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitter,
-        RuntimeTypes.Core.Retries.Impl.StandardRetryStrategyOptions,
-        RuntimeTypes.Core.Retries.Impl.StandardRetryStrategy,
-        RuntimeTypes.Core.Retries.Impl.NoOpTokenBucket,
-    ).forEach(::addImport)
+private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo, asValName: String) {
+    addImport(
+        RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitterOptions,
+        RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitter,
+        RuntimeTypes.Core.Retries.StandardRetryStrategyOptions,
+        RuntimeTypes.Core.Retries.StandardRetryStrategy,
+        RuntimeTypes.Core.Retries.Delay.InfiniteTokenBucket,
+    )
 
-    write("")
-    withBlock("private val #L = run {", "}", wi.retryStrategyName) {
+    withBlock("val #L = run {", "}", asValName) {
         withBlock("val delayOptions = ExponentialBackoffWithJitterOptions(", ")") {
             write("initialDelayMs = #L,", wi.waiter.minDelay.msFormat)
             write("scaleFactor = 1.5,")
@@ -34,31 +34,29 @@ private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo) {
         write("val delay = ExponentialBackoffWithJitter(delayOptions)")
         write("")
         write("val waiterOptions = StandardRetryStrategyOptions(maxTimeMs = 300_000, maxAttempts = 20)")
-        write("StandardRetryStrategy(waiterOptions, NoOpTokenBucket, delay)")
+        write("StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)")
     }
 }
 
 /**
  * Renders the client extension methods for a waiter.
  */
-fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
-    renderRetryStrategy(wi)
-    renderAcceptorList(wi)
-
-    setOf(
+internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
+    addImport(
         wi.serviceSymbol,
         wi.inputSymbol,
         wi.outputSymbol,
         RuntimeTypes.Core.Retries.Outcome,
-        RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitterOptions,
-        RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitter,
-        RuntimeTypes.Core.Retries.Impl.StandardRetryStrategyOptions,
-        RuntimeTypes.Core.Retries.Impl.StandardRetryStrategy,
-        RuntimeTypes.Core.Retries.RetryDirective,
-        RuntimeTypes.Core.Retries.Impl.Waiters.AcceptorRetryPolicy,
-    ).forEach(::addImport)
+        RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitterOptions,
+        RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitter,
+        RuntimeTypes.Core.Retries.StandardRetryStrategyOptions,
+        RuntimeTypes.Core.Retries.StandardRetryStrategy,
+        RuntimeTypes.Core.Retries.Policy.RetryDirective,
+        RuntimeTypes.Core.Retries.Policy.AcceptorRetryPolicy,
+    )
 
     write("")
+    wi.waiter.documentation.ifPresent(::dokka)
     withBlock(
         "suspend fun #T.#L(request: #T): Outcome<#T> {",
         "}",
@@ -67,11 +65,16 @@ fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
         wi.inputSymbol,
         wi.outputSymbol,
     ) {
-        write("val policy = AcceptorRetryPolicy(request, #L)", wi.acceptorListName)
-        write("return #L.retry(policy) { #L(request) }", wi.retryStrategyName, wi.opMethodName)
+        renderRetryStrategy(wi, "strategy")
+        write("")
+        renderAcceptorList(wi, "acceptors")
+        write("")
+        write("val policy = AcceptorRetryPolicy(request, acceptors)")
+        write("return strategy.retry(policy) { #L(request) }", wi.opMethodName)
     }
 
     write("")
+    wi.waiter.documentation.ifPresent(this::dokka)
     write(
         "suspend fun #T.#L(block: #T.Builder.() -> Unit): Outcome<#T> =",
         wi.serviceSymbol,

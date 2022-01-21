@@ -11,10 +11,10 @@ import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.retries.RetryDirective
-import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.getOrThrow
+import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**

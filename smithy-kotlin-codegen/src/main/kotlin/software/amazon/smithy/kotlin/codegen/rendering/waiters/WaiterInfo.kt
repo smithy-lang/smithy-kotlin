@@ -30,11 +30,6 @@ data class WaiterInfo(
     val waiter: Waiter,
 ) {
     /**
-     * The name of the acceptor list declaration for code generation.
-     */
-    val acceptorListName: String = "${name}AcceptorList".replaceFirstChar(Char::lowercaseChar)
-
-    /**
      * The [StructureShape] of the input for this waiter's operation.
      */
     val input: StructureShape = ctx.model.expectShape<StructureShape>(op.input.get())
@@ -69,11 +64,6 @@ data class WaiterInfo(
      * The [Symbol] of the output for this waiter's operation.
      */
     val outputSymbol: Symbol = ctx.symbolProvider.toSymbol(output)
-
-    /**
-     * The name of the retry strategy declaration for code generation.
-     */
-    val retryStrategyName: String = "${name}RetryStrategy".replaceFirstChar(Char::lowercaseChar)
 
     /**
      * The [Symbol] for this waiter's service.

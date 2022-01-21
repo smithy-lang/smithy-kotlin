@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
+import kotlin.test.assertNotNull
 
 /**
  * This file houses miscellaneous test functions that do not fall under other
@@ -29,6 +30,21 @@ internal fun String?.shouldContainWithDiff(expected: String) {
         kotlin.test.assertEquals(expected, this) // no need to rethrow as this will throw
     }
 }
+
+fun String.shouldContain(expectedStart: String, expectedEnd: String) {
+    val startLines = expectedStart.lines()
+    val endLines = expectedEnd.lines()
+    val actualLines = lines()
+
+    val startIndex = actualLines.indexOfSublistOrNull(startLines)
+    assertNotNull(startIndex, "Cannot find $expectedStart in $this")
+
+    val endIndex = actualLines.indexOfSublistOrNull(endLines, startIndex + startLines.size)
+    assertNotNull(endIndex, "Cannot find $expectedEnd after $expectedStart in $this")
+}
+
+fun <T> List<T>.indexOfSublistOrNull(sublist: List<T>, startFrom: Int = 0): Int? =
+    drop(startFrom).windowed(sublist.size).indexOf(sublist)
 
 // Format a multi-line string suitable for comparison with codegen, defaults to one level of indention.
 fun String.formatForTest(indent: String = "    ") =
