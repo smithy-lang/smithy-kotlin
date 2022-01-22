@@ -342,6 +342,22 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
     }
 }
 
+typealias InlineWriter = CodeWriter.() -> Unit
+/**
+ * Formatter to enable passing a writing function
+ */
+class InlineWriterBiFunction(
+    private val codeWriterCreator: () -> CodeWriter = { CodeWriter() }
+) : BiFunction<Any, String, String> {
+    @Suppress("UNCHECKED_CAST")
+    override fun apply(t: Any, u: String): String {
+        val func = t as InlineWriter
+        val innerWriter = codeWriterCreator()
+        func(innerWriter)
+        return innerWriter.toString().trimEnd()
+    }
+}
+
 /**
  * Implements Kotlin symbol formatting for the `#T` and `#Q` formatter(s)
  */
@@ -388,6 +404,8 @@ class KotlinPropertyFormatter(
         }
     }
 }
+
+
 
 // Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
 private val commonHtmlTags = setOf(

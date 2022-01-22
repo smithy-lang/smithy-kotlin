@@ -1,16 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License").
- * You may not use this file except in compliance with the License.
- * A copy of the License is located at
- *
- *  http://aws.amazon.com/apache2.0
- *
- * or in the "license" file accompanying this file. This file is distributed
- * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
- * express or implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * SPDX-License-Identifier: Apache-2.0.
  */
 package software.amazon.smithy.kotlin.codegen.util
 
@@ -21,7 +11,9 @@ import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.kotlin.codegen.BuildSettings
 import software.amazon.smithy.kotlin.codegen.CodegenVisitor
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.asSmithy
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.ObjectNode
@@ -224,3 +216,15 @@ fun findProjectRoot(projectDirectoryName: String = "smithy-kotlin"): String {
 
     return projectRootPath.toString()
 }
+
+/**
+ * Load a model from the resources directory
+ */
+fun loadModelFromResource(
+    modelName: String,
+    path: String = "software/amazon/smithy/kotlin/codegen"
+): Model = object {}
+    .javaClass
+    .classLoader
+    .getResource("$path/$modelName")!!
+    .asSmithy()

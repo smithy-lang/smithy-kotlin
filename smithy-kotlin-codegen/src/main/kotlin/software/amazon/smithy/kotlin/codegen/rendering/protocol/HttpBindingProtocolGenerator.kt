@@ -591,8 +591,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 } else {
                     memberName
                 }
-                val encodeToByteArraySymbol = "kotlin.text.encodeToByteArray".toSymbol()
-                writer.write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, encodeToByteArraySymbol)
+                writer.write(
+                    "builder.body = #T(input.#L.#T())",
+                    RuntimeTypes.Http.ByteArrayContent,
+                    contents,
+                    KotlinTypes.Text.encodeToByeArraySymbol
+                )
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the generated operation body serializer function
