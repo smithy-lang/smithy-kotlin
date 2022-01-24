@@ -40,8 +40,7 @@ class IdempotentTokenGeneratorTest {
                         path = "/input/AllocateWidget"
                     }
             
-                    val payload = serializeAllocateWidgetOperationBody(context, input)
-                    builder.body = ByteArrayContent(payload)
+                    builder.body = serializeAllocateWidgetOperationBody(context, input)
                     builder.headers.setMissing("Content-Type", "application/json")
                     return builder
                 }

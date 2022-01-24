@@ -15,6 +15,8 @@ import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializeGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.Test
@@ -205,13 +207,20 @@ class ExceptionGeneratorTest {
 
             val protocolGenerator = object : ProtocolGenerator {
                 override val protocol: ShapeId
-                    get() = TODO("Not yet implemented")
+                    get() = error("not needed for test")
 
                 override val applicationProtocol: ApplicationProtocol
-                    get() = TODO("Not yet implemented")
+                    get() = error("not needed for test")
 
                 override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
                 override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {}
+                override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator {
+                    error("not needed for test")
+                }
+
+                override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializeGenerator {
+                    error("not needed for test")
+                }
 
                 override val exceptionBaseClassSymbol: Symbol = buildSymbol {
                     name = "QuxException"

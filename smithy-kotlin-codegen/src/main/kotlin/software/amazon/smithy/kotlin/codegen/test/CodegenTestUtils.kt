@@ -6,9 +6,11 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
 import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
@@ -149,40 +151,27 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
         TestProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
 
-    override fun renderSerializeOperationBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter
-    ) {
-    }
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
+        object : StructuredDataParserGenerator {
+            override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = buildSymbol {
+                name = op.bodyDeserializerName()
+            }
 
-    override fun renderDeserializeOperationBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter
-    ) {
-    }
+            override fun errorDeserializer(
+                ctx: ProtocolGenerator.GenerationContext,
+                errorShape: StructureShape
+            ): Symbol = buildSymbol {
+                val errSymbol = ctx.symbolProvider.toSymbol(errorShape)
+                name = errSymbol.errorDeserializerName()
+            }
+        }
 
-    override fun renderSerializeDocumentBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-    }
-
-    override fun renderDeserializeDocumentBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-    }
-
-    override fun renderDeserializeException(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-    }
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializeGenerator =
+        object : StructuredDataSerializeGenerator {
+            override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = buildSymbol {
+                name = op.bodySerializerName()
+            }
+        }
 
     override fun renderThrowOperationError(
         ctx: ProtocolGenerator.GenerationContext,

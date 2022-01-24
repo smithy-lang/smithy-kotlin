@@ -11,6 +11,8 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializeGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
@@ -83,6 +85,10 @@ interface ProtocolGenerator {
      * to make it work (e.g. serializers and deserializers).
      */
     fun generateProtocolClient(ctx: GenerationContext)
+
+    fun structuredDataParser(ctx: GenerationContext): StructuredDataParserGenerator
+
+    fun structuredDataSerializer(ctx: GenerationContext): StructuredDataSerializeGenerator
 
     /**
      * Context object used for service serialization and deserialization
