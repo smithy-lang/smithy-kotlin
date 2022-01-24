@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries.delay
 
-import aws.smithy.kotlin.runtime.retries.DelayProvider
 import kotlinx.coroutines.delay
 import kotlin.math.min
 import kotlin.math.pow

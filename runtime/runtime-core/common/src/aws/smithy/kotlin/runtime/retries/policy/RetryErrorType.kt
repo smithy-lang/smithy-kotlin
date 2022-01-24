@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries
+package aws.smithy.kotlin.runtime.retries.policy
 
 /**
  * A type of error that may be retried.

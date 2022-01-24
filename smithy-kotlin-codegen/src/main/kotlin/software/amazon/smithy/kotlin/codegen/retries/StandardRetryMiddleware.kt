@@ -19,7 +19,7 @@ class StandardRetryMiddleware : ProtocolMiddleware {
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Http.Middlware.Retry)
-        writer.addImport(RuntimeTypes.Core.Retries.Impl.StandardRetryPolicy)
+        writer.addImport(RuntimeTypes.Core.Retries.Policy.StandardRetryPolicy)
 
         writer.write(
             "op.install(#T(config.retryStrategy, StandardRetryPolicy.Default))",

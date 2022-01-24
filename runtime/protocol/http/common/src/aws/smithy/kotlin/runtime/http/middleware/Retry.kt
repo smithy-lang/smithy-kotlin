@@ -11,9 +11,10 @@ import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.retries.RetryDirective
-import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
+import aws.smithy.kotlin.runtime.retries.getOrThrow
+import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -32,7 +33,7 @@ class Retry<O>(
             var attempt = 1
             val logger = request.context.getLogger("Retry")
             val wrappedPolicy = PolicyLogger(policy, logger)
-            strategy.retry(wrappedPolicy) {
+            val outcome = strategy.retry(wrappedPolicy) {
                 if (attempt > 1) {
                     logger.debug { "retrying request, attempt $attempt" }
                 }
@@ -49,6 +50,7 @@ class Retry<O>(
                 attempt++
                 next.call(requestCopy)
             }
+            outcome.getOrThrow()
         } else {
             next.call(request)
         }
