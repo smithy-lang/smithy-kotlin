@@ -210,8 +210,6 @@ class ExceptionGeneratorTest {
                 override val applicationProtocol: ApplicationProtocol
                     get() = TODO("Not yet implemented")
 
-                override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {}
-                override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {}
                 override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
                 override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {}
 

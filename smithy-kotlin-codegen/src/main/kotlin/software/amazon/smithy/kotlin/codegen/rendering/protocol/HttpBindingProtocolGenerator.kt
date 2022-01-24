@@ -20,6 +20,10 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
 import java.util.logging.Logger
 
+// FIXME - also want to investigate how to allow a single vs per/operation error deserialization
+
+
+
 /**
  * Abstract implementation useful for all HTTP protocols
  */
@@ -46,7 +50,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     abstract fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator
 
     /**
-     * Get all of the middleware that should be installed into the operation's middleware stack (`SdkOperationExecution`)
+     * Get all the middleware that should be installed into the operation's middleware stack (`SdkOperationExecution`)
      * This is the function that protocol client generators should invoke to get the fully resolved set of middleware
      * to be rendered (i.e. after integrations have had a chance to intercept). The default set of middleware for
      * a protocol can be overridden by [getDefaultHttpMiddleware].
@@ -189,7 +193,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     abstract fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter)
 
-    override fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
+    private fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpOperations = resolver.bindingOperations()
         // render HttpSerialize for all operation inputs
@@ -204,7 +208,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         generateDocumentSerializers(ctx, shapesRequiringSerializers)
     }
 
-    override fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
+    private fun generateDeserializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         // render HttpDeserialize for all operation outputs
         val httpOperations = resolver.bindingOperations()
@@ -229,6 +233,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val clientGenerator = getHttpProtocolClientGenerator(ctx)
             clientGenerator.render(writer)
         }
+        generateSerializers(ctx)
+        generateDeserializers(ctx)
     }
 
     /**
@@ -595,6 +601,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     .addImport(RuntimeTypes.Core.Content.toByteArray)
                     .write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, RuntimeTypes.Core.Content.toByteArray)
             }
+            // FIXME - AJT - this has to go away and be replaced as well
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the generated operation body serializer function
                 writer
@@ -1047,6 +1054,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("builder.$memberName = response.body.$conversion")
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
+                // FIXME - AJT - this has to go away and be replaced as well
                 // delegate to the payload deserializer
                 writer
                     .addImport(RuntimeTypes.Http.readAll)
@@ -1172,3 +1180,5 @@ fun List<HttpBindingDescriptor>.filterDocumentBoundMembers(): List<MemberShape> 
     filter { it.location == HttpBinding.Location.DOCUMENT }
         .sortedBy { it.memberName }
         .map { it.member }
+
+

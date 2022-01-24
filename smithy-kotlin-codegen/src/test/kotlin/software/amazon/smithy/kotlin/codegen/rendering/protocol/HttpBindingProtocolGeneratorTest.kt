@@ -26,8 +26,7 @@ class HttpBindingProtocolGeneratorTest {
 
     private fun getTransformFileContents(filename: String, testModel: Model = defaultModel): String {
         val (ctx, manifest, generator) = testModel.newTestContext()
-        generator.generateSerializers(ctx)
-        generator.generateDeserializers(ctx)
+        generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
         return getTransformFileContents(manifest, filename)
     }
@@ -38,7 +37,7 @@ class HttpBindingProtocolGeneratorTest {
     @Test
     fun `it creates serialize transforms in correct package`() {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
-        generator.generateSerializers(ctx)
+        generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/SmokeTestOperationSerializer.kt"))
     }
@@ -47,7 +46,7 @@ class HttpBindingProtocolGeneratorTest {
     fun `it creates serialize transforms for nested structures`() {
         // test that a struct member of an input operation shape also gets a serializer
         val (ctx, manifest, generator) = defaultModel.newTestContext()
-        generator.generateSerializers(ctx)
+        generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/NestedDocumentSerializer.kt"))
         // these are non-top level shapes reachable from an operation input and thus require a serializer
@@ -200,7 +199,7 @@ internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRe
     @Test
     fun `it generates serializer for shape reachable only through map`() {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
-        generator.generateSerializers(ctx)
+        generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
         // serializer should exist for the map value `ReachableOnlyThroughMap`
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/ReachableOnlyThroughMapDocumentSerializer.kt"))
@@ -450,7 +449,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     fun `it creates deserialize transforms for errors`() {
         // test that a struct member of an input operation shape also gets a serializer
         val (ctx, manifest, generator) = defaultModel.newTestContext()
-        generator.generateDeserializers(ctx)
+        generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/SmokeTestErrorDeserializer.kt"))
         assertTrue(manifest.hasFile("src/main/kotlin/com/test/transform/NestedErrorDataDocumentDeserializer.kt"))

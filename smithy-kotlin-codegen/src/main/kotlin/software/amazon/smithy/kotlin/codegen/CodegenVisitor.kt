@@ -124,10 +124,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 writers
             )
 
-            LOGGER.info("[${service.id}] Generating serde for protocol $protocol")
-            generateSerializers(ctx)
-            generateDeserializers(ctx)
-
             LOGGER.info("[${service.id}] Generating unit tests for protocol $protocol")
             generateProtocolUnitTests(ctx)
 

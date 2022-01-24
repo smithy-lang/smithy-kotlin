@@ -219,14 +219,6 @@ data class CodegenTestHarness(
     val protocol: String
 )
 
-// Drive de/serializer codegen and return results in map indexed by filename.
-fun CodegenTestHarness.generateDeSerializers(): Map<String, String> {
-    generator.generateSerializers(generationCtx)
-    generator.generateDeserializers(generationCtx)
-    generationCtx.delegator.flushWriters()
-    return manifest.files.associate { path -> path.fileName.toString() to manifest.expectFileString(path) }
-}
-
 // Create and use a writer to drive codegen from a function taking a writer.
 // Strip off comment and package preamble.
 fun generateCode(generator: (KotlinWriter) -> Unit): String {

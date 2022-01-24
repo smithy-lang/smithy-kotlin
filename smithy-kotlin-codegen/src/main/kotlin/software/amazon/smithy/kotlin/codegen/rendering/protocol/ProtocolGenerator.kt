@@ -74,22 +74,13 @@ interface ProtocolGenerator {
         get() = DefaultServiceExceptionSymbol
 
     /**
-     * Generate serializers required by the protocol
-     */
-    fun generateSerializers(ctx: GenerationContext)
-
-    /**
-     * Generate deserializers required by the protocol
-     */
-    fun generateDeserializers(ctx: GenerationContext)
-
-    /**
      * Generate unit tests for the protocol
      */
     fun generateProtocolUnitTests(ctx: GenerationContext)
 
     /**
-     * Generate an actual client implementation of the service interface
+     * Generate an actual client implementation of the service interface and all the code required
+     * to make it work (e.g. serializers and deserializers).
      */
     fun generateProtocolClient(ctx: GenerationContext)
 
