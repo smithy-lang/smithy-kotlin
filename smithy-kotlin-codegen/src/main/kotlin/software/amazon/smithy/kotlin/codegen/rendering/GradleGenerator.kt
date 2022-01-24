@@ -12,6 +12,8 @@ import software.amazon.smithy.utils.CodeWriter
 // Determines the jvmTarget version emitted to the build file
 private val JVM_TARGET_VERSION: String = System.getProperty("smithy.kotlin.codegen.jvmTargetVersion", "1.8")
 
+// --------------- Option 1: use a template-style codegen to generate gradle files
+
 fun writeGradleBuild(
     settings: KotlinSettings,
     manifest: FileManifest,
@@ -36,10 +38,48 @@ fun writeGradleBuild(
         }
     }
 
+    val pluginsBodyRenderer: InlineWriter = {
+        val pluginName = if (isKmp) "multiplatform" else "jvm"
+
+        write(
+            "kotlin(\"$pluginName\") #W",
+            { w: CodeWriter ->
+                if (isRootModule) {
+                    w.write("""version "#L"""", KOTLIN_COMPILER_VERSION)
+                }
+            }
+        )
+    }
+
+    val repositoryRenderer: InlineWriter = {
+        if (isRootModule) {
+            write(
+                """
+                    repositories {
+                        mavenLocal()
+                        mavenCentral()
+                    }
+                """.trimIndent()
+            )
+        }
+    }
+
     when {
-        isKmp && isRootModule -> renderRootKmpGradleBuild(writer, dependencies, annotationRenderer)
-        !isKmp && isRootModule -> renderRootJvmGradleBuild(writer, dependencies, annotationRenderer)
-        else -> error("")
+        isKmp -> renderKmpGradleBuild(
+            writer,
+            dependencies,
+            pluginsBodyRenderer,
+            repositoryRenderer,
+            annotationRenderer
+        )
+        !isKmp -> renderJvmGradleBuild(
+            writer,
+            dependencies,
+            pluginsBodyRenderer,
+            repositoryRenderer,
+            annotationRenderer
+        )
+        else -> error("Unhandled variant")
     }
 
     val contents = writer.toString()
@@ -49,21 +89,20 @@ fun writeGradleBuild(
     }
 }
 
-fun renderRootKmpGradleBuild(
+fun renderKmpGradleBuild(
     writer: CodeWriter,
     dependencies: List<KotlinDependency>,
+    pluginsRenderer: InlineWriter,
+    repositoryRenderer: InlineWriter,
     annotationRenderer: InlineWriter
 ) {
 
-    writer.write("""
+    writer.write(
+        """
         plugins {
-            kotlin("multiplatform") version "#L"
-        }
-        
-        repositories {
-            mavenLocal()
-            mavenCentral()
-        }
+            #W
+        }  
+        #W
         
         kotlin {
             jvm {
@@ -82,35 +121,35 @@ fun renderRootKmpGradleBuild(
                 }
                 val jvmMain by getting
             }
-            val optinAnnotations = listOf(
+            val optInAnnotations = listOf(
                 #W
             )
             kotlin.sourceSets.all {
-                optinAnnotations.forEach { languageSettings.optIn(it) }
+                optInAnnotations.forEach { languageSettings.optIn(it) }
             }
         }
         """.trimIndent(),
-        KOTLIN_COMPILER_VERSION,
+        pluginsRenderer,
+        repositoryRenderer,
         JVM_TARGET_VERSION,
         { w: CodeWriter -> w.dependencyRenderer(isSrcScope = true, isKmp = true, dependencies = dependencies) },
         annotationRenderer
     )
 }
 
-fun renderRootJvmGradleBuild(
+fun renderJvmGradleBuild(
     writer: CodeWriter,
     dependencies: List<KotlinDependency>,
+    pluginsRenderer: InlineWriter,
+    repositoryRenderer: InlineWriter,
     annotationRenderer: InlineWriter
 ) {
-    writer.write("""
+    writer.write(
+        """
         plugins {
-            kotlin("jvm") version "#L"
+            #W
         }
-
-        repositories {
-            mavenLocal()
-            mavenCentral()
-        }
+        #W
 
         dependencies {
             #W
@@ -130,9 +169,11 @@ fun renderRootJvmGradleBuild(
             }
         }
     """.trimIndent(),
-        KOTLIN_COMPILER_VERSION,
+        pluginsRenderer,
+        repositoryRenderer,
         { w: CodeWriter -> w.dependencyRenderer(isSrcScope = true, isKmp = false, dependencies = dependencies) },
-        annotationRenderer)
+        annotationRenderer
+    )
 }
 
 private fun CodeWriter.dependencyRenderer(isSrcScope: Boolean, isKmp: Boolean, dependencies: List<KotlinDependency>) {
@@ -161,10 +202,12 @@ private fun createCodeWriter(): CodeWriter =
         putFormatter('W', InlineWriterBiFunction(::createCodeWriter))
     }
 
+// --------------- Option 2: use default style codegen to generate gradle files
+
 /**
  * Create the gradle build file for the generated code
  */
-fun writeGradleBuild2(
+fun writeGradleBuildOldStyle(
     settings: KotlinSettings,
     manifest: FileManifest,
     dependencies: List<KotlinDependency>
@@ -286,47 +329,3 @@ fun renderDependencies(
             }
     }
 }
-
-/*
-
-plugins {
-    kotlin("jvm") version "1.6.10"
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-}
-
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation("aws.smithy.kotlin:http:0.7.7-SNAPSHOT")
-    implementation("aws.smithy.kotlin:http-client-engine-ktor:0.7.7-SNAPSHOT")
-    implementation("aws.smithy.kotlin:serde:0.7.7-SNAPSHOT")
-    implementation("aws.smithy.kotlin:utils:0.7.7-SNAPSHOT")
-    api("aws.smithy.kotlin:runtime-core:0.7.7-SNAPSHOT")
-}
-val optinAnnotations = listOf(
-    "kotlin.RequiresOptIn",
-    "aws.smithy.kotlin.runtime.util.InternalApi"
-)
-kotlin.sourceSets.all {
-    optinAnnotations.forEach { languageSettings.optIn(it) }
-}
-
-tasks.test {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-        showStandardStreams = true
-    }
-}
-
-
--------------
-
-
-
-
-
- */
