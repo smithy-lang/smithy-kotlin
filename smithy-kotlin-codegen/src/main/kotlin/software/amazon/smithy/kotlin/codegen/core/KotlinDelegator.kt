@@ -33,18 +33,34 @@ class KotlinDelegator(
     val runtimeDependencies: MutableList<SymbolDependency> = mutableListOf()
 
     /**
-     * Writes all pending writers to disk and then clears them out.
+     * Finalize renders any generated dependencies that were used and should be called just before [flushWriters]
      */
-    fun flushWriters() {
+    fun finalize() {
         // render generated "dependencies"
-        dependencies
-            .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
-            .distinctBy { it.fullName }
-            .forEach { generated ->
+        val writtenDependencies = mutableSetOf<String>()
+
+        // since generated dependencies can further mutate the set of generated dependencies this has
+        // to be unwound until we have nothing left to process
+        val unprocessedDependencies = {
+            dependencies
+                .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
+                .filterNot { writtenDependencies.contains(it.fullName) }
+                .distinctBy { it.fullName }
+        }
+
+        while (unprocessedDependencies().isNotEmpty()) {
+            unprocessedDependencies().forEach { generated ->
+                writtenDependencies.add(generated.fullName)
                 val writer = checkoutWriter(generated.definitionFile, generated.namespace)
                 writer.apply(generated.renderer)
             }
+        }
+    }
 
+    /**
+     * Writes all pending writers to disk and then clears them out.
+     */
+    fun flushWriters() {
         writers.forEach { (filename, writer) ->
             fileManifest.writeFile(filename, writer.toString())
         }
@@ -166,6 +182,12 @@ class KotlinDelegator(
 /**
  * A pseudo dependency on a snippet of code. A generated dependency is usually a symbol that is required
  * by some other piece of code and must be generated.
+ *
+ * GeneratedDependency should not be instantiated directly, rather, it should be constructed by setting
+ * the [software.amazon.smithy.kotlin.codegen.model.SymbolBuilder.renderBy] field when creating a [Symbol]
+ *
+ * Generated dependencies are created in the definition file of the [Symbol] they generate. They are
+ * deduplicated by their fully qualified name in [KotlinDelegator] during codegen when writers are finalized.
  */
 internal data class GeneratedDependency(
     val name: String,

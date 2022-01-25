@@ -14,6 +14,7 @@ import software.amazon.smithy.kotlin.codegen.loadModelFromResource
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
+import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import software.amazon.smithy.kotlin.codegen.test.shouldContainWithDiff
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.shapes.StructureShape
@@ -111,6 +112,13 @@ class KotlinDelegatorTest {
         delegator.useShapeWriter(fooInputShape) {
             it.write("use generated #T", generatedSymbol)
         }
+
+        val fooOutputShape = model.expectShape<StructureShape>("com.test#GetFooOutput")
+        delegator.useShapeWriter(fooOutputShape) {
+            it.write("second use of generated #T", generatedSymbol)
+        }
+
+        delegator.finalize()
         delegator.flushWriters()
 
         val generatedSymbolContents = manifest.expectFileString("src/main/kotlin/com/test/example/generated/FooGenerated.kt")
@@ -120,6 +128,6 @@ class KotlinDelegatorTest {
         fooContents.shouldContainWithDiff("import com.test.example.generated.Foo")
         fooContents.shouldContainWithDiff("use generated Foo")
 
-        generatedSymbolContents.shouldContainWithDiff("hello from generated dep!")
+        generatedSymbolContents.shouldContainOnlyOnceWithDiff("hello from generated dep!")
     }
 }
