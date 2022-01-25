@@ -24,7 +24,7 @@ fun writeGradleBuild(
     val isKmp = settings.build.generateMultiplatformProject
     val isRootModule = settings.build.generateFullProject
 
-    val annotationRenderer: InlineWriter = {
+    val annotationRenderer: InlineCodeWriter = {
         val annotations = settings.build.optInAnnotations ?: emptyList()
         if (annotations.isNotEmpty()) {
             val formatted = annotations.joinToString(
@@ -38,7 +38,7 @@ fun writeGradleBuild(
         }
     }
 
-    val pluginsBodyRenderer: InlineWriter = {
+    val pluginsBodyRenderer: InlineCodeWriter = {
         val pluginName = if (isKmp) "multiplatform" else "jvm"
 
         write(
@@ -51,35 +51,23 @@ fun writeGradleBuild(
         )
     }
 
-    val repositoryRenderer: InlineWriter = {
-        if (isRootModule) {
-            write(
-                """
-                    repositories {
-                        mavenLocal()
-                        mavenCentral()
-                    }
-                """.trimIndent()
-            )
-        }
-    }
-
     when {
         isKmp -> renderKmpGradleBuild(
             writer,
+            isRootModule,
             dependencies,
             pluginsBodyRenderer,
             repositoryRenderer,
             annotationRenderer
         )
-        !isKmp -> renderJvmGradleBuild(
+        else -> renderJvmGradleBuild(
             writer,
+            isRootModule,
             dependencies,
             pluginsBodyRenderer,
             repositoryRenderer,
             annotationRenderer
         )
-        else -> error("Unhandled variant")
     }
 
     val contents = writer.toString()
@@ -91,12 +79,12 @@ fun writeGradleBuild(
 
 fun renderKmpGradleBuild(
     writer: CodeWriter,
+    isRootModule: Boolean,
     dependencies: List<KotlinDependency>,
-    pluginsRenderer: InlineWriter,
-    repositoryRenderer: InlineWriter,
-    annotationRenderer: InlineWriter
+    pluginsRenderer: InlineCodeWriter,
+    repositoryRenderer: InlineCodeWriter,
+    annotationRenderer: InlineCodeWriter
 ) {
-
     writer.write(
         """
         plugins {
@@ -130,19 +118,20 @@ fun renderKmpGradleBuild(
         }
         """.trimIndent(),
         pluginsRenderer,
-        repositoryRenderer,
+        { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
         JVM_TARGET_VERSION,
-        { w: CodeWriter -> w.dependencyRenderer(isSrcScope = true, isKmp = true, dependencies = dependencies) },
+        { w: CodeWriter -> renderDependencies(w, isSrcScope = true, isKmp = true, dependencies = dependencies) },
         annotationRenderer
     )
 }
 
 fun renderJvmGradleBuild(
     writer: CodeWriter,
+    isRootModule: Boolean,
     dependencies: List<KotlinDependency>,
-    pluginsRenderer: InlineWriter,
-    repositoryRenderer: InlineWriter,
-    annotationRenderer: InlineWriter
+    pluginsRenderer: InlineCodeWriter,
+    repositoryRenderer: InlineCodeWriter,
+    annotationRenderer: InlineCodeWriter
 ) {
     writer.write(
         """
@@ -170,15 +159,15 @@ fun renderJvmGradleBuild(
         }
     """.trimIndent(),
         pluginsRenderer,
-        repositoryRenderer,
-        { w: CodeWriter -> w.dependencyRenderer(isSrcScope = true, isKmp = false, dependencies = dependencies) },
+        { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
+        { w: CodeWriter -> renderDependencies(w, isSrcScope = true, isKmp = false, dependencies = dependencies) },
         annotationRenderer
     )
 }
 
-private fun CodeWriter.dependencyRenderer(isSrcScope: Boolean, isKmp: Boolean, dependencies: List<KotlinDependency>) {
+private fun renderDependencies(writer: CodeWriter, isSrcScope: Boolean, isKmp: Boolean, dependencies: List<KotlinDependency>) {
     if (!isKmp) {
-        write("implementation(kotlin(\"stdlib\"))")
+        writer.write("implementation(kotlin(\"stdlib\"))")
     }
 
     // TODO - can we make kotlin dependencies not specify a version e.g. kotlin("kotlin-test")
@@ -189,17 +178,30 @@ private fun CodeWriter.dependencyRenderer(isSrcScope: Boolean, isKmp: Boolean, d
             if (isSrcScope) !it.config.isTestScope else it.config.isTestScope
         }
         .forEach { dependency ->
-            write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
+            writer.write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
         }
 }
 
+private val repositoryRenderer: InlineCodeWriter = {
+    write(
+        """
+            repositories {
+                mavenLocal()
+                mavenCentral()
+            }
+        """.trimIndent()
+    )
+}
+
+//Create a new [CodeWriter] for Gradle kts files
+// FIXME ~ new codewriter should use settings from parent
 private fun createCodeWriter(): CodeWriter =
     CodeWriter().apply {
         trimBlankLines()
         trimTrailingSpaces()
         setIndentText("    ")
         expressionStart = '#'
-        putFormatter('W', InlineWriterBiFunction(::createCodeWriter))
+        putFormatter('W', InlineCodeWriterFormatter(::createCodeWriter))
     }
 
 // --------------- Option 2: use default style codegen to generate gradle files

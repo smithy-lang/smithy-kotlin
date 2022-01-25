@@ -10,7 +10,7 @@ class CodeWriterTest {
     fun itSupportsInlineCodegen() {
         val unit = CodeWriter()
 
-        unit.putFormatter('W', InlineWriterBiFunction())
+        unit.putFormatter('W', InlineCodeWriterFormatter())
 
         unit.write("Here is \$W content", { writer: CodeWriter -> writer.write("inline") })
 
@@ -23,9 +23,9 @@ class CodeWriterTest {
     fun itSupportsDiscreteInlineWriters() {
         val unit = CodeWriter()
 
-        unit.putFormatter('W', InlineWriterBiFunction())
+        unit.putFormatter('W', InlineCodeWriterFormatter())
 
-        val inlineWriter: InlineWriter = { write((1..10).joinToString(",") { "$it" }) }
+        val inlineWriter: InlineCodeWriter = { write((1..10).joinToString(",") { "$it" }) }
 
         unit.write("Here is \$W content", inlineWriter)
 
@@ -38,9 +38,9 @@ class CodeWriterTest {
     fun itSupportsMultiLineInlineWriters() {
         val unit = CodeWriter()
 
-        unit.putFormatter('W', InlineWriterBiFunction())
+        unit.putFormatter('W', InlineCodeWriterFormatter())
 
-        val inlineWriter: InlineWriter = { (1..10).forEach { write(it) } }
+        val inlineWriter: InlineCodeWriter = { (1..10).forEach { write(it) } }
 
         unit.write("\$W", inlineWriter)
 

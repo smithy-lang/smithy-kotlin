@@ -136,7 +136,11 @@ class StandAloneProjectTest {
      * @param projectMutator (optional) function to make changes to project after codegen but before build. This is
      *  necessary for cases in which codegen does not produce fully working output (eg: build files assuming a parent)
      */
-    private fun saveAndBuildSdk(manifest: MockManifest, gradleTask: String = "build", projectMutator: (Path) -> Unit = { }) {
+    private fun saveAndBuildSdk(
+        manifest: MockManifest,
+        gradleTask: String = "build",
+        projectMutator: (Path) -> Unit = { }
+    ) {
         val sdkBuildDir = Files.createTempDirectory("smithy-sdk")
         println("writing to $sdkBuildDir")
         manifest.writeToDirectory(sdkBuildDir.absolutePathString())
