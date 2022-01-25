@@ -62,6 +62,7 @@ class KotlinWriter(
         // like `D` but fully qualified
         putFormatter('E', KotlinPropertyFormatter(setDefault = true, fullyQualifiedNames = true))
 
+        // Pass a function receiving a [KotlinWriter] to generate an inline value
         putFormatter('W', InlineKotlinWriterFormatter(this))
     }
 
