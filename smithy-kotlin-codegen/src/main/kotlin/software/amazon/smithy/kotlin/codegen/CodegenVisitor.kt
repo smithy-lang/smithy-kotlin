@@ -133,7 +133,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
         if (settings.build.generateDefaultBuildFiles) {
             val dependencies = writers.dependencies
-                .map { it.properties["dependency"] as KotlinDependency }
+                .mapNotNull { it.properties["dependency"] as? KotlinDependency }
                 .distinct()
             writeGradleBuild(settings, fileManifest, dependencies)
         }

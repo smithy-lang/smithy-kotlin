@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.model
 
+import software.amazon.smithy.kotlin.codegen.core.GeneratedDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
 import kotlin.test.*
 import kotlin.test.Test
@@ -57,5 +58,22 @@ class SymbolBuilderTest {
 
         assertEquals(expected.namespace, "Foo".toSymbol().namespace)
         assertEquals(expected.name, "Foo".toSymbol().name)
+    }
+
+    @Test
+    fun testRenderByAddsGeneratedDep() {
+        val actual = buildSymbol {
+            name = "Foo"
+            namespace = "com.test"
+            definitionFile = "Foo.kt"
+            renderBy = { writer -> writer.write("class Foo") }
+        }
+
+        val dep = actual.dependencies.first()
+        assertEquals("com.test.Foo", dep.packageName)
+
+        val generatedDep = dep.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency ?: error("fail")
+        assertEquals("com.test.Foo", generatedDep.fullName)
+        assertEquals("Foo.kt", generatedDep.definitionFile)
     }
 }

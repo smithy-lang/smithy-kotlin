@@ -5,12 +5,10 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.build.FileManifest
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.utils.namespaceToPath
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
@@ -38,6 +36,15 @@ class KotlinDelegator(
      * Writes all pending writers to disk and then clears them out.
      */
     fun flushWriters() {
+        // render generated "dependencies"
+        dependencies
+            .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
+            .distinctBy { it.fullName }
+            .forEach { generated ->
+                val writer = checkoutWriter(generated.definitionFile, generated.namespace)
+                writer.apply(generated.renderer)
+            }
+
         writers.forEach { (filename, writer) ->
             fileManifest.writeFile(filename, writer.toString())
         }
@@ -153,5 +160,33 @@ class KotlinDelegator(
             writer.write("\n")
         }
         return writer
+    }
+}
+
+/**
+ * A pseudo dependency on a snippet of code. A generated dependency is usually a symbol that is required
+ * by some other piece of code and must be generated.
+ */
+internal data class GeneratedDependency(
+    val name: String,
+    val namespace: String,
+    val definitionFile: String,
+    val renderer: (KotlinWriter) -> Unit
+) : SymbolDependencyContainer {
+    /**
+     * Fully qualified name
+     */
+    val fullName: String
+        get() = "$namespace.$name"
+
+    override fun getDependencies(): MutableList<SymbolDependency> {
+        val symbolDep = SymbolDependency.builder()
+            .dependencyType("generated")
+            .version("n/a")
+            .packageName(fullName)
+            .putProperty(SymbolProperty.GENERATED_DEPENDENCY, this)
+            .build()
+
+        return mutableListOf(symbolDep)
     }
 }

@@ -7,7 +7,11 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
+import software.amazon.smithy.kotlin.codegen.core.SymbolRenderer
 import software.amazon.smithy.kotlin.codegen.core.defaultName
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
@@ -29,6 +33,18 @@ fun OperationShape.serializerName(): String = StringUtils.capitalize(this.id.nam
 fun OperationShape.bodySerializerName(): String = "serialize" + StringUtils.capitalize(this.id.name) + "OperationBody"
 
 /**
+ * Get the function responsible for serializing an operation's body (payload) as a [Symbol] and register [block]
+ * which will be invoked to actually render the function (signature and implementation)
+ */
+fun OperationShape.bodySerializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = bodySerializerName()
+    namespace = "${settings.pkg.name}.transform"
+    // place body serializer in same file as operation serializer implementaiton
+    definitionFile = "${serializerName()}.kt"
+    renderBy = block
+}
+
+/**
  * Get the deserializer class name for an operation. Operation outputs can be deserialized from the protocol (e.g. HTTP)
  * and/or the document/payload.
  */
@@ -40,14 +56,52 @@ fun OperationShape.deserializerName(): String = StringUtils.capitalize(this.id.n
 fun OperationShape.bodyDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.id.name) + "OperationBody"
 
 /**
+ * Get the function responsible for deserializing an operation's body (payload) as a [Symbol] and register [block]
+ * which will be invoked to actually render the function (signature and implementation)
+ */
+fun OperationShape.bodyDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = bodyDeserializerName()
+    namespace = "${settings.pkg.name}.transform"
+    // place body serializer in same file as operation serializer implementaiton
+    definitionFile = "${deserializerName()}.kt"
+    renderBy = block
+}
+
+/**
  * Get the serializer class name for a shape bound to the document/payload
  */
 fun Symbol.documentSerializerName(): String = "serialize" + StringUtils.capitalize(this.name) + "Document"
 
 /**
+ * Get the function responsible for serializing an operation's body (payload) as a [Symbol] and register [block]
+ * which will be invoked to actually render the function (signature and implementation)
+ */
+fun Symbol.documentSerializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = documentSerializerName()
+    namespace = "${settings.pkg.name}.transform"
+    val symbol = this@documentSerializer
+    definitionFile = "${symbol.name}DocumentSerializer.kt"
+    reference(symbol, SymbolReference.ContextOption.DECLARE)
+    renderBy = block
+}
+
+/**
  * Get the deserializer class name for a shape bound to the document/payload
  */
 fun Symbol.documentDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.name) + "Document"
+
+/**
+ * Get the function responsible for serializing an operation's body (payload) as a [Symbol] and register [block]
+ * which will be invoked to actually render the function (signature and implementation)
+ */
+fun Symbol.documentDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = documentDeserializerName()
+    namespace = "${settings.pkg.name}.transform"
+    val symbol = this@documentDeserializer
+    definitionFile = "${symbol.name}DocumentDeserializer.kt"
+    reference(symbol, SymbolReference.ContextOption.DECLARE)
+    renderBy = block
+}
 
 /**
  * Get the deserializer name for an error shape
