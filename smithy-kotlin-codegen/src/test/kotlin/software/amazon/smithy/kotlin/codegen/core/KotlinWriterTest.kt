@@ -9,7 +9,6 @@ import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
-import software.amazon.smithy.utils.CodeWriter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

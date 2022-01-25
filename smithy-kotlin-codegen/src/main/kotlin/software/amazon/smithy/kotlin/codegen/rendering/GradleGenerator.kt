@@ -157,7 +157,7 @@ fun renderJvmGradleBuild(
                 showStandardStreams = true
             }
         }
-    """.trimIndent(),
+        """.trimIndent(),
         pluginsRenderer,
         { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
         { w: CodeWriter -> renderDependencies(w, isSrcScope = true, isKmp = false, dependencies = dependencies) },
@@ -193,7 +193,7 @@ private val repositoryRenderer: InlineCodeWriter = {
     )
 }
 
-//Create a new [CodeWriter] for Gradle kts files
+// Create a new [CodeWriter] for Gradle kts files
 // FIXME ~ new codewriter should use settings from parent
 private fun createCodeWriter(): CodeWriter =
     CodeWriter().apply {

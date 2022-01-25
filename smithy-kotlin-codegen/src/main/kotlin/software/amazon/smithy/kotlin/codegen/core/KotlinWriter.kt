@@ -26,52 +26,6 @@ import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
 /**
- * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
- * [SectionWriter.write] to be called at the point in which the section is declared via
- * the [CodeWriter.declareSection] function.
- */
-fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): KotlinWriter {
-    onSection(id.javaClass.canonicalName) { default ->
-        require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
-        writer.write(this, default)
-    }
-    return this
-}
-
-// Convenience function to create symbol and add it as an import.
-fun KotlinWriter.addImport(
-    name: String,
-    dependency: KotlinDependency = KotlinDependency.CORE,
-    namespace: String = dependency.namespace,
-    subpackage: String? = null
-): KotlinWriter {
-    val fullNamespace = if (subpackage != null) "$namespace.$subpackage" else namespace
-    val importSymbol = Symbol.builder()
-        .name(name)
-        .namespace(fullNamespace, ".")
-        .addDependency(dependency)
-        .build()
-
-    addImport(importSymbol)
-    return this
-}
-
-fun KotlinWriter.addImport(vararg imports: Symbol): KotlinWriter {
-    imports.forEach { import -> addImport(import) }
-    return this
-}
-
-fun KotlinWriter.addImport(imports: Iterable<Symbol>): KotlinWriter {
-    imports.forEach { import -> addImport(import) }
-    return this
-}
-
-fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
-    imports.forEach { importSet -> importSet.forEach { import -> addImport(import) } }
-    return this
-}
-
-/**
  * Provides capability of writing Kotlin source code. An instance of a KotlinWriter corresponds to a file emitted
  * from codegen.
  *
@@ -249,6 +203,52 @@ class KotlinWriter(
 }
 
 /**
+ * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
+ * [SectionWriter.write] to be called at the point in which the section is declared via
+ * the [CodeWriter.declareSection] function.
+ */
+fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): KotlinWriter {
+    onSection(id.javaClass.canonicalName) { default ->
+        require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
+        writer.write(this, default)
+    }
+    return this
+}
+
+// Convenience function to create symbol and add it as an import.
+fun KotlinWriter.addImport(
+    name: String,
+    dependency: KotlinDependency = KotlinDependency.CORE,
+    namespace: String = dependency.namespace,
+    subpackage: String? = null
+): KotlinWriter {
+    val fullNamespace = if (subpackage != null) "$namespace.$subpackage" else namespace
+    val importSymbol = Symbol.builder()
+        .name(name)
+        .namespace(fullNamespace, ".")
+        .addDependency(dependency)
+        .build()
+
+    addImport(importSymbol)
+    return this
+}
+
+fun KotlinWriter.addImport(vararg imports: Symbol): KotlinWriter {
+    imports.forEach { import -> addImport(import) }
+    return this
+}
+
+fun KotlinWriter.addImport(imports: Iterable<Symbol>): KotlinWriter {
+    imports.forEach { import -> addImport(import) }
+    return this
+}
+
+fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
+    imports.forEach { importSet -> importSet.forEach { import -> addImport(import) } }
+    return this
+}
+
+/**
  * Implements Kotlin symbol formatting for the `#T` and `#Q` formatter(s)
  */
 private class KotlinSymbolFormatter(
@@ -315,8 +315,6 @@ class InlineKotlinWriterFormatter(private val parent: KotlinWriter) : BiFunction
         return innerWriter.rawString().trimEnd()
     }
 }
-
-
 
 // Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
 private val commonHtmlTags = setOf(
