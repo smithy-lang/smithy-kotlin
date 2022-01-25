@@ -131,6 +131,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             generateProtocolClient(ctx)
         }
 
+        writers.finalize()
+
         if (settings.build.generateDefaultBuildFiles) {
             val dependencies = writers.dependencies
                 .mapNotNull { it.properties["dependency"] as? KotlinDependency }
