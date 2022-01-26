@@ -34,9 +34,14 @@ object KotlinTypes {
     val Double: Symbol = builtInSymbol("Double")
     val Boolean: Symbol = builtInSymbol("Boolean")
 
-    val List: Symbol = builtInSymbol("List", "kotlin.collections")
-    val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
-    val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
+    object Collections {
+        val List: Symbol = builtInSymbol("List", "kotlin.collections")
+        val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
+        val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
+    }
+    object Text {
+        val encodeToByeArraySymbol = builtInSymbol("encodeToByteArray", "kotlin.text")
+    }
 
     /**
      * A (non-exhaustive) set of builtin Kotlin symbols
@@ -64,9 +69,9 @@ object KotlinTypes {
         Double,
         Boolean,
 
-        List,
-        Set,
-        Map
+        Collections.List,
+        Collections.Set,
+        Collections.Map
     )
 }
 

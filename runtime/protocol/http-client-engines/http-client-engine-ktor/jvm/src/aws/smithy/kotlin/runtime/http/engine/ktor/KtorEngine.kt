@@ -32,9 +32,16 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 /**
  * JVM [HttpClientEngine] backed by Ktor
  */
-class KtorEngine(
-    private val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+actual class DefaultHttpClientEngine actual constructor(
+    config: HttpClientEngineConfig
 ) : HttpClientEngineBase("ktor-okhttp") {
+
+    private val config: HttpClientEngineConfig
+
+    init {
+        this.config = config
+    }
+
     @OptIn(ExperimentalTime::class)
     val client: HttpClient = HttpClient(OkHttp) {
         engine {
@@ -65,7 +72,7 @@ class KtorEngine(
         // do not throw exceptions if status code < 300, error handling is expected by generated clients
         expectSuccess = false
     }
-    private val logger = Logger.getLogger<KtorEngine>()
+    private val logger = Logger.getLogger<DefaultHttpClientEngine>()
 
     // TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
     @OptIn(InternalAPI::class)

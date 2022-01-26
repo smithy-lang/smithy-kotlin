@@ -15,8 +15,7 @@ import com.test.model.ListFunctionsResponse
  * test stub.  Due to codegen coupling between the abstract and concrete clients, the client must be
  * named 'Default<ClientName>`.
  */
-@Suppress("UNUSED_PARAMETER") // Required for interop with abstract client
-class DefaultLambdaClient(config: LambdaClient.Config) : LambdaClient {
+class TestLambdaClient : LambdaClient {
     override val config: LambdaClient.Config
         get() = error("Unneeded for test")
 

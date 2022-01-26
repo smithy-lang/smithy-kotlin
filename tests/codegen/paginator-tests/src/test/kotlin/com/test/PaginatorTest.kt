@@ -1,4 +1,4 @@
-import com.test.DefaultLambdaClient
+import com.test.TestLambdaClient
 import com.test.LambdaClient
 import com.test.paginators.functions
 import com.test.model.ListFunctionsRequest
@@ -12,7 +12,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateMultiplePagesSingleItem() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 5
         unit.itemsPerPage = 1
@@ -33,7 +33,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateMultiplePagesSingleItemOnItems() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 5
         unit.itemsPerPage = 1
@@ -55,7 +55,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateSingePage() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 1
         unit.itemsPerPage = 10
@@ -73,7 +73,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateSingePageOnItem() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 1
         unit.itemsPerPage = 10
@@ -95,7 +95,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateSinglePageNoItems() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 1
         unit.itemsPerPage = 0
@@ -113,7 +113,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateSinglePageNoItemsOnItem() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 1
         unit.itemsPerPage = 0
@@ -132,7 +132,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateMultiplePagesMultipleItems() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 2
         unit.itemsPerPage = 2
@@ -153,7 +153,7 @@ class PaginatorTest {
 
     @Test
     fun canPaginateMultiplePagesMultipleItemsOnItems() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 2
         unit.itemsPerPage = 2
@@ -174,7 +174,7 @@ class PaginatorTest {
 
     @Test
     fun handleServiceReturningEmptyStringForTerminus() = runBlocking {
-        val unit = DefaultLambdaClient(LambdaClient.Config {})
+        val unit = TestLambdaClient()
 
         unit.pageCount = 2
         unit.itemsPerPage = 2
