@@ -111,6 +111,11 @@ fun renderKmpGradleBuild(
                         #W
                     }
                 }
+                val commonTest by getting {
+                    dependencies {
+                        #W
+                    }
+                }
                 val jvmMain by getting
             }
             val optInAnnotations = listOf(
@@ -125,6 +130,7 @@ fun renderKmpGradleBuild(
         { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
         JVM_TARGET_VERSION,
         { w: CodeWriter -> renderDependencies(w, isSrcScope = true, isKmp = true, dependencies = dependencies) },
+        { w: CodeWriter -> renderDependencies(w, isSrcScope = false, isKmp = true, dependencies = dependencies) },
         annotationRenderer
     )
 }
@@ -179,7 +185,11 @@ private fun renderDependencies(writer: CodeWriter, isSrcScope: Boolean, isKmp: B
     val orderedDependencies = dependencies.sortedWith(compareBy({ it.config }, { it.artifact }))
     orderedDependencies
         .filter {
-            if (isSrcScope) !it.config.isTestScope else it.config.isTestScope
+            if (isKmp) {
+                if (isSrcScope) !it.config.isTestScope else it.config.isTestScope
+            } else {
+                true
+            }
         }
         .forEach { dependency ->
             writer.write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
