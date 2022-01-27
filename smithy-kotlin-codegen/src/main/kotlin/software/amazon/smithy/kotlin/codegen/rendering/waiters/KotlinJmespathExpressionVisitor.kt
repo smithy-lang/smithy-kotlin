@@ -6,191 +6,210 @@
 package software.amazon.smithy.kotlin.codegen.rendering.waiters
 
 import software.amazon.smithy.codegen.core.CodegenException
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.jmespath.ExpressionVisitor
 import software.amazon.smithy.jmespath.JmespathExpression
+import software.amazon.smithy.jmespath.RuntimeType
 import software.amazon.smithy.jmespath.ast.*
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.model.isBoxed
-import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.utils.dq
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
+
+private val suffixSequence = sequenceOf("") + generateSequence(2) { it + 1 }.map(Int::toString) // "", "2", "3", etc.
 
 /**
  * An [ExpressionVisitor] used for traversing a JMESPath expression to generate code for traversing an equivalent
- * modeled object.
- * @param includeInput Determines if this expression utilizes output only (false) or both input and output (true). If
- * false, the top-level object containing the output will be `it`. If true, the top-level object `it` will contain
- * `input` and `output` members with the request and response respectively.
- * @param model The [Model] to use for code generation.
- * @param inputShape The [StructureShape] of the input to the operation. Unused if [includeInput] is false.
- * @param inputSymbol The [Symbol] of the input to the operation. Unused if [includeInput] is false.
- * @param outputShape The [StructureShape] of the output from the operation.
- * @param outputSymbol The [Symbol] of the output from the operation.
+ * modeled object. This visitor is passed to [JmespathExpression.accept], at which point specific expression methods
+ * will be invoked. Code is written immediately to the [KotlinWriter].
+ * @param writer The [KotlinWriter] to generate code into.
  */
-class KotlinJmespathExpressionVisitor(
-    val includeInput: Boolean,
-    val model: Model,
-    val symbolProvider: SymbolProvider,
-    val inputShape: StructureShape,
-    val inputSymbol: Symbol,
-    val outputShape: StructureShape,
-    val outputSymbol: Symbol,
-) : ExpressionVisitor<Unit> {
-    private val tempVars = mutableMapOf<JmespathExpression, TempVar>()
+class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisitor<String> {
+    private val tempVars = mutableSetOf<String>()
 
-    private fun addTempVar(
-        jmespathExpression: JmespathExpression,
-        preferredName: String,
-        codegenExpression: String,
-        shape: Shape,
-        symbol: Symbol,
-    ) {
-        fun nameAvailable(name: String) = tempVars.values.none { it.name == name }
+    private fun addTempVar(preferredName: String, codegen: String): String {
+        val name = bestTempVarName(preferredName)
+        writer.write("val #L = #L", name, codegen)
+        return name
+    }
 
-        val name = when {
-            nameAvailable(preferredName) -> preferredName
-            else -> generateSequence(1) { it + 1 }.map { "$preferredName$it" }.first(::nameAvailable)
+    private fun bestTempVarName(preferredName: String): String =
+        suffixSequence.map { "$preferredName$it" }.first(tempVars::add)
+
+    private fun childBlock(forExpression: JmespathExpression): String =
+        forExpression.accept(KotlinJmespathExpressionVisitor(writer))
+
+    @OptIn(ExperimentalContracts::class)
+    private fun codegenReq(condition: Boolean, lazyMessage: () -> String) {
+        contract {
+            returns() implies condition
         }
-
-        tempVars[jmespathExpression] = TempVar(name, codegenExpression, shape, symbol)
+        if (!condition) throw CodegenException(lazyMessage())
     }
 
-    /**
-     * Renders the actual code for a path-based matcher by outputting a series of variable assignments for the
-     * expression.
-     * @param writer The [KotlinWriter] to use for code generation.
-     * @return The name of the variable containing the result of the expression.
-     */
-    fun renderActual(writer: KotlinWriter): String {
-        tempVars.values.forEach { writer.write("val #L = #L", it.name, it.codegenValue) }
-        return tempVars.values.last().name
-    }
+    private fun flatMappingBlock(right: JmespathExpression, leftName: String): String {
+        if (right is CurrentExpression) return leftName // Nothing to map
 
-    override fun visitAnd(expression: AndExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
+        val outerName = bestTempVarName("projection")
+        writer.openBlock("val #L = #L.flatMap {", outerName, leftName)
 
-    override fun visitComparator(expression: ComparatorExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitCurrentNode(expression: CurrentExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitExpressionType(expression: ExpressionTypeExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitField(expression: FieldExpression) {
-        val name = expression.name
-        if (includeInput) {
-            when (name) {
-                "input" -> addTempVar(expression, "input", "it.input", inputShape, inputSymbol)
-                "output" -> addTempVar(expression, "output", "it.output", outputShape, outputSymbol)
-                else -> TODO("Don't know how to handle root field $name")
-            }
-        } else {
-            val memberShape = outputShape.expectMember(name)
-            val memberName = symbolProvider.toMemberName(memberShape)
-            val memberSymbol = symbolProvider.toSymbol(memberShape)
-            val targetShape = model.expectShape(memberShape.target)
-            addTempVar(expression, memberName, "it.$memberName", targetShape, memberSymbol)
+        val innerResult = childBlock(right)
+        val innerCollector = when (right) {
+            is MultiSelectListExpression -> innerResult // Already a list
+            else -> "listOfNotNull($innerResult)"
         }
+        writer.write(innerCollector)
+
+        writer.closeBlock("}")
+        return outerName
     }
 
-    override fun visitFilterProjection(expression: FilterProjectionExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
+    private fun subfield(expression: FieldExpression, parentName: String): String {
+        val name = expression.name.toCamelCase()
+        return addTempVar(name, "$parentName?.$name")
     }
 
-    override fun visitFlatten(expression: FlattenExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
+    override fun visitAnd(expression: AndExpression): String {
+        throw CodegenException("AndExpression is unsupported")
     }
 
-    override fun visitFunction(expression: FunctionExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitIndex(expression: IndexExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitLiteral(expression: LiteralExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitMultiSelectHash(expression: MultiSelectHashExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitMultiSelectList(expression: MultiSelectListExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitNot(expression: NotExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitObjectProjection(expression: ObjectProjectionExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitOr(expression: OrExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitProjection(expression: ProjectionExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitSlice(expression: SliceExpression) {
-        println("Visited $expression")
-        TODO("Not yet implemented")
-    }
-
-    override fun visitSubexpression(expression: Subexpression) {
-        println("Visited $expression")
-
+    override fun visitComparator(expression: ComparatorExpression): String {
         val left = expression.left!!
-        left.accept(this)
+        val leftBaseName = left.accept(this)
 
-        when (val right = expression.right!!) {
-            is FieldExpression -> {
-                val leftTempVar = tempVars.getValue(left)
-                val operator = if (leftTempVar.symbol.isBoxed) "?." else "."
-                val rightMemberShape = (leftTempVar.shape as StructureShape).expectMember(right.name)
-                val rightMemberName = symbolProvider.toMemberName(rightMemberShape)
+        val right = expression.right
+        val rightBaseName = right.accept(this)
 
-                val rightTargetShape = model.expectShape(rightMemberShape.target)
-                val rightTargetSymbol = symbolProvider.toSymbol(rightTargetShape)
+        val leftIsString = (left as? LiteralExpression)?.isStringValue ?: false
+        val rightIsString = (right as? LiteralExpression)?.isStringValue ?: false
 
-                val codegen = "${leftTempVar.name}$operator$rightMemberName"
-                addTempVar(expression, rightMemberName, codegen, rightTargetShape, rightTargetSymbol)
-            }
-            else -> throw CodegenException("Unknown subexpression identifier: $right")
+        val leftName = if (rightIsString && !leftIsString) "$leftBaseName?.toString()" else leftBaseName
+        val rightName = if (leftIsString && !rightIsString) "$rightBaseName?.toString()" else rightBaseName
+
+        val codegen = when (val comparator = expression.comparator) {
+            ComparatorType.EQUAL, ComparatorType.NOT_EQUAL -> "$leftName $comparator $rightName"
+            else -> "if ($leftName == null || $rightName == null) null else $leftName $comparator $rightName"
+        }
+        return addTempVar("comparison", codegen)
+    }
+
+    override fun visitCurrentNode(expression: CurrentExpression): String {
+        throw CodegenException("Unexpected current expression outside of flatten expression: $expression")
+    }
+
+    override fun visitExpressionType(expression: ExpressionTypeExpression): String {
+        throw CodegenException("ExpressionTypeExpression is unsupported")
+    }
+
+    override fun visitField(expression: FieldExpression): String = subfield(expression, "it")
+
+    override fun visitFilterProjection(expression: FilterProjectionExpression): String {
+        val leftName = expression.left!!.accept(this)
+        val filteredName = bestTempVarName("${leftName}Filtered")
+
+        writer.openBlock("val #L = (#L ?: listOf()).filter {", filteredName, leftName)
+
+        val comparisonName = childBlock(expression.comparison!!)
+        writer.write(comparisonName)
+
+        writer.closeBlock("}")
+
+        val right = expression.right!!
+        return flatMappingBlock(right, filteredName)
+    }
+
+    override fun visitFlatten(expression: FlattenExpression): String {
+        val innerName = expression.expression!!.accept(this)
+        return addTempVar("${innerName}OrEmpty", "$innerName ?: listOf()")
+    }
+
+    override fun visitFunction(expression: FunctionExpression): String = when (expression.name) {
+        "contains" -> {
+            codegenReq(expression.arguments.size == 2) { "Unexpected number of arguments to $expression" }
+
+            val subject = expression.arguments[0]
+            val subjectName = subject.accept(this)
+
+            val search = expression.arguments[1]
+            val searchName = search.accept(this)
+
+            addTempVar("contains", "$subjectName?.contains($searchName) ?: false")
+        }
+
+        "length" -> {
+            codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
+            writer.addImport(RuntimeTypes.Utils.Convenience.length)
+
+            val subject = expression.arguments[0]
+            val subjectName = subject.accept(this)
+
+            addTempVar("length", "$subjectName?.length ?: 0")
+        }
+
+        else -> throw CodegenException("Unknown function type in $expression")
+    }
+
+    override fun visitIndex(expression: IndexExpression): String {
+        throw CodegenException("IndexExpression is unsupported")
+    }
+
+    override fun visitLiteral(expression: LiteralExpression): String = when (expression.type) {
+        RuntimeType.STRING -> addTempVar("string", expression.expectStringValue().dq())
+        RuntimeType.NUMBER -> addTempVar("number", expression.expectNumberValue().toString())
+        RuntimeType.BOOLEAN -> addTempVar("bool", expression.expectBooleanValue().toString())
+        RuntimeType.NULL -> "null"
+        else -> throw CodegenException("Expression type $expression is unsupported")
+    }
+
+    override fun visitMultiSelectHash(expression: MultiSelectHashExpression): String {
+        throw CodegenException("MultiSelectHashExpression is unsupported")
+    }
+
+    override fun visitMultiSelectList(expression: MultiSelectListExpression): String {
+        val listName = bestTempVarName("multiSelect")
+        writer.openBlock("val #L = listOfNotNull(", listName)
+
+        expression.expressions.forEach { inner ->
+            writer.openBlock("run {")
+            val innerName = inner.accept(this)
+            writer.write(innerName)
+            writer.closeBlock("},")
+        }
+
+        writer.closeBlock(")")
+        return listName
+    }
+
+    override fun visitNot(expression: NotExpression): String {
+        throw CodegenException("NotExpression is unsupported")
+    }
+
+    override fun visitObjectProjection(expression: ObjectProjectionExpression): String {
+        val leftName = expression.left!!.accept(this)
+        val valuesName = addTempVar("${leftName}Values", "$leftName?.values ?: listOf()")
+        return flatMappingBlock(expression.right!!, valuesName)
+    }
+
+    override fun visitOr(expression: OrExpression): String {
+        throw CodegenException("OrExpression is unsupported")
+    }
+
+    override fun visitProjection(expression: ProjectionExpression): String {
+        val leftName = expression.left!!.accept(this)
+        return flatMappingBlock(expression.right!!, leftName)
+    }
+
+    override fun visitSlice(expression: SliceExpression): String {
+        throw CodegenException("SliceExpression is unsupported")
+    }
+
+    override fun visitSubexpression(expression: Subexpression): String {
+        val leftName = expression.left!!.accept(this)
+
+        return when (val right = expression.right!!) {
+            is FieldExpression -> subfield(right, leftName)
+            else -> throw CodegenException("Subexpression type $right is unsupported")
         }
     }
 }
-
-private fun StructureShape.expectMember(name: String): MemberShape =
-    getMember(name).orElseThrow { CodegenException("Cannot find member $name on $this") }
-
-private data class TempVar(val name: String, val codegenValue: String, val shape: Shape, val symbol: Symbol)

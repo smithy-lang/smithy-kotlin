@@ -5,91 +5,261 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering.waiters
 
+import io.kotest.matchers.string.shouldEndWith
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.jmespath.JmespathExpression
-import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
-import software.amazon.smithy.kotlin.codegen.loadModelFromResource
-import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
-import software.amazon.smithy.kotlin.codegen.test.createSymbolProvider
 import software.amazon.smithy.kotlin.codegen.test.stripCodegenPrefix
-import software.amazon.smithy.model.shapes.ShapeId
-import software.amazon.smithy.model.shapes.StructureShape
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class KotlinJmespathExpressionVisitorTest {
-    val model = loadModelFromResource("waiter-tests.smithy")
-    val provider = KotlinCodegenPlugin.createSymbolProvider(model)
-    val inputShape = model.expectShape<StructureShape>(ShapeId.from("${TestModelDefault.NAMESPACE}#DescribeFooInput"))
-    val inputSymbol = provider.toSymbol(inputShape)
-    val outputShape = model.expectShape<StructureShape>(ShapeId.from("${TestModelDefault.NAMESPACE}#DescribeFooOutput"))
-    val outputSymbol = provider.toSymbol(outputShape)
+    @Test
+    fun testAndExpression() {
+        assertUnimplemented("foo && bar")
+    }
 
     @Test
-    fun testRootFieldExpression() {
-        testVisit(
-            false,
-            "name",
-            "name",
-            "val name = it.name",
+    fun testComparatorExpression_Equality() {
+        assertVisit(
+            "foo == bar",
+            "comparison",
+            "val foo = it?.foo",
+            "val bar = it?.bar",
+            "val comparison = foo == bar",
         )
     }
 
     @Test
+    fun testComparatorExpression_EqualityWithString() {
+        assertVisit(
+            "`\"foo\"` == bar",
+            "comparison",
+            "val string = \"foo\"",
+            "val bar = it?.bar",
+            "val comparison = string == bar?.toString()",
+        )
+
+        assertVisit(
+            "foo == `\"bar\"`",
+            "comparison",
+            "val foo = it?.foo",
+            "val string = \"bar\"",
+            "val comparison = foo?.toString() == string",
+        )
+    }
+
+    @Test
+    fun testComparatorExpression_EqualityWithTwoStrings() {
+        assertVisit(
+            "`\"foo\"` != `\"bar\"`",
+            "comparison",
+            "val string = \"foo\"",
+            "val string2 = \"bar\"",
+            "val comparison = string != string2",
+        )
+    }
+
+    @Test
+    fun testComparatorExpression_Inequality() {
+        assertVisit(
+            "foo <= bar",
+            "comparison",
+            "val foo = it?.foo",
+            "val bar = it?.bar",
+            "val comparison = if (foo == null || bar == null) null else foo <= bar",
+        )
+    }
+
+    @Test
+    fun testCurrentNodeInFlattenExpression() {
+        assertVisit(
+            "foo[]",
+            "fooOrEmpty",
+            "val foo = it?.foo",
+            "val fooOrEmpty = foo ?: listOf()",
+        )
+    }
+
+    @Test
+    fun testExpressionTypeExpression() {
+        assertUnimplemented("&foo")
+    }
+
+    @Test
+    fun testFieldExpression() {
+        assertVisit(
+            "name",
+            "name",
+            "val name = it?.name",
+        )
+    }
+
+    @Test
+    fun testFilterProjection() {
+        assertVisit(
+            "foo[?bar == baz]",
+            "fooFiltered",
+            "val foo = it?.foo",
+            "val fooFiltered = (foo ?: listOf()).filter {",
+            "    val bar = it?.bar",
+            "    val baz = it?.baz",
+            "    val comparison = bar == baz",
+            "    comparison",
+            "}",
+        )
+    }
+
+    @Test
+    fun testFunctionExpression_Contains() {
+        assertVisit(
+            "contains(foo, bar)",
+            "contains",
+            "val foo = it?.foo",
+            "val bar = it?.bar",
+            "val contains = foo?.contains(bar) ?: false",
+        )
+    }
+
+    @Test
+    fun testFunctionExpression_Length() {
+        assertVisit(
+            "length(foo)",
+            "length",
+            "import aws.smithy.kotlin.runtime.util.length",
+            "",
+            "val foo = it?.foo",
+            "val length = foo?.length ?: 0",
+        )
+    }
+
+    @Test
+    fun testIndexExpression() {
+        assertUnimplemented("foo[0]")
+    }
+
+    @Test
+    fun testLiteralExpressions() {
+        assertVisit("`\"a string\"`", "string", "val string = \"a string\"")
+        assertVisit("`3.14`", "number", "val number = 3.14")
+        assertVisit("`false`", "bool", "val bool = false")
+        assertVisit("`null`", "null")
+        assertUnimplemented("`[]`")
+        assertUnimplemented("`{}`")
+    }
+
+    @Test
+    fun testMultiSelectHashExpression() {
+        assertUnimplemented("foo.{bar: baz}")
+    }
+
+    @Test
+    fun testMultiSelectListExpression() {
+        assertVisit(
+            "foo[][bar, baz]",
+            "projection",
+            "val foo = it?.foo",
+            "val fooOrEmpty = foo ?: listOf()",
+            "val projection = fooOrEmpty.flatMap {",
+            "    val multiSelect = listOfNotNull(",
+            "        run {",
+            "            val bar = it?.bar",
+            "            bar",
+            "        },",
+            "        run {",
+            "            val baz = it?.baz",
+            "            baz",
+            "        },",
+            "    )",
+            "    multiSelect",
+            "}",
+        )
+    }
+
+    @Test
+    fun testNotExpression() {
+        assertUnimplemented("!foo")
+    }
+
+    @Test
+    fun testObjectProjection() {
+        assertVisit(
+            "foo.*.bar",
+            "projection",
+            "val foo = it?.foo",
+            "val fooValues = foo?.values ?: listOf()",
+            "val projection = fooValues.flatMap {",
+            "    val bar = it?.bar",
+            "    listOfNotNull(bar)",
+            "}",
+        )
+    }
+
+    @Test
+    fun testProjectionExpression() {
+        assertVisit(
+            "foo[].bar",
+            "projection",
+            "val foo = it?.foo",
+            "val fooOrEmpty = foo ?: listOf()",
+            "val projection = fooOrEmpty.flatMap {",
+            "    val bar = it?.bar",
+            "    listOfNotNull(bar)",
+            "}",
+        )
+    }
+
+    @Test
+    fun testOrExpression() {
+        assertUnimplemented("foo || bar")
+    }
+
+    @Test
+    fun testSliceExpression() {
+        assertUnimplemented("foo[0:1]")
+    }
+
+    @Test
     fun testSubExpressions() {
-        testVisit(
-            false,
+        assertVisit(
             "foo.bar.baz",
             "baz",
-            "val foo = it.foo",
+            "val foo = it?.foo",
             "val bar = foo?.bar",
             "val baz = bar?.baz",
         )
     }
 
-    @Test
-    fun testInputFieldExpression() {
-        testVisit(
-            true,
-            "input.id",
-            "id",
-            "val input = it.input",
-            "val id = input?.id",
-        )
+    private fun assertUnimplemented(path: String) {
+        try {
+            visit(path)
+        } catch (e: CodegenException) {
+            e.message shouldEndWith "is unsupported"
+            return
+        }
+        fail("Expected a CodegenException")
     }
 
-    @Test
-    fun testOutputFieldExpression() {
-        testVisit(
-            true,
-            "output.name",
-            "name",
-            "val output = it.output",
-            "val name = output?.name",
-        )
-    }
-
-    private fun testVisit(includeInput: Boolean, path: String, expectedActualName: String, vararg vals: String) {
-        val visitor = KotlinJmespathExpressionVisitor(
-            includeInput,
-            model,
-            provider,
-            inputShape,
-            inputSymbol,
-            outputShape,
-            outputSymbol
-        )
+    private fun assertVisit(path: String, expectedActualName: String, vararg vals: String) {
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val visitor = KotlinJmespathExpressionVisitor(writer)
 
         val expression = JmespathExpression.parse(path)
-        expression.accept(visitor)
+        val actualResultName = expression.accept(visitor)
 
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
-        val actualActualName = visitor.renderActual(writer)
-
-        assertEquals(expectedActualName, actualActualName)
+        assertEquals(expectedActualName, actualResultName)
 
         val codegen = writer.toString().stripCodegenPrefix(TestModelDefault.NAMESPACE)
         assertEquals(vals.joinToString("\n"), codegen)
+    }
+
+    private fun visit(path: String): String {
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val visitor = KotlinJmespathExpressionVisitor(writer)
+
+        val expression = JmespathExpression.parse(path)
+        return expression.accept(visitor)
     }
 }
