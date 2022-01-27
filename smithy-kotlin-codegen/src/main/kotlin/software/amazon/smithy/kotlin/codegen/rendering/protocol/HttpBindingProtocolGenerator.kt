@@ -32,6 +32,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
+    // FIXME - rename these two functions, they don't need "Protocol" in the name
     /**
      * Returns HTTP binding resolver for protocol specified by input.
      * @param model service model
@@ -243,7 +244,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             // delegate to the generate operation body serializer function
             val sdg = structuredDataSerializer(ctx)
             val opBodySerializerFn = sdg.operationSerializer(ctx, op)
-            writer.write("builder.body = #T(context, input)", opBodySerializerFn)
+            writer.write("val payload = #T(context, input)", opBodySerializerFn)
+            writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
         }
 
         resolver.determineRequestContentType(op)?.let { contentType ->
@@ -406,31 +408,25 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ShapeType.BLOB -> {
                 val isBinaryStream = ctx.model.expectShape(binding.member.target).hasTrait<StreamingTrait>()
                 if (isBinaryStream) {
-                    writer
-                        .addImport(RuntimeTypes.Http.toHttpBody)
-                        .write("builder.body = input.#L.#T() ?: #T.Empty", memberName, RuntimeTypes.Http.toHttpBody, RuntimeTypes.Http.HttpBody)
+                    writer.write("builder.body = input.#L.#T() ?: #T.Empty", memberName, RuntimeTypes.Http.toHttpBody, RuntimeTypes.Http.HttpBody)
                 } else {
-                    writer
-                        .addImport(RuntimeTypes.Http.ByteArrayContent)
-                        .write("builder.body = #T(input.#L)", RuntimeTypes.Http.ByteArrayContent, memberName)
+                    writer.write("builder.body = #T(input.#L)", RuntimeTypes.Http.ByteArrayContent, memberName)
                 }
             }
             ShapeType.STRING -> {
-                writer.addImport(RuntimeTypes.Http.ByteArrayContent)
                 val contents = if (target.isEnum) {
                     "$memberName.value"
                 } else {
                     memberName
                 }
-                writer
-                    .addImport(RuntimeTypes.Core.Content.toByteArray)
-                    .write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, RuntimeTypes.Core.Content.toByteArray)
+                writer.write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, RuntimeTypes.Core.Content.toByteArray)
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the generated operation body serializer function
                 val sdg = structuredDataSerializer(ctx)
                 val opBodySerializerFn = sdg.operationSerializer(ctx, op)
-                writer.write("builder.body = #T(context, input)", opBodySerializerFn)
+                writer.write("val payload = #T(context, input)", opBodySerializerFn)
+                writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
             }
             ShapeType.DOCUMENT -> {
                 // TODO - deal with document members
@@ -458,7 +454,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val definitionFileName = op.deserializerName().replaceFirstChar(Char::uppercaseChar)
             definitionFile = "$definitionFileName.kt"
             name = op.deserializerName()
-            namespace = "${ctx.settings.pkg.name}.transform"
+            namespace = ctx.settings.pkg.subpackage("transform")
 
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
@@ -531,7 +527,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             val deserializerName = "${outputSymbol.name}Deserializer"
             definitionFile = "$deserializerName.kt"
             name = deserializerName
-            namespace = "${ctx.settings.pkg.name}.transform"
+            namespace = ctx.settings.pkg.subpackage("transform")
             reference(outputSymbol, SymbolReference.ContextOption.DECLARE)
         }
 
@@ -598,8 +594,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderExplicitHttpPayloadDeserializer(ctx, httpPayload, op, writer)
                 } else {
                     // Unbound document members that should be deserialized from the document format for the protocol.
-                    // The generated code is the same across protocols and the serialization provider instance
-                    // passed into the function is expected to handle the formatting required by the protocol
                     val documentMembers = responseBindings
                         .filter { it.location == HttpBinding.Location.DOCUMENT }
                         .sortedBy { it.memberName }
@@ -616,7 +610,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             sdg.errorDeserializer(ctx, outputSymbol.shape as StructureShape)
                         }
 
-                        writer.write("#L(builder, response.body)", bodyDeserializerFn)
+                        writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
+                            .withBlock("if (payload != null) {", "}") {
+                                write("#T(builder, payload)", bodyDeserializerFn)
+                            }
                     }
                 }
             }
@@ -871,7 +868,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     sdg.errorDeserializer(ctx, target as StructureShape)
                 }
 
-                writer.write("#L(builder, response.body)", bodyDeserializerFn)
+                writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
+                    .withBlock("if (payload != null) {", "}") {
+                        write("#T(builder, payload)", bodyDeserializerFn)
+                    }
             }
             ShapeType.DOCUMENT -> {
                 // TODO - implement document support

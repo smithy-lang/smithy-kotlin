@@ -83,7 +83,8 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
             if (input.header2?.isNotEmpty() == true) append("X-Header2", input.header2)
         }
 
-        builder.body = serializeSmokeTestOperationBody(context, input)
+        val payload = serializeSmokeTestOperationBody(context, input)
+        builder.body = ByteArrayContent(payload)
         builder.headers.setMissing("Content-Type", "application/json")
         return builder
     }
@@ -184,7 +185,8 @@ internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRe
         }
 
         if (input.payload1 != null) {
-            builder.body = serializeExplicitStructOperationBody(context, input)
+            val payload = serializeExplicitStructOperationBody(context, input)
+            builder.body = ByteArrayContent(payload)
         }
         builder.headers.setMissing("Content-Type", "application/json")
         return builder
@@ -223,7 +225,8 @@ internal class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
             if (input.enumHeader != null) append("X-EnumHeader", input.enumHeader.value)
         }
 
-        builder.body = serializeEnumInputOperationBody(context, input)
+        val payload = serializeEnumInputOperationBody(context, input)
+        builder.body = ByteArrayContent(payload)
         builder.headers.setMissing("Content-Type", "application/json")
         return builder
     }
@@ -262,7 +265,8 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
             if (input.headerHttpDate != null) append("X-Date", input.headerHttpDate.format(TimestampFormat.RFC_5322))
         }
 
-        builder.body = serializeTimestampInputOperationBody(context, input)
+        val payload = serializeTimestampInputOperationBody(context, input)
+        builder.body = ByteArrayContent(payload)
         builder.headers.setMissing("Content-Type", "application/json")
         return builder
     }
@@ -292,7 +296,8 @@ internal class BlobInputOperationSerializer: HttpSerialize<BlobInputRequest> {
             if (input.headerMediaType?.isNotEmpty() == true) append("X-Blob", input.headerMediaType.encodeBase64())
         }
 
-        builder.body = serializeBlobInputOperationBody(context, input)
+        val payload = serializeBlobInputOperationBody(context, input)
+        builder.body = ByteArrayContent(payload)
         builder.headers.setMissing("Content-Type", "application/json")
         return builder
     }
@@ -350,7 +355,10 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         builder.strHeader = response.headers["X-Header1"]
         builder.tsListHeader = response.headers.getAll("X-Header3")?.flatMap(::splitHttpDateHeaderListValues)?.map { Instant.fromRfc5322(it) }
 
-        deserializeSmokeTestOperationBody(builder, response.body)
+        val payload = response.body.readAll()
+        if (payload != null) {
+            deserializeSmokeTestOperationBody(builder, payload)
+        }
         return builder.build()
     }
 }
@@ -429,7 +437,10 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         val contents = getTransformFileContents("ExplicitStructOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
-        deserializeExplicitStructOperationBody(builder, response.body)
+        val payload = response.body.readAll()
+        if (payload != null) {
+            deserializeExplicitStructOperationBody(builder, payload)
+        }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
     }

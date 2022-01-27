@@ -13,14 +13,14 @@ import software.amazon.smithy.model.shapes.StructureShape
 interface StructuredDataParserGenerator {
 
     /**
-     * Render function responsible for deserializing members bound to the payload of the given output shape.
+     * Render the function responsible for deserializing members bound to the payload of the given output shape.
      *
-     * The signature is protocol dependent, for example HTTP protocols are passed the output type builder and
-     * the HTTP response object:
+     * Because only a subset of fields of an operation output may be bound to the payload a builder is given
+     * as an argument.
      *
      * ```
-     * private fun deserializeFooOperationBody(builder: Foo.Builder, response: HttpResponse) {
-     *    ...
+     * private fun deserializeFooOperationBody(builder: Foo.Builder, payload: ByteArray) {
+     *     ...
      * }
      * ```
      *
@@ -36,14 +36,17 @@ interface StructuredDataParserGenerator {
     /**
      * Render function responsible for deserializing members bound to the payload for the given error shape.
      *
-     * The signature is protocol dependent, for example HTTP protocols are passed the output type builder and
-     * the HTTP response object:
+     * Because only a subset of fields of an operation error may be bound to the payload a builder is given
+     * as an argument.
      *
      * ```
-     * fun deserializeFooError(builder: FooError.Builder, response: HttpResponse) {
+     * fun deserializeFooError(builder: FooError.Builder, payload: ByteArray) {
      *     ...
      * }
      * ```
+     *
+     * Implementations are expected to instantiate an appropriate deserializer for the protocol and deserialize
+     * the error shape from the payload using the builder passed in.
      *
      * @param ctx the protocol generator context
      * @param errorShape the error shape to render deserialize for

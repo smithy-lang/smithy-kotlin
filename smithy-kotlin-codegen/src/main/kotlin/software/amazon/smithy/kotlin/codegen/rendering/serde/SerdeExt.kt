@@ -109,6 +109,19 @@ fun Symbol.documentDeserializer(settings: KotlinSettings, block: SymbolRenderer)
 fun Symbol.errorDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.name) + "Error"
 
 /**
+ * Get the function responsible for deserializing members bound to the payload of an error shape as [Symbol] and
+ * register [block] * which will be invoked to actually render the function (signature and implementation)
+ */
+fun Symbol.errorDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = errorDeserializerName()
+    namespace = "${settings.pkg.name}.transform"
+    val symbol = this@errorDeserializer
+    definitionFile = "${symbol.name}ErrorDeserializer.kt"
+    reference(symbol, SymbolReference.ContextOption.DECLARE)
+    renderBy = block
+}
+
+/**
  * Format an instance of `Instant` using the given [tsFmt]
  * @param paramName The name of the local identifier to format
  * @param tsFmt The timestamp format to use

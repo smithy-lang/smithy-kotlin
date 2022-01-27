@@ -41,7 +41,12 @@ data class KotlinSettings(
     /**
      * Configuration elements specific to the service's package namespace, version, and description.
      */
-    data class PackageSettings(val name: String, val version: String, val description: String? = null)
+    data class PackageSettings(val name: String, val version: String, val description: String? = null) {
+        /**
+         * Derive a subpackage namespace from the root package name
+         */
+        fun subpackage(subpackageName: String): String = "$name.$subpackageName"
+    }
 
     /**
      * Get the corresponding [ServiceShape] from a model.
