@@ -49,7 +49,7 @@ fun writeGradleBuild(
             "kotlin(\"$pluginName\") #W",
             { w: CodeWriter ->
                 if (isRootModule) {
-                    w.write("""version "#L"""", KOTLIN_COMPILER_VERSION)
+                    w.write("version #S", KOTLIN_COMPILER_VERSION)
                 }
             }
         )
@@ -97,14 +97,7 @@ fun renderKmpGradleBuild(
         #W
         
         kotlin {
-            jvm {
-                compilations.all {
-                    kotlinOptions.jvmTarget = "#L"
-                }
-                testRuns["test"].executionTask.configure {
-                    useJUnit()
-                }
-            }
+            #W
             sourceSets {
                 val commonMain by getting {
                     dependencies {
@@ -116,7 +109,7 @@ fun renderKmpGradleBuild(
                         #W
                     }
                 }
-                val jvmMain by getting
+                // val jvmMain by getting
             }
             val optInAnnotations = listOf(
                 #W
@@ -128,10 +121,30 @@ fun renderKmpGradleBuild(
         """.trimIndent(),
         pluginsRenderer,
         { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
-        JVM_TARGET_VERSION,
-        { w: CodeWriter -> renderDependencies(w, isSrcScope = true, isKmp = true, dependencies = dependencies) },
-        { w: CodeWriter -> renderDependencies(w, isSrcScope = false, isKmp = true, dependencies = dependencies) },
+        { w: CodeWriter -> if (isRootModule) renderRootJvmPluginConfig(w) else writer.write("jvm()") },
+        { w: CodeWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = true, dependencies = dependencies) },
+        { w: CodeWriter -> renderDependencies(w, scope = Scope.TEST, isKmp = true, dependencies = dependencies) },
         annotationRenderer
+    )
+}
+
+fun renderRootJvmPluginConfig(writer: CodeWriter) {
+    writer.write(
+        """
+            jvm {
+                compilations.all {
+                    kotlinOptions.jvmTarget = "#L"
+                }
+                testRuns["test"].executionTask.configure {
+                    useJUnitPlatform()
+                    testLogging {
+                        events("passed", "skipped", "failed")
+                        showStandardStreams = true
+                    }
+                }
+            }
+        """.trimIndent(),
+        JVM_TARGET_VERSION
     )
 }
 
@@ -153,11 +166,11 @@ fun renderJvmGradleBuild(
         dependencies {
             #W
         }
-        val optinAnnotations = listOf(
+        val optInAnnotations = listOf(
             #W
         )
         kotlin.sourceSets.all {
-            optinAnnotations.forEach { languageSettings.optIn(it) }
+            optInAnnotations.forEach { languageSettings.optIn(it) }
         }
 
         tasks.test {
@@ -170,12 +183,17 @@ fun renderJvmGradleBuild(
         """.trimIndent(),
         pluginsRenderer,
         { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
-        { w: CodeWriter -> renderDependencies(w, isSrcScope = true, isKmp = false, dependencies = dependencies) },
+        { w: CodeWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
         annotationRenderer
     )
 }
 
-private fun renderDependencies(writer: CodeWriter, isSrcScope: Boolean, isKmp: Boolean, dependencies: List<KotlinDependency>) {
+// Specifies if a given codegen operation is under a source or test scope
+private enum class Scope {
+    SOURCE, TEST;
+}
+
+private fun renderDependencies(writer: CodeWriter, scope: Scope, isKmp: Boolean, dependencies: List<KotlinDependency>) {
     if (!isKmp) {
         writer.write("implementation(kotlin(\"stdlib\"))")
     }
@@ -186,13 +204,18 @@ private fun renderDependencies(writer: CodeWriter, isSrcScope: Boolean, isKmp: B
     orderedDependencies
         .filter {
             if (isKmp) {
-                if (isSrcScope) !it.config.isTestScope else it.config.isTestScope
+                if (scope == Scope.SOURCE) !it.config.isTestScope else it.config.isTestScope
             } else {
                 true
             }
         }
         .forEach { dependency ->
-            writer.write("${dependency.config}(\"#L:#L:#L\")", dependency.group, dependency.artifact, dependency.version)
+            writer.write(
+                "${dependency.config}(\"#L:#L:#L\")",
+                dependency.group,
+                dependency.artifact,
+                dependency.version
+            )
         }
 }
 

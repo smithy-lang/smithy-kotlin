@@ -39,8 +39,9 @@ object KotlinTypes {
         val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
         val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
     }
+
     object Text {
-        val encodeToByeArraySymbol = builtInSymbol("encodeToByteArray", "kotlin.text")
+        val encodeToByteArray = builtInSymbol("encodeToByteArray", "kotlin.text")
     }
 
     /**

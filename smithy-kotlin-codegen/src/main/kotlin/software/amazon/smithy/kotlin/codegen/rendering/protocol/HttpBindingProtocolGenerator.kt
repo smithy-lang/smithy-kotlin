@@ -595,7 +595,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     "builder.body = #T(input.#L.#T())",
                     RuntimeTypes.Http.ByteArrayContent,
                     contents,
-                    KotlinTypes.Text.encodeToByeArraySymbol
+                    KotlinTypes.Text.encodeToByteArray
                 )
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {

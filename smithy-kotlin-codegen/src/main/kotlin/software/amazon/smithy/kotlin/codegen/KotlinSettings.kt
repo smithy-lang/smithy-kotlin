@@ -146,27 +146,20 @@ data class KotlinSettings(
     }
 }
 
+/**
+ * Contains Gradle build settings for a Kotlin project
+ * @param generateFullProject Flag indicating to generate a full project that will exist independent of other projects
+ * @param generateDefaultBuildFiles Flag indicating if (Gradle) build files should be spit out. This can be used to
+ * turn off generated gradle files by default in-favor of e.g. spitting out your own custom Gradle file as part of an
+ * integration.
+ * @param optInAnnotations Kotlin opt-in annotations. See:
+ * https://kotlinlang.org/docs/reference/opt-in-requirements.html
+ * @param generateMultiplatformProject Flag indicating to generate a Kotlin multiplatform or JVM project
+ */
 data class BuildSettings(
-    /**
-     * Flag indicating to generate a full project that will exist independent of other projects
-     */
     val generateFullProject: Boolean = false,
-
-    /**
-     * Flag indicating if (Gradle) build files should be spit out. This can be used to turn off generated gradle
-     * files by default in-favor of e.g. spitting out your own custom Gradle file as part of an integration.
-     */
     val generateDefaultBuildFiles: Boolean = true,
-
-    /**
-     * Kotlin opt-in annotations
-     * See: https://kotlinlang.org/docs/reference/opt-in-requirements.html
-     */
     val optInAnnotations: List<String>? = null,
-
-    /**
-     * Flag indicating to generate a Kotlin multiplatform or JVM project
-     */
     val generateMultiplatformProject: Boolean = false,
 ) {
     companion object {
@@ -175,7 +168,7 @@ data class BuildSettings(
         const val ANNOTATIONS = "optInAnnotations"
         const val GENERATE_MULTIPLATFORM_MODULE = "multiplatform"
 
-        fun fromNode(node: Optional<ObjectNode>): BuildSettings = if (node.isPresent) {
+        fun fromNode(node: Optional<ObjectNode>): BuildSettings = node.map {
             val generateFullProject = node.get().getBooleanMemberOrDefault(ROOT_PROJECT, false)
             val generateBuildFiles = node.get().getBooleanMemberOrDefault(GENERATE_DEFAULT_BUILD_FILES, true)
             val generateMultiplatformProject =
@@ -189,9 +182,7 @@ data class BuildSettings(
             }.orNull()
 
             BuildSettings(generateFullProject, generateBuildFiles, annotations, generateMultiplatformProject)
-        } else {
-            Default
-        }
+        }.orElse(Default)
 
         /**
          * Default build settings
