@@ -180,6 +180,11 @@ sealed class ClientConfigPropertyType {
      * @param default the value to assign if the corresponding builder property is null
      */
     data class RequiredWithDefault(val default: String) : ClientConfigPropertyType()
+
+    /**
+     * A configuration property that uses [render] to manually render the actual immutable property
+     */
+    data class Custom(val render: (ClientConfigProperty, KotlinWriter) -> Unit) : ClientConfigPropertyType()
 }
 
 private fun builtInSymbol(symbolName: String, defaultValue: String?): Symbol {
@@ -227,7 +232,9 @@ object KotlinClientRuntimeConfigProperty {
             symbol = RuntimeTypes.Http.Engine.HttpClientEngine
             baseClass = httpClientConfigSymbol
             documentation = """
-            Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)    
+            Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
+            NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
+            client will not close it when the client is closed.
             """.trimIndent()
         }
 
