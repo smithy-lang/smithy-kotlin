@@ -13,6 +13,6 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
  *
  * @param config Provides configuration for the DefaultHttpClientEngine
  */
-expect class KtorEngine(config: HttpClientEngineConfig) : HttpClientEngineBase {
+expect class KtorEngine(config: HttpClientEngineConfig = HttpClientEngineConfig.Default) : HttpClientEngineBase {
     val config: HttpClientEngineConfig
 }
