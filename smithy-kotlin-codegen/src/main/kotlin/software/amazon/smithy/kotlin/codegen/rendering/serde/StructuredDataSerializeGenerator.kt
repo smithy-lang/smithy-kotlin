@@ -7,27 +7,30 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 
+/**
+ * Responsible for rendering serialization of structured data (e.g. json, yaml, xml).
+ */
 interface StructuredDataSerializeGenerator {
 
     /**
      * Render function responsible for serializing members bound to the payload of the given operation's input shape.
      *
-     * The signature is protocol dependent, for example HTTP protocols are passed the execution context and the
-     * input type.
-     *
      * ```
-     * fun serializeFooOperationBody(context: ExecutionContext, input: Foo): HttpBody {
+     * fun serializeFooOperationBody(context: ExecutionContext, input: Foo): ByteArray {
      *  ...
      * }
      * ```
      *
-     * Implementations are expected to render a `HttpBody` as the return value.
+     * Implementations are expected to serialize to the specific data format and return the contents as a byte array.
      *
      * @param ctx the protocol generator context
      * @param op the operation to render serialize for
+     * @param members the members of the operation's input shape that are bound to the payload. Not all members are
+     * bound to the document, some may be bound to e.g. headers, uri, etc.
      * @return the generated symbol which should be a function matching the signature expected for the protocol
      */
-    fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol
+    fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol
 }

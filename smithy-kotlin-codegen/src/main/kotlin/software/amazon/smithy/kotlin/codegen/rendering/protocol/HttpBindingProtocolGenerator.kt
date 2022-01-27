@@ -240,10 +240,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         if (httpPayload != null) {
             renderExplicitHttpPayloadSerializer(ctx, op, httpPayload, writer)
         } else {
+            val documentMembers = requestBindings.filterDocumentBoundMembers()
             // Unbound document members that should be serialized into the document format for the protocol.
             // delegate to the generate operation body serializer function
             val sdg = structuredDataSerializer(ctx)
-            val opBodySerializerFn = sdg.operationSerializer(ctx, op)
+            val opBodySerializerFn = sdg.operationSerializer(ctx, op, documentMembers)
             writer.write("val payload = #T(context, input)", opBodySerializerFn)
             writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
         }
@@ -424,7 +425,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the generated operation body serializer function
                 val sdg = structuredDataSerializer(ctx)
-                val opBodySerializerFn = sdg.operationSerializer(ctx, op)
+                val opBodySerializerFn = sdg.operationSerializer(ctx, op, target.members().toList())
                 writer.write("val payload = #T(context, input)", opBodySerializerFn)
                 writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
             }
@@ -604,10 +605,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                         val bodyDeserializerFn = if (op != null) {
                             // normal operation
-                            sdg.operationDeserializer(ctx, op)
+                            sdg.operationDeserializer(ctx, op, documentMembers)
                         } else {
                             // error
-                            sdg.errorDeserializer(ctx, outputSymbol.shape as StructureShape)
+                            sdg.errorDeserializer(ctx, outputSymbol.shape as StructureShape, documentMembers)
                         }
 
                         writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
@@ -862,10 +863,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 val sdg = structuredDataParser(ctx)
                 val bodyDeserializerFn = if (op != null) {
                     // normal operation
-                    sdg.operationDeserializer(ctx, op)
+                    sdg.operationDeserializer(ctx, op, target.members().toList())
                 } else {
                     // error
-                    sdg.errorDeserializer(ctx, target as StructureShape)
+                    sdg.errorDeserializer(ctx, target as StructureShape, target.members().toList())
                 }
 
                 writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)

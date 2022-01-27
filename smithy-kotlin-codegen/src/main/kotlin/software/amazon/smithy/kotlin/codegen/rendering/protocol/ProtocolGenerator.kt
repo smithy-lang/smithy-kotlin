@@ -86,8 +86,14 @@ interface ProtocolGenerator {
      */
     fun generateProtocolClient(ctx: GenerationContext)
 
+    /**
+     * Get the generator responsible for rendering deserialization of the protocol specific data format
+     */
     fun structuredDataParser(ctx: GenerationContext): StructuredDataParserGenerator
 
+    /**
+     * Get the generator responsible for rendering serialization of the protocol specific data format
+     */
     fun structuredDataSerializer(ctx: GenerationContext): StructuredDataSerializeGenerator
 
     /**

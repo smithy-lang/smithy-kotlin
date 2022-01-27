@@ -7,9 +7,13 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
+import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.StructureShape
 
+/**
+ * Responsible for rendering deserialization of structured data (e.g. json, yaml, xml).
+ */
 interface StructuredDataParserGenerator {
 
     /**
@@ -29,9 +33,11 @@ interface StructuredDataParserGenerator {
      *
      * @param ctx the protocol generator context
      * @param op the operation to render deserialize for
+     * @param members the members of the operation's output shape that are bound to the payload. Not all members are
+     * bound to the document, some may be bound to e.g. headers, status code, etc
      * @return the generated symbol which should be a function matching the signature expected for the protocol
      */
-    fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol
+    fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol
 
     /**
      * Render function responsible for deserializing members bound to the payload for the given error shape.
@@ -50,7 +56,9 @@ interface StructuredDataParserGenerator {
      *
      * @param ctx the protocol generator context
      * @param errorShape the error shape to render deserialize for
+     * @param members the members of the error shape that are bound to the payload. Not all members are
+     * bound to the document, some may be bound to e.g. headers, status code, etc
      * @return the generated symbol which should be a function matching the signature expected for the protocol
      */
-    fun errorDeserializer(ctx: ProtocolGenerator.GenerationContext, errorShape: StructureShape): Symbol
+    fun errorDeserializer(ctx: ProtocolGenerator.GenerationContext, errorShape: StructureShape, members: List<MemberShape>): Symbol
 }

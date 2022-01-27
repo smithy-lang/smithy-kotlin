@@ -11,21 +11,20 @@ import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.filterDocumentBoundMembers
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
-import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 open class JsonSerializerGenerator(
+    // FIXME - we shouldn't need this, it's only required by JsonSerdeDescriptorGenerator because of toRenderingContext
     private val protocolGenerator: HttpBindingProtocolGenerator
 ) : StructuredDataSerializeGenerator {
 
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
 
-    override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
+    override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
         val input = op.input.get().let { ctx.model.expectShape(it) }
         val symbol = ctx.symbolProvider.toSymbol(input)
 
@@ -34,7 +33,7 @@ open class JsonSerializerGenerator(
             val fnName = op.bodySerializerName()
             writer.openBlock("private fun #L(context: #T, input: #T): ByteArray {", fnName, RuntimeTypes.Core.ExecutionContext, symbol)
                 .call {
-                    renderSerializeOperationBody(ctx, op, writer)
+                    renderSerializeOperationBody(ctx, op, members, writer)
                 }
                 .closeBlock("}")
         }
@@ -58,23 +57,25 @@ open class JsonSerializerGenerator(
     private fun renderSerializeOperationBody(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
+        documentMembers: List<MemberShape>,
         writer: KotlinWriter
     ) {
-        val resolver = protocolGenerator.getProtocolHttpBindingResolver(ctx.model, ctx.service)
-        val requestBindings = resolver.requestBindings(op)
-        val documentMembers = requestBindings.filterDocumentBoundMembers()
+        // val resolver = protocolGenerator.getProtocolHttpBindingResolver(ctx.model, ctx.service)
+        // val requestBindings = resolver.requestBindings(op)
+        // val documentMembers = requestBindings.filterDocumentBoundMembers()
 
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
 
         // restJson protocol supports the httpPayload trait
-        val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-        if (httpPayload != null) {
-            TODO("not sure when or where we hit this codepath...")
-        } else {
-            renderSerializerBody(ctx, shape, documentMembers, writer)
-        }
+        // val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        // if (httpPayload != null) {
+        //     TODO("not sure when or where we hit this codepath...")
+        // } else {
+        //     renderSerializerBody(ctx, shape, documentMembers, writer)
+        // }
 
+        renderSerializerBody(ctx, shape, documentMembers, writer)
         writer.write("return serializer.toByteArray()")
     }
 

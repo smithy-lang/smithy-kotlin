@@ -9,28 +9,29 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.filterDocumentBoundMembers
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
-import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 open class JsonParserGenerator(
-    private val protocolGenerator: HttpBindingProtocolGenerator
+    // FIXME - we shouldn't need this, it's only required by JsonSerdeDescriptorGenerator because of toRenderingContext
+    private val protocolGenerator: ProtocolGenerator
 ) : StructuredDataParserGenerator {
 
-    override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol {
+    open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
+
+    override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
         val outputSymbol = op.output.get().let { ctx.symbolProvider.toSymbol(ctx.model.expectShape(it)) }
         return op.bodyDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, op, writer)
             val fnName = op.bodyDeserializerName()
             writer.openBlock("private fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, outputSymbol)
                 .call {
-                    renderDeserializeOperationBody(ctx, op, writer)
+                    renderDeserializeOperationBody(ctx, op, members, writer)
                 }
                 .closeBlock("}")
         }
@@ -51,23 +52,29 @@ open class JsonParserGenerator(
         }
     }
 
-    private fun renderDeserializeOperationBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+    private fun renderDeserializeOperationBody(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        documentMembers: List<MemberShape>,
+        writer: KotlinWriter
+    ) {
         writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
-        val resolver = protocolGenerator.getProtocolHttpBindingResolver(ctx.model, ctx.service)
-        val responseBindings = resolver.responseBindings(op)
-        val documentMembers = responseBindings.filterDocumentBoundMembers()
+        // val resolver = protocolGenerator.getProtocolHttpBindingResolver(ctx.model, ctx.service)
+        // val responseBindings = resolver.responseBindings(op)
+        // val documentMembers = responseBindings.filterDocumentBoundMembers()
 
         val shape = ctx.model.expectShape(op.output.get())
 
-        val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-        if (httpPayload != null) {
-            // explicitly bound member, delegate to the document deserializer
-            // val memberSymbol = ctx.symbolProvider.toSymbol(httpPayload.member)
-            // writer.write("builder.${httpPayload.member.defaultName()} = #L(deserializer)", memberSymbol.documentDeserializerName())
-            TODO("not sure where we trigger this codepath...")
-        } else {
-            renderDeserializerBody(ctx, shape, documentMembers, writer)
-        }
+        // val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        // if (httpPayload != null) {
+        //     // explicitly bound member, delegate to the document deserializer
+        //     // val memberSymbol = ctx.symbolProvider.toSymbol(httpPayload.member)
+        //     // writer.write("builder.${httpPayload.member.defaultName()} = #L(deserializer)", memberSymbol.documentDeserializerName())
+        //     TODO("not sure where we trigger this codepath...")
+        // } else {
+        //     renderDeserializerBody(ctx, shape, documentMembers, writer)
+        // }
+        renderDeserializerBody(ctx, shape, documentMembers, writer)
     }
 
     open fun documentDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
@@ -90,17 +97,17 @@ open class JsonParserGenerator(
         }
     }
 
-    override fun errorDeserializer(ctx: ProtocolGenerator.GenerationContext, errorShape: StructureShape): Symbol {
+    override fun errorDeserializer(ctx: ProtocolGenerator.GenerationContext, errorShape: StructureShape, members: List<MemberShape>): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(errorShape)
         return symbol.errorDeserializer(ctx.settings) { writer ->
             val fnName = symbol.errorDeserializerName()
             writer.openBlock("internal fun #L(builder: #T.Builder, payload: ByteArray) {", fnName, symbol)
                 .call {
-                    val resolver = protocolGenerator.getProtocolHttpBindingResolver(ctx.model, ctx.service)
-                    val responseBindings = resolver.responseBindings(errorShape)
-                    val documentMembers = responseBindings.filterDocumentBoundMembers()
+                    // val resolver = protocolGenerator.getProtocolHttpBindingResolver(ctx.model, ctx.service)
+                    // val responseBindings = resolver.responseBindings(errorShape)
+                    // val documentMembers = responseBindings.filterDocumentBoundMembers()
                     writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
-                    renderDeserializerBody(ctx, errorShape, documentMembers, writer)
+                    renderDeserializerBody(ctx, errorShape, members, writer)
                 }
                 .closeBlock("}")
         }
@@ -115,9 +122,9 @@ open class JsonParserGenerator(
         JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members).render()
         if (shape.isUnionShape) {
             val name = ctx.symbolProvider.toSymbol(shape).name
-            DeserializeUnionGenerator(ctx, name, members, writer, protocolGenerator.defaultTimestampFormat).render()
+            DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
         } else {
-            DeserializeStructGenerator(ctx, members, writer, protocolGenerator.defaultTimestampFormat).render()
+            DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
         }
     }
 }
