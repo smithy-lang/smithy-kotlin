@@ -54,6 +54,12 @@ enum class GradleConfiguration {
     TestRuntimeOnly;
 
     override fun toString(): String = StringUtils.uncapitalize(this.name)
+
+    /**
+     * Return true if the dependency is in the test scope
+     */
+    val isTestScope
+        get() = this == TestImplementation || this == TestCompileOnly || this == TestRuntimeOnly
 }
 
 data class KotlinDependency(
