@@ -109,7 +109,6 @@ fun renderKmpGradleBuild(
                         #W
                     }
                 }
-                // val jvmMain by getting
             }
             val optInAnnotations = listOf(
                 #W
@@ -121,7 +120,7 @@ fun renderKmpGradleBuild(
         """.trimIndent(),
         pluginsRenderer,
         { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
-        { w: CodeWriter -> if (isRootModule) renderRootJvmPluginConfig(w) else writer.write("jvm()") },
+        { w: CodeWriter -> if (isRootModule) renderRootJvmPluginConfig(w) else w.write("jvm()") },
         { w: CodeWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = true, dependencies = dependencies) },
         { w: CodeWriter -> renderDependencies(w, scope = Scope.TEST, isKmp = true, dependencies = dependencies) },
         annotationRenderer
@@ -133,7 +132,7 @@ fun renderRootJvmPluginConfig(writer: CodeWriter) {
         """
             jvm {
                 compilations.all {
-                    kotlinOptions.jvmTarget = "#L"
+                    kotlinOptions.jvmTarget = #S
                 }
                 testRuns["test"].executionTask.configure {
                     useJUnitPlatform()
