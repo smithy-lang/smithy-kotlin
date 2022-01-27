@@ -61,7 +61,9 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
          */
         var endpointResolver: EndpointResolver? = null
         /**
-         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc)
+         * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
+         * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
+         * client will not close it when the client is closed.
          */
         var httpClientEngine: HttpClientEngine? = null
         /**
