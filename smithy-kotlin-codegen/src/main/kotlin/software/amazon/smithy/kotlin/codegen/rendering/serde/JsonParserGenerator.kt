@@ -46,8 +46,6 @@ open class JsonParserGenerator(
         val serdeIndex = SerdeIndex.of(ctx.model)
         val shapesRequiringDocumentDeserializer = serdeIndex.requiresDocumentDeserializer(shape)
 
-        val debug = shapesRequiringDocumentDeserializer.joinToString(separator = ",\n")
-        println("shapes requiring document deserializers: shape=$shape: \n$debug")
         // register a dependency on each of the members that require a deserializer impl
         // ensuring they get generated
         shapesRequiringDocumentDeserializer.forEach {
