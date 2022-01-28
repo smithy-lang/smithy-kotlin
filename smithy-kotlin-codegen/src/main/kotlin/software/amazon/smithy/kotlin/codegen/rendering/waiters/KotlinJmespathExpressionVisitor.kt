@@ -111,7 +111,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
         writer.openBlock("val #L = (#L ?: listOf()).filter {", filteredName, leftName)
 
         val comparisonName = childBlock(expression.comparison!!)
-        writer.write(comparisonName)
+        writer.write("#L == true", comparisonName)
 
         writer.closeBlock("}")
 

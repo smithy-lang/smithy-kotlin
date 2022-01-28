@@ -18,217 +18,244 @@ import kotlin.test.fail
 class KotlinJmespathExpressionVisitorTest {
     @Test
     fun testAndExpression() {
-        assertUnimplemented("foo && bar")
+        assertUnimplemented(path = "foo && bar")
     }
 
     @Test
     fun testComparatorExpression_Equality() {
         assertVisit(
-            "foo == bar",
-            "comparison",
-            "val foo = it?.foo",
-            "val bar = it?.bar",
-            "val comparison = foo == bar",
+            path = "foo == bar",
+            expectedActualName = "comparison",
+            expectedCodegen = """
+                val foo = it?.foo
+                val bar = it?.bar
+                val comparison = foo == bar
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testComparatorExpression_EqualityWithString() {
         assertVisit(
-            "`\"foo\"` == bar",
-            "comparison",
-            "val string = \"foo\"",
-            "val bar = it?.bar",
-            "val comparison = string == bar?.toString()",
+            path = "`\"foo\"` == bar",
+            expectedActualName = "comparison",
+            expectedCodegen = """
+                val string = "foo"
+                val bar = it?.bar
+                val comparison = string == bar?.toString()
+            """.trimIndent(),
         )
 
         assertVisit(
-            "foo == `\"bar\"`",
-            "comparison",
-            "val foo = it?.foo",
-            "val string = \"bar\"",
-            "val comparison = foo?.toString() == string",
+            path = "foo == `\"bar\"`",
+            expectedActualName = "comparison",
+            expectedCodegen = """
+                val foo = it?.foo
+                val string = "bar"
+                val comparison = foo?.toString() == string
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testComparatorExpression_EqualityWithTwoStrings() {
         assertVisit(
-            "`\"foo\"` != `\"bar\"`",
-            "comparison",
-            "val string = \"foo\"",
-            "val string2 = \"bar\"",
-            "val comparison = string != string2",
+            path = "`\"foo\"` != `\"bar\"`",
+            expectedActualName = "comparison",
+            expectedCodegen = """
+                val string = "foo"
+                val string2 = "bar"
+                val comparison = string != string2
+            """.trimIndent(),
+
         )
     }
 
     @Test
     fun testComparatorExpression_Inequality() {
         assertVisit(
-            "foo <= bar",
-            "comparison",
-            "val foo = it?.foo",
-            "val bar = it?.bar",
-            "val comparison = if (foo == null || bar == null) null else foo <= bar",
+            path = "foo <= bar",
+            expectedActualName = "comparison",
+            expectedCodegen = """
+                val foo = it?.foo
+                val bar = it?.bar
+                val comparison = if (foo == null || bar == null) null else foo <= bar
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testCurrentNodeInFlattenExpression() {
         assertVisit(
-            "foo[]",
-            "fooOrEmpty",
-            "val foo = it?.foo",
-            "val fooOrEmpty = foo ?: listOf()",
+            path = "foo[]",
+            expectedActualName = "fooOrEmpty",
+            expectedCodegen = """
+                val foo = it?.foo
+                val fooOrEmpty = foo ?: listOf()
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testExpressionTypeExpression() {
-        assertUnimplemented("&foo")
+        assertUnimplemented(path = "&foo")
     }
 
     @Test
     fun testFieldExpression() {
         assertVisit(
-            "name",
-            "name",
-            "val name = it?.name",
+            path = "name",
+            expectedActualName = "name",
+            expectedCodegen = "val name = it?.name",
         )
     }
 
     @Test
     fun testFilterProjection() {
         assertVisit(
-            "foo[?bar == baz]",
-            "fooFiltered",
-            "val foo = it?.foo",
-            "val fooFiltered = (foo ?: listOf()).filter {",
-            "    val bar = it?.bar",
-            "    val baz = it?.baz",
-            "    val comparison = bar == baz",
-            "    comparison",
-            "}",
+            path = "foo[?bar == baz]",
+            expectedActualName = "fooFiltered",
+            expectedCodegen = """
+                val foo = it?.foo
+                val fooFiltered = (foo ?: listOf()).filter {
+                    val bar = it?.bar
+                    val baz = it?.baz
+                    val comparison = bar == baz
+                    comparison == true
+                }
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testFunctionExpression_Contains() {
         assertVisit(
-            "contains(foo, bar)",
-            "contains",
-            "val foo = it?.foo",
-            "val bar = it?.bar",
-            "val contains = foo?.contains(bar) ?: false",
+            path = "contains(foo, bar)",
+            expectedActualName = "contains",
+            expectedCodegen = """
+                val foo = it?.foo
+                val bar = it?.bar
+                val contains = foo?.contains(bar) ?: false
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testFunctionExpression_Length() {
         assertVisit(
-            "length(foo)",
-            "length",
-            "import aws.smithy.kotlin.runtime.util.length",
-            "",
-            "val foo = it?.foo",
-            "val length = foo?.length ?: 0",
+            path = "length(foo)",
+            expectedActualName = "length",
+            expectedCodegen = """
+                import aws.smithy.kotlin.runtime.util.length
+                
+                val foo = it?.foo
+                val length = foo?.length ?: 0
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testIndexExpression() {
-        assertUnimplemented("foo[0]")
+        assertUnimplemented(path = "foo[0]")
     }
 
     @Test
     fun testLiteralExpressions() {
-        assertVisit("`\"a string\"`", "string", "val string = \"a string\"")
-        assertVisit("`3.14`", "number", "val number = 3.14")
-        assertVisit("`false`", "bool", "val bool = false")
-        assertVisit("`null`", "null")
-        assertUnimplemented("`[]`")
-        assertUnimplemented("`{}`")
+        assertVisit(path = "`\"foo\"`", expectedActualName = "string", expectedCodegen = "val string = \"foo\"")
+        assertVisit(path = "`3.14`", expectedActualName = "number", expectedCodegen = "val number = 3.14")
+        assertVisit(path = "`false`", expectedActualName = "bool", expectedCodegen = "val bool = false")
+        assertVisit(path = "`null`", expectedActualName = "null", expectedCodegen = "")
+        assertUnimplemented(path = "`[]`")
+        assertUnimplemented(path = "`{}`")
     }
 
     @Test
     fun testMultiSelectHashExpression() {
-        assertUnimplemented("foo.{bar: baz}")
+        assertUnimplemented(path = "foo.{bar: baz}")
     }
 
     @Test
     fun testMultiSelectListExpression() {
         assertVisit(
-            "foo[][bar, baz]",
-            "projection",
-            "val foo = it?.foo",
-            "val fooOrEmpty = foo ?: listOf()",
-            "val projection = fooOrEmpty.flatMap {",
-            "    val multiSelect = listOfNotNull(",
-            "        run {",
-            "            val bar = it?.bar",
-            "            bar",
-            "        },",
-            "        run {",
-            "            val baz = it?.baz",
-            "            baz",
-            "        },",
-            "    )",
-            "    multiSelect",
-            "}",
+            path = "foo[][bar, baz]",
+            expectedActualName = "projection",
+            expectedCodegen = """
+                val foo = it?.foo
+                val fooOrEmpty = foo ?: listOf()
+                val projection = fooOrEmpty.flatMap {
+                    val multiSelect = listOfNotNull(
+                        run {
+                            val bar = it?.bar
+                            bar
+                        },
+                        run {
+                            val baz = it?.baz
+                            baz
+                        },
+                    )
+                    multiSelect
+                }
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testNotExpression() {
-        assertUnimplemented("!foo")
+        assertUnimplemented(path = "!foo")
     }
 
     @Test
     fun testObjectProjection() {
         assertVisit(
-            "foo.*.bar",
-            "projection",
-            "val foo = it?.foo",
-            "val fooValues = foo?.values ?: listOf()",
-            "val projection = fooValues.flatMap {",
-            "    val bar = it?.bar",
-            "    listOfNotNull(bar)",
-            "}",
+            path = "foo.*.bar",
+            expectedActualName = "projection",
+            expectedCodegen = """
+                val foo = it?.foo
+                val fooValues = foo?.values ?: listOf()
+                val projection = fooValues.flatMap {
+                    val bar = it?.bar
+                    listOfNotNull(bar)
+                }
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testProjectionExpression() {
         assertVisit(
-            "foo[].bar",
-            "projection",
-            "val foo = it?.foo",
-            "val fooOrEmpty = foo ?: listOf()",
-            "val projection = fooOrEmpty.flatMap {",
-            "    val bar = it?.bar",
-            "    listOfNotNull(bar)",
-            "}",
+            path = "foo[].bar",
+            expectedActualName = "projection",
+            expectedCodegen = """
+                val foo = it?.foo
+                val fooOrEmpty = foo ?: listOf()
+                val projection = fooOrEmpty.flatMap {
+                    val bar = it?.bar
+                    listOfNotNull(bar)
+                }
+            """.trimIndent(),
         )
     }
 
     @Test
     fun testOrExpression() {
-        assertUnimplemented("foo || bar")
+        assertUnimplemented(path = "foo || bar")
     }
 
     @Test
     fun testSliceExpression() {
-        assertUnimplemented("foo[0:1]")
+        assertUnimplemented(path = "foo[0:1]")
     }
 
     @Test
     fun testSubExpressions() {
         assertVisit(
-            "foo.bar.baz",
-            "baz",
-            "val foo = it?.foo",
-            "val bar = foo?.bar",
-            "val baz = bar?.baz",
+            path = "foo.bar.baz",
+            expectedActualName = "baz",
+            expectedCodegen = """
+                val foo = it?.foo
+                val bar = foo?.bar
+                val baz = bar?.baz
+            """.trimIndent(),
         )
     }
 
@@ -242,7 +269,7 @@ class KotlinJmespathExpressionVisitorTest {
         fail("Expected a CodegenException")
     }
 
-    private fun assertVisit(path: String, expectedActualName: String, vararg vals: String) {
+    private fun assertVisit(path: String, expectedActualName: String, expectedCodegen: String) {
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val visitor = KotlinJmespathExpressionVisitor(writer)
 
@@ -251,8 +278,8 @@ class KotlinJmespathExpressionVisitorTest {
 
         assertEquals(expectedActualName, actualResultName)
 
-        val codegen = writer.toString().stripCodegenPrefix(TestModelDefault.NAMESPACE)
-        assertEquals(vals.joinToString("\n"), codegen)
+        val actualCodegen = writer.toString().stripCodegenPrefix(TestModelDefault.NAMESPACE)
+        assertEquals(expectedCodegen, actualCodegen)
     }
 
     private fun visit(path: String): String {
