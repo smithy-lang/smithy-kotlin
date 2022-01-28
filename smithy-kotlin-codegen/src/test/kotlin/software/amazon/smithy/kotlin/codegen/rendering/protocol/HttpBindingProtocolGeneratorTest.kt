@@ -185,7 +185,7 @@ internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRe
         }
 
         if (input.payload1 != null) {
-            val payload = serializeExplicitStructOperationBody(context, input)
+            val payload = serializeNested2Payload(input.payload1)
             builder.body = ByteArrayContent(payload)
         }
         builder.headers.setMissing("Content-Type", "application/json")
@@ -439,7 +439,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         val expectedContents = """
         val payload = response.body.readAll()
         if (payload != null) {
-            deserializeExplicitStructOperationBody(builder, payload)
+            builder.payload1 = deserializeNested2Payload(payload)
         }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)

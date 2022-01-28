@@ -153,23 +153,34 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
 
     override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
         object : StructuredDataParserGenerator {
-            override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = buildSymbol {
+            override fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol = buildSymbol {
                 name = op.bodyDeserializerName()
             }
 
             override fun errorDeserializer(
                 ctx: ProtocolGenerator.GenerationContext,
-                errorShape: StructureShape
+                errorShape: StructureShape,
+                members: List<MemberShape>
             ): Symbol = buildSymbol {
                 val errSymbol = ctx.symbolProvider.toSymbol(errorShape)
                 name = errSymbol.errorDeserializerName()
+            }
+
+            override fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol = buildSymbol {
+                val symbol = ctx.symbolProvider.toSymbol(member)
+                name = symbol.payloadDeserializerName()
             }
         }
 
     override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializeGenerator =
         object : StructuredDataSerializeGenerator {
-            override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = buildSymbol {
+            override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol = buildSymbol {
                 name = op.bodySerializerName()
+            }
+
+            override fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol = buildSymbol {
+                val symbol = ctx.symbolProvider.toSymbol(member)
+                name = symbol.payloadSerializerName()
             }
         }
 
@@ -177,8 +188,7 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         writer: KotlinWriter
-    ) {
-    }
+    ) {}
 }
 
 // Create a test harness with all necessary codegen types
