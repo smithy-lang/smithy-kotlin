@@ -37,8 +37,8 @@ private fun KotlinWriter.renderAcceptor(wi: WaiterInfo, acceptor: Acceptor) {
         }
 
         is Matcher.ErrorTypeMember -> renderErrorAcceptor(wi, directive, matcher)
-        is Matcher.InputOutputMember -> renderPathAcceptor(wi, directive, true, matcher.value)
-        is Matcher.OutputMember -> renderPathAcceptor(wi, directive, false, matcher.value)
+        is Matcher.InputOutputMember -> renderPathAcceptor(directive, true, matcher.value)
+        is Matcher.OutputMember -> renderPathAcceptor(directive, false, matcher.value)
         else -> throw CodegenException("""Unknown matcher type "${matcher::class}"""")
     }
 }
@@ -84,12 +84,7 @@ private fun KotlinWriter.renderErrorAcceptor(
 /**
  * Render a path-based acceptor (i.e., one that uses an output or inputOutput matcher).
  */
-private fun KotlinWriter.renderPathAcceptor(
-    wi: WaiterInfo,
-    directive: String,
-    includeInput: Boolean,
-    matcher: PathMatcher,
-) {
+private fun KotlinWriter.renderPathAcceptor(directive: String, includeInput: Boolean, matcher: PathMatcher) {
     val acceptorType = if (includeInput) {
         addImport(RuntimeTypes.Core.Retries.Policy.InputOutputAcceptor)
         "InputOutputAcceptor"
@@ -99,20 +94,9 @@ private fun KotlinWriter.renderPathAcceptor(
     }
 
     withBlock("#L(RetryDirective.#L) {", "},", acceptorType, directive) {
-        val visitor = KotlinJmespathExpressionVisitor(
-            includeInput,
-            wi.ctx.model,
-            wi.ctx.symbolProvider,
-            wi.input,
-            wi.inputSymbol,
-            wi.output,
-            wi.outputSymbol,
-        )
-
+        val visitor = KotlinJmespathExpressionVisitor(this)
         val expression = JmespathExpression.parse(matcher.path)
-        expression.accept(visitor)
-
-        val actual = visitor.renderActual(this)
+        val actual = expression.accept(visitor)
 
         val expected = matcher.expected
         val comparison = when (matcher.comparator!!) {

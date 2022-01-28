@@ -52,7 +52,7 @@ class AcceptorGeneratorTest {
         val expected = """
             val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 OutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val name = it.name
+                    val name = it?.name
                     name?.toString() == "foo"
                 },
             )
@@ -65,22 +65,22 @@ class AcceptorGeneratorTest {
         val expected = """
             val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val input = it.input
+                    val input = it?.input
                     val id = input?.id
                     id?.toString() == "foo"
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val output = it.output
+                    val output = it?.output
                     val isDeprecated = output?.isDeprecated
                     isDeprecated == false
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val output = it.output
+                    val output = it?.output
                     val tags = output?.tags
                     (tags?.size ?: 0) > 1 && tags?.all { it?.toString() == "foo" }
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
-                    val output = it.output
+                    val output = it?.output
                     val tags = output?.tags
                     tags?.any { it?.toString() == "foo" } ?: false
                 },
