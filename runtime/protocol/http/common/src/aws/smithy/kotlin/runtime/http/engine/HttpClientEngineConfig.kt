@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.http.engine
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 // See https://github.com/aws/aws-sdk-java-v2/blob/master/http-client-spi/src/main/java/software/amazon/awssdk/http/SdkHttpConfigurationOption.java
 // for all the options the Java v2 SDK supports
@@ -17,7 +16,6 @@ import kotlin.time.ExperimentalTime
  * NOTE: Not all engines will support every option! Engines *SHOULD* log a warning when given a configuration
  * option they don't understand/support
  */
-@OptIn(ExperimentalTime::class)
 open class HttpClientEngineConfig constructor(builder: Builder) {
     constructor() : this(Builder())
 

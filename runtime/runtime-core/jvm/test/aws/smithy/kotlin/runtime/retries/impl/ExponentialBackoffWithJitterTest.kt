@@ -6,8 +6,8 @@
 package aws.smithy.kotlin.runtime.retries.impl
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 class ExponentialBackoffWithJitterTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testScaling() = runBlockingTest {
+    fun testScaling() = runTest {
         val options = ExponentialBackoffWithJitterOptions(
             initialDelayMs = 10,
             scaleFactor = 2.0, // Make the numbers easy for tests
@@ -27,7 +27,7 @@ class ExponentialBackoffWithJitterTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testJitter() = runBlockingTest {
+    fun testJitter() = runTest {
         val options = ExponentialBackoffWithJitterOptions(
             initialDelayMs = 10,
             scaleFactor = 2.0, // Make the numbers easy for tests
@@ -43,7 +43,7 @@ class ExponentialBackoffWithJitterTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testMaxBackoff() = runBlockingTest {
+    fun testMaxBackoff() = runTest {
         val options = ExponentialBackoffWithJitterOptions(
             initialDelayMs = 10,
             scaleFactor = 2.0, // Make the numbers easy for tests
@@ -55,7 +55,7 @@ class ExponentialBackoffWithJitterTest {
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-private suspend fun TestCoroutineScope.backoffSeries(
+private suspend fun TestScope.backoffSeries(
     times: Int,
     options: ExponentialBackoffWithJitterOptions,
 ): List<Int> {

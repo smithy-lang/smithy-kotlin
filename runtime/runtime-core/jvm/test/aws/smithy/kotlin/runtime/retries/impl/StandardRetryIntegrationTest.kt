@@ -11,7 +11,9 @@ import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import aws.smithy.kotlin.runtime.retries.TooManyAttemptsException
 import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.*
@@ -19,7 +21,7 @@ import kotlin.test.*
 class StandardRetryIntegrationTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testIntegrationCases() = runBlockingTest {
+    fun testIntegrationCases() = runTest {
         val testCases = standardRetryIntegrationTestCases
             .mapValues { Yaml.default.decodeFromString(TestCase.serializer(), it.value) }
         testCases.forEach { (name, tc) ->
