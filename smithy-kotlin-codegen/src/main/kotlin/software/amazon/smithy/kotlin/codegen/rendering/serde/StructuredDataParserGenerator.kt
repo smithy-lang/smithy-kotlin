@@ -40,6 +40,23 @@ interface StructuredDataParserGenerator {
     fun operationDeserializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol
 
     /**
+     * Render function responsible for deserializing the given member shape from a payload.
+     *
+     * ```
+     * fun deserializeFooPayload(payload: ByteArray): Foo {
+     *  ...
+     * }
+     * ```
+     *
+     * Implementations are expected to deserialize from the specific data format and return the result
+     *
+     * @param ctx the protocol generator context
+     * @param member the member to deserialize
+     * @return the generated symbol which should be a function matching the expected signature
+     */
+    fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol
+
+    /**
      * Render function responsible for deserializing members bound to the payload for the given error shape.
      *
      * Because only a subset of fields of an operation error may be bound to the payload a builder is given

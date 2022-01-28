@@ -423,10 +423,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, RuntimeTypes.Core.Content.toByteArray)
             }
             ShapeType.STRUCTURE, ShapeType.UNION -> {
-                // delegate to the generated operation body serializer function
                 val sdg = structuredDataSerializer(ctx)
-                val opBodySerializerFn = sdg.operationSerializer(ctx, op, target.members().toList())
-                writer.write("val payload = #T(context, input)", opBodySerializerFn)
+                val payloadSerializerFn = sdg.payloadSerializer(ctx, binding.member)
+                writer.write("val payload = #T(input.#L)", payloadSerializerFn, memberName)
                 writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
             }
             ShapeType.DOCUMENT -> {
@@ -861,17 +860,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             ShapeType.STRUCTURE, ShapeType.UNION -> {
                 // delegate to the payload deserializer
                 val sdg = structuredDataParser(ctx)
-                val bodyDeserializerFn = if (op != null) {
-                    // normal operation
-                    sdg.operationDeserializer(ctx, op, target.members().toList())
-                } else {
-                    // error
-                    sdg.errorDeserializer(ctx, target as StructureShape, target.members().toList())
-                }
+                val payloadDeserializerFn = sdg.payloadDeserializer(ctx, binding.member)
 
                 writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
                     .withBlock("if (payload != null) {", "}") {
-                        write("#T(builder, payload)", bodyDeserializerFn)
+                        write("builder.$memberName = #T(payload)", payloadDeserializerFn)
                     }
             }
             ShapeType.DOCUMENT -> {

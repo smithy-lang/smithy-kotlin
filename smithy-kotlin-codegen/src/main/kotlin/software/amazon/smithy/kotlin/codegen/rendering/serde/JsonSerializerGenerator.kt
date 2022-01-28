@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -43,9 +44,9 @@ open class JsonSerializerGenerator(
      * Register nested structure/map shapes reachable from the operation input shape that require a "document" serializer
      * implementation
      */
-    private fun addNestedDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
+    private fun addNestedDocumentSerializers(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) {
         val serdeIndex = SerdeIndex.of(ctx.model)
-        val shapesRequiringDocumentSerializer = serdeIndex.requiresDocumentSerializer(listOf(op))
+        val shapesRequiringDocumentSerializer = serdeIndex.requiresDocumentSerializer(shape)
         // register a dependency on each of the members that require a serializer impl
         // ensuring they get generated
         shapesRequiringDocumentSerializer.forEach {
@@ -60,26 +61,13 @@ open class JsonSerializerGenerator(
         documentMembers: List<MemberShape>,
         writer: KotlinWriter
     ) {
-        // val resolver = protocolGenerator.getProtocolHttpBindingResolver(ctx.model, ctx.service)
-        // val requestBindings = resolver.requestBindings(op)
-        // val documentMembers = requestBindings.filterDocumentBoundMembers()
-
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
-
-        // restJson protocol supports the httpPayload trait
-        // val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-        // if (httpPayload != null) {
-        //     TODO("not sure when or where we hit this codepath...")
-        // } else {
-        //     renderSerializerBody(ctx, shape, documentMembers, writer)
-        // }
-
         renderSerializerBody(ctx, shape, documentMembers, writer)
         writer.write("return serializer.toByteArray()")
     }
 
-    open fun documentSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
+    private fun documentSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return symbol.documentSerializer(ctx.settings) { writer ->
             val fnName = symbol.documentSerializerName()
@@ -103,6 +91,22 @@ open class JsonSerializerGenerator(
             SerializeUnionGenerator(ctx, members, writer, defaultTimestampFormat).render()
         } else {
             SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        }
+    }
+
+    override fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol {
+        // re-use document serializer (for the target shape!)
+        val target = ctx.model.expectShape(member.target)
+        val symbol = ctx.symbolProvider.toSymbol(member)
+        val serializeFn = documentSerializer(ctx, target)
+        val fnName = symbol.payloadSerializerName()
+        return symbol.payloadSerializer(ctx.settings) { writer ->
+            addNestedDocumentSerializers(ctx, target, writer)
+            writer.withBlock("internal fun #L(input: #T): ByteArray {", "}", fnName, symbol) {
+                write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
+                write("#T(serializer, input)", serializeFn)
+                write("return serializer.toByteArray()")
+            }
         }
     }
 }

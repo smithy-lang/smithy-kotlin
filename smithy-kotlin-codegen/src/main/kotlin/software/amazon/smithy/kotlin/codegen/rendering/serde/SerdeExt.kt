@@ -122,6 +122,40 @@ fun Symbol.errorDeserializer(settings: KotlinSettings, block: SymbolRenderer): S
 }
 
 /**
+ * The name deserializer name for this shape as a payload
+ */
+fun Symbol.payloadDeserializerName(): String = "deserialize" + StringUtils.capitalize(name) + "Payload"
+
+/**
+ * Get the function responsible for deserializing the specific shape as a standalone payload
+ */
+fun Symbol.payloadDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = payloadDeserializerName()
+    namespace = "${settings.pkg.name}.transform"
+    val symbol = this@payloadDeserializer
+    definitionFile = "${symbol.name}PayloadDeserializer.kt"
+    reference(symbol, SymbolReference.ContextOption.DECLARE)
+    renderBy = block
+}
+
+/**
+ * The name serializer name for this shape as a payload
+ */
+fun Symbol.payloadSerializerName(): String = "serialize" + StringUtils.capitalize(name) + "Payload"
+
+/**
+ * Get the function responsible for serializing the specific shape as a standalone payload
+ */
+fun Symbol.payloadSerializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = payloadSerializerName()
+    namespace = "${settings.pkg.name}.transform"
+    val symbol = this@payloadSerializer
+    definitionFile = "${symbol.name}PayloadSerializer.kt"
+    reference(symbol, SymbolReference.ContextOption.DECLARE)
+    renderBy = block
+}
+
+/**
  * Format an instance of `Instant` using the given [tsFmt]
  * @param paramName The name of the local identifier to format
  * @param tsFmt The timestamp format to use
