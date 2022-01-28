@@ -26,158 +26,17 @@ import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
 /**
- * Extension function that is more idiomatic Kotlin that is roughly the same purpose as
- * the provided function `openBlock(String textBeforeNewline, String textAfterNewline, Runnable r)`
+ * Provides capability of writing Kotlin source code. An instance of a KotlinWriter corresponds to a file emitted
+ * from codegen.
  *
- * Example:
- * ```
- * writer.withBlock("{", "}") {
- *     write("foo")
- * }
- * ```
- *
- * Equivalent to:
- * ```
- * writer.openBlock("{")
- * writer.write("foo")
- * writer.closeBlock("}")
- * ```
+ * @param fullPackageName package namespace associated with the file
  */
-fun <T : CodeWriter> T.withBlock(
-    textBeforeNewLine: String,
-    textAfterNewLine: String,
-    vararg args: Any,
-    block: T.() -> Unit
-): T = wrapBlockIf(true, textBeforeNewLine, textAfterNewLine, *args) { block(this) }
-
-/**
- * Extension function that is more idiomatic Kotlin that is roughly the same purpose as an if block wrapped around
- * the provided function `openBlock(String textBeforeNewline, String textAfterNewline, Runnable r)`
- *
- * Example:
- * ```
- * writer.wrapBlockIf(foo == bar, "{", "}") {
- *     write("foo")
- * }
- * ```
- *
- * Equivalent to:
- * ```
- * if (foo == bar) writer.openBlock("{")
- * writer.write("foo")
- * if (foo == bar) writer.closeBlock("}")
- * ```
- */
-fun <T : CodeWriter> T.wrapBlockIf(
-    condition: Boolean,
-    textBeforeNewLine: String,
-    textAfterNewLine: String,
-    vararg args: Any,
-    block: T.() -> Unit,
-): T {
-    if (condition) openBlock(textBeforeNewLine, *args)
-    block(this)
-    if (condition) closeBlock(textAfterNewLine)
-    return this
-}
-
-/**
- * Extension function that closes the previous block, dedents, opens a new block with [textBeforeNewLine], and indents.
- *
- * This is useful for chaining if-if-else-else branches.
- *
- * Example:
- * ```
- * writer.openBlock("if (foo) {")
- *     .write("foo()")
- *     .closeAndOpenBlock("} else {")
- *     .write("bar()")
- *     .closeBlock("}")
- * ```
- */
-fun <T : CodeWriter> T.closeAndOpenBlock(
-    textBeforeNewLine: String,
-    vararg args: Any,
-): T = apply {
-    dedent()
-    openBlock(textBeforeNewLine, *args)
-}
-
-/**
- * Declares a section for extension in codegen.  The [SectionId] should be specified as a child
- * of the type housing the codegen associated with the section. This keeps [SectionId]s closely
- * associated with their targets.
- */
-fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> = emptyMap(), block: T.() -> Unit = {}): T {
-    putContext(context)
-    pushState(id.javaClass.canonicalName)
-    block(this)
-    popState()
-    removeContext(context)
-    return this
-}
-
-private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
-    context.keys.forEach { key -> removeContext(key) }
-
-/**
- * Convenience function to get a typed value out of the context or throw if the key doesn't exist
- * or the type is wrong
- */
-inline fun <reified T> CodeWriter.getContextValue(key: String): T = checkNotNull(getContext(key) as? T) {
-    "Expected `$key` in CodeWriter context"
-}
-
-/**
- * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
- * [SectionWriter.write] to be called at the point in which the section is declared via
- * the [CodeWriter.declareSection] function.
- */
-fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): KotlinWriter {
-    onSection(id.javaClass.canonicalName) { default ->
-        require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
-        writer.write(this, default)
-    }
-    return this
-}
-
-// Convenience function to create symbol and add it as an import.
-fun KotlinWriter.addImport(
-    name: String,
-    dependency: KotlinDependency = KotlinDependency.CORE,
-    namespace: String = dependency.namespace,
-    subpackage: String? = null
-): KotlinWriter {
-    val fullNamespace = if (subpackage != null) "$namespace.$subpackage" else namespace
-    val importSymbol = Symbol.builder()
-        .name(name)
-        .namespace(fullNamespace, ".")
-        .addDependency(dependency)
-        .build()
-
-    addImport(importSymbol)
-    return this
-}
-
-fun KotlinWriter.addImport(vararg imports: Symbol): KotlinWriter {
-    imports.forEach { import -> addImport(import) }
-    return this
-}
-
-fun KotlinWriter.addImport(imports: Iterable<Symbol>): KotlinWriter {
-    imports.forEach { import -> addImport(import) }
-    return this
-}
-
-fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
-    imports.forEach { importSet -> importSet.forEach { import -> addImport(import) } }
-    return this
-}
-
-class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
-    private val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf()
-    val dependencies: MutableSet<SymbolDependency> = mutableSetOf()
-    private val imports = ImportDeclarations()
+class KotlinWriter(
+    val fullPackageName: String,
+    val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf(),
+    val dependencies: MutableSet<SymbolDependency> = mutableSetOf(),
+    val imports: ImportDeclarations = ImportDeclarations()
+) : CodeWriter() {
 
     init {
         trimBlankLines()
@@ -202,6 +61,9 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 
         // like `D` but fully qualified
         putFormatter('E', KotlinPropertyFormatter(setDefault = true, fullyQualifiedNames = true))
+
+        // Pass a function receiving a [KotlinWriter] to generate an inline value
+        putFormatter('W', InlineKotlinWriterFormatter(this))
     }
 
     fun addImport(symbol: Symbol, alias: String = symbol.name): KotlinWriter {
@@ -256,6 +118,11 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
             imports.addImport(packageName, symbolName, alias)
         }
     }
+
+    /**
+     * @return the code written to this writer without anything else
+     */
+    fun rawString(): String = super.toString()
 
     override fun toString(): String {
         val contents = super.toString()
@@ -337,6 +204,52 @@ class KotlinWriter(private val fullPackageName: String) : CodeWriter() {
 }
 
 /**
+ * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
+ * [SectionWriter.write] to be called at the point in which the section is declared via
+ * the [CodeWriter.declareSection] function.
+ */
+fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): KotlinWriter {
+    onSection(id.javaClass.canonicalName) { default ->
+        require(default is String?) { "Expected Smithy to pass String for previous value but found ${default::class.java}" }
+        writer.write(this, default)
+    }
+    return this
+}
+
+// Convenience function to create symbol and add it as an import.
+fun KotlinWriter.addImport(
+    name: String,
+    dependency: KotlinDependency = KotlinDependency.CORE,
+    namespace: String = dependency.namespace,
+    subpackage: String? = null
+): KotlinWriter {
+    val fullNamespace = if (subpackage != null) "$namespace.$subpackage" else namespace
+    val importSymbol = Symbol.builder()
+        .name(name)
+        .namespace(fullNamespace, ".")
+        .addDependency(dependency)
+        .build()
+
+    addImport(importSymbol)
+    return this
+}
+
+fun KotlinWriter.addImport(vararg imports: Symbol): KotlinWriter {
+    imports.forEach { import -> addImport(import) }
+    return this
+}
+
+fun KotlinWriter.addImport(imports: Iterable<Symbol>): KotlinWriter {
+    imports.forEach { import -> addImport(import) }
+    return this
+}
+
+fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
+    imports.forEach { importSet -> importSet.forEach { import -> addImport(import) } }
+    return this
+}
+
+/**
  * Implements Kotlin symbol formatting for the `#T` and `#Q` formatter(s)
  */
 private class KotlinSymbolFormatter(
@@ -380,6 +293,27 @@ class KotlinPropertyFormatter(
             }
             else -> throw CodegenException("Invalid type provided for ${javaClass.name}. Expected a Symbol, but found `$type`")
         }
+    }
+}
+
+// Specifies a function that receives a [KotlinWriter]
+typealias InlineKotlinWriter = KotlinWriter.() -> Unit
+/**
+ * Formatter to enable passing a writing function
+ * @param codeWriterCreator function that creates a new [CodeWriter] instance used to generate output of inline content
+ */
+class InlineKotlinWriterFormatter(private val parent: KotlinWriter) : BiFunction<Any, String, String> {
+    @Suppress("UNCHECKED_CAST")
+    override fun apply(t: Any, u: String): String {
+        val func = t as? InlineCodeWriter ?: error("Invalid parameter type of ${t::class}")
+        val innerWriter = KotlinWriter(
+            parent.fullPackageName,
+            parent.fullyQualifiedSymbols,
+            parent.dependencies,
+            parent.imports
+        )
+        func(innerWriter)
+        return innerWriter.rawString().trimEnd()
     }
 }
 
@@ -428,14 +362,3 @@ private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
         .split('\n') // Break the doc into lines
         .filter { it.isNotBlank() } // Remove empty lines
         .joinToString(separator = lineSeparator) { it.trim() } // Trim line
-
-/**
- * Optionally call the [Runnable] if [test] is true, otherwise do nothing and return the instance without
- * running the block
- */
-fun CodeWriter.callIf(test: Boolean, runnable: Runnable): CodeWriter {
-    if (test) {
-        runnable.run()
-    }
-    return this
-}

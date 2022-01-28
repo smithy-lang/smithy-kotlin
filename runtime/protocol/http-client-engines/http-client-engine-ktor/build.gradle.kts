@@ -11,9 +11,13 @@ val ktorVersion: String by project
 
 kotlin {
     sourceSets {
-        jvmMain {
+        commonMain {
             dependencies {
                 api(project(":runtime:protocol:http"))
+            }
+        }
+        jvmMain {
+            dependencies {
                 implementation(project(":runtime:io"))
                 // okhttp works on both JVM and Android
                 implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
