@@ -234,7 +234,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val requestBindings = resolver.requestBindings(op)
         val httpPayload = requestBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
         if (httpPayload != null) {
-            renderExplicitHttpPayloadSerializer(ctx, op, httpPayload, writer)
+            renderExplicitHttpPayloadSerializer(ctx, httpPayload, writer)
         } else {
             val documentMembers = requestBindings.filterDocumentBoundMembers()
             // Unbound document members that should be serialized into the document format for the protocol.
@@ -391,7 +391,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     private fun renderExplicitHttpPayloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
         binding: HttpBindingDescriptor,
         writer: KotlinWriter
     ) {
@@ -577,7 +576,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 // payload member(s)
                 val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
                 if (httpPayload != null) {
-                    renderExplicitHttpPayloadDeserializer(ctx, httpPayload, op, writer)
+                    renderExplicitHttpPayloadDeserializer(ctx, httpPayload, writer)
                 } else {
                     // Unbound document members that should be deserialized from the document format for the protocol.
                     val documentMembers = responseBindings
@@ -814,7 +813,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     private fun renderExplicitHttpPayloadDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         binding: HttpBindingDescriptor,
-        op: OperationShape?,
         writer: KotlinWriter
     ) {
         val memberName = binding.member.defaultName()
