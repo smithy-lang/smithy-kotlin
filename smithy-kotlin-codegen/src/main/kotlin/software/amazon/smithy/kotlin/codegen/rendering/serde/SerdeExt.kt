@@ -116,7 +116,9 @@ fun Symbol.errorDeserializer(settings: KotlinSettings, block: SymbolRenderer): S
     name = errorDeserializerName()
     namespace = "${settings.pkg.name}.transform"
     val symbol = this@errorDeserializer
-    definitionFile = "${symbol.name}ErrorDeserializer.kt"
+    // place it in the same file as the exception deserializer, e.g. for HTTP protocols this will be in
+    // same file as HttpDeserialize
+    definitionFile = "${symbol.name}Deserializer.kt"
     reference(symbol, SymbolReference.ContextOption.DECLARE)
     renderBy = block
 }
