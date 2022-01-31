@@ -12,12 +12,7 @@ import software.amazon.smithy.kotlin.codegen.core.SymbolRenderer
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
@@ -59,13 +54,17 @@ class RestJsonTestProtocolGenerator(
     override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
         JsonParserGenerator(this)
 
-    override fun renderThrowOperationError(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter
-    ) {
-        writer.write("""TODO("not-implemented - compile only test")""")
-    }
+    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
+        op.errorHandler(ctx.settings) { writer ->
+            writer.withBlock(
+                "private suspend fun ${op.errorHandlerName()}(context: #T, response: #T): Nothing {",
+                "}",
+                RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.Http.Response.HttpResponse
+            ) {
+                write("error(\"not needed for compile tests\")")
+            }
+        }
 
 }
 

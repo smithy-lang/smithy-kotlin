@@ -7,8 +7,8 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
@@ -32,7 +32,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     abstract val defaultTimestampFormat: TimestampFormatTrait.Format
 
-    // FIXME - rename these two functions, they don't need "Protocol" in the name
     /**
      * Returns HTTP binding resolver for protocol specified by input.
      * @param model service model
@@ -67,15 +66,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             StandardRetryMiddleware(),
         )
 
-    // FIXME - remove in favor of returning the symbol dependency which would to allow a single vs per/operation error deserialization
     /**
-     * Render implementation responsible for matching an HTTP response that represents one of the modeled errors for
-     * an operation.
+     * Return the function responsible for handling an operational error. This function is invoked from the operation
+     * deserializer based on [renderIsHttpError] logic (i.e. the response has been determined to be an error, it is
+     * up to the function represented by the returned symbol to figure out which one and throw it)
      *
-     * This function is invoked from the operation deserializer based on [renderIsHttpError] logic. i.e. the response
-     * has already been determined to be an error, it is up to this function to figure out which one and throw it.
-     *
-     * The function has the following signature:
+     * The function should have the following signature:
      *
      * ```
      * suspend fun throwFooOperationError(context: ExecutionContext, response: HttpResponse): Nothing {
@@ -88,9 +84,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      *
      * @param ctx the protocol generator context
      * @param op the operation shape to render error matching
-     * @param writer the writer to render to
      */
-    abstract fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter)
+    abstract fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol
 
     private fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
@@ -483,17 +478,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     renderHttpDeserialize(ctx, outputSymbol, responseBindings, op, writer)
                 }
                 .closeBlock("}")
-                .call {
-                    writer.write("")
-                        .openBlock(
-                            "private suspend fun throw${op.capitalizedDefaultName()}Error(context: #T, response: #T): #Q {", "}",
-                            RuntimeTypes.Core.ExecutionContext,
-                            RuntimeTypes.Http.Response.HttpResponse,
-                            KotlinTypes.Nothing
-                        ) {
-                            renderThrowOperationError(ctx, op, writer)
-                        }
-                }
         }
     }
 
@@ -503,7 +487,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     protected open fun renderIsHttpError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Http.isSuccess)
         writer.withBlock("if (!response.status.#T()) {", "}", RuntimeTypes.Http.isSuccess) {
-            write("throw${op.capitalizedDefaultName()}Error(context, response)")
+            val errorHandlerFn = operationErrorHandler(ctx, op)
+            write("#T(context, response)", errorHandlerFn)
         }
     }
 
@@ -920,3 +905,19 @@ fun List<HttpBindingDescriptor>.filterDocumentBoundMembers(): List<MemberShape> 
     filter { it.location == HttpBinding.Location.DOCUMENT }
         .sortedBy { it.memberName }
         .map { it.member }
+
+/**
+ * The default operation error handler function name
+ */
+fun OperationShape.errorHandlerName(): String = "throw${capitalizedDefaultName()}Error"
+
+/**
+ * Get the function responsible for handling errors for this operation
+ */
+fun OperationShape.errorHandler(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+    name = errorHandlerName()
+    namespace = "${settings.pkg.name}.transform"
+    // place error handler in same file as operation deserializer
+    definitionFile = "${deserializerName()}.kt"
+    renderBy = block
+}

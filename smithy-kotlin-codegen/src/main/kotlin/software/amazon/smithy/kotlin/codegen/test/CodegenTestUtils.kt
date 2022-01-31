@@ -184,11 +184,9 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
             }
         }
 
-    override fun renderThrowOperationError(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter
-    ) {}
+    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = buildSymbol {
+        name = op.errorHandlerName()
+    }
 }
 
 // Create a test harness with all necessary codegen types
