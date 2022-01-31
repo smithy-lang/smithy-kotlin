@@ -69,6 +69,7 @@ benchmark {
             iterationTimeUnit = "s"
             warmups = 7
             outputTimeUnit = "ms"
+            reportFormat = "text"
         }
     }
 }

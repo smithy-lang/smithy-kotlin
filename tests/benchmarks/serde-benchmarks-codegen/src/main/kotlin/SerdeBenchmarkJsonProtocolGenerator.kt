@@ -28,38 +28,18 @@ class SerdeBenchmarkJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         object : HttpProtocolClientGenerator(ctx, emptyList(), getProtocolHttpBindingResolver(ctx.model, ctx.service)) {}
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) { }
-    override fun renderSerializeOperationBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) { }
-    override fun renderDeserializeOperationBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) { }
-    override fun renderDeserializeException(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) { }
-    override fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) { }
 
-    override fun renderSerializeDocumentBody(
+    override fun renderThrowOperationError(
         ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
+        op: OperationShape,
         writer: KotlinWriter
     ) {
-        val members = shape.members().toList()
-        // render the serde descriptors
-        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(this, shape, writer), members).render()
-        if (shape.isUnionShape) {
-            SerializeUnionGenerator(ctx, members, writer, defaultTimestampFormat).render()
-        } else {
-            SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
-        }
+        /* pass */
     }
 
-    override fun renderDeserializeDocumentBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-        val members = shape.members().toList()
-        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(this, shape, writer), members).render()
-        if (shape.isUnionShape) {
-            val name = ctx.symbolProvider.toSymbol(shape).name
-            DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
-        } else {
-            DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
-        }
-    }
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializeGenerator =
+        JsonSerializerGenerator(this)
+
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
+        JsonParserGenerator(this)
 }

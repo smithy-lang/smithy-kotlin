@@ -26,7 +26,7 @@ open class JsonSerializerGenerator(
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
 
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
-        val input = op.input.get().let { ctx.model.expectShape(it) }
+        val input = ctx.model.expectShape(op.input.get())
         val symbol = ctx.symbolProvider.toSymbol(input)
 
         return op.bodySerializer(ctx.settings) { writer ->
