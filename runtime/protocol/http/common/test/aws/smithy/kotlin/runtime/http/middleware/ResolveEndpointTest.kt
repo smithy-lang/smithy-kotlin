@@ -5,7 +5,11 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.Protocol
+import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.operation.Endpoint
 import aws.smithy.kotlin.runtime.http.operation.EndpointResolver
@@ -16,12 +20,15 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class ResolveEndpointTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(request: HttpRequest): HttpCall {
@@ -32,7 +39,7 @@ class ResolveEndpointTest {
     private val client = sdkHttpClient(mockEngine)
 
     @Test
-    fun testHostIsSet(): Unit = runSuspendTest {
+    fun testHostIsSet() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com"))
         val resolver = EndpointResolver { endpoint }
@@ -47,7 +54,7 @@ class ResolveEndpointTest {
     }
 
     @Test
-    fun testHostWithPort(): Unit = runSuspendTest {
+    fun testHostWithPort() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080"))
         val resolver = EndpointResolver { endpoint }
@@ -62,7 +69,7 @@ class ResolveEndpointTest {
     }
 
     @Test
-    fun testHostWithBasePath(): Unit = runSuspendTest {
+    fun testHostWithBasePath() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080/foo/bar"))
         val resolver = EndpointResolver { endpoint }
@@ -78,7 +85,7 @@ class ResolveEndpointTest {
     }
 
     @Test
-    fun testHostPrefix(): Unit = runSuspendTest {
+    fun testHostPrefix() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com"))
         val resolver = EndpointResolver { endpoint }
@@ -94,7 +101,7 @@ class ResolveEndpointTest {
     }
 
     @Test
-    fun testEndpointPathPrefixWithNonEmptyPath(): Unit = runSuspendTest {
+    fun testEndpointPathPrefixWithNonEmptyPath() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix/"))
         val resolver = EndpointResolver { endpoint }
@@ -109,7 +116,7 @@ class ResolveEndpointTest {
     }
 
     @Test
-    fun testEndpointPathPrefixWithEmptyPath(): Unit = runSuspendTest {
+    fun testEndpointPathPrefixWithEmptyPath() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix"))
         val resolver = EndpointResolver { endpoint }
@@ -124,7 +131,7 @@ class ResolveEndpointTest {
     }
 
     @Test
-    fun testQueryParameters(): Unit = runSuspendTest {
+    fun testQueryParameters() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com?foo=bar&baz=qux"))
         val resolver = EndpointResolver { endpoint }

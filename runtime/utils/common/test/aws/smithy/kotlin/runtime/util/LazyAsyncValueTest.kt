@@ -5,13 +5,15 @@
 
 package aws.smithy.kotlin.runtime.util
 
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class LazyAsyncValueTest {
     @Test
-    fun testLoadOnce() = runSuspendTest {
+    fun testLoadOnce() = runTest {
         var calls = 0
         val initializer = suspend {
             calls++

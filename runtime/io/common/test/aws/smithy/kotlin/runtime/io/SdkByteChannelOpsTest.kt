@@ -5,15 +5,22 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.yield
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SdkByteChannelOpsTest {
 
     @Test
-    fun testCopyTo() = runSuspendTest {
+    fun testCopyTo() = runTest {
         val dst = SdkByteChannel(false)
 
         val contents = byteArrayOf(1, 2, 3, 4, 5)
@@ -36,7 +43,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testCopyToFallback() = runSuspendTest {
+    fun testCopyToFallback() = runTest {
         val dst = SdkByteChannel(false)
 
         val contents = byteArrayOf(1, 2, 3, 4, 5)
@@ -60,7 +67,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testCopyToSameOrZero() = runSuspendTest {
+    fun testCopyToSameOrZero() = runTest {
         val chan = SdkByteChannel(false)
         assertFailsWith<IllegalArgumentException> {
             chan.copyTo(chan)
@@ -70,7 +77,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testReadFromClosedChannel() = runSuspendTest {
+    fun testReadFromClosedChannel() = runTest {
         val chan = SdkByteReadChannel(byteArrayOf(1, 2, 3, 4, 5))
         val buffer = ByteArray(3)
         var rc = chan.readAvailable(buffer)
@@ -82,7 +89,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testReadAvailableNoSuspend() = runSuspendTest {
+    fun testReadAvailableNoSuspend() = runTest {
         val chan = SdkByteReadChannel("world!".encodeToByteArray())
         val buffer = SdkByteBuffer(16u)
         buffer.write("hello, ")
@@ -94,7 +101,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testReadAvailableSuspend() = runSuspendTest {
+    fun testReadAvailableSuspend() = runTest {
         val chan = SdkByteChannel()
         val job = launch {
             val buffer = SdkByteBuffer(16u)
@@ -116,7 +123,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testAwaitContent() = runSuspendTest {
+    fun testAwaitContent() = runTest {
         val chan = SdkByteChannel()
         var awaitingContent = false
         launch {
@@ -133,7 +140,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testReadUtf8Chars() = runSuspendTest {
+    fun testReadUtf8Chars() = runTest {
         val chan = SdkByteReadChannel("hello".encodeToByteArray())
         assertEquals('h', chan.readUtf8CodePoint()?.toChar())
         assertEquals('e', chan.readUtf8CodePoint()?.toChar())
@@ -144,7 +151,7 @@ class SdkByteChannelOpsTest {
     }
 
     @Test
-    fun testReadMultibyteUtf8Chars(): Unit = runSuspendTest {
+    fun testReadMultibyteUtf8Chars() = runTest {
         // https://www.fileformat.info/info/unicode/char/1d122/index.htm
         // $ - 1 byte, cent sign - 2bytes, euro sign - 3 bytes, musical clef - 4 points (surrogate pair)
         val content = "$¢€\uD834\uDD22"

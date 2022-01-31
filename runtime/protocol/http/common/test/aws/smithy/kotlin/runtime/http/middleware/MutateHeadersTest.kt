@@ -18,12 +18,14 @@ import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MutateHeadersTest {
 
     private val mockEngine = object : HttpClientEngineBase("test") {
@@ -35,7 +37,7 @@ class MutateHeadersTest {
     private val client = sdkHttpClient(mockEngine)
 
     @Test
-    fun itOverridesHeaders() = runSuspendTest {
+    fun itOverridesHeaders() = runTest {
         val req = HttpRequestBuilder().apply {
             headers {
                 set("foo", "bar")
@@ -63,11 +65,11 @@ class MutateHeadersTest {
         // should leave in existing
         assertEquals("qux", call.request.headers["baz"])
 
-        return@runSuspendTest
+        return@runTest
     }
 
     @Test
-    fun itAppendsHeaders() = runSuspendTest {
+    fun itAppendsHeaders() = runTest {
         val req = HttpRequestBuilder().apply {
             headers {
                 set("foo", "bar")
@@ -95,11 +97,11 @@ class MutateHeadersTest {
         // should leave in existing
         assertEquals("qux", call.request.headers["baz"])
 
-        return@runSuspendTest
+        return@runTest
     }
 
     @Test
-    fun itSetsMissing() = runSuspendTest {
+    fun itSetsMissing() = runTest {
         val req = HttpRequestBuilder().apply {
             headers {
                 set("foo", "bar")
@@ -122,6 +124,6 @@ class MutateHeadersTest {
         assertEquals("zebra", call.request.headers["z"])
         assertEquals("qux", call.request.headers["baz"])
 
-        return@runSuspendTest
+        return@runTest
     }
 }

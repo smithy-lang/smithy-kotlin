@@ -13,8 +13,9 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 
 typealias HttpResponseTestFn<T> = suspend (expectedResponse: T?, mockEngine: HttpClientEngine) -> Unit
 
@@ -74,8 +75,8 @@ class HttpResponseTestBuilder<T> {
  * }
  * ```
  */
-@OptIn(ExperimentalStdlibApi::class)
-fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runSuspendTest {
+@OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
+fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runTest {
     val testBuilder = HttpResponseTestBuilder<T>().apply(block)
 
     // provide the mock engine
