@@ -140,6 +140,7 @@ class ClientConfigGenerator(
                         prop.propertyType.default
                     )
                 }
+                is ClientConfigPropertyType.Custom -> prop.propertyType.render(prop, ctx.writer)
             }
         }
     }

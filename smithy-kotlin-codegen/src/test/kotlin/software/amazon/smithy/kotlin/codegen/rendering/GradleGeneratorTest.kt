@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 
 import io.kotest.matchers.string.shouldContain
 import software.amazon.smithy.build.MockManifest
+import software.amazon.smithy.kotlin.codegen.BuildSettings
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.CORE
@@ -56,7 +57,13 @@ class GradleGeneratorTest {
                         .withMember("name", Node.from("example"))
                         .withMember("version", Node.from("1.0.0"))
                 )
-                .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(true)).build())
+                .withMember(
+                    "build",
+                    Node.objectNodeBuilder().withMember(
+                        BuildSettings.ROOT_PROJECT,
+                        Node.from(true)
+                    ).build()
+                )
                 .build()
         )
 
@@ -75,6 +82,39 @@ class GradleGeneratorTest {
         """.trimIndent()
 
         contents.shouldContain(expectedRepositories)
+        contents.shouldContain(expectedVersion)
+    }
+
+    @Test
+    fun `it writes kmp project`() {
+        val model = loadModelFromResource("simple-service.smithy")
+
+        val settings = KotlinSettings.from(
+            model,
+            Node.objectNodeBuilder()
+                .withMember(
+                    "package",
+                    Node.objectNode()
+                        .withMember("name", Node.from("example"))
+                        .withMember("version", Node.from("1.0.0"))
+                )
+                .withMember(
+                    "build",
+                    Node.objectNode()
+                        .withMember(BuildSettings.ROOT_PROJECT, Node.from(true))
+                        .withMember(BuildSettings.GENERATE_MULTIPLATFORM_MODULE, Node.from(true))
+                )
+                .build()
+        )
+
+        val manifest = MockManifest()
+        val dependencies = listOf(KotlinDependency.CORE)
+        writeGradleBuild(settings, manifest, dependencies)
+        val contents = manifest.getFileString("build.gradle.kts").get()
+        val expectedVersion = """
+            kotlin("multiplatform") version
+        """.trimIndent()
+
         contents.shouldContain(expectedVersion)
     }
 }

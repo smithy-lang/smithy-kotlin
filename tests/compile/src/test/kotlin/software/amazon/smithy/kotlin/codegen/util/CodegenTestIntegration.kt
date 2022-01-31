@@ -72,6 +72,4 @@ class MockRestJsonProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     middleware: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver
-) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver) {
-
-}
+) : HttpProtocolClientGenerator(ctx, middleware, httpBindingResolver)

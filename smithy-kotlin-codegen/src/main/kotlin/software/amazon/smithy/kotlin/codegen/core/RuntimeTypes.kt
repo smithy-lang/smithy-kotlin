@@ -156,6 +156,10 @@ object RuntimeTypes {
             val FormUrlSerializer = runtimeSymbol("FormUrlSerializer", KotlinDependency.SERDE_FORM_URL)
         }
     }
+
+    object IO {
+        val Closeable = runtimeSymbol("Closeable", KotlinDependency.IO)
+    }
 }
 
 private fun runtimeSymbol(name: String, dependency: KotlinDependency, subpackage: String = ""): Symbol = buildSymbol {

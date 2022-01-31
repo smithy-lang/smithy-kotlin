@@ -110,7 +110,7 @@ internal class ExplicitStringOperationSerializer: HttpSerialize<ExplicitStringRe
         }
 
         if (input.payload1 != null) {
-            builder.body = ByteArrayContent(input.payload1.toByteArray())
+            builder.body = ByteArrayContent(input.payload1.encodeToByteArray())
         }
         builder.headers.setMissing("Content-Type", "text/plain")
         return builder

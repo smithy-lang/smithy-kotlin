@@ -17,7 +17,8 @@ import software.amazon.smithy.model.shapes.ServiceShape
 // FIXME - rename file and class to ServiceClientGenerator
 
 /**
- * Renders just the service client interfaces. The actual implementation is handled by protocol generators
+ * Renders just the service client interfaces. The actual implementation is handled by protocol generators, see
+ * [software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator].
  */
 class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     /**
