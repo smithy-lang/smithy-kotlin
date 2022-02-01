@@ -120,8 +120,10 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
+        writer.addImport(RuntimeTypes.Utils.Convenience.flattenIfPossible)
+
         val innerName = expression.expression!!.accept(this)
-        return addTempVar("${innerName}OrEmpty", "$innerName ?: listOf()")
+        return addTempVar("${innerName}OrEmpty", "$innerName?.flattenIfPossible() ?: listOf()")
     }
 
     override fun visitFunction(expression: FunctionExpression): String = when (expression.name) {

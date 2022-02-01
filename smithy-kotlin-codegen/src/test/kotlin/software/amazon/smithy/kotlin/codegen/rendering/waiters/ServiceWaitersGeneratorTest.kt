@@ -69,7 +69,7 @@ class ServiceWaitersGeneratorTest {
         val expected = """
             val acceptors = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
                 SuccessAcceptor(RetryDirective.TerminateAndSucceed, true),
-                ErrorTypeAcceptor(RetryDirective.RetryError(RetryErrorType.ServerSide), NotFound::class),
+                ErrorTypeAcceptor(RetryDirective.RetryError(RetryErrorType.ServerSide), "NotFound"),
             )
         """.formatForTest()
         generated.shouldContainOnlyOnce(expected)

@@ -121,6 +121,7 @@ object RuntimeTypes {
         val urlEncodeComponent = runtimeSymbol("urlEncodeComponent", KotlinDependency.UTILS, "text")
 
         object Convenience {
+            val flattenIfPossible = runtimeSymbol("flattenIfPossible", KotlinDependency.UTILS)
             val length = runtimeSymbol("length", KotlinDependency.UTILS)
         }
     }

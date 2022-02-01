@@ -90,8 +90,10 @@ class KotlinJmespathExpressionVisitorTest {
             path = "foo[]",
             expectedActualName = "fooOrEmpty",
             expectedCodegen = """
+                import aws.smithy.kotlin.runtime.util.flattenIfPossible
+                
                 val foo = it?.foo
-                val fooOrEmpty = foo ?: listOf()
+                val fooOrEmpty = foo?.flattenIfPossible() ?: listOf()
             """.trimIndent(),
         )
     }
@@ -180,8 +182,10 @@ class KotlinJmespathExpressionVisitorTest {
             path = "foo[][bar, baz]",
             expectedActualName = "projection",
             expectedCodegen = """
+                import aws.smithy.kotlin.runtime.util.flattenIfPossible
+                
                 val foo = it?.foo
-                val fooOrEmpty = foo ?: listOf()
+                val fooOrEmpty = foo?.flattenIfPossible() ?: listOf()
                 val projection = fooOrEmpty.flatMap {
                     val multiSelect = listOfNotNull(
                         run {
@@ -226,8 +230,10 @@ class KotlinJmespathExpressionVisitorTest {
             path = "foo[].bar",
             expectedActualName = "projection",
             expectedCodegen = """
+                import aws.smithy.kotlin.runtime.util.flattenIfPossible
+                
                 val foo = it?.foo
-                val fooOrEmpty = foo ?: listOf()
+                val fooOrEmpty = foo?.flattenIfPossible() ?: listOf()
                 val projection = fooOrEmpty.flatMap {
                     val bar = it?.bar
                     listOfNotNull(bar)

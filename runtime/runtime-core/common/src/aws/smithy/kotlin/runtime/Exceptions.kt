@@ -78,6 +78,7 @@ private object EmptyProtocolResponse : ProtocolResponse
 open class ServiceErrorMetadata : ErrorMetadata() {
 
     companion object {
+        val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
         val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
         val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
     }
@@ -87,6 +88,12 @@ open class ServiceErrorMetadata : ErrorMetadata() {
      */
     val serviceName: String
         get() = attributes.getOrNull(SdkClientOption.ServiceName) ?: ""
+
+    /**
+     * Returns the error code associated with the response
+     */
+    val errorCode: String?
+        get() = attributes.getOrNull(ErrorCode)
 
     /**
      * Indicates who is responsible for this exception (caller, service, or unknown)

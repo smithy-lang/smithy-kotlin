@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.retries.policy
 
+import aws.smithy.kotlin.runtime.ServiceException
 import kotlin.reflect.KClass
 
 /**
@@ -48,9 +49,11 @@ class SuccessAcceptor(state: RetryDirective, val success: Boolean) : Acceptor<An
  * @param state The [RetryDirective] that applies when the acceptor's condition is matched.
  * @param errorType The [KClass] of error for this acceptor.
  */
-class ErrorTypeAcceptor(state: RetryDirective, val errorType: KClass<*>) : Acceptor<Any, Any>(state) {
+class ErrorTypeAcceptor(state: RetryDirective, val errorType: String) : Acceptor<Any, Any>(state) {
     override fun matches(request: Any, result: Result<Any>): Boolean =
-        errorType.isInstance(result.exceptionOrNull())
+        result.isFailure && result.exceptionOrNull()!!.let {
+            it::class.simpleName == errorType || (it as? ServiceException)?.sdkErrorMetadata?.errorCode == errorType
+        }
 }
 
 /**

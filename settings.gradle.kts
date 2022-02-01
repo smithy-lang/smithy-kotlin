@@ -49,6 +49,7 @@ include(":tests:benchmarks:serde-benchmarks-codegen")
 include(":tests:benchmarks:serde-benchmarks")
 include(":tests:compile")
 include(":tests:codegen:paginator-tests")
+include(":tests:codegen:waiter-tests")
 
 include(":dokka-smithy")
 include(":ktlint-rules")
