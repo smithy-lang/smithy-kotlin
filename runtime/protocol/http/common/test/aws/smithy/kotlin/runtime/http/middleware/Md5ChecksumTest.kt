@@ -38,7 +38,7 @@ class Md5ChecksumTest {
     private val client = sdkHttpClient(mockEngine)
 
     @Test
-    fun itSetsContentMd5Header()  = runTest {
+    fun itSetsContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
             body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
         }
@@ -53,7 +53,7 @@ class Md5ChecksumTest {
     }
 
     @Test
-    fun itOnlySetsHeaderForBytesContent()  = runTest {
+    fun itOnlySetsHeaderForBytesContent() = runTest {
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.Streaming() {
                 override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel("fooey".encodeToByteArray())

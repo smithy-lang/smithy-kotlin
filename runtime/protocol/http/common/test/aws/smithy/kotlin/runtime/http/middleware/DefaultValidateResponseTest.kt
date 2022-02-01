@@ -25,7 +25,7 @@ import kotlin.test.assertFailsWith
 @OptIn(ExperimentalCoroutinesApi::class)
 class DefaultValidateResponseTest {
     @Test
-    fun itThrowsExceptionOnNon200Response()  = runTest {
+    fun itThrowsExceptionOnNon200Response() = runTest {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val resp = HttpResponse(
@@ -50,7 +50,7 @@ class DefaultValidateResponseTest {
     }
 
     @Test
-    fun itPassesSuccessResponses()  = runTest {
+    fun itPassesSuccessResponses() = runTest {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val resp = HttpResponse(

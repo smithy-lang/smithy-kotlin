@@ -12,7 +12,6 @@ import aws.smithy.kotlin.runtime.retries.TooManyAttemptsException
 import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.currentTime
-import kotlinx.coroutines.test.runBlockingTest
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

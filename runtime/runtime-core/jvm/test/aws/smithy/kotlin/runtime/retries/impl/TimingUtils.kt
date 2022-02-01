@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.retries.impl
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineScope
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.currentTime
 import kotlin.test.assertTrue
