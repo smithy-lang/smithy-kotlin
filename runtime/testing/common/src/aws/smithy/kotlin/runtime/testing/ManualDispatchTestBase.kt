@@ -6,11 +6,6 @@
 package aws.smithy.kotlin.runtime.testing
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineScope
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.pauseDispatcher
-import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.runTest
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
@@ -47,17 +42,6 @@ import kotlin.test.assertNotEquals
 @OptIn(ExperimentalCoroutinesApi::class)
 public abstract class ManualDispatchTestBase {
     private var current = 0
-
-    /**
-     * Execute a test with the provided (test) coroutine scope. Any calls to `launch` or `async`
-     * will not be executed immediately and instead be scheduled for dispatch. Explicit calls to `yield()`
-     * will advance the dispatcher.
-     */
-    protected fun runDispatchingTest(block: suspend TestCoroutineScope.() -> Unit): Unit = runBlockingTest {
-        // ensure launch/async calls are coordinated with yield() points
-        pauseDispatcher()
-        block()
-    }
 
     /**
      * Assert the current execution point and increment the count
