@@ -44,6 +44,10 @@ object KotlinTypes {
         val encodeToByteArray = builtInSymbol("encodeToByteArray", "kotlin.text")
     }
 
+    object Time {
+        val Duration = builtInSymbol("Duration", "kotlin.time")
+    }
+
     /**
      * A (non-exhaustive) set of builtin Kotlin symbols
      */
