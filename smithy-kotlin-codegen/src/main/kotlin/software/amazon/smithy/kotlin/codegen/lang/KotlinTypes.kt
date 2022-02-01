@@ -103,10 +103,10 @@ fun isValidKotlinIdentifier(s: String): Boolean {
 }
 
 /**
- * Flag indicating if this symbol is a Kotlin built-in symbol
+ * Flag indicating if this symbol is a Kotlin built-in symbol, and as such, doesn't need to be imported
  */
 val Symbol.isBuiltIn: Boolean
-    get() = namespace == "kotlin" || namespace.startsWith("kotlin.")
+    get() = namespace == "kotlin"
 
 /**
  * Escape characters in strings to ensure they are treated as pure literals.
