@@ -9,10 +9,8 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.jmespath.JmespathExpression
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.utils.dq
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.waiters.*
 
 /**

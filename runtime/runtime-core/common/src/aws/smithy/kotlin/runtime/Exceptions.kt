@@ -76,11 +76,11 @@ interface ProtocolResponse
 private object EmptyProtocolResponse : ProtocolResponse
 
 open class ServiceErrorMetadata : ErrorMetadata() {
-
     companion object {
         val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
         val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
         val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
+        val RequestId: AttributeKey<String> = AttributeKey("RequestId")
     }
 
     /**
@@ -106,6 +106,12 @@ open class ServiceErrorMetadata : ErrorMetadata() {
      */
     val protocolResponse: ProtocolResponse
         get() = attributes.getOrNull(ProtocolResponse) ?: EmptyProtocolResponse
+
+    /**
+     * The request ID that was returned by the called service
+     */
+    val requestId: String?
+        get() = attributes.getOrNull(RequestId)
 }
 
 /**
