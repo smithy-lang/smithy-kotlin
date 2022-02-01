@@ -49,6 +49,12 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
     dependsOn(generateSdk)
 }
 
+tasks.compileKotlin {
+    kotlinOptions {
+        allWarningsAsErrors = false // FIXME Generated waiters code contains lots of warnings
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
     testLogging {
