@@ -89,7 +89,7 @@ structure ThrottlingError {}
 
 ### Event Stream Type Representation
 
-The members of an operation input or output that target a stream will be represented using by an asynchronous [Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) 
+The members of an operation input or output that target a stream will be represented with an asynchronous [Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) 
 from the `kotlinx-coroutines-core` library. `Flow` is a natural fit for representing asynchronous streams. 
 
 `Flow` was chosen for pagination and already in use as part of our public API contract. Any alternative to this would require a custom but similar type that doesn't play well with
@@ -145,11 +145,11 @@ to be implemented. If we directly returned or took a `Flow<T>` as the input or o
 
 NOTE: There are types and internal details here not important to the design of how customers will interact with 
 streaming requests/responses (e.g. serialization/deserialization). 
-Those details are subject to change and not part of this design document. The focus here should be on the way 
+Those details are subject to change and not part of this design document. The focus here is on the way 
 streaming is exposed to a customer.
 
 
-The signatures generated match that of binary streaming requests and responses. Notably that output streams take a lambda instead of returning the response directly.
+The signatures generated match that of binary streaming requests and responses. Notably that output streams take a lambda instead of returning the response directly (see [binary-streaming design](binary-streaming.md) which discusses this pattern).
 The response (and event stream) are only valid in that scope, after which the resources consumed by the stream are closed and no longer valid.
 
 
@@ -236,7 +236,7 @@ by JetBrains which would allow them to expose the Kotlin functions however they 
 ## Additional References
 
 * [Smithy Core Spec](https://awslabs.github.io/smithy/1.0/spec/core/shapes.html)
-* [Event Stream Spec](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#event-streams).
+* [Event Stream Spec](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#event-streams)
 * [Kotlin Asynchronous Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) 
 * [Kotlin Smithy SDK](kotlin-smithy-sdk.md)
 * [Binary Streaming](binary-streaming.md)
