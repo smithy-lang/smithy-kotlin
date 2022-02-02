@@ -64,8 +64,6 @@ class MutateHeadersTest {
 
         // should leave in existing
         assertEquals("qux", call.request.headers["baz"])
-
-        return@runTest
     }
 
     @Test
@@ -96,8 +94,6 @@ class MutateHeadersTest {
 
         // should leave in existing
         assertEquals("qux", call.request.headers["baz"])
-
-        return@runTest
     }
 
     @Test
@@ -123,7 +119,5 @@ class MutateHeadersTest {
         assertEquals("bar", call.request.headers["foo"])
         assertEquals("zebra", call.request.headers["z"])
         assertEquals("qux", call.request.headers["baz"])
-
-        return@runTest
     }
 }

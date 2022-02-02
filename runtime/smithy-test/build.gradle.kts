@@ -17,7 +17,6 @@ kotlin {
             dependencies {
                 api(project(":runtime:protocol:http"))
 
-                implementation(project(":runtime:testing"))
                 implementation(project(":runtime:serde:serde-xml"))
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
@@ -25,11 +24,6 @@ kotlin {
 
                 // kotlinx-serialization::JsonElement allows comparing arbitrary JSON docs for equality
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$kotlinxSerializationVersion")
-            }
-        }
-        commonTest {
-            dependencies {
-                implementation(project(":runtime:testing"))
             }
         }
 

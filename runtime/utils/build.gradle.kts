@@ -13,7 +13,6 @@ kotlin {
     sourceSets {
         commonTest {
             dependencies {
-                implementation(project(":runtime:testing"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
             }
         }

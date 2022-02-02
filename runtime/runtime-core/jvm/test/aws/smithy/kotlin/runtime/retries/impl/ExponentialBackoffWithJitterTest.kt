@@ -11,16 +11,18 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class ExponentialBackoffWithJitterTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testScaling() = runTest {
         val options = ExponentialBackoffWithJitterOptions(
-            initialDelayMs = 10,
+            initialDelay = 10.milliseconds,
             scaleFactor = 2.0, // Make the numbers easy for tests
             jitter = 0.0, // Disable jitter for this test
-            maxBackoffMs = Int.MAX_VALUE, // Effectively disable max backoff
+            maxBackoff = Duration.INFINITE, // Effectively disable max backoff
         )
         assertEquals(listOf(10, 20, 40, 80, 160, 320), backoffSeries(6, options))
     }
@@ -29,10 +31,10 @@ class ExponentialBackoffWithJitterTest {
     @Test
     fun testJitter() = runTest {
         val options = ExponentialBackoffWithJitterOptions(
-            initialDelayMs = 10,
+            initialDelay = 10.milliseconds,
             scaleFactor = 2.0, // Make the numbers easy for tests
             jitter = 0.6, // 60% jitter for this test
-            maxBackoffMs = Int.MAX_VALUE, // Effectively disable max backoff
+            maxBackoff = Duration.INFINITE, // Effectively disable max backoff
         )
         backoffSeries(6, options)
             .zip(listOf(4..10, 8..20, 16..40, 32..80, 64..160, 128..320))
@@ -45,10 +47,10 @@ class ExponentialBackoffWithJitterTest {
     @Test
     fun testMaxBackoff() = runTest {
         val options = ExponentialBackoffWithJitterOptions(
-            initialDelayMs = 10,
+            initialDelay = 10.milliseconds,
             scaleFactor = 2.0, // Make the numbers easy for tests
             jitter = 0.0, // Disable jitter for this test
-            maxBackoffMs = 100,
+            maxBackoff = 100.milliseconds,
         )
         assertEquals(listOf(10, 20, 40, 80, 100, 100), backoffSeries(6, options))
     }
