@@ -15,8 +15,7 @@ class IdempotentTokenGeneratorTest {
 
     private fun getTransformFileContents(filename: String): String {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
-        generator.generateSerializers(ctx)
-        generator.generateDeserializers(ctx)
+        generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
         return manifest.getTransformFileContents(filename)
     }

@@ -5,10 +5,12 @@
 
 package software.amazon.smithy.kotlin.codegen.core
 
+import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
+import software.amazon.smithy.kotlin.codegen.test.shouldContainWithDiff
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -292,5 +294,27 @@ class KotlinWriterTest {
         val actual = unit.toString()
 
         assertEquals(expected, actual.trim())
+    }
+
+    @Test
+    fun itAutoImportsFormattedSymbols() {
+        val unit = KotlinWriter("com.test")
+
+        val samePackageSymbol = buildSymbol {
+            name = "Foo"
+            namespace = "com.test"
+        }
+
+        val differentNamespace = buildSymbol {
+            name = "Bar"
+            namespace = "com.test.subpkg"
+        }
+
+        unit.write("val foo = #T()", samePackageSymbol)
+        unit.write("val bar = #T()", differentNamespace)
+
+        val contents = unit.toString()
+        contents.shouldNotContain("import com.test.Foo")
+        contents.shouldContainWithDiff("import com.test.subpkg.Bar")
     }
 }

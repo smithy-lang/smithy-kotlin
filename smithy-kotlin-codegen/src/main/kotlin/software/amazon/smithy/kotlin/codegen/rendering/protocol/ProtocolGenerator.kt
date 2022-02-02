@@ -11,6 +11,8 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
@@ -74,24 +76,25 @@ interface ProtocolGenerator {
         get() = DefaultServiceExceptionSymbol
 
     /**
-     * Generate serializers required by the protocol
-     */
-    fun generateSerializers(ctx: GenerationContext)
-
-    /**
-     * Generate deserializers required by the protocol
-     */
-    fun generateDeserializers(ctx: GenerationContext)
-
-    /**
      * Generate unit tests for the protocol
      */
     fun generateProtocolUnitTests(ctx: GenerationContext)
 
     /**
-     * Generate an actual client implementation of the service interface
+     * Generate an actual client implementation of the service interface and all the code required
+     * to make it work (e.g. serializers and deserializers).
      */
     fun generateProtocolClient(ctx: GenerationContext)
+
+    /**
+     * Get the generator responsible for rendering deserialization of the protocol specific data format
+     */
+    fun structuredDataParser(ctx: GenerationContext): StructuredDataParserGenerator
+
+    /**
+     * Get the generator responsible for rendering serialization of the protocol specific data format
+     */
+    fun structuredDataSerializer(ctx: GenerationContext): StructuredDataSerializerGenerator
 
     /**
      * Context object used for service serialization and deserialization

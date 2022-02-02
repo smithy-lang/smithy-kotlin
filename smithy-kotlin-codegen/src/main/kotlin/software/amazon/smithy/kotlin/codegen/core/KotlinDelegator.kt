@@ -5,12 +5,10 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.build.FileManifest
-import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.codegen.core.SymbolDependency
-import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.utils.namespaceToPath
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.Shape
@@ -33,6 +31,30 @@ class KotlinDelegator(
     private val writers: MutableMap<String, KotlinWriter> = mutableMapOf()
     // Tracks dependencies for source not provided by codegen that may reside in the service source tree.
     val runtimeDependencies: MutableList<SymbolDependency> = mutableListOf()
+
+    /**
+     * Finalize renders any generated dependencies that were used and should be called just before [flushWriters]
+     */
+    fun finalize() {
+        // render generated "dependencies"
+        val writtenDependencies = mutableSetOf<String>()
+
+        // since generated dependencies can further mutate the set of generated dependencies this has
+        // to be unwound until we have nothing left to process
+        while (unprocessedDependencies(writtenDependencies).isNotEmpty()) {
+            unprocessedDependencies(writtenDependencies).forEach { generated ->
+                writtenDependencies.add(generated.fullName)
+                val writer = checkoutWriter(generated.definitionFile, generated.namespace)
+                writer.apply(generated.renderer)
+            }
+        }
+    }
+
+    private fun unprocessedDependencies(writtenDependencies: Set<String>) =
+        dependencies
+            .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
+            .filterNot { writtenDependencies.contains(it.fullName) }
+            .distinctBy { it.fullName }
 
     /**
      * Writes all pending writers to disk and then clears them out.
@@ -153,5 +175,39 @@ class KotlinDelegator(
             writer.write("\n")
         }
         return writer
+    }
+}
+
+/**
+ * A pseudo dependency on a snippet of code. A generated dependency is usually a symbol that is required
+ * by some other piece of code and must be generated.
+ *
+ * GeneratedDependency should not be instantiated directly, rather, it should be constructed by setting
+ * the [software.amazon.smithy.kotlin.codegen.model.SymbolBuilder.renderBy] field when creating a [Symbol]
+ *
+ * Generated dependencies are created in the definition file of the [Symbol] they generate. They are
+ * deduplicated by their fully qualified name in [KotlinDelegator] during codegen when writers are finalized.
+ */
+internal data class GeneratedDependency(
+    val name: String,
+    val namespace: String,
+    val definitionFile: String,
+    val renderer: SymbolRenderer
+) : SymbolDependencyContainer {
+    /**
+     * Fully qualified name
+     */
+    val fullName: String
+        get() = "$namespace.$name"
+
+    override fun getDependencies(): List<SymbolDependency> {
+        val symbolDep = SymbolDependency.builder()
+            .dependencyType("generated")
+            .version("n/a")
+            .packageName(fullName)
+            .putProperty(SymbolProperty.GENERATED_DEPENDENCY, this)
+            .build()
+
+        return listOf(symbolDep)
     }
 }

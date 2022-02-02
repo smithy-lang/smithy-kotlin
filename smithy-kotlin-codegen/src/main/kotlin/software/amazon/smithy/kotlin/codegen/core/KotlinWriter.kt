@@ -26,6 +26,11 @@ import software.amazon.smithy.utils.CodeWriter
 import java.util.function.BiFunction
 
 /**
+ * A function that renders a symbol to the given writer
+ */
+typealias SymbolRenderer = (KotlinWriter) -> Unit
+
+/**
  * Provides capability of writing Kotlin source code. An instance of a KotlinWriter corresponds to a file emitted
  * from codegen.
  *
@@ -45,33 +50,39 @@ class KotlinWriter(
         expressionStart = '#'
 
         // type name: `Foo`
-        putFormatter('T', KotlinSymbolFormatter { symbol -> fullyQualifiedSymbols.contains(symbol.toFullyQualifiedSymbolName()) })
+        putFormatter('T', KotlinSymbolFormatter(this) { symbol -> fullyQualifiedSymbols.contains(symbol.toFullyQualifiedSymbolName()) })
         // fully qualified type: `aws.sdk.kotlin.model.Foo`
-        putFormatter('Q', KotlinSymbolFormatter { true })
+        putFormatter('Q', KotlinSymbolFormatter(this) { true })
 
         // like `T` but with nullability information: `aws.sdk.kotlin.model.Foo?`. This is mostly useful
         // when formatting properties
-        putFormatter('P', KotlinPropertyFormatter())
+        putFormatter('P', KotlinPropertyFormatter(this))
 
         // like `P` but fully qualified
-        putFormatter('F', KotlinPropertyFormatter(fullyQualifiedNames = true))
+        putFormatter('F', KotlinPropertyFormatter(this, fullyQualifiedNames = true))
 
         // like `P` but with default set (if applicable): `aws.sdk.kotlin.model.Foo = 1`
-        putFormatter('D', KotlinPropertyFormatter(setDefault = true))
+        putFormatter('D', KotlinPropertyFormatter(this, setDefault = true))
 
         // like `D` but fully qualified
-        putFormatter('E', KotlinPropertyFormatter(setDefault = true, fullyQualifiedNames = true))
+        putFormatter('E', KotlinPropertyFormatter(this, setDefault = true, fullyQualifiedNames = true))
 
         // Pass a function receiving a [KotlinWriter] to generate an inline value
         putFormatter('W', InlineKotlinWriterFormatter(this))
     }
 
+    /**
+     * Import [symbol] into the current file. If the symbol resides in the same package as the current writer
+     * then only the dependencies will be processed and no import statement generated.
+     *
+     * @param symbol the symbol to generate an import statement for
+     * @param alias an alias name to give to the imported symbol (e.g. `import foo.bar.baz as Quux`)
+     */
     fun addImport(symbol: Symbol, alias: String = symbol.name): KotlinWriter {
         // don't import built-in symbols
         if (symbol.isBuiltIn) return this
 
-        // always add dependencies
-        dependencies.addAll(symbol.dependencies)
+        addDepsRecursively(symbol)
 
         // only add imports for symbols in a different namespace
         if (symbol.namespace.isNotEmpty() && symbol.namespace != fullPackageName) {
@@ -106,6 +117,12 @@ class KotlinWriter(
             allRefs.add(ref)
             findAllReferences(ref.symbol, allRefs)
         }
+    }
+
+    private fun addDepsRecursively(symbol: Symbol) {
+        // always add dependencies
+        dependencies.addAll(symbol.dependencies)
+        symbol.references.forEach { addDepsRecursively(it.symbol) }
     }
 
     /**
@@ -251,13 +268,17 @@ fun KotlinWriter.addImport(vararg imports: Iterable<Symbol>): KotlinWriter {
 
 /**
  * Implements Kotlin symbol formatting for the `#T` and `#Q` formatter(s)
+ * NOTE: That the symbol will automatically be imported.
  */
 private class KotlinSymbolFormatter(
+    private val writer: KotlinWriter,
     private val fullyQualifiedPredicate: (Symbol) -> Boolean = { false },
 ) : BiFunction<Any, String, String> {
     override fun apply(type: Any, indent: String): String {
         when (type) {
             is Symbol -> {
+                // writer will omit unnecessary same package imports and dedupe
+                writer.addImport(type)
                 return if (fullyQualifiedPredicate(type)) type.fullName else type.name
             }
             else -> throw CodegenException("Invalid type provided for #T. Expected a Symbol, but found `$type`")
@@ -269,6 +290,7 @@ private class KotlinSymbolFormatter(
  * Implements Kotlin symbol formatting for the `#D` and `#P` formatter(s)
  */
 class KotlinPropertyFormatter(
+    private val writer: KotlinWriter,
     // set defaults
     private val setDefault: Boolean = false,
     // format with nullability `?`
@@ -279,6 +301,7 @@ class KotlinPropertyFormatter(
     override fun apply(type: Any, indent: String): String {
         when (type) {
             is Symbol -> {
+                writer.addImport(type)
                 var formatted = if (fullyQualifiedNames) type.fullName else type.name
                 if (includeNullability && type.isBoxed) {
                     formatted += "?"

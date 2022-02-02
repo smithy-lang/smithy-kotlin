@@ -4,13 +4,14 @@
  */
 package software.amazon.smithy.kotlin.codegen.protocols
 
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
@@ -28,38 +29,23 @@ class SerdeBenchmarkJsonProtocolGenerator : HttpBindingProtocolGenerator() {
         object : HttpProtocolClientGenerator(ctx, emptyList(), getProtocolHttpBindingResolver(ctx.model, ctx.service)) {}
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) { }
-    override fun renderSerializeOperationBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) { }
-    override fun renderDeserializeOperationBody(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) { }
-    override fun renderDeserializeException(ctx: ProtocolGenerator.GenerationContext, shape: Shape, writer: KotlinWriter) { }
-    override fun renderThrowOperationError(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) { }
 
-    override fun renderSerializeDocumentBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-        val members = shape.members().toList()
-        // render the serde descriptors
-        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(this, shape, writer), members).render()
-        if (shape.isUnionShape) {
-            SerializeUnionGenerator(ctx, members, writer, defaultTimestampFormat).render()
-        } else {
-            SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
-        }
-    }
 
-    override fun renderDeserializeDocumentBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-        val members = shape.members().toList()
-        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(this, shape, writer), members).render()
-        if (shape.isUnionShape) {
-            val name = ctx.symbolProvider.toSymbol(shape).name
-            DeserializeUnionGenerator(ctx, name, members, writer, defaultTimestampFormat).render()
-        } else {
-            DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
+        JsonSerializerGenerator(this)
+
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
+        JsonParserGenerator(this)
+
+    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
+        op.errorHandler(ctx.settings) { writer ->
+            writer.withBlock(
+                "private suspend fun ${op.errorHandlerName()}(context: #T, response: #T): Nothing",
+                "}",
+                RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.Http.Response.HttpResponse
+            ) {
+                write("error(\"not needed for benchmark tests\")")
+            }
         }
-    }
 }
