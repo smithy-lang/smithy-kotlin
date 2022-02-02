@@ -3,12 +3,12 @@ namespace com.test
 use aws.protocols#restJson1
 use smithy.waiters#waitable
 
-service Lambda {
-    operations: [GetFunction]
+service WaitersTestService {
+    operations: [GetEntity]
 }
 
 @waitable(
-    FunctionExistsBySuccess: {
+    EntityExistsBySuccess: {
         acceptors: [
             {
                 state: "success",
@@ -24,7 +24,7 @@ service Lambda {
             }
         ]
     },
-    FunctionHasNameTagByOutput: {
+    EntityHasNameTagByOutput: {
         acceptors: [
             {
                 state: "success",
@@ -50,19 +50,19 @@ service Lambda {
     }
 )
 @readonly
-@http(method: "GET", uri: "/functions/{name}", code: 200)
-operation GetFunction {
-    input: GetFunctionRequest,
-    output: GetFunctionResponse
+@http(method: "GET", uri: "/entities/{name}", code: 200)
+operation GetEntity {
+    input: GetEntityRequest,
+    output: GetEntityResponse
 }
 
-structure GetFunctionRequest {
+structure GetEntityRequest {
     @required
     @httpLabel
     name: String
 }
 
-structure GetFunctionResponse {
+structure GetEntityResponse {
     name: String,
     tags: Tags
 }

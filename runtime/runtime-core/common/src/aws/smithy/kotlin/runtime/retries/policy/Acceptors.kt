@@ -51,9 +51,7 @@ class SuccessAcceptor(state: RetryDirective, val success: Boolean) : Acceptor<An
  */
 class ErrorTypeAcceptor(state: RetryDirective, val errorType: String) : Acceptor<Any, Any>(state) {
     override fun matches(request: Any, result: Result<Any>): Boolean =
-        result.isFailure && result.exceptionOrNull()!!.let {
-            it::class.simpleName == errorType || (it as? ServiceException)?.sdkErrorMetadata?.errorCode == errorType
-        }
+        (result.exceptionOrNull() as? ServiceException)?.sdkErrorMetadata?.errorCode == errorType
 }
 
 /**

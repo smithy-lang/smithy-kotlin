@@ -120,7 +120,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
-        writer.addImport(RuntimeTypes.Utils.Convenience.flattenIfPossible)
+        writer.addImport(RuntimeTypes.Utils.flattenIfPossible)
 
         val innerName = expression.expression!!.accept(this)
         return addTempVar("${innerName}OrEmpty", "$innerName?.flattenIfPossible() ?: listOf()")
@@ -141,7 +141,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
 
         "length" -> {
             codegenReq(expression.arguments.size == 1) { "Unexpected number of arguments to $expression" }
-            writer.addImport(RuntimeTypes.Utils.Convenience.length)
+            writer.addImport(RuntimeTypes.Utils.length)
 
             val subject = expression.arguments[0]
             val subjectName = subject.accept(this)

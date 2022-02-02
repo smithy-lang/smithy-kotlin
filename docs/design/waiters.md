@@ -18,7 +18,10 @@ Thus, waiters are implemented by SDK codegen. Waiters are
 [modeled in Smithy](https://awslabs.github.io/smithy/1.0/spec/waiters.html) and annotated on various APIs by the service
 teams. This provides a cohesive, reusable, succinct polling mechanism for callers.
 
-## Definitions
+Note that not every API supports waiters. Instead, waiters must be explicitly modeled for service operations (including
+specific success/failure criteria).
+
+## Terms
 
 Most of these come from the Smithy specification for waiters but are reproduced here for context:
 
@@ -30,8 +33,8 @@ Most of these come from the Smithy specification for waiters but are reproduced 
     * **Output**: Matches based on the successful response of an operation, an operator, and an expected value.
     * **InputOutput**: Matches based on the input and successful response of an operation, an operator, and an expected
       value. Note that this type is not currently used by any AWS services.
-* **Waiter**: A client-side abstraction used to poll a resource until a desired state is reached. Waiters are
-  functionally finite state machines with transitions defined by **acceptors**.
+* **Waiter**: A client-side abstraction used to poll a resource until a desired state is reached or a failure condition
+  occurrs. Waiters are functionally finite state machines with transitions defined by **acceptors**.
 
 ## Generalized waiter workflow
 

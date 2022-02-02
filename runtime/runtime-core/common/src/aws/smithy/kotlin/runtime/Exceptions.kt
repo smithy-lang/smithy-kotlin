@@ -90,7 +90,12 @@ open class ServiceErrorMetadata : ErrorMetadata() {
         get() = attributes.getOrNull(SdkClientOption.ServiceName) ?: ""
 
     /**
-     * Returns the error code associated with the response
+     * Returns the error code associated with the response (if available).
+     *
+     * This value is implementation-defined. For example, AWS protocols use error code to identify the shape ID of the
+     * error (see
+     * [restJson1 protocol errors](https://awslabs.github.io/smithy/1.0/spec/aws/aws-restjson1-protocol.html#operation-error-serialization)
+     * for details).
      */
     val errorCode: String?
         get() = attributes.getOrNull(ErrorCode)
@@ -108,7 +113,10 @@ open class ServiceErrorMetadata : ErrorMetadata() {
         get() = attributes.getOrNull(ProtocolResponse) ?: EmptyProtocolResponse
 
     /**
-     * The request ID that was returned by the called service
+     * The request ID that was returned by the called service.
+     *
+     * This value is implementation-defined. For example, AWS services trace and return unique request IDs for API
+     * calls.
      */
     val requestId: String?
         get() = attributes.getOrNull(RequestId)

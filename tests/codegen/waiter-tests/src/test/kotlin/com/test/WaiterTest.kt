@@ -7,38 +7,39 @@ import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.util.InternalApi
-import com.test.TestLambdaClient
-import com.test.model.GetFunctionResponse
-import com.test.waiters.waitUntilFunctionExistsBySuccess
-import com.test.waiters.waitUntilFunctionHasNameTagByOutput
+import com.test.DefaultWaitersTestClient
+import com.test.model.GetEntityResponse
+import com.test.waiters.waitUntilEntityExistsBySuccess
+import com.test.waiters.waitUntilEntityHasNameTagByOutput
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.fail
 
 class WaiterTest {
     @OptIn(InternalApi::class)
-    private fun failure(errorCode: String) = Result.failure<GetFunctionResponse>(
+    private fun failure(errorCode: String) = Result.failure<GetEntityResponse>(
         ServiceException().apply {
             sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] = errorCode
         }
     )
 
-    private fun success(builderBlock: GetFunctionResponse.Builder.() -> Unit) =
-        GetFunctionResponse.Builder().apply(builderBlock).build().let { success(it) }
+    private fun success(builderBlock: GetEntityResponse.Builder.() -> Unit) =
+        GetEntityResponse.Builder().apply(builderBlock).build().let { success(it) }
 
-    private fun success(response: GetFunctionResponse) = Result.success(response)
+    private fun success(response: GetEntityResponse) = Result.success(response)
 
     @Test
     fun testSuccessResponse(): Unit = runBlocking {
-        val response = GetFunctionResponse { name = "Foo" }
+        val response = GetEntityResponse { name = "Foo" }
         val results = listOf(
             failure("NotFound"),
             success(response),
         )
-        val client = TestLambdaClient(results)
+        val client = DefaultWaitersTestClient(results)
 
-        val outcome = client.waitUntilFunctionExistsBySuccess { name = "Foo" }
+        val outcome = client.waitUntilEntityExistsBySuccess { name = "Foo" }
         assertEquals(2, outcome.attempts)
         assertEquals(response, outcome.getOrThrow())
     }
@@ -50,30 +51,26 @@ class WaiterTest {
             failure("NotFound"),
             failure("Unrecoverable"),
         )
-        val client = TestLambdaClient(results)
+        val client = DefaultWaitersTestClient(results)
 
-        try {
-            client.waitUntilFunctionExistsBySuccess { name = "Foo" }
-            fail("Expected exception from waiter")
-        } catch (e: ServiceException) {
-            assertEquals("Unrecoverable", e.sdkErrorMetadata.errorCode)
-        } catch (e: Throwable) {
-            fail("Unexpected exception from waiter: $e")
+        val ex = assertFailsWith<ServiceException> {
+            client.waitUntilEntityExistsBySuccess { name = "Foo" }
         }
+        assertEquals("Unrecoverable", ex.sdkErrorMetadata.errorCode)
     }
 
     @Test
     fun testSuccessOutput(): Unit = runBlocking {
-        val tagsResponse = GetFunctionResponse { name = "foo"; tags = mapOf("key" to "foo") }
+        val tagsResponse = GetEntityResponse { name = "foo"; tags = mapOf("key" to "foo") }
         val results = listOf(
             success { name = "foo"                               }, // No tags
-            success {               tags = mapOf("key" to "bar") }, // No name
-            success { name = "foo"; tags = mapOf("key" to "bar") }, // Missing "foo" tag
-            success(tagsResponse),                                  // Oll korrect
+            success {               tags = mapOf("key" to "foo") }, // No name
+            success { name = "foo"; tags = mapOf("key" to "bar") }, // "foo" name mismatches "bar" tag
+            success(tagsResponse),                                  // Name matches tag (expected waiter condition)
         )
-        val client = TestLambdaClient(results)
+        val client = DefaultWaitersTestClient(results)
 
-        val outcome = client.waitUntilFunctionHasNameTagByOutput { name = "foo" }
+        val outcome = client.waitUntilEntityHasNameTagByOutput { name = "foo" }
         assertEquals(4, outcome.attempts)
         assertEquals(tagsResponse, outcome.getOrThrow())
     }

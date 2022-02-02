@@ -27,7 +27,6 @@ kotlin.sourceSets.all {
 }
 
 kotlin.sourceSets.getByName("main") {
-    kotlin.srcDir("${project.buildDir}/generated-src/src")
     kotlin.srcDir("${project.buildDir}/smithyprojections/waiter-tests/waiter-tests/kotlin-codegen")
 }
 
@@ -45,11 +44,9 @@ val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
     inputs.files(configurations.getByName("codegen"))
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
-    dependsOn(generateSdk)
-}
-
 tasks.compileKotlin {
+    dependsOn(generateSdk)
+
     kotlinOptions {
         allWarningsAsErrors = false // FIXME Generated waiters code contains lots of warnings
     }

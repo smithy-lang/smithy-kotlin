@@ -27,19 +27,7 @@ class AcceptorsTest {
     }
 
     @Test
-    fun testErrorTypeAcceptor_ByType() {
-        val normalResponse = Result.success(Unit)
-        val unexpectedException = Result.failure<Unit>(IllegalArgumentException())
-        val expectedException = Result.failure<Unit>(IllegalStateException())
-
-        val illegalStateAcceptor = ErrorTypeAcceptor(RetryDirective.TerminateAndSucceed, "IllegalStateException")
-        assertEquals(RetryDirective.TerminateAndSucceed, illegalStateAcceptor.evaluate(Unit, expectedException))
-        assertNull(illegalStateAcceptor.evaluate(Unit, unexpectedException))
-        assertNull(illegalStateAcceptor.evaluate(Unit, normalResponse))
-    }
-
-    @Test
-    fun testErrorTypeAcceptor_ByCode() {
+    fun testErrorTypeAcceptor() {
         fun serviceException(code: String) = ServiceException().apply {
             sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] = code
         }
