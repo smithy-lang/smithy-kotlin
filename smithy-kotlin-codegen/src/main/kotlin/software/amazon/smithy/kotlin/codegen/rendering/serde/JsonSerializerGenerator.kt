@@ -21,7 +21,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 open class JsonSerializerGenerator(
     // FIXME - we shouldn't need this, it's only required by JsonSerdeDescriptorGenerator because of toRenderingContext
     private val protocolGenerator: HttpBindingProtocolGenerator
-) : StructuredDataSerializeGenerator {
+) : StructuredDataSerializerGenerator {
 
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
 

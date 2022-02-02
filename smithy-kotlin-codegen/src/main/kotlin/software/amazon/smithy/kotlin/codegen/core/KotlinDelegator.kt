@@ -41,21 +41,20 @@ class KotlinDelegator(
 
         // since generated dependencies can further mutate the set of generated dependencies this has
         // to be unwound until we have nothing left to process
-        val unprocessedDependencies = {
-            dependencies
-                .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
-                .filterNot { writtenDependencies.contains(it.fullName) }
-                .distinctBy { it.fullName }
-        }
-
-        while (unprocessedDependencies().isNotEmpty()) {
-            unprocessedDependencies().forEach { generated ->
+        while (unprocessedDependencies(writtenDependencies).isNotEmpty()) {
+            unprocessedDependencies(writtenDependencies).forEach { generated ->
                 writtenDependencies.add(generated.fullName)
                 val writer = checkoutWriter(generated.definitionFile, generated.namespace)
                 writer.apply(generated.renderer)
             }
         }
     }
+
+    private fun unprocessedDependencies(writtenDependencies: Set<String>) =
+        dependencies
+            .mapNotNull { it.properties[SymbolProperty.GENERATED_DEPENDENCY] as? GeneratedDependency }
+            .filterNot { writtenDependencies.contains(it.fullName) }
+            .distinctBy { it.fullName }
 
     /**
      * Writes all pending writers to disk and then clears them out.
@@ -193,7 +192,7 @@ internal data class GeneratedDependency(
     val name: String,
     val namespace: String,
     val definitionFile: String,
-    val renderer: (KotlinWriter) -> Unit
+    val renderer: SymbolRenderer
 ) : SymbolDependencyContainer {
     /**
      * Fully qualified name
@@ -201,7 +200,7 @@ internal data class GeneratedDependency(
     val fullName: String
         get() = "$namespace.$name"
 
-    override fun getDependencies(): MutableList<SymbolDependency> {
+    override fun getDependencies(): List<SymbolDependency> {
         val symbolDep = SymbolDependency.builder()
             .dependencyType("generated")
             .version("n/a")
@@ -209,6 +208,6 @@ internal data class GeneratedDependency(
             .putProperty(SymbolProperty.GENERATED_DEPENDENCY, this)
             .build()
 
-        return mutableListOf(symbolDep)
+        return listOf(symbolDep)
     }
 }

@@ -848,7 +848,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
 
                 writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
                     .withBlock("if (payload != null) {", "}") {
-                        write("builder.$memberName = #T(payload)", payloadDeserializerFn)
+                        write("builder.#L = #T(payload)", memberName, payloadDeserializerFn)
                     }
             }
             ShapeType.DOCUMENT -> {

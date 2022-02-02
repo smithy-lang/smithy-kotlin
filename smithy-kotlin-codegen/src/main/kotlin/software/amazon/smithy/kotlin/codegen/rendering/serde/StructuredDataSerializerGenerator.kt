@@ -13,7 +13,7 @@ import software.amazon.smithy.model.shapes.OperationShape
 /**
  * Responsible for rendering serialization of structured data (e.g. json, yaml, xml).
  */
-interface StructuredDataSerializeGenerator {
+interface StructuredDataSerializerGenerator {
 
     /**
      * Render function responsible for serializing members bound to the payload of the given operation's input shape.

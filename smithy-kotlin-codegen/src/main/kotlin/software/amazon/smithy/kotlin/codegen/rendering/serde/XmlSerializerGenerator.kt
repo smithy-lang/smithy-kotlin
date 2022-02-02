@@ -25,7 +25,7 @@ import software.amazon.smithy.model.traits.XmlAttributeTrait
 open class XmlSerializerGenerator(
     private val protocolGenerator: ProtocolGenerator,
     private val defaultTimestampFormat: TimestampFormatTrait.Format
-) : StructuredDataSerializeGenerator {
+) : StructuredDataSerializerGenerator {
 
     open fun descriptorGenerator(
         ctx: ProtocolGenerator.GenerationContext,
