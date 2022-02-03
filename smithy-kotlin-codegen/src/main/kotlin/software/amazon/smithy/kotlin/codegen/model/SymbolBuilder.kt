@@ -7,7 +7,9 @@ package software.amazon.smithy.kotlin.codegen.model
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolDependencyContainer
 import software.amazon.smithy.codegen.core.SymbolReference
+import software.amazon.smithy.kotlin.codegen.core.GeneratedDependency
 import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.SymbolRenderer
 
 @DslMarker
 annotation class SymbolDsl
@@ -25,6 +27,11 @@ open class SymbolBuilder {
     var definitionFile: String? = null
     var declarationFile: String? = null
     var defaultValue: String? = null
+
+    /**
+     * Register the function (dependency) responsible for rendering this symbol.
+     */
+    var renderBy: SymbolRenderer? = null
 
     val dependencies: MutableSet<SymbolDependencyContainer> = mutableSetOf()
     val references: MutableList<SymbolReference> = mutableListOf()
@@ -76,6 +83,15 @@ open class SymbolBuilder {
         declarationFile?.let { builder.declarationFile(it) }
         definitionFile?.let { builder.definitionFile(it) }
         defaultValue?.let { builder.defaultValue(it) }
+
+        if (renderBy != null) {
+            checkNotNull(definitionFile) { "a rendered dependency must declare a definition file!" }
+            checkNotNull(namespace) { "a rendered dependency must declare a namespace" }
+            // abuse dependencies to get the delegator to eventually render this
+            val generatedDep = GeneratedDependency(name!!, namespace!!, definitionFile!!, renderBy!!)
+            dependency(generatedDep)
+        }
+
         dependencies.forEach { builder.addDependency(it) }
         references.forEach { builder.addReference(it) }
 

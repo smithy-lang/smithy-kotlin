@@ -32,6 +32,9 @@ object SymbolProperty {
 
     // Entry type for Maps
     const val ENTRY_EXPRESSION: String = "entryExpression"
+
+    // Pseudo dependency on a snippet of code
+    const val GENERATED_DEPENDENCY: String = "generatedDependency"
 }
 
 /**

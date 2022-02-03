@@ -124,10 +124,6 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 writers
             )
 
-            LOGGER.info("[${service.id}] Generating serde for protocol $protocol")
-            generateSerializers(ctx)
-            generateDeserializers(ctx)
-
             LOGGER.info("[${service.id}] Generating unit tests for protocol $protocol")
             generateProtocolUnitTests(ctx)
 
@@ -135,9 +131,11 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             generateProtocolClient(ctx)
         }
 
+        writers.finalize()
+
         if (settings.build.generateDefaultBuildFiles) {
             val dependencies = writers.dependencies
-                .map { it.properties["dependency"] as KotlinDependency }
+                .mapNotNull { it.properties["dependency"] as? KotlinDependency }
                 .distinct()
             writeGradleBuild(settings, fileManifest, dependencies)
         }
