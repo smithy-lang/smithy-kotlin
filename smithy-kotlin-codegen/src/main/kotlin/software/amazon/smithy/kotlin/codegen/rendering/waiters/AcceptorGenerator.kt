@@ -9,16 +9,14 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.jmespath.JmespathExpression
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.utils.dq
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.waiters.*
 
 /**
  * Renders an individual acceptor for a waiter.
  */
-private fun KotlinWriter.renderAcceptor(wi: WaiterInfo, acceptor: Acceptor) {
+private fun KotlinWriter.renderAcceptor(acceptor: Acceptor) {
     addImport(RuntimeTypes.Core.Retries.Policy.RetryDirective)
 
     val directive = when (acceptor.state!!) {
@@ -36,7 +34,11 @@ private fun KotlinWriter.renderAcceptor(wi: WaiterInfo, acceptor: Acceptor) {
             write("SuccessAcceptor(RetryDirective.#L, #L),", directive, matcher.value)
         }
 
-        is Matcher.ErrorTypeMember -> renderErrorAcceptor(wi, directive, matcher)
+        is Matcher.ErrorTypeMember -> {
+            addImport(RuntimeTypes.Core.Retries.Policy.ErrorTypeAcceptor)
+            write("ErrorTypeAcceptor(RetryDirective.#L, #L),", directive, matcher.value.dq())
+        }
+
         is Matcher.InputOutputMember -> renderPathAcceptor(directive, true, matcher.value)
         is Matcher.OutputMember -> renderPathAcceptor(directive, false, matcher.value)
         else -> throw CodegenException("""Unknown matcher type "${matcher::class}"""")
@@ -55,30 +57,8 @@ internal fun KotlinWriter.renderAcceptorList(wi: WaiterInfo, asValName: String) 
         wi.inputSymbol,
         wi.outputSymbol,
     ) {
-        wi.waiter.acceptors.forEach { renderAcceptor(wi, it) }
+        wi.waiter.acceptors.forEach(::renderAcceptor)
     }
-}
-
-/**
- * Render an errorType acceptor.
- */
-private fun KotlinWriter.renderErrorAcceptor(
-    wi: WaiterInfo,
-    directive: String,
-    matcher: Matcher.ErrorTypeMember,
-) {
-    val errorShapeId = ShapeId.fromOptionalNamespace(wi.service.toShapeId().namespace, matcher.value)
-    val errorShape = wi.ctx.model.getShape(errorShapeId).orElseThrow {
-        CodegenException("Cannot find error type ${matcher.value} in model")
-    }
-    val errorSymbol = wi.ctx.symbolProvider.toSymbol(errorShape)
-
-    addImport(
-        RuntimeTypes.Core.Retries.Policy.ErrorTypeAcceptor,
-        errorSymbol,
-    )
-
-    write("ErrorTypeAcceptor(RetryDirective.#L, #T::class),", directive, errorSymbol)
 }
 
 /**

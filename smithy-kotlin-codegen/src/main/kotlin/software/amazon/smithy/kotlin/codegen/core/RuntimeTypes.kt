@@ -117,12 +117,10 @@ object RuntimeTypes {
 
     object Utils {
         val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
+        val flattenIfPossible = runtimeSymbol("flattenIfPossible", KotlinDependency.UTILS)
+        val length = runtimeSymbol("length", KotlinDependency.UTILS)
         val Sha256 = runtimeSymbol("Sha256", KotlinDependency.UTILS)
         val urlEncodeComponent = runtimeSymbol("urlEncodeComponent", KotlinDependency.UTILS, "text")
-
-        object Convenience {
-            val length = runtimeSymbol("length", KotlinDependency.UTILS)
-        }
     }
 
     object Serde {

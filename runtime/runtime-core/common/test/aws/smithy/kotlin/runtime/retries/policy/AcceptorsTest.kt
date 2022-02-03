@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries.policy
 
+import aws.smithy.kotlin.runtime.ServiceErrorMetadata
+import aws.smithy.kotlin.runtime.ServiceException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -26,14 +28,20 @@ class AcceptorsTest {
 
     @Test
     fun testErrorTypeAcceptor() {
-        val normalResponse = Result.success(Unit)
-        val unexpectedException = Result.failure<Unit>(IllegalArgumentException())
-        val expectedException = Result.failure<Unit>(IllegalStateException())
+        fun serviceException(code: String) = ServiceException().apply {
+            sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorCode] = code
+        }
 
-        val illegalStateAcceptor = ErrorTypeAcceptor(RetryDirective.TerminateAndSucceed, IllegalStateException::class)
-        assertEquals(RetryDirective.TerminateAndSucceed, illegalStateAcceptor.evaluate(Unit, expectedException))
-        assertNull(illegalStateAcceptor.evaluate(Unit, unexpectedException))
-        assertNull(illegalStateAcceptor.evaluate(Unit, normalResponse))
+        val normalResponse = Result.success(Unit)
+        val unexpectedTypeException = Result.failure<Unit>(IllegalArgumentException())
+        val unexpectedCodeException = Result.failure<Unit>(serviceException("BadArgument"))
+        val expectedException = Result.failure<Unit>(serviceException("BadState"))
+
+        val badStateAcceptor = ErrorTypeAcceptor(RetryDirective.TerminateAndSucceed, "BadState")
+        assertEquals(RetryDirective.TerminateAndSucceed, badStateAcceptor.evaluate(Unit, expectedException))
+        assertNull(badStateAcceptor.evaluate(Unit, unexpectedTypeException))
+        assertNull(badStateAcceptor.evaluate(Unit, unexpectedCodeException))
+        assertNull(badStateAcceptor.evaluate(Unit, normalResponse))
     }
 
     @Test

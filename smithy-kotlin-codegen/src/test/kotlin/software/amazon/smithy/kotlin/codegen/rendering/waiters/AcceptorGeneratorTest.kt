@@ -39,9 +39,9 @@ class AcceptorGeneratorTest {
     fun testErrorTypeAcceptors() {
         val expected = """
             val $acceptorListName = listOf<Acceptor<DescribeFooRequest, DescribeFooResponse>>(
-                ErrorTypeAcceptor(RetryDirective.TerminateAndSucceed, SuccessError::class),
-                ErrorTypeAcceptor(RetryDirective.RetryError(RetryErrorType.ServerSide), RetryError::class),
-                ErrorTypeAcceptor(RetryDirective.TerminateAndFail, FailureError::class),
+                ErrorTypeAcceptor(RetryDirective.TerminateAndSucceed, "SuccessError"),
+                ErrorTypeAcceptor(RetryDirective.RetryError(RetryErrorType.ServerSide), "RetryError"),
+                ErrorTypeAcceptor(RetryDirective.TerminateAndFail, "FailureError"),
             )
         """.trimIndent()
         generated.shouldContainOnlyOnce(expected)
