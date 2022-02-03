@@ -87,11 +87,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
         val leftName = if (rightIsString && !leftIsString) "$leftBaseName?.toString()" else leftBaseName
         val rightName = if (leftIsString && !rightIsString) "$rightBaseName?.toString()" else rightBaseName
 
-        val codegen = when (val comparator = expression.comparator) {
-            ComparatorType.EQUAL, ComparatorType.NOT_EQUAL -> "$leftName $comparator $rightName"
-            else -> "if ($leftName == null || $rightName == null) null else $leftName $comparator $rightName"
-        }
-        return addTempVar("comparison", codegen)
+        return addTempVar("comparison", "$leftName?.compareTo($rightName)?.let { it ${expression.comparator} 0 }")
     }
 
     override fun visitCurrentNode(expression: CurrentExpression): String {
