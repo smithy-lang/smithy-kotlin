@@ -66,8 +66,13 @@ open class SerializeStructGenerator(
     open fun render() {
         // inline an empty object descriptor when the struct has no members
         // otherwise use the one generated as part of the companion object
-        val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
-        writer.withBlock("serializer.serializeStruct($objDescriptor) {", "}") {
+        val objDescriptor = if (members.isNotEmpty()) {
+            "OBJ_DESCRIPTOR"
+        } else {
+            writer.addImport(RuntimeTypes.Serde.SdkObjectDescriptor)
+            "SdkObjectDescriptor.build{}"
+        }
+        writer.withBlock("serializer.#T($objDescriptor) {", "}", RuntimeTypes.Serde.serializeStruct) {
             members.forEach { memberShape ->
                 renderMemberShape(memberShape)
             }
@@ -222,7 +227,7 @@ open class SerializeStructGenerator(
         val valueToSerializeName = valueToSerializeName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            writer.write("$serializerFnName(asSdkSerializable($valueToSerializeName, ::$serializerTypeName))")
+            writer.write("$serializerFnName(#T($valueToSerializeName, ::$serializerTypeName))", RuntimeTypes.Serde.asSdkSerializable)
         }
     }
 
@@ -275,7 +280,7 @@ open class SerializeStructGenerator(
         val parentName = parentName(elementName)
 
         writer.withBlock("for ($elementName in $containerName$parentMemberName) {", "}") {
-            writer.withBlock("serializer.serializeMap($descriptorName) {", "}") {
+            writer.withBlock("serializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.serializeMap) {
                 delegateMapSerialization(rootMemberShape, mapShape, nestingLevel + 1, parentName)
             }
         }
@@ -362,7 +367,7 @@ open class SerializeStructGenerator(
         val containerName = if (nestingLevel == 0) "input." else ""
 
         writer.withBlock("for ($elementName in $containerName$parentListMemberName) {", "}") {
-            writer.withBlock("serializer.serializeList($descriptorName) {", "}") {
+            writer.withBlock("serializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.serializeList) {
                 delegateListSerialization(rootMemberShape, elementShape, nestingLevel + 1, elementName)
             }
         }

@@ -59,8 +59,13 @@ open class DeserializeStructGenerator(
     open fun render() {
         // inline an empty object descriptor when the struct has no members
         // otherwise use the one generated as part of the companion object
-        val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build {}"
-        writer.withBlock("deserializer.deserializeStruct($objDescriptor) {", "}") {
+        val objDescriptor = if (members.isNotEmpty()) {
+            "OBJ_DESCRIPTOR"
+        } else {
+            writer.addImport(RuntimeTypes.Serde.SdkObjectDescriptor)
+            "SdkObjectDescriptor.build {}"
+        }
+        writer.withBlock("deserializer.#T($objDescriptor) {", "}", RuntimeTypes.Serde.deserializeStruct) {
             withBlock("loop@while (true) {", "}") {
                 withBlock("when (findNextFieldIndex()) {", "}") {
                     members.sortedBy { it.memberName }.forEach { memberShape ->
@@ -140,7 +145,7 @@ open class DeserializeStructGenerator(
 
         writer.write("$descriptorName.index -> $valueCollector = ")
             .indent()
-            .withBlock("deserializer.deserializeMap($descriptorName) {", "}") {
+            .withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
                 write("val $mutableCollectionName = $mutableCollectionType()")
                 withBlock("while (hasNextEntry()) {", "}") {
                     delegateMapDeserialization(memberShape, targetShape, nestingLevel, mutableCollectionName)
@@ -246,7 +251,7 @@ open class DeserializeStructGenerator(
         writer.write("val $keyName = key()")
         writer.withBlock("val $valueName =", "") {
             withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
-                withBlock("deserializer.deserializeMap($descriptorName) {", "}") {
+                withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
                     write("val $memberName = $mutableCollectionType()")
                     withBlock("while (hasNextEntry()) {", "}") {
                         delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, memberName)
@@ -292,7 +297,7 @@ open class DeserializeStructGenerator(
         writer.write("val $keyName = key()")
         writer.withBlock("val $valueName =", "") {
             withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
-                withBlock("deserializer.deserializeList($descriptorName) {", "}") {
+                withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
                     write("val $memberName = $mutableCollectionType()")
                     withBlock("while (hasNextElement()) {", "}") {
                         delegateListDeserialization(rootMemberShape, collectionShape, nextNestingLevel, memberName)
@@ -346,7 +351,7 @@ open class DeserializeStructGenerator(
 
         writer.write("$descriptorName.index -> $valueCollector = ")
             .indent()
-            .withBlock("deserializer.deserializeList($descriptorName) {", "}") {
+            .withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
                 write("val $mutableCollectionName = $mutableCollectionType()")
                 withBlock("while (hasNextElement()) {", "}") {
                     delegateListDeserialization(memberShape, targetShape, nestingLevel, mutableCollectionName)
@@ -433,7 +438,7 @@ open class DeserializeStructGenerator(
         val mutableCollectionType = mapShape.mutableCollectionType()
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, mapName)
 
-        writer.withBlock("val $elementName = deserializer.deserializeMap($descriptorName) {", "}") {
+        writer.withBlock("val $elementName = deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
             write("val $mapName = $mutableCollectionType()")
             withBlock("while (hasNextEntry()) {", "}") {
                 delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, mapName)
@@ -466,7 +471,7 @@ open class DeserializeStructGenerator(
         val mutableCollectionType = elementShape.mutableCollectionType()
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, listName)
 
-        writer.withBlock("val $elementName = deserializer.deserializeList($descriptorName) {", "}") {
+        writer.withBlock("val $elementName = deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
             write("val $listName = $mutableCollectionType()")
             withBlock("while (hasNextElement()) {", "}") {
                 delegateListDeserialization(rootMemberShape, elementShape, nextNestingLevel, listName)

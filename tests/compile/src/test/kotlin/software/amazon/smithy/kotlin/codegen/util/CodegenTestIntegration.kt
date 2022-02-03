@@ -5,19 +5,14 @@
 package software.amazon.smithy.kotlin.codegen.util
 
 import software.amazon.smithy.aws.traits.protocols.RestJson1Trait
-import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpBindingResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpProtocolClientGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.HttpTraitResolver
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolMiddleware
+import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
+import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
@@ -50,53 +45,23 @@ class RestJsonTestProtocolGenerator(
         return MockRestJsonProtocolClientGenerator(ctx, getHttpMiddleware(ctx), getProtocolHttpBindingResolver(ctx.model, ctx.service))
     }
 
-    override fun renderSerializeOperationBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter
-    ) {
-        writer.write("""error("not-implemented - compile only test")""")
-    }
+    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
+        JsonSerializerGenerator(this)
 
-    override fun renderDeserializeOperationBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter
-    ) {
-        writer.write("""error("not-implemented - compile only test")""")
-    }
+    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
+        JsonParserGenerator(this)
 
-    override fun renderSerializeDocumentBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-        writer.write("""error("not-implemented - compile only test")""")
-    }
-
-    override fun renderDeserializeDocumentBody(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-        writer.write("""error("not-implemented - compile only test")""")
-    }
-
-    override fun renderDeserializeException(
-        ctx: ProtocolGenerator.GenerationContext,
-        shape: Shape,
-        writer: KotlinWriter
-    ) {
-        writer.write("""error("not-implemented - compile only test")""")
-    }
-
-    override fun renderThrowOperationError(
-        ctx: ProtocolGenerator.GenerationContext,
-        op: OperationShape,
-        writer: KotlinWriter
-    ) {
-        writer.write("""error("not-implemented - compile only test")""")
-    }
+    override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
+        op.errorHandler(ctx.settings) { writer ->
+            writer.withBlock(
+                "private suspend fun ${op.errorHandlerName()}(context: #T, response: #T): Nothing {",
+                "}",
+                RuntimeTypes.Core.ExecutionContext,
+                RuntimeTypes.Http.Response.HttpResponse
+            ) {
+                write("error(\"not needed for compile tests\")")
+            }
+        }
 
 }
 

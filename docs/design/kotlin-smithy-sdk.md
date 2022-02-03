@@ -849,7 +849,7 @@ Influences endpoint resolution
 
 Binary streams: [Kotlin (binary) streaming request/response bodies](kotlin-binary-streaming-request-response-bodies.md)
 
-The design of event stream bindings (full duplex streams) is still in progress. It will be reviewed separately.
+Event streams: [Event streams](event-streams.md)
 
 # Revision history
 
