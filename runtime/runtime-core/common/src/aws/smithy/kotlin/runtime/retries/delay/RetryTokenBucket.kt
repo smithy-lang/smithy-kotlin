@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries
+package aws.smithy.kotlin.runtime.retries.delay
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 
 /**
  * A rate-limiting token bucket for use in a client-throttled retry strategy.

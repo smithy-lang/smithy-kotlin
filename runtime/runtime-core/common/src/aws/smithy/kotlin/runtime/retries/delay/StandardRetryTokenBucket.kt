@@ -3,12 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries.delay
 
-import aws.smithy.kotlin.runtime.retries.RetryCapacityExceededException
-import aws.smithy.kotlin.runtime.retries.RetryErrorType
-import aws.smithy.kotlin.runtime.retries.RetryToken
-import aws.smithy.kotlin.runtime.retries.RetryTokenBucket
+import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.time.Clock
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import kotlinx.coroutines.delay

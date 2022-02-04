@@ -2,6 +2,7 @@ $version: "1.0"
 namespace com.test
 
 use aws.protocols#restJson1
+use smithy.waiters#waitable
 
 @restJson1
 service Example {
@@ -23,7 +24,8 @@ service Example {
         UnionInput,
         UnionAggregateInput,
         UnionOutput,
-        UnionAggregateOutput
+        UnionAggregateOutput,
+        WaiterTest
     ]
 }
 
@@ -404,7 +406,7 @@ structure PrefixHeadersIO {
 
 @http(method: "POST", uri: "/input/union")
 operation UnionInput {
-    input: UnionRequest    
+    input: UnionRequest
 }
 
 @http(method: "GET", uri: "/input/union")
@@ -443,3 +445,56 @@ union MyAggregateUnion {
     @timestampFormat("date-time")
     timestamp4: Timestamp
 }
+
+@http(method: "GET", uri: "/waitertest/{id}")
+@waitable(
+    WaiterExists: {
+        documentation: "Wait until something exists",
+        acceptors: [
+            {
+                state: "failure",
+                matcher: {
+                    output: {
+                        path: "foo.bar",
+                        expected: "baz",
+                        comparator: "stringEquals"
+                    }
+                }
+            },
+            {
+                state: "success",
+                matcher: {
+                    success: true
+                }
+            },
+            {
+                state: "retry",
+                matcher: {
+                    errorType: "WaiterTestNotFound"
+                }
+            }
+        ]
+    }
+)
+operation WaiterTest {
+    input: WaiterTestInput,
+    output: WaiterTestOutput,
+    errors: [WaiterTestNotFound]
+}
+
+structure WaiterTestInput {
+    @httpLabel
+    @required
+    id: String
+}
+
+structure WaiterTestOutput {
+    foo: WaiterTestFoo
+}
+
+structure WaiterTestFoo {
+    bar: String
+}
+
+@error("client")
+structure WaiterTestNotFound {}
