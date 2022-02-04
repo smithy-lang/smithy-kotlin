@@ -138,7 +138,7 @@ class StandardRetryStrategy(
         token.notifyFailure()
         when (val ex = previousResult?.exceptionOrNull()) {
             null -> throw TimedOutException(
-                "Took more than ${options.maxTime}ms to yield a result",
+                "Took more than ${options.maxTime} to yield a result",
                 attempt,
                 previousResult?.getOrNull(),
                 previousResult?.exceptionOrNull(),
