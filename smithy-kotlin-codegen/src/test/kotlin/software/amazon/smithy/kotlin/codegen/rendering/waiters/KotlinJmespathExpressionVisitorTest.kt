@@ -29,7 +29,7 @@ class KotlinJmespathExpressionVisitorTest {
             expectedCodegen = """
                 val foo = it?.foo
                 val bar = it?.bar
-                val comparison = foo?.compareTo(bar)?.let { it == 0 }
+                val comparison = if (foo == null || bar == null) null else foo.compareTo(bar) == 0
             """.trimIndent(),
         )
     }
@@ -42,7 +42,7 @@ class KotlinJmespathExpressionVisitorTest {
             expectedCodegen = """
                 val string = "foo"
                 val bar = it?.bar
-                val comparison = string?.compareTo(bar?.toString())?.let { it == 0 }
+                val comparison = if (string == null || bar == null) null else string.compareTo(bar.toString()) == 0
             """.trimIndent(),
         )
 
@@ -52,7 +52,7 @@ class KotlinJmespathExpressionVisitorTest {
             expectedCodegen = """
                 val foo = it?.foo
                 val string = "bar"
-                val comparison = foo?.toString()?.compareTo(string)?.let { it == 0 }
+                val comparison = if (foo == null || string == null) null else foo.toString().compareTo(string) == 0
             """.trimIndent(),
         )
     }
@@ -65,7 +65,7 @@ class KotlinJmespathExpressionVisitorTest {
             expectedCodegen = """
                 val string = "foo"
                 val string2 = "bar"
-                val comparison = string?.compareTo(string2)?.let { it != 0 }
+                val comparison = if (string == null || string2 == null) null else string.compareTo(string2) != 0
             """.trimIndent(),
 
         )
@@ -79,7 +79,7 @@ class KotlinJmespathExpressionVisitorTest {
             expectedCodegen = """
                 val foo = it?.foo
                 val bar = it?.bar
-                val comparison = foo?.compareTo(bar)?.let { it <= 0 }
+                val comparison = if (foo == null || bar == null) null else foo.compareTo(bar) <= 0
             """.trimIndent(),
         )
     }
@@ -122,7 +122,7 @@ class KotlinJmespathExpressionVisitorTest {
                 val fooFiltered = (foo ?: listOf()).filter {
                     val bar = it?.bar
                     val baz = it?.baz
-                    val comparison = bar?.compareTo(baz)?.let { it == 0 }
+                    val comparison = if (bar == null || baz == null) null else bar.compareTo(baz) == 0
                     comparison == true
                 }
             """.trimIndent(),

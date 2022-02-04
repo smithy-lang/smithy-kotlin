@@ -47,6 +47,20 @@ service WaitersTestService {
                 }
             }
         ]
+    },
+    EntityHasComparableNumericalValues: {
+        acceptors: [
+            {
+                state: "success",
+                matcher: {
+                    output: {
+                        path: "size == `42`",
+                        expected: "true",
+                        comparator: "booleanEquals"
+                    }
+                }
+            }
+        ]
     }
 )
 @readonly
@@ -64,7 +78,8 @@ structure GetEntityRequest {
 
 structure GetEntityResponse {
     name: String,
-    tags: Tags
+    tags: Tags,
+    size: Integer
 }
 
 map Tags {
