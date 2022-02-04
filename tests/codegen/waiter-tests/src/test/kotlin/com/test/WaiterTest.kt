@@ -10,12 +10,12 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 import com.test.DefaultWaitersTestClient
 import com.test.model.GetEntityResponse
 import com.test.waiters.waitUntilEntityExistsBySuccess
+import com.test.waiters.waitUntilEntityHasComparableNumericalValues
 import com.test.waiters.waitUntilEntityHasNameTagByOutput
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.fail
 
 class WaiterTest {
     @OptIn(InternalApi::class)
@@ -73,5 +73,21 @@ class WaiterTest {
         val outcome = client.waitUntilEntityHasNameTagByOutput { name = "foo" }
         assertEquals(4, outcome.attempts)
         assertEquals(tagsResponse, outcome.getOrThrow())
+    }
+
+    @Test
+    fun testNumericalComparison(): Unit = runBlocking {
+        val successResponse = GetEntityResponse { size = 42 }
+        val results = listOf(
+            success { },
+            success { size = null },
+            success { size = 41 },
+            success(successResponse),
+        )
+        val client = DefaultWaitersTestClient(results)
+
+        val outcome = client.waitUntilEntityHasComparableNumericalValues { name = "foo" }
+        assertEquals(4, outcome.attempts)
+        assertEquals(successResponse, outcome.getOrThrow())
     }
 }
