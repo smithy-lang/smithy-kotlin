@@ -20,7 +20,8 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 open class JsonSerializerGenerator(
     // FIXME - we shouldn't need this, it's only required by JsonSerdeDescriptorGenerator because of toRenderingContext
-    private val protocolGenerator: HttpBindingProtocolGenerator
+    private val protocolGenerator: HttpBindingProtocolGenerator,
+    private val supportsJsonNameTrait: Boolean = true
 ) : StructuredDataSerializerGenerator {
 
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
@@ -86,7 +87,7 @@ open class JsonSerializerGenerator(
         writer: KotlinWriter,
     ) {
         // render the serde descriptors
-        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members).render()
+        JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members, supportsJsonNameTrait).render()
         if (shape.isUnionShape) {
             SerializeUnionGenerator(ctx, members, writer, defaultTimestampFormat).render()
         } else {
