@@ -100,8 +100,9 @@ class HttpStringValuesMapSerializerTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedContents = """
-            if (input.enumList?.isNotEmpty() == true) appendAll("x-enumList", input.enumList.map { it.value })
+            if (input.enumList?.isNotEmpty() == true) appendAll("x-enumList", input.enumList.map { quoteHeaderValue(it.value) })
             if (input.intList?.isNotEmpty() == true) appendAll("x-intList", input.intList.map { "${'$'}it" })
+            if (input.strList?.isNotEmpty() == true) appendAll("x-strList", input.strList.map { quoteHeaderValue(it) })
             if (input.tsList?.isNotEmpty() == true) appendAll("x-tsList", input.tsList.map { it.format(TimestampFormat.RFC_5322) })
         """.trimIndent()
         contents.shouldContainOnlyOnceWithDiff(expectedContents)

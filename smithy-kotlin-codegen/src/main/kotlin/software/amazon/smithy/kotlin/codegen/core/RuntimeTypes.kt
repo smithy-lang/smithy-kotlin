@@ -25,14 +25,18 @@ object RuntimeTypes {
         val QueryParameters = runtimeSymbol("QueryParameters", KotlinDependency.HTTP)
         val QueryParametersBuilder = runtimeSymbol("QueryParametersBuilder", KotlinDependency.HTTP)
         val toQueryParameters = runtimeSymbol("toQueryParameters", KotlinDependency.HTTP)
-        val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
         val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
         val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.HTTP)
         val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.HTTP)
         val isSuccess = runtimeSymbol("isSuccess", KotlinDependency.HTTP)
         val StatusCode = runtimeSymbol("HttpStatusCode", KotlinDependency.HTTP)
-        val splitAsQueryParameters = runtimeSymbol("splitAsQueryParameters", KotlinDependency.HTTP, "util")
+
+        object Util {
+            val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
+            val splitAsQueryParameters = runtimeSymbol("splitAsQueryParameters", KotlinDependency.HTTP, "util")
+            val quoteHeaderValue = runtimeSymbol("quoteHeaderValue", KotlinDependency.HTTP, "util")
+        }
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.HTTP, "request")
