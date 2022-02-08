@@ -22,6 +22,10 @@ class HeaderListsTest {
         // leading and trailing space
         assertEquals(listOf("  foo  "), splitHeaderListValues("\"  foo  \""))
 
+        // ignore spaces between values
+        assertEquals(listOf("foo", "bar"), splitHeaderListValues("foo  ,  bar"))
+        assertEquals(listOf("foo", "bar"), splitHeaderListValues("\"foo\"  ,  \"bar\""))
+
         // comma in quotes
         assertEquals(listOf("foo,bar", "baz"), splitHeaderListValues("\"foo,bar\",baz"))
 
@@ -46,6 +50,10 @@ class HeaderListsTest {
         assertFailsWith<IllegalStateException> {
             splitHeaderListValues("foo, bar, \"baz")
         }.message.shouldContain("missing end quote around quoted header value: `baz`")
+
+        assertFailsWith<IllegalStateException> {
+            splitHeaderListValues("foo  ,  \"bar\"  \tf,baz")
+        }.message.shouldContain("Unexpected char `f` between header values. Previous header: `bar`")
     }
 
     @Test

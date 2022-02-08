@@ -54,7 +54,16 @@ private fun String.readNextQuoted(startIdx: Int, delim: Char = ','): Pair<Int, S
     endIdx++
 
     // consume delim
-    if (endIdx < length && this[endIdx] == delim) endIdx++
+    while (endIdx < length) {
+        when (this[endIdx]) {
+            ' ', '\t' -> endIdx++
+            ',' -> {
+                endIdx++
+                break
+            }
+            else -> error("Unexpected char `${this[endIdx]}` between header values. Previous header: `$next`")
+        }
+    }
 
     val unescaped = next.replace("\\\"", "\"")
         .replace("\\\\", "\\")
