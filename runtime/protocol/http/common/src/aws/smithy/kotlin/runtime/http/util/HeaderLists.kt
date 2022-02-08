@@ -14,7 +14,6 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  */
 @InternalApi
 fun splitHeaderListValues(value: String): List<String> {
-    // value.split(",").map { it.trim() }
     val results = mutableListOf<String>()
     var currIdx = 0
     while (currIdx < value.length) {
@@ -24,7 +23,7 @@ fun splitHeaderListValues(value: String): List<String> {
                 currIdx++
                 continue
             }
-            '\"' -> value.readNextQuoted(currIdx)
+            '"' -> value.readNextQuoted(currIdx)
             else -> value.readNextUnquoted(currIdx)
         }
         currIdx = next.first
@@ -51,7 +50,8 @@ private fun String.readNextQuoted(startIdx: Int, delim: Char = ','): Pair<Int, S
     val next = substring(startIdx + 1, endIdx)
 
     // consume trailing quote
-    if (endIdx < length && this[endIdx] == '"') endIdx++
+    check(endIdx < length && this[endIdx] == '"') { "missing end quote around quoted header value: `$next`" }
+    endIdx++
 
     // consume delim
     if (endIdx < length && this[endIdx] == delim) endIdx++

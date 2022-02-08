@@ -8,6 +8,7 @@ import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
+import kotlin.test.assertFailsWith
 
 class HeaderListsTest {
 
@@ -41,6 +42,10 @@ class HeaderListsTest {
 
         // empty
         assertEquals(listOf("", "1"), splitHeaderListValues(",1"))
+
+        assertFailsWith<IllegalStateException> {
+            splitHeaderListValues("foo, bar, \"baz")
+        }.message.shouldContain("missing end quote around quoted header value: `baz`")
     }
 
     @Test
