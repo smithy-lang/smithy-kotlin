@@ -57,7 +57,7 @@ private fun String.readNextQuoted(startIdx: Int, delim: Char = ','): Pair<Int, S
     while (endIdx < length) {
         when (this[endIdx]) {
             ' ', '\t' -> endIdx++
-            ',' -> {
+            delim -> {
                 endIdx++
                 break
             }
