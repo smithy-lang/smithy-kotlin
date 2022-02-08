@@ -25,14 +25,18 @@ object RuntimeTypes {
         val QueryParameters = runtimeSymbol("QueryParameters", KotlinDependency.HTTP)
         val QueryParametersBuilder = runtimeSymbol("QueryParametersBuilder", KotlinDependency.HTTP)
         val toQueryParameters = runtimeSymbol("toQueryParameters", KotlinDependency.HTTP)
-        val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
         val readAll = runtimeSymbol("readAll", KotlinDependency.HTTP)
         val parameters = runtimeSymbol("parameters", KotlinDependency.HTTP)
         val toByteStream = runtimeSymbol("toByteStream", KotlinDependency.HTTP)
         val toHttpBody = runtimeSymbol("toHttpBody", KotlinDependency.HTTP)
         val isSuccess = runtimeSymbol("isSuccess", KotlinDependency.HTTP)
         val StatusCode = runtimeSymbol("HttpStatusCode", KotlinDependency.HTTP)
-        val splitAsQueryParameters = runtimeSymbol("splitAsQueryParameters", KotlinDependency.HTTP, "util")
+
+        object Util {
+            val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
+            val splitAsQueryParameters = runtimeSymbol("splitAsQueryParameters", KotlinDependency.HTTP, "util")
+            val quoteHeaderValue = runtimeSymbol("quoteHeaderValue", KotlinDependency.HTTP, "util")
+        }
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.HTTP, "request")
@@ -88,21 +92,37 @@ object RuntimeTypes {
         }
 
         object Retries {
+            val Outcome = runtimeSymbol("Outcome", KotlinDependency.CORE, "retries")
             val RetryStrategy = runtimeSymbol("RetryStrategy", KotlinDependency.CORE, "retries")
-            object Impl {
-                val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.impl")
-                val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.impl")
-                val StandardRetryPolicy = runtimeSymbol("StandardRetryPolicy", KotlinDependency.CORE, "retries.impl")
-                val StandardRetryStrategy = runtimeSymbol("StandardRetryStrategy", KotlinDependency.CORE, "retries.impl")
-                val StandardRetryStrategyOptions = runtimeSymbol("StandardRetryStrategyOptions", KotlinDependency.CORE, "retries.impl")
-                val StandardRetryTokenBucket = runtimeSymbol("StandardRetryTokenBucket", KotlinDependency.CORE, "retries.impl")
-                val StandardRetryTokenBucketOptions = runtimeSymbol("StandardRetryTokenBucketOptions", KotlinDependency.CORE, "retries.impl")
+            val StandardRetryStrategy = runtimeSymbol("StandardRetryStrategy", KotlinDependency.CORE, "retries")
+            val StandardRetryStrategyOptions = runtimeSymbol("StandardRetryStrategyOptions", KotlinDependency.CORE, "retries")
+
+            object Delay {
+                val ExponentialBackoffWithJitter = runtimeSymbol("ExponentialBackoffWithJitter", KotlinDependency.CORE, "retries.delay")
+                val ExponentialBackoffWithJitterOptions = runtimeSymbol("ExponentialBackoffWithJitterOptions", KotlinDependency.CORE, "retries.delay")
+                val InfiniteTokenBucket = runtimeSymbol("InfiniteTokenBucket", KotlinDependency.CORE, "retries.delay")
+                val StandardRetryTokenBucket = runtimeSymbol("StandardRetryTokenBucket", KotlinDependency.CORE, "retries.delay")
+                val StandardRetryTokenBucketOptions = runtimeSymbol("StandardRetryTokenBucketOptions", KotlinDependency.CORE, "retries.delay")
+            }
+
+            object Policy {
+                val Acceptor = runtimeSymbol("Acceptor", KotlinDependency.CORE, "retries.policy")
+                val AcceptorRetryPolicy = runtimeSymbol("AcceptorRetryPolicy", KotlinDependency.CORE, "retries.policy")
+                val ErrorTypeAcceptor = runtimeSymbol("ErrorTypeAcceptor", KotlinDependency.CORE, "retries.policy")
+                val InputOutputAcceptor = runtimeSymbol("InputOutputAcceptor", KotlinDependency.CORE, "retries.policy")
+                val OutputAcceptor = runtimeSymbol("OutputAcceptor", KotlinDependency.CORE, "retries.policy")
+                val RetryDirective = runtimeSymbol("RetryDirective", KotlinDependency.CORE, "retries.policy")
+                val RetryErrorType = runtimeSymbol("RetryErrorType", KotlinDependency.CORE, "retries.policy")
+                val StandardRetryPolicy = runtimeSymbol("StandardRetryPolicy", KotlinDependency.CORE, "retries.policy")
+                val SuccessAcceptor = runtimeSymbol("SuccessAcceptor", KotlinDependency.CORE, "retries.policy")
             }
         }
     }
 
     object Utils {
         val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
+        val flattenIfPossible = runtimeSymbol("flattenIfPossible", KotlinDependency.UTILS)
+        val length = runtimeSymbol("length", KotlinDependency.UTILS)
         val Sha256 = runtimeSymbol("Sha256", KotlinDependency.UTILS)
         val urlEncodeComponent = runtimeSymbol("urlEncodeComponent", KotlinDependency.UTILS, "text")
     }

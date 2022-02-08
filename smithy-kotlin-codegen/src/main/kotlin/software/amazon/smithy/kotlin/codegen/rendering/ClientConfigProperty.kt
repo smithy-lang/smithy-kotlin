@@ -274,12 +274,12 @@ object KotlinClientRuntimeConfigProperty {
             propertyType = ClientConfigPropertyType.ConstantValue(retryStrategyBlock)
 
             additionalImports = listOf(
-                RuntimeTypes.Core.Retries.Impl.StandardRetryStrategy,
-                RuntimeTypes.Core.Retries.Impl.StandardRetryStrategyOptions,
-                RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucket,
-                RuntimeTypes.Core.Retries.Impl.StandardRetryTokenBucketOptions,
-                RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitter,
-                RuntimeTypes.Core.Retries.Impl.ExponentialBackoffWithJitterOptions,
+                RuntimeTypes.Core.Retries.StandardRetryStrategy,
+                RuntimeTypes.Core.Retries.StandardRetryStrategyOptions,
+                RuntimeTypes.Core.Retries.Delay.StandardRetryTokenBucket,
+                RuntimeTypes.Core.Retries.Delay.StandardRetryTokenBucketOptions,
+                RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitter,
+                RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitterOptions,
             )
         }
 

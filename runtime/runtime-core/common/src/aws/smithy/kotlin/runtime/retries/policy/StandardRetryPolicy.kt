@@ -3,15 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries.policy
 
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.SdkBaseException
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.ServiceException.*
-import aws.smithy.kotlin.runtime.retries.RetryDirective
-import aws.smithy.kotlin.runtime.retries.RetryErrorType
-import aws.smithy.kotlin.runtime.retries.RetryPolicy
 import kotlin.reflect.KClass
 import kotlin.reflect.safeCast
 
@@ -24,11 +21,11 @@ open class StandardRetryPolicy : RetryPolicy<Any?> {
     }
 
     private val evaluationStrategies = sequenceOf(
+        EvaluationStrategy(::evaluateSpecificExceptions),
         EvaluationStrategy(::evaluateBaseException),
         EvaluationStrategy(::evaluateServiceException),
         EvaluationStrategy(::evaluateClientException),
         EvaluationStrategy(::evaluateNonSdkException),
-        EvaluationStrategy(::evaluateOtherExceptions),
     )
 
     /**
@@ -63,7 +60,7 @@ open class StandardRetryPolicy : RetryPolicy<Any?> {
         }
     }
 
-    protected open fun evaluateOtherExceptions(ex: Throwable): RetryDirective? = null
+    protected open fun evaluateSpecificExceptions(ex: Throwable): RetryDirective? = null
 
     @Suppress("UNUSED_PARAMETER") // Until method is implemented
     private fun evaluateNonSdkException(ex: Throwable): RetryDirective? =

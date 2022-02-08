@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries
+package aws.smithy.kotlin.runtime.retries.delay
 
 /**
  * An object that can be used to delay between iterations of code.
