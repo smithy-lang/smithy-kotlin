@@ -16,10 +16,12 @@ import software.amazon.smithy.model.traits.JsonNameTrait
 
 /**
  * Field descriptor generator that processes the [jsonName trait](https://awslabs.github.io/smithy/1.0/spec/core/protocol-traits.html#jsonname-trait)
+ * @param supportsJsonNameTrait Flag indicating if the jsonName trait should be used or not, when `false` the member name is used.
  */
 open class JsonSerdeDescriptorGenerator(
     ctx: RenderingContext<Shape>,
-    memberShapes: List<MemberShape>? = null
+    memberShapes: List<MemberShape>? = null,
+    private val supportsJsonNameTrait: Boolean = true
 ) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
 
     override fun getFieldDescriptorTraits(
@@ -34,7 +36,11 @@ open class JsonSerdeDescriptorGenerator(
             RuntimeTypes.Serde.SerdeJson.JsonSerialName,
         )
 
-        val serialName = member.getTrait<JsonNameTrait>()?.value ?: member.memberName
+        val serialName = if (supportsJsonNameTrait) {
+            member.getTrait<JsonNameTrait>()?.value ?: member.memberName
+        } else {
+            member.memberName
+        }
         return listOf(SdkFieldDescriptorTrait(RuntimeTypes.Serde.SerdeJson.JsonSerialName, serialName.dq()))
     }
 }
