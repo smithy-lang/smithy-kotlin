@@ -79,7 +79,7 @@ if (project.prop("kotlinWarningsAsErrors")?.toString()?.toBoolean() == true) {
 
 // configure the root multimodule docs
 tasks.dokkaHtmlMultiModule.configure {
-    moduleName.set("Smithy SDK")
+    moduleName.set("Smithy SDK for Kotlin")
 
     includes.from(
         // NOTE: these get concatenated
