@@ -178,7 +178,27 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun memberShape(shape: MemberShape): Symbol {
         val targetShape =
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
-        return toSymbol(targetShape)
+
+        val targetSymbol = toSymbol(targetShape)
+
+        // figure out if we are referencing an event stream or not.
+        // NOTE: unlike blob streams we actually re-use the target (union) shape which is why we can't do this
+        // when visiting a unionShape() like we can for blobShape()
+        val container = model.expectShape(shape.container) as? StructureShape
+        val isOperationInputOrOutput = container != null && (container.isOperationInput || container.isOperationOutput)
+        val isEventStream = targetShape.isStreaming && targetShape.isUnionShape
+
+        return if (isOperationInputOrOutput && isEventStream) {
+            // a top level operation input/output member referencing a streaming union is represented by a Flow<T>
+            buildSymbol {
+                name = "Flow<${targetSymbol.fullName}>"
+                nullable = true
+                reference(targetSymbol, SymbolReference.ContextOption.DECLARE)
+                reference(RuntimeTypes.KotlinxCoroutines.Flow, SymbolReference.ContextOption.DECLARE)
+            }
+        } else {
+            targetSymbol
+        }
     }
 
     override fun timestampShape(shape: TimestampShape?): Symbol {

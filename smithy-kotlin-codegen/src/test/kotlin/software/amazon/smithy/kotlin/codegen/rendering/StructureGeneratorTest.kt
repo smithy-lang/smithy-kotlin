@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.kotlin.codegen.trimEveryLine
 import software.amazon.smithy.model.shapes.StructureShape
@@ -543,6 +544,69 @@ class StructureGeneratorTest {
         generator.render()
 
         return writer.toString()
+    }
+
+    @Test
+    fun testEventStreams() {
+        // event streams require special attention
+
+        val model = """
+            operation GetFoos {
+                output: GetFoosResponse
+            }
+            
+            @streaming
+            union Events {
+                a: Event1,
+                b: Event2,
+                c: Event3,
+            }
+            
+            structure Event1{}
+            structure Event2{}
+            structure Event3{}
+            
+            structure GetFoosResponse {
+                events: Events
+            }
+            
+        """.prependNamespaceAndService(operations = listOf("GetFoos")).toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+
+        // we have to use the synthetic operation input/output to actually trigger all the logic
+        val struct = model.expectShape<StructureShape>("$SYNTHETIC_NAMESPACE.test#GetFoosResponse")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
+        val contents = writer.toString()
+
+        val expectedProperty = """
+            val events: Flow<com.test.model.Events>? = builder.events
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedProperty)
+
+        val expectedEqualsContent = """
+            override fun equals(other: kotlin.Any?): kotlin.Boolean {
+                if (this === other) return true
+                if (other == null || this::class != other::class) return false
+
+                other as GetFoosResponse
+
+                if (events != other.events) return false
+
+                return true
+            }
+        """.formatForTest()
+
+        val expectedHashCodeContent = """
+            override fun hashCode(): kotlin.Int {
+                var result = events?.hashCode() ?: 0
+                return result
+            }
+        """.formatForTest()
+        contents.shouldContainOnlyOnceWithDiff(expectedEqualsContent)
+        contents.shouldContainOnlyOnceWithDiff(expectedHashCodeContent)
     }
 }
 

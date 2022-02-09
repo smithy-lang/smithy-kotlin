@@ -8,6 +8,7 @@ package software.amazon.smithy.kotlin.codegen.core
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.model.toSymbol
 
 /**
  * Commonly used runtime types. Provides a single definition of a runtime symbol such that codegen isn't littered
@@ -33,6 +34,7 @@ object RuntimeTypes {
         val isSuccess = runtimeSymbol("isSuccess", KotlinDependency.HTTP)
         val StatusCode = runtimeSymbol("HttpStatusCode", KotlinDependency.HTTP)
         val splitAsQueryParameters = runtimeSymbol("splitAsQueryParameters", KotlinDependency.HTTP, "util")
+        val toSdkByteReadChannel = runtimeSymbol("toSdkByteReadChannel", KotlinDependency.HTTP)
 
         object Request {
             val HttpRequest = runtimeSymbol("HttpRequest", KotlinDependency.HTTP, "request")
@@ -175,6 +177,11 @@ object RuntimeTypes {
 
     object IO {
         val Closeable = runtimeSymbol("Closeable", KotlinDependency.IO)
+    }
+
+    object KotlinxCoroutines {
+        // NOTE: smithy-kotlin core has an API dependency on this already
+        val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()
     }
 }
 
