@@ -194,7 +194,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
                 name = "Flow<${targetSymbol.fullName}>"
                 nullable = true
                 reference(targetSymbol, SymbolReference.ContextOption.DECLARE)
-                reference(RuntimeTypes.KotlinxCoroutines.Flow, SymbolReference.ContextOption.DECLARE)
+                reference(RuntimeTypes.KotlinxCoroutines.Flow.Flow, SymbolReference.ContextOption.DECLARE)
             }
         } else {
             targetSymbol

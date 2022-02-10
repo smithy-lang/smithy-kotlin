@@ -180,8 +180,11 @@ object RuntimeTypes {
     }
 
     object KotlinxCoroutines {
-        // NOTE: smithy-kotlin core has an API dependency on this already
-        val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()
+        object Flow {
+            // NOTE: smithy-kotlin core has an API dependency on this already
+            val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()
+            val map = "kotlinx.coroutines.flow.map".toSymbol()
+        }
     }
 }
 
