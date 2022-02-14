@@ -71,7 +71,11 @@ actual class KtorEngine actual constructor(
 
         // do not throw exceptions if status code < 300, error handling is expected by generated clients
         expectSuccess = false
+
+        // do not attempt to follow redirects for status codes like 301 because they should be handled higher up
+        followRedirects = false
     }
+
     private val logger = Logger.getLogger<KtorEngine>()
 
     // TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
