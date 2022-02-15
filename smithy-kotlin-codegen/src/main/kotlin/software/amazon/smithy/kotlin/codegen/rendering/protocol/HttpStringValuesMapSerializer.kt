@@ -101,12 +101,18 @@ class HttpStringValuesMapSerializer(
                 formatInstant("it", tsFormat, forceString = true)
             }
             ShapeType.STRING -> {
-                if (collectionMemberTarget.isEnum) {
-                    // collections of enums should be mapped to the raw values
-                    "it.value"
-                } else {
-                    // collections of string doesn't need mapped to anything
-                    ""
+                when (binding.location) {
+                    HttpBinding.Location.QUERY -> {
+                        if (collectionMemberTarget.isEnum) "it.value" else ""
+                    }
+                    else -> {
+                        // collections of enums should be mapped to the raw values
+                        val inner = if (collectionMemberTarget.isEnum) "it.value" else "it"
+                        // ensure header values targeting lists are quoted appropriately
+                        val quoteHeaderValue = RuntimeTypes.Http.Util.quoteHeaderValue
+                        writer.addImport(quoteHeaderValue)
+                        "${quoteHeaderValue.name}($inner)"
+                    }
                 }
             }
             // default to "toString"

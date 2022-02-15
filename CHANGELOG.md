@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.7.7] - 02/04/2022
+
+### New features
+* implement waiters codegen [#584](https://github.com/awslabs/smithy-kotlin/pull/584)
+* Kotlin MP gradle file generation [#577](https://github.com/awslabs/smithy-kotlin/pull/577)
+* allow custom rendering of config properties [#568](https://github.com/awslabs/smithy-kotlin/pull/568)
+
+### Miscellaneous
+* event stream design [#576](https://github.com/awslabs/smithy-kotlin/pull/576)
+
 ## [0.7.6] - 01/13/2022
 
 ### New features

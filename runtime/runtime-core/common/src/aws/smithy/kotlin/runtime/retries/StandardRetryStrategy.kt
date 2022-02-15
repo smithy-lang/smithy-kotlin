@@ -3,9 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries
 
-import aws.smithy.kotlin.runtime.retries.*
+import aws.smithy.kotlin.runtime.retries.delay.DelayProvider
+import aws.smithy.kotlin.runtime.retries.delay.RetryCapacityExceededException
+import aws.smithy.kotlin.runtime.retries.delay.RetryToken
+import aws.smithy.kotlin.runtime.retries.delay.RetryTokenBucket
+import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
@@ -30,8 +35,8 @@ class StandardRetryStrategy(
      * Retry the given block of code until it's successful. Note this method throws exceptions for non-successful
      * outcomes from retrying.
      */
-    override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): R =
-        withTimeout(options.maxTime.inWholeMilliseconds) {
+    override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R> =
+        withTimeout(options.maxTime) {
             doTryLoop(block, policy, 1, tokenBucket.acquireToken(), null)
         }
 
@@ -46,6 +51,7 @@ class StandardRetryStrategy(
      * [notifyFailure][RetryToken.notifyFailure], or [scheduleRetry][RetryToken.scheduleRetry].
      * @param previousResult The [Result] from the prior loop iteration. This is used in the case of a timeout to
      * include in the thrown exception.
+     * @return The successful [Outcome] from the final try.
      */
     private tailrec suspend fun <R> doTryLoop(
         block: suspend () -> R,
@@ -53,7 +59,7 @@ class StandardRetryStrategy(
         attempt: Int,
         fromToken: RetryToken,
         previousResult: Result<R>?,
-    ): R {
+    ): Outcome<R> {
         val callResult = runCatching { block() }
         when (val ex = callResult.exceptionOrNull()) {
             is TimeoutCancellationException -> throwTimeOut(fromToken, attempt, previousResult)
@@ -63,7 +69,7 @@ class StandardRetryStrategy(
         val nextToken = try {
             when (val evaluation = policy.evaluate(callResult)) {
                 is RetryDirective.TerminateAndSucceed ->
-                    return success(fromToken, callResult)
+                    return success(fromToken, attempt, callResult)
 
                 is RetryDirective.TerminateAndFail ->
                     throwFailure(attempt, callResult)
@@ -96,9 +102,12 @@ class StandardRetryStrategy(
      * @param result The [Result] that was evaluated to be successful.
      * @return The [Result]'s value.
      */
-    private suspend fun <R> success(token: RetryToken, result: Result<R>): R {
+    private suspend fun <R> success(token: RetryToken, attempt: Int, result: Result<R>): Outcome<R> {
         token.notifySuccess()
-        return result.getOrNull()!!
+        return when (val response = result.getOrNull()) {
+            null -> Outcome.Exception(attempt, result.exceptionOrNull()!!)
+            else -> Outcome.Response(attempt, response)
+        }
     }
 
     private fun <R> throwCapacityExceeded(cause: Throwable, attempt: Int, result: Result<R>): Nothing =

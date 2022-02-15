@@ -3,9 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries
 
-import aws.smithy.kotlin.runtime.retries.*
+import aws.smithy.kotlin.runtime.retries.delay.DelayProvider
+import aws.smithy.kotlin.runtime.retries.delay.RetryToken
+import aws.smithy.kotlin.runtime.retries.delay.RetryTokenBucket
+import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
+import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
@@ -24,7 +29,7 @@ class StandardRetryStrategyTest {
 
         val result = retryer.retry(policy, block(policy, bucket, delayer, "success"))
 
-        assertEquals("success", result)
+        assertEquals(Outcome.Response(1, "success"), result)
         val token = bucket.lastTokenAcquired!!
         assertTrue(token.isSuccess)
     }
@@ -52,7 +57,7 @@ class StandardRetryStrategyTest {
             )
         )
 
-        assertEquals("success", result)
+        assertEquals(Outcome.Response(5, "success"), result)
         val token = bucket.lastTokenAcquired!!
         assertTrue(token.nextToken!!.nextToken!!.nextToken!!.nextToken!!.isSuccess)
     }

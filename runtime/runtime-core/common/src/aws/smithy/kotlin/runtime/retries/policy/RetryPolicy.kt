@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries
+package aws.smithy.kotlin.runtime.retries.policy
 
 /**
  * A policy that evaluates a [Result] from a retry attempt and indicates the action a [RetryStrategy] should take next.

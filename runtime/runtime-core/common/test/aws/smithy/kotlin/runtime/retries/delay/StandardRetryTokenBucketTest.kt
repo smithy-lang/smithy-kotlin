@@ -3,10 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
-package aws.smithy.kotlin.runtime.retries.impl
+package aws.smithy.kotlin.runtime.retries.delay
 
-import aws.smithy.kotlin.runtime.retries.RetryCapacityExceededException
-import aws.smithy.kotlin.runtime.retries.RetryErrorType
+import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.time.ManualClock
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -14,6 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.ExperimentalTime
 
 class StandardRetryTokenBucketTest {
     companion object {
@@ -85,7 +85,7 @@ class StandardRetryTokenBucketTest {
         }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
     @Test
     fun testRefillOverTime() = runTest {
         val clock = ManualClock()
