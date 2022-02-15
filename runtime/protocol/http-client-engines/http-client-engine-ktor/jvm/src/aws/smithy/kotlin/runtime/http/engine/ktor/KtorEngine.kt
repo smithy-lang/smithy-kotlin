@@ -21,6 +21,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import java.util.concurrent.TimeUnit
@@ -152,11 +153,11 @@ actual class KtorEngine actual constructor(
  * Simple notify mechanism that waits for a signal
  */
 internal class Waiter {
-    private val channel = Channel<Unit>(0)
+    private val mutex = Mutex(locked = true)
 
     // wait for the signal
-    suspend fun wait() { channel.receive() }
+    suspend fun wait() { mutex.lock() }
 
     // give the signal to continue
-    fun signal() { channel.trySend(Unit).getOrThrow() }
+    fun signal() { mutex.unlock() }
 }
