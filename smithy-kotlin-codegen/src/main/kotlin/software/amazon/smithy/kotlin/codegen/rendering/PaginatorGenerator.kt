@@ -108,36 +108,35 @@ class PaginatorGenerator : KotlinIntegration {
         }
         val markerLiteral = paginationInfo.inputTokenMember.defaultName()
 
+        val docBody = """
+            Paginate over [${outputSymbol.name}] results.
+            
+            When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+            calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+            until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+            calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+            see the failures only after you start collection.
+        """.trimIndent()
+        val docReturn = "@return A [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]"
+
         writer.write("")
-        writer.dokka(
-            """
-                  Paginate over [${outputSymbol.name}] results.
-                  When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are 
-                  made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once 
-                  you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no 
-                  pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
-                  collection.
-                  @param initialRequest A [${inputSymbol.name}] to start pagination
-                  @return A [kotlinx.coroutines.flow.Flow] that can collect [${outputSymbol.name}]
-            """.trimIndent()
-        )
         writer
-            .addImport(ExternalTypes.KotlinxCoroutines.Flow)
-            .addImport(ExternalTypes.KotlinxCoroutines.FlowGenerator)
-            .addImport(serviceSymbol)
-            .addImport(inputSymbol)
-            .addImport(outputSymbol)
-            .addImport(cursorSymbol)
+            .dokka("""
+                $docBody
+                @param initialRequest A [${inputSymbol.name}] to start pagination
+                $docReturn
+            """.trimIndent())
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
-                "fun #T.#LPaginated(initialRequest: #T): Flow<#T> =",
+                "fun #T.#LPaginated(initialRequest: #T): #T<#T> =",
                 "",
                 serviceSymbol,
                 operationShape.defaultName(),
                 inputSymbol,
-                outputSymbol
+                ExternalTypes.KotlinxCoroutines.Flow,
+                outputSymbol,
             ) {
-                withBlock("flow {", "}") {
+                withBlock("#T {", "}", ExternalTypes.KotlinxCoroutines.FlowGenerator) {
                     write("var cursor: #F = null", cursorSymbol)
                     write("var isFirstPage: Boolean = true")
                     write("")
@@ -154,6 +153,25 @@ class PaginatorGenerator : KotlinIntegration {
                         write("emit(result)")
                     }
                 }
+            }
+
+        writer.write("")
+        writer
+            .dokka("""
+                $docBody
+                @param block A builder block used for DSL-style invocation of the operation
+                $docReturn
+            """.trimIndent())
+            .withBlock(
+                "fun #T.#LPaginated(block: #T.Builder.() -> Unit): #T<#T> =",
+                "",
+                serviceSymbol,
+                operationShape.defaultName(),
+                inputSymbol,
+                ExternalTypes.KotlinxCoroutines.Flow,
+                outputSymbol,
+            ) {
+                write("#LPaginated(#T.Builder().apply(block).build())", operationShape.defaultName(), inputSymbol)
             }
     }
 
