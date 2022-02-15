@@ -6,13 +6,21 @@ package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.http.request.*
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.request.dumpRequest
+import aws.smithy.kotlin.runtime.http.request.header
+import aws.smithy.kotlin.runtime.http.request.headers
+import aws.smithy.kotlin.runtime.http.request.toBuilder
+import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HttpRequestBuilderTest {
     @Test
     fun itBuilds() {
@@ -35,7 +43,7 @@ class HttpRequestBuilderTest {
     }
 
     @Test
-    fun testDumpRequest() = runSuspendTest {
+    fun testDumpRequest() = runTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"
         val builder = HttpRequestBuilder().apply {
             url {
@@ -68,7 +76,7 @@ class HttpRequestBuilderTest {
     }
 
     @Test
-    fun testRequestToBuilder() = runSuspendTest {
+    fun testRequestToBuilder() = runTest {
         val req = HttpRequest(
             method = HttpMethod.POST,
             url = Url(

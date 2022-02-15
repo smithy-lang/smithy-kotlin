@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.time
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.time.Duration
-import kotlin.time.ExperimentalTime
 
 /**
  * [Clock] implementation that is controlled manually. This is mostly useful for testing purposes.
@@ -20,7 +19,6 @@ public class ManualClock(epoch: Instant = Instant.now()) : Clock {
     /**
      * Advance the current clock by [duration]
      */
-    @OptIn(ExperimentalTime::class)
     public fun advance(duration: Duration) {
         now = duration.toComponents { seconds, nanoseconds ->
             Instant.fromEpochSeconds(now.epochSeconds + seconds, now.nanosecondsOfSecond + nanoseconds)

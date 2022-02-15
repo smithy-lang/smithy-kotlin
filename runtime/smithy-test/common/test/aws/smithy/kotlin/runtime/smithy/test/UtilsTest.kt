@@ -6,18 +6,20 @@ package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.string.shouldContain
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertFails
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class UtilsTest {
 
     private val testBodyContents = "bueller...bueller".encodeAsByteArray()
     private val testBody = ByteArrayContent(testBodyContents)
 
     @Test
-    fun itComparesEmptyBodies() = runSuspendTest {
+    fun itComparesEmptyBodies() = runTest {
         val ex = assertFails {
             assertEmptyBody(null, testBody)
         }
@@ -27,7 +29,7 @@ class UtilsTest {
     }
 
     @Test
-    fun itComparesBytes() = runSuspendTest {
+    fun itComparesBytes() = runTest {
         val ex = assertFails {
             assertBytesEqual(null, testBody)
         }

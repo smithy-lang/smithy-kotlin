@@ -2,6 +2,8 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
@@ -12,8 +14,9 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -46,7 +49,7 @@ private class MockEngineException : RuntimeException()
  * }
  * ```
  */
-fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runSuspendTest {
+fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runTest {
     // setup expectations
     val testBuilder = HttpRequestTestBuilder().apply(block)
 

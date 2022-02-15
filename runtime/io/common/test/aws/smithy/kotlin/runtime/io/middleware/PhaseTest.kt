@@ -6,13 +6,15 @@
 package aws.smithy.kotlin.runtime.io.middleware
 
 import aws.smithy.kotlin.runtime.io.Handler
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class PhaseTest {
     @Test
-    fun `it orders interceptors`() = runSuspendTest {
+    fun `it orders interceptors`() = runTest {
         val phase = Phase<String, String>()
         val order = mutableListOf<String>()
 

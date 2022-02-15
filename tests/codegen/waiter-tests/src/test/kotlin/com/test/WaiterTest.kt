@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+package com.test
+
 import aws.smithy.kotlin.runtime.ServiceErrorMetadata
 import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.util.InternalApi
-import com.test.DefaultWaitersTestClient
 import com.test.model.GetEntityResponse
 import com.test.waiters.waitUntilEntityExistsBySuccess
 import com.test.waiters.waitUntilEntityHasComparableNumericalValues

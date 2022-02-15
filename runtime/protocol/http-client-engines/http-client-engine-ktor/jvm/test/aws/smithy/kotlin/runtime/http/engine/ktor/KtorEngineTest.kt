@@ -8,7 +8,8 @@ package aws.smithy.kotlin.runtime.http.engine.ktor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.currentTime
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.milliseconds
@@ -17,7 +18,7 @@ import kotlin.time.ExperimentalTime
 @OptIn(ExperimentalCoroutinesApi::class, ExperimentalTime::class)
 class WaiterTest {
     @Test
-    fun testSignalWhenWaiting() = runBlockingTest {
+    fun testSignalWhenWaiting() = runTest {
         val start = currentTime
 
         val waiter = Waiter()
@@ -31,7 +32,7 @@ class WaiterTest {
     }
 
     @Test
-    fun testSignalWhenNotWaiting() = runBlockingTest {
+    fun testSignalWhenNotWaiting() = runTest {
         val start = currentTime
 
         val waiter = Waiter()

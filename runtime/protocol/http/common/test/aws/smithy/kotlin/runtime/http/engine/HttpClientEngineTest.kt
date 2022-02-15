@@ -14,15 +14,25 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlin.test.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 /**
  * Base tests applicable for all client engines
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class HttpClientEngineTest {
 
     class MockEngine : HttpClientEngineBase("test") {
@@ -53,7 +63,7 @@ class HttpClientEngineTest {
         get() = callContext.job
 
     @Test
-    fun testCallComplete() = runSuspendTest {
+    fun testCallComplete() = runTest {
         val call = client.call(HttpRequestBuilder())
         assertTrue(call.job.isActive)
         call.complete()
@@ -62,7 +72,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testUserContextCancelsRequestJob() = runSuspendTest {
+    fun testUserContextCancelsRequestJob() = runTest {
         val job = launch {
             client.call(HttpRequestBuilder())
             delay(1000)
@@ -75,7 +85,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testInFlightRequestJobsAreIndependent() = runSuspendTest {
+    fun testInFlightRequestJobsAreIndependent() = runTest {
         val job1 = launch {
             client.call(HttpRequestBuilder())
             delay(1000)
@@ -99,7 +109,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testEngineJobNotCancelledByRequestJobs() = runSuspendTest {
+    fun testEngineJobNotCancelledByRequestJobs() = runTest {
         launch {
             client.call(HttpRequestBuilder())
             delay(1000)
@@ -116,7 +126,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testShutdownOnlyAfterInFlightDone() = runSuspendTest {
+    fun testShutdownOnlyAfterInFlightDone() = runTest {
         val waiter = Channel<Unit>(1)
         launch {
             val call = client.call(HttpRequestBuilder())
@@ -149,7 +159,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testRequestAfterClose() = runSuspendTest {
+    fun testRequestAfterClose() = runTest {
         client.close()
         assertFailsWith(HttpClientEngineClosedException::class) {
             client.call(HttpRequestBuilder())
@@ -158,7 +168,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testCloseUnmanagedEngine() = runSuspendTest {
+    fun testCloseUnmanagedEngine() = runTest {
         val client = sdkHttpClient(engine, manageEngine = false)
         client.close()
         assertFalse(engine.coroutineContext.job.isCompleted)

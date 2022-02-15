@@ -14,6 +14,8 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.withTimeout
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Implements a retry strategy utilizing backoff delayer and a token bucket for rate limiting and circuit breaking. Note
@@ -34,7 +36,7 @@ class StandardRetryStrategy(
      * outcomes from retrying.
      */
     override suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R> =
-        withTimeout(options.maxTimeMs.toLong()) {
+        withTimeout(options.maxTime) {
             doTryLoop(block, policy, 1, tokenBucket.acquireToken(), null)
         }
 
@@ -145,7 +147,7 @@ class StandardRetryStrategy(
         token.notifyFailure()
         when (val ex = previousResult?.exceptionOrNull()) {
             null -> throw TimedOutException(
-                "Took more than ${options.maxTimeMs}ms to yield a result",
+                "Took more than ${options.maxTime} to yield a result",
                 attempt,
                 previousResult?.getOrNull(),
                 previousResult?.exceptionOrNull(),
@@ -176,14 +178,14 @@ class StandardRetryStrategy(
 
 /**
  * Defines configuration for a [StandardRetryStrategy].
- * @param maxTimeMs The maximum amount of time to retry (in milliseconds).
+ * @param maxTime The maximum amount of time to retry.
  * @param maxAttempts The maximum number of attempts to make (including the first attempt).
  */
-data class StandardRetryStrategyOptions(val maxTimeMs: Int, val maxAttempts: Int) {
+data class StandardRetryStrategyOptions(val maxTime: Duration, val maxAttempts: Int) {
     companion object {
         /**
          * The default retry strategy configuration.
          */
-        val Default = StandardRetryStrategyOptions(maxTimeMs = 20_000, maxAttempts = 3)
+        val Default = StandardRetryStrategyOptions(maxTime = 20_000.milliseconds, maxAttempts = 3)
     }
 }

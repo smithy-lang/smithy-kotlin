@@ -25,12 +25,14 @@ import aws.smithy.kotlin.runtime.retries.delay.StandardRetryTokenBucketOptions
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class RetryTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(request: HttpRequest): HttpCall {
@@ -41,7 +43,7 @@ class RetryTest {
     private val client = sdkHttpClient(mockEngine)
 
     @Test
-    fun testRetryMiddleware(): Unit = runSuspendTest {
+    fun testRetryMiddleware() = runTest {
         val policy = object : RetryPolicy<Any?> {
             var attempts = 0
             override fun evaluate(result: Result<Any?>): RetryDirective =

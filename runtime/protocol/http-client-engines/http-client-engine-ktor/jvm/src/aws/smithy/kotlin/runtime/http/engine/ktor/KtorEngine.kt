@@ -26,7 +26,6 @@ import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 
@@ -36,14 +35,12 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 actual class KtorEngine actual constructor(
     config: HttpClientEngineConfig
 ) : HttpClientEngineBase("ktor-okhttp") {
-
     actual val config: HttpClientEngineConfig
 
     init {
         this.config = config
     }
 
-    @OptIn(ExperimentalTime::class)
     val client: HttpClient = HttpClient(OkHttp) {
         engine {
             config {

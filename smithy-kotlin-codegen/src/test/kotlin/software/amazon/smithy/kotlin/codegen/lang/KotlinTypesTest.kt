@@ -36,11 +36,11 @@ class KotlinTypesTest {
     }
 
     @Test
-    fun `it identifies multi-segment stdlib types`() {
+    fun `it identifies multi-segment types`() {
         val testSymbol = buildSymbol {
             name = "Duration"
             namespace = "kotlin.time"
         }
-        assertEquals(true, testSymbol.isBuiltIn)
+        assertEquals(false, testSymbol.isBuiltIn)
     }
 }

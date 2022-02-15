@@ -7,9 +7,16 @@ package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
-import kotlin.test.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class HttpBodyTest {
     @Test
     fun testFromByteStreamBytes() {
@@ -45,7 +52,7 @@ class HttpBodyTest {
     }
 
     @Test
-    fun testReset() = runSuspendTest {
+    fun testReset() = runTest {
         val stream = object : ByteStream.ReplayableStream() {
             override val contentLength: Long = 6
             override fun newReader(): SdkByteReadChannel = SdkByteReadChannel("foobar".encodeToByteArray())

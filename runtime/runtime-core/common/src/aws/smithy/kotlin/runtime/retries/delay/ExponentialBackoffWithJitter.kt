@@ -9,6 +9,9 @@ import kotlinx.coroutines.delay
 import kotlin.math.min
 import kotlin.math.pow
 import kotlin.random.Random
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.DurationUnit
 
 /**
  * A [DelayProvider] that implements exponentially increasing delays and jitter (i.e., randomization of delay amount).
@@ -30,8 +33,8 @@ class ExponentialBackoffWithJitter(val options: ExponentialBackoffWithJitterOpti
      */
     override suspend fun backoff(attempt: Int) {
         require(attempt > 0) { "attempt was $attempt but must be greater than 0" }
-        val calculatedDelayMs = options.initialDelayMs * options.scaleFactor.pow(attempt - 1)
-        val maxDelayMs = min(calculatedDelayMs, options.maxBackoffMs.toDouble())
+        val calculatedDelayMs = options.initialDelay.inWholeMilliseconds * options.scaleFactor.pow(attempt - 1)
+        val maxDelayMs = min(calculatedDelayMs, options.maxBackoff.toDouble(DurationUnit.MILLISECONDS))
         val jitterProportion = if (options.jitter > 0.0) random.nextDouble(options.jitter) else 0.0
         val delayMs = maxDelayMs * (1.0 - jitterProportion)
         delay(delayMs.toLong())
@@ -40,19 +43,22 @@ class ExponentialBackoffWithJitter(val options: ExponentialBackoffWithJitterOpti
 
 /**
  * The configuration options for a [DelayProvider].
- * @param initialDelayMs The initial amount of delay
+ * @param initialDelay The initial amount of delay
+ * @param scaleFactor scale factor for determining backoff
+ * @param jitter amount of jitter used in calculating delay
+ * @param maxBackoff maximum amount of delay
  */
 data class ExponentialBackoffWithJitterOptions(
-    val initialDelayMs: Int,
+    val initialDelay: Duration,
     val scaleFactor: Double,
     val jitter: Double,
-    val maxBackoffMs: Int,
+    val maxBackoff: Duration,
 ) {
     init {
-        require(initialDelayMs > 0) { "initialDelayMs must be at least 0" }
+        require(initialDelay.isPositive()) { "initialDelayMs must be at least 0" }
         require(scaleFactor >= 1.0) { "scaleFactor must be at least 1" }
         require(jitter in 0.0..1.0) { "jitter must be between 0 and 1" }
-        require(maxBackoffMs >= 0) { "maxBackoffMs must be at least 0" }
+        require(!maxBackoff.isNegative()) { "maxBackoffMs must be at least 0" }
     }
 
     companion object {
@@ -60,10 +66,10 @@ data class ExponentialBackoffWithJitterOptions(
          * The default backoff configuration to use.
          */
         val Default = ExponentialBackoffWithJitterOptions(
-            initialDelayMs = 10, // start with 10ms
+            initialDelay = 10.milliseconds, // start with 10ms
             scaleFactor = 1.5, // 10ms -> 15ms -> 22.5ms -> 33.8ms -> 50.6ms -> …
             jitter = 1.0, // Full jitter,
-            maxBackoffMs = 20_000, // 20s
+            maxBackoff = 20_000.milliseconds, // 20s
         )
     }
 }

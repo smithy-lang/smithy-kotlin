@@ -6,13 +6,14 @@
 package aws.smithy.kotlin.runtime.retries.delay
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.TestCoroutineScope
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.currentTime
 import kotlin.test.assertTrue
 
 private const val timeToleranceMs = 20
 
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun <T> TestCoroutineScope.assertTime(expectedMs: Int, block: suspend () -> T): T {
+suspend fun <T> TestScope.assertTime(expectedMs: Int, block: suspend () -> T): T {
     val (actualMs, result) = measure(block)
 
     val expectedRangeMs = (expectedMs - timeToleranceMs)..(expectedMs + timeToleranceMs)
@@ -22,7 +23,7 @@ suspend fun <T> TestCoroutineScope.assertTime(expectedMs: Int, block: suspend ()
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
-suspend fun <T> TestCoroutineScope.measure(block: suspend () -> T): Pair<Int, T> {
+suspend fun <T> TestScope.measure(block: suspend () -> T): Pair<Int, T> {
     val start = currentTime
     val result = block()
     val actualMs = currentTime - start

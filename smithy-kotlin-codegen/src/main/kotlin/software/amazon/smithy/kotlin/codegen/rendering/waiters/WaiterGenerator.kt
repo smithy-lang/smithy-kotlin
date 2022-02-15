@@ -9,6 +9,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
@@ -26,14 +27,14 @@ private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo, asValName: String) 
 
     withBlock("val #L = run {", "}", asValName) {
         withBlock("val delayOptions = ExponentialBackoffWithJitterOptions(", ")") {
-            write("initialDelayMs = #L,", wi.waiter.minDelay.msFormat)
+            write("initialDelay = #L.#T,", wi.waiter.minDelay.msFormat, KotlinTypes.Time.milliseconds)
             write("scaleFactor = 1.5,")
             write("jitter = 1.0,")
-            write("maxBackoffMs = #L,", wi.waiter.maxDelay.msFormat)
+            write("maxBackoff = #L.#T,", wi.waiter.maxDelay.msFormat, KotlinTypes.Time.milliseconds)
         }
         write("val delay = ExponentialBackoffWithJitter(delayOptions)")
         write("")
-        write("val waiterOptions = StandardRetryStrategyOptions(maxTimeMs = 300_000, maxAttempts = 20)")
+        write("val waiterOptions = StandardRetryStrategyOptions(maxTime = 300.#T, maxAttempts = 20)", KotlinTypes.Time.seconds)
         write("StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)")
     }
 }
