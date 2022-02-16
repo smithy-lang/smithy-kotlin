@@ -74,7 +74,9 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
         /**
          * Configure events that will be logged. By default clients will not output
          * raw requests or responses. Use this setting to opt-in to additional debug logging.
+         *
          * This can be used to configure logging of requests, responses, retries, etc of SDK clients.
+         *
          * **NOTE**: Logging of raw requests or responses may leak sensitive information! It may also have
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.

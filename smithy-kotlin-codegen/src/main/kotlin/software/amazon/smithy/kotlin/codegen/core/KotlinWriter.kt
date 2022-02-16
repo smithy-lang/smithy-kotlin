@@ -379,9 +379,24 @@ private fun String.stripAll(stripList: List<String>): String {
 }
 
 // Remove whitespace from the beginning and end of each line of documentation
-// Remove blank lines
+// Remove leading, trailing, and consecutive blank lines
 private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
     doc
         .split('\n') // Break the doc into lines
-        .filter { it.isNotBlank() } // Remove empty lines
+        .dropWhile { it.isBlank() } // Drop leading blank lines
+        .dropLastWhile { it.isBlank() } // Drop trailing blank lines
+        .dropConsecutive { it.isBlank() } // Remove consecutive empty lines
         .joinToString(separator = lineSeparator) { it.trim() } // Trim line
+
+/**
+ * Filters out consecutive items matching the given [predicate].
+ */
+private fun <T> List<T>.dropConsecutive(predicate: (T) -> Boolean) =
+    windowed(2, partialWindows = true)
+        .flatMap { window ->
+            if (predicate(window.first()) && window.first() == window.elementAtOrNull(1)) {
+                listOf()
+            } else {
+                listOf(window.first())
+            }
+        }
