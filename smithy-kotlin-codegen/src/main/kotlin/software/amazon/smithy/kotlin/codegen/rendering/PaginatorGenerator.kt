@@ -15,6 +15,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.defaultName
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
@@ -121,11 +122,13 @@ class PaginatorGenerator : KotlinIntegration {
 
         writer.write("")
         writer
-            .dokka("""
-                $docBody
-                @param initialRequest A [${inputSymbol.name}] to start pagination
-                $docReturn
-            """.trimIndent())
+            .dokka(
+                """
+                    $docBody
+                    @param initialRequest A [${inputSymbol.name}] to start pagination
+                    $docReturn
+                """.trimIndent()
+            )
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
                 "fun #T.#LPaginated(initialRequest: #T): #T<#T> =",
@@ -157,17 +160,20 @@ class PaginatorGenerator : KotlinIntegration {
 
         writer.write("")
         writer
-            .dokka("""
-                $docBody
-                @param block A builder block used for DSL-style invocation of the operation
-                $docReturn
-            """.trimIndent())
+            .dokka(
+                """
+                    $docBody
+                    @param block A builder block used for DSL-style invocation of the operation
+                    $docReturn
+                """.trimIndent()
+            )
             .withBlock(
-                "fun #T.#LPaginated(block: #T.Builder.() -> Unit): #T<#T> =",
+                "fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",
                 "",
                 serviceSymbol,
                 operationShape.defaultName(),
                 inputSymbol,
+                KotlinTypes.Unit,
                 ExternalTypes.KotlinxCoroutines.Flow,
                 outputSymbol,
             ) {

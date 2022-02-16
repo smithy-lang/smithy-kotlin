@@ -385,17 +385,18 @@ private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
         .split('\n') // Break the doc into lines
         .dropWhile { it.isBlank() } // Drop leading blank lines
         .dropLastWhile { it.isBlank() } // Drop trailing blank lines
-        .filter(NoConsecutivesFilter { it.isBlank() }) // Remove consecutive empty lines
+        .dropConsecutive { it.isBlank() } // Remove consecutive empty lines
         .joinToString(separator = lineSeparator) { it.trim() } // Trim line
 
 /**
- * A filtering predicate for removing consecutive lines matching some condition. When passed to a `filter` method, it
- * will remove any item matching the [predicate] if the previous item also matched the [predicate]. (Single instances of
- * items matching the predicate will not be removed.)
+ * Filters out consecutive items matching the given [predicate].
  */
-private class NoConsecutivesFilter<T>(private val predicate: (T) -> Boolean): (T) -> Boolean {
-    var lastItemMatched = false
-
-    override operator fun invoke(item: T): Boolean =
-        !lastItemMatched or !predicate(item).also { lastItemMatched = it }
-}
+private fun <T> List<T>.dropConsecutive(predicate: (T) -> Boolean) =
+    windowed(2, partialWindows = true)
+        .flatMap { window ->
+            if (predicate(window.first()) && window.first() == window.elementAtOrNull(1)) {
+                listOf()
+            } else {
+                listOf(window.first())
+            }
+        }
