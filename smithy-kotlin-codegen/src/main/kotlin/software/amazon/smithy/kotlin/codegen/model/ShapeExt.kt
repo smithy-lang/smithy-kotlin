@@ -207,3 +207,16 @@ val StructureShape.isOperationInput: Boolean
  */
 val StructureShape.isOperationOutput: Boolean
     get() = hasTrait<OperationOutput>()
+
+/**
+ * Return all the members of an event stream union that do not target an error shape.
+ * If the current union is not an event stream then it just returns all members
+ */
+fun UnionShape.filterEventStreamErrors(model: Model): Collection<MemberShape> {
+    if (!hasTrait<StreamingTrait>()) return members()
+
+    return members().filterNot {
+        val target = model.expectShape(it.target)
+        target.isError
+    }
+}

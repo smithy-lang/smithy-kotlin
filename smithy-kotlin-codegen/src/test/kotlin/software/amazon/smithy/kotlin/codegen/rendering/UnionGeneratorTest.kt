@@ -141,6 +141,37 @@ class UnionGeneratorTest {
         )
     }
 
+    @Test
+    fun `it filters event stream unions`() {
+        val contents = generateUnion(
+            """
+                @streaming
+                union MyUnion {
+                    foo: MyStruct,
+                    err: InvalidRequestException
+                }
+
+                structure MyStruct {
+                    qux: String
+                }
+                
+                @error("client")
+                structure InvalidRequestException {
+                     message: String
+                }
+            """
+        )
+
+        val expectedClassDecl = """
+            sealed class MyUnion {
+                data class Foo(val value: test.model.MyStruct) : test.model.MyUnion()
+                object SdkUnknown : test.model.MyUnion()
+            }
+        """.trimIndent()
+
+        contents.shouldContainWithDiff(expectedClassDecl)
+    }
+
     private fun generateUnion(model: String): String {
         val fullModel = model.prependNamespaceAndService(namespace = "test").toSmithyModel()
 
