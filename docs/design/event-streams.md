@@ -97,7 +97,8 @@ the rest of the coroutine ecosystem. There is also prior art for representing st
 
 The following types and service would be generated. 
 
-NOTE: only the input and output types are shown, the other structures or unions in the model would be generated as described in [Kotlin Smithy Design](kotlin-smithy-sdk.md).
+NOTE: only the input and output types are shown, the other structures or unions in the model would be generated as described in [Kotlin Smithy Design](kotlin-smithy-sdk.md) with the
+exception of event stream members targeting errors which is described below in more detail.
 
 #### Input Event Streams
 
@@ -141,15 +142,70 @@ Modeling the event stream as a field of the request or response allows for [init
 to be implemented. If we directly returned or took a `Flow<T>` as the input or output type we would not be able to represent the initial request or response fields when present.
 
 
+#### Event Stream Error Representation
+
+Event stream unions may model exceptions that can appear on the stream. These exceptions are terminal messages that are intended to be surfaced to the client using
+idiomatic error handling mechansims of the target language. This means that in the model the possible (modeled) errors a consumer may see after the stream has started
+are part of the overall union that makes up the possible events. 
+
+NOTE: the set of errors on the operation MAY not be the same set of errors modeled on the event stream.
+
+
+Using the example from above: 
+
+```
+@streaming
+union MovementEvents {
+    up: Movement,
+    down: Movement,
+    left: Movement,
+    right: Movement,
+    throttlingError: ThrottlingError
+}
+
+```
+
+The default representation of a union (as documented in [Kotlin Smithy Design](kotlin-smithy-sdk.md)) is generated as:
+
+```kotlin
+sealed class MovementEvents {
+    data class Up(val value: Movement): MovementEvents()
+    data class Down(val value: Movement): MovementEvents()
+    data class Left(val value: Movement): MovementEvents()
+    data class Right(val value: Movement): MovementEvents()
+    data class ThrottlingError(val value: ThrottlingError): MovementEvents()
+    object SdkUnknown : MovementEvents()
+}
+```
+
+This is undesirable though since event stream errors are terminal and end the stream. Keeping them in the set of possible events also means it may be easier for consumers to ignore
+errors depending on what events they are looking for (e.g. by having a catch all `else` branch they may inadvertently ignore an error and think the stream completed successfully).
+
+
+Event stream unions will be special cased to filter out variants targeting error shapes. When these errors are emitted by the service on the stream they will be converted
+to the appropriate modeled exception and thrown rather than being emitted on the stream the consumer sees.
+
+As an example, the generated event stream union will look like this (note the absence of `ThrottlingError`):
+
+```kotlin
+sealed class MovementEvents {
+    data class Up(val value: Movement): MovementEvents()
+    data class Down(val value: Movement): MovementEvents()
+    data class Left(val value: Movement): MovementEvents()
+    data class Right(val value: Movement): MovementEvents()
+    object SdkUnknown : MovementEvents()
+}
+```
+
 ### **Service and Usage**
 
 NOTE: There are types and internal details here not important to the design of how customers will interact with 
 streaming requests/responses (e.g. serialization/deserialization). 
-Those details are subject to change and not part of this design document. The focus here is on the way 
-streaming is exposed to a customer.
+Those details are subject to change and not part of this design document. The focus here is on the way streaming is exposed to a customer.
 
 
-The signatures generated match that of binary streaming requests and responses. Notably that output streams take a lambda instead of returning the response directly (see [binary-streaming design](binary-streaming.md) which discusses this pattern).
+The signatures generated match that of binary streaming requests and responses. Notably that output streams take a lambda instead of returning 
+the response directly (see [binary-streaming design](binary-streaming.md) which discusses this pattern).
 The response (and event stream) are only valid in that scope, after which the resources consumed by the stream are closed and no longer valid.
 
 
@@ -206,7 +262,6 @@ fun main() = runBlocking{
                 is MovementEvents.Down,
                 is MovementEvents.Left,
                 is MovementEvents.Right -> handleMovement(event)
-                is MovementEvents.ThrottlingError -> throw event.throttlingError
                 else -> error("unknown event type: $event")
             }
         }
