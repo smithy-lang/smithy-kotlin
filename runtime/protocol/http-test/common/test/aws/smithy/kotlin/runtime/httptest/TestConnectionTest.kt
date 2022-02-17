@@ -11,15 +11,17 @@ import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.string.shouldContain
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class TestConnectionTest {
     @Test
-    fun testAssertRequestsSuccess(): Unit = runSuspendTest {
+    fun testAssertRequestsSuccess() = runTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -46,7 +48,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsUrlDifferent(): Unit = runSuspendTest {
+    fun testAssertRequestsUrlDifferent() = runTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -73,7 +75,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsMissingHeader(): Unit = runSuspendTest {
+    fun testAssertRequestsMissingHeader() = runTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -100,7 +102,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsBodyDifferent(): Unit = runSuspendTest {
+    fun testAssertRequestsBodyDifferent() = runTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -128,7 +130,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testAssertRequestsAny(): Unit = runSuspendTest {
+    fun testAssertRequestsAny() = runTest {
         val engine = buildTestConnection {
             expect {
                 request {
@@ -162,7 +164,7 @@ class TestConnectionTest {
     }
 
     @Test
-    fun testFromJson(): Unit = runSuspendTest {
+    fun testFromJson() = runTest {
         // language=JSON
         val data = """
         [

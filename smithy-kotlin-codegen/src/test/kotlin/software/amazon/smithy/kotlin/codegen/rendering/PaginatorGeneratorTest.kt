@@ -142,11 +142,12 @@ class PaginatorGeneratorTest {
         val expected = """
             /**
              * Paginate over [ListFunctionsResponse] results.
-             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are
-             * made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once
-             * you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no
-             * pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
-             * collection.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
@@ -165,6 +166,20 @@ class PaginatorGeneratorTest {
                         emit(result)
                     }
                 }
+            
+            /**
+             * Paginate over [ListFunctionsResponse] results.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
+             * @param block A builder block used for DSL-style invocation of the operation
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
+             */
+            fun TestClient.listFunctionsPaginated(block: ListFunctionsRequest.Builder.() -> Unit): Flow<ListFunctionsResponse> =
+                listFunctionsPaginated(ListFunctionsRequest.Builder().apply(block).build())
         """.trimIndent()
 
         actual.shouldContainOnlyOnceWithDiff(expected)
@@ -182,11 +197,12 @@ class PaginatorGeneratorTest {
         val expectedCode = """
             /**
              * Paginate over [ListFunctionsResponse] results.
-             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service calls are
-             * made until the flow is collected. This also means there is no guarantee that the request is valid until then. Once
-             * you start collecting the flow, the SDK will lazily load response pages by making service calls until there are no
-             * pages left or the flow is cancelled. If there are errors in your request, you will see the failures only after you start
-             * collection.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
@@ -205,6 +221,20 @@ class PaginatorGeneratorTest {
                         emit(result)
                     }
                 }
+            
+            /**
+             * Paginate over [ListFunctionsResponse] results.
+             *
+             * When this operation is called, a [kotlinx.coroutines.Flow] is created. Flows are lazy (cold) so no service
+             * calls are made until the flow is collected. This also means there is no guarantee that the request is valid
+             * until then. Once you start collecting the flow, the SDK will lazily load response pages by making service
+             * calls until there are no pages left or the flow is cancelled. If there are errors in your request, you will
+             * see the failures only after you start collection.
+             * @param block A builder block used for DSL-style invocation of the operation
+             * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
+             */
+            fun TestClient.listFunctionsPaginated(block: ListFunctionsRequest.Builder.() -> Unit): Flow<ListFunctionsResponse> =
+                listFunctionsPaginated(ListFunctionsRequest.Builder().apply(block).build())
             
             /**
              * This paginator transforms the flow returned by [listFunctionsPaginated]

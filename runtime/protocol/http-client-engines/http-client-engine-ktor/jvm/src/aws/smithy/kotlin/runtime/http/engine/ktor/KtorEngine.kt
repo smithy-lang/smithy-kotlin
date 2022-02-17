@@ -21,11 +21,11 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
-import kotlin.time.ExperimentalTime
 import kotlin.time.toJavaDuration
 import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 
@@ -35,14 +35,12 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 actual class KtorEngine actual constructor(
     config: HttpClientEngineConfig
 ) : HttpClientEngineBase("ktor-okhttp") {
-
     actual val config: HttpClientEngineConfig
 
     init {
         this.config = config
     }
 
-    @OptIn(ExperimentalTime::class)
     val client: HttpClient = HttpClient(OkHttp) {
         engine {
             config {
@@ -71,7 +69,11 @@ actual class KtorEngine actual constructor(
 
         // do not throw exceptions if status code < 300, error handling is expected by generated clients
         expectSuccess = false
+
+        // do not attempt to follow redirects for status codes like 301 because they should be handled higher up
+        followRedirects = false
     }
+
     private val logger = Logger.getLogger<KtorEngine>()
 
     // TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
@@ -152,11 +154,11 @@ actual class KtorEngine actual constructor(
  * Simple notify mechanism that waits for a signal
  */
 internal class Waiter {
-    private val channel = Channel<Unit>(0)
+    private val mutex = Mutex(locked = true)
 
     // wait for the signal
-    suspend fun wait() { channel.receive() }
+    suspend fun wait() { mutex.lock() }
 
     // give the signal to continue
-    fun signal() { channel.trySend(Unit).getOrThrow() }
+    fun signal() { mutex.unlock() }
 }

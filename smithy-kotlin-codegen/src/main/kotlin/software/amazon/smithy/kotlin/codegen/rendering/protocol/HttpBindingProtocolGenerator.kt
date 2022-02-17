@@ -297,7 +297,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             "input.${binding.member.defaultName()}"
                         }
 
-                        val encodeSymbol = RuntimeTypes.Http.encodeLabel
+                        val encodeSymbol = RuntimeTypes.Http.Util.encodeLabel
                         writer.addImport(encodeSymbol)
                         val encodeFn = if (segment.isGreedyLabel) {
                             writer.format("#T(greedy = true)", encodeSymbol)

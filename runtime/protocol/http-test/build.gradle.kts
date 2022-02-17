@@ -6,6 +6,7 @@ description = "Utilities for testing HTTP requests"
 extra["displayName"] = "Smithy :: Kotlin :: HTTP Test"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.httptest"
 
+val coroutinesVersion: String by project
 val kotlinVersion: String by project
 val ktorVersion: String by project
 val kotlinxSerializationVersion: String by project
@@ -24,7 +25,7 @@ kotlin {
         }
         commonTest {
             dependencies {
-                implementation(project(":runtime:testing"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
             }
         }
         jvmMain {

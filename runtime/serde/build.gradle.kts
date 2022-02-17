@@ -18,15 +18,3 @@ kotlin {
         }
     }
 }
-
-allprojects {
-    kotlin {
-        sourceSets {
-            commonTest {
-                dependencies {
-                    implementation(project(":runtime:testing"))
-                }
-            }
-        }
-    }
-}

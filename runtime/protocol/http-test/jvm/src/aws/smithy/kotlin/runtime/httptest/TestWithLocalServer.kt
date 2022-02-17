@@ -14,7 +14,6 @@ import java.util.concurrent.*
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 /**
  * Spin up a local server using ktor-server to test real requests against. This can used in integration tests where
@@ -28,7 +27,6 @@ public abstract class TestWithLocalServer {
 
     private val logger = Logger.getLogger<TestWithLocalServer>()
 
-    @OptIn(ExperimentalTime::class)
     @BeforeTest
     public fun startServer() = runBlocking {
         withTimeout(5.seconds) {

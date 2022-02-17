@@ -7,15 +7,17 @@ package aws.smithy.kotlin.runtime.smithy.test
 
 import aws.smithy.kotlin.runtime.serde.xml.dom.XmlNode
 import aws.smithy.kotlin.runtime.serde.xml.dom.toXmlString
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class XmlAssertionsTest {
 
     @Test
-    fun testToCanonicalForm() = runSuspendTest {
+    fun testToCanonicalForm() = runTest {
         val input = """
         <Foo>
             <C>
@@ -64,7 +66,7 @@ class XmlAssertionsTest {
     }
 
     @Test
-    fun testToCanonicalFormFlatMap() = runSuspendTest {
+    fun testToCanonicalFormFlatMap() = runTest {
         // test when the original insertion order parsed/constructed is different
 
         /*
@@ -117,7 +119,7 @@ class XmlAssertionsTest {
     }
 
     @Test
-    fun testToCanonicalWrappedMap() = runSuspendTest {
+    fun testToCanonicalWrappedMap() = runTest {
         /*
         structure Foo {
             A: MyMap
@@ -172,7 +174,7 @@ class XmlAssertionsTest {
     }
 
     @Test
-    fun testToCanonicalList() = runSuspendTest {
+    fun testToCanonicalList() = runTest {
         /*
             structure Foo {
                 values: MyList
@@ -215,7 +217,7 @@ class XmlAssertionsTest {
     }
 
     @Test
-    fun itAssertsKitchenSink() = runSuspendTest {
+    fun itAssertsKitchenSink() = runTest {
         val expected = """
         <Foo>
             <String>v1</String>
@@ -300,7 +302,7 @@ class XmlAssertionsTest {
     }
 
     @Test
-    fun itFailsUnequalXml() = runSuspendTest {
+    fun itFailsUnequalXml() = runTest {
         val expected = """
         <Foo>
             <String>v1</String>            

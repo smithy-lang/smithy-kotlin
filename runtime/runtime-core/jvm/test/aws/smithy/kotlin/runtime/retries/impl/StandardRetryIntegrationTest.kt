@@ -15,19 +15,22 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import com.charleskorn.kaml.Yaml
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.currentTime
+import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class StandardRetryIntegrationTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testIntegrationCases() = runBlockingTest {
+    fun testIntegrationCases() = runTest {
         val testCases = standardRetryIntegrationTestCases
             .mapValues { Yaml.default.decodeFromString(TestCase.serializer(), it.value) }
         testCases.forEach { (name, tc) ->
-            val options = StandardRetryStrategyOptions(maxTimeMs = Int.MAX_VALUE, maxAttempts = tc.given.maxAttempts)
+            val options = StandardRetryStrategyOptions(maxTime = Duration.INFINITE, maxAttempts = tc.given.maxAttempts)
             val tokenBucket = StandardRetryTokenBucket(
                 StandardRetryTokenBucketOptions.Default.copy(
                     maxCapacity = tc.given.initialRetryTokens,
@@ -37,10 +40,10 @@ class StandardRetryIntegrationTest {
             )
             val delayer = ExponentialBackoffWithJitter(
                 ExponentialBackoffWithJitterOptions(
-                    initialDelayMs = tc.given.exponentialBase.toInt(),
+                    initialDelay = tc.given.exponentialBase.milliseconds,
                     scaleFactor = tc.given.exponentialPower,
                     jitter = 0.0, // None of the tests use jitter
-                    maxBackoffMs = tc.given.maxBackoffTime,
+                    maxBackoff = tc.given.maxBackoffTime.milliseconds,
                 )
             )
             val retryer = StandardRetryStrategy(options, tokenBucket, delayer)

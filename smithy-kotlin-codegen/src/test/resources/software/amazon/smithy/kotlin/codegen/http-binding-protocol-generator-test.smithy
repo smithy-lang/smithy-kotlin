@@ -183,6 +183,10 @@ list IntList {
     member: Integer
 }
 
+list StringList {
+    member: String
+}
+
 list StructList {
     member: Nested
 }
@@ -240,6 +244,9 @@ structure HeaderListInputRequest {
 
     @httpHeader("x-intList")
     intList: IntList,
+
+    @httpHeader("x-strList")
+    strList: StringList,
 
     @httpHeader("x-tsList")
     tsList: TimestampList

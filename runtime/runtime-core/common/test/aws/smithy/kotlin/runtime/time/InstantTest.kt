@@ -9,7 +9,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.Duration.Companion.seconds
-import kotlin.time.ExperimentalTime
 
 // tests for conversion from a parsed representation into an Instant instance
 
@@ -209,7 +208,6 @@ class InstantTest {
         //       been accepted by the parser.
     }
 
-    @OptIn(ExperimentalTime::class)
     @Test
     fun testPlusMinusDuration() {
         val start = Instant.fromEpochSeconds(1000, 1000)

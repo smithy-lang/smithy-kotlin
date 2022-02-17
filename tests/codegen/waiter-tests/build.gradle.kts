@@ -27,7 +27,7 @@ kotlin.sourceSets.all {
 }
 
 kotlin.sourceSets.getByName("main") {
-    kotlin.srcDir("${project.buildDir}/smithyprojections/waiter-tests/waiter-tests/kotlin-codegen")
+    kotlin.srcDir("${project.buildDir}/smithyprojections/waiter-tests/waiter-tests/kotlin-codegen/src/main/kotlin")
 }
 
 tasks["smithyBuildJar"].enabled = false

@@ -4,11 +4,18 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import io.kotest.matchers.string.shouldContain
 import io.ktor.utils.io.core.*
-import kotlin.test.*
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFails
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.test.fail
 
+@OptIn(ExperimentalCoroutinesApi::class)
 open class SdkByteChannelSmokeTest {
 
     @Test
@@ -18,7 +25,7 @@ open class SdkByteChannelSmokeTest {
     }
 
     @Test
-    fun testAutoFlush() = runSuspendTest {
+    fun testAutoFlush() = runTest {
         SdkByteChannel(false).use { chan ->
             assertFalse(chan.autoFlush)
             chan.writeByte(1)
@@ -39,7 +46,7 @@ open class SdkByteChannelSmokeTest {
     }
 
     @Test
-    fun testClose() = runSuspendTest {
+    fun testClose() = runTest {
         val chan = SdkByteChannel(false)
         chan.writeByte(1)
         chan.writeByte(2)
@@ -68,7 +75,7 @@ open class SdkByteChannelSmokeTest {
     }
 
     @Test
-    fun testReadAndWriteFully() = runSuspendTest {
+    fun testReadAndWriteFully() = runTest {
         val src = byteArrayOf(1, 2, 3, 4, 5)
         val sink = ByteArray(5)
         val chan = SdkByteChannel(false)
@@ -97,7 +104,7 @@ open class SdkByteChannelSmokeTest {
     }
 
     @Test
-    fun testReadAndWritePartial(): Unit = runSuspendTest {
+    fun testReadAndWritePartial() = runTest {
         val src = byteArrayOf(1, 2, 3, 4, 5)
         val chan = SdkByteChannel(false)
         chan.writeFully(src)
@@ -117,7 +124,7 @@ open class SdkByteChannelSmokeTest {
     }
 
     @Test
-    fun testWriteString() = runSuspendTest {
+    fun testWriteString() = runTest {
         val chan = SdkByteChannel(false)
         val content = "I meant what I said. And said what I meant. An elephant's faithful. One hundred percent!"
         chan.writeUtf8(content)
@@ -127,7 +134,7 @@ open class SdkByteChannelSmokeTest {
     }
 
     @Test
-    fun testReadChannelByteArrayCtor() = runSuspendTest {
+    fun testReadChannelByteArrayCtor() = runTest {
         val src = byteArrayOf(1, 2, 3, 4, 5)
         val chan = SdkByteReadChannel(src)
         assertTrue(chan.isClosedForWrite)
@@ -147,7 +154,7 @@ open class SdkByteChannelSmokeTest {
     }
 
     @Test
-    fun testCloseableUse() = runSuspendTest {
+    fun testCloseableUse() = runTest {
         val chan = SdkByteChannel(true)
         chan.writeFully(byteArrayOf(1, 2, 3, 4, 5))
         val rc = chan.use {

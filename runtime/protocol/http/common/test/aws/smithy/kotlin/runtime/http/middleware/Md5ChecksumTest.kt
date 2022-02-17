@@ -19,13 +19,15 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class Md5ChecksumTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(request: HttpRequest): HttpCall {
@@ -36,7 +38,7 @@ class Md5ChecksumTest {
     private val client = sdkHttpClient(mockEngine)
 
     @Test
-    fun itSetsContentMd5Header() = runSuspendTest {
+    fun itSetsContentMd5Header() = runTest {
         val req = HttpRequestBuilder().apply {
             body = ByteArrayContent("<Foo>bar</Foo>".encodeToByteArray())
         }
@@ -51,7 +53,7 @@ class Md5ChecksumTest {
     }
 
     @Test
-    fun itOnlySetsHeaderForBytesContent() = runSuspendTest {
+    fun itOnlySetsHeaderForBytesContent() = runTest {
         val req = HttpRequestBuilder().apply {
             body = object : HttpBody.Streaming() {
                 override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel("fooey".encodeToByteArray())

@@ -13,13 +13,14 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import kotlin.test.*
+import kotlin.time.Duration.Companion.milliseconds
 
 class StandardRetryStrategyTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testInitialSuccess() = runBlockingTest {
+    fun testInitialSuccess() = runTest {
         val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -35,7 +36,7 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testRetryableFailures() = runBlockingTest {
+    fun testRetryableFailures() = runTest {
         val options = StandardRetryStrategyOptions.Default.copy(maxAttempts = 10)
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -63,7 +64,7 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testNonretryableFailureFromException() = runBlockingTest {
+    fun testNonretryableFailureFromException() = runTest {
         val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -82,7 +83,7 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testNonretryableFailureFromResult() = runBlockingTest {
+    fun testNonretryableFailureFromResult() = runTest {
         val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -103,7 +104,7 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testTooManyAttemptsFromException() = runBlockingTest {
+    fun testTooManyAttemptsFromException() = runTest {
         val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -132,7 +133,7 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testTooManyAttemptsFromResult() = runBlockingTest {
+    fun testTooManyAttemptsFromResult() = runTest {
         val options = StandardRetryStrategyOptions.Default
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
@@ -163,8 +164,8 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testTooLongFromException() = runBlockingTest {
-        val options = StandardRetryStrategyOptions.Default.copy(maxTimeMs = 1_500)
+    fun testTooLongFromException() = runTest {
+        val options = StandardRetryStrategyOptions.Default.copy(maxTime = 1_500.milliseconds)
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
         val retryer = StandardRetryStrategy(options, bucket, delayer)
@@ -185,8 +186,8 @@ class StandardRetryStrategyTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun testTooLongFromResult() = runBlockingTest {
-        val options = StandardRetryStrategyOptions.Default.copy(maxTimeMs = 1_000)
+    fun testTooLongFromResult() = runTest {
+        val options = StandardRetryStrategyOptions.Default.copy(maxTime = 1_000.milliseconds)
         val bucket = RecordingTokenBucket()
         val delayer = RecordingDelayer()
         val retryer = StandardRetryStrategy(options, bucket, delayer)

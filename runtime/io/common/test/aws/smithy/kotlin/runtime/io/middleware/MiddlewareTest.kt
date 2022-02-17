@@ -7,14 +7,16 @@ package aws.smithy.kotlin.runtime.io.middleware
 
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.io.HandlerLambda
-import aws.smithy.kotlin.runtime.testing.runSuspendTest
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class MiddlewareTest {
 
     @Test
-    fun testDecorate() = runSuspendTest {
+    fun testDecorate() = runTest {
         val handler = object : Handler<String, String> {
             override suspend fun call(request: String): String = request.replaceFirstChar { c -> c.uppercaseChar() }
         }
@@ -34,7 +36,7 @@ class MiddlewareTest {
     }
 
     @Test
-    fun testServiceLambda() = runSuspendTest {
+    fun testServiceLambda() = runTest {
         val handler = HandlerLambda<String, String> {
             it.replaceFirstChar { c -> c.uppercaseChar() }
         }
@@ -42,7 +44,7 @@ class MiddlewareTest {
     }
 
     @Test
-    fun testMapRequest() = runSuspendTest {
+    fun testMapRequest() = runTest {
         val handler = HandlerLambda<String, String> {
             it
         }
@@ -55,7 +57,7 @@ class MiddlewareTest {
     }
 
     @Test
-    fun testMapResponse() = runSuspendTest {
+    fun testMapResponse() = runTest {
         val handler = HandlerLambda<String, String> {
             it
         }

@@ -30,14 +30,14 @@ class WaiterGeneratorTest {
         val expected = """
             val strategy = run {
                 val delayOptions = ExponentialBackoffWithJitterOptions(
-                    initialDelayMs = 2_000,
+                    initialDelay = 2_000.milliseconds,
                     scaleFactor = 1.5,
                     jitter = 1.0,
-                    maxBackoffMs = 120_000,
+                    maxBackoff = 120_000.milliseconds,
                 )
                 val delay = ExponentialBackoffWithJitter(delayOptions)
 
-                val waiterOptions = StandardRetryStrategyOptions(maxTimeMs = 300_000, maxAttempts = 20)
+                val waiterOptions = StandardRetryStrategyOptions(maxTime = 300.seconds, maxAttempts = 20)
                 StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)
             }
         """.formatForTest()
@@ -49,14 +49,14 @@ class WaiterGeneratorTest {
         val expected = """
             val strategy = run {
                 val delayOptions = ExponentialBackoffWithJitterOptions(
-                    initialDelayMs = 5_000,
+                    initialDelay = 5_000.milliseconds,
                     scaleFactor = 1.5,
                     jitter = 1.0,
-                    maxBackoffMs = 30_000,
+                    maxBackoff = 30_000.milliseconds,
                 )
                 val delay = ExponentialBackoffWithJitter(delayOptions)
 
-                val waiterOptions = StandardRetryStrategyOptions(maxTimeMs = 300_000, maxAttempts = 20)
+                val waiterOptions = StandardRetryStrategyOptions(maxTime = 300.seconds, maxAttempts = 20)
                 StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)
             }
         """.formatForTest()
