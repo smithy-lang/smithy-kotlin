@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.7.8] - 02/17/2022
+
+### New features
+* add DSL overloads to paginator methods [#591](https://github.com/awslabs/smithy-kotlin/pull/591)
+
+### Fixes
+* ignore redirect statuses in Ktor engine [#590](https://github.com/awslabs/smithy-kotlin/pull/590)
+* handle stream response exceptions properly in Ktor engine [#589](https://github.com/awslabs/smithy-kotlin/pull/589)
+
+### Miscellaneous
+* coroutine version bump to 1.6.0 and Duration stabilization [#580](https://github.com/awslabs/smithy-kotlin/pull/580)
+* dokka upgrade [#588](https://github.com/awslabs/smithy-kotlin/pull/588)
+* upgrade smithy to 1.17.0 [#587](https://github.com/awslabs/smithy-kotlin/pull/587)
+
 ## [0.7.7] - 02/04/2022
 
 ### New features
