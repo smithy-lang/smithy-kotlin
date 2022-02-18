@@ -88,6 +88,20 @@ fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
 }
 
 /**
+ * Convert a [SdkByteReadChannel] to an [HttpBody]
+ * @param contentLength the total content length of the channel if known
+ */
+@InternalApi
+fun SdkByteReadChannel.toHttpBody(contentLength: Long? = null): HttpBody {
+    val ch = this
+    return object : HttpBody.Streaming() {
+        override val contentLength: Long? = contentLength
+        override val isReplayable: Boolean = false
+        override fun readFrom(): SdkByteReadChannel = ch
+    }
+}
+
+/**
  * Consume the [HttpBody] and pull the entire contents into memory as a [ByteArray].
  * Only do this if you are sure the contents fit in-memory as this will read the entire contents
  * of a streaming variant.
