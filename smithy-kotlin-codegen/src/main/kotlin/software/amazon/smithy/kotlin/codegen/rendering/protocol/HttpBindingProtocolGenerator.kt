@@ -89,10 +89,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
     abstract fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol
 
     // FIXME - probably make abstract and let individual protocols throw if they don't support event stream bindings
+
+    /**
+     * ```
+     * private suspend fun serializeOperationFooEventStream(input: Foo): HttpBody
+     * ```
+     *
+     * @param ctx the protocol generator context
+     * @param op the operation shape to return event stream serializer for
+     */
+    open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = error("event streams are not supported by $this")
+
     /**
      *
      * ```
-     * private fun deserializeOperationFooEventStream(builder: Foo.Builder, body: HttpBody)
+     * private suspend fun deserializeOperationFooEventStream(builder: Foo.Builder, body: HttpBody)
      * ```
      *
      * @param ctx the protocol generator context
@@ -229,7 +240,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .write("")
             .call {
-                renderSerializeHttpBody(ctx, op, writer)
+                if (op.isInputEventStream(ctx.model)) {
+                    val eventStreamSerializeFn = eventStreamRequestHandler(ctx, op)
+                    writer.write("builder.body = #T(context, input)", eventStreamSerializeFn)
+                } else {
+                    renderSerializeHttpBody(ctx, op, writer)
+                }
             }
     }
 

@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
@@ -124,6 +125,7 @@ open class XmlSerializerGenerator(
         val fnName = symbol.payloadSerializerName()
         return symbol.payloadSerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, target, writer)
+            writer.addImportReferences(symbol, SymbolReference.ContextOption.USE)
             writer.withBlock("internal fun #L(input: #T): ByteArray {", "}", fnName, symbol) {
                 write("val serializer = #T()", RuntimeTypes.Serde.SerdeXml.XmlSerializer)
                 write("#T(serializer, input)", serializeFn)
