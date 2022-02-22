@@ -194,6 +194,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeByte(value: Byte) {
+        reserve(1)
         memory.storeAt(writePosition.toLong(), value)
         advance(1u)
     }
@@ -223,6 +224,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeShort(value: Short) {
+        reserve(2)
         memory.storeShortAt(writePosition.toLong(), value)
         advance(2u)
     }
@@ -232,6 +234,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeUShort(value: UShort) {
+        reserve(2)
         memory.storeUShortAt(writePosition.toLong(), value)
         advance(2u)
     }
@@ -261,6 +264,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeInt(value: Int) {
+        reserve(4)
         memory.storeIntAt(writePosition.toLong(), value)
         advance(4u)
     }
@@ -270,6 +274,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeUInt(value: UInt) {
+        reserve(4)
         memory.storeUIntAt(writePosition.toLong(), value)
         advance(4u)
     }
@@ -299,6 +304,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeLong(value: Long) {
+        reserve(8)
         memory.storeLongAt(writePosition.toLong(), value)
         advance(8u)
     }
@@ -308,6 +314,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeULong(value: ULong) {
+        reserve(8)
         memory.storeULongAt(writePosition.toLong(), value)
         advance(8u)
     }
@@ -327,6 +334,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeFloat(value: Float) {
+        reserve(4)
         memory.storeFloatAt(writePosition.toLong(), value)
         advance(4u)
     }
@@ -345,6 +353,7 @@ class SdkByteBuffer internal constructor(
      */
     @OptIn(ExperimentalIoApi::class)
     override fun writeDouble(value: Double) {
+        reserve(8)
         memory.storeDoubleAt(writePosition.toLong(), value)
         advance(8u)
     }
