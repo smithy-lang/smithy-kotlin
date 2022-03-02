@@ -28,6 +28,7 @@ private const val BUILD_SETTINGS = "build"
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
 
+// FIXME - service should not be required
 /**
  * Settings used by [KotlinCodegenPlugin]
  */

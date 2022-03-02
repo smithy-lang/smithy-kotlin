@@ -115,6 +115,7 @@ open class JsonParserGenerator(
         }
     }
 
+    // FIXME - we should just update the interface to accept any Shape and branch on member shape as necessary
     override fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol {
         // re-use document deserializer (for the target shape!)
         val symbol = ctx.symbolProvider.toSymbol(member)
@@ -123,6 +124,19 @@ open class JsonParserGenerator(
         val fnName = symbol.payloadDeserializerName()
         return symbol.payloadDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, target, writer)
+            writer.withBlock("internal fun #L(payload: ByteArray): #T {", "}", fnName, symbol) {
+                write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
+                write("return #T(deserializer)", deserializeFn)
+            }
+        }
+    }
+
+    fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
+        val symbol = ctx.symbolProvider.toSymbol(shape)
+        val deserializeFn = documentDeserializer(ctx, shape)
+        val fnName = symbol.payloadDeserializerName()
+        return symbol.payloadDeserializer(ctx.settings) { writer ->
+            addNestedDocumentDeserializers(ctx, shape, writer)
             writer.withBlock("internal fun #L(payload: ByteArray): #T {", "}", fnName, symbol) {
                 write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
                 write("return #T(deserializer)", deserializeFn)

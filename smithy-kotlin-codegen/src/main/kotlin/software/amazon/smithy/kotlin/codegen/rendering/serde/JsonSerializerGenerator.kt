@@ -20,7 +20,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 open class JsonSerializerGenerator(
     // FIXME - we shouldn't need this, it's only required by JsonSerdeDescriptorGenerator because of toRenderingContext
-    private val protocolGenerator: HttpBindingProtocolGenerator,
+    private val protocolGenerator: ProtocolGenerator,
     private val supportsJsonNameTrait: Boolean = true
 ) : StructuredDataSerializerGenerator {
 
@@ -103,6 +103,20 @@ open class JsonSerializerGenerator(
         val fnName = symbol.payloadSerializerName()
         return symbol.payloadSerializer(ctx.settings) { writer ->
             addNestedDocumentSerializers(ctx, target, writer)
+            writer.withBlock("internal fun #L(input: #T): ByteArray {", "}", fnName, symbol) {
+                write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
+                write("#T(serializer, input)", serializeFn)
+                write("return serializer.toByteArray()")
+            }
+        }
+    }
+
+    fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
+        val symbol = ctx.symbolProvider.toSymbol(shape)
+        val serializeFn = documentSerializer(ctx, shape)
+        val fnName = symbol.payloadSerializerName()
+        return symbol.payloadSerializer(ctx.settings) { writer ->
+            addNestedDocumentSerializers(ctx, shape, writer)
             writer.withBlock("internal fun #L(input: #T): ByteArray {", "}", fnName, symbol) {
                 write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
                 write("#T(serializer, input)", serializeFn)
