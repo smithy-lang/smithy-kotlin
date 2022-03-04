@@ -10,6 +10,7 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
+import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.model.shapes.MemberShape
@@ -115,28 +116,14 @@ open class JsonParserGenerator(
         }
     }
 
-    // FIXME - we should just update the interface to accept any Shape and branch on member shape as necessary
-    override fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol {
+    override fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
         // re-use document deserializer (for the target shape!)
-        val symbol = ctx.symbolProvider.toSymbol(member)
-        val target = ctx.model.expectShape(member.target)
+        val target = shape.targetOrSelf(ctx.model)
+        val symbol = ctx.symbolProvider.toSymbol(shape)
         val deserializeFn = documentDeserializer(ctx, target)
         val fnName = symbol.payloadDeserializerName()
         return symbol.payloadDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, target, writer)
-            writer.withBlock("internal fun #L(payload: ByteArray): #T {", "}", fnName, symbol) {
-                write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
-                write("return #T(deserializer)", deserializeFn)
-            }
-        }
-    }
-
-    fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
-        val symbol = ctx.symbolProvider.toSymbol(shape)
-        val deserializeFn = documentDeserializer(ctx, shape)
-        val fnName = symbol.payloadDeserializerName()
-        return symbol.payloadDeserializer(ctx.settings) { writer ->
-            addNestedDocumentDeserializers(ctx, shape, writer)
             writer.withBlock("internal fun #L(payload: ByteArray): #T {", "}", fnName, symbol) {
                 write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
                 write("return #T(deserializer)", deserializeFn)
