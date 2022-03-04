@@ -139,8 +139,13 @@ open class XmlParserGenerator(
         return symbol.payloadDeserializer(ctx.settings) { writer ->
             addNestedDocumentDeserializers(ctx, target, writer)
             writer.withBlock("internal fun #L(payload: ByteArray): #T {", "}", fnName, symbol) {
-                write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeXml.XmlDeserializer)
-                write("return #T(deserializer)", deserializeFn)
+                if (target.members().isEmpty()) {
+                    // short circuit when the shape has no modeled members to deserialize
+                    write("return #T.Builder().build()", symbol)
+                } else {
+                    write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeXml.XmlDeserializer)
+                    write("return #T(deserializer)", deserializeFn)
+                }
             }
         }
     }

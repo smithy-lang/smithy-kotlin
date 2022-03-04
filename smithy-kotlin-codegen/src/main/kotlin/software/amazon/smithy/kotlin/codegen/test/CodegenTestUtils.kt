@@ -141,7 +141,7 @@ internal class TestProtocolClientGenerator(
 internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        HttpTraitResolver(model, serviceShape, "application/json")
+        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
 
     override val protocol: ShapeId = RestJson1Trait.ID
 

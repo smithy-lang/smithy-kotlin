@@ -14,11 +14,9 @@ import software.amazon.smithy.kotlin.codegen.core.KotlinDependency.Companion.COR
 import software.amazon.smithy.kotlin.codegen.model.defaultValue
 import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
+import software.amazon.smithy.kotlin.codegen.model.traits.SYNTHETIC_NAMESPACE
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumDefinition
-import software.amazon.smithy.model.traits.EnumTrait
-import software.amazon.smithy.model.traits.StreamingTrait
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -118,9 +116,6 @@ class SymbolProviderTest {
 
     @Test
     fun `creates streaming blobs`() {
-        val blobStream = BlobShape.builder().id("foo.bar#BodyStream").addTrait(StreamingTrait()).build()
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target(blobStream).build()
-
         val model = """
             structure MyStruct {
                 quux: BodyStream,
@@ -130,6 +125,7 @@ class SymbolProviderTest {
             blob BodyStream
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
+        val member = model.expectShape<MemberShape>("foo.bar#MyStruct\$quux")
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val memberSymbol = provider.toSymbol(member)
 
@@ -178,12 +174,6 @@ class SymbolProviderTest {
 
     @Test
     fun `creates sets`() {
-        val struct = StructureShape.builder().id("foo.bar#Record").build()
-        val setMember = MemberShape.builder().id("foo.bar#Records\$member").target(struct).build()
-        val set = SetShape.builder()
-            .id("foo.bar#Records")
-            .member(setMember)
-            .build()
         val model = """
             structure Record { }
 
@@ -193,7 +183,8 @@ class SymbolProviderTest {
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-        val setSymbol = provider.toSymbol(set)
+        val setShape = model.expectShape<SetShape>("foo.bar#Records")
+        val setSymbol = provider.toSymbol(setShape)
 
         assertEquals("Set<Record>", setSymbol.name)
         assertEquals(true, setSymbol.isBoxed)
@@ -262,16 +253,6 @@ class SymbolProviderTest {
 
     @Test
     fun `creates enums`() {
-        val trait = EnumTrait.builder()
-            .addEnum(EnumDefinition.builder().value("FOO").build())
-            .addEnum(EnumDefinition.builder().value("BAR").build())
-            .build()
-
-        val shape = StringShape.builder()
-            .id("com.test#Baz")
-            .addTrait(trait)
-            .build()
-
         val model = """
             @enum([
                 {
@@ -285,6 +266,7 @@ class SymbolProviderTest {
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+        val shape = model.expectShape<StringShape>("foo.bar#Baz")
         val symbol = provider.toSymbol(shape)
 
         assertEquals("foo.bar.model", symbol.namespace)
@@ -296,16 +278,6 @@ class SymbolProviderTest {
 
     @Test
     fun `creates unions`() {
-        val member1 = MemberShape.builder().id("com.test#MyUnion\$foo").target("smithy.api#String").build()
-        val member2 = MemberShape.builder().id("com.test#MyUnion\$bar").target("smithy.api#PrimitiveInteger").build()
-        val member3 = MemberShape.builder().id("com.test#MyUnion\$baz").target("smithy.api#Integer").build()
-
-        val union = UnionShape.builder()
-            .id("com.test#MyUnion")
-            .addMember(member1)
-            .addMember(member2)
-            .addMember(member3)
-            .build()
         val model = """
             union MyUnion {
                 foo: String,
@@ -315,7 +287,8 @@ class SymbolProviderTest {
         """.prependNamespaceAndService().toSmithyModel()
 
         val provider = KotlinCodegenPlugin.createSymbolProvider(model)
-        val symbol = provider.toSymbol(union)
+        val unionShape = model.expectShape<UnionShape>("com.test#MyUnion")
+        val symbol = provider.toSymbol(unionShape)
 
         assertEquals("com.test.model", symbol.namespace)
         assertEquals("null", symbol.defaultValue())
@@ -326,11 +299,6 @@ class SymbolProviderTest {
 
     @Test
     fun `creates structures`() {
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target("smithy.api#String").build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
         val model = """
             structure MyStruct {
                 quux: String,
@@ -338,7 +306,8 @@ class SymbolProviderTest {
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-        val structSymbol = provider.toSymbol(struct)
+        val structShape = model.expectShape<StructureShape>("foo.bar#MyStruct")
+        val structSymbol = provider.toSymbol(structShape)
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct", structSymbol.name)
         assertEquals("null", structSymbol.defaultValue())
@@ -349,13 +318,13 @@ class SymbolProviderTest {
 
     @Test
     fun `creates documents`() {
-        val document = DocumentShape.builder().id("foo.bar#MyDocument").build()
         val model = """
             document MyDocument
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-        val documentSymbol = provider.toSymbol(document)
+        val documentShape = model.expectShape<DocumentShape>("foo.bar#MyDocument")
+        val documentSymbol = provider.toSymbol(documentShape)
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
         assertEquals(true, documentSymbol.isBoxed)
@@ -368,19 +337,6 @@ class SymbolProviderTest {
         // lists/sets reference the inner member, ensure that struct members
         // also contain a reference to the collection member in addition to the
         // collection itself
-        val ts = TimestampShape.builder().id("foo.bar#MyTimestamp").build()
-        val listMember = MemberShape.builder().id("foo.bar#Records\$member").target(ts).build()
-        val list = ListShape.builder()
-            .id("foo.bar#Records")
-            .member(listMember)
-            .build()
-
-        val member = MemberShape.builder().id("foo.bar#MyStruct\$quux").target(list).build()
-        val struct = StructureShape.builder()
-            .id("foo.bar#MyStruct")
-            .addMember(member)
-            .build()
-
         val model = """
             structure MyStruct {
                 quux: Records,
@@ -394,18 +350,18 @@ class SymbolProviderTest {
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-        val structSymbol = provider.toSymbol(struct)
+        val structShape = model.expectShape<StructureShape>("foo.bar#MyStruct")
+        val structSymbol = provider.toSymbol(structShape)
         // should get reference to List and Instant
         assertEquals(2, structSymbol.references.size)
     }
 
     @Test
     fun `creates timestamps`() {
-        val tsShape = TimestampShape.builder().id("foo.bar#MyTimestamp").build()
-
         val model = "timestamp MyTimestamp".prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
+        val tsShape = model.expectShape<TimestampShape>("foo.bar#MyTimestamp")
         val timestampSymbol = provider.toSymbol(tsShape)
         assertEquals("$RUNTIME_ROOT_NS.time", timestampSymbol.namespace)
         assertEquals("Instant", timestampSymbol.name)
@@ -416,14 +372,6 @@ class SymbolProviderTest {
 
     @Test
     fun `it handles recursive structures`() {
-        val memberQuux = MemberShape.builder().id("foo.bar#MyStruct1\$quux").target("smithy.api#String").build()
-        val nestedMember = MemberShape.builder().id("foo.bar#MyStruct1\$nested").target("foo.bar#MyStruct2").build()
-        val struct1 = StructureShape.builder()
-            .id("foo.bar#MyStruct1")
-            .addMember(memberQuux)
-            .addMember(nestedMember)
-            .build()
-
         val model = """
             structure MyStruct1 {
                 quux: String,
@@ -438,6 +386,7 @@ class SymbolProviderTest {
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
 
+        val struct1 = model.expectShape<StructureShape>("foo.bar#MyStruct1")
         val structSymbol = provider.toSymbol(struct1)
         assertEquals("foo.bar.model", structSymbol.namespace)
         assertEquals("MyStruct1", structSymbol.name)
@@ -445,5 +394,45 @@ class SymbolProviderTest {
         assertEquals(true, structSymbol.isBoxed)
         assertEquals("MyStruct1.kt", structSymbol.definitionFile)
         assertEquals(2, structSymbol.references.size)
+    }
+
+    @Test
+    fun `it specializes event stream members`() {
+        // streaming members can only be referenced by top level operation input or output structs
+        val model = """
+            operation GetEventStream {
+                output: GetEventStreamResponse
+            }
+            
+            @streaming
+            union Events {
+                a: Event1,
+                b: Event2,
+                c: Event3,
+            }
+            
+            structure Event1{}
+            structure Event2{}
+            structure Event3{}
+            
+            structure GetEventStreamResponse {
+                events: Events
+            }
+            
+        """.prependNamespaceAndService(operations = listOf("GetEventStream")).toSmithyModel()
+
+        val provider = KotlinCodegenPlugin.createSymbolProvider(model)
+
+        // we have to use the synthetic operation input/output to actually trigger the detection of an event stream
+        // since it looks for operation input/output shapes
+        val streamMember = model.expectShape<MemberShape>("$SYNTHETIC_NAMESPACE.test#GetEventStreamResponse\$events")
+        val symbol = provider.toSymbol(streamMember)
+
+        assertEquals("", symbol.namespace)
+        assertEquals("null", symbol.defaultValue())
+        assertEquals(true, symbol.isBoxed)
+        assertEquals("Flow<com.test.model.Events>", symbol.name)
+
+        assertEquals("com.test.model.Events", symbol.references[0].symbol.fullName)
     }
 }
