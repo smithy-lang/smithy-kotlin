@@ -105,6 +105,7 @@ class KotlinDelegatorTest {
             namespace = "com.test.example.generated"
             renderBy = { writer ->
                 writer.write("hello from generated dep!")
+                writer.write("we generated a #identifier.name:L")
             }
         }
 
@@ -129,5 +130,6 @@ class KotlinDelegatorTest {
         fooContents.shouldContainWithDiff("use generated Foo")
 
         generatedSymbolContents.shouldContainOnlyOnceWithDiff("hello from generated dep!")
+        generatedSymbolContents.shouldContainOnlyOnceWithDiff("we generated a Foo")
     }
 }
