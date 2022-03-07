@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 
 /**
  * Responsible for rendering serialization of structured data (e.g. json, yaml, xml).
@@ -46,8 +47,8 @@ interface StructuredDataSerializerGenerator {
      * Implementations are expected to serialize to the specific data format and return the contents as a byte array.
      *
      * @param ctx the protocol generator context
-     * @param member the member to serialize
+     * @param shape the shape or member to serialize
      * @return the generated symbol which should be a function matching the expected signature
      */
-    fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol
+    fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol
 }
