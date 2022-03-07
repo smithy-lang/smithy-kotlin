@@ -165,8 +165,8 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
                 name = errSymbol.errorDeserializerName()
             }
 
-            override fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol = buildSymbol {
-                val symbol = ctx.symbolProvider.toSymbol(member)
+            override fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol = buildSymbol {
+                val symbol = ctx.symbolProvider.toSymbol(shape)
                 name = symbol.payloadDeserializerName()
             }
         }
@@ -177,8 +177,8 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
                 name = op.bodySerializerName()
             }
 
-            override fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol = buildSymbol {
-                val symbol = ctx.symbolProvider.toSymbol(member)
+            override fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol = buildSymbol {
+                val symbol = ctx.symbolProvider.toSymbol(shape)
                 name = symbol.payloadSerializerName()
             }
         }

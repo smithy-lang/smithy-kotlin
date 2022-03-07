@@ -56,7 +56,7 @@ fun Shape.changeNameSuffix(fromTo: Pair<String, String>): String {
  * If is member shape returns target, otherwise returns self.
  * @param model for loading the target shape
  */
-internal fun Shape.targetOrSelf(model: Model) = when (this) {
+fun Shape.targetOrSelf(model: Model): Shape = when (this) {
     is MemberShape -> model.expectShape(this.target)
     else -> this
 }

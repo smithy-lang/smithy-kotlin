@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
+import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.StructureShape
 
 /**
@@ -51,10 +52,10 @@ interface StructuredDataParserGenerator {
      * Implementations are expected to deserialize from the specific data format and return the result
      *
      * @param ctx the protocol generator context
-     * @param member the member to deserialize
+     * @param shape the shape or member to deserialize
      * @return the generated symbol which should be a function matching the expected signature
      */
-    fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol
+    fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol
 
     /**
      * Render function responsible for deserializing members bound to the payload for the given error shape.
