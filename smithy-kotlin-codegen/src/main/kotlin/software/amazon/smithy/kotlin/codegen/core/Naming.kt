@@ -6,6 +6,7 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.kotlin.codegen.lang.isValidKotlinIdentifier
+import software.amazon.smithy.kotlin.codegen.model.shape
 import software.amazon.smithy.kotlin.codegen.utils.splitOnWordBoundaries
 import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.kotlin.codegen.utils.toPascalCase
@@ -14,6 +15,8 @@ import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.EnumDefinition
+import java.security.MessageDigest
+import java.util.*
 import java.util.logging.Logger
 
 // (somewhat) centralized naming rules
@@ -98,3 +101,22 @@ fun MemberShape.unionVariantName(): String = this.memberName.toPascalCase()
  * e.g. `register{OperationName}Middleware
  */
 fun OperationShape.registerMiddlewareName(): String = "register${this.capitalizedDefaultName()}Middleware"
+
+/**
+ * Generate a mangled name based on the [shape] and the members contained in [members]
+ * If the set of [members] contains all members of [shape] then an empty suffix is returned.
+ */
+internal fun Shape.mangledSuffix(members: Collection<MemberShape> = members()): String {
+    check(members().containsAll(members)) { "One or more members given $members is not a member of $this" }
+    if (members().size == members.size) return ""
+
+    val md = MessageDigest.getInstance("SHA-256")
+    md.update(id.toString().encodeToByteArray())
+
+    members.forEach { md.update(it.id.toString().encodeToByteArray()) }
+
+    val b64Encoder = Base64.getUrlEncoder().withoutPadding()
+    val encoded = b64Encoder.encodeToString(md.digest())
+
+    return encoded.filter { it.isLetterOrDigit() }.substring(0, 8)
+}

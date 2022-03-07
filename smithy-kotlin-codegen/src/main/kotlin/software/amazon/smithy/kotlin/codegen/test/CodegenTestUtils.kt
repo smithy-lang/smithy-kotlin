@@ -18,6 +18,7 @@ import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.knowledge.HttpBindingIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
+import software.amazon.smithy.utils.StringUtils
 
 /**
  * This file houses test classes and functions relating to the code generator (protocols, serializers, etc)
@@ -165,9 +166,13 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
                 name = errSymbol.errorDeserializerName()
             }
 
-            override fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol = buildSymbol {
+            override fun payloadDeserializer(
+                ctx: ProtocolGenerator.GenerationContext,
+                shape: Shape,
+                members: Collection<MemberShape>?
+            ): Symbol = buildSymbol {
                 val symbol = ctx.symbolProvider.toSymbol(shape)
-                name = symbol.payloadDeserializerName()
+                name = "deserialize" + StringUtils.capitalize(symbol.name) + "Payload"
             }
         }
 
@@ -177,9 +182,13 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
                 name = op.bodySerializerName()
             }
 
-            override fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol = buildSymbol {
+            override fun payloadSerializer(
+                ctx: ProtocolGenerator.GenerationContext,
+                shape: Shape,
+                members: Collection<MemberShape>?
+            ): Symbol = buildSymbol {
                 val symbol = ctx.symbolProvider.toSymbol(shape)
-                name = symbol.payloadSerializerName()
+                name = "serialize" + StringUtils.capitalize(symbol.name) + "Payload"
             }
         }
 

@@ -78,11 +78,14 @@ open class XmlSerializerGenerator(
         writer.write("return serializer.toByteArray()")
     }
 
-    protected fun documentSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
+    protected fun documentSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: Collection<MemberShape> = shape.members()
+    ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
-        return symbol.documentSerializer(ctx.settings) { writer ->
-            val fnName = symbol.documentSerializerName()
-            writer.openBlock("internal fun #L(serializer: #T, input: #T) {", fnName, RuntimeTypes.Serde.Serializer, symbol)
+        return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
+            writer.openBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", RuntimeTypes.Serde.Serializer, symbol)
                 .call {
                     renderSerializerBody(ctx, shape, shape.members().toList(), writer)
                 }
@@ -118,16 +121,20 @@ open class XmlSerializerGenerator(
         return attributes + elements
     }
 
-    override fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
+    override fun payloadSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: Collection<MemberShape>?
+    ): Symbol {
         // re-use document serializer
         val target = shape.targetOrSelf(ctx.model)
         val symbol = ctx.symbolProvider.toSymbol(shape)
-        val serializeFn = documentSerializer(ctx, target)
-        val fnName = symbol.payloadSerializerName()
-        return symbol.payloadSerializer(ctx.settings) { writer ->
+        val forMembers = members ?: target.members()
+        val serializeFn = documentSerializer(ctx, target, forMembers)
+        return target.payloadSerializer(ctx.settings, symbol, forMembers) { writer ->
             addNestedDocumentSerializers(ctx, target, writer)
             writer.addImportReferences(symbol, SymbolReference.ContextOption.USE)
-            writer.withBlock("internal fun #L(input: #T): ByteArray {", "}", fnName, symbol) {
+            writer.withBlock("internal fun #identifier.name:L(input: #T): ByteArray {", "}", symbol) {
                 write("val serializer = #T()", RuntimeTypes.Serde.SerdeXml.XmlSerializer)
                 write("#T(serializer, input)", serializeFn)
                 write("return serializer.toByteArray()")
