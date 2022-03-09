@@ -53,9 +53,14 @@ interface StructuredDataParserGenerator {
      *
      * @param ctx the protocol generator context
      * @param shape the shape or member to deserialize
+     * @param members the subset of members to deserialize from the payload
      * @return the generated symbol which should be a function matching the expected signature
      */
-    fun payloadDeserializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol
+    fun payloadDeserializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: Collection<MemberShape>? = null
+    ): Symbol
 
     /**
      * Render function responsible for deserializing members bound to the payload for the given error shape.

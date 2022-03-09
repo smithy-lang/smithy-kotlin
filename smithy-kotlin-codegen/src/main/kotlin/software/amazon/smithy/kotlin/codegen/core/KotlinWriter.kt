@@ -27,6 +27,7 @@ import java.util.function.BiFunction
 
 /**
  * A function that renders a symbol to the given writer
+ * The writer will have `identifier.name` set in the context to whatever the symbol name is that is being generated.
  */
 typealias SymbolRenderer = (KotlinWriter) -> Unit
 
