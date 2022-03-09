@@ -45,6 +45,7 @@ class KotlinDelegator(
             unprocessedDependencies(writtenDependencies).forEach { generated ->
                 writtenDependencies.add(generated.fullName)
                 val writer = checkoutWriter(generated.definitionFile, generated.namespace)
+                writer.putContext("identifier.name", generated.name)
                 writer.apply(generated.renderer)
             }
         }

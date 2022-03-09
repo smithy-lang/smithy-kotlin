@@ -96,32 +96,43 @@ fun HttpBindingResolver.hasHttpBody(operationShape: OperationShape): Boolean =
     }
 
 /**
- * An Http Binding Resolver that relies on [HttpTrait] data from service models.
+ * Protocol content type mappings
+ */
+data class ProtocolContentTypes(
+    val requestContentType: String? = null,
+    val responseContentType: String? = null,
+    val eventStreamContentType: String? = null
+) {
+    companion object {
+        /**
+         * Create an instance of [ProtocolContentTypes] where all content types are the same
+         */
+        fun consistent(contentType: String) = ProtocolContentTypes(contentType, contentType, contentType)
+    }
+}
+
+/**
+ * A Http Binding Resolver that relies on [HttpTrait] data from service models.
  * @param model Model
  * @param serviceShape service under which to find bindings
- * @param defaultContentType content-type
- * @param bindingIndex [HttpBindingIndex]
- * @param topDownIndex [TopDownIndex]
+ * @param contentTypes content-type mappings
  */
 class HttpTraitResolver(
     private val model: Model,
     private val serviceShape: ServiceShape,
-    private val defaultContentType: String,
-    private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(model),
-    private val topDownIndex: TopDownIndex = TopDownIndex.of(model)
+    private val contentTypes: ProtocolContentTypes
 ) : HttpBindingResolver {
     /**
      * @param ctx [ProtocolGenerator.GenerationContext]
      * @param defaultContentType content-type
-     * @param bindingIndex [HttpBindingIndex]
-     * @param topDownIndex [TopDownIndex]
      */
     constructor(
         ctx: ProtocolGenerator.GenerationContext,
         defaultContentType: String,
-        bindingIndex: HttpBindingIndex = HttpBindingIndex.of(ctx.model),
-        topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
-    ) : this(ctx.model, ctx.service, defaultContentType, bindingIndex, topDownIndex)
+    ) : this(ctx.model, ctx.service, ProtocolContentTypes.consistent(defaultContentType))
+
+    private val bindingIndex: HttpBindingIndex = HttpBindingIndex.of(model)
+    private val topDownIndex: TopDownIndex = TopDownIndex.of(model)
 
     override fun bindingOperations(): List<OperationShape> = topDownIndex
         .getContainedOperations(serviceShape)
@@ -142,7 +153,7 @@ class HttpTraitResolver(
     }
 
     override fun determineRequestContentType(operationShape: OperationShape): String? = bindingIndex
-        .determineRequestContentType(operationShape, defaultContentType)
+        .determineRequestContentType(operationShape, contentTypes.requestContentType, contentTypes.eventStreamContentType)
         .getOrNull()
 
     override fun determineTimestampFormat(

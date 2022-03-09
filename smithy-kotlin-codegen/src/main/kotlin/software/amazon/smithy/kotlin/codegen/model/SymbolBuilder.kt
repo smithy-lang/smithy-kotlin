@@ -85,6 +85,7 @@ open class SymbolBuilder {
         defaultValue?.let { builder.defaultValue(it) }
 
         if (renderBy != null) {
+            checkNotNull(name) { "a rendered dependency must declare a name!" }
             checkNotNull(definitionFile) { "a rendered dependency must declare a definition file!" }
             checkNotNull(namespace) { "a rendered dependency must declare a namespace" }
             // abuse dependencies to get the delegator to eventually render this

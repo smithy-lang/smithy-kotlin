@@ -35,7 +35,7 @@ class RestJsonTestProtocolGenerator(
 ) : HttpBindingProtocolGenerator() {
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        HttpTraitResolver(model, serviceShape, "application/json")
+        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
 
     override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {
         // NOP

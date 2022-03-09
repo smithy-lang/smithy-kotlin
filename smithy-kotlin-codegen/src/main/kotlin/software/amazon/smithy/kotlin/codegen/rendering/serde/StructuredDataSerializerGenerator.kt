@@ -48,7 +48,12 @@ interface StructuredDataSerializerGenerator {
      *
      * @param ctx the protocol generator context
      * @param shape the shape or member to serialize
+     * @param members the subset of members to serialize in the payload
      * @return the generated symbol which should be a function matching the expected signature
      */
-    fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol
+    fun payloadSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: Collection<MemberShape>? = null
+    ): Symbol
 }

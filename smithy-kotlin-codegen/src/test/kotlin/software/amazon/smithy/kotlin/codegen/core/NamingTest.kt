@@ -9,9 +9,11 @@ import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.test.prependNamespaceAndService
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.EnumDefinition
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class NamingTest {
 
@@ -145,5 +147,30 @@ class NamingTest {
             val shape = model.expectShape<MemberShape>("com.test#TestStruct\$$input")
             assertEquals(expected, shape.unionVariantName(), "input: $input")
         }
+    }
+
+    @Test
+    fun testMangledNames() {
+        val model = """
+            structure Foo {
+                member1: Integer,
+                member2: Nested
+            }
+            
+            structure Nested { }
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val shape = model.expectShape(ShapeId.from("com.test#Foo"))
+
+        val all = shape.mangledSuffix(shape.members())
+        val none = shape.mangledSuffix()
+        assertEquals("", all)
+        assertEquals("", none)
+
+        val firstMember = shape.mangledSuffix(shape.members().take(1))
+        val secondMember = shape.mangledSuffix(shape.members().drop(1))
+
+        assertNotEquals(all, firstMember)
+        assertNotEquals(firstMember, secondMember)
     }
 }
