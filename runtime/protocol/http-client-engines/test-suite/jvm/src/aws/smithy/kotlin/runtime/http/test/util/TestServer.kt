@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.test.util
 
 import aws.smithy.kotlin.runtime.http.test.suite.downloadTests
+import aws.smithy.kotlin.runtime.http.test.suite.uploadTests
 import io.ktor.application.*
 import io.ktor.request.*
 import io.ktor.response.*
@@ -57,6 +58,7 @@ internal fun startServer(): Closeable {
 internal fun Application.testRoutes() {
     redirectTests()
     downloadTests()
+    uploadTests()
 
     routing {
         post("/echo") {
