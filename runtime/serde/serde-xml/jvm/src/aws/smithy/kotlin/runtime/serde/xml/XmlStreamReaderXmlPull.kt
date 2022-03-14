@@ -14,7 +14,7 @@ import org.xmlpull.v1.XmlPullParserFactory
 import java.io.ByteArrayInputStream
 import java.nio.charset.Charset
 
-actual fun xmlStreamReader(payload: ByteArray): XmlStreamReader =
+actual fun xmlPull(payload: ByteArray): XmlStreamReader =
     XmlStreamReaderXmlPull(XmlStreamReaderXmlPull.xmlPullParserFactory(payload))
 
 internal class XmlStreamReaderXmlPull(

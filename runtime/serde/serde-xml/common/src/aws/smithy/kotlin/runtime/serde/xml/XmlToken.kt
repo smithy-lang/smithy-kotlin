@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 /**
- * Raw tokens produced when reading a XML document as a stream
+ * Raw tokens produced when reading an XML document as a stream
  */
 sealed class XmlToken {
 
