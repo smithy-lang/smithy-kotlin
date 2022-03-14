@@ -43,6 +43,7 @@ include(":runtime:serde:serde-form-url")
 include(":runtime:protocol:http")
 include(":runtime:protocol:http-test")
 include(":runtime:protocol:http-client-engines:http-client-engine-ktor")
+include(":runtime:protocol:http-client-engines:test-suite")
 
 include(":tests")
 include(":tests:benchmarks:serde-benchmarks-codegen")

@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.engine.createCallContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.io.Handler
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
@@ -35,7 +36,7 @@ fun sdkHttpClient(
 class SdkHttpClient(
     val engine: HttpClientEngine,
     private val manageEngine: Boolean = false
-) : HttpHandler {
+) : HttpHandler, Closeable {
     private val closed = atomic(false)
 
     suspend fun call(request: HttpRequest): HttpCall = executeWithCallContext(request)
@@ -54,7 +55,7 @@ class SdkHttpClient(
     /**
      * Shutdown this HTTP client and close any resources. The client will no longer be capable of making requests.
      */
-    fun close() {
+    override fun close() {
         if (!closed.compareAndSet(false, true)) return
         if (manageEngine) {
             engine.close()
