@@ -55,7 +55,7 @@ class KtorRequestAdapterTest {
         val content = "testing".toByteArray()
         val sdkSource = ByteReadChannel(content)
 
-        sdkBuilder.body = KtorHttpBody(sdkSource)
+        sdkBuilder.body = KtorHttpBody(content.size.toLong(), sdkSource)
         val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()
         val convertedBody = actual.body as OutgoingContent.ReadChannelContent
         assertEquals(ContentType.Application.OctetStream, convertedBody.contentType)
@@ -69,7 +69,7 @@ class KtorRequestAdapterTest {
         val content = "testing".toByteArray()
 
         val sdkSource = ByteReadChannel(content)
-        sdkBuilder.body = KtorHttpBody(sdkSource)
+        sdkBuilder.body = KtorHttpBody(content.size.toLong(), sdkSource)
         val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()
         val convertedBody = actual.body as OutgoingContent.ReadChannelContent
 
@@ -88,7 +88,7 @@ class KtorRequestAdapterTest {
         val content = "testing".toByteArray()
 
         val sdkSource = ByteReadChannel(content)
-        sdkBuilder.body = KtorHttpBody(sdkSource)
+        sdkBuilder.body = KtorHttpBody(content.size.toLong(), sdkSource)
         val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()
         val convertedBody = actual.body as OutgoingContent.ReadChannelContent
 
@@ -118,7 +118,7 @@ class KtorRequestAdapterTest {
         val content = ByteArray(8192) { (it % 128).toByte() }
 
         val sdkSource = ByteReadChannel(content)
-        sdkBuilder.body = KtorHttpBody(sdkSource)
+        sdkBuilder.body = KtorHttpBody(content.size.toLong(), sdkSource)
         val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()
         val convertedBody = actual.body as OutgoingContent.ReadChannelContent
 
@@ -145,7 +145,7 @@ class KtorRequestAdapterTest {
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
         val sdkSource = ByteChannel()
-        sdkBuilder.body = KtorHttpBody(sdkSource)
+        sdkBuilder.body = KtorHttpBody(0L, sdkSource)
 
         val job = launch {
             val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()

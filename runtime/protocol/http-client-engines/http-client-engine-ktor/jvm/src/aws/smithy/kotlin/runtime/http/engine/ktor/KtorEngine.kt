@@ -122,7 +122,8 @@ actual class KtorEngine actual constructor(
             // completes, at which point we signal it's safe to exit the block and release the underlying resources.
             callContext.job.invokeOnCompletion { waiter.signal() }
 
-            val body = KtorHttpBody(httpResp.content)
+            val contentLength = httpResp.headers["content-length"]?.toLong()
+            val body = KtorHttpBody(contentLength, httpResp.content)
 
             // copy the headers so that we no longer depend on the underlying ktor HttpResponse object
             // outside of the body content (which will signal once read that it is safe to exit the block)
