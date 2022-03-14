@@ -6,8 +6,8 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.xml.tokenization.StringTextStream
+import aws.smithy.kotlin.runtime.serde.xml.tokenization.LexingXmlStreamReader
 import aws.smithy.kotlin.runtime.serde.xml.tokenization.XmlLexer
-import aws.smithy.kotlin.runtime.serde.xml.tokenization.XmlScanner
 
 /**
  * Provides stream-style access to an XML payload.  This abstraction
@@ -81,8 +81,8 @@ inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicate: (T) -
  */
 fun xmlStreamReader(payload: ByteArray): XmlStreamReader {
     val stream = StringTextStream(payload.decodeToString())
-    val scanner = XmlScanner(stream)
-    return XmlLexer(scanner)
+    val lexer = XmlLexer(stream)
+    return LexingXmlStreamReader(lexer)
 }
 
 // TODO remove me!

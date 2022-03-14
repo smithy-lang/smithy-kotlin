@@ -14,7 +14,7 @@ private val nonAscii = """[^\x20-\x7E]""".toRegex()
  * A stream of text characters that can be processed sequentially. This stream maintains a current position (i.e.,
  * offset in the string) from which all reading operations begin. The stream is advanced by `read` operations. The
  * stream is **not** advanced by `peek` operations.
- * @param bytes The source bytes for this stream (which will be decoded to a string)
+ * @param source The source text for this stream.
  */
 class StringTextStream(private val source: String) {
     private val end = source.length
