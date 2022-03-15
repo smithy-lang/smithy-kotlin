@@ -95,7 +95,10 @@ internal class KtorContentStream(private val channel: ByteReadChannel) : SdkByte
 }
 
 // wrapper around a ByteReadChannel that implements the content as an SDK (streaming) HttpBody
-internal class KtorHttpBody(channel: ByteReadChannel) : HttpBody.Streaming() {
+internal class KtorHttpBody(
+    override val contentLength: Long? = null,
+    channel: ByteReadChannel
+) : HttpBody.Streaming() {
     private val source = KtorContentStream(channel)
     override fun readFrom(): SdkByteReadChannel = source
 }
@@ -104,5 +107,5 @@ internal class KtorHttpBody(channel: ByteReadChannel) : HttpBody.Streaming() {
 fun HttpResponse.toSdkHttpResponse(): SdkHttpResponse = SdkHttpResponse(
     HttpStatusCode.fromValue(status.value),
     KtorHeaders(headers),
-    KtorHttpBody(content)
+    KtorHttpBody(contentLength(), channel = content)
 )

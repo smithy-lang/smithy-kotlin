@@ -43,7 +43,6 @@ subprojects {
     // don't configure anything
     if (!needsConfigure) return@subprojects
 
-    // TODO - the group to publish under needs negotiated still
     group = "aws.smithy.kotlin"
     version = sdkVersion
 
