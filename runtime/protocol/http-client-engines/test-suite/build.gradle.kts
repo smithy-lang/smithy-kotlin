@@ -28,6 +28,7 @@ kotlin {
                 implementation("io.ktor:ktor-server-cio:$ktorVersion")
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-ktor"))
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
             }
         }
 

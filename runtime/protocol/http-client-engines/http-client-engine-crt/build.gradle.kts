@@ -17,9 +17,8 @@ apply(plugin = "kotlinx-atomicfu")
 
 description = "HTTP client engine backed by CRT"
 extra["displayName"] = "AWS :: SDK :: Kotlin :: HTTP"
-extra["moduleName"] = "aws.sdk.kotlin.runtime.http.engine.crt"
+extra["moduleName"] = "aws.smithy.kotlin.runtime.http.engine.crt"
 
-val smithyKotlinVersion: String by project
 val coroutinesVersion: String by project
 val atomicFuVersion: String by project
 
@@ -27,27 +26,26 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(project(":aws-runtime:aws-core"))
-                api("aws.smithy.kotlin:http:$smithyKotlinVersion")
-                implementation("aws.smithy.kotlin:logging:$smithyKotlinVersion")
-                implementation(project(":aws-runtime:crt-util"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+                api(project(":runtime:runtime-core"))
+                api(project(":runtime:protocol:http"))
+                implementation(project(":runtime:logging"))
+                implementation(project(":runtime:crt-util"))
 
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
             }
         }
 
         commonTest {
             dependencies {
-                implementation(project(":aws-runtime:testing"))
+                implementation(project(":runtime:testing"))
+                implementation(project(":runtime:protocol:http-test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation("aws.smithy.kotlin:http-test:$smithyKotlinVersion")
             }
         }
 
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
-            languageSettings.optIn("aws.sdk.kotlin.runtime.InternalSdkApi")
         }
     }
 }
