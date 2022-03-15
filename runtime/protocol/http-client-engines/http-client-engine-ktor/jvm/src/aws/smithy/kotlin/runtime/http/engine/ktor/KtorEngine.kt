@@ -15,6 +15,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpStatement
+import io.ktor.http.*
 import io.ktor.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -122,8 +123,7 @@ actual class KtorEngine actual constructor(
             // completes, at which point we signal it's safe to exit the block and release the underlying resources.
             callContext.job.invokeOnCompletion { waiter.signal() }
 
-            val contentLength = httpResp.headers["content-length"]?.toLong()
-            val body = KtorHttpBody(contentLength, httpResp.content)
+            val body = KtorHttpBody(httpResp.contentLength(), httpResp.content)
 
             // copy the headers so that we no longer depend on the underlying ktor HttpResponse object
             // outside of the body content (which will signal once read that it is safe to exit the block)

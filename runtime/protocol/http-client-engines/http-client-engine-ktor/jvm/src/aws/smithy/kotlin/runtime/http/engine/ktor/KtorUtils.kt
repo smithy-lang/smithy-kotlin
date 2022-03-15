@@ -107,5 +107,5 @@ internal class KtorHttpBody(
 fun HttpResponse.toSdkHttpResponse(): SdkHttpResponse = SdkHttpResponse(
     HttpStatusCode.fromValue(status.value),
     KtorHeaders(headers),
-    KtorHttpBody(channel = content)
+    KtorHttpBody(contentLength(), channel = content)
 )

@@ -25,15 +25,15 @@ import kotlin.test.*
 @OptIn(InternalAPI::class)
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall
-        get() = TODO("Not yet implemented")
+        get() = error("not needed for test")
     override val content: ByteReadChannel = ByteReadChannel.Empty
     override val coroutineContext: CoroutineContext
-        get() = TODO("Not yet implemented")
+        get() = error("not needed for test")
     override val headers: Headers = Headers.build { append("x-foo", "bar") }
     override val requestTime: GMTDate
-        get() = TODO("Not yet implemented")
+        get() = error("not needed for test")
     override val responseTime: GMTDate
-        get() = TODO("Not yet implemented")
+        get() = error("not needed for test")
     override val status: HttpStatusCode = HttpStatusCode.OK
     override val version: HttpProtocolVersion = HttpProtocolVersion.HTTP_1_1
 }
