@@ -61,7 +61,14 @@ open class LocalTestServer : DefaultTask() {
             println("[TestServer] started")
         } catch (cause: Throwable) {
             println("[TestServer] failed: ${cause.message}")
-            cause.printStackTrace()
+            throw cause
+        }
+    }
+
+    fun stop() {
+        if (server != null) {
+            server?.close()
+            println("[TestServer] stop")
         }
     }
 }
@@ -84,8 +91,5 @@ val testTasks = listOf("allTests", "jvmTest")
     }
 
 gradle.buildFinished {
-    if (startTestServer.server != null) {
-        startTestServer.server?.close()
-        println("[TestServer] stop")
-    }
+    startTestServer.stop()
 }

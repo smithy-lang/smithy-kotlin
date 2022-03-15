@@ -13,6 +13,7 @@ import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+// TODO - add ipv6 test server/tests
 private val TEST_SERVER = Url.parse("http://127.0.0.1:8082")
 
 /**
@@ -47,7 +48,7 @@ class EngineTestBuilder {
      * configured with an engine loaded by [AbstractEngineTest]. Invoke calls against test routes and make
      * assertions here
      */
-    var test: (suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) = { _, _ -> Unit }
+    var test: (suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) = { _, _ -> error("engine test not configured") }
 
     /**
      * Number of times to repeat [test]
@@ -69,7 +70,7 @@ fun testWithClient(
     block: suspend EngineTestBuilder.() -> Unit
 ): Unit = runBlockingTest(timeout = timeout) {
     val builder = EngineTestBuilder().apply { block() }
-    concurrency(builder.concurrency) { coroutineId ->
+    runConcurrently(builder.concurrency) { coroutineId ->
         repeat(builder.repeat) { attempt ->
             val env = TestEnvironment(TEST_SERVER, coroutineId, attempt)
             builder.test(env, client)
@@ -86,7 +87,7 @@ expect fun runBlockingTest(
     block: suspend CoroutineScope.() -> Unit
 ): Unit
 
-private suspend fun concurrency(level: Int, block: suspend (Int) -> Unit) {
+private suspend fun runConcurrently(level: Int, block: suspend (Int) -> Unit) {
     coroutineScope {
         List(level) {
             async {

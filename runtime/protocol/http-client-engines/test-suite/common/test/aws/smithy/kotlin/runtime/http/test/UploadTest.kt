@@ -49,7 +49,7 @@ class UploadTest : AbstractEngineTest() {
     @Test
     fun testUploadWithDelay() = testEngines {
         test { env, client ->
-            val data = ByteArray(16 * 1024 * 1023) { it.toByte() }
+            val data = ByteArray(16 * 1024 * 1024) { it.toByte() }
             val sha = data.sha256().encodeToHex()
             val ch = SdkByteChannel(autoFlush = true)
             val content = object : HttpBody.Streaming() {

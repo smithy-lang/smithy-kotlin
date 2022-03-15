@@ -32,7 +32,12 @@ class AsyncStressTest : AbstractEngineTest() {
             assertEquals(HttpStatusCode.OK, call.response.status)
 
             try {
-                call.response.body.readAll()
+                val resp = call.response.body.readAll() ?: error("expected response body")
+
+                val contentLength = call.response.body.contentLength ?: 0L
+                val text = "testing"
+                val expectedText = text.repeat(contentLength.toInt() / text.length)
+                assertEquals(expectedText, resp.decodeToString())
             } finally {
                 call.complete()
             }

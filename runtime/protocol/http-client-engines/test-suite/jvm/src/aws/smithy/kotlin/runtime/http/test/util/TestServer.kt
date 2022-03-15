@@ -50,6 +50,7 @@ internal fun startServer(): Closeable {
         Thread.sleep(500)
     } catch (ex: Exception) {
         servers.close()
+        throw ex
     }
 
     return servers
@@ -61,11 +62,4 @@ internal fun Application.testRoutes() {
     downloadTests()
     uploadTests()
     concurrentTests()
-
-    routing {
-        post("/echo") {
-            val response = call.receiveText()
-            call.respond(response)
-        }
-    }
 }
