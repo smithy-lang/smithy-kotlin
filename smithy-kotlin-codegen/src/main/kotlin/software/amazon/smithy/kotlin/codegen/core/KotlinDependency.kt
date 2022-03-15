@@ -82,6 +82,7 @@ data class KotlinDependency(
         val HTTP_KTOR_ENGINE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.engine.ktor", RUNTIME_GROUP, "http-client-engine-ktor", RUNTIME_VERSION)
         val UTILS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.util", RUNTIME_GROUP, "utils", RUNTIME_VERSION)
         val SMITHY_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "$RUNTIME_ROOT_NS.smithy.test", RUNTIME_GROUP, "smithy-test", RUNTIME_VERSION)
+        val AWS_CRT_HTTP_ENGINE = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.http.engine.crt", RUNTIME_GROUP, "http-client-engine-crt", RUNTIME_VERSION)
 
         // External third-party dependencies
         val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", KOTLIN_COMPILER_VERSION)

@@ -21,6 +21,11 @@
     "test_steps": [
         "{gradlew} test allTests"
     ],
+    "upstream": [
+        {
+            "name": "aws-crt-kotlin"
+        }
+    ],
     "downstream": [
         { "name": "aws-sdk-kotlin" }    
     ]
