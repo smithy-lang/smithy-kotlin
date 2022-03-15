@@ -7,6 +7,8 @@ package aws.smithy.kotlin.runtime.http.test.util
 
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
+import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -19,7 +21,7 @@ private val TEST_SERVER = Url.parse("http://127.0.0.1:8082")
 /**
  * Abstract base class that all engine test suite test classes should inherit from.
  */
-expect abstract class AbstractEngineTest() {
+abstract class AbstractEngineTest() {
 
     /**
      * Build a test that will run against each engine in the test suite.
@@ -27,8 +29,19 @@ expect abstract class AbstractEngineTest() {
      * Concrete implementations for each KMP target are responsible for loading the engines
      * supported by that platform and executing the test
      */
-    fun testEngines(block: EngineTestBuilder.() -> Unit)
+    fun testEngines(block: EngineTestBuilder.() -> Unit) {
+        engines().forEach { engine ->
+            val client = sdkHttpClient(engine)
+            testWithClient(client, block = block)
+        }
+    }
 }
+
+/**
+ * Concrete implementations for each KMP target are responsible for loading the engines
+ * supported by that platform and executing the test
+ */
+internal expect fun engines(): List<HttpClientEngine>
 
 /**
  * Container for current engine test environment
@@ -81,7 +94,7 @@ fun testWithClient(
 
 // Use a real dispatcher rather than `runTest` (e.g. runBlocking for JVM/Native) which more appropriately matches
 // a real environment
-expect fun runBlockingTest(
+internal expect fun runBlockingTest(
     context: CoroutineContext = EmptyCoroutineContext,
     timeout: Duration? = null,
     block: suspend CoroutineScope.() -> Unit
