@@ -15,17 +15,14 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:protocol:http"))
-            }
-        }
-        jvmMain {
-            dependencies {
-                implementation(project(":runtime:io"))
-                // okhttp works on both JVM and Android
-                implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
                 implementation(project(":runtime:logging"))
+                implementation(project(":runtime:io"))
+
+                // exposes HttpClientEngine interface wrapped by KtorEngine
+                api("io.ktor:ktor-client-core:$ktorVersion")
             }
         }
-        jvmTest {
+        commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
             }

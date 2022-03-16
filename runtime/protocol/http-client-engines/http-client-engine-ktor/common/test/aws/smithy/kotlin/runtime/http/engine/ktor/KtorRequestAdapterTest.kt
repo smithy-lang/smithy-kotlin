@@ -12,20 +12,19 @@ import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.ktor.http.ContentType
 import io.ktor.http.content.OutgoingContent
-import io.ktor.util.*
 import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
-import java.nio.ByteBuffer
+import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 
-// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
-@OptIn(InternalAPI::class)
+@OptIn(ExperimentalCoroutinesApi::class)
 class KtorRequestAdapterTest {
     @Test
-    fun itStripsContentTypeHeader() = runBlocking {
+    fun itStripsContentTypeHeader() = runTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/json")
@@ -34,7 +33,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun itConvertsHttpBodyVariantBytes() = runBlocking {
+    fun itConvertsHttpBodyVariantBytes() = runTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/json")
@@ -48,7 +47,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun itConvertsHttpBodyVariantStreaming() = runBlocking {
+    fun itConvertsHttpBodyVariantStreaming() = runTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -62,7 +61,7 @@ class KtorRequestAdapterTest {
     }
 
     @Test
-    fun itTransfersAStreamingBody() = runBlocking {
+    fun itTransfersAStreamingBody() = runTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -74,14 +73,14 @@ class KtorRequestAdapterTest {
         val convertedBody = actual.body as OutgoingContent.ReadChannelContent
 
         val channel = convertedBody.readFrom()
-        val buffer = ByteBuffer.allocate(256)
-        channel.readAvailable(buffer)
-        assertEquals(content.size, buffer.position())
+        val buffer = ByteArray(256)
+        val rc = channel.readAvailable(buffer)
+        assertEquals(content.size, rc)
         assertTrue(channel.isClosedForRead)
     }
 
     @Test
-    fun itHandlesPartialStreamReads() = runBlocking {
+    fun itHandlesPartialStreamReads() = runTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -93,14 +92,14 @@ class KtorRequestAdapterTest {
         val convertedBody = actual.body as OutgoingContent.ReadChannelContent
 
         val channel = convertedBody.readFrom()
-        val buffer = ByteBuffer.allocate(5)
-        channel.readAvailable(buffer)
-        assertEquals(5, buffer.position())
+        val buffer = ByteArray(5)
+        val rc = channel.readAvailable(buffer)
+        assertEquals(5, rc)
         assertEquals(2, channel.availableForRead)
     }
 
     @Test
-    fun itHandlesStreamBackpressure() = runBlocking {
+    fun itHandlesStreamBackpressure() = runTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -123,24 +122,22 @@ class KtorRequestAdapterTest {
         val convertedBody = actual.body as OutgoingContent.ReadChannelContent
 
         val channel = convertedBody.readFrom()
-        val buffer = ByteBuffer.allocate(2048)
+        val buffer = ByteArray(2048)
 
         var totalRead = 0
         var readLoopCnt = 0
         while (!channel.isClosedForRead) {
-            channel.readAvailable(buffer)
-            totalRead += buffer.position()
-            buffer.clear()
+            val rc = channel.readAvailable(buffer)
+            totalRead += rc
             readLoopCnt++
         }
+
         assertEquals(content.size, totalRead)
         readLoopCnt.shouldBeGreaterThanOrEqual(4)
-
-        return@runBlocking Unit
     }
 
     @Test
-    fun itHandlesStreamCancellation() = runBlocking {
+    fun itHandlesStreamCancellation() = runTest {
         val sdkBuilder = HttpRequestBuilder()
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/octet-stream")
@@ -163,6 +160,5 @@ class KtorRequestAdapterTest {
         // if test runs to completion it worked. The "fill" coroutine that pulls
         // data from the source and propagates to the channel would otherwise prevent
         // an exit.
-        return@runBlocking Unit
     }
 }
