@@ -11,4 +11,10 @@ package aws.smithy.kotlin.runtime.http.engine
 fun SdkHttpEngine(config: HttpClientEngineConfig = HttpClientEngineConfig.Default): HttpClientEngine =
     newDefaultHttpEngine(config)
 
+fun SdkHttpEngine(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine {
+    val builder = HttpClientEngineConfig.Builder().apply(block)
+    val config = HttpClientEngineConfig(builder)
+    return SdkHttpEngine(config)
+}
+
 internal expect fun newDefaultHttpEngine(config: HttpClientEngineConfig): HttpClientEngine
