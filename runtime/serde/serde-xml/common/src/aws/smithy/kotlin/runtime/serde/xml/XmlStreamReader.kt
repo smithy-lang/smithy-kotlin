@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
-import aws.smithy.kotlin.runtime.serde.xml.tokenization.StringTextStream
 import aws.smithy.kotlin.runtime.serde.xml.tokenization.LexingXmlStreamReader
+import aws.smithy.kotlin.runtime.serde.xml.tokenization.StringTextStream
 import aws.smithy.kotlin.runtime.serde.xml.tokenization.XmlLexer
 
 /**
@@ -84,6 +84,3 @@ fun xmlStreamReader(payload: ByteArray): XmlStreamReader {
     val lexer = XmlLexer(stream)
     return LexingXmlStreamReader(lexer)
 }
-
-// TODO remove me!
-expect fun xmlPull(payload: ByteArray): XmlStreamReader

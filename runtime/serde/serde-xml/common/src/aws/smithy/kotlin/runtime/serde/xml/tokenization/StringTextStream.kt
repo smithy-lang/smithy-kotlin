@@ -21,145 +21,213 @@ class StringTextStream(private val source: String) {
     private var offset = 0
 
     /**
-     * Checks whether the bounds of the stream would be exceeded by advancing the given number of characters and, if so,
-     * throws an exception.
-     * @param length The amount beyond the current position to check.
-     * @param errMessage A provider of an error message to include in the exception.
+     * Advance the position by the given [length]. Throws an exception if this would advance beyond the end of the
+     * stream.
+     * @param length The length by which to advance the stream position.
      */
-    private fun checkBounds(length: Int, errMessage: () -> String) {
-        if (offset + length > end) error(errMessage())
+    fun advance(length: Int, errCondition: String) {
+        checkBounds(length, errCondition)
+        offset += length
     }
 
     /**
-     * Throws a [DeserializationException] with the given message and location string.
+     * Advances the position if the given [text] is next in the stream. Otherwise, the offset is not updated.
+     * @param text The text to look for at the current offset.
+     * @return True if the given [text] was found and the offset was advanced; otherwise, false.
+     */
+    fun advanceIf(text: String): Boolean =
+        if (source.startsWith(text, offset)) {
+            offset += text.length
+            true
+        } else {
+            false
+        }
+
+    /**
+     * Advances the position until a whitespace character is found (i.e., one of ' ', '\r', '\n', '\t').
+     */
+    fun advanceUntilSpace() {
+        while (offset < end) {
+            val ch = source[offset]
+            if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t') return
+            offset++
+        }
+    }
+
+    /**
+     * Advances the position until a non-whitespace character is found (i.e., not one of ' ', '\r', '\n', '\t').
+     */
+    fun advanceWhileSpace() {
+        while (offset < end) {
+            val ch = source[offset]
+            if (ch != ' ' && ch != '\r' && ch != '\n' && ch != '\t') return
+            offset++
+        }
+    }
+
+    /**
+     * Checks whether the bounds of the stream would be exceeded by advancing the given number of characters and, if so,
+     * throws an exception.
+     * @param length The amount beyond the current position to check.
+     * @param errCondition The condition to include in an error message if necessary.
+     */
+    private fun checkBounds(length: Int, errCondition: String) {
+        if (offset + length > end) error("Unexpected end-of-doc while $errCondition")
+    }
+
+    /**
+     * Throws a [DeserializationException] with the given message and location string. Automatically includes the
+     * current offset and a preview of the surrounding characters. For example:
+     * ```
+     * DeserializationException: Error msg
+     * At offset 123 (showing range 120-126):
+     * <b>!</b
+     *    ^
+     * ```
      * @param msg The error message to include with the exception.
      */
     @Suppress("NOTHING_TO_INLINE")
     internal inline fun error(msg: String): Nothing {
+        val start = max(0, offset - 3)
+        val end = min(end - 1, offset + 3)
+
+        val snippet = source.substring(start, end + 1).replace(nonAscii, "·")
+
+        val caretPos = offset - start
+        val caret = " ".repeat(caretPos) + "^"
+
+        val locationMultilineString = "At offset $offset (showing range $start-$end):\n$snippet\n$caret"
+
         val fullMsg = "$msg\n$locationMultilineString"
         throw DeserializationException(fullMsg)
     }
 
     /**
-     * Gets a multiline string that shows the current offset and a preview of the surrounding characters. For example:
-     * ```
-     * At offset 123 (showing range 120-126):
-     * <b>!</b
-     *    ^
-     * ```
-     */
-    val locationMultilineString: String
-        get() {
-            val start = max(0, offset - 3)
-            val end = min(end - 1, offset + 3)
-            val snippet = source.substring(start..end).replace(nonAscii, "·")
-            val caretPos = offset - start
-            val caret = " ".repeat(caretPos) + "^"
-            return "At offset $offset (showing range $start-$end):\n$snippet\n$caret"
-        }
-
-    /**
-     * Returns the next [length] characters in the stream without advancing the position. The return is truncated if
-     * [length] would exceed the end of the stream.
-     * @param length The number of characters (at most) to return.
-     */
-    fun peekAtMost(length: Int): String {
-        val actualLength = min(length, end - offset)
-        return sliceByLength(actualLength)
-    }
-
-    /**
      * Determines if the next several characters in the stream match the given text without advancing the position.
      */
-    fun peekMatches(text: String): Boolean = peekAtMost(text.length) == text
-
-    /**
-     * Returns the next character in the stream without advancing the position. Throws an exception if the position is
-     * at the stream's end.
-     * @param errMessage A provider of an error message to include in the exception.
-     */
-    fun peekOrThrow(errMessage: () -> String): Char {
-        checkBounds(1, errMessage)
-        return source[offset]
+    fun peekMatches(text: String): Boolean {
+        val actualLength = min(text.length, end - offset)
+        return sliceByLength(actualLength) == text
     }
 
     /**
-     * Returns the next [length] characters in the stream without advancing the position. Throws an exception if the end
-     * of the stream would be exceeded.
-     * @param length The number of characters to read.
-     * @param errMessage A provider of an error message to include in the exception.
+     * Returns the next character in the stream and advances the position. Throws an exception if the end of the stream
+     * would be exceeded.
+     * @param errCondition The condition to include in an error message if necessary.
      */
-    fun peekOrThrow(length: Int, errMessage: () -> String): String {
-        checkBounds(length, errMessage)
-        return sliceByLength(length)
+    fun readOrThrow(errCondition: String): Char {
+        checkBounds(1, errCondition)
+        return source[offset++]
     }
-
-    /**
-     * Returns contents of the stream up to and including the given text without advancing the position. Throws an
-     * exception if the text is not encountered before the end of the stream.
-     * @param text The text to seek
-     * @param errMessage A provider of an error message to include in the exception.
-     * @return The stream contents from the current position up to and including [text].
-     */
-    fun peekThrough(text: String, errMessage: () -> String): String {
-        val charIndex = source.indexOf(text, startIndex = offset)
-        if (charIndex < 0) error(errMessage())
-        return sliceByEnd(charIndex + text.length)
-    }
-
-    /**
-     * Returns zero or more characters from the stream while the given predicate is matched without advancing the
-     * position.
-     * @param predicate The evaluation function for each character.
-     */
-    fun peekWhile(predicate: (Char) -> Boolean): String {
-        var peekOffset = offset
-        while (peekOffset < end && predicate(source[peekOffset])) {
-            peekOffset++
-        }
-        return sliceByEnd(peekOffset)
-    }
-
-    /**
-     * Returns the next [length] characters in the stream and advances the position. Throws an exception if the end of
-     * the stream would be exceeded.
-     * @param length The number of characters to read.
-     * @param errMessage A provider of an error message to include in the exception.
-     */
-    fun readOrThrow(errMessage: () -> String): Char =
-        peekOrThrow(errMessage).also { offset++ }
-
-    /**
-     * Returns the next [length] characters in the stream and advances the position. Throws an exception if the end of
-     * the stream would be exceeded.
-     * @param length The number of characters to read.
-     * @param errMessage A provider of an error message to include in the exception.
-     */
-    fun readOrThrow(length: Int, errMessage: () -> String): String =
-        peekOrThrow(length, errMessage).also { offset += length }
 
     /**
      * Returns contents of the stream up to and including the given text and advances the position. Throws an exception
      * if the text is not encountered before the end of the stream.
-     * @param text The text to seek
-     * @param errMessage A provider of an error message to include in the exception.
+     * @param text The text to seek.
+     * @param errCondition The condition to include in an error message if necessary.
      * @return The stream contents from the current position up to and including [text].
      */
-    fun readThrough(text: String, errMessage: () -> String): String =
-        peekThrough(text, errMessage).also { offset += it.length }
+    fun readThrough(text: String, errCondition: String): String {
+        val charIndex = source.indexOf(text, startIndex = offset)
+        if (charIndex < 0) error("Unexpected end-of-doc while $errCondition")
+
+        val endOfResult = charIndex + text.length
+        val result = sliceByEnd(endOfResult)
+        offset = endOfResult
+        return result
+    }
 
     /**
-     * Returns zero or more characters from the stream while the given predicate is matched and advances the position.
-     * @param predicate The evaluation function for each character.
+     * Returns contents of the stream up to but not including the given text and advances the position. Throws an
+     * exception if the text is not encountered before the end of the stream.
+     * @param text The text to seek.
+     * @param errCondition The condition to include in an error message if necessary.
+     * @return The stream contents from the current position up to but not including [text].
      */
-    fun readWhile(predicate: (Char) -> Boolean): String =
-        peekWhile(predicate).also { offset += it.length }
+    fun readUntil(text: String, errCondition: String): String {
+        val charIndex = source.indexOf(text, startIndex = offset)
+        if (charIndex < 0) error("Unexpected end-of-doc while $errCondition")
+
+        val result = sliceByEnd(charIndex)
+        offset = charIndex
+        return result
+    }
+
+    /**
+     * Returns an XML name from the stream and advances the position. Throws an exception if unable to find a valid XML
+     * name start character. See https://www.w3.org/TR/xml/#NT-Name for name character rules.
+     */
+    fun readWhileXmlName(): String {
+        val c = source[offset]
+        if (
+            c < ':' ||
+            ':' < c && c < 'A' ||
+            'Z' < c && c < '_' ||
+            '_' < c && c < 'a' ||
+            'z' < c && c < '\u00c0' ||
+            '\u00d6' < c && c < '\u00d8' ||
+            '\u00f6' < c && c < '\u00f8' ||
+            '\u02ff' < c && c < '\u0370' ||
+            '\u037d' < c && c < '\u037f' ||
+            '\u1fff' < c && c < '\u200c' ||
+            '\u200d' < c && c < '\u2070' ||
+            '\u218f' < c && c < '\u2c00' ||
+            '\u2fef' < c && c < '\u3001' ||
+            '\ud7ff' < c
+        ) {
+            error("Unable to find valid XML start name character")
+        }
+
+        var peekOffset = offset + 1
+        while (peekOffset < end) {
+            val ch = source[peekOffset]
+            if (
+                ch < '-' ||
+                '-' < ch && ch < '.' ||
+                '.' < ch && ch < '0' ||
+                '9' < ch && ch < ':' ||
+                ':' < ch && ch < 'A' ||
+                'Z' < ch && ch < '_' ||
+                '_' < ch && ch < 'a' ||
+                'z' < ch && ch < '\u00b7' ||
+                '\u00b7' < ch && ch < '\u00c0' ||
+                '\u00d6' < ch && ch < '\u00d8' ||
+                '\u00f6' < ch && ch < '\u00f8' ||
+                '\u02ff' < ch && ch < '\u0300' ||
+                '\u036f' < ch && ch < '\u0370' ||
+                '\u037d' < ch && ch < '\u037f' ||
+                '\u1fff' < ch && ch < '\u200c' ||
+                '\u200d' < ch && ch < '\u203f' ||
+                '\u2040' < ch && ch < '\u2070' ||
+                '\u218f' < ch && ch < '\u2c00' ||
+                '\u2fef' < ch && ch < '\u3001' ||
+                '\ud7ff' < ch
+            ) {
+                // Found end of name
+                break
+            }
+
+            peekOffset++
+        }
+        return sliceByEnd(peekOffset).also { offset = peekOffset }
+    }
+
+    /**
+     * Moves the stream position back by [length] characters. Throws an exception if this would exceed the bounds of the
+     * stream.
+     * @param length The amount of characters to go back.
+     * @param errCondition The condition to include in an error message if necessary.
+     */
+    fun rewind(length: Int, errCondition: String) {
+        checkBounds(-length, errCondition)
+        offset -= length
+    }
 
     /**
      * Returns a slice of the source up to (but not including) the given end position.
      * @param endExclusive The exclusive end position.
      */
-    private fun sliceByEnd(endExclusive: Int): String = source.substring(offset until endExclusive)
+    private fun sliceByEnd(endExclusive: Int): String = source.substring(offset, endExclusive)
 
     /**
      * Returns a slice of the source that is [length] characters long.
