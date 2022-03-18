@@ -111,4 +111,27 @@ class KtorUtilsTest {
         assertEquals(true, converted.contains("baz", "quz"))
         assertEquals(true, converted.contains("baz"))
     }
+
+    @Test
+    fun testPathAndQueryEncoding() {
+        // sanity check that we are still encoding the parameters (we are just using the SDK encoding rather than
+        // relying on ktor)
+        val builder = HttpRequestBuilder()
+
+        val sdkUrl = UrlBuilder {
+            scheme = Protocol.HTTP
+            host = "test.aws.com"
+            path = "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT"
+            parameters {
+                // space is encoded as form-url-data using `+` by ktor whereas SDK always uses percent encoding
+                append("foo", "bar baz/qux")
+            }
+        }
+
+        builder.url(sdkUrl)
+
+        val actual = builder.toKtorRequestBuilder().build()
+        assertEquals(sdkUrl.encodedPath, actual.url.fullPath)
+        assertEquals(UrlEncodingOption.NO_ENCODING, actual.url.parameters.urlEncodingOption)
+    }
 }

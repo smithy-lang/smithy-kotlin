@@ -10,31 +10,37 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.toSdkChannel
+import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
+import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
-import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.CoroutineDispatcher
 import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
-// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
-@OptIn(InternalAPI::class)
 internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()
     builder.method = HttpMethod.parse(this.method.name)
     val sdkUrl = this.url
     val sdkHeaders = this.headers
+
     builder.url {
         val protocolName = sdkUrl.scheme.protocolName.replaceFirstChar(Char::lowercaseChar)
         protocol = URLProtocol(protocolName, sdkUrl.scheme.defaultPort)
         host = sdkUrl.host
         port = sdkUrl.port
-        encodedPath = sdkUrl.path.encodeURLPath()
+        encodedPath = sdkUrl.path.encodeUrlPath()
+
+        // Use the encoding rules from SDK rather than KTOR or else signature may mismatch
+        parameters.urlEncodingOption = UrlEncodingOption.NO_ENCODING
         if (!sdkUrl.parameters.isEmpty()) {
             sdkUrl.parameters.entries().forEach { (name, values) ->
-                parameters.appendAll(name, values)
+                // if parameters are already encoded don't double encode them
+                val encoded = if (sdkUrl.encodeParameters) values.map { it.urlEncodeComponent() } else values
+                parameters.appendAll(name, encoded)
             }
         }
         sdkUrl.fragment?.let { fragment = it }
