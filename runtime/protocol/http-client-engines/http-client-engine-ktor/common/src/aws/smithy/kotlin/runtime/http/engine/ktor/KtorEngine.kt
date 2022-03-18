@@ -36,6 +36,7 @@ class KtorEngine(
     private val engine: KtorHttpClientEngine
 ) : HttpClientEngineBase("ktor") {
 
+    @Suppress("UNUSED_PARAMETER")
     @Deprecated(
         message = "KtorEngine was previously synonymous with the OkHttp engine. It has been modified to wrap any " +
             "Ktor compliant engine. The default engine has been changed from CRT to Ktor/OkHttp. To fix either " +
