@@ -70,6 +70,22 @@ benchmark {
             outputTimeUnit = "ms"
             reportFormat = "text"
         }
+
+        register("json") {
+            iterations = 5
+            warmups = 7
+            outputTimeUnit = "ms"
+            reportFormat = "text"
+            include(".*json.*")
+        }
+
+        register("xml") {
+            iterations = 5
+            warmups = 7
+            outputTimeUnit = "ms"
+            reportFormat = "text"
+            include(".*xml.*")
+        }
     }
 }
 

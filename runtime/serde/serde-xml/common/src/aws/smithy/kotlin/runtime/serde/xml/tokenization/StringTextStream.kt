@@ -71,7 +71,8 @@ class StringTextStream(private val source: String) {
      * @param length The amount beyond the current position to check.
      * @param errCondition The condition to include in an error message if necessary.
      */
-    private fun checkBounds(length: Int, errCondition: String) {
+    @Suppress("NOTHING_TO_INLINE")
+    private inline fun checkBounds(length: Int, errCondition: String) {
         if (offset + length > end) error("Unexpected end-of-doc while $errCondition")
     }
 
@@ -160,48 +161,50 @@ class StringTextStream(private val source: String) {
     fun readWhileXmlName(): String {
         val c = source[offset]
         if (
-            c < ':' ||
-            ':' < c && c < 'A' ||
-            'Z' < c && c < '_' ||
-            '_' < c && c < 'a' ||
-            'z' < c && c < '\u00c0' ||
-            '\u00d6' < c && c < '\u00d8' ||
-            '\u00f6' < c && c < '\u00f8' ||
-            '\u02ff' < c && c < '\u0370' ||
-            '\u037d' < c && c < '\u037f' ||
-            '\u1fff' < c && c < '\u200c' ||
-            '\u200d' < c && c < '\u2070' ||
-            '\u218f' < c && c < '\u2c00' ||
-            '\u2fef' < c && c < '\u3001' ||
-            '\ud7ff' < c
+            !(
+                'a' <= c && c <= 'z' ||
+                    'A' <= c && c <= 'Z' ||
+                    c == ':' ||
+                    c == '_' ||
+                    '\u00c0' <= c && c <= '\u00d6' ||
+                    '\u00d8' <= c && c <= '\u00f6' ||
+                    '\u00f8' <= c && c <= '\u02ff' ||
+                    '\u0370' <= c && c <= '\u037d' ||
+                    '\u037f' <= c && c <= '\u1fff' ||
+                    '\u200c' <= c && c <= '\u200d' ||
+                    '\u2070' <= c && c <= '\u218f' ||
+                    '\u2c00' <= c && c <= '\u2fef' ||
+                    '\u3001' <= c && c <= '\ud7ff'
+                )
         ) {
-            error("Unable to find valid XML start name character")
+            error("Found '$c' but expected a valid XML start name character")
         }
 
         var peekOffset = offset + 1
         while (peekOffset < end) {
             val ch = source[peekOffset]
             if (
-                ch < '-' ||
-                '-' < ch && ch < '.' ||
-                '.' < ch && ch < '0' ||
-                '9' < ch && ch < ':' ||
-                ':' < ch && ch < 'A' ||
-                'Z' < ch && ch < '_' ||
-                '_' < ch && ch < 'a' ||
-                'z' < ch && ch < '\u00b7' ||
-                '\u00b7' < ch && ch < '\u00c0' ||
-                '\u00d6' < ch && ch < '\u00d8' ||
-                '\u00f6' < ch && ch < '\u00f8' ||
-                '\u02ff' < ch && ch < '\u0300' ||
-                '\u036f' < ch && ch < '\u0370' ||
-                '\u037d' < ch && ch < '\u037f' ||
-                '\u1fff' < ch && ch < '\u200c' ||
-                '\u200d' < ch && ch < '\u203f' ||
-                '\u2040' < ch && ch < '\u2070' ||
-                '\u218f' < ch && ch < '\u2c00' ||
-                '\u2fef' < ch && ch < '\u3001' ||
-                '\ud7ff' < ch
+                !(
+                    'a' <= ch && ch <= 'z' ||
+                        'A' <= ch && ch <= 'Z' ||
+                        '0' <= ch && ch <= '9' ||
+                        ch == ':' ||
+                        ch == '-' ||
+                        ch == '.' ||
+                        ch == '_' ||
+                        ch == '\u00b7' ||
+                        '\u00c0' <= ch && ch <= '\u00d6' ||
+                        '\u00d8' <= ch && ch <= '\u00f6' ||
+                        '\u00f8' <= ch && ch <= '\u02ff' ||
+                        '\u0300' <= ch && ch <= '\u036f' ||
+                        '\u0370' <= ch && ch <= '\u037d' ||
+                        '\u037f' <= ch && ch <= '\u1fff' ||
+                        '\u200c' <= ch && ch <= '\u200d' ||
+                        '\u203f' <= ch && ch <= '\u2040' ||
+                        '\u2070' <= ch && ch <= '\u218f' ||
+                        '\u2c00' <= ch && ch <= '\u2fef' ||
+                        '\u3001' <= ch && ch <= '\ud7ff'
+                    )
             ) {
                 // Found end of name
                 break
