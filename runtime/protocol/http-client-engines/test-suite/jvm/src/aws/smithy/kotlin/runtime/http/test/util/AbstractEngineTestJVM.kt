@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.test.util
 
+import aws.smithy.kotlin.runtime.http.engine.DefaultHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
-import aws.smithy.kotlin.runtime.http.engine.SdkHttpEngine
 import aws.smithy.kotlin.runtime.http.engine.crt.CrtHttpEngine
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.runBlocking
@@ -16,7 +16,7 @@ import kotlin.time.Duration
 
 internal actual fun engines(): List<HttpClientEngine> =
     listOf(
-        SdkHttpEngine(),
+        DefaultHttpEngine(),
         CrtHttpEngine()
     )
 

@@ -94,7 +94,7 @@ abstract class HttpProtocolClientGenerator(
      * or else you need to override [renderInit] and construct it manually
      */
     protected open val defaultHttpClientEngineSymbol: Symbol = buildSymbol {
-        name = "SdkHttpEngine"
+        name = "DefaultHttpEngine"
         namespace(KotlinDependency.DEFAULT_HTTP_ENGINE)
     }
 
