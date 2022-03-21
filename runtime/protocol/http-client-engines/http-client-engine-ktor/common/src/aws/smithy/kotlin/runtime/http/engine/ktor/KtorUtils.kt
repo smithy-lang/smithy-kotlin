@@ -9,32 +9,38 @@ import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.toSdkChannel
+import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
+import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+import io.ktor.client.request.*
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
-import io.ktor.util.*
 import io.ktor.utils.io.*
-import io.ktor.utils.io.core.*
-import java.nio.ByteBuffer
+import kotlinx.coroutines.CoroutineDispatcher
 import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
-// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
-@OptIn(InternalAPI::class)
 internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     val builder = KtorHttpRequestBuilder()
     builder.method = HttpMethod.parse(this.method.name)
     val sdkUrl = this.url
     val sdkHeaders = this.headers
+
     builder.url {
         val protocolName = sdkUrl.scheme.protocolName.replaceFirstChar(Char::lowercaseChar)
         protocol = URLProtocol(protocolName, sdkUrl.scheme.defaultPort)
         host = sdkUrl.host
         port = sdkUrl.port
-        encodedPath = sdkUrl.path.encodeURLPath()
+        encodedPath = sdkUrl.path.encodeUrlPath()
+
+        // Use the encoding rules from SDK rather than KTOR or else signature may mismatch
+        parameters.urlEncodingOption = UrlEncodingOption.NO_ENCODING
         if (!sdkUrl.parameters.isEmpty()) {
             sdkUrl.parameters.entries().forEach { (name, values) ->
-                parameters.appendAll(name, values)
+                // if parameters are already encoded don't double encode them
+                val encoded = if (sdkUrl.encodeParameters) values.map { it.urlEncodeComponent() } else values
+                parameters.appendAll(name, encoded)
             }
         }
         sdkUrl.fragment?.let { fragment = it }
@@ -64,42 +70,12 @@ internal class KtorHeaders(private val headers: Headers) : aws.smithy.kotlin.run
     override fun isEmpty(): Boolean = headers.isEmpty()
 }
 
-// wrapper around ByteReadChannel that implements the [Source] interface
-internal class KtorContentStream(private val channel: ByteReadChannel) : SdkByteReadChannel {
-    override val availableForRead: Int
-        get() = channel.availableForRead
-
-    override val isClosedForRead: Boolean
-        get() = channel.isClosedForRead
-
-    override val isClosedForWrite: Boolean
-        get() = channel.isClosedForWrite
-
-    override suspend fun readRemaining(limit: Int): ByteArray {
-        val packet = channel.readRemaining(limit.toLong())
-        return packet.readBytes()
-    }
-
-    override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) {
-        channel.readFully(sink, offset, length)
-    }
-
-    override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int =
-        channel.readAvailable(sink, offset, length)
-
-    override suspend fun readAvailable(sink: ByteBuffer): Int = channel.readAvailable(sink)
-
-    override suspend fun awaitContent() = channel.awaitContent()
-
-    override fun cancel(cause: Throwable?): Boolean = channel.cancel(cause)
-}
-
 // wrapper around a ByteReadChannel that implements the content as an SDK (streaming) HttpBody
 internal class KtorHttpBody(
     override val contentLength: Long? = null,
     channel: ByteReadChannel
 ) : HttpBody.Streaming() {
-    private val source = KtorContentStream(channel)
+    private val source = channel.toSdkChannel()
     override fun readFrom(): SdkByteReadChannel = source
 }
 
@@ -109,3 +85,14 @@ fun HttpResponse.toSdkHttpResponse(): SdkHttpResponse = SdkHttpResponse(
     KtorHeaders(headers),
     KtorHttpBody(contentLength(), channel = content)
 )
+
+/**
+ * Copy all of (SDK) [source] to (Ktor) [dst]. This allows implementations to use whatever
+ * buffering is most efficient for the platform.
+ */
+internal expect suspend fun forwardSource(dst: ByteChannel, source: SdkByteReadChannel)
+
+/**
+ * Get the appropriate dispatcher for doing IO bound work for the platform
+ */
+internal expect fun ioDispatcher(): CoroutineDispatcher

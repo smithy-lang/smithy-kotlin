@@ -20,7 +20,7 @@ dependencies {
     testImplementation(project(":runtime"))
     testImplementation(project(":runtime:runtime-core"))
     testImplementation(project(":runtime:protocol:http"))
-    testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-ktor"))
+    testImplementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
     testImplementation(project(":runtime:serde:serde-json"))
 
     testImplementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")

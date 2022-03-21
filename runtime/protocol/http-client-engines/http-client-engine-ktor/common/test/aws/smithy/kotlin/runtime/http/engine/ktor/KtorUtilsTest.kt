@@ -15,14 +15,11 @@ import io.ktor.http.*
 import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
-import io.ktor.util.*
 import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.*
 
-// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
-@OptIn(InternalAPI::class)
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall
         get() = error("not needed for test")
@@ -38,8 +35,6 @@ class MockHttpResponse : HttpResponse() {
     override val version: HttpProtocolVersion = HttpProtocolVersion.HTTP_1_1
 }
 
-// TODO: Remove following annotation after https://youtrack.jetbrains.com/issue/KTOR-3001 is resolved
-@OptIn(InternalAPI::class)
 class KtorUtilsTest {
 
     @Test
@@ -115,5 +110,28 @@ class KtorUtilsTest {
         assertEquals(setOf("foo", "baz"), converted.names())
         assertEquals(true, converted.contains("baz", "quz"))
         assertEquals(true, converted.contains("baz"))
+    }
+
+    @Test
+    fun testPathAndQueryEncoding() {
+        // sanity check that we are still encoding the parameters (we are just using the SDK encoding rather than
+        // relying on ktor)
+        val builder = HttpRequestBuilder()
+
+        val sdkUrl = UrlBuilder {
+            scheme = Protocol.HTTP
+            host = "test.aws.com"
+            path = "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT"
+            parameters {
+                // space is encoded as form-url-data using `+` by ktor whereas SDK always uses percent encoding
+                append("foo", "bar baz/qux")
+            }
+        }
+
+        builder.url(sdkUrl)
+
+        val actual = builder.toKtorRequestBuilder().build()
+        assertEquals(sdkUrl.encodedPath, actual.url.fullPath)
+        assertEquals(UrlEncodingOption.NO_ENCODING, actual.url.parameters.urlEncodingOption)
     }
 }
