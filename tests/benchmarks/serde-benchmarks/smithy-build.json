@@ -25,6 +25,31 @@
           }
         }
       }
+    },
+    "countries-states": {
+      "transforms": [
+        {
+          "name": "includeServices",
+          "args": {
+            "services": [
+              "aws.benchmarks.countries_states#CountriesStatesService"
+            ]
+          }
+        }
+      ],
+      "plugins": {
+        "kotlin-codegen": {
+          "service": "aws.benchmarks.countries_states#CountriesStatesService",
+          "package": {
+            "name": "aws.smithy.kotlin.benchmarks.serde.xml.countriesstates",
+            "version": "0.0.1"
+          },
+          "build": {
+            "rootProject": false,
+            "generateDefaultBuildFiles": false
+          }
+        }
+      }
     }
   }
 }

@@ -8,34 +8,27 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
-import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.ServiceShape
-import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
-/**
- * Protocol generator for benchmark protocol [SerdeBenchmarkJsonProtocol]
- */
-class SerdeBenchmarkJsonProtocolGenerator : HttpBindingProtocolGenerator() {
+abstract class BenchmarkProtocolGenerator : HttpBindingProtocolGenerator() {
+    abstract val contentTypes: ProtocolContentTypes
+
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
-    override val protocol: ShapeId = SerdeBenchmarkJsonProtocol.ID
+
+    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
+        object : HttpProtocolClientGenerator(
+            ctx,
+            listOf(),
+            getProtocolHttpBindingResolver(ctx.model, ctx.service)
+        ) { }
+
+    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) = Unit
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
         HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
-
-    override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
-        object : HttpProtocolClientGenerator(ctx, emptyList(), getProtocolHttpBindingResolver(ctx.model, ctx.service)) {}
-
-    override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) { }
-
-
-    override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator =
-        JsonSerializerGenerator(this)
-
-    override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator =
-        JsonParserGenerator(this)
 
     override fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol =
         op.errorHandler(ctx.settings) { writer ->

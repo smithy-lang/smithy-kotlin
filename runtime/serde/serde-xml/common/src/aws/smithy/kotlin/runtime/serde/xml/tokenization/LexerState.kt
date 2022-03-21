@@ -34,8 +34,6 @@ internal sealed class LexerState {
      * Describes the state of being inside a tag.
      */
     sealed class Tag : LexerState() {
-        override val depth: Int by lazy { (parent?.depth ?: 0) + 1 }
-
         abstract val name: XmlToken.QualifiedName
         abstract val parent: OpenTag?
 
@@ -46,14 +44,18 @@ internal sealed class LexerState {
             override val name: XmlToken.QualifiedName,
             override val parent: OpenTag?,
             val seenChildren: Boolean,
-        ) : Tag()
+        ) : Tag() {
+            override val depth: Int = (parent?.depth ?: 0) + 1
+        }
 
         /**
          * The lexer has read a self-closing tag (e.g., '<foo />') but only returned the [XmlToken.BeginElement] token
          * to the caller. The subsequent [XmlLexer.parseNext] call will return an [XmlToken.EndElement] without
          * actually reading more from the source.
          */
-        data class EmptyTag(override val name: XmlToken.QualifiedName, override val parent: OpenTag?) : Tag()
+        data class EmptyTag(override val name: XmlToken.QualifiedName, override val parent: OpenTag?) : Tag() {
+            override val depth: Int = (parent?.depth ?: 0) + 1
+        }
     }
 
     /**

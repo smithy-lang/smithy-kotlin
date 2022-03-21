@@ -1,0 +1,569 @@
+<mediawiki xmlns="http://www.mediawiki.org/xml/export-0.10/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mediawiki.org/xml/export-0.10/ http://www.mediawiki.org/xml/export-0.10.xsd" version="0.10" xml:lang="en">
+  <siteinfo>
+    <sitename>Wikipedia</sitename>
+    <dbname>enwiki</dbname>
+    <base>https://en.wikipedia.org/wiki/Main_Page</base>
+    <generator>MediaWiki 1.38.0-wmf.25</generator>
+    <case>first-letter</case>
+    <namespaces>
+      <namespace key="-2" case="first-letter">Media</namespace>
+      <namespace key="-1" case="first-letter">Special</namespace>
+      <namespace key="0" case="first-letter" />
+      <namespace key="1" case="first-letter">Talk</namespace>
+      <namespace key="2" case="first-letter">User</namespace>
+      <namespace key="3" case="first-letter">User talk</namespace>
+      <namespace key="4" case="first-letter">Wikipedia</namespace>
+      <namespace key="5" case="first-letter">Wikipedia talk</namespace>
+      <namespace key="6" case="first-letter">File</namespace>
+      <namespace key="7" case="first-letter">File talk</namespace>
+      <namespace key="8" case="first-letter">MediaWiki</namespace>
+      <namespace key="9" case="first-letter">MediaWiki talk</namespace>
+      <namespace key="10" case="first-letter">Template</namespace>
+      <namespace key="11" case="first-letter">Template talk</namespace>
+      <namespace key="12" case="first-letter">Help</namespace>
+      <namespace key="13" case="first-letter">Help talk</namespace>
+      <namespace key="14" case="first-letter">Category</namespace>
+      <namespace key="15" case="first-letter">Category talk</namespace>
+      <namespace key="100" case="first-letter">Portal</namespace>
+      <namespace key="101" case="first-letter">Portal talk</namespace>
+      <namespace key="118" case="first-letter">Draft</namespace>
+      <namespace key="119" case="first-letter">Draft talk</namespace>
+      <namespace key="710" case="first-letter">TimedText</namespace>
+      <namespace key="711" case="first-letter">TimedText talk</namespace>
+      <namespace key="828" case="first-letter">Module</namespace>
+      <namespace key="829" case="first-letter">Module talk</namespace>
+      <namespace key="2300" case="first-letter">Gadget</namespace>
+      <namespace key="2301" case="first-letter">Gadget talk</namespace>
+      <namespace key="2302" case="case-sensitive">Gadget definition</namespace>
+      <namespace key="2303" case="case-sensitive">Gadget definition talk</namespace>
+    </namespaces>
+  </siteinfo>
+  <page>
+    <title>Kotlin (programming language)</title>
+    <ns>0</ns>
+    <id>41819039</id>
+    <revision>
+      <id>1070905187</id>
+      <parentid>1067938317</parentid>
+      <timestamp>2022-02-09T22:14:23Z</timestamp>
+      <contributor>
+        <username>Comp.arch</username>
+        <id>18779361</id>
+      </contributor>
+      <comment>1.6.20-M1</comment>
+      <model>wikitext</model>
+      <format>text/x-wiki</format>
+      <text bytes="45703" xml:space="preserve">{{Short description|General-purpose programming language}}
+{{Use dmy dates|date=July 2020}}
+{{Infobox programming language
+| name = Kotlin
+| logo = Kotlin logo 2021.svg
+| logo size = 180px
+| paradigm = [[Multi-paradigm programming language|Multi-paradigm]]: [[Object-oriented programming|object-oriented]], [[Functional programming|functional]], [[Imperative programming|imperative]], [[Block (programming)|block structured]], [[Declarative programming|declarative]], [[Generic programming|generic]], [[Reflection (computer programming)|reflective]], [[Concurrent computing|concurrent]]
+| family = 
+| released = {{Start date and age|2011|07|22|df=no}}
+| designer = [[JetBrains]]
+| developer = JetBrains
+| latest release version = {{wikidata|property|reference|edit|P348}}
+| latest release date = {{Start date and age|{{wikidata|qualifier|P348|P577}}|df=no}}
+| latest preview version = 1.6.20-M1&lt;ref&gt;{{Cite web|title=Preview of Kotlin 1.6.20 With Prototype of Context Receivers, Parallel Compilation on JVM, Incremental Compilation in JS, and More {{!}} The Kotlin Blog|url=https://blog.jetbrains.com/kotlin/2022/02/kotlin-1-6-20-m1-released/|access-date=2022-02-09|website=The JetBrains Blog|language=en-US}}&lt;/ref&gt;
+| latest preview date = {{Start date and age|2022|02|08|df=no}}
+| typing = [[Type inference|Inferred]], [[static typing|static]], [[strong typing|strong]]
+| implementations = 
+| dialects = 
+| influenced by = {{Hlist|[[C Sharp (programming language)|C#]]|[[Eiffel (programming language)|Eiffel]]|[[Gosu (programming language)|Gosu]]|[[Groovy (programming language)|Groovy]]|[[Java (programming language)|Java]]|[[JavaScript]]|[[ML (programming language)|ML]]|[[Python (programming language)|Python]]|[[Scala (programming language)|Scala]]}}
+| platform = * [[Android (operating system)|Android]]
+* [[Java virtual machine|JVM]]
+* [[iOS]]
+* [[macOS]] (incl. [[Apple silicon]] support)
+* [[watchOS]]
+* [[tvOS]]
+* [[Microsoft Windows|Windows]]
+* [[Linux]]
+* [[JavaScript]] ([https://kotlinlang.org/docs/reference/js-overview.html Kotlin/JS])
+* [[WebAssembly]]
+* [[LLVM]] ([https://kotlinlang.org/docs/reference/native-overview.html Kotlin/Native])
+| operating system = [[Cross-platform software|Cross-platform]]
+| license = [[Apache License 2.0]]
+| file_ext = .kt, .kts, .ktm
+| website = {{official URL}}
+| wikibooks = 
+| caption = 
+}}
+
+'''Kotlin''' ({{IPAc-en|ˈ|k|ɒ|t|l|ɪ|n}})&lt;ref name="pronunciation"&gt;{{cite web |url = https://discuss.kotlinlang.org/t/what-is-the-correct-english-pronunciation-of-kotlin/2050
+|title = What is the correct English pronunciation of Kotlin? |date=16 October 2019 |access-date=9 November 2019}}&lt;/ref&gt; is a [[cross-platform software|cross-platform]], [[static typing|statically typed]], [[general-purpose programming language|general-purpose]] [[programming language]] with [[type inference]]. Kotlin is designed to interoperate fully with [[Java (programming language)|Java]], and the [[Java virtual machine|JVM]] version of Kotlin's [[standard library]] depends on the [[Java Class Library]],&lt;ref name="kotlin_stdlib"&gt;{{cite web|title=kotlin-stdlib|url=https://kotlinlang.org/api/latest/jvm/stdlib/index.html|website=kotlinlang.org|access-date=20 April 2018|publisher=JetBrains}}&lt;/ref&gt; but type inference allows its [[syntax (programming languages)|syntax]] to be more concise. Kotlin mainly targets the JVM, but also compiles to [[JavaScript]] (e.g., for frontend web applications using [[React (web framework)|React]]&lt;ref&gt;{{Cite web|title=Kotlin for JavaScript - Kotlin Programming Language|url=https://kotlinlang.org/docs/reference/js-overview.html|access-date=2020-08-20|website=Kotlin|language=en}}&lt;/ref&gt;) or [[machine code|native code]] via [[LLVM]] (e.g., for native [[iOS]] apps sharing [[business logic]] with [[Android (operating system)|Android]] apps).&lt;ref&gt;{{Cite web|title=Kotlin for cross-platform mobile development|url=https://www.jetbrains.com/lp/mobilecrossplatform/|access-date=2020-08-20|website=JetBrains: Developer Tools for Professionals and Teams|language=en}}&lt;/ref&gt; Language development costs are borne by [[JetBrains]], while the Kotlin Foundation protects the Kotlin trademark.&lt;ref&gt;{{Cite web|url=https://kotlinlang.org/foundation/kotlin-foundation.html|title=Kotlin Foundation - Kotlin Programming Language|website=Kotlin}}&lt;/ref&gt;
+
+On 7 May 2019, Google announced that the Kotlin programming language is now its preferred language for [[Android (operating system)|Android]] app developers.&lt;ref name="auto"&gt;{{cite web|url=http://social.techcrunch.com/2019/05/07/kotlin-is-now-googles-preferred-language-for-android-app-development/|title=Kotlin is now Google's preferred language for Android app development|website=TechCrunch|language=en-US|access-date=8 May 2019}}&lt;/ref&gt; Since the release of [[Android Studio]] 3.0 in October 2017, Kotlin has been included as an alternative to the standard Java compiler. The Android Kotlin compiler produces Java 8 bytecode by default (which runs in any later JVM), but lets the programmer choose to target Java 9 up to 17, for optimization,&lt;ref name="kotlin-faq"&gt;{{cite web |url = https://kotlinlang.org/docs/faq.html#which-versions-of-jvm-does-kotlin-target
+|title = Kotlin FAQ |quote = Kotlin lets you choose the version of JVM for execution. By default, the Kotlin/JVM compiler produces Java 8 compatible bytecode. If you want to make use of optimizations available in newer versions of Java, you can explicitly specify the target Java version from 9 to 17. Note that in this case the resulting bytecode might not run on lower versions. |accessdate=2021-08-26}}&lt;/ref&gt; or allows for more features; has bidirectional [[Record (computer science)|record class]] interoperability support for JVM, introduced in Java 16, considered stable as of Kotlin 1.5.
+
+Kotlin support for compilation directly to JavaScript (i.e., the classic back-end) is considered stable since version 1.3, while the new Kotlin/JS(IR) is in beta as of version 1.5.30. The new optimized implementations of Kotlin/JVM(IR) and Kotlin/JS ([[Intermediate representation|IR]]-based) were introduced in version 1.4. Kotlin/JVM(IR) is considered stable and enabled by default since version 1.5. Kotlin/Native (for e.g. Apple silicon support) is considered beta since version 1.3.&lt;ref name=stability&gt;{{Cite web|title=Stability of Kotlin Components |url=https://kotlinlang.org/docs/components-stability.html |access-date=July 29, 2021 |date=May 21, 2021 |website=Kotlin}}&lt;/ref&gt;&lt;ref name=whatsnew150&gt;{{Cite web|title=Kotlin 1.5.0 – the First Big Release of 2021 |url=https://blog.jetbrains.com/kotlin/2021/05/kotlin-1-5-0-released/ |access-date=July 29, 2021 |date=May 4, 2021 |website=Kotlin}}&lt;/ref&gt;
+
+==History==
+
+[[File:Kotlin Mascot 2D no. 1.svg|thumb|upright=0.5|A 2D picture of Kotlin mascot]]
+[[File:Kotlin Mascot 3D no. 5.png|thumb|upright=0.5|A 3D picture of Kotlin mascot]]
+
+In July 2011, [[JetBrains]] unveiled Project Kotlin, a new language for the JVM, which had been under development for a year.&lt;ref name="announce"&gt;{{cite web |url = https://www.infoworld.com/d/application-development/jetbrains-readies-jvm-based-language-167875 |website = [[InfoWorld]] |first = Paul |last = Krill |title = JetBrains readies JVM language Kotlin |date = 22 July 2011 |access-date = 2 February 2014 |archive-url = https://web.archive.org/web/20190907161741/https://www.infoworld.com/article/2622405/jetbrains-readies-jvm-based-language.html |archive-date = 7 September 2019 |url-status = live }}&lt;/ref&gt; JetBrains lead Dmitry Jemerov said that most languages did not have the features they were looking for, with the exception of [[Scala (programming language)|Scala]]. However, he cited the slow [[compiler|compilation]] time of Scala as a deficiency.&lt;ref name="announce"/&gt; One of the stated goals of Kotlin is to compile as quickly as Java. In February 2012, JetBrains open sourced the project under the [[Apache license|Apache 2 license]].&lt;ref name="open source"&gt;{{cite web |url = https://adtmag.com/articles/2012/02/22/kotlin-goes-open-source.aspx |title = Kotlin Goes Open Source |first = John |last = Waters |date = 22 February 2012 |access-date = 2 February 2014 |website = ADTmag.com |publisher = 1105 Enterprise Computing Group |archive-url=https://web.archive.org/web/20140218225151/https://adtmag.com/articles/2012/02/22/kotlin-goes-open-source.aspx |archive-date=18 February 2014 |url-status=live }}&lt;/ref&gt;
+
+The name comes from [[Kotlin Island]], near [[Saint Petersburg|St. Petersburg]]. [[Andrey Breslav]] mentioned that the team decided to name it after an island, just like Java was named after the Indonesian island of [[Java]]&lt;ref&gt;{{Citation|last=Mobius|title=Андрей Бреслав — Kotlin для Android: коротко и ясно|date=8 January 2015|url=https://www.youtube.com/watch?v=VU_L2_XGQ9s|access-date=28 May 2017}}&lt;/ref&gt; (though the programming language Java was perhaps named after the coffee rather than the island).&lt;ref&gt;{{cite web|author=Kieron Murphy|title=So why did they decide to call it Java?|url=https://www.javaworld.com/article/2077265/core-java/so-why-did-they-decide-to-call-it-java-.html|date=4 October 1996|website=[[JavaWorld]]|archive-url=https://web.archive.org/web/20190315171946/http://www.javaworld.com/article/2077265/so-why-did-they-decide-to-call-it-java-.html|archive-date=15 March 2019|url-status=live|access-date=14 October 2017}}&lt;/ref&gt;
+
+JetBrains hopes that the new language will drive [[IntelliJ IDEA]] sales.&lt;ref&gt;{{cite web |url = https://blog.jetbrains.com/kotlin/2011/08/why-jetbrains-needs-kotlin/ |title = Why JetBrains needs Kotlin |quote = we expect Kotlin to drive the sales of IntelliJ IDEA }}&lt;/ref&gt;
+
+Kotlin 1.0 was released on February 15, 2016.&lt;ref&gt;{{cite web |url = https://blog.jetbrains.com/kotlin/2016/02/kotlin-1-0-released-pragmatic-language-for-jvm-and-android/ |title = Kotlin 1.0 Released: Pragmatic Language for JVM and Android &amp;#124; Kotlin Blog |website = Blog.jetbrains.com |date = 15 February 2016 |access-date = 11 April 2017 }}&lt;/ref&gt; This is considered to be the first officially stable release and JetBrains has committed to long-term backwards compatibility starting with this version.
+
+At [[Google I/O]] 2017, Google announced first-class support for Kotlin on [[Android (operating system)|Android]].&lt;ref name="kotlin-android"&gt;{{cite web |url = https://blog.jetbrains.com/kotlin/2017/05/kotlin-on-android-now-official/ |title = Kotlin on Android. Now official |first = Maxim |last = Shafirov |quote = Today, at the Google I/O keynote, the Android team announced first-class support for Kotlin. |date = 17 May 2017 }}&lt;/ref&gt;
+
+Kotlin 1.2 was released on November 28, 2017.&lt;ref&gt;{{cite web |url = https://blog.jetbrains.com/kotlin/2017/11/kotlin-1-2-released/ |title = Kotlin 1.2 Released: Sharing Code between Platforms &amp;#124; Kotlin Blog |website = blog.jetbrains.com |date = 28 November 2017 }}&lt;/ref&gt; Sharing code between JVM and JavaScript platforms feature was newly added to this release (as of version 1.4 multiplatform programming is an [[Software release life cycle#Alpha|alpha]] feature&lt;ref&gt;{{Cite web|url=https://kotlinlang.org/docs/reference/multiplatform.html|title=Multiplatform Projects - Kotlin Programming Language|quote=Working on all platforms is an explicit goal for Kotlin, but we see it as a premise to a much more important goal: sharing code between platforms. With support for JVM, Android, JavaScript, iOS, Linux, Windows, Mac and even embedded systems like STM32, Kotlin can handle any and all components of a modern application.|website=Kotlin|access-date=20 August 2020}}&lt;/ref&gt; upgraded from "experimental"). A [[full-stack]] demo has been made with the new Kotlin/JS Gradle Plugin.&lt;ref&gt;{{Cite web|title=Kotlin/kotlin-full-stack-application-demo|date=3 April 2020|url=https://github.com/Kotlin/kotlin-full-stack-application-demo|publisher=Kotlin|access-date=4 April 2020}}&lt;/ref&gt;&lt;ref&gt;{{Cite web|url=https://youtrack.jetbrains.com/issue/KT-37029|title=Kotlin full stack app demo: update all involving versions to work with 1.3.70 release|website=youtrack.jetbrains.com|access-date=4 April 2020}}&lt;/ref&gt;
+
+Kotlin 1.3 was released on October 29, 2018, bringing coroutines for asynchronous programming.
+
+On May 7, 2019, Google announced that the Kotlin programming language is now its preferred language for Android app developers.&lt;ref name="auto"/&gt;
+
+Kotlin 1.4 was released in August 2020, with e.g. some slight changes to the support for Apple's platforms, i.e. to the [[Objective-C]]/[[Swift (programming language)|Swift]] [[interoperability|interop]].&lt;ref&gt;{{Cite web|title=What's New in Kotlin 1.4 - Kotlin Programming Language|url=https://kotlinlang.org/docs/reference/whatsnew14.html|quote=In 1.4.0, we slightly change the Swift API generated from Kotlin with respect to the way exceptions are translated.|access-date=2020-08-20|website=Kotlin|language=en}}&lt;/ref&gt;
+
+Kotlin 1.5 was released in May 2021.
+
+Kotlin 1.6 was released in November 2021.
+
+==Design==
+Development lead Andrey Breslav has said that Kotlin is designed to be an industrial-strength [[object-oriented programming|object-oriented]] language, and a "better language" than [[Java (programming language)|Java]], but still be fully interoperable with Java code, allowing companies to make a gradual migration from Java to Kotlin.&lt;ref name="interview"&gt;{{cite web |title = JVM Languages Report extended interview with Kotlin creator Andrey Breslav |url = https://zeroturnaround.com/rebellabs/jvm-languages-report-extended-interview-with-kotlin-creator-andrey-breslav/ |website = Zeroturnaround.com |date = 22 April 2013 |access-date = 2 February 2014 }}&lt;/ref&gt;
+
+[[Semicolon]]s are optional as a [[Statement (computer science)|statement]] [[Statement terminator#Statements|terminator]]; in most cases a [[newline]] is sufficient for the [[compiler]] to deduce that the statement has ended.&lt;ref&gt;{{cite web |url = https://confluence.jetbrains.com/display/Kotlin/Grammar#Grammar-Semicolons |title = Semicolons |website = jetbrains.com |access-date = 8 February 2014 }}&lt;/ref&gt;
+
+Kotlin [[Variable (computer science)|variable]] declarations and [[Parameter (computer programming)|parameter lists]] have the [[data type]] come after the variable name (and with a [[Colon (punctuation)|colon]] separator), similar to [[Ada (programming language)|Ada]], [[BASIC]], [[Pascal (programming language)|Pascal]], [[TypeScript]] and [[Rust (programming language)|Rust]]. This, according to an article from Roman Elizarov, current project lead, results in alignment of variable names and is more pleasing to eyes especially when there are a few variable declarations in succession and one or more of the types is too complex for type inference or needs to be declared explicitly for human readers to understand.&lt;ref&gt;{{cite web|title=Types are moving to the right|url=https://elizarov.medium.com/types-are-moving-to-the-right-22c0ef31dd4a#:~:text=Woot!%20That%E2%80%99s%20nice%20and%20aligns,%20pleasure%20for%20our%20eyes%20to%20see.|website=Medium|date = 16 July 2020|publisher=Medium|access-date=6 November 2021}}&lt;/ref&gt;&lt;ref&gt;{{cite web|title=Roman Elizarov is the new Project Lead for Kotlin|url=https://blog.jetbrains.com/kotlin/2020/11/roman-elizarov-is-the-new-project-lead-for-kotlin/|website=The Kotlin Blog|publisher=JetBrains|access-date=7 November 2021}}&lt;/ref&gt;
+
+Variables in Kotlin can be read-only, declared with the {{mono|val}} keyword, or [[Immutable object|mutable]], declared with the {{mono|var}} keyword.&lt;ref name="Basic Syntax"&gt;{{cite web|title=Basic Syntax|url=https://kotlinlang.org/docs/reference/basic-syntax.html#defining-variables|website=Kotlin|publisher=Jetbrains|access-date=19 January 2018}}&lt;/ref&gt;
+
+Class members are public by default, and classes themselves are final by default, meaning that creating a derived class is disabled unless the base class is declared with the {{mono|open}} keyword.
+
+In addition to the [[class (computer programming)|classes]] and [[Method (computer programming)|member functions]] (which are equivalent to methods) of object-oriented programming, Kotlin also supports [[procedural programming]] with the use of [[function (computer science)|functions]].&lt;ref&gt;{{cite web |url = https://confluence.jetbrains.com/display/Kotlin/Functions |title = functions |website = jetbrains.com |access-date = 8 February 2014 }}&lt;/ref&gt;
+Kotlin functions and constructors support [[default argument]]s, [[variadic function|variable-length argument]] lists, [[Named parameter|named argument]]s and overloading by unique signature. Class member functions are virtual, i.e. dispatched based on the runtime type of the object they are called on.
+
+Kotlin 1.3 adds support for contracts,&lt;ref&gt;{{Cite web|url=https://kotlinlang.org/docs/reference/whatsnew13.html|title=What's New in Kotlin 1.3 - Kotlin Programming Language|website=Kotlin|access-date=4 April 2020}}&lt;/ref&gt; which are stable for the standard library declarations, but still experimental for user-defined declarations. Contracts are inspired by [[Eiffel (programming language)|Eiffel's]] [[design by contract]]&lt;ref&gt;{{Cite web|url=https://discuss.kotlinlang.org/t/design-by-contract-dbc-design-considerations/1321|title=Design by Contract (DbC) design considerations|quote=Implement the full semantics of Eiffel DbC and improve upon it.|date=16 August 2012|website=Kotlin Discussions|language=en-US|access-date=4 April 2020}}&lt;/ref&gt; programming paradigm.
+
+According to Kotlin developers, you can call [[JavaScript]] code from Kotlin, e.g. write full, type-safe [[React (JavaScript library)|React]] applications, or write and maintain full-stack web applications sharing validation logic with the frontend, or you can "generate libraries from your Kotlin code that can be consumed as modules from any code base written in JavaScript or [[TypeScript]]".&lt;ref&gt;{{Cite web|title=Kotlin for JavaScript {{!}} Kotlin|url=https://kotlinlang.org/docs/js-overview.html#use-cases-for-kotlin-js|date=21 January 2021&lt;!-- 11 February 2021 --&gt;|access-date=2021-03-19|website=Kotlin Help|language=en-US}}&lt;/ref&gt;
+
+==Syntax==
+
+===Procedural programming style===
+Kotlin relaxes Java's restriction of allowing [[Static (keyword)|static]] methods and variables to exist only within a class body. Static objects and functions can be defined at the top level of the package without needing a redundant class level. For compatibility with Java, Kotlin provides a &lt;code&gt;JvmName&lt;/code&gt; annotation which specifies a class name used when the package is viewed from a Java project. For example, &lt;code&gt;@file:JvmName("JavaClassName")&lt;/code&gt;.
+
+===Main entry point===
+As in [[C (programming language)|C]], [[C++]], [[C Sharp (programming language)|C#]], Java, and [[Go (programming language)|Go]], the [[entry point]] to a Kotlin [[Computer program|program]] is a function named "main", which may be passed an array containing any [[Command-line interface|command-line]] arguments. This is optional since Kotlin 1.3.&lt;ref&gt;{{cite web |url = https://play.kotlinlang.org/byExample/01_introduction/01_Hello%20world |title = Kotlin Examples: Learn Kotlin Programming By Example}}&lt;/ref&gt; [[Perl]], [[PHP]] and [[Unix shell]] style [[string interpolation]] is supported. [[Type inference]] is also supported.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+
+// Hello, World! example
+fun main() {
+    val scope = "World"
+    println("Hello, $scope!")
+}
+
+fun main(args: Array&lt;String&gt;) {
+    for (arg in args)
+        println(arg)
+}
+&lt;/syntaxhighlight&gt;
+
+===Extension functions===
+
+Similar to C#, Kotlin allows adding an [[extension function]] to any class without the formalities of creating a derived class with new functions. An extension function has access to all the public interface of a class, which it can use to create a new function interface to a target class. An extension function will appear exactly like a function of the class and will be shown in code completion inspection of class functions. For example:
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+package MyStringExtensions
+
+fun String.lastChar(): Char = get(length - 1)
+
+&gt;&gt;&gt; println("Kotlin".lastChar()) 
+&lt;/syntaxhighlight&gt;
+
+By placing the preceding code in the top-level of a package, the String class is extended to include a {{code|lastChar}} function that was not included in the original definition of the String class.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// Overloading '+' operator using an extension function
+operator fun Point.plus(other: Point): Point {
+    return Point(x + other.x, y + other.y)
+}
+
+&gt;&gt;&gt; val p1 = Point(10, 20)
+&gt;&gt;&gt; val p2 = Point(30, 40)
+&gt;&gt;&gt; println(p1 + p2)
+Point(x=40, y=60)
+&lt;/syntaxhighlight&gt;
+
+===Unpack arguments with spread operator===
+Similar to Python, the spread operator asterisk (*) unpacks an array's contents as comma-separated arguments to a function:
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+fun main(args: Array&lt;String&gt;) { 
+    val list = listOf("args: ", *args)
+    println(list)
+}
+&lt;/syntaxhighlight&gt;
+
+===Destructuring declarations===
+{{Distinguish|Destructor (computer programming)|text=the [[Destructor (computer programming)|destructor]] method common in object-oriented languages}}
+''Destructuring declarations'' decompose an object into multiple variables at once, e.g. a 2D coordinate object might be ''destructured'' into two integers, x and y.
+
+For example, the {{Code|code=Map.Entry}} object supports destructuring to simplify access to its key and value fields:
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+for ((key, value) in map)
+    println("$key: $value")
+&lt;/syntaxhighlight&gt;
+
+===Nested functions===
+Kotlin allows local functions to be declared inside of other functions or methods.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+class User(val id: Int, val name: String, val address: String)
+    
+fun saveUserToDb(user: User) {
+    fun validate(user: User, value: String, fieldName: String) {
+        require(value.isNotEmpty()) { "Can't save user ${user.id}: empty $fieldName" }
+    }
+    
+    validate(user, user.name, "Name") 
+    validate(user, user.address, "Address")
+    // Save user to the database 
+    ...
+}
+&lt;/syntaxhighlight&gt;
+
+===Classes are final by default===
+In Kotlin, to derive a new class from a base class type, the base class needs to be explicitly marked as "open".  This is in contrast to most object-oriented languages such as Java where classes are open by default.
+
+Example of a base class that is open to deriving a new subclass from it.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// open on the class means this class will allow derived classes
+open class MegaButton  {
+
+    // no-open on a function means that 
+    //    polymorphic behavior disabled if function overridden in derived class
+    fun disable() { ... }
+
+    // open on a function means that
+    //    polymorphic behavior allowed if function is overridden in derived class
+    open fun animate() { ... }
+}
+
+class GigaButton: MegaButton {
+
+    // Explicit use of override keyword required to override a function in derived class
+    override fun animate() { println("Giga Click!") } 
+}
+
+&lt;/syntaxhighlight&gt;
+
+===Abstract classes are open by default===
+[[Abstract class]]es define abstract or "pure virtual" placeholder functions that will be defined in a derived class. Abstract classes are open by default.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// No need for the open keyword here, it’s already open by default
+abstract class Animated {
+
+    // This virtual function is already open by default as well
+    abstract fun animate()
+  
+    open fun stopAnimating() { }
+
+    fun animateTwice() { }
+}
+&lt;/syntaxhighlight&gt;
+
+===Classes are public by default===
+Kotlin provides the following keywords to restrict visibility for top-level declaration, such as classes, and for class members: &lt;code&gt;public&lt;/code&gt;, &lt;code&gt;internal&lt;/code&gt;, &lt;code&gt;protected&lt;/code&gt;, and &lt;code&gt;private&lt;/code&gt;.
+
+When applied to a class member:
+{| class="wikitable"
+! Keyword !! Visibility
+|-
+| &lt;code&gt;public&lt;/code&gt; (default) || Everywhere 
+|-
+| &lt;code&gt;internal&lt;/code&gt; || Within a module 
+|-
+| &lt;code&gt;protected&lt;/code&gt; || Within subclasses 
+|-
+| &lt;code&gt;private&lt;/code&gt; || Within a class
+|}
+
+When applied to a top-level declaration:
+{| class="wikitable"
+! Keyword !! Visibility
+|-
+| &lt;code&gt;public&lt;/code&gt; (default) || Everywhere
+|-
+| &lt;code&gt;internal&lt;/code&gt; || Within a module
+|-
+| &lt;code&gt;private&lt;/code&gt; || Within a file
+|}
+
+Example:
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// Class is visible only to current module
+internal open class TalkativeButton : Focusable {
+    // method is only visible to current class 
+    private fun yell() = println("Hey!")
+
+    // method is visible to current class and derived classes
+    protected fun whisper() = println("Let's talk!")
+}
+&lt;/syntaxhighlight&gt;
+
+===Primary constructor vs. secondary constructors===
+Kotlin supports the specification of a "primary constructor" as part of the class definition itself, consisting of an argument list following the class name. This argument list supports an expanded syntax on Kotlin's standard function argument lists, that enables declaration of class properties in the primary constructor, including visibility, extensibility and mutability attributes. Additionally, when defining a subclass, properties in super-interfaces and super-classes can be overridden in the primary constructor.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// Example of class using primary constructor syntax
+// (Only one constructor required for this class)
+open class PowerUser(
+    protected val nickname: String, 
+    final override var isSubscribed: Boolean = true) 
+  : User(...) {
+    ...
+}
+&lt;/syntaxhighlight&gt;
+
+However, in cases where more than one constructor is needed for a class,  a more general constructor can be used called '''secondary constructor syntax''' which closely resembles the constructor syntax used in most object-oriented languages like C++, C#, and Java.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// Example of class using secondary constructor syntax
+// (more than one constructor required for this class)
+class MyButton : View {
+
+    // Constructor #1 
+    constructor(ctx: Context) : super(ctx) { 
+        // ... 
+    } 
+  
+    // Constructor #2
+    constructor(ctx: Context, attr: AttributeSet) : super(ctx, attr) { 
+        // ... 
+    }
+}
+&lt;/syntaxhighlight&gt;
+===Sealed classes===
+The Sealed classes and interfaces restrict the subclass hierarchies, meaning more control over the inheritance hierarchy.
+
+Declaration of sealed interface and class:
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+sealed interface Expr
+sealed class Job
+&lt;/syntaxhighlight&gt;
+All the subclasses of the sealed class are defined at compile time. 
+No new subclasses can be added to it after the compilation of the module having the sealed class.
+For example, a sealed class in a compiled jar file cannot be subclassed.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+sealed class Vehicle
+data class Car(val brandName: String, val owner: String, val color: String): Vehicle()
+class Bike(val brandName: String, val owner: String, val color: String): Vehicle()
+class Tractor(val brandName: String, val owner: String, val color: String): Vehicle()
+val kiaCar = Car("KIA", "John", "Blue")
+val hyundaiCar = Car("Hyundai", "Britto", "Green")
+
+&lt;/syntaxhighlight&gt;
+
+===Data classes===
+Kotlin's &lt;code&gt;data class&lt;/code&gt; construct defines classes whose primary purpose is storing data. This construct is similar to normal classes except that the key functions &lt;code&gt;equals&lt;/code&gt;, &lt;code&gt;toString&lt;/code&gt;, and &lt;code&gt;hashCode&lt;/code&gt; are automatically generated from the class properties. In Java, such classes are expected to provide a standard assortment of functions such as those. Data classes are not required to declare any methods, though each must have at least one property. A data class often is written without a body, though it is possible to give a data class any methods or secondary constructors that are valid for any other class. The &lt;code&gt;data&lt;/code&gt; keyword is used before the &lt;code&gt;class&lt;/code&gt; keyword to define a data class.&lt;ref&gt;{{cite web|url=https://www.callicoder.com/kotlin-data-classes/|title=Introduction to Data Classes in Kotlin}}&lt;/ref&gt;
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+fun main(args: Array) {
+    // create a data class object like any other class object
+    var book1 = Book("Kotlin Programming", 250)
+    println(book1)
+    // output: Book(name=Kotlin Programming, price=250)
+}
+     
+// data class with parameters and their optional default values
+data class Book(val name: String = "", val price: Int = 0)
+&lt;/syntaxhighlight&gt;
+
+===Kotlin interactive shell===
+&lt;syntaxhighlight lang="pycon"&gt;
+$ kotlinc-jvm
+type :help for help; :quit for quit
+&gt;&gt;&gt; 2 + 2
+4
+&gt;&gt;&gt; println("Hello, World!")
+Hello, World!
+&lt;/syntaxhighlight&gt;
+
+===Kotlin as a scripting language===
+Kotlin can also be used as a scripting language. A script is a Kotlin source file (.kts) with top level executable code.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// list_folders.kts
+import java.io.File
+val folders = File(args[0]).listFiles { file -&gt; file.isDirectory() }
+folders?.forEach(::println)
+&lt;/syntaxhighlight&gt;
+
+Scripts can be run by passing the &lt;code&gt;-script&lt;/code&gt; option and the corresponding script file to the compiler.
+
+&lt;syntaxhighlight lang="bash"&gt;
+$ kotlinc -script list_folders.kts "path_to_folder_to_inspect"
+&lt;/syntaxhighlight&gt;
+
+===Null safety===
+Kotlin makes a distinction between [[nullable]] and non-nullable data types. All nullable objects must be declared with a "?" postfix after the type name. Operations on nullable objects need special care from developers: null-check must be performed before using the value. Kotlin provides null-safe operators to help developers:
+
+* {{mono|?.}} ([[safe navigation operator]]) can be used to safely access a method or property of a possibly null object. If the object is null, the method will not be called and the expression evaluates to null.
+* {{mono|?:}} ([[null coalescing operator]]) often referred to as the [[Elvis operator]]:
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+fun sayHello(maybe: String?, neverNull: Int) {
+    // use of elvis operator
+    val name: String = maybe ?: "stranger"
+    println("Hello $name")
+}
+&lt;/syntaxhighlight&gt;
+
+An example of the use of the safe navigation operator:
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// returns null if...
+// - foo() returns null,
+// - or if foo() is non-null, but bar() returns null,
+// - or if foo() and bar() are non-null, but baz() returns null.
+// vice versa, return value is non-null if and only if foo(), bar() and baz() are non-null
+foo()?.bar()?.baz()
+&lt;/syntaxhighlight&gt;
+
+===Lambdas===
+Kotlin provides support for [[higher-order function]]s and [[anonymous functions]] or lambdas.&lt;ref&gt;{{cite web|title=Higher-Order Functions and Lambdas|url=https://kotlinlang.org/docs/reference/lambdas.html|website=Kotlin|publisher=Jetbrains|access-date=19 January 2018}}&lt;/ref&gt;
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// the following function takes a lambda, f, and executes f passing it the string "lambda"
+// note that (String) -&gt; Unit indicates a lambda with a String parameter and Unit return type
+fun executeLambda(f: (String) -&gt; Unit) {
+    f("lambda")
+}
+&lt;/syntaxhighlight&gt;
+
+Lambdas are declared using braces, {{mono|{  } }}. If a lambda takes parameters, they are declared within the braces and followed by the {{mono|-&gt;}} operator.
+
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+// the following statement defines a lambda that takes a single parameter and passes it to the println function
+val l = { c : Any? -&gt; println(c) }
+// lambdas with no parameters may simply be defined using { }
+val l2 = { print("no parameters") }
+&lt;/syntaxhighlight&gt;
+
+===Complex "hello world" example===
+&lt;syntaxhighlight lang="kotlin" line="1"&gt;
+fun main(args: Array&lt;String&gt;) {
+    greet {
+        to.place
+    }.print()
+}
+
+// Inline higher-order functions
+inline fun greet(s: () -&gt; String) : String = greeting andAnother s()
+
+// Infix functions, extensions, type inference, nullable types, 
+// lambda expressions, labeled this, Elvis operator (?:)
+infix fun String.andAnother(other : Any?) = buildString() 
+{ 
+    append(this@andAnother); append(" "); append(other ?: "") 
+}
+
+// Immutable types, delegated properties, lazy initialization, string templates
+val greeting by lazy { val doubleEl: String = "ll"; "he${doubleEl}o" }
+
+// Sealed classes, companion objects
+sealed class to { companion object { val place = "world"} }
+
+// Extensions, Unit
+fun String.print() = println(this)
+&lt;/syntaxhighlight&gt;
+
+==Tools==
+* [[IntelliJ IDEA]] has plug-in support for Kotlin.&lt;ref&gt;{{cite web |url = https://plugins.jetbrains.com/plugin/6954-kotlin |title = Kotlin :: JetBrains Plugin Repository |website = Plugins.jetbrains.com |date = 31 March 2017 |access-date = 11 April 2017 }}&lt;/ref&gt; IntelliJ IDEA 15 was the first version to bundle the Kotlin plugin in the IntelliJ Installer, and provide Kotlin support out of the box.&lt;ref&gt;{{cite web |url = https://www.jetbrains.com/idea/whatsnew/ |title = What's New in IntelliJ IDEA 2017.1 |website = Jetbrains.com |access-date = 11 April 2017 }}&lt;/ref&gt;
+* JetBrains also provides a plugin for [[Eclipse (software)|Eclipse]].&lt;ref&gt;{{cite web |url = https://kotlinlang.org/docs/tutorials/getting-started-eclipse.html |title = Getting Started with Eclipse Neon – Kotlin Programming Language |website = Kotlinlang.org |date = 10 November 2016 |access-date = 11 April 2017 }}&lt;/ref&gt;&lt;ref&gt;{{cite web |url = https://github.com/JetBrains/kotlin-eclipse |title = JetBrains/kotlin-eclipse: Kotlin Plugin for Eclipse |publisher = GitHub |access-date = 11 April 2017 }}&lt;/ref&gt; 
+* Integration with common Java build tools is supported including [[Apache Maven]],&lt;ref&gt;{{cite web |url = https://kotlinlang.org/docs/reference/using-maven.html |title = Using Maven – Kotlin Programming Language |website = kotlinlang.org |access-date = 9 May 2017 }}&lt;/ref&gt; [[Apache Ant]],&lt;ref&gt;{{cite web |url = https://kotlinlang.org/docs/reference/using-ant.html |title = Using Ant – Kotlin Programming Language |website = kotlinlang.org |access-date = 9 May 2017 }}&lt;/ref&gt; and [[Gradle]].&lt;ref&gt;{{cite web |url = https://kotlinlang.org/docs/reference/using-gradle.html |title = Using Gradle – Kotlin Programming Language |website = kotlinlang.org |access-date = 9 May 2017 }}&lt;/ref&gt;
+* [[Android Studio]]  (based on IntelliJ IDEA) has official support for Kotlin, starting from Android Studio 3.&lt;ref&gt;{{Cite web|url=https://developer.android.com/kotlin|title=Kotlin and Android|website=Android Developers}}&lt;/ref&gt;
+* [[Emacs]] has a Kotlin Mode in its Melpa package repository.
+* [[Vim (text editor)|Vim]] has a plugin maintained on GitHub.&lt;ref&gt;{{cite web|url=https://github.com/udalov/kotlin-vim|publisher=GitHub|title=udalov/kotlin-vim: Kotlin plugin for Vim. Featuring: syntax highlighting, basic indentation, Syntastic support|access-date=30 August 2019}}&lt;/ref&gt;
+* [https://json2kotlin.com/ Json2Kotlin] generates [[Plain old Java object|POJO]] style native Kotlin code for web service response mapping.
+
+==Applications==
+When Kotlin was announced as an official Android development language at [[Google I/O]] in May 2017, it became the third language fully supported for Android, in addition to Java and C++.&lt;ref&gt;{{Cite news|url=https://techcrunch.com/2017/05/17/google-makes-kotlin-a-first-class-language-for-writing-android-apps/|title=Google makes Kotlin a first-class language for writing Android apps|last=Lardinois|first=Frederic|website=techcrunch.com|language=en-US|date=17 May 2017|access-date=28 June 2018}}&lt;/ref&gt; As of 2020, Kotlin is still most widely used on Android, with Google estimating that 70% of the top 1000 apps on the Play Store are written in Kotlin. Google itself has 60 apps written in Kotlin, including Maps and Drive. Many Android apps, such as Google's Home, are in the process of being migrated to Kotlin, and so use both Kotlin and Java. Kotlin on Android is seen as beneficial for its [[null-pointer safety]] as well as for its features that make for shorter, more readable code.&lt;ref&gt;{{cite web|url=https://www.zdnet.com/article/google-were-using-kotlin-programming-language-to-squash-the-bugs-that-cause-most-crashes/|website=ZDNet|title=Kotlin programming language: How Google is using it to squash the code bugs that cause most crashes}}&lt;/ref&gt;
+
+In addition to its prominent use on Android, Kotlin is gaining traction in server-side development. The [[Spring Framework]] officially added Kotlin support with version 5 on 4 January 2017.&lt;ref&gt;{{cite web |url = https://spring.io/blog/2017/01/04/introducing-kotlin-support-in-spring-framework-5-0 |website=Spring|title = Introducing Kotlin support in Spring Framework 5.0 |date=4 January 2017|publisher = Pivotal |access-date = 29 September 2020 }}&lt;/ref&gt; To further support Kotlin, Spring has translated all its documentation to Kotlin and added built-in support for many Kotlin-specific features such as coroutines.&lt;ref&gt;{{cite web |title=The State of Kotlin Support in Spring|url=https://blog.jetbrains.com/kotlin/2020/08/the-state-of-kotlin-support-in-spring/|website=JetBrains|access-date=6 December 2020 |language=en}}&lt;/ref&gt; In addition to Spring, JetBrains has produced a Kotlin-first framework called Ktor for building web applications.&lt;ref&gt;{{cite web|url=https://dzone.com/articles/not-only-spring-boot-a-review-of-alternatives|website=DZone|title=Review of Microservices Frameworks: A Look at Spring Boot Alternatives}}&lt;/ref&gt;
+
+In 2020, JetBrains found in a survey of developers who use Kotlin that 56% were using Kotlin for mobile apps, while 47% were using it for a web back-end. Just over a third of all Kotlin developers said that they were migrating to Kotlin from another language. Most Kotlin users were targeting Android (or otherwise on the JVM), with only 6% using Kotlin Native.&lt;ref&gt;{{cite web |title=Kotlin Programming - The State of Developer Ecosystem 2020 |url=https://www.jetbrains.com/lp/devecosystem-2020/kotlin/ |website=JetBrains |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+
+==Adoption==
+In 2018, Kotlin was the fastest growing language on GitHub with 2.6 times more developers compared to 2017.&lt;ref&gt;{{cite web |url = https://octoverse.github.com/projects |title = The state of the Octoverse |access-date = 24 July 2019 |archive-url = https://web.archive.org/web/20190322190823/https://octoverse.github.com/projects |archive-date = 22 March 2019 |url-status = dead }}&lt;/ref&gt; It is the fourth most loved programming language according to the 2020 Stack Overflow Developer Survey.&lt;ref&gt;{{cite web|title=Stack Overflow Developer Survey 2020|url=https://insights.stackoverflow.com/survey/2020#most-loved-dreaded-and-wanted|access-date=28 May 2020}}&lt;/ref&gt;
+
+Kotlin was also awarded the O'Reilly Open Source Software Conference Breakout Award for 2019.&lt;ref&gt;{{cite web|url=https://blog.jetbrains.com/kotlin/2019/07/kotlin-wins-breakout-project-of-the-year-award-at-oscon-19/|title=Kotlin wins Breakout Project of the Year award at OSCON '19|access-date=24 July 2019}}&lt;/ref&gt;
+
+Many companies/organizations have used Kotlin for backend development:
+* Google&lt;ref&gt;{{cite web |title=State of Kotlin on Android |url=https://www.youtube.com/watch?v=AgPj1Q6D--c&amp;feature=youtu.be&amp;t=309 |access-date=29 September 2020 |website=YouTube}}&lt;/ref&gt;
+* Norwegian Tax Administration&lt;ref&gt;{{cite web |title=KotlinConf 2019: Kotlin Runs Taxes in Norway by Jarle Hansen &amp; Anders Mikkelsen |url=https://www.youtube.com/watch?v=K8XxaAba65g&amp;list=PLQ176FUIyIUY6SKGl3Cj9yeYibBuRr3Hl&amp;index=22 |website=YouTube |access-date=29 September 2020}}&lt;/ref&gt;
+* Gradle&lt;ref&gt;{{cite web |title=Gradle Kotlin DSL Primer |url=https://docs.gradle.org/current/userguide/kotlin_dsl.html |website=docs.gradle.org |access-date=29 September 2020}}&lt;/ref&gt;
+* Amazon&lt;ref&gt;{{cite web |title=QLDB at Amazon |url=https://talkingkotlin.com/qldb/ |website=Talking Kotlin |access-date=29 September 2020}}&lt;/ref&gt;
+* Cash App&lt;ref&gt;{{cite web |title=Going Full Kotlin Multiplatform |url=https://talkingkotlin.com/going-full-kotlin-multiplatform/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* JetBrains&lt;ref&gt;{{cite web |title=Kotless |url=https://talkingkotlin.com/kotless/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Flux&lt;ref&gt;{{cite web |title=Using Kotlin for backend development at Flux |url=https://talkingkotlin.com/Using-Kotlin-for-backend-development-at-Flux/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Allegro&lt;ref&gt;{{cite web |title=Kotlin at Allegro |url=https://talkingkotlin.com/kotlin-at-allegro/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* OLX&lt;ref&gt;{{cite web |title=Greenfield Kotlin at OLX |url=https://talkingkotlin.com/greenfield-kotlin-at-olx/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Shazam&lt;ref&gt;{{cite web |title=Kotlin at Shazam |url=https://talkingkotlin.com/kotlin-at-shazam/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Pivotal&lt;ref&gt;{{cite web |title=Application Monitoring with Micrometer |url=https://talkingkotlin.com/application-monitoring-with-micrometer/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Rocket Travel&lt;ref&gt;{{cite web |title=Groovy and Kotlin Interop at Rocket Travel |url=https://talkingkotlin.com/groovy-and-kotlin-interop-at-rocket-travel/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Meshcloud&lt;ref&gt;{{cite web |title=Kotlin on the backend at Meshcloud |url=https://talkingkotlin.com/kotlin-on-the-backend-at-meshcloud/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Zalando&lt;ref&gt;{{cite web |title=Zally - An API Linter |url=https://talkingkotlin.com/Zally-An-API-Linter/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+
+Some companies/organizations have used Kotlin for web development:
+
+* JetBrains&lt;ref&gt;{{cite web |title=KotlinConf 2019: Kotlin in Space by Maxim Mazin |url=https://www.youtube.com/watch?v=JnmHqKLgYY4 |website=YouTube |access-date=29 September 2020}}&lt;/ref&gt;
+* Data2viz&lt;ref&gt;{{cite web |title=KotlinConf 2017 - Frontend Kotlin from the Trenches by Gaetan Zoritchak |url=https://www.youtube.com/watch?v=1Pu0TYJJ2Tw&amp;list=PLQ176FUIyIUY6UK1cgVsbdPYA3X5WLam5&amp;index=14 |website=YouTube |access-date=29 September 2020}}&lt;/ref&gt;
+* Fritz2&lt;ref&gt;{{cite web |title=Fritz2 |url=https://talkingkotlin.com/fritz2/ |website=Talking Kotlin |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+* Barclay's Bank&lt;ref&gt;{{cite web |title=Java/Kotlin Developer - Barclays - Prague - Wizbii |url=https://www.wizbii.com/company/barclays/job/convertibles-trading-system-developer |website=Wizbii.com |access-date=29 September 2020 |language=en}}&lt;/ref&gt;
+
+A number of companies have publicly stated they were using Kotlin:
+
+* DripStat&lt;ref&gt;{{cite web |url = https://blog.dripstat.com/kotlin-in-production-the-good-the-bad-and-the-ugly-2/ |title = Kotlin in Production – What works, Whats broken |website = Blog.dripstat.com |date = 24 September 2016 |access-date = 11 April 2017 }}&lt;/ref&gt;
+* [[Basecamp (software)|Basecamp]]&lt;ref&gt;{{Cite news |url = https://m.signalvnoise.com/how-we-made-basecamp-3s-android-app-100-kotlin-35e4e1c0ef12 |title = How we made Basecamp 3's Android app 100% Kotlin – Signal v. Noise |date = 29 April 2017 |work = Signal v. Noise |access-date = 1 May 2017 }}&lt;/ref&gt;
+* [[Pinterest]]&lt;ref&gt;{{cite web |url = https://www.youtube.com/watch?v=mDpnc45WwlI |title = Droidcon NYC 2016 - Kotlin in Production |website = [[YouTube]] |access-date = 24 July 2019 }}&lt;/ref&gt;
+* Coursera&lt;ref&gt;{{cite web |url = https://medium.com/coursera-engineering/becoming-bilingual-coursera-d8048dce73e3 |title = Becoming bilingual@coursera |date = 26 April 2018 |access-date = 24 July 2019 }}&lt;/ref&gt;
+* Netflix&lt;ref&gt;{{cite web |url = https://twitter.com/robspieldenner/status/708355228832178176 |title = Rob Spieldenner on twitter |access-date = 24 July 2019 }}&lt;/ref&gt;
+* Uber&lt;ref&gt;{{cite web |url = https://www.reddit.com/r/androiddev/comments/5sihp0/2017_whos_using_kotlin/ddfmkf7/ |title = 2017 Who's using Kotlin? |date = 7 February 2017 |access-date = 24 July 2019 }}&lt;/ref&gt;
+* Cash App&lt;ref&gt;{{cite web |url = https://github.com/square/sqldelight |title = square/sqldelight |website = [[GitHub]] |access-date = 24 July 2019 }}&lt;/ref&gt;
+* Trello&lt;ref&gt;{{cite web |url = https://twitter.com/danlew42/status/809065097339564032 | title = Dan Lew on Twitter |access-date = 24 July 2019 }}&lt;/ref&gt;
+* Duolingo&lt;ref&gt;{{cite web |url = https://twitter.com/duolingo/status/1247876630984474626 | title = Duolingo on Twitter |access-date = 13 April 2020 }}&lt;/ref&gt;
+* Corda, a distributed ledger developed by a consortium of well-known banks (such as [[Goldman Sachs]], [[Wells Fargo]], [[JPMorgan Chase|J.P. Morgan]], [[Deutsche Bank]], [[UBS]], [[HSBC]], [[BNP Paribas]], [[Société Générale]]), has over 90% Kotlin code in its codebase.&lt;ref&gt;{{Cite news |url = https://blog.jetbrains.com/kotlin/2017/03/kotlin-1-1/ |title = Kotlin 1.1 Released with JavaScript Support, Coroutines and more |access-date = 1 May 2017 }}&lt;/ref&gt;
+
+==See also==
+{{Portal|Free and open-source software|Computer programming}}
+* [[Comparison of programming languages]]
+
+==References==
+* This article contains quotations from Kotlin tutorials which are released under an Apache 2.0 license.
+{{Reflist}}
+
+==External links==
+* {{Official website}}
+
+{{Programming languages}}
+{{Java (Sun)}}
+
+[[Category:Java programming language family]]
+[[Category:JVM programming languages]]
+[[Category:Object-oriented programming languages]]
+[[Category:Programming languages]]
+[[Category:Programming languages created in 2011]]
+[[Category:Software using the Apache license]]
+[[Category:Statically typed programming languages]]
+[[Category:High-level programming languages]]
+[[Category:2011 software]]
+[[Category:Free software projects]]</text>
+      <sha1>24qfiba2g0vyktwiuj3u5rabzfv3rle</sha1>
+    </revision>
+  </page>
+</mediawiki>

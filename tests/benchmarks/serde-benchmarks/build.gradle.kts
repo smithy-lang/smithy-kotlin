@@ -48,6 +48,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:$kotlinxBenchmarkVersion")
                 implementation(project(":runtime:serde:serde-json"))
+                implementation(project(":runtime:serde:serde-xml"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
         }
@@ -65,11 +66,25 @@ benchmark {
     configurations {
         getByName("main") {
             iterations = 5
-            iterationTime = 1
-            iterationTimeUnit = "s"
             warmups = 7
             outputTimeUnit = "ms"
             reportFormat = "text"
+        }
+
+        register("json") {
+            iterations = 5
+            warmups = 7
+            outputTimeUnit = "ms"
+            reportFormat = "text"
+            include(".*json.*")
+        }
+
+        register("xml") {
+            iterations = 5
+            warmups = 7
+            outputTimeUnit = "ms"
+            reportFormat = "text"
+            include(".*xml.*")
         }
     }
 }
@@ -104,7 +119,10 @@ data class BenchmarkModel(val name: String) {
         get() = project.file("${project.buildDir}/generated-src/src").absoluteFile
 }
 
-val benchmarkModels = listOf("twitter").map{ BenchmarkModel(it) }
+val benchmarkModels = listOf(
+    "twitter",
+    "countries-states",
+).map{ BenchmarkModel(it) }
 
 
 val stageGeneratedSources = tasks.register("stageGeneratedSources") {

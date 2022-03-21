@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.benchmarks.serde.json
 
+import aws.smithy.kotlin.benchmarks.serde.BenchmarkBase
 import aws.smithy.kotlin.benchmarks.serde.json.twitter.model.TwitterFeed
 import aws.smithy.kotlin.benchmarks.serde.json.twitter.transform.deserializeTwitterFeedDocument
 import aws.smithy.kotlin.benchmarks.serde.json.twitter.transform.serializeTwitterFeedDocument
@@ -15,10 +16,7 @@ import aws.smithy.kotlin.runtime.serde.json.jsonStreamReader
 import kotlinx.benchmark.*
 import kotlinx.coroutines.runBlocking
 
-@BenchmarkMode(Mode.AverageTime)
-@State(Scope.Benchmark)
-open class TwitterBenchmark {
-
+open class TwitterBenchmark : BenchmarkBase() {
     private val input = TwitterBenchmark::class.java.getResource("/twitter.json")!!.readBytes()
     private val feed: TwitterFeed = runBlocking {
         val deserializer = JsonDeserializer(input)
