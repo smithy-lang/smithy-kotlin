@@ -13,13 +13,13 @@ Baseline `0.7.8-beta` on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-
 ```
 jvm summary:
 Benchmark                                                        (sourceFilename)  Mode  Cnt   Score   Error  Units
-a.s.k.b.s.json.CitmBenchmark.tokensBenchmark                                  N/A  avgt    5  13.459 ± 1.197  ms/op
-a.s.k.b.s.json.TwitterBenchmark.deserializeBenchmark                          N/A  avgt    5  10.306 ± 7.294  ms/op
-a.s.k.b.s.json.TwitterBenchmark.serializeBenchmark                            N/A  avgt    5   1.526 ± 1.355  ms/op
-a.s.k.b.s.json.TwitterBenchmark.tokensBenchmark                               N/A  avgt    5   5.562 ± 1.726  ms/op
-a.s.k.b.s.xml.XmlDeserializerBenchmark.deserializeBenchmark                   N/A  avgt    5  94.065 ± 1.673  ms/op
-a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark         countries-states.xml  avgt    5  24.700 ± 0.235  ms/op
-a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark           kotlin-article.xml  avgt    5   0.686 ± 0.012  ms/op
+a.s.k.b.s.json.CitmBenchmark.tokensBenchmark                                  N/A  avgt    5  13.139 ± 0.900  ms/op
+a.s.k.b.s.json.TwitterBenchmark.deserializeBenchmark                          N/A  avgt    5  10.301 ± 7.446  ms/op
+a.s.k.b.s.json.TwitterBenchmark.serializeBenchmark                            N/A  avgt    5   1.571 ± 1.986  ms/op
+a.s.k.b.s.json.TwitterBenchmark.tokensBenchmark                               N/A  avgt    5   5.642 ± 1.780  ms/op
+a.s.k.b.s.xml.XmlDeserializerBenchmark.deserializeBenchmark                   N/A  avgt    5  93.057 ± 1.420  ms/op
+a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark         countries-states.xml  avgt    5  24.313 ± 0.598  ms/op
+a.s.k.b.s.xml.XmlLexerBenchmark.deserializeBenchmark           kotlin-article.xml  avgt    5   0.688 ± 0.006  ms/op
 ```
 
 ## JSON Data
