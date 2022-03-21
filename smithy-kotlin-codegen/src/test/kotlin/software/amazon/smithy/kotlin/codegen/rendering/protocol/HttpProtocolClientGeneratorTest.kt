@@ -53,7 +53,7 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("val client: SdkHttpClient")
         val expected = """
     init {
-        val httpClientEngine = config.httpClientEngine ?: SdkHttpEngine()
+        val httpClientEngine = config.httpClientEngine ?: DefaultHttpEngine()
         client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)
     }
 """
