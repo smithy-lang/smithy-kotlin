@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
+import software.amazon.smithy.aws.traits.HttpChecksumTrait
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
@@ -248,7 +249,7 @@ abstract class HttpProtocolClientGenerator(
             .forEach { middleware ->
                 middleware.render(ctx, op, writer)
             }
-        if (op.hasTrait<HttpChecksumRequiredTrait>()) {
+        if (op.checksumRequired()) {
             writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
             writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
         }
@@ -267,3 +268,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
 }
+
+// TODO https://github.com/awslabs/aws-sdk-kotlin/issues/557
+private fun OperationShape.checksumRequired(): Boolean =
+    hasTrait<HttpChecksumRequiredTrait>() || getTrait<HttpChecksumTrait>()?.isRequestChecksumRequired == true
