@@ -129,3 +129,13 @@ public fun String.splitAsQueryString(): Map<String, List<String>> {
         }
     return entries
 }
+
+private val percentEncodedParam = """%([A-Fa-f0-9]{2})""".toRegex()
+
+/**
+ * Decode a URL's query string, resolving percent-encoding (e.g., "%3B" → ";").
+ */
+@InternalApi
+public fun String.urlDecodeComponent(): String = this
+    .replace('+', ' ')
+    .replace(percentEncodedParam) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
