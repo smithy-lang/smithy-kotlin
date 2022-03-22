@@ -112,4 +112,11 @@ class TextTest {
             actualValueWithEquals.shouldContain(entry.key, entry.value)
         }
     }
+
+    @Test
+    fun decodeUrlComponent() {
+        val component = "a%3Bb+c%7Ed%20e%2Bf"
+        val expected = "a;b c~d e+f"
+        assertEquals(expected, component.urlDecodeComponent())
+    }
 }
