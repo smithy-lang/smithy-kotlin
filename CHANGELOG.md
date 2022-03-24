@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.8.0] - 03/24/2022
+
+### Breaking changes
+* introduce opaque KMP default HTTP client engine [#606](https://github.com/awslabs/smithy-kotlin/pull/606)
+
+### New features
+* bootstrap event streams [#597](https://github.com/awslabs/smithy-kotlin/pull/597)
+
+### Fixes
+* temporarily handle httpchecksum trait the same as httpchecksumrequired [#608](https://github.com/awslabs/smithy-kotlin/pull/608)
+
+### Miscellaneous
+* add convenience function for decoding URL components [#607](https://github.com/awslabs/smithy-kotlin/pull/607)
+* fix pagination design docs [#600](https://github.com/awslabs/smithy-kotlin/pull/600)
+
 ## [0.7.8] - 02/17/2022
 
 ### New features
