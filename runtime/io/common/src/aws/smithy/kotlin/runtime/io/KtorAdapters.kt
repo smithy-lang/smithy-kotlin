@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.InternalApi
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.ByteChannel as KtorByteChannel
@@ -100,6 +101,11 @@ internal class KtorByteChannelAdapter(
 internal expect class KtorReadChannelAdapter(chan: KtorByteReadChannel) : SdkByteReadChannel
 internal expect class KtorWriteChannelAdapter(chan: KtorByteWriteChannel) : SdkByteWriteChannel
 
-internal fun KtorByteReadChannel.toSdkChannel(): SdkByteReadChannel = KtorReadChannelAdapter(this)
-internal fun KtorByteWriteChannel.toSdkChannel(): SdkByteWriteChannel = KtorWriteChannelAdapter(this)
-internal fun KtorByteChannel.toSdkChannel(): SdkByteChannel = KtorByteChannelAdapter(this)
+@InternalApi
+fun KtorByteReadChannel.toSdkChannel(): SdkByteReadChannel = KtorReadChannelAdapter(this)
+
+@InternalApi
+fun KtorByteWriteChannel.toSdkChannel(): SdkByteWriteChannel = KtorWriteChannelAdapter(this)
+
+@InternalApi
+fun KtorByteChannel.toSdkChannel(): SdkByteChannel = KtorByteChannelAdapter(this)

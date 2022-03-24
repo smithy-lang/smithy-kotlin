@@ -5,7 +5,9 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * HTTP payload to be sent to a peer
@@ -60,7 +62,19 @@ sealed class HttpBody {
          */
         open fun reset() { throw UnsupportedOperationException("${this::class.simpleName} can only be consumed once") }
     }
+
+    companion object {
+        /**
+         * Create a [HttpBody] from a [ByteArray]
+         */
+        fun fromBytes(bytes: ByteArray): HttpBody = ByteArrayContent(bytes)
+    }
 }
+
+/**
+ * Convert a [ByteArray] into an [HttpBody]
+ */
+fun ByteArray.toHttpBody(): HttpBody = HttpBody.fromBytes(this)
 
 /**
  * Convert a [ByteStream] to the equivalent [HttpBody] variant
@@ -83,6 +97,20 @@ fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
             channel?.close()
             channel = null
         }
+    }
+}
+
+/**
+ * Convert a [SdkByteReadChannel] to an [HttpBody]
+ * @param contentLength the total content length of the channel if known
+ */
+@InternalApi
+fun SdkByteReadChannel.toHttpBody(contentLength: Long? = null): HttpBody {
+    val ch = this
+    return object : HttpBody.Streaming() {
+        override val contentLength: Long? = contentLength
+        override val isReplayable: Boolean = false
+        override fun readFrom(): SdkByteReadChannel = ch
     }
 }
 
@@ -119,4 +147,14 @@ fun HttpBody.toByteStream(): ByteStream? = when (val body = this) {
         override val contentLength: Long? = body.contentLength
         override fun readFrom(): SdkByteReadChannel = body.readFrom()
     }
+}
+
+/**
+ * Convenience function to treat all [HttpBody] variants with a payload as an [SdkByteReadChannel]
+ */
+@InternalApi
+fun HttpBody.toSdkByteReadChannel(): SdkByteReadChannel? = when (val body = this) {
+    is HttpBody.Empty -> null
+    is HttpBody.Bytes -> SdkByteReadChannel(body.bytes())
+    is HttpBody.Streaming -> body.readFrom()
 }

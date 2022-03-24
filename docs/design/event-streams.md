@@ -89,15 +89,19 @@ structure ThrottlingError {}
 
 ### Event Stream Type Representation
 
-The members of an operation input or output that target a stream will be represented with an asynchronous [Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) 
-from the `kotlinx-coroutines-core` library. `Flow` is a natural fit for representing asynchronous streams. 
+The members of an operation input or output that target a stream will be represented with an asynchronous 
+[Flow](https://kotlinlang.org/docs/reference/coroutines/flow.html) from the `kotlinx-coroutines-core` library. 
+`Flow` is a natural fit for representing asynchronous streams. 
 
-`Flow` was chosen for pagination and already in use as part of our public API contract. Any alternative to this would require a custom but similar type that doesn't play well with
-the rest of the coroutine ecosystem. There is also prior art for representing streaming requests and responses, see [gRPC Kotlin](https://github.com/grpc/grpc-kotlin).
+`Flow` was chosen for pagination and already in use as part of our public API contract. Any alternative to this 
+would require a custom but similar type that doesn't play well with the rest of the coroutine ecosystem. There is
+also prior art for representing streaming requests and responses, see [gRPC Kotlin](https://github.com/grpc/grpc-kotlin).
 
 The following types and service would be generated. 
 
-NOTE: only the input and output types are shown, the other structures or unions in the model would be generated as described in [Kotlin Smithy Design](kotlin-smithy-sdk.md).
+NOTE: only the input and output types are shown, the other structures or unions in the model would be generated as
+described in [Kotlin Smithy Design](kotlin-smithy-sdk.md) with the exception of event stream members targeting errors
+which is described below in more detail.
 
 #### Input Event Streams
 
@@ -120,7 +124,8 @@ class PublishMessagesRequest private constructor(builder: Builder){
 
 #### Output Event Streams
 
-Output event streams would be modeled the same way as input streams. The response object would have a `Flow<T>` field that represents the response stream.
+Output event streams would be modeled the same way as input streams. The response object would have a `Flow<T>` 
+field that represents the response stream.
 
 ```kt
 class SubscribeToMovementsResponse private constructor(builder: Builder){
@@ -137,20 +142,81 @@ class SubscribeToMovementsResponse private constructor(builder: Builder){
 ```
 
 
-Modeling the event stream as a field of the request or response allows for [initial messages](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#initial-messages) 
-to be implemented. If we directly returned or took a `Flow<T>` as the input or output type we would not be able to represent the initial request or response fields when present.
+Modeling the event stream as a field of the request or response allows for 
+[initial messages](https://awslabs.github.io/smithy/1.0/spec/core/stream-traits.html#initial-messages) to be 
+implemented. If we directly returned or took a `Flow<T>` as the input or output type we would not be able to 
+represent the initial request or response fields when present.
 
+
+#### Event Stream Error Representation
+
+Event stream unions may model exceptions that can appear on the stream. These exceptions are terminal messages that 
+are intended to be surfaced to the client using idiomatic error handling mechanisms of the target language. Thus,
+the modeled errors a consumer may see on the stream are part of the overall union that makes up the possible events.
+
+NOTE: the set of errors on the operation MAY not be the same set of errors modeled on the event stream.
+
+
+Using the example from above: 
+
+```
+@streaming
+union MovementEvents {
+    up: Movement,
+    down: Movement,
+    left: Movement,
+    right: Movement,
+    throttlingError: ThrottlingError
+}
+
+```
+
+The default representation of a union (as documented in [Kotlin Smithy Design](kotlin-smithy-sdk.md)) is generated as:
+
+```kotlin
+sealed class MovementEvents {
+    data class Up(val value: Movement): MovementEvents()
+    data class Down(val value: Movement): MovementEvents()
+    data class Left(val value: Movement): MovementEvents()
+    data class Right(val value: Movement): MovementEvents()
+    data class ThrottlingError(val value: ThrottlingError): MovementEvents()
+    object SdkUnknown : MovementEvents()
+}
+```
+
+This is undesirable though since event stream errors are terminal and end the stream. Keeping them in the set of 
+possible events also means it may be easier for consumers to ignore errors depending on what events they are looking 
+for (e.g. by having a catch all `else` branch they may inadvertently ignore an error and think the stream completed 
+successfully).
+
+
+Event stream unions will be special-cased to filter out variants targeting error shapes. When these errors are 
+emitted by the service on the stream they will be converted to the appropriate modeled exception and thrown rather 
+than being emitted on the stream the consumer sees.
+
+As an example, the generated event stream union will look like this (note the absence of `ThrottlingError`):
+
+```kotlin
+sealed class MovementEvents {
+    data class Up(val value: Movement): MovementEvents()
+    data class Down(val value: Movement): MovementEvents()
+    data class Left(val value: Movement): MovementEvents()
+    data class Right(val value: Movement): MovementEvents()
+    object SdkUnknown : MovementEvents()
+}
+```
 
 ### **Service and Usage**
 
 NOTE: There are types and internal details here not important to the design of how customers will interact with 
-streaming requests/responses (e.g. serialization/deserialization). 
-Those details are subject to change and not part of this design document. The focus here is on the way 
-streaming is exposed to a customer.
+streaming requests/responses (e.g. serialization/deserialization). Those details are subject to change and not part of
+this design document. The focus here is on the way streaming is exposed to a customer.
 
 
-The signatures generated match that of binary streaming requests and responses. Notably that output streams take a lambda instead of returning the response directly (see [binary-streaming design](binary-streaming.md) which discusses this pattern).
-The response (and event stream) are only valid in that scope, after which the resources consumed by the stream are closed and no longer valid.
+The signatures generated match that of binary streaming requests and responses. Notably that output streams take a 
+lambda instead of returning the response directly (see [binary-streaming design](binary-streaming.md) which 
+discusses this pattern). The response (and event stream) are only valid in that scope, after which the resources 
+consumed by the stream are closed and no longer valid.
 
 
 ```kt
@@ -206,7 +272,6 @@ fun main() = runBlocking{
                 is MovementEvents.Down,
                 is MovementEvents.Left,
                 is MovementEvents.Right -> handleMovement(event)
-                is MovementEvents.ThrottlingError -> throw event.throttlingError
                 else -> error("unknown event type: $event")
             }
         }
@@ -218,8 +283,9 @@ fun main() = runBlocking{
 private fun handleMovement(event: MovementEvents) { ... }
 ```
 
-Accepting a lambda matches what is generated for binary streams (see [binary-streaming design](binary-streaming.md)) and will provide a consistent API experience as well
-as the same benefits to the SDK (properly scoped lifetime for resources). 
+Accepting a lambda matches what is generated for binary streams (see [binary-streaming design](binary-streaming.md)) 
+and will provide a consistent API experience as well as the same benefits to the SDK (properly scoped lifetime 
+for resources). 
 
 
 # Appendix
@@ -228,9 +294,10 @@ as the same benefits to the SDK (properly scoped lifetime for resources).
 ## Java Interop
 
 `Flow<T>` is not easily consumable directly from Java due to the `suspend` nature of it. JetBrains provides 
-[reactive adapters](https://github.com/Kotlin/kotlinx.coroutines/tree/master/reactive) that can be used to convert rxJava and JDK-9 
-reactive streams to or from an equivalent `Flow`. Users would be responsible for creating a shim layer using these primitives provided
-by JetBrains which would allow them to expose the Kotlin functions however they see fit to their applications. 
+[reactive adapters](https://github.com/Kotlin/kotlinx.coroutines/tree/master/reactive) that can be used to convert
+rxJava and JDK-9 reactive streams to or from an equivalent `Flow`. Users would be responsible for creating a shim 
+layer using these primitives provided by JetBrains which would allow them to expose the Kotlin functions however 
+they see fit to their applications. 
 
 
 ## Additional References
@@ -243,4 +310,5 @@ by JetBrains which would allow them to expose the Kotlin functions however they 
 
 # Revision history
 
+* 02/17/2022 - Remove errors from generated event stream
 * 01/19/2022 - Created

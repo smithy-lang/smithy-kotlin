@@ -1,7 +1,7 @@
 # Pagination Design
 
 * **Type**: Design
-* **Author(s)**: Aaron Todd
+* **Author(s)**: Aaron Todd, Ken Gilmer
 
 # Abstract
 
@@ -88,13 +88,16 @@ public API for the response of a paginated operation. Runtime library code is
 not required for `Flow`-based paginators, as all functionality will be provided
 by the Kotlin standard lib and the `kotlinx-coroutines-core` library.
 
-Pagination by default will always generate an extension function that returns
-a `Flow` over the normal operation output type.
+Each operation that supports pagination would receive an extension function off the 
+service client interface that returns a `Flow` over the normal operation output type.
+The generated function name uses the operation name plus the suffix `Paginated`. 
+This way the paginated and non-paginated operations should show up next to eachother 
+in the IDE to promote discoverability.
 
 An example of this is demonstrated below (codegen):
 
 ```kotlin
-fun LambdaClient.paginateListFunctions(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+fun LambdaClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
     flow {
         var cursor: String? = null
         var isFirstPage: Boolean = true
@@ -124,6 +127,13 @@ works from the base response flow. The targeted type will provide iteration to
 the `item` element for the user automatically. The name of the generated
 function comes from the name of the member.
 
+Additionally, the `item` specified in the model may be deeply nested and involve
+operations and types with many words. Generating a single function that combines
+the operation, some word to indicate pagination, plus the nested item's name
+often produces unreadable function signatures. Instead the member name targeted
+by the `items` will be used. Thas has the advantage of matching the output structure
+type property name.
+
 Here is an example that follows from the previous example (codegen):
 
 ```kotlin
@@ -135,18 +145,6 @@ fun Flow<ListFunctionsResponse>.functions(): Flow<FunctionConfiguration> =
     }
 ```
 
-### Creating a Paginator
-
-Each operation that supports pagination would receive an extension function (
-based from the service client interface) to create a paginator. The function
-generated always begins with the suffix `Paginated`, helping with
-the `discoverablity`
-design consideration, by allowing users to quickly view all paginatable
-operations by specifying this literal suffix in the IDE. Once customers are
-familiar with these two prefixes, discovering what pagination options are
-available for a given client or paginated response is simple and consistent.
-
-Using the model in the introduction would produce the following:
 
 ### Examples
 
@@ -157,20 +155,13 @@ An example of driving a paginator and processing response instances:
 ```kotlin
 suspend fun rawPaginationExample(client: LambdaClient) {
     lambdaClient
-        .paginateListFunctions(ListFunctionsRequest {})
+        .listFunctionsPaginated(ListFunctionsRequest {})
         .collect { response ->
             response.functions?.forEach { functionConfiguration ->
                 println(functionConfiguration.functionName)
             }
         }
 }
-
-fun Flow<ListFunctionsResponse>.items(): Flow<FunctionConfiguration> =
-   transform() { response ->
-      response.functions?.forEach {
-         emit(it)
-      }
-   }
 ```
 
 #### Usage - Iterating over Modeled Item
@@ -180,12 +171,6 @@ transform we are able to iterate over the nested element. As transforms can be
 applied to any member of a type, users may extend the abstraction as needed
 simply by providing their own flow transforms.
 
-Additionally, the `item` specified in the model may be deeply nested and involve
-operations and types with many words. Generating a single function that combines
-the operation, some word to indicate pagination, plus the nested item's name
-often produces unreadable function signatures. In this approach, we generate
-more legible API by breaking the extraction of the nested items into a separate
-function, which always uses the name of the member referenced as the item.
 
 ```kotlin
 lambdaClient
@@ -381,6 +366,7 @@ future.
 
 # Revision history
 
+* 03/10/2022 - Fix function names
 * 12/15/2021 - Adapted to favor Flow
 * 8/23/2021 - Initial upload
 * 2/05/2021 - Created

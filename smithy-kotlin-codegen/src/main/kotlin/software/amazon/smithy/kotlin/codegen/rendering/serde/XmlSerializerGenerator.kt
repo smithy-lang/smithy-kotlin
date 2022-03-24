@@ -6,11 +6,13 @@
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
+import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
 import software.amazon.smithy.model.shapes.MemberShape
@@ -76,11 +78,14 @@ open class XmlSerializerGenerator(
         writer.write("return serializer.toByteArray()")
     }
 
-    protected fun documentSerializer(ctx: ProtocolGenerator.GenerationContext, shape: Shape): Symbol {
+    protected fun documentSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: Collection<MemberShape> = shape.members()
+    ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
-        return symbol.documentSerializer(ctx.settings) { writer ->
-            val fnName = symbol.documentSerializerName()
-            writer.openBlock("internal fun #L(serializer: #T, input: #T) {", fnName, RuntimeTypes.Serde.Serializer, symbol)
+        return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
+            writer.openBlock("internal fun #identifier.name:L(serializer: #T, input: #T) {", RuntimeTypes.Serde.Serializer, symbol)
                 .call {
                     renderSerializerBody(ctx, shape, shape.members().toList(), writer)
                 }
@@ -116,15 +121,20 @@ open class XmlSerializerGenerator(
         return attributes + elements
     }
 
-    override fun payloadSerializer(ctx: ProtocolGenerator.GenerationContext, member: MemberShape): Symbol {
+    override fun payloadSerializer(
+        ctx: ProtocolGenerator.GenerationContext,
+        shape: Shape,
+        members: Collection<MemberShape>?
+    ): Symbol {
         // re-use document serializer
-        val symbol = ctx.symbolProvider.toSymbol(member)
-        val target = ctx.model.expectShape(member.target)
-        val serializeFn = documentSerializer(ctx, target)
-        val fnName = symbol.payloadSerializerName()
-        return symbol.payloadSerializer(ctx.settings) { writer ->
+        val target = shape.targetOrSelf(ctx.model)
+        val symbol = ctx.symbolProvider.toSymbol(shape)
+        val forMembers = members ?: target.members()
+        val serializeFn = documentSerializer(ctx, target, forMembers)
+        return target.payloadSerializer(ctx.settings, symbol, forMembers) { writer ->
             addNestedDocumentSerializers(ctx, target, writer)
-            writer.withBlock("internal fun #L(input: #T): ByteArray {", "}", fnName, symbol) {
+            writer.addImportReferences(symbol, SymbolReference.ContextOption.USE)
+            writer.withBlock("internal fun #identifier.name:L(input: #T): ByteArray {", "}", symbol) {
                 write("val serializer = #T()", RuntimeTypes.Serde.SerdeXml.XmlSerializer)
                 write("#T(serializer, input)", serializeFn)
                 write("return serializer.toByteArray()")

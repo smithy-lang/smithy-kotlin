@@ -23,7 +23,7 @@ class SerdeBenchmarkJsonProtocolGenerator : HttpBindingProtocolGenerator() {
     override val protocol: ShapeId = SerdeBenchmarkJsonProtocol.ID
 
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
-        HttpTraitResolver(model, serviceShape, "application/json")
+        HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
 
     override fun getHttpProtocolClientGenerator(ctx: ProtocolGenerator.GenerationContext): HttpProtocolClientGenerator =
         object : HttpProtocolClientGenerator(ctx, emptyList(), getProtocolHttpBindingResolver(ctx.model, ctx.service)) {}

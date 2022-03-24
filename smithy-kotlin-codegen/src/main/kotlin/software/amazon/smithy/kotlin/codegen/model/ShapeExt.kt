@@ -7,6 +7,8 @@ package software.amazon.smithy.kotlin.codegen.model
 
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.defaultName
+import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
+import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.OperationIndex
@@ -54,7 +56,7 @@ fun Shape.changeNameSuffix(fromTo: Pair<String, String>): String {
  * If is member shape returns target, otherwise returns self.
  * @param model for loading the target shape
  */
-internal fun Shape.targetOrSelf(model: Model) = when (this) {
+fun Shape.targetOrSelf(model: Model): Shape = when (this) {
     is MemberShape -> model.expectShape(this.target)
     else -> this
 }
@@ -167,3 +169,54 @@ val Shape.isSparse: Boolean
  */
 val Shape.isStreaming: Boolean
     get() = hasTrait<StreamingTrait>()
+
+/**
+ * Test if a member targets an event stream
+ */
+fun StructureShape.hasEventStreamMember(model: Model): Boolean {
+    val streamingMember = findStreamingMember(model) ?: return false
+    val target = model.expectShape(streamingMember.target)
+    return target.isUnionShape
+}
+
+/**
+ * Test if an operation input is an event stream
+ */
+fun OperationShape.isInputEventStream(model: Model): Boolean {
+    val reqShape = model.expectShape<StructureShape>(input.get())
+    return reqShape.hasEventStreamMember(model)
+}
+
+/**
+ * Test if an operation output is an event stream
+ */
+fun OperationShape.isOutputEventStream(model: Model): Boolean {
+    val respShape = model.expectShape<StructureShape>(output.get())
+    return respShape.hasEventStreamMember(model)
+}
+
+// FIXME - move to the InputTrait and OutputTrait provided by smithy now
+/**
+ * Test if a structure shape is an operation input
+ */
+val StructureShape.isOperationInput: Boolean
+    get() = hasTrait<OperationInput>()
+
+/**
+ * Test if a structure shape is an operation output
+ */
+val StructureShape.isOperationOutput: Boolean
+    get() = hasTrait<OperationOutput>()
+
+/**
+ * Return all the members of an event stream union that do not target an error shape.
+ * If the current union is not an event stream then it just returns all members
+ */
+fun UnionShape.filterEventStreamErrors(model: Model): Collection<MemberShape> {
+    if (!hasTrait<StreamingTrait>()) return members()
+
+    return members().filterNot {
+        val target = model.expectShape(it.target)
+        target.isError
+    }
+}

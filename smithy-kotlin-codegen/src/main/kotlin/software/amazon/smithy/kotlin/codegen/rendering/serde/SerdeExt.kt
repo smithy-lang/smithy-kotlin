@@ -11,6 +11,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.SymbolRenderer
 import software.amazon.smithy.kotlin.codegen.core.defaultName
+import software.amazon.smithy.kotlin.codegen.core.mangledSuffix
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
@@ -36,7 +37,10 @@ fun OperationShape.bodySerializerName(): String = "serialize" + StringUtils.capi
  * Get the function responsible for serializing an operation's body (payload) as a [Symbol] and register [block]
  * which will be invoked to actually render the function (signature and implementation)
  */
-fun OperationShape.bodySerializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+fun OperationShape.bodySerializer(
+    settings: KotlinSettings,
+    block: SymbolRenderer
+): Symbol = buildSymbol {
     name = bodySerializerName()
     namespace = "${settings.pkg.name}.transform"
     // place body serializer in same file as operation serializer implementaiton
@@ -59,10 +63,13 @@ fun OperationShape.bodyDeserializerName(): String = "deserialize" + StringUtils.
  * Get the function responsible for deserializing an operation's body (payload) as a [Symbol] and register [block]
  * which will be invoked to actually render the function (signature and implementation)
  */
-fun OperationShape.bodyDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
+fun OperationShape.bodyDeserializer(
+    settings: KotlinSettings,
+    block: SymbolRenderer
+): Symbol = buildSymbol {
     name = bodyDeserializerName()
     namespace = "${settings.pkg.name}.transform"
-    // place body serializer in same file as operation serializer implementaiton
+    // place body serializer in same file as operation serializer implementation
     definitionFile = "${deserializerName()}.kt"
     renderBy = block
 }
@@ -70,37 +77,57 @@ fun OperationShape.bodyDeserializer(settings: KotlinSettings, block: SymbolRende
 /**
  * Get the serializer class name for a shape bound to the document/payload
  */
-fun Symbol.documentSerializerName(): String = "serialize" + StringUtils.capitalize(this.name) + "Document"
+// TODO - removed and replace with Shape.documentSerializerName(members: Collection<Members>). SerializeStructGenerator still uses this though
+internal fun Symbol.documentSerializerName(): String = "serialize" + StringUtils.capitalize(this.name) + "Document"
 
 /**
- * Get the function responsible for serializing an operation's body (payload) as a [Symbol] and register [block]
- * which will be invoked to actually render the function (signature and implementation)
+ * Get the [Symbol] responsible for serializing the current shape and [members] into the document/payload
+ * and register [block] which will be invoked to actually render the function (signature and implementation)
  */
-fun Symbol.documentSerializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
-    name = documentSerializerName()
-    namespace = "${settings.pkg.name}.transform"
-    val symbol = this@documentSerializer
-    definitionFile = "${symbol.name}DocumentSerializer.kt"
-    reference(symbol, SymbolReference.ContextOption.DECLARE)
-    renderBy = block
+fun Shape.documentSerializer(
+    settings: KotlinSettings,
+    symbol: Symbol,
+    members: Collection<MemberShape> = members(),
+    block: SymbolRenderer
+): Symbol {
+    val base = symbol.documentSerializerName()
+    val suffix = mangledSuffix(members)
+
+    return buildSymbol {
+        name = "$base$suffix"
+        namespace = settings.pkg.subpackage("transform")
+        definitionFile = "${symbol.name}DocumentSerializer.kt"
+        reference(symbol, SymbolReference.ContextOption.DECLARE)
+        renderBy = block
+    }
 }
 
 /**
  * Get the deserializer class name for a shape bound to the document/payload
  */
-fun Symbol.documentDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.name) + "Document"
+// TODO - removed and replace with Shape.documentDeserializerName(members: Collection<Members>). DeserializeStructGenerator still uses this though
+internal fun Symbol.documentDeserializerName(): String = "deserialize" + StringUtils.capitalize(this.name) + "Document"
 
 /**
- * Get the function responsible for serializing an operation's body (payload) as a [Symbol] and register [block]
- * which will be invoked to actually render the function (signature and implementation)
+ * Get the [Symbol] responsible for deserializing the current shape and [members] from the document/payload
+ * and register [block] which will be invoked to actually render the function (signature and implementation)
  */
-fun Symbol.documentDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
-    name = documentDeserializerName()
-    namespace = "${settings.pkg.name}.transform"
-    val symbol = this@documentDeserializer
-    definitionFile = "${symbol.name}DocumentDeserializer.kt"
-    reference(symbol, SymbolReference.ContextOption.DECLARE)
-    renderBy = block
+fun Shape.documentDeserializer(
+    settings: KotlinSettings,
+    symbol: Symbol,
+    members: Collection<MemberShape> = members(),
+    block: SymbolRenderer
+): Symbol {
+    val base = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
+    val suffix = mangledSuffix(members)
+
+    return buildSymbol {
+        name = "$base$suffix"
+        namespace = settings.pkg.subpackage("transform")
+        definitionFile = "${symbol.name}DocumentDeserializer.kt"
+        reference(symbol, SymbolReference.ContextOption.DECLARE)
+        renderBy = block
+    }
 }
 
 /**
@@ -124,37 +151,43 @@ fun Symbol.errorDeserializer(settings: KotlinSettings, block: SymbolRenderer): S
 }
 
 /**
- * The name deserializer name for this shape as a payload
- */
-fun Symbol.payloadDeserializerName(): String = "deserialize" + StringUtils.capitalize(name) + "Payload"
-
-/**
  * Get the function responsible for deserializing the specific shape as a standalone payload
  */
-fun Symbol.payloadDeserializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
-    name = payloadDeserializerName()
-    namespace = "${settings.pkg.name}.transform"
-    val symbol = this@payloadDeserializer
-    definitionFile = "${symbol.name}PayloadDeserializer.kt"
-    reference(symbol, SymbolReference.ContextOption.DECLARE)
-    renderBy = block
+fun Shape.payloadDeserializer(
+    settings: KotlinSettings,
+    symbol: Symbol,
+    members: Collection<MemberShape> = members(),
+    block: SymbolRenderer
+): Symbol {
+    val base = "deserialize" + StringUtils.capitalize(symbol.name) + "Payload"
+    val suffix = mangledSuffix(members)
+    return buildSymbol {
+        name = "$base$suffix"
+        namespace = settings.pkg.subpackage("transform")
+        definitionFile = "${symbol.name}PayloadDeserializer.kt"
+        reference(symbol, SymbolReference.ContextOption.DECLARE)
+        renderBy = block
+    }
 }
-
-/**
- * The name serializer name for this shape as a payload
- */
-fun Symbol.payloadSerializerName(): String = "serialize" + StringUtils.capitalize(name) + "Payload"
 
 /**
  * Get the function responsible for serializing the specific shape as a standalone payload
  */
-fun Symbol.payloadSerializer(settings: KotlinSettings, block: SymbolRenderer): Symbol = buildSymbol {
-    name = payloadSerializerName()
-    namespace = "${settings.pkg.name}.transform"
-    val symbol = this@payloadSerializer
-    definitionFile = "${symbol.name}PayloadSerializer.kt"
-    reference(symbol, SymbolReference.ContextOption.DECLARE)
-    renderBy = block
+fun Shape.payloadSerializer(
+    settings: KotlinSettings,
+    symbol: Symbol,
+    members: Collection<MemberShape> = members(),
+    block: SymbolRenderer
+): Symbol {
+    val base = "serialize" + StringUtils.capitalize(symbol.name) + "Payload"
+    val suffix = mangledSuffix(members)
+    return buildSymbol {
+        name = "$base$suffix"
+        namespace = "${settings.pkg.name}.transform"
+        definitionFile = "${symbol.name}PayloadSerializer.kt"
+        reference(symbol, SymbolReference.ContextOption.DECLARE)
+        renderBy = block
+    }
 }
 
 /**

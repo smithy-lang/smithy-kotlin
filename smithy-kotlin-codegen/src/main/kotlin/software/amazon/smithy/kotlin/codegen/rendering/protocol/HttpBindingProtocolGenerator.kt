@@ -88,6 +88,29 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      */
     abstract fun operationErrorHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol
 
+    // FIXME - probably make abstract and let individual protocols throw if they don't support event stream bindings
+
+    /**
+     * ```
+     * private suspend fun serializeOperationFooEventStream(input: Foo): HttpBody
+     * ```
+     *
+     * @param ctx the protocol generator context
+     * @param op the operation shape to return event stream serializer for
+     */
+    open fun eventStreamRequestHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = error("event streams are not supported by $this")
+
+    /**
+     *
+     * ```
+     * private suspend fun deserializeOperationFooEventStream(builder: Foo.Builder, body: HttpBody)
+     * ```
+     *
+     * @param ctx the protocol generator context
+     * @param op the operation shape to return event stream deserializer for
+     */
+    open fun eventStreamResponseHandler(ctx: ProtocolGenerator.GenerationContext, op: OperationShape): Symbol = error("event streams are not supported by $this")
+
     private fun generateSerializers(ctx: ProtocolGenerator.GenerationContext) {
         val resolver = getProtocolHttpBindingResolver(ctx.model, ctx.service)
         val httpOperations = resolver.bindingOperations()
@@ -217,7 +240,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .write("")
             .call {
-                renderSerializeHttpBody(ctx, op, writer)
+                if (op.isInputEventStream(ctx.model)) {
+                    val eventStreamSerializeFn = eventStreamRequestHandler(ctx, op)
+                    writer.write("builder.body = #T(context, input)", eventStreamSerializeFn)
+                } else {
+                    renderSerializeHttpBody(ctx, op, writer)
+                }
             }
     }
 
@@ -572,34 +600,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .write("")
             .call {
-                // document members
-                // payload member(s)
-                val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
-                if (httpPayload != null) {
-                    renderExplicitHttpPayloadDeserializer(ctx, httpPayload, writer)
+                if (op != null && op.isOutputEventStream(ctx.model)) {
+                    deserializeViaEventStream(ctx, op, writer)
                 } else {
-                    // Unbound document members that should be deserialized from the document format for the protocol.
-                    val documentMembers = responseBindings
-                        .filter { it.location == HttpBinding.Location.DOCUMENT }
-                        .sortedBy { it.memberName }
-                        .map { it.member }
-
-                    if (documentMembers.isNotEmpty()) {
-                        val sdg = structuredDataParser(ctx)
-
-                        val bodyDeserializerFn = if (op != null) {
-                            // normal operation
-                            sdg.operationDeserializer(ctx, op, documentMembers)
-                        } else {
-                            // error
-                            sdg.errorDeserializer(ctx, outputSymbol.shape as StructureShape, documentMembers)
-                        }
-
-                        writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
-                            .withBlock("if (payload != null) {", "}") {
-                                write("#T(builder, payload)", bodyDeserializerFn)
-                            }
-                    }
+                    deserializeViaPayload(ctx, outputSymbol, responseBindings, op, writer)
                 }
             }
             .call {
@@ -610,6 +614,56 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             }
             .write("return builder.build()")
             .closeBlock("}")
+    }
+
+    /**
+     * Deserialize a non-streaming payload
+     */
+    private fun deserializeViaPayload(
+        ctx: ProtocolGenerator.GenerationContext,
+        outputSymbol: Symbol,
+        responseBindings: List<HttpBindingDescriptor>,
+        // this method is shared between operation and exception deserialization. In the case of operations this MUST be set
+        op: OperationShape?,
+        writer: KotlinWriter
+    ) {
+        // payload member(s)
+        val httpPayload = responseBindings.firstOrNull { it.location == HttpBinding.Location.PAYLOAD }
+        if (httpPayload != null) {
+            renderExplicitHttpPayloadDeserializer(ctx, httpPayload, writer)
+        } else {
+            // Unbound document members that should be deserialized from the document format for the protocol.
+            val documentMembers = responseBindings
+                .filter { it.location == HttpBinding.Location.DOCUMENT }
+                .sortedBy { it.memberName }
+                .map { it.member }
+
+            if (documentMembers.isNotEmpty()) {
+                val sdg = structuredDataParser(ctx)
+
+                val bodyDeserializerFn = if (op != null) {
+                    // normal operation
+                    sdg.operationDeserializer(ctx, op, documentMembers)
+                } else {
+                    // error
+                    sdg.errorDeserializer(ctx, outputSymbol.shape as StructureShape, documentMembers)
+                }
+
+                writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
+                    .withBlock("if (payload != null) {", "}") {
+                        write("#T(builder, payload)", bodyDeserializerFn)
+                    }
+            }
+        }
+    }
+
+    private fun deserializeViaEventStream(
+        ctx: ProtocolGenerator.GenerationContext,
+        op: OperationShape,
+        writer: KotlinWriter
+    ) {
+        val eventStreamDeserializerFn = eventStreamResponseHandler(ctx, op)
+        writer.write("#T(builder, response.body)", eventStreamDeserializerFn)
     }
 
     /**

@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
+import software.amazon.smithy.kotlin.codegen.model.filterEventStreamErrors
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
 import software.amazon.smithy.model.Model
@@ -33,7 +34,13 @@ class UnionGenerator(
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
         writer.openBlock("sealed class #T {", symbol)
-        shape.allMembers.values.sortedBy { it.memberName }.forEach {
+
+        // event streams (@streaming union) MAY have variants that target errors.
+        // These errors if encountered on the stream will be thrown as an exception rather
+        // than showing up as one of the possible events the consumer will see on the stream (Flow<T>).
+        val members = shape.filterEventStreamErrors(model)
+
+        members.sortedBy { it.memberName }.forEach {
             writer.renderMemberDocumentation(model, it)
             writer.renderAnnotations(it)
             val variantName = it.unionVariantName()
