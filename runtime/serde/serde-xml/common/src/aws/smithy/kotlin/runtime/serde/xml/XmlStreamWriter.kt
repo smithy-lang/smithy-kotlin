@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.serde.xml.serialization.BufferingXmlStreamWriter
+import aws.smithy.kotlin.runtime.util.InternalApi
+
 /**
  * Defines an interface to serialization of an XML Infoset.
  */
@@ -75,4 +78,11 @@ fun XmlStreamWriter.text(text: Number) {
 /*
 * Creates a [XmlStreamWriter] instance to write XML
 */
-internal expect fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter
+@InternalApi
+fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter = BufferingXmlStreamWriter(pretty)
+
+/*
+* Creates a [XmlStreamWriter] instance to write XML
+*/
+@InternalApi
+expect fun xmlPullStreamWriter(pretty: Boolean = false): XmlStreamWriter

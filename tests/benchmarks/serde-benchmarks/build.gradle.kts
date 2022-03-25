@@ -86,6 +86,14 @@ benchmark {
             reportFormat = "text"
             include(".*xml.*")
         }
+
+        register("nuevo") {
+            iterations = 5
+            warmups = 7
+            outputTimeUnit = "ms"
+            reportFormat = "text"
+            include(".*XmlSerializerBenchmark.*")
+        }
     }
 }
 

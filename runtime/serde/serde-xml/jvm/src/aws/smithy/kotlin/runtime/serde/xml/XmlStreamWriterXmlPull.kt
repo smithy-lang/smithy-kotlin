@@ -86,4 +86,4 @@ class XmlPullSerializer(pretty: Boolean, private val serializer: XmlSerializer =
         }
 }
 
-internal actual fun xmlStreamWriter(pretty: Boolean): XmlStreamWriter = XmlPullSerializer(pretty)
+actual fun xmlPullStreamWriter(pretty: Boolean): XmlStreamWriter = XmlPullSerializer(pretty)

@@ -39,7 +39,7 @@ class XmlStreamWriterTest {
         assertEquals(expectedIdempotent, writer.bytes.decodeToString())
     }
 
-    private fun generateSimpleDocument() = xmlStreamWriter(true).apply {
+    private fun generateSimpleDocument() = xmlStreamWriter().apply {
         startDocument(null, null)
         startTag("id")
         text(912345678901.toString())
@@ -68,7 +68,7 @@ class XmlStreamWriterTest {
         writer.endTag("batch")
 
         // adapted from https://docs.aws.amazon.com/cloudsearch/latest/developerguide/documents-batch-xml.html
-        val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>"""
+        val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199"/></batch>"""
 
         assertEquals(expected, writer.toString())
     }
@@ -199,27 +199,28 @@ class Message(val id: Long, val text: String, val geo: Array<Double>?, val user:
 data class User(val name: String, val followersCount: Int)
 
 val expected: String = """
-<messages>
-    <message>
-        <id>912345678901</id>
-        <text>How do I stream XML in Java?</text>
-        <geo />
-        <user>
-            <name>xml_newb</name>
-            <followers_count>41</followers_count>
-        </user>
-    </message>
-    <message>
-        <id>912345678902</id>
-        <text>@xml_newb just use XmlWriter!</text>
-        <geo>
-            <position>50.454722</position>
-            <position>-104.606667</position>
-        </geo>
-        <user>
-            <name>jesse</name>
-            <followers_count>2</followers_count>
-        </user>
-    </message>
-</messages>
+    <messages>
+        <message>
+            <id>912345678901</id>
+            <text>How do I stream XML in Java?</text>
+            <geo />
+            <user>
+                <name>xml_newb</name>
+                <followers_count>41</followers_count>
+            </user>
+        </message>
+        <message>
+            <id>912345678902</id>
+            <text>@xml_newb just use XmlWriter!</text>
+            <geo>
+                <position>50.454722</position>
+                <position>-104.606667</position>
+            </geo>
+            <user>
+                <name>jesse</name>
+                <followers_count>2</followers_count>
+            </user>
+        </message>
+    </messages>
+    
 """.trimIndent()

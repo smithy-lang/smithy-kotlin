@@ -5,9 +5,9 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
-import aws.smithy.kotlin.runtime.serde.xml.tokenization.LexingXmlStreamReader
-import aws.smithy.kotlin.runtime.serde.xml.tokenization.StringTextStream
-import aws.smithy.kotlin.runtime.serde.xml.tokenization.XmlLexer
+import aws.smithy.kotlin.runtime.serde.xml.deserialization.LexingXmlStreamReader
+import aws.smithy.kotlin.runtime.serde.xml.deserialization.StringTextStream
+import aws.smithy.kotlin.runtime.serde.xml.deserialization.XmlLexer
 
 /**
  * Provides stream-style access to an XML payload.  This abstraction

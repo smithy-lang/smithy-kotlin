@@ -1,0 +1,45 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0.
+ */
+package aws.smithy.kotlin.benchmarks.serde.xml
+
+import aws.smithy.kotlin.benchmarks.serde.BenchmarkBase
+import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.model.CountriesAndStates
+import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.transform.deserializeCountriesAndStatesDocument
+import aws.smithy.kotlin.benchmarks.serde.xml.countriesstates.transform.serializeCountriesAndStatesDocument
+import aws.smithy.kotlin.runtime.serde.xml.XmlDeserializer
+import aws.smithy.kotlin.runtime.serde.xml.XmlSerializer
+import aws.smithy.kotlin.runtime.serde.xml.xmlPullStreamWriter
+import kotlinx.benchmark.*
+import kotlinx.coroutines.runBlocking
+
+open class XmlSerializerBenchmark : BenchmarkBase() {
+    private val source = javaClass.getResource("/countries-states.xml")!!.readBytes()
+
+    private lateinit var dataSet: CountriesAndStates
+
+    @Setup
+    fun init() {
+        dataSet = runBlocking {
+            val deserializer = XmlDeserializer(source)
+            deserializeCountriesAndStatesDocument(deserializer)
+        }
+    }
+
+    @Benchmark
+    fun serializeBenchmark() {
+        serialize(XmlSerializer())
+    }
+
+
+    @Benchmark
+    fun serializeXmlPullBenchmark() {
+        serialize(XmlSerializer(xmlPullStreamWriter(false)))
+    }
+
+    private fun serialize(serializer: XmlSerializer) {
+        serializeCountriesAndStatesDocument(serializer, dataSet)
+        serializer.toByteArray()
+    }
+}
