@@ -80,9 +80,3 @@ fun XmlStreamWriter.text(text: Number) {
 */
 @InternalApi
 fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter = BufferingXmlStreamWriter(pretty)
-
-/*
-* Creates a [XmlStreamWriter] instance to write XML
-*/
-@InternalApi
-expect fun xmlPullStreamWriter(pretty: Boolean = false): XmlStreamWriter

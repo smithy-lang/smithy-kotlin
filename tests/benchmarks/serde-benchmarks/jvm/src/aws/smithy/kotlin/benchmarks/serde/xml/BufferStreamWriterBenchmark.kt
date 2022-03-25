@@ -5,8 +5,6 @@
 package aws.smithy.kotlin.benchmarks.serde.xml
 
 import aws.smithy.kotlin.benchmarks.serde.BenchmarkBase
-import aws.smithy.kotlin.runtime.serde.xml.XmlStreamWriter
-import aws.smithy.kotlin.runtime.serde.xml.xmlPullStreamWriter
 import aws.smithy.kotlin.runtime.serde.xml.xmlStreamWriter
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.benchmark.*
@@ -15,15 +13,8 @@ import kotlinx.benchmark.*
 open class BufferStreamWriterBenchmark : BenchmarkBase() {
     @Benchmark
     fun serializeBenchmark() {
-        writeDocument(xmlStreamWriter())
-    }
+        val writer = xmlStreamWriter()
 
-    @Benchmark
-    fun serializeBenchmarkXmlPull() {
-        writeDocument(xmlPullStreamWriter())
-    }
-
-    private fun writeDocument(writer: XmlStreamWriter) {
         writer.startDocument()
 
         writer.namespacePrefix("https://www.loc.gov/", "loc")
