@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.serde.xml.serialization
 /**
  * Represents a child node of an XML tag.
  */
-sealed class TagChild {
+internal sealed class TagChild {
     /**
      * A child tag node.
      * @param lazyTagWriter The [LazyTagWriter] for the given child.

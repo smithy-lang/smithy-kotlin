@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.serde.xml.XmlToken.QualifiedName
 /**
  * An object that buffers XML tags into an output string (via [toString]) or byte array (via [bytes]).
  */
-class BufferingXmlStreamWriter(val pretty: Boolean = false) : XmlStreamWriter {
+internal class BufferingXmlStreamWriter(val pretty: Boolean = false) : XmlStreamWriter {
     private val buffer = StringBuilder()
     private val nsAttributes = mutableMapOf<QualifiedName, String>()
     private val tagWriterStack = ArrayDeque<LazyTagWriter>()
@@ -20,7 +20,16 @@ class BufferingXmlStreamWriter(val pretty: Boolean = false) : XmlStreamWriter {
      * Gets the byte serialization for this writer. Note that this will call [endDocument] first, closing all open tags.
      */
     override val bytes: ByteArray
-        get() = toString().encodeToByteArray()
+        get() = text.encodeToByteArray()
+
+    /**
+     * Gets the text serialization for this writer. Note that this will call [endDocument] first, closing all open tags.
+     */
+    override val text: String
+        get() {
+            endDocument()
+            return buffer.toString()
+        }
 
     /**
      * Adds an attribute to the current tag in this writer.
@@ -84,10 +93,8 @@ class BufferingXmlStreamWriter(val pretty: Boolean = false) : XmlStreamWriter {
 
     /**
      * Starts this XML document by writing the XML declaration (e.g., `<?xml version="1.0"?>`).
-     * @param encoding Unused
-     * @param standalone Unused
      */
-    override fun startDocument(encoding: String?, standalone: Boolean?) {
+    override fun startDocument() {
         buffer.append("""<?xml version="1.0"?>""")
         if (pretty) buffer.appendLine()
     }
@@ -117,13 +124,5 @@ class BufferingXmlStreamWriter(val pretty: Boolean = false) : XmlStreamWriter {
     override fun text(text: String): XmlStreamWriter {
         requireWriter().text(text)
         return this
-    }
-
-    /**
-     * Gets the text serialization for this writer. Note that this will call [endDocument] first, closing all open tags.
-     */
-    override fun toString(): String {
-        endDocument()
-        return buffer.toString()
     }
 }

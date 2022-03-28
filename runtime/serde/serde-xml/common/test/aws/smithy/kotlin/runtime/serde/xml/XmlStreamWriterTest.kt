@@ -40,7 +40,7 @@ class XmlStreamWriterTest {
     }
 
     private fun generateSimpleDocument() = xmlStreamWriter().apply {
-        startDocument(null, null)
+        startDocument()
         startTag("id")
         text(912345678901.toString())
         endTag("id")
@@ -70,18 +70,17 @@ class XmlStreamWriterTest {
         // adapted from https://docs.aws.amazon.com/cloudsearch/latest/developerguide/documents-batch-xml.html
         val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199"/></batch>"""
 
-        assertEquals(expected, writer.toString())
+        assertEquals(expected, writer.text)
     }
 
     // The following escape tests were adapted from
     // https://github.com/awslabs/smithy-rs/blob/c15289a7163cb6344b088a0ee39244df2967070a/rust-runtime/smithy-xml/src/unescape.rs
     @Test
     fun itHandlesEscaping() {
-        // FIXME ~ the commented out tests do not pass the XPP parser. Once new parser is in place they should pass.
         val testCases = mapOf(
-            // "< > ' \" &" to """<a>&lt; &gt; &apos; &quot; &amp;</a>""",
+            "< > ' \" &" to """<a>&lt; &gt; ' " &amp;</a>""",
             """hello 🍕!""" to """<a>hello 🍕!</a>""",
-            // """a<b>c\"d'e&f;;""" to """<a>a&lt;b&gt;c&quot;d&apos;e&amp;f;;</a>""",
+            """a<b>c\"d'e&f;;""" to """<a>a&lt;b&gt;c\"d'e&amp;f;;</a>""",
             "\n" to """<a>&#xA;</a>""",
             "\r" to """<a>&#xD;</a>"""
         )
@@ -93,7 +92,7 @@ class XmlStreamWriterTest {
             writer.text(input)
             writer.endTag("a")
 
-            assertEquals(expected, writer.toString())
+            assertEquals(expected, writer.text)
         }
     }
 
@@ -123,7 +122,7 @@ class XmlStreamWriterTest {
             writer.text(input)
             writer.endTag("a")
 
-            assertEquals(expected, writer.toString())
+            assertEquals(expected, writer.text)
         }
     }
 }

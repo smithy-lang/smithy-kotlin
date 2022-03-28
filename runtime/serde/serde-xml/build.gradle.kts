@@ -7,7 +7,6 @@ description = "XML serialization and deserialization for Smithy services generat
 extra["displayName"] = "Smithy :: Kotlin :: Serde :: XML"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.serde.xml"
 
-val xpp3Version: String by project
 val slf4jVersion: String by project
 
 kotlin {
@@ -15,12 +14,6 @@ kotlin {
         commonMain {
             dependencies {
                 api(project(":runtime:serde"))
-            }
-        }
-        jvmMain {
-            dependencies {
-                // https://mvnrepository.com/artifact/org.ogce/xpp3
-                implementation("org.ogce:xpp3:$xpp3Version")
             }
         }
 

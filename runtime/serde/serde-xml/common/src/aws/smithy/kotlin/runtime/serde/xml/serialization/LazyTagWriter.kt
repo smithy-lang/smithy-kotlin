@@ -18,7 +18,7 @@ private const val INDENT_PER_LEVEL = "    "
  * @param nsAttributes The namespace declaration attributes for this tag (as a [Map] of [QualifiedName] keys to [String]
  * values).
  */
-class LazyTagWriter(
+internal class LazyTagWriter(
     val pretty: Boolean,
     val indentLevel: Int,
     val qName: QualifiedName,
