@@ -2,7 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package aws.smithy.kotlin.runtime.serde.xml.tokenization
+package aws.smithy.kotlin.runtime.serde.xml.deserialization
 
 import aws.smithy.kotlin.runtime.serde.DeserializationException
 import aws.smithy.kotlin.runtime.serde.xml.XmlStreamReader
@@ -43,7 +43,6 @@ class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamReader {
 
         tailrec fun scanUntilDepth(from: XmlToken?) {
             when {
-                // TODO Is EndDocument actually returned in the XmlStreamReaderXmlPull implementation? If not, remove...
                 from == null || from is XmlToken.EndDocument -> return // End of document
                 from is XmlToken.EndElement && from.depth == startDepth -> return // Returned to original start depth
                 else -> scanUntilDepth(nextToken()) // Keep scannin'!

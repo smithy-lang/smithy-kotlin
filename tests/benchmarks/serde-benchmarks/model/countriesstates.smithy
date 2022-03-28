@@ -10,15 +10,14 @@ service CountriesStatesService {
     operations: [GetCountriesAndStates]
 }
 
-@http(uri: "/GetCountriesAndStates", method: "GET")
-@readonly
+@http(uri: "/GetCountriesAndStates", method: "POST")
 operation GetCountriesAndStates {
     input: GetCountriesAndStatesRequest,
     output: GetCountriesAndStatesResponse
 }
 
 structure GetCountriesAndStatesRequest {
-    @httpQuery("foo") foo: String
+    countries_states: CountriesAndStates
 }
 
 structure GetCountriesAndStatesResponse {
