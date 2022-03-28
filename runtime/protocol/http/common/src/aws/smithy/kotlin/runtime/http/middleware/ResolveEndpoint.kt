@@ -31,7 +31,12 @@ class ResolveEndpoint(
 @InternalApi
 fun setRequestEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
     val hostPrefix = req.context.getOrNull(HttpOperationContext.HostPrefix)
-    val hostname = if (hostPrefix != null) "${hostPrefix}${endpoint.uri.host}" else endpoint.uri.host
+    val hostname = if (hostPrefix != null && !endpoint.isHostnameImmutable) {
+        "$hostPrefix${endpoint.uri.host}"
+    } else {
+        endpoint.uri.host
+    }
+
     req.subject.url.scheme = endpoint.uri.scheme
     req.subject.url.host = hostname
     req.subject.url.port = endpoint.uri.port
