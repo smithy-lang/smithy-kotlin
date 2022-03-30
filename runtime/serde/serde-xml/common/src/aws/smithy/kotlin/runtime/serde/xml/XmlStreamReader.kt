@@ -5,6 +5,10 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.serde.xml.deserialization.LexingXmlStreamReader
+import aws.smithy.kotlin.runtime.serde.xml.deserialization.StringTextStream
+import aws.smithy.kotlin.runtime.serde.xml.deserialization.XmlLexer
+
 /**
  * Provides stream-style access to an XML payload.  This abstraction
  * supports the ability to look ahead an arbitrary number of elements.  It can also
@@ -22,7 +26,7 @@ interface XmlStreamReader {
         /**
          * The subtree's minimum depth is the same as the current node depth + 1.
          */
-        CHILD
+        CHILD,
     }
     /**
      * Return the last token that was consumed by the reader.
@@ -39,7 +43,7 @@ interface XmlStreamReader {
     /**
      * Return the next actionable token or null if stream is exhausted.
      *
-     * @throws XmlGenerationException upon any error.
+     * @throws [aws.smithy.kotlin.runtime.serde.DeserializationException] upon any error.
      */
     fun nextToken(): XmlToken?
 
@@ -63,17 +67,20 @@ interface XmlStreamReader {
  */
 inline fun <reified T : XmlToken> XmlStreamReader.seek(selectionPredicate: (T) -> Boolean = { true }): T? {
     var token: XmlToken? = lastToken
-    var foundMatch = false
 
-    while (token != null && !foundMatch) {
-        foundMatch = if (token is T) selectionPredicate.invoke(token) else false
+    do {
+        val foundMatch = if (token is T) selectionPredicate.invoke(token) else false
         if (!foundMatch) token = nextToken()
-    }
+    } while (token != null && !foundMatch)
 
     return token as T?
 }
 
-/*
-* Creates an [XmlStreamReader] instance
-*/
-expect fun xmlStreamReader(payload: ByteArray): XmlStreamReader
+/**
+ * Creates an [XmlStreamReader] instance
+ */
+fun xmlStreamReader(payload: ByteArray): XmlStreamReader {
+    val stream = StringTextStream(payload.decodeToString())
+    val lexer = XmlLexer(stream)
+    return LexingXmlStreamReader(lexer)
+}

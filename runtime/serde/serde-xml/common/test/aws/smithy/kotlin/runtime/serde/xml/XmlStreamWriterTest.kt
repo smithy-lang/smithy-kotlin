@@ -39,8 +39,8 @@ class XmlStreamWriterTest {
         assertEquals(expectedIdempotent, writer.bytes.decodeToString())
     }
 
-    private fun generateSimpleDocument() = xmlStreamWriter(true).apply {
-        startDocument(null, null)
+    private fun generateSimpleDocument() = xmlStreamWriter().apply {
+        startDocument()
         startTag("id")
         text(912345678901.toString())
         endTag("id")
@@ -68,20 +68,19 @@ class XmlStreamWriterTest {
         writer.endTag("batch")
 
         // adapted from https://docs.aws.amazon.com/cloudsearch/latest/developerguide/documents-batch-xml.html
-        val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199" /></batch>"""
+        val expected = """<batch><add id="tt0484562"><field name="title">The Seeker: The Dark Is Rising</field></add><delete id="tt0301199"/></batch>"""
 
-        assertEquals(expected, writer.toString())
+        assertEquals(expected, writer.text)
     }
 
     // The following escape tests were adapted from
     // https://github.com/awslabs/smithy-rs/blob/c15289a7163cb6344b088a0ee39244df2967070a/rust-runtime/smithy-xml/src/unescape.rs
     @Test
     fun itHandlesEscaping() {
-        // FIXME ~ the commented out tests do not pass the XPP parser. Once new parser is in place they should pass.
         val testCases = mapOf(
-            // "< > ' \" &" to """<a>&lt; &gt; &apos; &quot; &amp;</a>""",
+            "< > ' \" &" to """<a>&lt; &gt; ' " &amp;</a>""",
             """hello 🍕!""" to """<a>hello 🍕!</a>""",
-            // """a<b>c\"d'e&f;;""" to """<a>a&lt;b&gt;c&quot;d&apos;e&amp;f;;</a>""",
+            """a<b>c\"d'e&f;;""" to """<a>a&lt;b&gt;c\"d'e&amp;f;;</a>""",
             "\n" to """<a>&#xA;</a>""",
             "\r" to """<a>&#xD;</a>"""
         )
@@ -93,8 +92,25 @@ class XmlStreamWriterTest {
             writer.text(input)
             writer.endTag("a")
 
-            assertEquals(expected, writer.toString())
+            assertEquals(expected, writer.text)
         }
+    }
+
+    @Test
+    fun itHandlesNonAsciiCharacters() {
+        val tag = "textTest"
+        val payload = (0..1023).map(Int::toChar).joinToString("")
+
+        val writer = xmlStreamWriter()
+        writer.startTag(tag)
+        writer.text(payload)
+        writer.endTag(tag)
+        val serialized = writer.bytes
+
+        val reader = xmlStreamReader(serialized)
+        reader.nextToken() // opening tag
+        val textToken = reader.nextToken() as XmlToken.Text
+        assertEquals(payload, textToken.value)
     }
 
     /**
@@ -123,7 +139,7 @@ class XmlStreamWriterTest {
             writer.text(input)
             writer.endTag("a")
 
-            assertEquals(expected, writer.toString())
+            assertEquals(expected, writer.text)
         }
     }
 }
@@ -199,27 +215,28 @@ class Message(val id: Long, val text: String, val geo: Array<Double>?, val user:
 data class User(val name: String, val followersCount: Int)
 
 val expected: String = """
-<messages>
-    <message>
-        <id>912345678901</id>
-        <text>How do I stream XML in Java?</text>
-        <geo />
-        <user>
-            <name>xml_newb</name>
-            <followers_count>41</followers_count>
-        </user>
-    </message>
-    <message>
-        <id>912345678902</id>
-        <text>@xml_newb just use XmlWriter!</text>
-        <geo>
-            <position>50.454722</position>
-            <position>-104.606667</position>
-        </geo>
-        <user>
-            <name>jesse</name>
-            <followers_count>2</followers_count>
-        </user>
-    </message>
-</messages>
+    <messages>
+        <message>
+            <id>912345678901</id>
+            <text>How do I stream XML in Java?</text>
+            <geo />
+            <user>
+                <name>xml_newb</name>
+                <followers_count>41</followers_count>
+            </user>
+        </message>
+        <message>
+            <id>912345678902</id>
+            <text>@xml_newb just use XmlWriter!</text>
+            <geo>
+                <position>50.454722</position>
+                <position>-104.606667</position>
+            </geo>
+            <user>
+                <name>jesse</name>
+                <followers_count>2</followers_count>
+            </user>
+        </message>
+    </messages>
+    
 """.trimIndent()

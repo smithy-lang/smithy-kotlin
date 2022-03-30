@@ -5,22 +5,22 @@
 
 package aws.smithy.kotlin.runtime.serde.xml
 
+import aws.smithy.kotlin.runtime.serde.xml.serialization.BufferingXmlStreamWriter
+import aws.smithy.kotlin.runtime.util.InternalApi
+
 /**
  * Defines an interface to serialization of an XML Infoset.
  */
 interface XmlStreamWriter {
 
     /**
-     * Write xml declaration with encoding (if encoding not null)
-     * and standalone flag (if standalone not null)
-     * This method can only be called just after setOutput.
+     * Write the XML declaration.
      */
-    fun startDocument(encoding: String? = null, standalone: Boolean? = null)
+    fun startDocument()
 
     /**
      * Finish writing. All unclosed start tags will be closed and output
-     * will be flushed. After calling this method no more output can be
-     * serialized until next call to setOutput()
+     * will be flushed.
      */
     fun endDocument()
 
@@ -63,9 +63,14 @@ interface XmlStreamWriter {
     fun namespacePrefix(uri: String, prefix: String? = null)
 
     /**
-     * XML content will be constructed in this UTF-8 encoded byte array.
+     * Gets the byte serialization for this writer. Note that this will call [endDocument] first, closing all open tags.
      */
     val bytes: ByteArray
+
+    /**
+     *
+     */
+    val text: String
 }
 
 fun XmlStreamWriter.text(text: Number) {
@@ -75,4 +80,5 @@ fun XmlStreamWriter.text(text: Number) {
 /*
 * Creates a [XmlStreamWriter] instance to write XML
 */
-internal expect fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter
+@InternalApi
+fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter = BufferingXmlStreamWriter(pretty)
