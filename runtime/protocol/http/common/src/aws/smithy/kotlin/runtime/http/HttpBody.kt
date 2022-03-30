@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.InternalApi
 
@@ -61,7 +62,19 @@ sealed class HttpBody {
          */
         open fun reset() { throw UnsupportedOperationException("${this::class.simpleName} can only be consumed once") }
     }
+
+    companion object {
+        /**
+         * Create a [HttpBody] from a [ByteArray]
+         */
+        fun fromBytes(bytes: ByteArray): HttpBody = ByteArrayContent(bytes)
+    }
 }
+
+/**
+ * Convert a [ByteArray] into an [HttpBody]
+ */
+fun ByteArray.toHttpBody(): HttpBody = HttpBody.fromBytes(this)
 
 /**
  * Convert a [ByteStream] to the equivalent [HttpBody] variant
