@@ -96,6 +96,23 @@ class XmlStreamWriterTest {
         }
     }
 
+    @Test
+    fun itHandlesNonAsciiCharacters() {
+        val tag = "textTest"
+        val payload = (0..1023).map(Int::toChar).joinToString("")
+
+        val writer = xmlStreamWriter()
+        writer.startTag(tag)
+        writer.text(payload)
+        writer.endTag(tag)
+        val serialized = writer.bytes
+
+        val reader = xmlStreamReader(serialized)
+        reader.nextToken() // opening tag
+        val textToken = reader.nextToken() as XmlToken.Text
+        assertEquals(payload, textToken.value)
+    }
+
     /**
      * The set of EOL characters and their corresponding escaped form are:
      *
