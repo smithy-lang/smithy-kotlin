@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.1] - 03/31/2022
+
+### New features
+* implement KMP XML serde and remove XmlPull dependency [#615](https://github.com/awslabs/smithy-kotlin/pull/615)
+
+### Fixes
+* respect hostname immutability in endpoints to disable host prefixing [#612](https://github.com/awslabs/smithy-kotlin/pull/612)
+
 ## [0.8.0] - 03/24/2022
 
 ### Breaking changes
