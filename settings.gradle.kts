@@ -49,6 +49,7 @@ include(":runtime:protocol:http-client-engines:http-client-engine-default")
 include(":runtime:protocol:http-client-engines:test-suite")
 
 include(":tests")
+include(":tests:benchmarks:crypto-benchmarks")
 include(":tests:benchmarks:serde-benchmarks-codegen")
 include(":tests:benchmarks:serde-benchmarks")
 include(":tests:compile")

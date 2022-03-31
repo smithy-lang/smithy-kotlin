@@ -16,7 +16,7 @@ class Md5 : Digest {
     private var c = INIT_C
     private var d = INIT_D
 
-    private var length = 0L
+    private var length = 0
 
     /**
      * Holds the incomplete portion of a block that's not ready for digesting yet.
@@ -27,6 +27,8 @@ class Md5 : Digest {
      * The number of bytes in the [remainder] that are used (0-63).
      */
     private var remainderSize = 0
+
+    private val buffer = IntArray(16) // Optimization to reduce allocations in digestBlock()
 
     override fun append(input: ByteArray) {
         if (input.size < BLOCK_SIZE - remainderSize) { // We're not appending enough for a full block incl remainder
@@ -58,7 +60,7 @@ class Md5 : Digest {
         val messageLenBytes = length
         val numBlocks = ((messageLenBytes + 8) ushr 6) + 1
         val totalLen = numBlocks shl 6
-        val paddingBytes = ByteArray((totalLen - messageLenBytes).toInt())
+        val paddingBytes = ByteArray(totalLen - messageLenBytes)
         paddingBytes[0] = PADDING_START_BYTE
         var messageLenBits = messageLenBytes shl 3
 
@@ -70,9 +72,13 @@ class Md5 : Digest {
         append(paddingBytes)
 
         val md5 = ByteArray(16)
-        val state = intArrayOf(a, b, c, d)
         for (i in 0..3) {
-            var n = state[i]
+            var n = when (i) {
+                0 -> a
+                1 -> b
+                2 -> c
+                else -> d
+            }
             for (j in 0..3) {
                 md5[i * 4 + j] = n.toByte()
                 n = n ushr 8
@@ -98,11 +104,10 @@ class Md5 : Digest {
      * Digests a complete block.
      */
     private fun digestBlock(block: ByteArray, startByteIndex: Int) {
-        val buffer = IntArray(16)
-
         for (j in 0 until BLOCK_SIZE) {
             val byte = block[startByteIndex + j]
-            buffer[j ushr 2] = (byte.toInt() shl 24) or (buffer[j ushr 2] ushr 8)
+            val i = j ushr 2
+            buffer[i] = (byte.toInt() shl 24) or (buffer[i] ushr 8)
         }
 
         val origA = a
@@ -155,7 +160,7 @@ class Md5 : Digest {
         b = INIT_B
         c = INIT_C
         d = INIT_D
-        length = 0L
+        length = 0
         remainderSize = 0
     }
 }
