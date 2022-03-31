@@ -798,7 +798,7 @@ class XmlSerializerTest {
         }
 
         val expected = """
-            <Foo bool="true" str="bar" number="2" />
+            <Foo bool="true" str="bar" number="2"/>
         """.toXmlCompactString()
 
         assertEquals(expected, serializer.toByteArray().decodeToString())
@@ -832,10 +832,10 @@ class XmlSerializerTest {
             field(nestedDescriptor, nestedSerializer)
         }
 
-        // ... the order these attributes come out w.r.t namespaces is not well defined
+        // The order these attributes come out in exactly the order they're put in (as defined by XmlSerializer).
         val expected = """
             <Foo>
-                <nestedField xsi:myAttr="nestedAttrValue" xmlns:xsi="https://example.com" />
+                <nestedField xmlns:xsi="https://example.com" xsi:myAttr="nestedAttrValue"/>
             </Foo>
         """.toXmlCompactString()
 

@@ -54,9 +54,9 @@ class XmlStreamReaderTest {
 
         // Test that input contains a single TEXT
         assertEquals(3, actual.size)
-        assertTrue(actual[0] is XmlToken.BeginElement)
-        assertTrue(actual[1] is XmlToken.Text)
-        assertTrue(actual[2] is XmlToken.EndElement)
+        assertIs<XmlToken.BeginElement>(actual[0])
+        assertIs<XmlToken.Text>(actual[1])
+        assertIs<XmlToken.EndElement>(actual[2])
         assertTrue((actual[1] as XmlToken.Text).value!!.isNotEmpty())
     }
 
@@ -111,9 +111,9 @@ class XmlStreamReaderTest {
         val actual = xmlStreamReader(payload).allTokens()
         println(actual)
 
-        assertEquals(actual.size, 6)
-        assertTrue(actual.first() is XmlToken.BeginElement)
-        assertTrue((actual.first() as XmlToken.BeginElement).name.local == "payload")
+        assertEquals(6, actual.size)
+        assertIs<XmlToken.BeginElement>(actual.first())
+        assertEquals("payload", (actual.first() as XmlToken.BeginElement).name.local)
     }
 
     @Test
@@ -227,7 +227,7 @@ class XmlStreamReaderTest {
         }
 
         val nt = reader.peek()
-        assertTrue(nt is XmlToken.BeginElement)
+        assertIs<XmlToken.BeginElement>(nt)
 
         assertEquals("unknown", nt.name.local)
         reader.skipNext()
@@ -253,7 +253,7 @@ class XmlStreamReaderTest {
         }
         reader.skipNext()
 
-        assertTrue(reader.peek() is XmlToken.BeginElement)
+        assertIs<XmlToken.BeginElement>(reader.peek())
 
         val zElement = reader.nextToken() as XmlToken.BeginElement
         assertEquals("z", zElement.name.local)
@@ -296,26 +296,71 @@ class XmlStreamReaderTest {
         """.trimIndent().encodeToByteArray()
         val reader = xmlStreamReader(payload)
 
-        assertTrue(reader.lastToken?.depth == 1, "Expected to start at level 1")
+        assertNull(reader.lastToken, "Expected to start with null lastToken")
         var peekedToken = reader.peek()
-        assertTrue(peekedToken is XmlToken.BeginElement)
-        assertTrue(peekedToken.name.local == "l1")
-        assertTrue(reader.lastToken?.depth == 1, "Expected peek to not effect level")
+        assertIs<XmlToken.BeginElement>(peekedToken)
+        assertEquals("l1", peekedToken.name.local)
+        assertNull(reader.lastToken, "Expected peek to not effect lastToken")
         reader.nextToken() // consumed l1
+        assertEquals(1, reader.lastToken?.depth, "Expected level 1")
 
         peekedToken = reader.nextToken() // consumed l2
-        assertTrue(reader.lastToken?.depth == 2, "Expected level 2")
-        assertTrue(peekedToken is XmlToken.BeginElement)
-        assertTrue(peekedToken.name.local == "l2")
+        assertEquals(2, reader.lastToken?.depth, "Expected level 2")
+        assertIs<XmlToken.BeginElement>(peekedToken)
+        assertEquals("l2", peekedToken.name.local)
         reader.peek()
-        assertTrue(reader.lastToken?.depth == 2, "Expected peek to not effect level")
+        assertEquals(2, reader.lastToken?.depth, "Expected peek to not effect level")
 
         peekedToken = reader.nextToken()
-        assertTrue(reader.lastToken?.depth == 3, "Expected level 3")
-        assertTrue(peekedToken is XmlToken.BeginElement)
-        assertTrue(peekedToken.name.local == "l3")
+        assertEquals(3, reader.lastToken?.depth, "Expected level 3")
+        assertIs<XmlToken.BeginElement>(peekedToken)
+        assertEquals("l3", peekedToken.name.local)
         reader.peek()
-        assertTrue(reader.lastToken?.depth == 3, "Expected peek to not effect level")
+        assertEquals(3, reader.lastToken?.depth, "Expected peek to not effect level")
+    }
+
+    @Test
+    fun itPeeksWithoutImpactingLastToken() {
+        val payload = """
+            <a>
+                <b/>
+                <c>
+                    <d>Whee</d>
+                </c>
+                <e/>
+                <f>
+                    <g>
+                        <h/>
+                    </g>
+                </f>
+            </a>
+        """.trimIndent().encodeToByteArray()
+        val reader = xmlStreamReader(payload)
+
+        assertNull(reader.lastToken, "Expected to start with null lastToken")
+        assertEquals(XmlToken.BeginElement(1, "a"), reader.peek(1))
+        assertNull(reader.lastToken, "Expected peek not to affect lastToken")
+        assertEquals(XmlToken.BeginElement(2, "b"), reader.peek(2))
+        assertEquals(XmlToken.EndElement(2, "b"), reader.peek(3))
+        assertNull(reader.lastToken, "Expected peek not to affect lastToken")
+
+        reader.nextToken()
+        assertEquals(reader.lastToken, XmlToken.BeginElement(1, "a"))
+        reader.nextToken()
+        assertEquals(reader.lastToken, XmlToken.BeginElement(2, "b"))
+        reader.nextToken()
+        assertEquals(reader.lastToken, XmlToken.EndElement(2, "b"))
+        reader.nextToken()
+        assertEquals(reader.lastToken, XmlToken.BeginElement(2, "c"))
+        reader.nextToken()
+        assertEquals(reader.lastToken, XmlToken.BeginElement(3, "d"))
+
+        assertEquals(XmlToken.Text(3, "Whee"), reader.peek(1))
+        assertEquals(reader.lastToken, XmlToken.BeginElement(3, "d"), "Expected peek not to affect lastToken")
+        assertEquals(XmlToken.EndElement(3, "d"), reader.peek(2))
+        assertEquals(reader.lastToken, XmlToken.BeginElement(3, "d"), "Expected peek not to affect lastToken")
+        assertEquals(XmlToken.EndElement(2, "c"), reader.peek(3))
+        assertEquals(reader.lastToken, XmlToken.BeginElement(3, "d"), "Expected peek not to affect lastToken")
     }
 
     @Test
@@ -400,8 +445,8 @@ class XmlStreamReaderTest {
         var unit = xmlStreamReader(payload)
 
         val token = unit.nextToken()
-        assertTrue(token is XmlToken.BeginElement)
-        assertTrue(token.name.local == "root")
+        assertIs<XmlToken.BeginElement>(token)
+        assertEquals("root", token.name.local)
 
         var subTree1 = unit.subTreeReader()
         var subTree1Elements = subTree1.allTokens()
@@ -449,6 +494,57 @@ class XmlStreamReaderTest {
     }
 
     @Test
+    fun itHandlesSubreadersCorrectly() {
+        val payload = """
+            <outermost>
+                <outer-1/>
+                <outer-2>
+                    <inner-a>a</inner-a>
+                    <inner-b>b</inner-b>
+                    <inner-c>c</inner-c>
+                </outer-2>
+                <outer-3>
+                    <inner-d>d</inner-d>
+                    <inner-e>e</inner-e>
+                    <inner-f>
+                        <innermost>f</innermost>
+                    </inner-f>
+                </outer-3>
+                <outer-4/>
+                <outer-5>
+                    <inner-g/>
+                </outer-5>
+            </outermost>
+        """.encodeToByteArray()
+        val reader = xmlStreamReader(payload)
+
+        assertEquals(XmlToken.BeginElement(1, "outermost"), reader.nextToken())
+        assertEquals(XmlToken.BeginElement(2, "outer-1"), reader.nextToken())
+
+        var subreader = reader.subTreeReader(XmlStreamReader.SubtreeStartDepth.CHILD) // Children of <outer-1/> = ∅
+        assertNull(subreader.nextToken(), "Expected no children for <outer-1/> node")
+
+        // Special case for empty subtrees: advance lastToken to the end element
+        assertEquals(XmlToken.EndElement(2, "outer-1"), reader.lastToken)
+
+        assertEquals(XmlToken.BeginElement(2, "outer-2"), reader.nextToken())
+        subreader = reader.subTreeReader((XmlStreamReader.SubtreeStartDepth.CHILD)) // 3 child tags with text
+        ('a'..'c').forEach {
+            assertEquals(XmlToken.BeginElement(3, "inner-$it"), subreader.peek(1))
+            assertEquals(XmlToken.Text(3, "$it"), subreader.peek(2))
+            assertEquals(XmlToken.EndElement(3, "inner-$it"), subreader.peek(3))
+
+            assertEquals(XmlToken.BeginElement(3, "inner-$it"), subreader.nextToken())
+            assertEquals(XmlToken.Text(3, "$it"), subreader.nextToken())
+            assertEquals(XmlToken.EndElement(3, "inner-$it"), subreader.nextToken())
+            assertEquals(XmlToken.EndElement(3, "inner-$it"), subreader.lastToken)
+        }
+        assertNull(subreader.nextToken(), "Expected no more children for <outer-2> node")
+
+        assertEquals(XmlToken.EndElement(2, "outer-2"), reader.nextToken())
+    }
+
+    @Test
     fun itHandlesPeekingMultipleLevels() {
         val payload = """
             <r>
@@ -465,26 +561,26 @@ class XmlStreamReaderTest {
         val aToken = actual.peek(2)
         val rTokenTake = actual.nextToken()
 
-        assertTrue(rTokenPeek is XmlToken.BeginElement)
-        assertTrue(rTokenPeek.name.local == "r")
+        assertIs<XmlToken.BeginElement>(rTokenPeek)
+        assertEquals("r", rTokenPeek.name.local)
 
-        assertTrue(aToken is XmlToken.BeginElement)
-        assertTrue(aToken.name.local == "a")
+        assertIs<XmlToken.BeginElement>(aToken)
+        assertEquals("a", aToken.name.local)
 
-        assertTrue(rTokenTake is XmlToken.BeginElement)
-        assertTrue(rTokenTake.name.local == "r")
+        assertIs<XmlToken.BeginElement>(rTokenTake)
+        assertEquals("r", rTokenTake.name.local)
 
         val bToken = actual.peek(2)
-        assertTrue(bToken is XmlToken.BeginElement)
-        assertTrue(bToken.name.local == "b")
+        assertIs<XmlToken.BeginElement>(bToken)
+        assertEquals("b", bToken.name.local)
 
         val aTokenTake = actual.nextToken()
-        assertTrue(aTokenTake is XmlToken.BeginElement)
-        assertTrue(aTokenTake.name.local == "a")
+        assertIs<XmlToken.BeginElement>(aTokenTake)
+        assertEquals("a", aTokenTake.name.local)
 
-        val aCloseToken = actual.peek(4)
-        assertTrue(aCloseToken is XmlToken.EndElement)
-        assertTrue(aTokenTake.name.local == "a")
+        val aCloseToken = actual.peek(5) // 1:<b> 2:<c> 3:</c> 4:</b> 5:</a>
+        assertIs<XmlToken.EndElement>(aCloseToken)
+        assertEquals("a", aCloseToken.name.local)
 
         val restOfTokens = actual.allTokens()
         assertEquals(restOfTokens.size, 6)
@@ -505,19 +601,19 @@ class XmlStreamReaderTest {
 
         // match text node contents
         val textNode = unit.seek<XmlToken.Text> { text -> text.value == "some text" }
-        assertTrue(textNode is XmlToken.Text)
-        assertTrue(textNode.value == "some text")
+        assertIs<XmlToken.Text>(textNode)
+        assertEquals("some text", textNode.value)
 
         unit = xmlStreamReader(payload)
         // match begin node of depth 2
         val l2Node = unit.seek<XmlToken.BeginElement> { it.depth == 2 }
-        assertTrue(l2Node is XmlToken.BeginElement)
-        assertTrue(l2Node.name.local == "a")
+        assertIs<XmlToken.BeginElement>(l2Node)
+        assertEquals("a", l2Node.name.local)
 
         // verify next token is correct
         val nextNode = unit.nextToken()
-        assertTrue(nextNode is XmlToken.BeginElement)
-        assertTrue(nextNode.name.local == "b")
+        assertIs<XmlToken.BeginElement>(nextNode)
+        assertEquals("b", nextNode.name.local)
 
         // verify no match produces null
         unit = xmlStreamReader(payload)
@@ -540,13 +636,114 @@ class XmlStreamReaderTest {
 
         invalidTextList.forEach { testCase ->
             val input = "<a>$testCase</a>".encodeToByteArray()
-            // FIXME ~ XPP throws NPE here due to invalid internal state.  Once we have a better
-            //  XML parser we should expect a specific parse exception.
-            assertFails {
+            val ex = assertFailsWith<DeserializationException> {
                 val actual = xmlStreamReader(input)
                 actual.allTokens()
             }
+            assertTrue(ex.message!!.contains("reference"), "Expected error message to contain the word 'reference'")
         }
+    }
+
+    @Test
+    fun itHandlesWhitespaceCorrectly() {
+        val payload = """
+            <doc>
+                <a> <b/> </a>
+                <c>No leading/trailing spaces</c>
+                <d>  Leading spaces</d>
+                <e>Trailing spaces  </e>
+                <f>  Leading/trailing spaces  </f>
+                <g> Leading text <h/> </g> 
+                <i> <j/> Trailing text </i>
+                <k>   </k> <!-- Blank space only! -->
+                <l> <!-- Blank space only! -->  </l>
+                <m><!-- Blank space only! -->   </m>
+                <n>   <!-- Blank space only! --></n>
+            </doc>
+        """.encodeToByteArray()
+        var reader = xmlStreamReader(payload)
+
+        fun readAndAssertEquals(vararg tokens: XmlToken) {
+            tokens.forEach {
+                assertEquals(it, reader.nextToken())
+            }
+        }
+
+        readAndAssertEquals(XmlToken.BeginElement(1, "doc"))
+
+        // No text nodes because they're all blank and a child <b/> tag exists
+        readAndAssertEquals(
+            XmlToken.BeginElement(2, "a"),
+            XmlToken.BeginElement(3, "b"),
+            XmlToken.EndElement(3, "b"),
+            XmlToken.EndElement(2, "a"),
+        )
+
+        // A single text node
+        readAndAssertEquals(
+            XmlToken.BeginElement(2, "c"),
+            XmlToken.Text(2, "No leading/trailing spaces"),
+            XmlToken.EndElement(2, "c"),
+        )
+
+        // Text node with leading space
+        readAndAssertEquals(
+            XmlToken.BeginElement(2, "d"),
+            XmlToken.Text(2, "  Leading spaces"),
+            XmlToken.EndElement(2, "d"),
+        )
+
+        // Text node with trailing space
+        readAndAssertEquals(
+            XmlToken.BeginElement(2, "e"),
+            XmlToken.Text(2, "Trailing spaces  "),
+            XmlToken.EndElement(2, "e"),
+        )
+
+        // Text node with leading & trailing space
+        readAndAssertEquals(
+            XmlToken.BeginElement(2, "f"),
+            XmlToken.Text(2, "  Leading/trailing spaces  "),
+            XmlToken.EndElement(2, "f"),
+        )
+
+        // Text node before <h/>, no text node afterward
+        readAndAssertEquals(
+            XmlToken.BeginElement(2, "g"),
+            XmlToken.Text(2, " Leading text "),
+            XmlToken.BeginElement(3, "h"),
+            XmlToken.EndElement(3, "h"),
+            XmlToken.EndElement(2, "g"),
+        )
+
+        // Text node after <j/>, no text node before
+        readAndAssertEquals(
+            XmlToken.BeginElement(2, "i"),
+            XmlToken.BeginElement(3, "j"),
+            XmlToken.EndElement(3, "j"),
+            XmlToken.Text(2, " Trailing text "),
+            XmlToken.EndElement(2, "i"),
+        )
+
+        // Variations on blank text nodes
+        ('k'..'n').map(Char::toString).forEach {
+            readAndAssertEquals(
+                XmlToken.BeginElement(2, it),
+                XmlToken.Text(2, "   "),
+                XmlToken.EndElement(2, it),
+            )
+        }
+    }
+
+    @Test
+    fun itHandlesCdata() {
+        val payload = """
+            <doc>This is a <![CDATA[<test/>]]> of CDATA</doc>
+        """.encodeToByteArray()
+        var reader = xmlStreamReader(payload)
+
+        reader.nextToken()
+        assertEquals(XmlToken.Text(1, "This is a <test/> of CDATA"), reader.nextToken())
     }
 }
 
