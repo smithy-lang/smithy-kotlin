@@ -274,7 +274,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         }
 
         resolver.determineRequestContentType(op)?.let { contentType ->
-            writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
+            writer.openBlock("if (builder.body !is HttpBody.Empty) {", "}") {
+                writer.write("builder.headers.setMissing(\"Content-Type\", #S)", contentType)
+            }
         }
     }
 
