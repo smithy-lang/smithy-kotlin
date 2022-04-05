@@ -17,7 +17,6 @@ package aws.smithy.kotlin.runtime.util
     level = RequiresOptIn.Level.ERROR,
     message = "This API is internal to smithy-client-rt and should not be used. It could be removed or changed without notice."
 )
-@Experimental(level = Experimental.Level.ERROR)
 @Target(
     AnnotationTarget.CLASS,
     AnnotationTarget.TYPEALIAS,
