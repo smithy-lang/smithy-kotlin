@@ -158,6 +158,7 @@ internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkByteBuffe
     // channel was closed while waiting and no further content was made available
     if (availableForRead == 0 && isClosedForRead) return -1
     val tmp = ByteArray(minOf(availableForRead.toLong(), limit, Int.MAX_VALUE.toLong()).toInt())
+    readFully(tmp)
     dest.writeFully(tmp)
     return tmp.size.toLong()
 }
