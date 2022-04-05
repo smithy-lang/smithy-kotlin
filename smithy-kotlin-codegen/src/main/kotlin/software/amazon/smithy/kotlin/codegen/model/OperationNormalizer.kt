@@ -94,7 +94,7 @@ object OperationNormalizer {
                 """renaming operation inputs or outputs will result in a conflict for:
                 |$formatted
                 |Fix by supplying a manual rename customization for the shapes listed.
-            """.trimMargin()
+                """.trimMargin()
             )
         }
     }
