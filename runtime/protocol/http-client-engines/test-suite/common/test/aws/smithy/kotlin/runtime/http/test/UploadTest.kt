@@ -94,7 +94,6 @@ class UploadTest : AbstractEngineTest() {
             val wrappedStream = object : ByteStream.ReplayableStream() {
                 override val contentLength: Long = data.size.toLong()
                 override fun newReader(): SdkByteReadChannel {
-                    println("new reader called")
                     val underlying = SdkByteReadChannel(data)
                     return object : SdkByteReadChannel by underlying {}
                 }
