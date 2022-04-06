@@ -3,7 +3,12 @@ package software.aws.ktlint.rules
 import com.pinterest.ktlint.core.Rule
 import org.jetbrains.kotlin.com.intellij.lang.ASTNode
 
-class CopyrightHeaderRule : Rule("copyright-header"), Rule.Modifier.RestrictToRoot {
+class CopyrightHeaderRule : Rule(
+    "copyright-header",
+    visitorModifiers = setOf(
+        VisitorModifier.RunOnRootNodeOnly
+    )
+) {
     companion object {
         private val header = """
             /*
