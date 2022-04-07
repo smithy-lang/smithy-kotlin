@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.2] - 04/07/2022
+
+### Fixes
+* remove maxTime from StandardRetryStrategy [#624](https://github.com/awslabs/smithy-kotlin/pull/624)
+* readAvailable fallback behavior [#620](https://github.com/awslabs/smithy-kotlin/pull/620)
+
 ## [0.8.1] - 03/31/2022
 
 ### New features
