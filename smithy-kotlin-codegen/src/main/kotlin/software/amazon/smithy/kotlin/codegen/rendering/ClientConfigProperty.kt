@@ -263,24 +263,9 @@ object KotlinClientRuntimeConfigProperty {
                 strategy.
             """.trimIndent()
 
-            val retryStrategyBlock = """
-                run {
-                    val strategyOptions = StandardRetryStrategyOptions.Default
-                    val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default)
-                    val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitterOptions.Default)
-                    StandardRetryStrategy(strategyOptions, tokenBucket, delayer)
-                }
-            """.trimIndent()
-            propertyType = ClientConfigPropertyType.ConstantValue(retryStrategyBlock)
+            propertyType = ClientConfigPropertyType.ConstantValue("StandardRetryStrategy()")
 
-            additionalImports = listOf(
-                RuntimeTypes.Core.Retries.StandardRetryStrategy,
-                RuntimeTypes.Core.Retries.StandardRetryStrategyOptions,
-                RuntimeTypes.Core.Retries.Delay.StandardRetryTokenBucket,
-                RuntimeTypes.Core.Retries.Delay.StandardRetryTokenBucketOptions,
-                RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitter,
-                RuntimeTypes.Core.Retries.Delay.ExponentialBackoffWithJitterOptions,
-            )
+            additionalImports = listOf(RuntimeTypes.Core.Retries.StandardRetryStrategy)
         }
 
         SdkLogMode = ClientConfigProperty {

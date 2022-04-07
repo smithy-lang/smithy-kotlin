@@ -20,7 +20,6 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlin.test.*
-import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 class StandardRetryIntegrationTest {
@@ -30,7 +29,7 @@ class StandardRetryIntegrationTest {
         val testCases = standardRetryIntegrationTestCases
             .mapValues { Yaml.default.decodeFromString(TestCase.serializer(), it.value) }
         testCases.forEach { (name, tc) ->
-            val options = StandardRetryStrategyOptions(maxTime = Duration.INFINITE, maxAttempts = tc.given.maxAttempts)
+            val options = StandardRetryStrategyOptions(maxAttempts = tc.given.maxAttempts)
             val tokenBucket = StandardRetryTokenBucket(
                 StandardRetryTokenBucketOptions.Default.copy(
                     maxCapacity = tc.given.initialRetryTokens,

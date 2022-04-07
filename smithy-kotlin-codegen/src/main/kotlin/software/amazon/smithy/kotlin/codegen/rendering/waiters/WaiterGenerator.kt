@@ -34,7 +34,7 @@ private fun KotlinWriter.renderRetryStrategy(wi: WaiterInfo, asValName: String) 
         }
         write("val delay = ExponentialBackoffWithJitter(delayOptions)")
         write("")
-        write("val waiterOptions = StandardRetryStrategyOptions(maxTime = 300.#T, maxAttempts = 20)", KotlinTypes.Time.seconds)
+        write("val waiterOptions = StandardRetryStrategyOptions(maxAttempts = 20)")
         write("StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)")
     }
 }

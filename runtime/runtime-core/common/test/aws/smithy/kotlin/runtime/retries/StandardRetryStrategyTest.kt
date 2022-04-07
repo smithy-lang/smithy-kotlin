@@ -12,10 +12,8 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
-import kotlin.time.Duration.Companion.milliseconds
 
 class StandardRetryStrategyTest {
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -160,53 +158,6 @@ class StandardRetryStrategyTest {
 
         val token = bucket.lastTokenAcquired!!
         assertTrue(token.nextToken!!.nextToken!!.isFailure)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun testTooLongFromException() = runTest {
-        val options = StandardRetryStrategyOptions.Default.copy(maxTime = 1_500.milliseconds)
-        val bucket = RecordingTokenBucket()
-        val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
-        val policy = StringRetryPolicy()
-
-        val result = runCatching {
-            retryer.retry(policy) {
-                delay(1_000)
-                throw ConcurrentModificationException()
-            }
-        }
-
-        assertIs<ConcurrentModificationException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
-
-        val token = bucket.lastTokenAcquired!!
-        assertTrue(token.nextToken!!.isFailure)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun testTooLongFromResult() = runTest {
-        val options = StandardRetryStrategyOptions.Default.copy(maxTime = 1_000.milliseconds)
-        val bucket = RecordingTokenBucket()
-        val delayer = RecordingDelayer()
-        val retryer = StandardRetryStrategy(options, bucket, delayer)
-        val policy = StringRetryPolicy()
-
-        val result = runCatching {
-            retryer.retry(policy) {
-                delay(2_000)
-                "This will never run!"
-            }
-        }
-
-        val ex = assertIs<TimedOutException>(result.exceptionOrNull(), "Unexpected ${result.exceptionOrNull()}")
-        assertEquals(1, ex.attempts)
-        assertNull(ex.lastResponse)
-        assertNull(ex.lastException)
-
-        val token = bucket.lastTokenAcquired!!
-        assertTrue(token.isFailure)
     }
 }
 
