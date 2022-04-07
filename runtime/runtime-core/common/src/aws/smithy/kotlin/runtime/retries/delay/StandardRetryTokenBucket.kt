@@ -23,7 +23,7 @@ private const val MS_PER_S = 1_000
  * @param clock A clock to use for time calculations.
  */
 class StandardRetryTokenBucket(
-    val options: StandardRetryTokenBucketOptions,
+    val options: StandardRetryTokenBucketOptions = StandardRetryTokenBucketOptions.Default,
     private val clock: Clock = Clock.System,
 ) : RetryTokenBucket {
     internal var capacity = options.maxCapacity

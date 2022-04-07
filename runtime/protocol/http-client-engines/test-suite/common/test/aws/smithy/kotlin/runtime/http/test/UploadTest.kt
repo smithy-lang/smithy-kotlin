@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.test
 
+import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -14,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
+import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.encodeToHex
@@ -29,7 +31,7 @@ class UploadTest : AbstractEngineTest() {
     fun testUploadIntegrity() = testEngines {
         // test that what we write the entire contents given to us
         test { env, client ->
-            val data = ByteArray(16 * 1024 * 1023) { it.toByte() }
+            val data = ByteArray(16 * 1024 * 1024) { it.toByte() }
             val sha = data.sha256().encodeToHex()
 
             val req = HttpRequest {
@@ -78,6 +80,36 @@ class UploadTest : AbstractEngineTest() {
                 assertEquals(HttpStatusCode.OK, call.response.status)
                 assertEquals(sha, call.response.headers["content-sha256"])
             }
+        }
+    }
+
+    @Test
+    fun testUploadWithWrappedStream() = testEngines {
+        // test custom ByteStream behavior
+        // see https://github.com/awslabs/smithy-kotlin/issues/613
+        test { env, client ->
+            val data = ByteArray(1024 * 1024) { it.toByte() }
+            val sha = data.sha256().encodeToHex()
+
+            val wrappedStream = object : ByteStream.ReplayableStream() {
+                override val contentLength: Long = data.size.toLong()
+                override fun newReader(): SdkByteReadChannel {
+                    val underlying = SdkByteReadChannel(data)
+                    return object : SdkByteReadChannel by underlying {}
+                }
+            }
+
+            val req = HttpRequest {
+                method = HttpMethod.POST
+                url(env.testServer)
+                url.path = "/upload/content"
+                body = wrappedStream.toHttpBody()
+            }
+
+            val call = client.call(req)
+            call.complete()
+            assertEquals(HttpStatusCode.OK, call.response.status)
+            assertEquals(sha, call.response.headers["content-sha256"], "sha mismatch for upload on ${client.engine}")
         }
     }
 }

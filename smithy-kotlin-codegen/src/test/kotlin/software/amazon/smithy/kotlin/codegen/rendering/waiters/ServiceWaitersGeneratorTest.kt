@@ -87,7 +87,7 @@ class ServiceWaitersGeneratorTest {
                 )
                 val delay = ExponentialBackoffWithJitter(delayOptions)
             
-                val waiterOptions = StandardRetryStrategyOptions(maxTime = 300.seconds, maxAttempts = 20)
+                val waiterOptions = StandardRetryStrategyOptions(maxAttempts = 20)
                 StandardRetryStrategy(waiterOptions, InfiniteTokenBucket, delay)
             }
         """.formatForTest()

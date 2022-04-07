@@ -25,7 +25,9 @@ import kotlin.time.DurationUnit
  *
  * @param options The configuration to use for this delayer.
  */
-class ExponentialBackoffWithJitter(val options: ExponentialBackoffWithJitterOptions) : DelayProvider {
+class ExponentialBackoffWithJitter(
+    val options: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions.Default
+) : DelayProvider {
     private val random = Random.Default
 
     /**
