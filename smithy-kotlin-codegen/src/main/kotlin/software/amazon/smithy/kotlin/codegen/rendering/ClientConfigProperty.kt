@@ -294,7 +294,7 @@ object KotlinClientRuntimeConfigProperty {
         }
 
         EndpointResolver = ClientConfigProperty {
-            symbol = RuntimeTypes.Http.Operation.EndpointResolver
+            symbol = RuntimeTypes.Http.Endpoints.EndpointResolver
             documentation = """
             Set the [${symbol!!.fullName}] used to resolve service endpoints. Operation requests will be 
             made against the endpoint returned by the resolver.

@@ -67,7 +67,13 @@ object RuntimeTypes {
             val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
             val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
-            val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "operation")
+        }
+
+        object Endpoints {
+            val AwsEndpoint = runtimeSymbol("AwsEndpoint", KotlinDependency.HTTP, "endpoints")
+            val AwsEndpointResolver = runtimeSymbol("AwsEndpointResolver", KotlinDependency.HTTP, "endpoints")
+            val CredentialScope = runtimeSymbol("CredentialScope", KotlinDependency.HTTP, "endpoints")
+            val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "endpoints")
         }
 
         object Engine {
@@ -176,6 +182,33 @@ object RuntimeTypes {
             val FormUrlMapName = runtimeSymbol("FormUrlMapName", KotlinDependency.SERDE_FORM_URL)
             val QueryLiteral = runtimeSymbol("QueryLiteral", KotlinDependency.SERDE_FORM_URL)
             val FormUrlSerializer = runtimeSymbol("FormUrlSerializer", KotlinDependency.SERDE_FORM_URL)
+        }
+    }
+
+    object Auth {
+        object Credentials {
+            object AwsCredentials {
+                val Credentials = runtimeSymbol("Credentials", KotlinDependency.AWS_CREDENTIALS)
+                val CredentialsProvider = runtimeSymbol("CredentialsProvider", KotlinDependency.AWS_CREDENTIALS)
+            }
+        }
+
+        object Signing {
+            object AwsSigningCommon {
+                val AwsSignedBodyHeader = runtimeSymbol("AwsSignedBodyHeader", KotlinDependency.AWS_SIGNING_COMMON)
+                val AwsSigner = runtimeSymbol("AwsSigner", KotlinDependency.AWS_SIGNING_COMMON)
+                val AwsSignerContextMiddleware = runtimeSymbol("AwsSignerContextMiddleware", KotlinDependency.AWS_SIGNING_COMMON, "middleware")
+                val AwsSigningAttributes = runtimeSymbol("AwsSigningAttributes", KotlinDependency.AWS_SIGNING_COMMON)
+                val AwsSigningMiddleware = runtimeSymbol("AwsSigningMiddleware", KotlinDependency.AWS_SIGNING_COMMON, "middleware")
+                val createPresignedRequest = runtimeSymbol("createPresignedRequest", KotlinDependency.AWS_SIGNING_COMMON)
+                val PresignedRequestConfig = runtimeSymbol("PresignedRequestConfig", KotlinDependency.AWS_SIGNING_COMMON)
+                val ServicePresignConfig = runtimeSymbol("ServicePresignConfig", KotlinDependency.AWS_SIGNING_COMMON)
+                val SigningLocation = runtimeSymbol("SigningLocation", KotlinDependency.AWS_SIGNING_COMMON)
+            }
+
+            object AwsSigningCrt {
+                val CrtAwsSigner = runtimeSymbol("CrtAwsSigner", KotlinDependency.AWS_SIGNING_CRT)
+            }
         }
     }
 

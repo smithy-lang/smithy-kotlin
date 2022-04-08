@@ -11,6 +11,15 @@ import aws.smithy.kotlin.runtime.util.text.VALID_PCHAR_DELIMS
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 
+public fun CharSequence.fullUriToQueryParameters(): QueryParameters? {
+    val idx = indexOf("?")
+    if (idx < 0 || idx + 1 > length) return null
+
+    val fragmentIdx = indexOf("#", startIndex = idx)
+    val rawQueryString = if (fragmentIdx > 0) substring(idx + 1, fragmentIdx) else substring(idx + 1)
+    return rawQueryString.splitAsQueryParameters()
+}
+
 /**
  * Split a (decoded) query string "foo=baz&bar=quux" into it's component parts
  */
