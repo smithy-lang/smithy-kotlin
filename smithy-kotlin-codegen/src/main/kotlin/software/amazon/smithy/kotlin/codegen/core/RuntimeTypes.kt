@@ -197,7 +197,6 @@ object RuntimeTypes {
             object AwsSigningCommon {
                 val AwsSignedBodyHeader = runtimeSymbol("AwsSignedBodyHeader", KotlinDependency.AWS_SIGNING_COMMON)
                 val AwsSigner = runtimeSymbol("AwsSigner", KotlinDependency.AWS_SIGNING_COMMON)
-                val AwsSignerContextMiddleware = runtimeSymbol("AwsSignerContextMiddleware", KotlinDependency.AWS_SIGNING_COMMON, "middleware")
                 val AwsSigningAttributes = runtimeSymbol("AwsSigningAttributes", KotlinDependency.AWS_SIGNING_COMMON)
                 val AwsSigningMiddleware = runtimeSymbol("AwsSigningMiddleware", KotlinDependency.AWS_SIGNING_COMMON, "middleware")
                 val createPresignedRequest = runtimeSymbol("createPresignedRequest", KotlinDependency.AWS_SIGNING_COMMON)

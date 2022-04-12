@@ -6,9 +6,7 @@ package aws.smithy.kotlin.runtime.http.util
 
 import aws.smithy.kotlin.runtime.http.QueryParameters
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class TextTest {
 
@@ -40,6 +38,41 @@ class TextTest {
                 assertTrue(actualNoEquals.contains(entry.key, value), "parsed query does not contain ${entry.key}:$value")
             }
         }
+    }
+
+    @Test
+    fun testFullUriToQueryParameters() {
+        val uri = "http://foo.com?a=apple&b=banana&c=cherry"
+        val params = uri.fullUriToQueryParameters()
+        assertNotNull(params)
+        assertEquals("apple", params["a"])
+        assertEquals("banana", params["b"])
+        assertEquals("cherry", params["c"])
+    }
+
+    @Test
+    fun testFullUriToQueryParameters_withFragment() {
+        val uri = "http://foo.com?a=apple&b=banana&c=cherry#d=durian"
+        val params = uri.fullUriToQueryParameters()
+        assertNotNull(params)
+        assertEquals("apple", params["a"])
+        assertEquals("banana", params["b"])
+        assertEquals("cherry", params["c"])
+        assertFalse("d" in params)
+    }
+
+    @Test
+    fun testFullUriToQueryParameters_emptyQueryString() {
+        val uri = "http://foo.com?"
+        val params = uri.fullUriToQueryParameters()
+        assertNull(params)
+    }
+
+    @Test
+    fun testFullUriToQueryParameters_noQueryString() {
+        val uri = "http://foo.com"
+        val params = uri.fullUriToQueryParameters()
+        assertNull(params)
     }
 
     @Test
