@@ -43,12 +43,7 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
     val endpointResolver: EndpointResolver = requireNotNull(builder.endpointResolver) { "endpointResolver is a required configuration property" }
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
-    val retryStrategy: RetryStrategy = run {
-        val strategyOptions = StandardRetryStrategyOptions.Default
-        val tokenBucket = StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default)
-        val delayer = ExponentialBackoffWithJitter(ExponentialBackoffWithJitterOptions.Default)
-        StandardRetryStrategy(strategyOptions, tokenBucket, delayer)
-    }
+    val retryStrategy: RetryStrategy = StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
 """
         contents.shouldContainWithDiff(expectedProps)
