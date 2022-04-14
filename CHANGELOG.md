@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.3] - 04/14/2022
+
+### Fixes
+* only set Content-Type when body is non-empty [#619](https://github.com/awslabs/smithy-kotlin/pull/619)
+
 ## [0.8.2] - 04/07/2022
 
 ### Fixes
