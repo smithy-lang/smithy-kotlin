@@ -6,10 +6,14 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.endpoints.AwsEndpointResolver
+import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.time.Duration
+
+data class SigningContext(val service: String?, val region: String?)
+data class SigningContextualizedEndpoint(val endpoint: Endpoint, val context: SigningContext?)
+typealias SigningEndpointProvider = suspend (SigningContext) -> SigningContextualizedEndpoint
 
 /**
  * The service configuration details for a presigned request
@@ -17,7 +21,7 @@ import kotlin.time.Duration
  * @property region The AWS region to which the request is going
  * @property signingName The signing name used to sign the request
  * @property serviceId the service id used to sign the request
- * @property endpointResolver Resolves the endpoint to determine where the request should be sent
+ * @property endpointProvider Resolves the contextualized endpoint to determine where the request should be sent
  * @property credentialsProvider Resolves credentials to sign the request with
  * @property useDoubleUriEncode Determines if presigner should double encode Uri
  * @property normalizeUriPath Determines if presigned URI path will be normalized
@@ -27,7 +31,7 @@ interface ServicePresignConfig {
     val region: String
     val signingName: String
     val serviceId: String
-    val endpointResolver: AwsEndpointResolver
+    val endpointProvider: SigningEndpointProvider
     val credentialsProvider: CredentialsProvider
     val useDoubleUriEncode: Boolean
     val normalizeUriPath: Boolean
@@ -81,7 +85,8 @@ suspend fun createPresignedRequest(
     serviceConfig: ServicePresignConfig,
     requestConfig: PresignedRequestConfig,
 ): HttpRequest {
-    val endpoint = serviceConfig.endpointResolver.resolve(serviceConfig.serviceId, serviceConfig.region)
+    val givenSigningContext = SigningContext(serviceConfig.serviceId, serviceConfig.region)
+    val endpoint = serviceConfig.endpointProvider(givenSigningContext)
     val signatureType = when (requestConfig.signingLocation) {
         SigningLocation.HEADER -> AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
         SigningLocation.QUERY_STRING -> AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS
@@ -89,8 +94,8 @@ suspend fun createPresignedRequest(
     val bodyHash = if (requestConfig.signBody) BodyHash.CalculateFromPayload else BodyHash.UnsignedPayload
 
     val signingConfig = AwsSigningConfig {
-        region = endpoint.credentialScope?.region ?: serviceConfig.region
-        service = endpoint.credentialScope?.service ?: serviceConfig.signingName
+        region = endpoint.context?.region ?: serviceConfig.region
+        service = endpoint.context?.service ?: serviceConfig.signingName
         credentialsProvider = serviceConfig.credentialsProvider
         this.signatureType = signatureType
         signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256

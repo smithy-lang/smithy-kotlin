@@ -70,9 +70,6 @@ object RuntimeTypes {
         }
 
         object Endpoints {
-            val AwsEndpoint = runtimeSymbol("AwsEndpoint", KotlinDependency.HTTP, "endpoints")
-            val AwsEndpointResolver = runtimeSymbol("AwsEndpointResolver", KotlinDependency.HTTP, "endpoints")
-            val CredentialScope = runtimeSymbol("CredentialScope", KotlinDependency.HTTP, "endpoints")
             val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "endpoints")
         }
 
@@ -202,6 +199,9 @@ object RuntimeTypes {
                 val createPresignedRequest = runtimeSymbol("createPresignedRequest", KotlinDependency.AWS_SIGNING_COMMON)
                 val PresignedRequestConfig = runtimeSymbol("PresignedRequestConfig", KotlinDependency.AWS_SIGNING_COMMON)
                 val ServicePresignConfig = runtimeSymbol("ServicePresignConfig", KotlinDependency.AWS_SIGNING_COMMON)
+                val SigningContext = runtimeSymbol("SigningContext", KotlinDependency.AWS_SIGNING_COMMON)
+                val SigningContextualizedEndpoint = runtimeSymbol("SigningContextualizedEndpoint", KotlinDependency.AWS_SIGNING_COMMON)
+                val SigningEndpointProvider = runtimeSymbol("SigningEndpointProvider", KotlinDependency.AWS_SIGNING_COMMON)
                 val SigningLocation = runtimeSymbol("SigningLocation", KotlinDependency.AWS_SIGNING_COMMON)
             }
 
