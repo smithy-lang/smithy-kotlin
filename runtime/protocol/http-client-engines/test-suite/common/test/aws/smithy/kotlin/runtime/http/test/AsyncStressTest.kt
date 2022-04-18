@@ -12,8 +12,12 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
+import kotlinx.coroutines.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.milliseconds
 
 class AsyncStressTest : AbstractEngineTest() {
 
@@ -41,6 +45,47 @@ class AsyncStressTest : AbstractEngineTest() {
             } finally {
                 call.complete()
             }
+        }
+    }
+
+    @Test
+    fun testHttpCallJobCompletion() = testEngines {
+        // https://github.com/awslabs/aws-sdk-kotlin/issues/587
+
+        test { env, client ->
+            val req = HttpRequest {
+                url(env.testServer)
+                url.path = "concurrent"
+            }
+
+            val engineJobsBefore = client.engine.coroutineContext.job.children.toList()
+
+            val call = client.call(req)
+            assertEquals(HttpStatusCode.OK, call.response.status)
+
+            val message = "engine=${client.engine}"
+            assertTrue(call.callContext.isActive, message)
+            assertFalse(call.callContext.job.isCompleted, message)
+            val engineJobsDuring = client.engine.coroutineContext.job.children.toList()
+
+            // any jobs needed to support request execution should be launched in the engine's scope
+            // NOTE: callContext is launched in engine scope
+            assertTrue(engineJobsDuring.size >= engineJobsBefore.size, message)
+
+            call.complete()
+
+            // NOTE: this is a bit finicky as engines are free to adapt requests as needed, including
+            // launching coroutines. The completion of these coroutines may or may not have happened
+            // at this point depending on the dispatcher used. This delay should block the current
+            // thread and hopefully let any coroutines running on other dispatchers(threads) complete.
+            // Running in debugger affects this though!
+            delay(200.milliseconds)
+
+            assertFalse(call.callContext.isActive, message)
+            assertTrue(call.callContext.job.isCompleted, message)
+
+            val engineJobsAfter = client.engine.coroutineContext.job.children.toList()
+            assertEquals(engineJobsBefore.size, engineJobsAfter.size, message)
         }
     }
 }
