@@ -45,16 +45,21 @@ internal class KtorRequestAdapter(
         // strip content type header which Ktor doesn't allow set this way for some reason
         val contentHeaders = builder.headers["Content-Type"]
         builder.headers.remove("Content-Type")
-        val contentType: ContentType? = contentHeaders?.let { ContentType.parse(it) }
+        val contentType: ContentType? = contentHeaders?.let(ContentType::parse)
 
         // convert the request body
-        when (val body = sdkRequest.body) {
-            is HttpBody.Empty -> builder.body = EmptyContent
-            is HttpBody.Bytes -> builder.body = ByteArrayContent(body.bytes(), contentType)
-            is HttpBody.Streaming -> builder.body = proxyRequestStream(body, contentType)
+        builder.body = when (val body = sdkRequest.body) {
+            is HttpBody.Empty -> emptyContent(contentType)
+            is HttpBody.Bytes -> ByteArrayContent(body.bytes(), contentType)
+            is HttpBody.Streaming -> proxyRequestStream(body, contentType)
         }
 
         return builder
+    }
+
+    private fun emptyContent(contentType: ContentType?) = object : OutgoingContent.NoContent() {
+        override val contentLength: Long = 0
+        override val contentType = contentType
     }
 
     @OptIn(ExperimentalStdlibApi::class)
