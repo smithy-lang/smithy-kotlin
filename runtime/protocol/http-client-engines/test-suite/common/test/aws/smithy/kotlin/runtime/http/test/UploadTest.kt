@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
@@ -110,6 +111,30 @@ class UploadTest : AbstractEngineTest() {
             call.complete()
             assertEquals(HttpStatusCode.OK, call.response.status)
             assertEquals(sha, call.response.headers["content-sha256"], "sha mismatch for upload on ${client.engine}")
+        }
+    }
+
+    @Test
+    fun testUploadEmptyWithContentTypes() = testEngines {
+        // test that empty bodies with a specified Content-Type actually include Content-Type in the request
+        // see https://github.com/awslabs/aws-sdk-kotlin/issues/588
+        test { env, client ->
+            val req = HttpRequest {
+                method = HttpMethod.POST
+                headers {
+                    append("Content-Type", "application/xml")
+                }
+                url(env.testServer)
+                url.path = "/upload/content"
+                body = HttpBody.Empty
+            }
+
+            val call = client.call(req)
+            call.complete()
+            assertEquals(HttpStatusCode.OK, call.response.status)
+
+            val reqContentType = call.response.headers["request-content-type"]
+            assertEquals("application/xml", reqContentType, "No Content-Type set on ${client.engine}")
         }
     }
 }
