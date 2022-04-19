@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.http.engine.ktor
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import io.ktor.client.utils.EmptyContent
 import io.ktor.http.*
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
