@@ -19,6 +19,7 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.job
@@ -62,7 +63,11 @@ class KtorEngine(
         val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 
         // run the request in another coroutine to allow streaming body to be handled
-        launch(callContext + ioDispatcher()) {
+        // NOTE: we can't use the callContext as a parent here though because we rely on
+        // the callContext job completion to signal when we can clean up resources associated
+        // with this request!
+        val name = callContext[CoroutineName]?.name ?: "http-client-engine-ktor-request"
+        launch(ioDispatcher() + CoroutineName("$name:execute-ktor-request")) {
             try {
                 execute(callContext, request, respChannel)
             } catch (ex: Exception) {

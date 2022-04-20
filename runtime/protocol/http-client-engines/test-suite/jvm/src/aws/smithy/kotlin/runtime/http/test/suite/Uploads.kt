@@ -31,6 +31,7 @@ internal fun Application.uploadTests() {
                 }
 
                 call.response.header("content-sha256", contentSha.digest().encodeToHex())
+                call.request.headers["Content-Type"]?.let { call.response.header("request-content-type", it) }
                 call.respond(HttpStatusCode.OK)
             }
         }

@@ -16,9 +16,7 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
+import kotlin.test.*
 import io.ktor.content.ByteArrayContent as KtorByteArrayContent
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -29,7 +27,11 @@ class KtorRequestAdapterTest {
         sdkBuilder.url { host = "test.aws.com" }
         sdkBuilder.header("Content-Type", "application/json")
         val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()
-        actual.headers.contains("Content-Type").shouldBeFalse()
+        assertFalse("Content-Type" in actual.headers)
+
+        val body = actual.body
+        assertIs<OutgoingContent.NoContent>(body)
+        assertEquals(ContentType.parse("application/json"), body.contentType)
     }
 
     @Test

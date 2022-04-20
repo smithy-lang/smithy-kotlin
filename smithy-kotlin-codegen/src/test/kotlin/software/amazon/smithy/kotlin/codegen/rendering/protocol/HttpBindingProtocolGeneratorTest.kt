@@ -72,7 +72,9 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
 
         val payload = serializeSmokeTestOperationBody(context, input)
         builder.body = ByteArrayContent(payload)
-        builder.headers.setMissing("Content-Type", "application/json")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/json")
+        }
         return builder
     }
 }
@@ -99,7 +101,9 @@ internal class ExplicitStringOperationSerializer: HttpSerialize<ExplicitStringRe
         if (input.payload1 != null) {
             builder.body = ByteArrayContent(input.payload1.encodeToByteArray())
         }
-        builder.headers.setMissing("Content-Type", "text/plain")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "text/plain")
+        }
         return builder
     }
 }
@@ -124,7 +128,9 @@ internal class ExplicitBlobOperationSerializer: HttpSerialize<ExplicitBlobReques
         if (input.payload1 != null) {
             builder.body = ByteArrayContent(input.payload1)
         }
-        builder.headers.setMissing("Content-Type", "application/octet-stream")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/octet-stream")
+        }
         return builder
     }
 }
@@ -149,7 +155,9 @@ internal class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlob
         if (input.payload1 != null) {
             builder.body = input.payload1.toHttpBody() ?: HttpBody.Empty
         }
-        builder.headers.setMissing("Content-Type", "application/octet-stream")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/octet-stream")
+        }
         return builder
     }
 }
@@ -175,7 +183,9 @@ internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRe
             val payload = serializeNested2Payload(input.payload1)
             builder.body = ByteArrayContent(payload)
         }
-        builder.headers.setMissing("Content-Type", "application/json")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/json")
+        }
         return builder
     }
 }
@@ -203,7 +213,9 @@ internal class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
 
         val payload = serializeEnumInputOperationBody(context, input)
         builder.body = ByteArrayContent(payload)
-        builder.headers.setMissing("Content-Type", "application/json")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/json")
+        }
         return builder
     }
 }
@@ -243,7 +255,9 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
 
         val payload = serializeTimestampInputOperationBody(context, input)
         builder.body = ByteArrayContent(payload)
-        builder.headers.setMissing("Content-Type", "application/json")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/json")
+        }
         return builder
     }
 }
@@ -274,7 +288,9 @@ internal class BlobInputOperationSerializer: HttpSerialize<BlobInputRequest> {
 
         val payload = serializeBlobInputOperationBody(context, input)
         builder.body = ByteArrayContent(payload)
-        builder.headers.setMissing("Content-Type", "application/json")
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/json")
+        }
         return builder
     }
 }
