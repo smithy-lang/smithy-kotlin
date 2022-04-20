@@ -19,7 +19,7 @@
         "{gradlew} publishToMavenLocal" 
     ],
     "test_steps": [
-        "{gradlew} test allTests"
+        "{gradlew} --stacktrace --debug test allTests"
     ],
     "upstream": [
         {
