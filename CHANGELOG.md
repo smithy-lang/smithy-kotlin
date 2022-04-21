@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.4] - 04/21/2022
+
+### Fixes
+* set Content-Type header on empty bodies with Ktor if canonical request includes it [#630](https://github.com/awslabs/smithy-kotlin/pull/630)
+* coroutine leak in ktor engine [#628](https://github.com/awslabs/smithy-kotlin/pull/628)
+
 ## [0.8.3] - 04/14/2022
 
 ### Fixes
