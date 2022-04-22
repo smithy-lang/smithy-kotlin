@@ -11,8 +11,35 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.time.Duration
 
+// Note: the following types are essentially smithy-kotlin local versions of the following AWS types:
+// * SigningContext ≈ CredentialScope
+// * SigningContextualizedEndpoint ≈ AwsEndpoint
+// * SigningEndpointProvider ≈ AwsEndpointResolver
+// Rather than move those AWS-specific types down into smithy-kotlin (where there's no good home for them) we reproduce
+// them here for presigning.
+
+/**
+ * Represents the context under which signing takes place. These parameters are used in the calculation of a valid
+ * signature.
+ * @param service The service for which the API is being signed. If none is specified then the service in
+ * [PresignedRequestConfig] is used instead.
+ * @param region The region in which the API call would occur. If none is specified then the region in
+ * [PresignedRequestConfig] is used instead.
+ */
 data class SigningContext(val service: String?, val region: String?)
+
+/**
+ * Represents a endpoint that will be used for signing which has optionally been contextualized with additional signing
+ * overrides.
+ * @param endpoint The endpoint for the API call which will be signed.
+ * @param context The [SigningContext] overrides for signing. If none are specified, the values in
+ * [PresignedRequestConfig] are used instead.
+ */
 data class SigningContextualizedEndpoint(val endpoint: Endpoint, val context: SigningContext?)
+
+/**
+ * A lambda function that returns an endpoint and optional signing config overrides based on the given service/region.
+ */
 typealias SigningEndpointProvider = suspend (SigningContext) -> SigningContextualizedEndpoint
 
 /**
@@ -42,7 +69,7 @@ interface ServicePresignConfig {
  * @property HEADER
  * @property QUERY_STRING
  */
-enum class SigningLocation {
+enum class PresigningLocation {
     /**
      * Signing details are to be placed in a header
      */
@@ -61,7 +88,7 @@ enum class SigningLocation {
  * @property queryString the HTTP querystring of the presigned request
  * @property expiresAfter Amount of time that the request will be valid for after being signed
  * @property signBody Specifies if the request body should be signed
- * @property signingLocation Specifies where the signing information should be placed in the presigned request
+ * @property presigningLocation Specifies where the signing information should be placed in the presigned request
  * @property additionalHeaders Custom headers that should be signed as part of the request
  */
 data class PresignedRequestConfig(
@@ -70,7 +97,7 @@ data class PresignedRequestConfig(
     val queryString: QueryParameters = QueryParameters.Empty,
     val expiresAfter: Duration,
     val signBody: Boolean = false,
-    val signingLocation: SigningLocation,
+    val presigningLocation: PresigningLocation,
     val additionalHeaders: Headers = Headers.Empty
 )
 
@@ -87,9 +114,9 @@ suspend fun createPresignedRequest(
 ): HttpRequest {
     val givenSigningContext = SigningContext(serviceConfig.serviceId, serviceConfig.region)
     val endpoint = serviceConfig.endpointProvider(givenSigningContext)
-    val signatureType = when (requestConfig.signingLocation) {
-        SigningLocation.HEADER -> AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
-        SigningLocation.QUERY_STRING -> AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS
+    val signatureType = when (requestConfig.presigningLocation) {
+        PresigningLocation.HEADER -> AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
+        PresigningLocation.QUERY_STRING -> AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS
     }
     val bodyHash = if (requestConfig.signBody) BodyHash.CalculateFromPayload else BodyHash.UnsignedPayload
 

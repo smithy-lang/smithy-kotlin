@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.auth.awssigning.middleware
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.*
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -56,6 +55,13 @@ class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware
          * The algorithm to sign with
          */
         var algorithm: AwsSigningAlgorithm = AwsSigningAlgorithm.SIGV4
+
+        /**
+         * Indicates whether the payload should be unsigned _even_ in cases where it would otherwise be signable (e.g.,
+         * a replayable stream or byte buffer). Setting this value to `false` will _not_ allow signing a non-replayable
+         * stream.
+         */
+        var isUnsignedPayload: Boolean = false
 
         /**
          * The uri is assumed to be encoded once in preparation for transmission.  Certain services
@@ -122,7 +128,7 @@ class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware
             // isn't present).
             //
             // There are a few escape hatches/special cases:
-            //     1. Customer explicitly disables signed payload (via AwsSigningAttributes.UnsignedPayload)
+            //     1. Customer explicitly disables signed payload (via Config.isUnsignedPayload)
             //     2. Customer provides a (potentially) unbounded stream (via HttpBody.Streaming)
             //
             // When an unbounded stream (2) is given we proceed as follows:
@@ -138,7 +144,7 @@ class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware
             // then we must decide how to compute the payload hash ourselves (defaults to unsigned payload)
             bodyHash = when {
                 contextBodyHash != null -> contextBodyHash
-                req.context.isUnsignedRequest() -> BodyHash.UnsignedPayload
+                config.isUnsignedPayload -> BodyHash.UnsignedPayload
                 body is HttpBody.Empty -> BodyHash.EmptyBody
                 body is HttpBody.Streaming && !body.isReplayable -> {
                     logger.warn { "unable to compute hash for unbounded stream; defaulting to unsigned payload" }
@@ -161,11 +167,6 @@ class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware
         return req
     }
 }
-
-/**
- * Check if the current operation should be signed or not
- */
-private fun ExecutionContext.isUnsignedRequest(): Boolean = getOrNull(AwsSigningAttributes.UnsignedPayload) ?: false
 
 private fun HttpBody.resetStream() {
     if (this is HttpBody.Streaming && this.isReplayable) {

@@ -30,12 +30,6 @@ object AwsSigningAttributes {
     val SigningService: ClientOption<String> = ClientOption("AwsSigningService")
 
     /**
-     * Mark a request payload as unsigned
-     * See: https://awslabs.github.io/smithy/1.0/spec/aws/aws-auth.html#aws-auth-unsignedpayload-trait
-     */
-    val UnsignedPayload: ClientOption<Boolean> = ClientOption("UnsignedPayload")
-
-    /**
      * Override the date to complete the signing process with. Defaults to current time when not specified.
      *
      * **Note**: This is an advanced configuration option that does not normally need to be set manually.

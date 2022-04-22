@@ -59,7 +59,10 @@ abstract class MiddlewareSigningTestBase : HasSigner {
         }
     }
 
-    private suspend fun getSignedRequest(operation: SdkHttpOperation<Unit, HttpResponse>): HttpRequest {
+    private suspend fun getSignedRequest(
+        operation: SdkHttpOperation<Unit, HttpResponse>,
+        unsigned: Boolean = false,
+    ): HttpRequest {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val now = Instant.now()
@@ -74,6 +77,7 @@ abstract class MiddlewareSigningTestBase : HasSigner {
                 signer = this@MiddlewareSigningTestBase.signer
                 credentialsProvider = testCredentialsProvider
                 service = "demo"
+                isUnsignedPayload = unsigned
             }
         )
 
@@ -102,9 +106,7 @@ abstract class MiddlewareSigningTestBase : HasSigner {
             "SignedHeaders=content-length;host;x-amz-archive-description;x-amz-date;x-amz-security-token, " +
             "Signature=6c0cc11630692e2c98f28003c8a0349b56011361e0bab6545f1acee01d1d211e"
 
-        op.context[AwsSigningAttributes.UnsignedPayload] = true
-
-        val signed = getSignedRequest(op)
+        val signed = getSignedRequest(op, unsigned = true)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
     }

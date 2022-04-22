@@ -198,11 +198,9 @@ object RuntimeTypes {
                 val AwsSigningMiddleware = runtimeSymbol("AwsSigningMiddleware", KotlinDependency.AWS_SIGNING_COMMON, "middleware")
                 val createPresignedRequest = runtimeSymbol("createPresignedRequest", KotlinDependency.AWS_SIGNING_COMMON)
                 val PresignedRequestConfig = runtimeSymbol("PresignedRequestConfig", KotlinDependency.AWS_SIGNING_COMMON)
+                val PresigningLocation = runtimeSymbol("PresigningLocation", KotlinDependency.AWS_SIGNING_COMMON)
                 val ServicePresignConfig = runtimeSymbol("ServicePresignConfig", KotlinDependency.AWS_SIGNING_COMMON)
-                val SigningContext = runtimeSymbol("SigningContext", KotlinDependency.AWS_SIGNING_COMMON)
-                val SigningContextualizedEndpoint = runtimeSymbol("SigningContextualizedEndpoint", KotlinDependency.AWS_SIGNING_COMMON)
                 val SigningEndpointProvider = runtimeSymbol("SigningEndpointProvider", KotlinDependency.AWS_SIGNING_COMMON)
-                val SigningLocation = runtimeSymbol("SigningLocation", KotlinDependency.AWS_SIGNING_COMMON)
             }
 
             object AwsSigningCrt {
