@@ -51,7 +51,7 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
         val expectedBuilder = """
     class Builder {
         /**
-         * Set the [aws.smithy.kotlin.runtime.http.operation.EndpointResolver] used to resolve service endpoints. Operation requests will be
+         * Set the [aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver] used to resolve service endpoints. Operation requests will be
          * made against the endpoint returned by the resolver.
          */
         var endpointResolver: EndpointResolver? = null
@@ -85,7 +85,7 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
         contents.shouldContainWithDiff(expectedBuilder)
 
         val expectedImports = listOf(
-            "import ${RuntimeTypes.Http.Operation.EndpointResolver.fullName}",
+            "import ${RuntimeTypes.Http.Endpoints.EndpointResolver.fullName}",
             "import ${RuntimeTypes.Http.Engine.HttpClientEngine.fullName}",
             "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
             "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenConfig",

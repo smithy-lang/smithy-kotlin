@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
+import aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.util.InternalApi
 
