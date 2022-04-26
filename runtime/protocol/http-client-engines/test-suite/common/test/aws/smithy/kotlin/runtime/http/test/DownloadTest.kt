@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.test
 
+import aws.smithy.kotlin.runtime.hashing.Sha256
+import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -13,9 +15,7 @@ import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.util.Sha256
 import aws.smithy.kotlin.runtime.util.encodeToHex
-import aws.smithy.kotlin.runtime.util.sha256
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs

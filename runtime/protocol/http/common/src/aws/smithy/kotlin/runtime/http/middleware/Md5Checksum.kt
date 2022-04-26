@@ -5,12 +5,12 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.hashing.md5
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.encodeBase64String
-import aws.smithy.kotlin.runtime.util.md5
 
 /**
  * Set the `Content-MD5` header based on the current payload

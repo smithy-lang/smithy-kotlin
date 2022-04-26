@@ -2,17 +2,15 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+package aws.smithy.kotlin.runtime.hashing
 
-package aws.smithy.kotlin.runtime.util
-
+import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-/**
- * Test vectors from https://www.ietf.org/rfc/rfc1321.txt
- */
-class MD5Test {
+class Md5Test {
+    // Test vectors from https://www.ietf.org/rfc/rfc1321.txt
     private val tests = listOf(
         "" to "d41d8cd98f00b204e9800998ecf8427e",
         "a" to "0cc175b9c0f1b6a831c399e269772661",
@@ -20,7 +18,7 @@ class MD5Test {
         "message digest" to "f96b697d7cb7938d525a2f31aaf161d0",
         "abcdefghijklmnopqrstuvwxyz" to "c3fcd3d76192e4007dfb496cca67e13b",
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789" to "d174ab98d277d9f5a5611c2c9f419d9f",
-        "12345678901234567890123456789012345678901234567890123456789012345678901234567890" to "57edf4a22be3c955ac49da2e2107b67a"
+        "12345678901234567890123456789012345678901234567890123456789012345678901234567890" to "57edf4a22be3c955ac49da2e2107b67a",
     )
 
     @Test
@@ -33,7 +31,6 @@ class MD5Test {
 
     @Test
     fun testKnownCollision() {
-
         val message1 = intArrayOf(
             0xd1, 0x31, 0xdd, 0x02, 0xc5, 0xe6, 0xee, 0xc4, 0x69, 0x3d, 0x9a, 0x06, 0x98, 0xaf, 0xf9, 0x5c,
             0x2f, 0xca, 0xb5, 0x87, 0x12, 0x46, 0x7e, 0xab, 0x40, 0x04, 0x58, 0x3e, 0xb8, 0xfb, 0x7f, 0x89,

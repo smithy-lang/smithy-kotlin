@@ -5,7 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.test.suite
 
-import aws.smithy.kotlin.runtime.util.Sha256
+import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import io.ktor.application.*
 import io.ktor.http.*
