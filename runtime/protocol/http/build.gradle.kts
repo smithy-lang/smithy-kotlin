@@ -17,6 +17,7 @@ kotlin {
                 api(project(":runtime:runtime-core"))
                 // exposes: Attributes
                 api(project(":runtime:utils"))
+                implementation(project(":runtime:hashing"))
                 // exposes: service+middleware
                 api(project(":runtime:io"))
                 implementation(project(":runtime:logging"))

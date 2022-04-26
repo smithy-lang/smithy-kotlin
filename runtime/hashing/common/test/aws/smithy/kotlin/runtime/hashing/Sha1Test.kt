@@ -2,15 +2,13 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+package aws.smithy.kotlin.runtime.hashing
 
-package aws.smithy.kotlin.runtime.util
-
+import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-/**
- * https://www.di-mgt.com.au/sha_testvectors.html
- */
+// Test vectors from https://www.di-mgt.com.au/sha_testvectors.html
 class Sha1Test {
     private fun assertShaHexEqual(input: String, sha: String, repeat: Int = 1) {
         val expected = sha.replace(" ", "")
