@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.9.0] - 04/29/2022
+
+### Miscellaneous
+* Refactor hashing functions into new subproject
+
 ## [0.8.5] - 04/21/2022
 
 ### Fixes
