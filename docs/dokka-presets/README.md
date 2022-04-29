@@ -1,1 +1,1 @@
-# Smithy SDK for Kotlin API Reference
+# Smithy Kotlin API Reference
