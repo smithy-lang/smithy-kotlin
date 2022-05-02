@@ -5,18 +5,16 @@
 
 package software.amazon.smithy.kotlin.codegen.lang
 
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
+import org.jsoup.nodes.Node
+import org.jsoup.nodes.TextNode
+import org.jsoup.select.NodeVisitor
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.transform.ModelTransformer
-
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.nodes.Node
-import org.jsoup.nodes.TextNode
-import org.jsoup.select.NodeTraversor
-import org.jsoup.select.NodeVisitor
 
 /**
  * Sanitize all instances of [DocumentationTrait] and converts them to KDoc-compliant strings.
@@ -75,10 +73,11 @@ class DocumentationPreprocessor : KotlinIntegration {
 
         override fun head(node: Node, depth: Int) {
             if (node is TextNode) {
-                if (node.parentNode()?.nodeName() == "a")
+                if (node.parentNode()?.nodeName() == "a") {
                     bufferedAnchorText = node.markdownText()
-                else
+                } else {
                     text += node.markdownText()
+                }
                 return
             }
 
@@ -156,7 +155,7 @@ class DocumentationPreprocessor : KotlinIntegration {
                 }
                 "ul", "ol" -> {
                     sublistDedent()
-                    text += if (node.parent()?.nodeName()  == "body") "\n\n" else ""
+                    text += if (node.parent()?.nodeName() == "body") "\n\n" else ""
                 }
                 "code", "pre" -> {
                     text += PREFORMAT_MARKER

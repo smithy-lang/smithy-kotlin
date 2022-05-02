@@ -146,11 +146,11 @@ class DocumentationPreprocessorTest {
     @Test
     fun `it renders nested structures`() {
         val input = "<fullname>FooService</fullname>" +
-                "<p>a service that is itself</p>" +
-                "<p>methods are as follows:</p>" +
-                "<ul>" +
-                "<li><strong>IMPORTANT</strong> do not use: <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html\">CreateBucket</a></li>" +
-                "</ul>"
+            "<p>a service that is itself</p>" +
+            "<p>methods are as follows:</p>" +
+            "<ul>" +
+            "<li><strong>IMPORTANT</strong> do not use: <a href=\"https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html\">CreateBucket</a></li>" +
+            "</ul>"
         val expected = """
         # FooService
         a service that is itself
@@ -447,7 +447,7 @@ address of an Amazon Web Services account</p>
 </li>
 </ul>
 """
-val expected = """This action initiates a multipart upload and returns an upload ID. This upload ID is used to associate all of the parts in the specific multipart upload. You specify this upload ID in each of your subsequent upload part requests (see [UploadPart](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html)). You also include this upload ID in the final request to either complete or abort the multipart upload request.
+        val expected = """This action initiates a multipart upload and returns an upload ID. This upload ID is used to associate all of the parts in the specific multipart upload. You specify this upload ID in each of your subsequent upload part requests (see [UploadPart](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html)). You also include this upload ID in the final request to either complete or abort the multipart upload request.
 
 For more information about multipart uploads, see [Multipart Upload Overview](https://docs.aws.amazon.com/AmazonS3/latest/dev/mpuoverview.html).
 
