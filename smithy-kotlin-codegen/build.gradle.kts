@@ -27,6 +27,7 @@ dependencies {
     api("software.amazon.smithy:smithy-waiters:$smithyVersion")
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
+    implementation("org.jsoup:jsoup:1.14.1")
 
     // Test dependencies
     // These are not set as test dependencies so they can be shared with other modules
