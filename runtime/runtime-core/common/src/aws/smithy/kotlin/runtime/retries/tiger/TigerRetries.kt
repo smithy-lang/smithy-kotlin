@@ -35,28 +35,17 @@ interface RetryStrategy {
     suspend fun recordSuccess(token: RetryToken)
 }
 
-//////////////////////
-//  Implementation  //
-//////////////////////
+/* Implementation */
 
 private const val MS_PER_S = 1000
 
-class PrivateRetryToken(
-    val partitionId: String,
-    val returnSize: Int,
-) : RetryToken
+class PrivateRetryToken(val partitionId: String, val returnSize: Int) : RetryToken
 
-class TokenBucketRetryStrategy(
-    val options: TokenBucketRetryStrategyOptions,
-    private val clock: Clock,
-) : RetryStrategy {
+class TokenBucketRetryStrategy(val options: TokenBucketRetryStrategyOptions, private val clock: Clock) : RetryStrategy {
     private val partitions = mutableMapOf("" to TokenBucket())
     private val partitionsMutex = Mutex()
 
-    override suspend fun acquireRetryToken(
-        partitionId: String,
-        timeout: Duration,
-    ): RetryToken {
+    override suspend fun acquireRetryToken(partitionId: String, timeout: Duration): RetryToken {
         val bucket = getBucket(partitionId)
         bucket.checkoutCapacity(options.initialTryCost, timeout)
         return PrivateRetryToken(partitionId, options.returnSize)
@@ -72,10 +61,7 @@ class TokenBucketRetryStrategy(
             }
         }
 
-    override suspend fun waitForRetry(
-        token: RetryToken,
-        errorType: RetryErrorType,
-    ) {
+    override suspend fun waitForRetry(token: RetryToken, errorType: RetryErrorType) {
         delay(options.delayProvider.nextDelay())
 
         token as PrivateRetryToken
@@ -95,30 +81,19 @@ class TokenBucketRetryStrategy(
         private val capacityMutex = Mutex()
         private var lastTimestamp = now()
 
-        suspend fun checkoutCapacity(
-            amount: Int,
-            timeout: Duration?
-        ) =
+        suspend fun checkoutCapacity(amount: Int, timeout: Duration?) =
             capacityMutex.withLock {
                 refillCapacity()
 
                 if (amount <= capacity) {
                     capacity -= amount
                 } else {
-                    if (options.circuitBreakerMode) {
-                        throw Exception("No capacity to attempt retry")
-                    }
+                    if (options.circuitBreakerMode) throw Exception("No capacity to attempt retry")
 
                     val extraReqCapacity = amount - capacity
-                    val delayMs = ceil(
-                        extraReqCapacity.toDouble() /
-                                options.refillUnitsPerSecond * MS_PER_S
-                    ).toLong()
+                    val delayMs = ceil(extraReqCapacity.toDouble() / options.refillUnitsPerSecond * MS_PER_S).toLong()
 
-                    if (
-                        timeout != null &&
-                        delayMs >= timeout.inWholeMilliseconds
-                    ) {
+                    if (timeout != null && delayMs >= timeout.inWholeMilliseconds) {
                         throw Exception("No capacity before timeout")
                     }
 
@@ -133,10 +108,7 @@ class TokenBucketRetryStrategy(
 
         private fun refillCapacity() {
             val refillMs = now() - lastTimestamp
-            val refillSize = floor(
-                options.refillUnitsPerSecond.toDouble() /
-                        MS_PER_S * refillMs
-            ).toInt()
+            val refillSize = floor(options.refillUnitsPerSecond.toDouble() / MS_PER_S * refillMs).toInt()
             capacity = min(options.maxCapacity, capacity + refillSize)
         }
 
@@ -159,17 +131,14 @@ data class TokenBucketRetryStrategyOptions(
     val circuitBreakerMode: Boolean,
 )
 
-class ExponentialBackoffDelayProvider(
-    private val options: ExponentialBackoffDelayProviderOptions,
-) : DelayProvider {
+class ExponentialBackoffDelayProvider(private val options: ExponentialBackoffDelayProviderOptions) : DelayProvider {
     var index = 0
 
     override fun nextDelay(): Duration {
         val delay = if (index == 0) {
             Duration.ZERO
         } else {
-            val maxDelay =
-                options.initialDelay * options.backoffFactor.pow(index - 1)
+            val maxDelay = options.initialDelay * options.backoffFactor.pow(index - 1)
             val jitter = 1.0 - (Random.nextDouble() * options.maxJitter)
             maxDelay * jitter
         }
