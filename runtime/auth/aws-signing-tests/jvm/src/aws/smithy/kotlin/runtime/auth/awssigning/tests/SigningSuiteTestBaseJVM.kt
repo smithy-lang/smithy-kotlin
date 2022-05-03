@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.http.util.StringValuesMap
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -89,7 +90,17 @@ actual abstract class SigningSuiteTestBase : HasSigner {
             .map { it.parent }
     }
 
-    protected open val disabledTests = setOf<String>()
+    protected open val disabledTests = setOf<String>(
+        // ktor-http-cio parser doesn't support parsing multiline headers since they are deprecated in RFC7230
+        "get-header-value-multiline",
+        // ktor fails to parse with space in it (expects it to be a valid request already encoded)
+        "get-space-normalized",
+        "get-space-unnormalized",
+
+        // no signed request to test against
+        "get-vanilla-query-order-key",
+        "get-vanilla-query-order-value",
+    )
 
     fun headerTestArgs(): List<Sigv4TestSuiteTest> = getTests(AwsSignatureType.HTTP_REQUEST_VIA_HEADERS)
     fun queryTestArgs(): List<Sigv4TestSuiteTest> = getTests(AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS)
@@ -194,6 +205,8 @@ actual abstract class SigningSuiteTestBase : HasSigner {
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 
+    private fun StringValuesMap.lowerKeys(): Set<String> = entries().map { it.key.lowercase() }.toSet()
+
     private fun assertRequestsEqual(expected: HttpRequest, actual: HttpRequest, message: String? = null) {
         assertEquals(expected.method, actual.method, message)
         assertEquals(expected.url.path, actual.url.path, message)
@@ -205,12 +218,18 @@ actual abstract class SigningSuiteTestBase : HasSigner {
             assertEquals(expectedValues, actualValues, "expected header `$key=$expectedValues` in signed request")
         }
 
+        val extraHeaders = actual.headers.lowerKeys() - expected.headers.lowerKeys()
+        assertEquals(0, extraHeaders.size, "Found extra headers in request: $extraHeaders")
+
         expected.url.parameters.forEach { key, values ->
             val expectedValues = values.sorted().joinToString(separator = ", ")
             val actualValues = actual.url.parameters.getAll(key)?.sorted()?.joinToString(separator = ", ")
             assertNotNull(actualValues, "expected query key `$key` not found in actual signed request")
             assertEquals(expectedValues, actualValues, "expected query param `$key=$expectedValues` in signed request")
         }
+
+        val extraParams = actual.url.parameters.lowerKeys() - expected.url.parameters.lowerKeys()
+        assertEquals(0, extraParams.size, "Found extra query params in request: $extraParams")
 
         when (val expectedBody = expected.body) {
             is HttpBody.Empty -> assertIs<HttpBody.Empty>(actual.body)

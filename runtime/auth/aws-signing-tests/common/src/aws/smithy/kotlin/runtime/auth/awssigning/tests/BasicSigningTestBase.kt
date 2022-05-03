@@ -80,7 +80,7 @@ abstract class BasicSigningTestBase : HasSigner {
     }
 
     @Test
-    fun testSignRequestSigV4Asymmetric() = runTest {
+    open fun testSignRequestSigV4Asymmetric() = runTest {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST

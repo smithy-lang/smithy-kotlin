@@ -157,9 +157,12 @@ class AwsSigningConfig(builder: Builder) {
     val normalizeUriPath: Boolean = builder.normalizeUriPath
 
     /**
-     * Determines wheter the `X-Amz-Security-Token` query param should be omitted. Normally, this parameter is added
-     * during signing if the credentials have a session token. The only known case where this should be true is when
-     * signing a websocket handshake to IoT Core.
+     * Determines whether the `X-Amz-Security-Token` query param should be omitted from the canonical signing
+     * calculation. Normally, this parameter is added during signing if the credentials have a session token. The only
+     * known case where this should be true is when signing a websocket handshake to IoT Core.
+     *
+     * If this value is false, a non-null security token is _still added to the request_ but it is not used in signature
+     * calculation.
      */
     val omitSessionToken: Boolean = builder.omitSessionToken
 

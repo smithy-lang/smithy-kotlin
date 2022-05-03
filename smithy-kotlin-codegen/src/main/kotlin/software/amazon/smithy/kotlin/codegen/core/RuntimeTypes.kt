@@ -206,8 +206,8 @@ object RuntimeTypes {
                 val SigningEndpointProvider = runtimeSymbol("SigningEndpointProvider", KotlinDependency.AWS_SIGNING_COMMON)
             }
 
-            object AwsSigningCrt {
-                val CrtAwsSigner = runtimeSymbol("CrtAwsSigner", KotlinDependency.AWS_SIGNING_CRT)
+            object AwsSigningStandard {
+                val StandardAwsSigner = runtimeSymbol("StandardAwsSigner", KotlinDependency.AWS_SIGNING_STANDARD)
             }
         }
     }
