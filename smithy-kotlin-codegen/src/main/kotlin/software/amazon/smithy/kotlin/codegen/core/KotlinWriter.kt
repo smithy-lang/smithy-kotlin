@@ -194,7 +194,7 @@ class KotlinWriter(
      * Clean/escape any content from the doc that would invalidate the Kotlin output.
      */
     private fun cleanForWriter(doc: String) = doc
-        // Docs can have valid $ characters that shouldn't run through formatters.
+        // Docs can have valid # characters that shouldn't run through formatters.
         .replace("#", "##")
         // Services may have comment string literals embedded in documentation.
         .replace("/*", "&##47;*")

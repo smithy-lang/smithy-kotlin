@@ -124,10 +124,10 @@ class PaginatorGenerator : KotlinIntegration {
         writer
             .dokka(
                 """
-                    $docBody
-                    @param initialRequest A [${inputSymbol.name}] to start pagination
-                    $docReturn
-                """.trimIndent()
+                    |$docBody
+                    |@param initialRequest A [${inputSymbol.name}] to start pagination
+                    |$docReturn
+                """.trimMargin()
             )
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
@@ -162,10 +162,10 @@ class PaginatorGenerator : KotlinIntegration {
         writer
             .dokka(
                 """
-                    $docBody
-                    @param block A builder block used for DSL-style invocation of the operation
-                    $docReturn
-                """.trimIndent()
+                    |$docBody
+                    |@param block A builder block used for DSL-style invocation of the operation
+                    |$docReturn
+                """.trimMargin()
             )
             .withBlock(
                 "fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",

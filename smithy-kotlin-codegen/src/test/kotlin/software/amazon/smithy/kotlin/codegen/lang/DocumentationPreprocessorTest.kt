@@ -12,6 +12,7 @@ import software.amazon.smithy.model.shapes.ShapeId
 import software.amazon.smithy.model.traits.DocumentationTrait
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class DocumentationPreprocessorTest {
     @Test
@@ -76,8 +77,6 @@ class DocumentationPreprocessorTest {
         this is paragraph
         
         this too is paragraph
-        
-        
         """.trimIndent()
         inputTest(input, expected)
     }
@@ -90,10 +89,6 @@ class DocumentationPreprocessorTest {
         + item 1
         + item 2
            + subitem 1
-        
-        
-        
-        
         """.trimIndent()
         inputTest(input, expected)
     }
@@ -116,14 +111,20 @@ class DocumentationPreprocessorTest {
     }
 
     @Test
+    fun `it throws on nested unescaped code blocks`() {
+        val input = "<code>handleXml(\"<xml> <code></code> </xml>\");</code>"
+        assertFailsWith<RuntimeException> {
+            inputTest(input, "")
+        }
+    }
+
+    @Test
     fun `it handles anchors with and without href`() {
         val input = "<p>for more information see <a href=\"link.com\">this link</a></p><p>also reference <a>NoRefAnchor</a>"
         val expected = """
         for more information see [this link](link.com)
         
         also reference NoRefAnchor
-        
-        
         """.trimIndent()
         inputTest(input, expected)
     }
@@ -137,8 +138,6 @@ class DocumentationPreprocessorTest {
         
         ## section 1
         section 1 details
-        
-        
         """.trimIndent()
         inputTest(input, expected)
     }
@@ -157,9 +156,6 @@ class DocumentationPreprocessorTest {
         
         methods are as follows:
         + **IMPORTANT** do not use: [CreateBucket](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CreateBucket.html)
-        
-        
-        
         """.trimIndent()
         inputTest(input, expected)
     }
@@ -473,8 +469,6 @@ When copying an object, you can optionally specify the accounts or groups that s
 + Specify access permissions explicitly with the `x-amz-grant-read`, `x-amz-grant-read-acp`, `x-amz-grant-write-acp`, and `x-amz-grant-full-control` headers. These parameters map to the set of permissions that Amazon S3 supports in an ACL. For more information, see [Access Control List (ACL) Overview](https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html).
 You can use either a canned ACL or specify access permissions explicitly. You cannot do both.
 
-
-
 ## Server-Side- Encryption-Specific Request Headers
 You can optionally tell Amazon S3 to encrypt data at rest using server-side encryption. Server-side encryption is for data encryption at rest. Amazon S3 encrypts your data as it writes it to disks in its data centers and decrypts it when you access it. The option you use depends on whether you want to use Amazon Web Services managed encryption keys or provide your own encryption key. 
 + Use encryption keys managed by Amazon S3 or customer managed key stored in Amazon Web Services Key Management Service (Amazon Web Services KMS) – If you want Amazon Web Services to manage the keys used to encrypt data, specify the following headers in the request.
@@ -487,7 +481,6 @@ If you specify `x-amz-server-side-encryption:aws:kms`, but don't provide `x-amz-
    + `x-amz-server-side-encryption-customer-key`
    + `x-amz-server-side-encryption-customer-key-MD5`
 For more information about server-side encryption with KMS keys (SSE-KMS), see [Protecting Data Using Server-Side Encryption with KMS keys](https://docs.aws.amazon.com/AmazonS3/latest/dev/UsingKMSEncryption.html).
-
 
 ## Access-Control-List (ACL)-Specific Request Headers
 You also can use the following access control–related headers with this operation. By default, all objects are private. Only the owner has full access control. When adding a new object, you can grant permissions to individual Amazon Web Services accounts or to predefined groups defined by Amazon S3. These permissions are then added to the access control list (ACL) on the object. For more information, see [Using ACLs](https://docs.aws.amazon.com/AmazonS3/latest/dev/S3_ACLs_UsingACLs.html). With this operation, you can grant access permissions using one of the following two methods:
@@ -513,16 +506,12 @@ You specify each grantee as a type=value pair, where the type is one of the foll
 For a list of all the Amazon S3 supported Regions and endpoints, see [Regions and Endpoints](https://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region) in the Amazon Web Services General Reference.
 For example, the following `x-amz-grant-read` header grants the Amazon Web Services accounts identified by account IDs permissions to read object data and its metadata:`x-amz-grant-read: id="11112222333", id="444455556666" `
 
-
 The following operations are related to `CreateMultipartUpload`:
 + [UploadPart](https://docs.aws.amazon.com/AmazonS3/latest/API/API_UploadPart.html)
 + [CompleteMultipartUpload](https://docs.aws.amazon.com/AmazonS3/latest/API/API_CompleteMultipartUpload.html)
 + [AbortMultipartUpload](https://docs.aws.amazon.com/AmazonS3/latest/API/API_AbortMultipartUpload.html)
 + [ListParts](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListParts.html)
-+ [ListMultipartUploads](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListMultipartUploads.html)
-
-
-"""
++ [ListMultipartUploads](https://docs.aws.amazon.com/AmazonS3/latest/API/API_ListMultipartUploads.html)"""
         inputTest(input, expected)
     }
 
