@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Node
 import org.jsoup.nodes.TextNode
 import org.jsoup.select.NodeVisitor
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.model.Model
@@ -222,7 +223,7 @@ private fun String.applyWithin(start: String, end: String, transform: (String) -
 
     val stringToTransform = substring(substringStart, substringEnd)
     if (stringToTransform.indexOf(start) != -1) {
-        throw RuntimeException("string contains nested start delimiter")
+        throw CodegenException("string contains nested start delimiter")
     }
 
     return substring(0, substringStart) + transform(stringToTransform) + end +

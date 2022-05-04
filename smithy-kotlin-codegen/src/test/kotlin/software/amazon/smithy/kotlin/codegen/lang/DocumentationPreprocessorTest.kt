@@ -5,6 +5,7 @@
 
 package software.amazon.smithy.kotlin.codegen.lang
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.test.toSmithyModel
@@ -113,7 +114,7 @@ class DocumentationPreprocessorTest {
     @Test
     fun `it throws on nested unescaped code blocks`() {
         val input = "<code>handleXml(\"<xml> <code></code> </xml>\");</code>"
-        assertFailsWith<RuntimeException> {
+        assertFailsWith<CodegenException> {
             inputTest(input, "")
         }
     }
