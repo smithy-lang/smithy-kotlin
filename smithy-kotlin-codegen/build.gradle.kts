@@ -20,6 +20,7 @@ val smithyVersion: String by project
 val kotlinVersion: String by project
 val junitVersion: String by project
 val kotestVersion: String by project
+val jsoupVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
@@ -27,6 +28,7 @@ dependencies {
     api("software.amazon.smithy:smithy-waiters:$smithyVersion")
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
     implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
+    implementation("org.jsoup:jsoup:$jsoupVersion")
 
     // Test dependencies
     // These are not set as test dependencies so they can be shared with other modules

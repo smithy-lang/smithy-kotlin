@@ -184,11 +184,21 @@ class KotlinWriter(
     fun dokka(docs: String): KotlinWriter =
         dokka {
             write(
-                formatDocumentation(
-                    sanitizeDocumentation(docs)
+                cleanForWriter(
+                    formatDocumentation(docs)
                 )
             )
         }
+
+    /**
+     * Clean/escape any content from the doc that would invalidate the Kotlin output.
+     */
+    private fun cleanForWriter(doc: String) = doc
+        // Docs can have valid # characters that shouldn't run through formatters.
+        .replace("#", "##")
+        // Services may have comment string literals embedded in documentation.
+        .replace("/*", "&##47;*")
+        .replace("*/", "*&##47;")
 
     /**
      * Adds appropriate annotations to generated declarations.
@@ -341,36 +351,6 @@ class InlineKotlinWriterFormatter(private val parent: KotlinWriter) : BiFunction
     }
 }
 
-// Most commonly occurring (but not exhaustive) set of HTML tags found in AWS models
-private val commonHtmlTags = setOf(
-    "a",
-    "b",
-    "code",
-    "dd",
-    "dl",
-    "dt",
-    "i",
-    "important",
-    "li",
-    "note",
-    "p",
-    "strong",
-    "ul"
-).map { listOf("<$it>", "</$it>") }.flatten()
-
-// Replace characters in the input documentation to prevent issues in codegen or rendering.
-// NOTE: Currently we look for specific strings of Html tags commonly found in docs
-//       and remove them.  A better solution would be to generally convert from HTML to "pure"
-//       markdown such that formatting is preserved.
-// TODO: https://github.com/awslabs/smithy-kotlin/issues/136
-private fun sanitizeDocumentation(doc: String): String = doc
-    .stripAll(commonHtmlTags)
-    // Docs can have valid $ characters that shouldn't run through formatters.
-    .replace("#", "##")
-    // Services may have comment string literals embedded in documentation.
-    .replace("/*", "&##47;*")
-    .replace("*/", "*&##47;")
-
 // Remove all strings from source string and return the result
 private fun String.stripAll(stripList: List<String>): String {
     var newStr = this
@@ -379,7 +359,6 @@ private fun String.stripAll(stripList: List<String>): String {
     return newStr
 }
 
-// Remove whitespace from the beginning and end of each line of documentation
 // Remove leading, trailing, and consecutive blank lines
 private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
     doc
@@ -387,7 +366,7 @@ private fun formatDocumentation(doc: String, lineSeparator: String = "\n") =
         .dropWhile { it.isBlank() } // Drop leading blank lines
         .dropLastWhile { it.isBlank() } // Drop trailing blank lines
         .dropConsecutive { it.isBlank() } // Remove consecutive empty lines
-        .joinToString(separator = lineSeparator) { it.trim() } // Trim line
+        .joinToString(separator = lineSeparator)
 
 /**
  * Filters out consecutive items matching the given [predicate].

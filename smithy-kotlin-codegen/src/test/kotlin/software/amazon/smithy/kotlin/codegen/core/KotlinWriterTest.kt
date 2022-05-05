@@ -48,15 +48,6 @@ class KotlinWriterTest {
     }
 
     @Test
-    fun `it strips html tags from doc strings`() {
-        val unit = KotlinWriter(TestModelDefault.NAMESPACE)
-        val docs = "<p>here is <b>some</b> sweet <i>sweet</i> <a>html</a></p>"
-        unit.dokka(docs)
-        val actual = unit.toString()
-        actual.shouldContainOnlyOnceWithDiff("here is some sweet sweet html")
-    }
-
-    @Test
     fun `it disambiguates type names`() {
         val unit = KotlinWriter(TestModelDefault.NAMESPACE)
 
