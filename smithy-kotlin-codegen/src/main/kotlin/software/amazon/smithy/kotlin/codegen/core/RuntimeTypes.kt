@@ -207,7 +207,7 @@ object RuntimeTypes {
             }
 
             object AwsSigningStandard {
-                val StandardAwsSigner = runtimeSymbol("StandardAwsSigner", KotlinDependency.AWS_SIGNING_STANDARD)
+                val DefaultAwsSigner = runtimeSymbol("DefaultAwsSigner", KotlinDependency.AWS_SIGNING_DEFAULT)
             }
         }
     }

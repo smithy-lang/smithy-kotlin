@@ -28,6 +28,7 @@ import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
+import org.junit.jupiter.api.Assumptions.assumeTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
@@ -64,8 +65,11 @@ private val defaultTestSigningConfig = AwsSigningConfig.Builder().apply {
 data class Sigv4TestSuiteTest(
     val path: Path,
     val request: HttpRequestBuilder,
+    val canonicalRequest: String,
+    val stringToSign: String,
+    val signature: String,
     val signedRequest: HttpRequestBuilder,
-    val config: AwsSigningConfig = defaultTestSigningConfig.build()
+    val config: AwsSigningConfig = defaultTestSigningConfig.build(),
 ) {
     override fun toString() = path.fileName.toString()
 }
@@ -76,6 +80,15 @@ private val testSuitePath: Path by lazy {
     val uri = url.toURI()
     FileSystems.newFileSystem(uri, mapOf<String, Any>()).getPath("/aws-signing-test-suite/v4")
 }
+
+private val AwsSignatureType.fileNamePart: String
+    get() = when (this) {
+        AwsSignatureType.HTTP_REQUEST_VIA_HEADERS -> "header"
+        AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS -> "query"
+        else -> error("Unsupported signature type $this for test suite")
+    }
+
+typealias SigningStateProvider = suspend (HttpRequest, AwsSigningConfig) -> String
 
 // FIXME - move to common test (will require ability to access test resources in a KMP compatible way)
 
@@ -109,7 +122,7 @@ actual abstract class SigningSuiteTestBase : HasSigner {
     fun testParseRequest() {
         // sanity test that we are converting requests from file correctly
         val noBodyTest = testSuitePath.resolve("post-vanilla")
-        val actual = getSignedRequest(noBodyTest)
+        val actual = getSignedRequest(noBodyTest, AwsSignatureType.HTTP_REQUEST_VIA_HEADERS)
 
         assertEquals(3, actual.headers.names().size)
         assertIs<HttpBody.Empty>(actual.body)
@@ -121,13 +134,13 @@ actual abstract class SigningSuiteTestBase : HasSigner {
         )
     }
 
-    @ParameterizedTest(name = "header test {0} (#{index})")
+    @ParameterizedTest(name = "header middleware test {0} (#{index})")
     @MethodSource("headerTestArgs")
     fun testSigv4TestSuiteHeaders(test: Sigv4TestSuiteTest) {
         testSigv4Middleware(test)
     }
 
-    @ParameterizedTest(name = "query param test {0} (#{index})")
+    @ParameterizedTest(name = "query param middleware test {0} (#{index})")
     @MethodSource("queryTestArgs")
     fun testSigv4TestSuiteQuery(test: Sigv4TestSuiteTest) {
         testSigv4Middleware(test)
@@ -138,13 +151,12 @@ actual abstract class SigningSuiteTestBase : HasSigner {
             try {
                 val req = getRequest(dir)
                 val config = getSigningConfig(dir) ?: defaultTestSigningConfig
-                val sreq = when (signatureType) {
-                    AwsSignatureType.HTTP_REQUEST_VIA_HEADERS -> getSignedRequest(dir)
-                    AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS -> getQuerySignedRequest(dir)
-                    else -> error("unsupported signature type $signatureType")
-                }
+                val canonicalRequest = getCanonicalRequest(dir, signatureType)
+                val stringToSign = getStringToSign(dir, signatureType)
+                val signature = getSignature(dir, signatureType)
+                val signedReq = getSignedRequest(dir, signatureType)
                 config.signatureType = signatureType
-                Sigv4TestSuiteTest(dir, req, sreq, config.build())
+                Sigv4TestSuiteTest(dir, req, canonicalRequest, stringToSign, signature, signedReq, config.build())
             } catch (ex: Exception) {
                 println("failed to get request from $dir: ${ex.message}")
                 throw ex
@@ -165,6 +177,69 @@ actual abstract class SigningSuiteTestBase : HasSigner {
             println("failed to get a signed request for ${test.path}: $ex")
             throw ex
         }
+    }
+
+    @ParameterizedTest(name = "header canonical request test {0} (#{index})")
+    @MethodSource("headerTestArgs")
+    fun testCanonicalRequestHeaders(test: Sigv4TestSuiteTest) {
+        testCanonicalRequest(test)
+    }
+
+    @ParameterizedTest(name = "query param canonical request test {0} (#{index})")
+    @MethodSource("queryTestArgs")
+    fun testCanonicalRequestQuery(test: Sigv4TestSuiteTest) {
+        testCanonicalRequest(test)
+    }
+
+    open val canonicalRequestProvider: SigningStateProvider? = null
+
+    private fun testCanonicalRequest(test: Sigv4TestSuiteTest) = runBlocking {
+        assumeTrue(canonicalRequestProvider != null)
+        val expected = test.canonicalRequest
+        val actual = canonicalRequestProvider!!(test.request.build(), test.config)
+        assertEquals(expected, actual)
+    }
+
+    @ParameterizedTest(name = "header signature test {0} (#{index})")
+    @MethodSource("headerTestArgs")
+    fun testSignatureHeaders(test: Sigv4TestSuiteTest) {
+        testSignature(test)
+    }
+
+    @ParameterizedTest(name = "query param signature test {0} (#{index})")
+    @MethodSource("queryTestArgs")
+    fun testSignatureQuery(test: Sigv4TestSuiteTest) {
+        testSignature(test)
+    }
+
+    open val signatureProvider: SigningStateProvider? = null
+
+    private fun testSignature(test: Sigv4TestSuiteTest) = runBlocking {
+        assumeTrue(signatureProvider != null)
+        val expected = test.signature
+        val actual = signatureProvider!!(test.request.build(), test.config)
+        assertEquals(expected, actual)
+    }
+
+    @ParameterizedTest(name = "header string to sign test {0} (#{index})")
+    @MethodSource("headerTestArgs")
+    fun testStringToSignHeaders(test: Sigv4TestSuiteTest) {
+        testStringToSign(test)
+    }
+
+    @ParameterizedTest(name = "query param string to sign test {0} (#{index})")
+    @MethodSource("queryTestArgs")
+    fun testStringToSignQuery(test: Sigv4TestSuiteTest) {
+        testStringToSign(test)
+    }
+
+    open val stringToSignProvider: SigningStateProvider? = null
+
+    private fun testStringToSign(test: Sigv4TestSuiteTest) = runBlocking {
+        assumeTrue(stringToSignProvider != null)
+        val expected = test.stringToSign
+        val actual = stringToSignProvider!!(test.request.build(), test.config)
+        assertEquals(expected, actual)
     }
 
     /**
@@ -287,20 +362,21 @@ actual abstract class SigningSuiteTestBase : HasSigner {
     }
 
     /**
-     * Get `header-signed-request.txt` from the given directory [dir]
+     * Get `<type>-signed-request.txt` from the given directory [dir]
      */
-    private fun getSignedRequest(dir: Path): HttpRequestBuilder {
-        val path = dir.resolve("header-signed-request.txt")
+    private fun getSignedRequest(dir: Path, type: AwsSignatureType): HttpRequestBuilder {
+        val path = dir.resolve("${type.fileNamePart}-signed-request.txt")
         return parseRequest(path)
     }
 
-    /**
-     * Get `query-signed-request.txt` from the given directory [dir]
-     */
-    private fun getQuerySignedRequest(dir: Path): HttpRequestBuilder {
-        val path = dir.resolve("query-signed-request.txt")
-        return parseRequest(path)
-    }
+    private fun getCanonicalRequest(dir: Path, type: AwsSignatureType): String =
+        dir.resolve("${type.fileNamePart}-canonical-request.txt").readText()
+
+    private fun getSignature(dir: Path, type: AwsSignatureType): String =
+        dir.resolve("${type.fileNamePart}-signature.txt").readText()
+
+    private fun getStringToSign(dir: Path, type: AwsSignatureType): String =
+        dir.resolve("${type.fileNamePart}-string-to-sign.txt").readText()
 
     /**
      * Parse a path containing an HTTP request into an in memory representation of an SDK request

@@ -45,11 +45,11 @@ object AwsSigningAttributes {
     val CredentialsProvider: ClientOption<CredentialsProvider> = ClientOption("CredentialsProvider")
 
     /**
-     * The source for the body hash.
+     * The specification for determining the hash value for the request.
      *
      * **Note**: This is an advanced configuration option that does not normally need to be set manually.
      */
-    val BodyHash: ClientOption<BodyHash> = ClientOption("BodyHash")
+    val HashSpecification: ClientOption<HashSpecification> = ClientOption("HashSpecification")
 
     /**
      * The signed body header type.

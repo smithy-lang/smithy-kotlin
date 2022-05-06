@@ -20,9 +20,9 @@ class AwsSignerIntegration : KotlinIntegration {
             symbol = RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsSigner
             name = "signer"
             documentation = "The implementation of AWS signer to use for signing requests"
-            propertyType = ClientConfigPropertyType.RequiredWithDefault("StandardAwsSigner")
+            propertyType = ClientConfigPropertyType.RequiredWithDefault("DefaultAwsSigner")
             additionalImports = listOf(
-                RuntimeTypes.Auth.Signing.AwsSigningStandard.StandardAwsSigner,
+                RuntimeTypes.Auth.Signing.AwsSigningStandard.DefaultAwsSigner,
             )
         },
     )

@@ -8,7 +8,7 @@ import java.security.MessageDigest
 
 actual class Sha1 : Sha1Base() {
     private val md = MessageDigest.getInstance("SHA-1")
-    override fun update(input: ByteArray) = md.update(input)
+    override fun update(input: ByteArray, offset: Int, length: Int) = md.update(input, offset, length)
     override fun digest(): ByteArray = md.digest()
     override fun reset() = md.reset()
 }
