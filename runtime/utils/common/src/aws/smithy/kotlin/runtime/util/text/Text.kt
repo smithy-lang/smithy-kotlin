@@ -13,18 +13,19 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  */
 @InternalApi
 fun String.urlEncodeComponent(
-    formUrlEncode: Boolean = false
+    formUrlEncode: Boolean = false,
+    where: (Char) -> Boolean = Char::defaultShouldUrlEncode
 ): String {
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
     for (cbyte in data) {
         val chr = cbyte.toInt().toChar()
-        when (chr) {
-            ' ' -> if (formUrlEncode) sb.append("+") else sb.append("%20")
-            // $2.3 Unreserved characters
-            in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.', '~' -> sb.append(chr)
-            else -> sb.append(cbyte.percentEncode())
+        if (!where(chr)) {
+            sb.append(chr)
+            continue
         }
+
+        sb.append(if (formUrlEncode && chr == ' ') '+' else cbyte.percentEncode())
     }
 
     return sb.toString()
@@ -139,3 +140,8 @@ private val percentEncodedParam = """%([A-Fa-f0-9]{2})""".toRegex()
 public fun String.urlDecodeComponent(): String = this
     .replace('+', ' ')
     .replace(percentEncodedParam) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
+
+private fun Char.defaultShouldUrlEncode() = when (this) {
+    in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.', '~' -> false
+    else -> true
+}
