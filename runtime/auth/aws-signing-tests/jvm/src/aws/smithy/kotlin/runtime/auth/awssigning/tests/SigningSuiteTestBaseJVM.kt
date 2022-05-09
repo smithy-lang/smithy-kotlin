@@ -21,6 +21,7 @@ import aws.smithy.kotlin.runtime.http.util.StringValuesMap
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.util.encodeToHex
 import aws.smithy.kotlin.runtime.util.get
 import io.ktor.http.cio.*
 import io.ktor.util.*
@@ -239,7 +240,7 @@ actual abstract class SigningSuiteTestBase : HasSigner {
         assumeTrue(stringToSignProvider != null)
         val expected = test.stringToSign
         val actual = stringToSignProvider!!(test.request.build(), test.config)
-        assertEquals(expected, actual)
+        assertEquals(expected, actual, "Mismatch in string to sign. Binary dump follows:\nExpected: ${expected.encodeToByteArray().encodeToHex()}\nActual: ${actual.encodeToByteArray().encodeToHex()}")
     }
 
     /**

@@ -26,10 +26,10 @@ internal class DefaultAwsSignerImpl(
         val credentials = config.credentialsProvider.getCredentials()
 
         val canonical = canonicalizer.canonicalRequest(request, config, credentials)
-        logger.debug { "Canonical request:\n${canonical.requestString}" }
+        logger.trace { "Canonical request:\n${canonical.requestString}" }
 
         val stringToSign = signatureCalculator.stringToSign(canonical.requestString, config)
-        logger.debug { "String to sign:\n$stringToSign" }
+        logger.trace { "String to sign:\n$stringToSign" }
 
         val signingKey = signatureCalculator.signingKey(config, credentials)
 
@@ -47,7 +47,7 @@ internal class DefaultAwsSignerImpl(
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
         val stringToSign = signatureCalculator.chunkStringToSign(chunkBody, prevSignature, config)
-        logger.debug { "Chunk string to sign:\n$stringToSign" }
+        logger.trace { "Chunk string to sign:\n$stringToSign" }
 
         val credentials = config.credentialsProvider.getCredentials()
         val signingKey = signatureCalculator.signingKey(config, credentials)
