@@ -4,7 +4,7 @@
  */
 description = "AWS Signer default implementation"
 extra["displayName"] = "Smithy :: Kotlin :: Standard AWS Signer"
-extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.awssigning.default"
+extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.awssigning"
 
 val coroutinesVersion: String by project
 
