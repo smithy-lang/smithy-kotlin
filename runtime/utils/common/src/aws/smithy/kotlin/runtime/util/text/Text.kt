@@ -13,19 +13,18 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  */
 @InternalApi
 fun String.urlEncodeComponent(
-    formUrlEncode: Boolean = false,
-    where: (Char) -> Boolean = Char::defaultShouldUrlEncode
+    formUrlEncode: Boolean = false
 ): String {
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
     for (cbyte in data) {
         val chr = cbyte.toInt().toChar()
-        if (!where(chr)) {
-            sb.append(chr)
-            continue
+        when (chr) {
+            ' ' -> if (formUrlEncode) sb.append("+") else sb.append("%20")
+            // $2.3 Unreserved characters
+            in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.', '~' -> sb.append(chr)
+            else -> sb.append(cbyte.percentEncode())
         }
-
-        sb.append(if (formUrlEncode && chr == ' ') '+' else cbyte.percentEncode())
     }
 
     return sb.toString()
@@ -100,7 +99,7 @@ private const val upperHex: String = "0123456789ABCDEF"
 private val upperHexSet = upperHex.toSet()
 
 // $2.1 Percent-Encoding
-private fun Byte.percentEncode(): String = buildString(3) {
+fun Byte.percentEncode(): String = buildString(3) {
     val code = toInt() and 0xff
     append('%')
     append(upperHex[code shr 4])
@@ -140,8 +139,3 @@ private val percentEncodedParam = """%([A-Fa-f0-9]{2})""".toRegex()
 public fun String.urlDecodeComponent(): String = this
     .replace('+', ' ')
     .replace(percentEncodedParam) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
-
-private fun Char.defaultShouldUrlEncode() = when (this) {
-    in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.', '~' -> false
-    else -> true
-}
