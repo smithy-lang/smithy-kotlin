@@ -51,41 +51,6 @@ enum class AwsSignatureType {
     HTTP_REQUEST_EVENT,
 }
 
-/**
- * Identifies a source for calculating the body hash value
- */
-sealed class BodyHash(open val hash: String?) {
-    /**
-     * The hash value should be calculated from the body payload
-     */
-    object CalculateFromPayload : BodyHash(null)
-
-    /**
-     * The hash value should indicate an unsigned payload
-     */
-    object UnsignedPayload : BodyHash("UNSIGNED-PAYLOAD")
-
-    /**
-     * The hash value should indicate an empty body
-     */
-    object EmptyBody : BodyHash("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") // hash of ""
-
-    /**
-     * The hash value should indicate that signature covers only headers and that there is no payload
-     */
-    object StreamingAws4HmacSha256Payload : BodyHash("STREAMING-AWS4-HMAC-SHA256-PAYLOAD")
-
-    /**
-     * The hash value should indicate ???
-     */
-    object StreamingAws4HmacSha256Events : BodyHash("STREAMING-AWS4-HMAC-SHA256-EVENTS")
-
-    /**
-     * Use an explicit, precalculated value for the hash
-     */
-    data class Precalculated(override val hash: String) : BodyHash(hash)
-}
-
 enum class AwsSignedBodyHeader {
     /**
      * Do not add a header.
@@ -157,18 +122,21 @@ class AwsSigningConfig(builder: Builder) {
     val normalizeUriPath: Boolean = builder.normalizeUriPath
 
     /**
-     * Determines wheter the `X-Amz-Security-Token` query param should be omitted. Normally, this parameter is added
-     * during signing if the credentials have a session token. The only known case where this should be true is when
-     * signing a websocket handshake to IoT Core.
+     * Determines whether the `X-Amz-Security-Token` query param should be omitted from the canonical signing
+     * calculation. Normally, this parameter is added during signing if the credentials have a session token. The only
+     * known case where this should be true is when signing a websocket handshake to IoT Core.
+     *
+     * If this value is false, a non-null security token is _still added to the request_ but it is not used in signature
+     * calculation.
      */
     val omitSessionToken: Boolean = builder.omitSessionToken
 
     /**
      * Determines the source of the canonical request's body public value. The default is
-     * [BodyHash.CalculateFromPayload], indicating that a public value will be calculated from the payload during
-     * signing.
+     * [HashSpecification.CalculateFromPayload], indicating that a public value will be calculated from the payload
+     * during signing.
      */
-    val bodyHash: BodyHash = builder.bodyHash ?: BodyHash.CalculateFromPayload
+    val hashSpecification: HashSpecification = builder.hashSpecification ?: HashSpecification.CalculateFromPayload
 
     /**
      * Determines which body "hash" header, if any, should be added to the canonical request and the signed request.
@@ -200,7 +168,7 @@ class AwsSigningConfig(builder: Builder) {
         it.useDoubleUriEncode = useDoubleUriEncode
         it.normalizeUriPath = normalizeUriPath
         it.omitSessionToken = omitSessionToken
-        it.bodyHash = bodyHash
+        it.hashSpecification = hashSpecification
         it.signedBodyHeader = signedBodyHeader
         it.credentialsProvider = credentialsProvider
         it.expiresAfter = expiresAfter
@@ -216,7 +184,7 @@ class AwsSigningConfig(builder: Builder) {
         var useDoubleUriEncode: Boolean = true
         var normalizeUriPath: Boolean = true
         var omitSessionToken: Boolean = false
-        var bodyHash: BodyHash? = null
+        var hashSpecification: HashSpecification? = null
         var signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE
         var credentialsProvider: CredentialsProvider? = null
         var expiresAfter: Duration? = null

@@ -24,6 +24,17 @@ class InstantTest {
      */
     private data class FmtTest(val sec: Long, val ns: Int, val expected: String)
 
+    /**
+     * Conversion from epoch sec/ns to multiple formats of ISO-8601
+     */
+    private data class Iso8601FmtTest(
+        val sec: Long,
+        val ns: Int,
+        val expectedIso8601: String,
+        val expectedIso8601Cond: String,
+        val expectedIso8601CondDate: String,
+    )
+
     private val iso8601Tests = listOf(
         FromTest("2020-11-05T19:22:37+00:00", 1604604157, 0),
         FromTest("2020-11-05T19:22:37Z", 1604604157, 0),
@@ -55,24 +66,34 @@ class InstantTest {
     }
 
     private val iso8601FmtTests = listOf(
-        FmtTest(1604604157, 0, "2020-11-05T19:22:37Z"),
-        FmtTest(1604604157, 422_000_000, "2020-11-05T19:22:37.422Z"),
-        FmtTest(1604604157, 422_000, "2020-11-05T19:22:37.000422Z"),
-        FmtTest(1604604157, 1, "2020-11-05T19:22:37Z"),
-        FmtTest(1604604157, 999, "2020-11-05T19:22:37Z"),
-        FmtTest(1604604157, 1_000, "2020-11-05T19:22:37.000001Z"),
-        FmtTest(1604602957, 0, "2020-11-05T19:02:37Z"),
-        FmtTest(1604605357, 0, "2020-11-05T19:42:37Z"),
-        FmtTest(1604558257, 0, "2020-11-05T06:37:37Z"),
-        FmtTest(1604650057, 0, "2020-11-06T08:07:37Z")
+        Iso8601FmtTest(1604604157, 0, "2020-11-05T19:22:37Z", "20201105T192237Z", "20201105"),
+        Iso8601FmtTest(1604604157, 422_000_000, "2020-11-05T19:22:37.422Z", "20201105T192237Z", "20201105"),
+        Iso8601FmtTest(1604604157, 422_000, "2020-11-05T19:22:37.000422Z", "20201105T192237Z", "20201105"),
+        Iso8601FmtTest(1604604157, 1, "2020-11-05T19:22:37Z", "20201105T192237Z", "20201105"),
+        Iso8601FmtTest(1604604157, 999, "2020-11-05T19:22:37Z", "20201105T192237Z", "20201105"),
+        Iso8601FmtTest(1604604157, 1_000, "2020-11-05T19:22:37.000001Z", "20201105T192237Z", "20201105"),
+        Iso8601FmtTest(1604602957, 0, "2020-11-05T19:02:37Z", "20201105T190237Z", "20201105"),
+        Iso8601FmtTest(1604605357, 0, "2020-11-05T19:42:37Z", "20201105T194237Z", "20201105"),
+        Iso8601FmtTest(1604558257, 0, "2020-11-05T06:37:37Z", "20201105T063737Z", "20201105"),
+        Iso8601FmtTest(1604650057, 0, "2020-11-06T08:07:37Z", "20201106T080737Z", "20201106"),
     )
+
+    private val iso8601Forms = mapOf(
+        TimestampFormat.ISO_8601 to Iso8601FmtTest::expectedIso8601,
+        TimestampFormat.ISO_8601_CONDENSED to Iso8601FmtTest::expectedIso8601Cond,
+        TimestampFormat.ISO_8601_CONDENSED_DATE to Iso8601FmtTest::expectedIso8601CondDate,
+    )
+
     @Test
     fun testFormatAsIso8601() {
         for ((idx, test) in iso8601FmtTests.withIndex()) {
-            val actual = Instant
-                .fromEpochSeconds(test.sec, test.ns)
-                .format(TimestampFormat.ISO_8601)
-            assertEquals(test.expected, actual, "test[$idx]: failed to correctly format Instant from")
+            for ((format, getter) in iso8601Forms) {
+                val actual = Instant
+                    .fromEpochSeconds(test.sec, test.ns)
+                    .format(format)
+                val expected = getter(test)
+                assertEquals(expected, actual, "test[$idx]: failed to correctly format Instant as $format")
+            }
         }
     }
 

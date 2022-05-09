@@ -105,7 +105,7 @@ class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware
         val body = req.subject.body
 
         // favor attributes from the current request context
-        val contextBodyHash = req.context.getOrNull(AwsSigningAttributes.BodyHash)
+        val contextHashSpecification = req.context.getOrNull(AwsSigningAttributes.HashSpecification)
         val contextSignedBodyHeader = req.context.getOrNull(AwsSigningAttributes.SignedBodyHeader)
 
         // operation signing config is baseConfig + operation specific config/overrides
@@ -142,16 +142,16 @@ class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware
             // FIXME - see: https://github.com/awslabs/smithy-kotlin/issues/296
             // if we know we have a (streaming) body and toSignableRequest() fails to convert it to a CRT equivalent
             // then we must decide how to compute the payload hash ourselves (defaults to unsigned payload)
-            bodyHash = when {
-                contextBodyHash != null -> contextBodyHash
-                config.isUnsignedPayload -> BodyHash.UnsignedPayload
-                body is HttpBody.Empty -> BodyHash.EmptyBody
+            hashSpecification = when {
+                contextHashSpecification != null -> contextHashSpecification
+                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
+                body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body is HttpBody.Streaming && !body.isReplayable -> {
                     logger.warn { "unable to compute hash for unbounded stream; defaulting to unsigned payload" }
-                    BodyHash.UnsignedPayload
+                    HashSpecification.UnsignedPayload
                 }
                 // use the payload to compute the hash
-                else -> BodyHash.CalculateFromPayload
+                else -> HashSpecification.CalculateFromPayload
             }
         }
 

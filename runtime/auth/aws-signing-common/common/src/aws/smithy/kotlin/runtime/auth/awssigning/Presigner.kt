@@ -118,7 +118,8 @@ suspend fun createPresignedRequest(
         PresigningLocation.HEADER -> AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
         PresigningLocation.QUERY_STRING -> AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS
     }
-    val bodyHash = if (requestConfig.signBody) BodyHash.CalculateFromPayload else BodyHash.UnsignedPayload
+    val hashSpecification =
+        if (requestConfig.signBody) HashSpecification.CalculateFromPayload else HashSpecification.UnsignedPayload
 
     val signingConfig = AwsSigningConfig {
         region = endpoint.context?.region ?: serviceConfig.region
@@ -126,7 +127,7 @@ suspend fun createPresignedRequest(
         credentialsProvider = serviceConfig.credentialsProvider
         this.signatureType = signatureType
         signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256
-        this.bodyHash = bodyHash
+        this.hashSpecification = hashSpecification
         expiresAfter = requestConfig.expiresAfter
         useDoubleUriEncode = serviceConfig.useDoubleUriEncode
         normalizeUriPath = serviceConfig.normalizeUriPath

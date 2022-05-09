@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.util.text
 import io.kotest.matchers.maps.shouldContain
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 data class EscapeTest(val input: String, val expected: String, val formUrlEncode: Boolean = false)
 
@@ -69,6 +70,38 @@ class TextTest {
     }
 
     @Test
+    fun testNormalizePathSegments() {
+        fun assertNormalize(unnormalized: String, expected: String) {
+            val actual = unnormalized.normalizePathSegments()
+            assertEquals(expected, actual, "Unexpected normalization for `$unnormalized`")
+        }
+
+        val tests = mapOf(
+            "" to "/",
+            "/" to "/",
+            "foo" to "/foo",
+            "/foo" to "/foo",
+            "foo/" to "/foo/",
+            "/foo/" to "/foo/",
+            "/a/b/c" to "/a/b/c",
+            "/a/b/../c" to "/a/c",
+            "/a/./c" to "/a/c",
+            "/./" to "/",
+            "/a/b/./../c" to "/a/c",
+            "/a/b/c/d/../e/../../f/../../../g" to "/g",
+            "//a//b//c//" to "/a/b/c/",
+        )
+        tests.forEach { (unnormalized, expected) -> assertNormalize(unnormalized, expected) }
+    }
+
+    @Test
+    fun testNormalizePathSegmentsError() {
+        assertFailsWith(IllegalArgumentException::class) {
+            "/a/b/../../..".normalizePathSegments()
+        }
+    }
+
+    @Test
     fun utf8UrlPathValuesEncodeCorrectly() {
         val swissAndGerman = "\u0047\u0072\u00fc\u0065\u007a\u0069\u005f\u007a\u00e4\u006d\u00e4"
         val russian = "\u0412\u0441\u0435\u043c\u005f\u043f\u0440\u0438\u0432\u0435\u0442"
@@ -115,8 +148,15 @@ class TextTest {
 
     @Test
     fun decodeUrlComponent() {
-        val component = "a%3Bb+c%7Ed%20e%2Bf"
-        val expected = "a;b c~d e+f"
+        val component = "a%3Bb+c%7Ed%20e%2Bf+g%3D%E1%88%B4"
+        val expected = "a;b c~d e+f g=ሴ"
         assertEquals(expected, component.urlDecodeComponent())
+    }
+
+    @Test
+    fun reencodeUrlComponent() {
+        val component = "ሴ%E1%88%B4"
+        val expected = "%E1%88%B4%E1%88%B4"
+        assertEquals(expected, component.urlReencodeComponent())
     }
 }

@@ -9,7 +9,7 @@ import java.util.zip.CRC32
 actual class Crc32 : Crc32Base() {
     private val md = CRC32()
 
-    override fun update(input: ByteArray) = md.update(input)
+    override fun update(input: ByteArray, offset: Int, length: Int) = md.update(input, offset, length)
 
     override fun digest(): ByteArray {
         val x = digestValue()

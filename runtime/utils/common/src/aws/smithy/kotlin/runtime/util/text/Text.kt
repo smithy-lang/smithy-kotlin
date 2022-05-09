@@ -95,6 +95,38 @@ fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolea
     return sb.toString()
 }
 
+/**
+ * Normalizes the segments of a URL path according to the following rules:
+ * * The returned path always begins with `/` (e.g., `a/b/c` → `/a/b/c`)
+ * * The returned path ends with `/` if the input path also does
+ * * Empty segments are discarded (e.g., `/a//b` → `/a/b`)
+ * * Segments of `.` are discarded (e.g., `/a/./b` → `/a/b`)
+ * * Segments of `..` are used to discard ancestor paths (e.g., `/a/b/../c` → `/a/c`)
+ * * All other segments are unmodified
+ */
+@InternalApi
+public fun String.normalizePathSegments(): String {
+    val segments = split("/").filter(String::isNotEmpty)
+    var skip = 0
+    val normalizedSegments = buildList {
+        segments.asReversed().forEach {
+            when {
+                it == "." -> { } // Ignore
+                it == ".." -> skip++
+                skip > 0 -> skip--
+                else -> add(it)
+            }
+        }
+    }.asReversed()
+    require(skip == 0) { "Found too many `..` instances for path segment count" }
+
+    return normalizedSegments.joinToString(
+        separator = "/",
+        prefix = "/",
+        postfix = if (normalizedSegments.isNotEmpty() && endsWith("/")) "/" else "",
+    )
+}
+
 private const val upperHex: String = "0123456789ABCDEF"
 private val upperHexSet = upperHex.toSet()
 
@@ -130,12 +162,52 @@ public fun String.splitAsQueryString(): Map<String, List<String>> {
     return entries
 }
 
-private val percentEncodedParam = """%([A-Fa-f0-9]{2})""".toRegex()
-
 /**
  * Decode a URL's query string, resolving percent-encoding (e.g., "%3B" → ";").
  */
 @InternalApi
-public fun String.urlDecodeComponent(): String = this
-    .replace('+', ' ')
-    .replace(percentEncodedParam) { it.groupValues[1].toInt(radix = 16).toChar().toString() }
+public fun String.urlDecodeComponent(): String {
+    val orig = this
+    return buildString(orig.length) {
+        var byteBuffer: ByteArray? = null // Do not initialize unless needed
+        var i = 0
+        var c: Char
+        while (i < orig.length) {
+            c = orig[i]
+            when (c) {
+                '+' -> {
+                    append(' ')
+                    i++
+                }
+
+                '%' -> {
+                    if (byteBuffer == null) {
+                        byteBuffer = ByteArray((orig.length - i) / 3) // Max remaining percent-encoded bytes
+                    }
+
+                    var byteCount = 0
+                    while ((i + 2) < orig.length && c == '%') {
+                        val byte = orig.substring(i + 1, i + 3).toInt(radix = 16).toByte()
+                        byteBuffer[byteCount++] = byte
+
+                        i += 3
+                        if (i < orig.length) c = orig[i]
+                    }
+
+                    require(i == orig.length || c != '%') { "Incomplete escape pattern at end of string" }
+
+                    append(byteBuffer.decodeToString(endIndex = byteCount))
+                }
+
+                else -> {
+                    append(c)
+                    i++
+                }
+            }
+        }
+    }
+}
+
+@InternalApi
+public fun String.urlReencodeComponent(formUrlEncode: Boolean = false): String =
+    urlDecodeComponent().urlEncodeComponent(formUrlEncode)
