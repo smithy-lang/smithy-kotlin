@@ -240,7 +240,7 @@ actual abstract class SigningSuiteTestBase : HasSigner {
         assumeTrue(stringToSignProvider != null)
         val expected = test.stringToSign
         val actual = stringToSignProvider!!(test.request.build(), test.config)
-        assertEquals(expected, actual, "Mismatch in string to sign. Binary dump follows:\nExpected: ${expected.encodeToByteArray().encodeToHex()}\nActual: ${actual.encodeToByteArray().encodeToHex()}")
+        assertEquals(expected, actual)
     }
 
     /**
@@ -371,13 +371,13 @@ actual abstract class SigningSuiteTestBase : HasSigner {
     }
 
     private fun getCanonicalRequest(dir: Path, type: AwsSignatureType): String =
-        dir.resolve("${type.fileNamePart}-canonical-request.txt").readText()
+        dir.resolve("${type.fileNamePart}-canonical-request.txt").readText().normalizeLineEndings()
 
     private fun getSignature(dir: Path, type: AwsSignatureType): String =
-        dir.resolve("${type.fileNamePart}-signature.txt").readText()
+        dir.resolve("${type.fileNamePart}-signature.txt").readText().normalizeLineEndings()
 
     private fun getStringToSign(dir: Path, type: AwsSignatureType): String =
-        dir.resolve("${type.fileNamePart}-string-to-sign.txt").readText()
+        dir.resolve("${type.fileNamePart}-string-to-sign.txt").readText().normalizeLineEndings()
 
     /**
      * Parse a path containing an HTTP request into an in memory representation of an SDK request
@@ -468,3 +468,6 @@ private fun buildOperation(
         set(AwsSigningAttributes.SigningService, config.service)
     }
 }
+
+private val irregularLineEndings = """\r\n?""".toRegex()
+private fun String.normalizeLineEndings() = replace(irregularLineEndings, "\n")
