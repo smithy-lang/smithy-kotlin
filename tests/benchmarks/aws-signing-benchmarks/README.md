@@ -1,6 +1,6 @@
 # Serde Benchmarks
 
-This project contains benchmarks for the [AWS signer implementations](../../runtime/auth).
+This project contains benchmarks for the [AWS signer implementations](../../../runtime/auth).
 
 ## Testing
 
