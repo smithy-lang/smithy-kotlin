@@ -13,6 +13,8 @@ import java.nio.file.Path
 import java.util.*
 
 public actual object Platform : PlatformProvider {
+    override fun getAllEnvVars(): Map<String, String> = System.getenv()
+
     /**
      * Get an environment variable or null
      */
@@ -42,6 +44,11 @@ public actual object Platform : PlatformProvider {
 
     suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
     suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
+
+    override fun getAllProperties(): Map<String, String> = System
+        .getProperties()
+        .entries
+        .associate { (key, value) -> key.toString() to value.toString() }
 
     /**
      * Get a system property or null

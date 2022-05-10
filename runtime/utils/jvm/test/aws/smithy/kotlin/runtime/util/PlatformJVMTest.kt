@@ -32,4 +32,21 @@ class PlatformJVMTest {
         assertNotNull(actual)
         assertEquals(fileContent, actual.decodeToString())
     }
+
+    @Test
+    fun testGetAllEnvVars() {
+        val allEnvVarsFromSystem = System.getenv()
+        val allEnvVarsFromPlatform = Platform.getAllEnvVars()
+        assertEquals(allEnvVarsFromSystem, allEnvVarsFromPlatform)
+    }
+
+    @Test
+    fun testGetAllProperties() {
+        val allPropertiesFromSystem = System
+            .getProperties()
+            .entries
+            .associate { (key, value) -> key.toString() to value.toString() }
+        val allPropertiesFromPlatform = Platform.getAllProperties()
+        assertEquals(allPropertiesFromSystem, allPropertiesFromPlatform)
+    }
 }

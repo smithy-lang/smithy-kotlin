@@ -8,7 +8,13 @@ package aws.smithy.kotlin.runtime.util
 /**
  * Provide a mapping from key to value
  */
-public fun interface EnvironmentProvider {
+public interface EnvironmentProvider {
+    /**
+     * Get a map of all environment variables.
+     * @return A map of string keys to string values.
+     */
+    public fun getAllEnvVars(): Map<String, String>
+
     /**
      * Get an environment variable or null
      *
