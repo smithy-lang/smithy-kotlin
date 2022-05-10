@@ -108,12 +108,7 @@ fun Byte.percentEncodeTo(out: Appendable) {
 }
 
 @InternalApi
-fun Byte.percentEncode(): String {
-    val byte = this
-    return StringBuilder(3)
-        .apply { byte.percentEncodeTo(this) }
-        .toString()
-}
+fun Byte.percentEncode(): String = StringBuilder(3).also(::percentEncodeTo).toString()
 
 /**
  * Split a (decoded) query string "foo=baz&bar=quux" into it's component parts
