@@ -73,6 +73,31 @@ class UnionGeneratorTest {
                 data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
                 object SdkUnknown : test.model.MyUnion()
             }
+            
+            /**
+             * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value.
+             */
+            val MyUnion.Bar get() = (this as MyUnion.Bar).value
+            
+            /**
+             * Casts this [MyUnion] as a [Baz] and retrieves its [kotlin.Int] value.
+             */
+            val MyUnion.Baz get() = (this as MyUnion.Baz).value
+            
+            /**
+             * Casts this [MyUnion] as a [Blz] and retrieves its [kotlin.ByteArray] value.
+             */
+            val MyUnion.Blz get() = (this as MyUnion.Blz).value
+            
+            /**
+             * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value.
+             */
+            val MyUnion.Foo get() = (this as MyUnion.Foo).value
+            
+            /**
+             * Casts this [MyUnion] as a [MyStruct] and retrieves its [test.model.MyStruct] value.
+             */
+            val MyUnion.MyStruct get() = (this as MyUnion.MyStruct).value
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)
@@ -167,6 +192,11 @@ class UnionGeneratorTest {
                 data class Foo(val value: test.model.MyStruct) : test.model.MyUnion()
                 object SdkUnknown : test.model.MyUnion()
             }
+            
+            /**
+             * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value.
+             */
+            val MyUnion.Foo get() = (this as MyUnion.Foo).value
         """.trimIndent()
 
         contents.shouldContainWithDiff(expectedClassDecl)

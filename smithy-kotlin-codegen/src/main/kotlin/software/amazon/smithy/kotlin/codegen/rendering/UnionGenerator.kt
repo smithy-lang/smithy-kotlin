@@ -59,6 +59,17 @@ class UnionGenerator(
         // generate the unknown which will always be last
         writer.write("object SdkUnknown : #Q()", symbol)
         writer.closeBlock("}").write("")
+
+        members.sortedBy { it.memberName }.forEach {
+            val variantName = it.unionVariantName()
+            val variantSymbol = symbolProvider.toSymbol(it)
+
+            writer.write("")
+            writer.dokka {
+                write("Casts this [#T] as a [#L] and retrieves its [#Q] value.", symbol, variantName, variantSymbol)
+            }
+            writer.write("val #T.#L get() = (this as #T.#L).value", symbol, variantName, symbol, variantName)
+        }
     }
 
     // generate a `hashCode()` implementation
