@@ -84,4 +84,16 @@ class ByteStreamJVMTest {
 
         assertContentEquals(expected, part0 + part1 + part2)
     }
+
+    @Test
+    fun `partial file as byte stream using range`() = runTest {
+        val file = RandomTempFile(1024)
+
+        val expected = file.readBytes()
+        val part0 = file.asByteStream(0L..255L).toByteArray()
+        val part1 = file.asByteStream(256L..511L).toByteArray()
+        val part2 = file.asByteStream(512L until file.length()).toByteArray()
+
+        assertContentEquals(expected, part0 + part1 + part2)
+    }
 }

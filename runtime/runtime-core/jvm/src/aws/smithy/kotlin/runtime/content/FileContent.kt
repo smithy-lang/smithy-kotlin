@@ -15,16 +15,15 @@ import java.io.File
 public class FileContent(
     public val file: File,
     public val start: Long = 0,
-    public val endInclusive: Long = -1
+    public val endInclusive: Long = file.length() - 1
 ) : ByteStream.ReplayableStream() {
 
     override val contentLength: Long
         get() = if (isPartial()) partialContentLength() else file.length()
 
-    private fun isPartial() = start != 0L || endInclusive != -1L
+    private fun isPartial() = start != 0L || endInclusive != file.length() - 1
 
-    private fun partialContentLength() =
-        if (endInclusive == -1L) file.length() - start else endInclusive - start + 1
+    private fun partialContentLength() = endInclusive - start + 1
 
     override fun newReader(): SdkByteReadChannel = file.readChannel(start, endInclusive)
 }

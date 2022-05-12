@@ -21,7 +21,7 @@ fun ByteStream.Companion.fromFile(file: File): ByteStream = file.asByteStream()
 /**
  * Create a [ByteStream] from a file
  */
-fun File.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
+fun File.asByteStream(start: Long = 0, endInclusive: Long = length() - 1): ByteStream {
     require(start >= 0) { "start index $start cannot be negative" }
     require(endInclusive == -1L || endInclusive >= start) {
         "end index $endInclusive must be greater than or equal to start index $start"
@@ -32,6 +32,11 @@ fun File.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
 
     return FileContent(this, start, endInclusive)
 }
+
+/**
+ * Create a [ByteStream] from a file with the given range
+ */
+fun File.asByteStream(range: LongRange) = asByteStream(range.first, range.last)
 
 /**
  * Create a [ByteStream] from a path
