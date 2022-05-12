@@ -21,16 +21,26 @@ fun ByteStream.Companion.fromFile(file: File): ByteStream = file.asByteStream()
 /**
  * Create a [ByteStream] from a file
  */
-fun File.asByteStream(): ByteStream = FileContent(this)
+fun File.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
+    require(start >= 0) { "start index $start cannot be negative" }
+    require(endInclusive == -1L || endInclusive >= start) {
+        "end index $endInclusive must be greater than or equal to start index $start"
+    }
+
+    val len = length()
+    require(endInclusive < len) { "end index $endInclusive must be less than file size $len" }
+
+    return FileContent(this, start, endInclusive)
+}
 
 /**
  * Create a [ByteStream] from a path
  */
-fun Path.asByteStream(): ByteStream {
+fun Path.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
     val f = toFile()
     require(f.exists()) { "cannot create ByteStream, file does not exist: $this" }
     require(f.isFile) { "cannot create a ByteStream from a directory: $this" }
-    return f.asByteStream()
+    return f.asByteStream(start, endInclusive)
 }
 
 /**
