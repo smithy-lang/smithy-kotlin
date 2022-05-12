@@ -31,7 +31,7 @@ class SmithySdkTest {
         val compilationResult = compileSdkAndTest(model = model, outputSink = compileOutputStream, emitSourcesToTmp = Debug.emitSourcesToTemp)
         compileOutputStream.flush()
 
-        assertEquals(compilationResult.exitCode, KotlinCompilation.ExitCode.OK, compileOutputStream.toString())
+        assertEquals(KotlinCompilation.ExitCode.OK, compilationResult.exitCode, compileOutputStream.toString())
     }
 
     // FIXME - disabled until we invest time into improving the extraneous warnings we get for things like parameter never used, etc

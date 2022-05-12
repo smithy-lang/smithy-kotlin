@@ -1,0 +1,8 @@
+{
+    "id": "02852edb-3c2d-4f29-a1ad-5f7e1b884268",
+    "type": "feature",
+    "description": "Add convenience getters for union members",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#393"
+    ]
+}
