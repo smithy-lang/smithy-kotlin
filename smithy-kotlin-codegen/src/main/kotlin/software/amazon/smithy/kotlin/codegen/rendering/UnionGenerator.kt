@@ -55,6 +55,14 @@ class UnionGenerator(
                 }
                 else -> writer.write("")
             }
+        }
+
+        // generate the unknown which will always be last
+        writer.write("object SdkUnknown : #Q()", symbol)
+
+        members.sortedBy { it.memberName }.forEach {
+            val variantName = it.unionVariantName()
+            val variantSymbol = symbolProvider.toSymbol(it)
 
             writer.write("")
             writer.dokka {
@@ -90,11 +98,8 @@ class UnionGenerator(
                 symbol,
                 variantName,
             )
-
-            writer.write("")
         }
-        // generate the unknown which will always be last
-        writer.write("object SdkUnknown : #Q()", symbol)
+
         writer.closeBlock("}").write("")
 
         members.sortedBy { it.memberName }.forEach {

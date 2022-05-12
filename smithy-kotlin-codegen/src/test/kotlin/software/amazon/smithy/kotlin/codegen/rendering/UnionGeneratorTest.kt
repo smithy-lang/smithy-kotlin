@@ -48,31 +48,7 @@ class UnionGeneratorTest {
              */
             sealed class MyUnion {
                 data class Bar(val value: kotlin.Int) : test.model.MyUnion()
-            
-                /**
-                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
-                 * [Bar].
-                 */
-                fun asBar(): kotlin.Int = (this as MyUnion.Bar).value
-            
-                /**
-                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Returns null if the [MyUnion] is not a [Bar].
-                 */
-                fun asBarOrNull(): kotlin.Int? = (this as? MyUnion.Bar)?.value
-            
                 data class Baz(val value: kotlin.Int) : test.model.MyUnion()
-            
-                /**
-                 * Casts this [MyUnion] as a [Baz] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
-                 * [Baz].
-                 */
-                fun asBaz(): kotlin.Int = (this as MyUnion.Baz).value
-            
-                /**
-                 * Casts this [MyUnion] as a [Baz] and retrieves its [kotlin.Int] value. Returns null if the [MyUnion] is not a [Baz].
-                 */
-                fun asBazOrNull(): kotlin.Int? = (this as? MyUnion.Baz)?.value
-            
                 data class Blz(val value: kotlin.ByteArray) : test.model.MyUnion() {
             
                     override fun hashCode(): kotlin.Int {
@@ -90,6 +66,34 @@ class UnionGeneratorTest {
                         return true
                     }
                 }
+                /**
+                 * Documentation for foo
+                 */
+                data class Foo(val value: kotlin.String) : test.model.MyUnion()
+                data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
+                object SdkUnknown : test.model.MyUnion()
+            
+                /**
+                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
+                 * [Bar].
+                 */
+                fun asBar(): kotlin.Int = (this as MyUnion.Bar).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Returns null if the [MyUnion] is not a [Bar].
+                 */
+                fun asBarOrNull(): kotlin.Int? = (this as? MyUnion.Bar)?.value
+            
+                /**
+                 * Casts this [MyUnion] as a [Baz] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
+                 * [Baz].
+                 */
+                fun asBaz(): kotlin.Int = (this as MyUnion.Baz).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Baz] and retrieves its [kotlin.Int] value. Returns null if the [MyUnion] is not a [Baz].
+                 */
+                fun asBazOrNull(): kotlin.Int? = (this as? MyUnion.Baz)?.value
             
                 /**
                  * Casts this [MyUnion] as a [Blz] and retrieves its [kotlin.ByteArray] value. Throws an exception if the [MyUnion] is not a
@@ -103,11 +107,6 @@ class UnionGeneratorTest {
                 fun asBlzOrNull(): kotlin.ByteArray? = (this as? MyUnion.Blz)?.value
             
                 /**
-                 * Documentation for foo
-                 */
-                data class Foo(val value: kotlin.String) : test.model.MyUnion()
-            
-                /**
                  * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Throws an exception if the [MyUnion] is not a
                  * [Foo].
                  */
@@ -117,8 +116,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Returns null if the [MyUnion] is not a [Foo].
                  */
                 fun asFooOrNull(): kotlin.String? = (this as? MyUnion.Foo)?.value
-            
-                data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
             
                 /**
                  * Casts this [MyUnion] as a [MyStruct] and retrieves its [test.model.MyStruct] value. Throws an exception if the [MyUnion] is not a
@@ -130,8 +127,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [MyStruct] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [MyStruct].
                  */
                 fun asMyStructOrNull(): test.model.MyStruct? = (this as? MyUnion.MyStruct)?.value
-            
-                object SdkUnknown : test.model.MyUnion()
             }
         """.trimIndent()
 
@@ -225,6 +220,7 @@ class UnionGeneratorTest {
         val expectedClassDecl = """
             sealed class MyUnion {
                 data class Foo(val value: test.model.MyStruct) : test.model.MyUnion()
+                object SdkUnknown : test.model.MyUnion()
             
                 /**
                  * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Throws an exception if the [MyUnion] is not a
@@ -236,8 +232,6 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [Foo].
                  */
                 fun asFooOrNull(): test.model.MyStruct? = (this as? MyUnion.Foo)?.value
-            
-                object SdkUnknown : test.model.MyUnion()
             }
         """.trimIndent()
 
