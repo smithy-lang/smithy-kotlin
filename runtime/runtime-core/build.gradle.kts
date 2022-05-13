@@ -34,6 +34,8 @@ kotlin {
 
                 val kamlVersion: String by project
                 implementation("com.charleskorn.kaml:kaml:$kamlVersion")
+
+                implementation(project(":runtime:testing"))
             }
         }
 
