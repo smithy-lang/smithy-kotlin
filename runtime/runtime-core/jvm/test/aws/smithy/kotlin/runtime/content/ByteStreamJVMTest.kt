@@ -96,4 +96,30 @@ class ByteStreamJVMTest {
 
         assertContentEquals(expected, part0 + part1 + part2)
     }
+
+    @Test
+    fun `partial path as byte stream`() = runTest {
+        val file = RandomTempFile(1024)
+        val path = file.toPath()
+
+        val expected = file.readBytes()
+        val part0 = path.asByteStream(endInclusive = 255).toByteArray()
+        val part1 = path.asByteStream(256, 511).toByteArray()
+        val part2 = path.asByteStream(512).toByteArray()
+
+        assertContentEquals(expected, part0 + part1 + part2)
+    }
+
+    @Test
+    fun `partial path as byte stream using range`() = runTest {
+        val file = RandomTempFile(1024)
+        val path = file.toPath()
+
+        val expected = file.readBytes()
+        val part0 = path.asByteStream(0L..255L).toByteArray()
+        val part1 = path.asByteStream(256L..511L).toByteArray()
+        val part2 = path.asByteStream(512L until file.length()).toByteArray()
+
+        assertContentEquals(expected, part0 + part1 + part2)
+    }
 }

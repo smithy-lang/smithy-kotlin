@@ -19,11 +19,7 @@ public class FileContent(
 ) : ByteStream.ReplayableStream() {
 
     override val contentLength: Long
-        get() = if (isPartial()) partialContentLength() else file.length()
-
-    private fun isPartial() = start != 0L || endInclusive != file.length() - 1
-
-    private fun partialContentLength() = endInclusive - start + 1
+        get() = endInclusive - start + 1
 
     override fun newReader(): SdkByteReadChannel = file.readChannel(start, endInclusive)
 }

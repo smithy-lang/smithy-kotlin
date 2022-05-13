@@ -49,6 +49,11 @@ fun Path.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
 }
 
 /**
+ * Create a [ByteStream] from a path with the given range
+ */
+fun Path.asByteStream(range: LongRange) = asByteStream(range.first, range.last)
+
+/**
  * Write the contents of this ByteStream to file and close it
  * @return the number of bytes written
  */
