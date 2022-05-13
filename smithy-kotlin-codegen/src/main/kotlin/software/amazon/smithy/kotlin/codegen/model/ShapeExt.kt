@@ -109,7 +109,11 @@ fun ServiceShape.hasIdempotentTokenMember(model: Model): Boolean {
  * Return the formatted (Kotlin) function signature for the given operation
  */
 fun OperationIndex.operationSignature(
-    model: Model, symbolProvider: SymbolProvider, op: OperationShape, includeOptionalDefault: Boolean = false): String {
+    model: Model,
+    symbolProvider: SymbolProvider,
+    op: OperationShape,
+    includeOptionalDefault: Boolean = false
+): String {
     val inputShape = this.getInput(op)
     val outputShape = this.getOutput(op)
     val input = inputShape.map { symbolProvider.toSymbol(it).name }
