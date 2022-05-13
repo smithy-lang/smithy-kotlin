@@ -1,5 +1,0 @@
-{
-    "id": "9b64eab0-c53a-472c-8b9f-e22209e1674c",
-    "type": "misc",
-    "description": "Expose Byte.percentEncodeTo for downstream recursion detection."
-}

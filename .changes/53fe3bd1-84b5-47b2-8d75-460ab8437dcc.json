@@ -1,8 +1,0 @@
-{
-    "id": "53fe3bd1-84b5-47b2-8d75-460ab8437dcc",
-    "type": "feature",
-    "description": "Add partial-file ByteStream support.",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#530"
-    ]
-}

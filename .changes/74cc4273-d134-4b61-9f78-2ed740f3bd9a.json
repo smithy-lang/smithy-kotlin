@@ -1,8 +1,0 @@
-{
-    "id": "74cc4273-d134-4b61-9f78-2ed740f3bd9a",
-    "type": "bugfix",
-    "description": "Convert HTML to Markdown for improved Dokka compatibility.",
-    "issues": [
-        "awslabs/smithy-kotlin#136"
-    ]
-}

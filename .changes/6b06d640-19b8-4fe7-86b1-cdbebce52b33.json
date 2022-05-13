@@ -1,8 +1,0 @@
-{
-    "id": "6b06d640-19b8-4fe7-86b1-cdbebce52b33",
-    "type": "misc",
-    "description": "Add support for getting all env vars and system properties (i.e., not just by a single key)",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#575"
-    ]
-}

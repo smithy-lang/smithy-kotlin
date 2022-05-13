@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.9.1] - 05/13/2022
+
+### Features
+* [#393](https://github.com/awslabs/aws-sdk-kotlin/issues/393) Add convenience getters for union members
+* [#530](https://github.com/awslabs/aws-sdk-kotlin/issues/530) Add partial-file ByteStream support.
+
+### Fixes
+* [#136](https://github.com/awslabs/smithy-kotlin/issues/136) Convert HTML to Markdown for improved Dokka compatibility.
+
+### Miscellaneous
+* [#575](https://github.com/awslabs/aws-sdk-kotlin/issues/575) Add support for getting all env vars and system properties (i.e., not just by a single key)
+* Expose Byte.percentEncodeTo for downstream recursion detection.
+
 ## [0.9.0] - 04/29/2022
 
 ### Miscellaneous
