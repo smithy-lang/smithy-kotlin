@@ -108,14 +108,17 @@ fun ServiceShape.hasIdempotentTokenMember(model: Model): Boolean {
 /**
  * Return the formatted (Kotlin) function signature for the given operation
  */
-fun OperationIndex.operationSignature(model: Model, symbolProvider: SymbolProvider, op: OperationShape): String {
+fun OperationIndex.operationSignature(
+    model: Model, symbolProvider: SymbolProvider, op: OperationShape, includeOptionalDefault: Boolean = false): String {
     val inputShape = this.getInput(op)
     val outputShape = this.getOutput(op)
     val input = inputShape.map { symbolProvider.toSymbol(it).name }
     val output = outputShape.map { symbolProvider.toSymbol(it).name }
 
     val hasOutputStream = outputShape.map { it.hasStreamingMember(model) }.orElse(false)
-    val inputParam = input.map { "input: $it" }.orElse("")
+    val inputParam = input.map {
+        if (includeOptionalDefault && inputShape.get().isOptional()) "input: $it = $it{}" else "input: $it"
+    }.orElse("")
     val outputParam = output.map { ": $it" }.orElse("")
 
     val operationName = op.defaultName()
@@ -220,3 +223,8 @@ fun UnionShape.filterEventStreamErrors(model: Model): Collection<MemberShape> {
         target.isError
     }
 }
+
+/**
+ * Test if a shape is optional.
+ */
+fun Shape.isOptional(): Boolean = members().none { it.isRequired }

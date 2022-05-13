@@ -153,7 +153,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.write("")
         writer.renderDocumentation(op)
         writer.renderAnnotations(op)
-        writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op))
+        writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op, true))
 
         // Add DSL overload (if appropriate)
         opIndex.getInput(op).ifPresent { inputShape ->

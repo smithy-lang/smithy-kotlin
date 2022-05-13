@@ -20,6 +20,7 @@ operation YeOldeOperation {
 
 @deprecated
 structure YeOldeOperationRequest {
+    @required
     @deprecated
     @httpQuery("yeOldeParam")
     yeOldParameter: String,

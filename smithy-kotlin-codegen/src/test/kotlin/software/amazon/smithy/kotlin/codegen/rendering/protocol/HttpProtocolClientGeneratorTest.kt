@@ -177,6 +177,36 @@ class HttpProtocolClientGeneratorTest {
         op.install(MockMiddleware(configurationField1 = "testing"))
         return op.roundTrip(client, input)
     }
+""",
+"""
+    override suspend fun getFooNoRequired(input: GetFooNoRequiredRequest): GetFooNoRequiredResponse {
+        val op = SdkHttpOperation.build<GetFooNoRequiredRequest, GetFooNoRequiredResponse> {
+            serializer = GetFooNoRequiredOperationSerializer()
+            deserializer = GetFooNoRequiredOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooNoRequired"
+            }
+        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
+        return op.roundTrip(client, input)
+    }
+""",
+"""
+    override suspend fun getFooSomeRequired(input: GetFooSomeRequiredRequest): GetFooSomeRequiredResponse {
+        val op = SdkHttpOperation.build<GetFooSomeRequiredRequest, GetFooSomeRequiredResponse> {
+            serializer = GetFooSomeRequiredOperationSerializer()
+            deserializer = GetFooSomeRequiredOperationDeserializer()
+            context {
+                expectedHttpStatus = 200
+                service = serviceName
+                operationName = "GetFooSomeRequired"
+            }
+        }
+        op.install(MockMiddleware(configurationField1 = "testing"))
+        return op.roundTrip(client, input)
+    }
 """
         )
         expectedBodies.forEach {
