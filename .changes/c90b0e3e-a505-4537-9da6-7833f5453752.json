@@ -1,0 +1,8 @@
+{
+    "id": "c90b0e3e-a505-4537-9da6-7833f5453752",
+    "type": "bugfix",
+    "description": "Upgrade to ktor-2.x",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#480"
+    ]
+}

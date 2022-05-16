@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
@@ -13,11 +12,9 @@ import aws.smithy.kotlin.runtime.io.toSdkChannel
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import io.ktor.client.request.*
-import io.ktor.client.statement.HttpResponse
 import io.ktor.http.*
 import io.ktor.utils.io.*
 import kotlinx.coroutines.CoroutineDispatcher
-import aws.smithy.kotlin.runtime.http.response.HttpResponse as SdkHttpResponse
 import io.ktor.client.request.HttpRequestBuilder as KtorHttpRequestBuilder
 
 // convert everything **except** the body from an Sdk HttpRequestBuilder to equivalent Ktor abstraction
@@ -34,13 +31,11 @@ internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
         port = sdkUrl.port
         encodedPath = sdkUrl.path.encodeUrlPath()
 
-        // Use the encoding rules from SDK rather than KTOR or else signature may mismatch
-        parameters.urlEncodingOption = UrlEncodingOption.NO_ENCODING
         if (!sdkUrl.parameters.isEmpty()) {
             sdkUrl.parameters.entries().forEach { (name, values) ->
                 // if parameters are already encoded don't double encode them
                 val encoded = if (sdkUrl.encodeParameters) values.map { it.urlEncodeComponent() } else values
-                parameters.appendAll(name, encoded)
+                encodedParameters.appendAll(name, encoded)
             }
         }
         sdkUrl.fragment?.let { fragment = it }
@@ -78,13 +73,6 @@ internal class KtorHttpBody(
     private val source = channel.toSdkChannel()
     override fun readFrom(): SdkByteReadChannel = source
 }
-
-// convert ktor Http response to an (SDK) Http response
-fun HttpResponse.toSdkHttpResponse(): SdkHttpResponse = SdkHttpResponse(
-    HttpStatusCode.fromValue(status.value),
-    KtorHeaders(headers),
-    KtorHttpBody(contentLength(), channel = content)
-)
 
 /**
  * Copy all of (SDK) [source] to (Ktor) [dst]. This allows implementations to use whatever

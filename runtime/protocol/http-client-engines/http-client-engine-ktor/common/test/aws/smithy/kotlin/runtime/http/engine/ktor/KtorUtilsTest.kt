@@ -15,11 +15,13 @@ import io.ktor.http.*
 import io.ktor.http.Headers
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
+import io.ktor.util.*
 import io.ktor.util.date.GMTDate
 import io.ktor.utils.io.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.test.*
 
+@OptIn(InternalAPI::class)
 class MockHttpResponse : HttpResponse() {
     override val call: HttpClientCall
         get() = error("not needed for test")
@@ -65,14 +67,6 @@ class KtorUtilsTest {
         actual.url.parameters.getAll("baz")!!.shouldContainAll("qux", "waldo")
         assertEquals("v1", actual.headers["h1"]!!)
         actual.headers.getAll("h2")!!.shouldContainAll("v2", "v3")
-    }
-
-    @Test
-    fun itConvertsResponses() {
-        val response = MockHttpResponse()
-        val actual = response.toSdkHttpResponse()
-        assertEquals("bar", actual.headers["x-foo"]!!)
-        assertEquals(aws.smithy.kotlin.runtime.http.HttpStatusCode.OK, actual.status)
     }
 
     @Test
@@ -132,6 +126,6 @@ class KtorUtilsTest {
 
         val actual = builder.toKtorRequestBuilder().build()
         assertEquals(sdkUrl.encodedPath, actual.url.fullPath)
-        assertEquals(UrlEncodingOption.NO_ENCODING, actual.url.parameters.urlEncodingOption)
+        assertEquals("foo=bar%20baz%2Fqux", actual.url.encodedQuery)
     }
 }
