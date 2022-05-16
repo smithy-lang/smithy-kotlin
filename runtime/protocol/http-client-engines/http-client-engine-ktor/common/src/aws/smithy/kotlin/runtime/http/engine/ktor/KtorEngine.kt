@@ -59,6 +59,7 @@ class KtorEngine(
 
     override suspend fun roundTrip(request: HttpRequest): HttpCall {
         val callContext = callContext()
+        val sdkRequestId = request.headers["__sdkRequestId"]
 
         val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 
@@ -77,14 +78,15 @@ class KtorEngine(
         }
 
         // wait for the response to be available, the content will be read as a stream
-        logger.trace("waiting on response to be available")
+        logger.trace("[sdkRequestId=$sdkRequestId] waiting on response to be available")
 
         try {
             val resp = respChannel.receive()
-            logger.trace("response is available continuing")
+            logger.trace("[sdkRequestId=$sdkRequestId] response is available continuing")
             return resp
         } catch (ex: Exception) {
-            throw logger.throwing(ex)
+            logger.trace(ex){ "[sdkRequestId=$sdkRequestId] failed to receive response" }
+            throw ex
         }
     }
 
@@ -93,6 +95,7 @@ class KtorEngine(
         sdkRequest: HttpRequest,
         channel: SendChannel<HttpCall>
     ) {
+        val sdkRequestId = sdkRequest.headers["__sdkRequestId"]
         val builder = KtorRequestAdapter(sdkRequest, callContext).toBuilder()
         val waiter = Waiter()
         val reqTime = Instant.now()
@@ -117,14 +120,14 @@ class KtorEngine(
                 body,
             )
 
-            logger.trace("signalling response")
+            logger.trace("[sdkRequestId=$sdkRequestId] signalling response")
             val call = HttpCall(sdkRequest, resp, reqTime, respTime, callContext)
             channel.send(call)
 
-            logger.trace("waiting on body to be consumed")
+            logger.trace("[sdkRequestId=$sdkRequestId] waiting on body to be consumed")
             // wait for the receiving end to finish with the HTTP body
             waiter.wait()
-            logger.trace("request done")
+            logger.trace("[sdkRequestId=$sdkRequestId] request done")
         }
     }
 

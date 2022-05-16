@@ -10,6 +10,7 @@ import io.ktor.client.engine.okhttp.*
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 internal actual fun newDefaultHttpEngine(config: HttpClientEngineConfig): HttpClientEngine {
@@ -17,7 +18,8 @@ internal actual fun newDefaultHttpEngine(config: HttpClientEngineConfig): HttpCl
         config {
             connectTimeout(config.connectTimeout.toJavaDuration())
             readTimeout(config.socketReadTimeout.toJavaDuration())
-            writeTimeout(config.socketWriteTimeout.toJavaDuration())
+            // writeTimeout(config.socketWriteTimeout.toJavaDuration())
+            writeTimeout((0.seconds).toJavaDuration())
             val pool = ConnectionPool(
                 maxIdleConnections = config.maxConnections.toInt(),
                 keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,

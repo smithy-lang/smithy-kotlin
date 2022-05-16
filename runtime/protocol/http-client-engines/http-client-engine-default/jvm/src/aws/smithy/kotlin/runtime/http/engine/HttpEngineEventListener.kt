@@ -18,28 +18,38 @@ internal class HttpEngineEventListener(
 ) : EventListener() {
     private val logger = Logger.getLogger<HttpEngineEventListener>()
 
+    private inline fun traceCall(call: Call, crossinline msg: () -> Any) {
+        val sdkRequestId = call.request().header("__sdkRequestId")
+        logger.trace { "[sdkRequestId=$sdkRequestId] ${msg()}" }
+    }
+
+    private inline fun traceCall(call: Call, throwable: Throwable, crossinline msg: () -> Any) {
+        val sdkRequestId = call.request().header("__sdkRequestId")
+        logger.trace(throwable) { "[sdkRequestId=$sdkRequestId] ${msg()}" }
+    }
+
     override fun callStart(call: Call) {
-        logger.trace { "call started" }
+        traceCall(call){ "call started" }
     }
 
     override fun callEnd(call: Call) {
-        logger.trace { "call complete" }
+        traceCall(call) { "call complete" }
     }
 
     override fun callFailed(call: Call, ioe: IOException) {
-        logger.trace(ioe) { "call failed" }
+        traceCall(call, ioe) { "call failed" }
     }
 
     override fun canceled(call: Call) {
-        logger.trace { "call cancelled" }
+        traceCall(call) { "call cancelled" }
     }
 
     override fun connectStart(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy) {
-        logger.trace { "starting connection: addr=$inetSocketAddress; proxy=$proxy" }
+        traceCall(call) { "starting connection: addr=$inetSocketAddress; proxy=$proxy" }
     }
 
     override fun connectEnd(call: Call, inetSocketAddress: InetSocketAddress, proxy: Proxy, protocol: Protocol?) {
-        logger.trace { "connection established: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
+        traceCall(call) { "connection established: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
     }
 
     override fun connectFailed(
@@ -49,98 +59,100 @@ internal class HttpEngineEventListener(
         protocol: Protocol?,
         ioe: IOException
     ) {
-        logger.trace(ioe) { "connect failed: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
+        traceCall(call, ioe) { "connect failed: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
     }
 
     override fun connectionAcquired(call: Call, connection: Connection) {
-        logger.trace { "connection acquired: conn=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
+        val connId = System.identityHashCode(connection)
+        traceCall(call) { "connection acquired: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
 
     override fun connectionReleased(call: Call, connection: Connection) {
-        logger.trace { "connection released: conn=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
+        val connId = System.identityHashCode(connection)
+        traceCall(call) { "connection released: conn(id=$connId)=$connection; connPool: total=${pool.connectionCount()}, idle=${pool.idleConnectionCount()}" }
     }
 
     override fun dnsStart(call: Call, domainName: String) {
-        logger.trace { "dns query: domain=$domainName" }
+        traceCall(call) { "dns query: domain=$domainName" }
     }
 
     override fun dnsEnd(call: Call, domainName: String, inetAddressList: List<InetAddress>) {
-        logger.trace { "dns resolved: domain=$domainName; records=$inetAddressList" }
+        traceCall(call) { "dns resolved: domain=$domainName; records=$inetAddressList" }
     }
 
     override fun proxySelectStart(call: Call, url: HttpUrl) {
-        logger.trace { "proxy select start: url=$url" }
+        traceCall(call) { "proxy select start: url=$url" }
     }
 
     override fun proxySelectEnd(call: Call, url: HttpUrl, proxies: List<Proxy>) {
-        logger.trace { "proxy select end: url=$url" }
+        traceCall(call) { "proxy select end: url=$url" }
     }
 
     override fun requestBodyStart(call: Call) {
-        logger.trace { "sending request body" }
+        traceCall(call) { "sending request body" }
     }
 
     override fun requestBodyEnd(call: Call, byteCount: Long) {
-        logger.trace { "finished sending request body: bytesSent=$byteCount" }
+        traceCall(call) { "finished sending request body: bytesSent=$byteCount" }
     }
 
     override fun requestFailed(call: Call, ioe: IOException) {
-        logger.trace(ioe) { "request failed" }
+        traceCall(call, ioe) { "request failed" }
     }
 
     override fun requestHeadersStart(call: Call) {
-        logger.trace { "sending request headers" }
+        traceCall(call) { "sending request headers" }
     }
 
     override fun requestHeadersEnd(call: Call, request: Request) {
-        logger.trace { "finished sending request headers" }
+        traceCall(call) { "finished sending request headers" }
     }
 
     override fun responseBodyStart(call: Call) {
-        logger.trace { "response body available" }
+        traceCall(call) { "response body available" }
     }
 
     override fun responseBodyEnd(call: Call, byteCount: Long) {
-        logger.trace { "response body finished: bytesConsumed=$byteCount" }
+        traceCall(call) { "response body finished: bytesConsumed=$byteCount" }
     }
 
     override fun responseFailed(call: Call, ioe: IOException) {
-        logger.trace(ioe) { "response failed" }
+        traceCall(call, ioe) { "response failed" }
     }
 
     override fun responseHeadersStart(call: Call) {
-        logger.trace { "response headers start" }
+        traceCall(call) { "response headers start" }
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
         val contentLength = response.body?.contentLength()
-        logger.trace { "response headers end: contentLengthHeader=$contentLength" }
+        traceCall(call) { "response headers end: contentLengthHeader=$contentLength" }
     }
 
     override fun secureConnectStart(call: Call) {
-        logger.trace { "initiating TLS connection" }
+        traceCall(call) { "initiating TLS connection" }
     }
 
     override fun secureConnectEnd(call: Call, handshake: Handshake?) {
-        logger.trace { "TLS connect end: handshake=$handshake" }
+        traceCall(call) { "TLS connect end: handshake=$handshake" }
     }
 
     // NOTE: we don't configure a cache and should never get the rest of these events,
     // seeing these messages logged means we configured something wrong
 
     override fun satisfactionFailure(call: Call, response: Response) {
-        logger.trace { "cache satisfaction failure" }
+        traceCall(call) { "cache satisfaction failure" }
     }
 
     override fun cacheConditionalHit(call: Call, cachedResponse: Response) {
-        logger.trace { "cache conditional hit" }
+        traceCall(call) { "cache conditional hit" }
     }
 
     override fun cacheHit(call: Call, response: Response) {
-        logger.trace { "cache hit" }
+        traceCall(call) { "cache hit" }
     }
 
     override fun cacheMiss(call: Call) {
-        logger.trace { "cache miss" }
+        traceCall(call) { "cache miss" }
     }
 }
