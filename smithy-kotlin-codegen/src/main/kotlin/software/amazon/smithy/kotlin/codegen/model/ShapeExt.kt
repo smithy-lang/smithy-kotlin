@@ -107,6 +107,9 @@ fun ServiceShape.hasIdempotentTokenMember(model: Model): Boolean {
 
 /**
  * Return the formatted (Kotlin) function signature for the given operation
+ * @param includeOptionalDefault Set whether the arg declaration should include a default initializer for operations
+ * where the input has no required parameters. Consumers that render both a super and subclass definition using this
+ * method will need to manage this parameter to ensure that the default is only present in the former.
  */
 fun OperationIndex.operationSignature(
     model: Model,
