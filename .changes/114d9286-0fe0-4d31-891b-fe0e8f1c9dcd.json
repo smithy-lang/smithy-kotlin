@@ -1,0 +1,8 @@
+{
+    "id": "114d9286-0fe0-4d31-891b-fe0e8f1c9dcd",
+    "type": "feature",
+    "description": "Allow omission of input in service method calls where no parameters are required.",
+    "issues": [
+        "awslabs/smithy-kotlin#129"
+    ]
+}
