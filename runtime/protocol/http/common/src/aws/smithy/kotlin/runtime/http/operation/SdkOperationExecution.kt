@@ -180,8 +180,6 @@ private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<S
     val logMode = request.context.sdkLogMode
     val logger by lazy { request.context.getLogger("httpTraceMiddleware") }
 
-    request.subject.headers["__sdkRequestId"] = request.context[HttpOperationContext.SdkRequestId]
-
     if (logMode.isEnabled(SdkLogMode.LogRequest) || logMode.isEnabled(SdkLogMode.LogRequestWithBody)) {
         val formattedReq = dumpRequest(request.subject, logMode.isEnabled(SdkLogMode.LogRequestWithBody))
         logger.debug { "HttpRequest:\n$formattedReq" }

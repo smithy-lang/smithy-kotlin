@@ -32,6 +32,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class RetryTest {
@@ -43,19 +44,19 @@ class RetryTest {
     }
     private val client = sdkHttpClient(mockEngine)
 
+    private val policy = object : RetryPolicy<Any?> {
+        var attempts = 0
+        override fun evaluate(result: Result<Any?>): RetryDirective =
+            if (attempts < 1) {
+                attempts++
+                RetryDirective.RetryError(RetryErrorType.ServerSide)
+            } else {
+                RetryDirective.TerminateAndSucceed
+            }
+    }
+
     @Test
     fun testRetryMiddleware() = runTest {
-        val policy = object : RetryPolicy<Any?> {
-            var attempts = 0
-            override fun evaluate(result: Result<Any?>): RetryDirective =
-                if (attempts < 1) {
-                    attempts++
-                    RetryDirective.RetryError(RetryErrorType.ServerSide)
-                } else {
-                    RetryDirective.TerminateAndSucceed
-                }
-        }
-
         val req = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
@@ -71,5 +72,30 @@ class RetryTest {
         op.roundTrip(client, Unit)
         val attempts = op.context.attributes[HttpOperationContext.HttpCallList].size
         assertEquals(2, attempts)
+    }
+
+    @Test
+    fun testItSetsRetryHeaders() = runTest {
+        // see retry-header SEP
+        val req = HttpRequestBuilder()
+        val op = newTestOperation<Unit, Unit>(req, Unit)
+
+        val delayProvider = DelayProvider { }
+        val strategy = StandardRetryStrategy(
+            StandardRetryStrategyOptions.Default,
+            StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default),
+            delayProvider
+        )
+
+        op.install(Retry(strategy, policy))
+
+        op.roundTrip(client, Unit)
+        val calls = op.context.attributes[HttpOperationContext.HttpCallList]
+        val sdkRequestId = op.context[HttpOperationContext.SdkRequestId]
+
+        assertTrue(calls.all { it.request.headers[AMZ_SDK_INVOCATION_ID_HEADER] == sdkRequestId })
+        calls.forEachIndexed { idx, call ->
+            assertEquals("attempt=${idx + 1}", call.request.headers[AMZ_SDK_REQUEST_HEADER])
+        }
     }
 }
