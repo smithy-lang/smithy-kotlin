@@ -10,7 +10,6 @@ import io.ktor.client.engine.okhttp.*
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import java.util.concurrent.TimeUnit
-import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 internal actual fun newDefaultHttpEngine(config: HttpClientEngineConfig): HttpClientEngine {

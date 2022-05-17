@@ -29,7 +29,7 @@ internal class HttpEngineEventListener(
     }
 
     override fun callStart(call: Call) {
-        traceCall(call){ "call started" }
+        traceCall(call) { "call started" }
     }
 
     override fun callEnd(call: Call) {

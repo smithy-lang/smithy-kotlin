@@ -17,7 +17,9 @@ import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
  * @param context The operation context
  * @param subject The input type
  */
-data class OperationRequest<T>(val context: ExecutionContext, val subject: T)
+data class OperationRequest<T>(val context: ExecutionContext, val subject: T) {
+    constructor(subject: T) : this(ExecutionContext(), subject)
+}
 
 /**
  * Deep copy an [OperationRequest] to a new request. Note that, because [context] is...well, context...it's considered

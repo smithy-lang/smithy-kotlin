@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.*
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
@@ -71,7 +72,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
     private val connManagers = mutableMapOf<String, HttpClientConnectionManager>()
     private val mutex = Mutex()
 
-    override suspend fun roundTrip(request: HttpRequest): HttpCall {
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
         val manager = getManagerForUri(request.uri)
 

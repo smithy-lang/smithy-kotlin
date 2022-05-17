@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -27,7 +28,7 @@ class DefaultValidateResponseTest {
     @Test
     fun itThrowsExceptionOnNon200Response() = runTest {
         val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(request: HttpRequest): HttpCall {
+            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
                 val resp = HttpResponse(
                     HttpStatusCode.BadRequest,
                     Headers.Empty,
@@ -52,7 +53,7 @@ class DefaultValidateResponseTest {
     @Test
     fun itPassesSuccessResponses() = runTest {
         val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(request: HttpRequest): HttpCall {
+            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
                 val resp = HttpResponse(
                     HttpStatusCode.Accepted,
                     Headers.Empty,

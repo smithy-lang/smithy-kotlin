@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.*
@@ -57,7 +58,7 @@ class KtorEngine(
 
     private val logger = Logger.getLogger<KtorEngine>()
 
-    override suspend fun roundTrip(request: HttpRequest): HttpCall {
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
         val sdkRequestId = request.headers["__sdkRequestId"]
 
@@ -85,7 +86,7 @@ class KtorEngine(
             logger.trace("[sdkRequestId=$sdkRequestId] response is available continuing")
             return resp
         } catch (ex: Exception) {
-            logger.trace(ex){ "[sdkRequestId=$sdkRequestId] failed to receive response" }
+            logger.trace(ex) { "[sdkRequestId=$sdkRequestId] failed to receive response" }
             throw ex
         }
     }
@@ -131,7 +132,7 @@ class KtorEngine(
         }
     }
 
-    override fun close() {
+    override fun shutdown() {
         client.close()
         engine.close()
     }
