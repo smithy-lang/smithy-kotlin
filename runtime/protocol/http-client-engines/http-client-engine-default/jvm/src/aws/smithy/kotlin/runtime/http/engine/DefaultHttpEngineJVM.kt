@@ -18,7 +18,6 @@ internal actual fun newDefaultHttpEngine(config: HttpClientEngineConfig): HttpCl
             connectTimeout(config.connectTimeout.toJavaDuration())
             readTimeout(config.socketReadTimeout.toJavaDuration())
             writeTimeout(config.socketWriteTimeout.toJavaDuration())
-            // writeTimeout((0.seconds).toJavaDuration())
             val pool = ConnectionPool(
                 maxIdleConnections = config.maxConnections.toInt(),
                 keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
