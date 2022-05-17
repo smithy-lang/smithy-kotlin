@@ -200,12 +200,19 @@ private fun Node.hasAncestor(predicate: (Node) -> Boolean): Boolean =
 private fun Node.isList() =
     nodeName().let { it == "ul" || it == "ol" }
 
-private fun TextNode.markdownText() =
-    text()
-        // Replace square brackets with escaped equivalents so that they are not rendered as invalid Markdown
-        // links.
+private fun Node.isPreformat() =
+    nodeName().let { it == "code" || it == "pre" }
+
+private fun TextNode.markdownText() = when {
+    // If we're inside a preformat block, everything is literal, ie. no escapes required.
+    hasAncestor(Node::isPreformat) -> text()
+
+    // Replace square brackets with escaped equivalents so that they are not rendered as invalid Markdown
+    // links.
+    else -> text()
         .replace("[", "&#91;")
         .replace("]", "&#93;")
+}
 
 /**
  * Operates on all substrings that fall within the provided section delimiters. Returns a new string where all

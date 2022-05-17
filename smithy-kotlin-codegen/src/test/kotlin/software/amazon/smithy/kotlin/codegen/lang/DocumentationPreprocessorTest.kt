@@ -162,6 +162,21 @@ class DocumentationPreprocessorTest {
     }
 
     @Test
+    fun `it renders markdown text`() {
+        val input = "<p>This [should be escaped because it's in formatland].</p>" +
+            "<p><code>this should [not]</code></p>" +
+            "<p><pre>nor [should] this</pre></p>"
+        val expected = """
+        This &#91;should be escaped because it's in formatland&#93;.
+        
+        `this should [not]`
+        
+        `nor [should] this`
+        """.trimIndent()
+        inputTest(input, expected)
+    }
+
+    @Test
     fun `it fully renders S3 CreateMultipartUpload`() {
         val input = """
 <p>This action initiates a multipart upload and returns an upload ID. This upload ID is
