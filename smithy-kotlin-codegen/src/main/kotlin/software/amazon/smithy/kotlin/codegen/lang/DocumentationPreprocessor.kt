@@ -203,13 +203,13 @@ private fun Node.isList() =
 private fun Node.isPreformat() =
     nodeName().let { it == "code" || it == "pre" }
 
-private fun TextNode.markdownText(): String {
+private fun TextNode.markdownText() = when {
     // If we're inside a preformat block, everything is literal, ie. no escapes required.
-    if (hasAncestor(Node::isPreformat)) return text()
+    hasAncestor(Node::isPreformat) -> text()
 
-    return text()
-        // Replace square brackets with escaped equivalents so that they are not rendered as invalid Markdown
-        // links.
+    // Replace square brackets with escaped equivalents so that they are not rendered as invalid Markdown
+    // links.
+    else -> text()
         .replace("[", "&#91;")
         .replace("]", "&#93;")
 }
