@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.http.engine
 
-import aws.smithy.kotlin.runtime.http.middleware.AMZ_SDK_INVOCATION_ID_HEADER
 import aws.smithy.kotlin.runtime.logging.Logger
 import okhttp3.*
 import java.io.IOException
@@ -12,7 +11,8 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-// TODO - propagate call metadata (e.g. sdkRequestId) using Request.tag instead of abusing AMZ_SDK_INVOCATION_ID. Requires more direct integration with okhttp though.
+// FIXME - propagate call metadata (e.g. sdkRequestId) using Request.tag instead of abusing AMZ_SDK_INVOCATION_ID. Requires more direct integration with okhttp though.
+private const val AMZ_SDK_INVOCATION_ID_HEADER = "amz-sdk-invocation-id"
 
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool
