@@ -177,6 +177,25 @@ class DocumentationPreprocessorTest {
     }
 
     @Test
+    fun `it renders description list section headers`() {
+        val input = """
+            <dl>
+                <dt>term1</dt>
+                <dd><p>description1</p></dd>
+                <dt/>
+                <dd><p>definition of a nonexistent term...</p></dd>
+            <dl>
+        """.trimIndent()
+        val expected = """
+        ## term1
+        description1
+        
+        definition of a nonexistent term...
+        """.trimIndent()
+        inputTest(input, expected)
+    }
+
+    @Test
     fun `it fully renders S3 CreateMultipartUpload`() {
         val input = """
 <p>This action initiates a multipart upload and returns an upload ID. This upload ID is

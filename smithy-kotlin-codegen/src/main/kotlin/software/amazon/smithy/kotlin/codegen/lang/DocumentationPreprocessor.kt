@@ -27,13 +27,7 @@ class DocumentationPreprocessor : KotlinIntegration {
         return transformer.mapTraits(model) { _, trait ->
             when (trait) {
                 is DocumentationTrait -> {
-                    // There's definitely some improperly escaped HTML characters within preformat blocks in existing
-                    // models. Ensure we strip those now, the parser is VERY forgiving and will mistreat any sequences
-                    // of characters that happen to form tags as such.
-                    val sanitizedDoc = trait.value
-                        .applyWithin("<code>", "</code>", String::escapeHtml)
-                        .applyWithin("<pre>", "</pre>", String::escapeHtml)
-                    val docs = toKdoc(sanitizedDoc)
+                    val docs = toKdoc(trait.value)
                     DocumentationTrait(docs, trait.sourceLocation)
                 }
                 else -> trait
@@ -49,10 +43,28 @@ class DocumentationPreprocessor : KotlinIntegration {
         return renderer.text()
     }
 
+    /**
+     * Parse the raw documentation into an HTML structure from which we can deterministically generate valid markdown.
+     * This method accepts the model documentation as-is and is designated to handle any input or parsing quirks that
+     * might occur.
+     */
     private fun parseClean(rawDoc: String): Document {
-        val parsed = Jsoup.parse(rawDoc)
+        // There's definitely some improperly escaped HTML characters within preformat blocks in existing
+        // models. Ensure we strip those now, the parser is VERY forgiving and will mistreat any sequences
+        // of characters that happen to form tags as such.
+        val sanitized = rawDoc
+            .applyWithin("<code>", "</code>", String::escapeHtml)
+            .applyWithin("<pre>", "</pre>", String::escapeHtml)
+        val parsed = Jsoup.parse(sanitized)
 
-        parsed.body().stripBlankTextNodes()
+        parsed.body().filterDescendants(
+            // Jsoup will preserve newlines between elements as blank text nodes. These have zero bearing on the content
+            // of the document to begin with and only serve to complicate traversal.
+            { it is TextNode && it.isBlank },
+            // Some docs contain empty definition terms, which we render as section headers. An empty section header
+            // (literal "## \n" is invalid markdown according to dokka.
+            { it.nodeName() == "dt" && it.childNodes().isEmpty() }
+        )
 
         return parsed
     }
@@ -181,17 +193,13 @@ class DocumentationPreprocessor : KotlinIntegration {
     }
 }
 
-/**
- * Jsoup will preserve newlines between elements as blank text nodes. These have zero bearing on the content of the
- * document to begin with and only serve to complicate traversal.
- */
-private fun Node.stripBlankTextNodes() {
-    if (this is TextNode && isBlank) {
+private fun Node.filterDescendants(vararg matchers: (Node) -> Boolean) {
+    if (matchers.any { it(this) }) {
         remove()
         return
     }
 
-    childNodes().forEach(Node::stripBlankTextNodes)
+    childNodes().forEach { it.filterDescendants(*matchers) }
 }
 
 private fun Node.hasAncestor(predicate: (Node) -> Boolean): Boolean =
