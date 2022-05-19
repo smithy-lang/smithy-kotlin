@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.2] - 05/19/2022
+
+### Features
+* [#129](https://github.com/awslabs/smithy-kotlin/issues/129) Allow omission of input in service method calls where no parameters are required.
+
+### Fixes
+* Handle invalid (empty) description term headers when generating documentation.
+* Don't escape markdown within preformat blocks in documentation.
+
 ## [0.9.1] - 05/13/2022
 
 ### Features

@@ -1,5 +1,0 @@
-{
-    "id": "8ca59a5e-f734-4b5f-877e-848740bca124",
-    "type": "bugfix",
-    "description": "Handle invalid (empty) description term headers when generating documentation."
-}

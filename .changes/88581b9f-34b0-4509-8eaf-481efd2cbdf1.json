@@ -1,5 +1,0 @@
-{
-    "id": "88581b9f-34b0-4509-8eaf-481efd2cbdf1",
-    "type": "bugfix",
-    "description": "Don't escape markdown within preformat blocks in documentation."
-}
