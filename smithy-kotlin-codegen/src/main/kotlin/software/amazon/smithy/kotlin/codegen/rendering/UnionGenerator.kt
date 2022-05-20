@@ -160,7 +160,7 @@ class UnionGenerator(
         writer.write("")
         writer.withBlock("override fun equals(other: #Q?): #Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
-            write("if (javaClass != other?.javaClass) return false")
+            write("if (other == null || this::class != other::class) return false")
             write("")
             write("other as $typeName")
             write("")

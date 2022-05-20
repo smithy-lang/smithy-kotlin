@@ -18,6 +18,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingConte
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.model.traits.XmlAttributeTrait
 
@@ -103,10 +104,9 @@ open class XmlSerializerGenerator(
         val sortedMembers = sortMembersForSerialization(members)
         descriptorGenerator(ctx, shape, sortedMembers, writer).render()
         // render the serde descriptors
-        if (shape.isUnionShape) {
-            SerializeUnionGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
-        } else {
-            SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
+        when (shape) {
+            is UnionShape -> SerializeUnionGenerator(ctx, shape, sortedMembers, writer, defaultTimestampFormat).render()
+            else -> SerializeStructGenerator(ctx, sortedMembers, writer, defaultTimestampFormat).render()
         }
     }
 

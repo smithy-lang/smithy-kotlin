@@ -17,6 +17,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingConte
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.shapes.Shape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 open class JsonSerializerGenerator(
@@ -93,10 +94,9 @@ open class JsonSerializerGenerator(
     ) {
         // render the serde descriptors
         JsonSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members, supportsJsonNameTrait).render()
-        if (shape.isUnionShape) {
-            SerializeUnionGenerator(ctx, members, writer, defaultTimestampFormat).render()
-        } else {
-            SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
+        when (shape) {
+            is UnionShape -> SerializeUnionGenerator(ctx, shape, members, writer, defaultTimestampFormat).render()
+            else -> SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat).render()
         }
     }
 

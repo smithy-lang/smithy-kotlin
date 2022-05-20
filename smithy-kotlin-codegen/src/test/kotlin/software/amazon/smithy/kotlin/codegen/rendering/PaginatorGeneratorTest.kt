@@ -256,6 +256,7 @@ class PaginatorGeneratorTest {
             import com.test.model.FunctionConfiguration
             import com.test.model.ListFunctionsRequest
             import com.test.model.ListFunctionsResponse
+            import kotlin.jvm.JvmName
             import kotlinx.coroutines.flow.Flow
             import kotlinx.coroutines.flow.flow
             import kotlinx.coroutines.flow.transform

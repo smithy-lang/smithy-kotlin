@@ -205,7 +205,8 @@ class PaginatorGenerator : KotlinIntegration {
             // Multiple functions may have the same name and the generic does not disambiguate the type in Java.
             // NOTE: This does not mean these functions are callable from Java.
             .write(
-                """@JvmName("#L#L")""",
+                """@#T("#L#L")""",
+                ExternalTypes.Kotlin.Jvm.JvmName,
                 outputSymbol.name.replaceFirstChar(Char::lowercaseChar),
                 itemDesc.targetMember.defaultName(serviceShape)
             )
