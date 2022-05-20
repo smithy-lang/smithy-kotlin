@@ -91,4 +91,4 @@ fun ExecutionContext.getLogger(name: String): Logger {
 }
 
 @InternalApi
-fun Logger.withContext(context: ExecutionContext): Logger = withContext(context[HttpOperationContext.LoggingContext])
+fun Logger.withContext(context: ExecutionContext): Logger = withContext(context.getOrNull(HttpOperationContext.LoggingContext) ?: emptyMap())

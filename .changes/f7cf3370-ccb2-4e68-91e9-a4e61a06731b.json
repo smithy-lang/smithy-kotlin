@@ -1,0 +1,5 @@
+{
+    "id": "f7cf3370-ccb2-4e68-91e9-a4e61a06731b",
+    "type": "feature",
+    "description": "add additional trace logging to default HTTP client engine"
+}

@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -15,20 +15,15 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 
 /**
- * Functionality a real HTTP client must provide
+ * Functionality a real HTTP client must provide.
+ * NOTE: Implementations SHOULD inherit from [HttpClientEngineBase] rather than implementing this interface directly.
  */
 interface HttpClientEngine : Closeable, CoroutineScope {
     /**
      * Execute a single HTTP request and return the response.
      * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
      */
-    suspend fun roundTrip(request: HttpRequest): HttpCall
-
-    /**
-     * Execute a single HTTP request and return the response
-     * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
-     */
-    suspend fun roundTrip(request: HttpRequestBuilder): HttpCall = roundTrip(request.build())
+    suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall
 
     /**
      * Shutdown and cleanup any resources
@@ -45,7 +40,7 @@ public abstract class HttpClientEngineBase(engineName: String) : HttpClientEngin
     override val coroutineContext: CoroutineContext = SupervisorJob() + CoroutineName("http-client-engine-$engineName-context")
     private val closed = atomic(false)
 
-    override fun close() {
+    final override fun close() {
         // ensure engine close is idempotent independent of SdkHttpClient
         if (!closed.compareAndSet(false, true)) return
 

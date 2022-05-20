@@ -8,10 +8,12 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.*
 import aws.smithy.kotlin.runtime.ClientException
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.callContext
+import aws.smithy.kotlin.runtime.http.operation.withContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.Logger
@@ -71,8 +73,9 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
     private val connManagers = mutableMapOf<String, HttpClientConnectionManager>()
     private val mutex = Mutex()
 
-    override suspend fun roundTrip(request: HttpRequest): HttpCall {
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
+        val reqLogger = logger.withContext(context)
         val manager = getManagerForUri(request.uri)
 
         // LIFETIME: connection will be released back to the pool/manager when
@@ -84,7 +87,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
         val respHandler = SdkStreamResponseHandler(conn)
         callContext.job.invokeOnCompletion {
-            logger.trace { "completing handler; cause=$it" }
+            reqLogger.trace { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
             respHandler.complete()
         }
