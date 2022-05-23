@@ -5,21 +5,20 @@
 
 package aws.smithy.kotlin.runtime
 
-import aws.smithy.kotlin.runtime.smithy.document
-import aws.smithy.kotlin.runtime.smithy.documentArray
+import aws.smithy.kotlin.runtime.smithy.Document
 import kotlin.test.*
 
 class DocumentBuilderTest {
     @Test
     fun buildsAnObject() {
-        val doc = document {
+        val doc = Document {
             "foo" to 1
-            "baz" to documentArray {
-                +n(202L)
-                +n(12)
-                +true
-                +"blah"
-            }
+            "baz" to Document.listOf(
+                202L,
+                12,
+                true,
+                "blah"
+            )
         }
 
         val expected = """{"foo":1,"baz":[202,12,true,"blah"]}"""
