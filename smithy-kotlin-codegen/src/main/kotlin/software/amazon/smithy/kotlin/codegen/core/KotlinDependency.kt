@@ -70,7 +70,12 @@ enum class GradleConfiguration(val sourceSet: SourceSet) {
     val isTestScope
         get() = sourceSet == SourceSet.CommonTest
 
-    val kmpName
+    /**
+     * The name of the dependency type in Gradle when used in a KMP project. For instance, [TestImplementation] would be
+     * called `implementation` when used in the `commonTest` source set for KMP (vs `testImplementation` when used in a
+     * non-KMP project).
+     */
+    val kmpName: String
         get() = when {
             isTestScope -> name.removePrefix("Test")
             else -> name

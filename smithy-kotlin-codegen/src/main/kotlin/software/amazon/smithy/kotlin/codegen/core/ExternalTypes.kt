@@ -10,12 +10,6 @@ import software.amazon.smithy.kotlin.codegen.model.toSymbol
  * Commonly used external types.
  */
 object ExternalTypes {
-    object Kotlin {
-        object Jvm {
-            val JvmName = "kotlin.jvm.JvmName".toSymbol()
-        }
-    }
-
     // https://github.com/Kotlin/kotlinx.coroutines
     object KotlinxCoroutines {
         val Flow = "kotlinx.coroutines.flow.Flow".toSymbol()

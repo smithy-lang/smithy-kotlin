@@ -206,7 +206,7 @@ class PaginatorGenerator : KotlinIntegration {
             // NOTE: This does not mean these functions are callable from Java.
             .write(
                 """@#T("#L#L")""",
-                ExternalTypes.Kotlin.Jvm.JvmName,
+                KotlinTypes.Jvm.JvmName,
                 outputSymbol.name.replaceFirstChar(Char::lowercaseChar),
                 itemDesc.targetMember.defaultName(serviceShape)
             )
