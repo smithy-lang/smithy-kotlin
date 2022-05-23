@@ -5,11 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -46,7 +44,7 @@ class HttpClientEngineTest {
         val inFlightJobs: List<Job>
             get() = coroutineContext.job.children.toList()
 
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+        override suspend fun roundTrip(request: HttpRequest): HttpCall {
             val callContext = callContext()
             // callJob = callContext.job
             val response = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
@@ -66,7 +64,7 @@ class HttpClientEngineTest {
 
     @Test
     fun testCallComplete() = runTest {
-        val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
+        val call = client.call(HttpRequestBuilder())
         assertTrue(call.job.isActive)
         call.complete()
         assertFalse(call.job.isActive)
@@ -76,7 +74,7 @@ class HttpClientEngineTest {
     @Test
     fun testUserContextCancelsRequestJob() = runTest {
         val job = launch {
-            client.call(SdkHttpRequest(HttpRequestBuilder()))
+            client.call(HttpRequestBuilder())
             delay(1000)
         }
         yield()
@@ -89,13 +87,13 @@ class HttpClientEngineTest {
     @Test
     fun testInFlightRequestJobsAreIndependent() = runTest {
         val job1 = launch {
-            client.call(SdkHttpRequest(HttpRequestBuilder()))
+            client.call(HttpRequestBuilder())
             delay(1000)
         }
         yield()
 
         val job2 = launch {
-            client.call(SdkHttpRequest(HttpRequestBuilder()))
+            client.call(HttpRequestBuilder())
             delay(1000)
         }
         yield()
@@ -113,13 +111,13 @@ class HttpClientEngineTest {
     @Test
     fun testEngineJobNotCancelledByRequestJobs() = runTest {
         launch {
-            client.call(SdkHttpRequest(HttpRequestBuilder()))
+            client.call(HttpRequestBuilder())
             delay(1000)
         }
         yield()
 
         launch {
-            client.call(SdkHttpRequest(HttpRequestBuilder()))
+            client.call(HttpRequestBuilder())
             delay(1000)
         }
         yield()
@@ -131,13 +129,13 @@ class HttpClientEngineTest {
     fun testShutdownOnlyAfterInFlightDone() = runTest {
         val waiter = Channel<Unit>(1)
         launch {
-            val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
+            val call = client.call(HttpRequestBuilder())
             waiter.receive()
             call.complete()
         }
         yield()
         launch {
-            val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
+            val call = client.call(HttpRequestBuilder())
             waiter.receive()
             call.complete()
         }
@@ -164,7 +162,7 @@ class HttpClientEngineTest {
     fun testRequestAfterClose() = runTest {
         client.close()
         assertFailsWith(HttpClientEngineClosedException::class) {
-            client.call(SdkHttpRequest(HttpRequestBuilder()))
+            client.call(HttpRequestBuilder())
         }
         Unit
     }

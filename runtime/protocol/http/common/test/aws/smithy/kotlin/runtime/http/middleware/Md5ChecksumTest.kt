@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -31,7 +30,7 @@ import kotlin.test.assertNull
 @OptIn(ExperimentalCoroutinesApi::class)
 class Md5ChecksumTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+        override suspend fun roundTrip(request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
             return HttpCall(request, resp, Instant.now(), Instant.now())
         }

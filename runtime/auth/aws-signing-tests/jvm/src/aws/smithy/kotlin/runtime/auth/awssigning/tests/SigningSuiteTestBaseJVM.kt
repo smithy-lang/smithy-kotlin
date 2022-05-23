@@ -168,7 +168,7 @@ actual abstract class SigningSuiteTestBase : HasSigner {
         operation: SdkHttpOperation<Unit, HttpResponse>
     ): HttpRequest {
         val mockEngine = object : HttpClientEngineBase("test") {
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+            override suspend fun roundTrip(request: HttpRequest): HttpCall {
                 val now = Instant.now()
                 val resp = HttpResponse(HttpStatusCode.fromValue(200), Headers.Empty, HttpBody.Empty)
                 return HttpCall(request, resp, now, now)

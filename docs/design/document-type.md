@@ -1,7 +1,7 @@
 # Document type
 
 * **Type**: Design
-* **Author(s)**: Aaron Todd
+* **Author(s)**: Aaron Todd, Luc Talatinian
 
 ## Work in progress
 
@@ -14,342 +14,159 @@ such as `struct`, `union`, etc. which are handled by the [Kotlin Smithy SDK](kot
 
 # Design
 
-The `document` type is an untyped JSON-like value that can take on the following types: null, boolean, string, byte,
-short, integer, long, float, double, an array of these types, or a map of these types where the key is string.
+The `document` type is an untyped JSON-like value that can take on the following types:
+* null
+* boolean
+* string
+* number (byte, short, integer, long, float, double)
+* an array of these types
+* a map of these types, keyed by string
 
 This type is best represented as a sum type (sealed class is closest we can get in Kotlin). See the
 [JSON type](https://github.com/Kotlin/kotlinx.serialization/blob/master/runtime/commonMain/src/kotlinx/serialization/json/JsonElement.kt)
-from the kotlinx.serialization lib for an example on which the following is derived. We should provide our own type but
-we may be able to internally deal with serialization by going through the one from the kotlinx.serialization library.
+from the kotlinx.serialization lib for an example on which the following is derived. We expose our own type for SDK
+consumers, but internally consume kotlinx.serialization to unwrap serialized values passed during construction.
 
+# Interface (annotated)
 ````kotlin
-package com.amazonaws.smithy.runtime
+package aws.smithy.kotlin.runtime.smithy
 
-/**
- * Class representing a Smithy Document type.
- * Can be a [SmithyNumber], [SmithyBool], [SmithyString], [SmithyNull], [SmithyArray], or [SmithyMap]
- */
 sealed class Document {
-    /**
-     * Checks whether the current element is [SmithyNull]
-     */
-    val isNull: Boolean
-        get() = this == SmithyNull
-}
+    companion object {
+        /**
+         * Overloads to create a document from possible values.
+         */
+        operator fun invoke(init: Builder.() -> Unit): Document
+        operator fun invoke(value: kotlin.Number): Document
+        operator fun invoke(value: kotlin.String): Document
+        operator fun invoke(value: kotlin.Boolean): Document
+        operator fun invoke(value: Transformable): Document
 
-/**
- * Class representing document `null` type.
- */
-object SmithyNull : Document() {
-    override fun toString(): String = "null"
-}
-
-/**
- * Class representing document `bool` type
- */
-data class SmithyBool(val value: Boolean): Document() {
-    override fun toString(): String = when(value) {
-        true -> "true"
-        false -> "false"
-    }
-}
-
-/**
- * Class representing document `string` type
- */
-data class SmithyString(val value: String) : Document() {
-    override fun toString(): String {
-        return "\"$value\""
-    }
-}
-
-/**
- * Class representing document numeric types.
- *
- * Creates a Document from a number literal: Int, Long, Short, Byte, Float, Double
- */
-class SmithyNumber(val content: Number) : Document() {
-    /**
-     * Returns the content as a byte which may involve rounding
-     */
-    val byte: Byte get() = content.toByte()
-
-    /**
-     * Returns the content as a int which may involve rounding
-     */
-    val int: Int get() = content.toInt()
-
-    /**
-     * Returns the content as a long which may involve rounding
-     */
-    val long: Long get() = content.toLong()
-
-    /**
-     * Returns the content as a float which may involve rounding
-     */
-    val float: Float get() = content.toFloat()
-
-    /**
-     * Returns the content as a double which may involve rounding
-     */
-    val double: Double get() = content.toDouble()
-
-    override fun toString(): String = content.toString()
-}
-
-/**
- * Class representing document `array` type
- */
-data class SmithyArray(val content: List<Document>): Document(), List<Document> by content{
-    /**
-     * Returns [index] th element of an array as [SmithyNumber] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getNumber(index: Int) = content[index] as? SmithyNumber
-
-    /**
-     * Returns [index] th element of an array as [SmithyBool] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getBoolean(index: Int) = content[index] as? SmithyBool
-
-    /**
-     * Returns [index] th element of an array as [SmithyString] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getString(index: Int) = content[index] as? SmithyString
-
-    /**
-     * Returns [index] th element of an array as [SmithyArray] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getArray(index: Int) = content[index] as? SmithyArray
-
-    /**
-     * Returns [index] th element of an array as [SmithyMap] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getMap(index: Int) = content[index] as? SmithyMap
-
-    override fun toString(): String = content.joinToString( separator = ",", prefix = "[", postfix = "]" )
-}
-
-/**
- * Class representing document `map` type
- *
- * Map consists of name-value pairs, where the value is an arbitrary Document. This is much like a JSON object.
- */
-data class SmithyMap(val content: Map<String, Document>): Document(), Map<String, Document> by content {
-    /**
-     * Returns [SmithyNumber] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getNumber(key: String): SmithyNumber? = getValue(key) as? SmithyNumber
-
-    /**
-     * Returns [SmithyBool] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getBoolean(key: String): SmithyBool? = getValue(key) as? SmithyBool
-
-    /**
-     * Returns [SmithyString] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getString(key: String): SmithyString? = getValue(key) as? SmithyString
-
-    /**
-     * Returns [SmithyArray] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getArray(key: String): SmithyArray? = getValue(key) as? SmithyArray
-
-    /**
-     * Returns [SmithyMap] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getMap(key: String): SmithyMap? = getValue(key) as? SmithyMap
-
-    override fun toString(): String {
-        return content.entries.joinToString(
-            separator = ",",
-            prefix = "{",
-            postfix = "}",
-            transform = {(k, v) -> """"$k":$v"""}
-        )
-    }
-}
-
-fun Boolean.toDocument() = SmithyBool(this)
-fun Number.toDocument() = SmithyNumber(this)
-fun String.toDocument() = SmithyString(this)
-
-/**
- * DSL builder for a [SmithyArray]
- */
-class DocumentArrayBuilder internal constructor() {
-    internal val content: MutableList<Document> = mutableListOf()
-
-    /**
-     * Adds [this] value to the current [SmithyArray] as [SmithyString]
-     */
-    operator fun String.unaryPlus() {
-        content.add(SmithyString(this))
+        /**
+         * Unwraps a Document from a serialized value.
+         */
+        fun fromString(value: kotlin.String): Document
+        
+        /**
+         * Creates a Document list from the provided values.
+         */
+        fun listOf(vararg values: Any?): Document
     }
 
     /**
-     * Adds [this] value to the current [SmithyArray] as [SmithyBool]
+     * Inheritors that wrap all the possible values a Document can hold.
      */
-    operator fun Boolean.unaryPlus() {
-        content.add(SmithyBool(this))
+    data class Number(val value: kotlin.Number) : Document()
+    data class String(val value: kotlin.String) : Document()
+    data class Boolean(val value: kotlin.Boolean) : Document()
+    data class List(val value: kotlin.collections.List<Document>) : Document()
+    data class Map(val value: kotlin.collections.Map<kotlin.String, Document>) : Document()
+    object Null : Document()
+
+    /**
+     * A host of casts to simplify in-memory processing.
+     */
+    fun asNumber() = (this as Number).value
+    fun asString() = (this as String).value
+    fun asBoolean() = (this as Boolean).value
+    fun asList() = (this as List).value
+    fun asMap() = (this as Map).value
+    fun asInt() = asNumber().toInt()
+    fun asByte() = asNumber().toByte()
+    fun asLong() = asNumber().toLong()
+    fun asFloat() = asNumber().toFloat()
+    fun asDouble() = asNumber().toDouble()
+    val isNull: kotlin.Boolean
+        get() = this == Null
+
+    /**
+     * Simplify access to list/object members.
+     */
+    operator fun get(i: Int) = asList()[i]
+    operator fun get(i: kotlin.String) = asMap()[i]
+
+    /**
+     * DSL builder to create a map-based Document.
+     */
+    class Builder internal constructor() {
+        infix fun kotlin.String.to(value: kotlin.Number)
+        infix fun kotlin.String.to(value: kotlin.Boolean)
+        infix fun kotlin.String.to(value: kotlin.String)
+        infix fun kotlin.String.to(value: Document)
+        infix fun kotlin.String.to(value: Transformable)
     }
 
     /**
-     * Adds [this] value to the current [SmithyArray] as [Document]
+     * Implemented by structures that can be transformed into a serialized Document.
+     * Must serialize to JSON.
      */
-    operator fun Document.unaryPlus() {
-        content.add(this)
+    interface Transformable {
+        fun serialize(): kotlin.String
     }
-
-    /**
-     * Convenience function to wrap raw numeric literals
-     *
-     * Use as `+n()` inside of [documentArray] builder init().
-     */
-    fun n(number: Number): SmithyNumber = SmithyNumber(number)
-}
-
-/**
- * Builds [SmithyArray] with given [init] builder.
- *
- * NOTE: raw numeric types need to be wrapped as a [SmithyNumber]. Use the [DocumentArrayBuilder::a] builder
- * as a shorthand.
- */
-fun documentArray(init: DocumentArrayBuilder.() -> Unit): Document {
-    val builder = DocumentArrayBuilder()
-    builder.init()
-    return SmithyArray(builder.content)
-}
-
-/**
- * DSL builder for a [Document] as a [SmithyMap]
- */
-class DocumentBuilder internal constructor() {
-    internal val content: MutableMap<String, Document> = linkedMapOf()
-
-    /**
-     * Adds given [value] as [SmithyBool] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: Boolean) {
-       require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value.toDocument()
-    }
-
-    /**
-     * Adds given [value] as [SmithyNumber] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: Number) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value.toDocument()
-    }
-
-    /**
-     * Adds given [value] as [SmithyString] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: String) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value.toDocument()
-    }
-
-    /**
-     * Adds given [value] to the current [SmithyMap] with [this] as a key
-     */
-    infix fun String.to(value: Document) {
-        require(content[this] == null) {"Key $this is already registered in builder"}
-        content[this] = value
-    }
-}
-
-/**
- * Builds [Document] with given [init] builder.
- *
- * ```
- * val doc = document {
- *     "foo" to 1
- *     "baz" to document {
- *         "quux" to documentArray {
- *             +n(202L)
- *             +n(12)
- *             +true
- *             +"blah"
- *         }
- *     }
- *     "foobar" to document {
- *         "nested" to "a string"
- *         "blerg" to documentArray {
- *             +documentArray {
- *                 +n(2.02)
- *              }
- *         }
- *     }
- * }
- * ```
- *
- * This generates the following JSON:
- * {"foo":1,"baz":{"quux":[202,12,true,"blah"]},"foobar":{"nested":"a string","blerg":[[2.02]]}}
- */
-fun document(init: DocumentBuilder.() -> Unit): Document {
-    val builder = DocumentBuilder()
-    builder.init()
-    return SmithyMap(builder.content)
 }
 ````
 
 Example usage of building a doc or processing one:
 
 ```kotlin
-fun foo() {
-    val doc = document {
-        "foo" to 1
-        "baz" to document {
-            "quux" to documentArray {
-                +n(202L)
-                +n(12)
-                +true
-                +"blah"
-            }
-        }
-        "foobar" to document {
-            "nested" to "a string"
-            "blerg" to documentArray {
-                +documentArray {
-                    +n(2.02)
-                }
-            }
-        }
-    }
-    println(doc)
+import kotlinx.serialization.json.*
 
-    processDoc(doc)
+// implement Document.Transformable so we can use this in document builder
+// use kotlinx.serialization
+@Serializable
+data class Clazz(
+    val name: String,
+    val ival: Int
+    ) : Document.Transformable {
+    
+    override fun serialize() = Json.encodeToString(this)
 }
 
-fun processDoc(doc: Document) {
-    when(doc) {
-        is SmithyNumber -> println("number: $doc")
-        is SmithyBool -> println("bool: ${doc.value}")
-        is SmithyString -> println("str: ${doc.value}")
-        is SmithyNull -> println("str: $doc")
-        is SmithyArray-> {
-            println("array")
-            for (d in doc) processDoc(d)
+fun main() {
+    val meta = Document {
+        "foo" to 1
+        "baz" to Document {
+            "quux" to Document.listOf(
+                202L,
+                12,
+                false,
+                true,
+                "blah",
+                null,
+                Document.listOf(1, null, 2)
+            )
         }
-        is SmithyMap -> {
-            println("map")
-            for((k,d) in doc) {
-                print("$k: ")
-                processDoc(d)
-            }
+        "foobar" to Document {
+            "nested" to "a string"
+            "blerg" to Document.listOf(
+                Document.listOf(2.02)
+            )
         }
+        "qux4" to Clazz("this", 79)
+        "qux3" to Document.listOf(
+            11,20,3,4,9
+        )
+    }
+
+    println(doc["foo"]) // 1
+    println(doc["qux4"]?.get("ival")?.asInt()?.plus(2)) // 81
+    
+    val metaEx = Clazz("metadata_", 7)
+    DocumentFooClient.fromEnvironment().use {
+        val response = it.CreateItem {
+            itemName = "sample"
+            // pass an in-memory Document
+            metadata = meta
+            // pass a Transformable
+            metadataEx = Document(metaEx)
+        }
+        
+        // pull a value from a returned Document
+        val metaName = response.createdItemMetadata["name"]?.asString()
+        // pull a returned Document back into a known structure
+        val returnedMetadata = Json.decodeFromString<Clazz>(
+            response.createdItemMetadata.toString()
+        )
     }
 }
 ```
@@ -357,3 +174,4 @@ fun processDoc(doc: Document) {
 # Revision history
 
 * 5/27/2021 - Initial upload
+* 5/22/2022 - Refine/extend structure and use of interface

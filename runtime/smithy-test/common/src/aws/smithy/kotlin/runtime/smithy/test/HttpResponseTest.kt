@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -82,7 +81,7 @@ fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runTest
 
     // provide the mock engine
     val mockEngine = object : HttpClientEngineBase("smithy-test-resp-mock-engine") {
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+        override suspend fun roundTrip(request: HttpRequest): HttpCall {
             val headers = Headers {
                 testBuilder.expected.headers.forEach { (key, value) ->
                     append(key, value)

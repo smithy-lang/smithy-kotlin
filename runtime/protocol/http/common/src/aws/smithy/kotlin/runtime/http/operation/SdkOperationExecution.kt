@@ -16,6 +16,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.response.dumpResponse
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.io.middleware.MapRequest
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
 import aws.smithy.kotlin.runtime.logging.Logger
@@ -71,11 +72,15 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     serializer: HttpSerialize<Request>,
     deserializer: HttpDeserialize<Response>,
 ): Handler<OperationRequest<Request>, Response> {
+    val inner = MapRequest(handler) { sdkRequest: SdkHttpRequest ->
+        sdkRequest.subject
+    }
+
     // ensure http calls are tracked
     receive.register(HttpCallMiddleware())
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
-    val receiveHandler = decorateHandler(handler, receive)
+    val receiveHandler = decorateHandler(inner, receive)
     val deserializeHandler = deserializer.decorate(receiveHandler)
     val finalizeHandler = decorateHandler(FinalizeHandler(deserializeHandler), finalize)
     val mutateHandler = decorateHandler(MutateHandler(finalizeHandler), mutate)

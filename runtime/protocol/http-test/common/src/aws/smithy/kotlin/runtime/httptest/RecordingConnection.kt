@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.httptest
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
@@ -42,11 +41,11 @@ class RecordingEngine(private val wrapped: HttpClientEngine) : HttpClientEngine 
         }
     }
 
-    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+    override suspend fun roundTrip(request: HttpRequest): HttpCall {
         // copy request and response bodies to bytes content so that it can be read multiple times
         val reqBody = copyHttpBody("request", request.body)
         val requestCopy = request.copy(body = reqBody)
-        val call = wrapped.roundTrip(context, request)
+        val call = wrapped.roundTrip(request)
         val respBody = copyHttpBody("response", call.response.body)
         val responseCopy = call.response.copy(body = respBody)
         val copy = call.copy(request = requestCopy, response = responseCopy)

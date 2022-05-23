@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -30,7 +29,7 @@ class HttpResponseTestBuilderTest {
             }
 
             test { _, mockEngine ->
-                val mockedCall = mockEngine.roundTrip(ExecutionContext(), HttpRequestBuilder().build())
+                val mockedCall = mockEngine.roundTrip(HttpRequestBuilder().build())
                 val mockedResp = mockedCall.response
 
                 mockedResp.headers.contains("bar", "1")

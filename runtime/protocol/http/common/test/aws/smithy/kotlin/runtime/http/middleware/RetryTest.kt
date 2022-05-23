@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
@@ -36,26 +35,26 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalCoroutinesApi::class)
 class RetryTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
-        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+        override suspend fun roundTrip(request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
             return HttpCall(request, resp, Instant.now(), Instant.now())
         }
     }
     private val client = sdkHttpClient(mockEngine)
 
-    private val policy = object : RetryPolicy<Any?> {
-        var attempts = 0
-        override fun evaluate(result: Result<Any?>): RetryDirective =
-            if (attempts < 1) {
-                attempts++
-                RetryDirective.RetryError(RetryErrorType.ServerSide)
-            } else {
-                RetryDirective.TerminateAndSucceed
-            }
-    }
-
     @Test
     fun testRetryMiddleware() = runTest {
+        val policy = object : RetryPolicy<Any?> {
+            var attempts = 0
+            override fun evaluate(result: Result<Any?>): RetryDirective =
+                if (attempts < 1) {
+                    attempts++
+                    RetryDirective.RetryError(RetryErrorType.ServerSide)
+                } else {
+                    RetryDirective.TerminateAndSucceed
+                }
+        }
+
         val req = HttpRequestBuilder()
         val op = newTestOperation<Unit, Unit>(req, Unit)
 

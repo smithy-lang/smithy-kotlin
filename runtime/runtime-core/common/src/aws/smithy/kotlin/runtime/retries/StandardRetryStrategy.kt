@@ -20,7 +20,7 @@ import kotlinx.coroutines.CancellationException
  * @param delayProvider A delayer that can back off after the initial try to spread out the retries.
  */
 class StandardRetryStrategy(
-    override val options: StandardRetryStrategyOptions = StandardRetryStrategyOptions.Default,
+    val options: StandardRetryStrategyOptions = StandardRetryStrategyOptions.Default,
     private val tokenBucket: RetryTokenBucket = StandardRetryTokenBucket(),
     private val delayProvider: DelayProvider = ExponentialBackoffWithJitter()
 ) : RetryStrategy {
@@ -145,7 +145,7 @@ class StandardRetryStrategy(
  * Defines configuration for a [StandardRetryStrategy].
  * @param maxAttempts The maximum number of attempts to make (including the first attempt).
  */
-data class StandardRetryStrategyOptions(override val maxAttempts: Int) : RetryOptions {
+data class StandardRetryStrategyOptions(val maxAttempts: Int) {
     companion object {
         /**
          * The default retry strategy configuration.

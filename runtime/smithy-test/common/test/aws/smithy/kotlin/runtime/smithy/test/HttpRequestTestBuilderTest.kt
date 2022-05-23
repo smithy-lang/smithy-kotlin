@@ -4,7 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -15,7 +14,6 @@ import kotlin.test.assertFails
 
 class HttpRequestTestBuilderTest {
 
-    private val execContext = ExecutionContext()
     @Test
     fun itAssertsHttpMethod() {
         val ex = assertFails {
@@ -27,7 +25,7 @@ class HttpRequestTestBuilderTest {
                     val builder = HttpRequest {
                         method = HttpMethod.GET
                     }
-                    mockEngine.roundTrip(execContext, builder)
+                    mockEngine.roundTrip(builder)
                 }
             }
         }
@@ -47,7 +45,7 @@ class HttpRequestTestBuilderTest {
                         method = HttpMethod.POST
                         url.path = "/bar"
                     }
-                    mockEngine.roundTrip(execContext, builder)
+                    mockEngine.roundTrip(builder)
                 }
             }
         }
@@ -70,7 +68,7 @@ class HttpRequestTestBuilderTest {
                         url.parameters.append("baz", "quux")
                         url.parameters.append("Hi", "Hello")
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -95,7 +93,7 @@ class HttpRequestTestBuilderTest {
                         url.parameters.append("Hi", "Hello there")
                         url.parameters.append("foobar", "i am forbidden")
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -121,7 +119,7 @@ class HttpRequestTestBuilderTest {
                         url.parameters.append("Hi", "Hello there")
                         url.parameters.append("foobar2", "i am not forbidden")
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -156,7 +154,7 @@ class HttpRequestTestBuilderTest {
                             append("k1", "v1")
                         }
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -184,7 +182,7 @@ class HttpRequestTestBuilderTest {
                             appendAll("k2", listOf("v3", "v4"))
                         }
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -222,7 +220,7 @@ class HttpRequestTestBuilderTest {
                             append("forbiddenHeader", "i am forbidden")
                         }
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -261,7 +259,7 @@ class HttpRequestTestBuilderTest {
                             append("forbiddenHeader2", "i am not forbidden")
                         }
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -279,7 +277,7 @@ class HttpRequestTestBuilderTest {
                     // no actual body should not make it to our assertEquals but it should still fail (invalid test setup)
                     val request = HttpRequest {
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -300,7 +298,7 @@ class HttpRequestTestBuilderTest {
                     val request = HttpRequest {
                         body = ByteArrayContent("do not pass go".encodeToByteArray())
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }
@@ -320,7 +318,7 @@ class HttpRequestTestBuilderTest {
                         method = HttpMethod.POST
                         url.host = "bar.example.com"
                     }
-                    mockEngine.roundTrip(execContext, request)
+                    mockEngine.roundTrip(request)
                 }
             }
         }

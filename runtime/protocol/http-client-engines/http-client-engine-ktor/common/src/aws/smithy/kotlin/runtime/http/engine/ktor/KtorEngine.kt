@@ -4,12 +4,9 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.*
-import aws.smithy.kotlin.runtime.http.operation.getLogger
-import aws.smithy.kotlin.runtime.http.operation.withContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -60,9 +57,8 @@ class KtorEngine(
 
     private val logger = Logger.getLogger<KtorEngine>()
 
-    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+    override suspend fun roundTrip(request: HttpRequest): HttpCall {
         val callContext = callContext()
-        val reqLogger = logger.withContext(context)
 
         val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 
@@ -73,7 +69,7 @@ class KtorEngine(
         val name = callContext[CoroutineName]?.name ?: "http-client-engine-ktor-request"
         launch(ioDispatcher() + CoroutineName("$name:execute-ktor-request")) {
             try {
-                execute(callContext, request, respChannel, reqLogger)
+                execute(callContext, request, respChannel)
             } catch (ex: Exception) {
                 // signal the HTTP response isn't coming
                 respChannel.close(ex)
@@ -81,23 +77,21 @@ class KtorEngine(
         }
 
         // wait for the response to be available, the content will be read as a stream
-        reqLogger.trace("waiting on response to be available")
+        logger.trace("waiting on response to be available")
 
         try {
             val resp = respChannel.receive()
-            reqLogger.trace("response is available continuing")
+            logger.trace("response is available continuing")
             return resp
         } catch (ex: Exception) {
-            reqLogger.trace(ex) { "failed to receive response" }
-            throw ex
+            throw logger.throwing(ex)
         }
     }
 
     private suspend fun execute(
         callContext: CoroutineContext,
         sdkRequest: HttpRequest,
-        channel: SendChannel<HttpCall>,
-        reqLogger: Logger
+        channel: SendChannel<HttpCall>
     ) {
         val builder = KtorRequestAdapter(sdkRequest, callContext).toBuilder()
         val waiter = Waiter()
@@ -123,18 +117,18 @@ class KtorEngine(
                 body,
             )
 
-            reqLogger.trace("signalling response")
+            logger.trace("signalling response")
             val call = HttpCall(sdkRequest, resp, reqTime, respTime, callContext)
             channel.send(call)
 
-            reqLogger.trace("waiting on body to be consumed")
+            logger.trace("waiting on body to be consumed")
             // wait for the receiving end to finish with the HTTP body
             waiter.wait()
-            reqLogger.trace("request done")
+            logger.trace("request done")
         }
     }
 
-    override fun shutdown() {
+    override fun close() {
         client.close()
         engine.close()
     }
