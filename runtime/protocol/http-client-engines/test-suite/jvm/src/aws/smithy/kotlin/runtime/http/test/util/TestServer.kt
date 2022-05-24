@@ -8,12 +8,12 @@ package aws.smithy.kotlin.runtime.http.test.util
 import aws.smithy.kotlin.runtime.http.test.suite.concurrentTests
 import aws.smithy.kotlin.runtime.http.test.suite.downloadTests
 import aws.smithy.kotlin.runtime.http.test.suite.uploadTests
-import io.ktor.application.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import redirectTests
 import java.io.Closeable
 import java.util.concurrent.TimeUnit

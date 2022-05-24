@@ -17,10 +17,12 @@ import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.logging.trace
 import aws.smithy.kotlin.runtime.time.Instant
 import io.ktor.client.*
+import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
+import io.ktor.utils.io.*
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.channels.Channel
@@ -102,16 +104,24 @@ class KtorEngine(
         val builder = KtorRequestAdapter(sdkRequest, callContext).toBuilder()
         val waiter = Waiter()
         val reqTime = Instant.now()
-        client.request<HttpStatement>(builder).execute { httpResp ->
+
+        client.prepareRequest(builder).execute { httpResp ->
             val respTime = Instant.now()
+            val content = httpResp.body<ByteReadChannel>()
+
             // we have a lifetime problem here...the stream (and HttpResponse instance) are only valid
             // until the end of this block. We don't know if the consumer wants to read the content fully or
             // stream it. We need to wait until the entire content has been read before leaving the block and
             // releasing the underlying network resources. We do this by blocking until the request job
             // completes, at which point we signal it's safe to exit the block and release the underlying resources.
-            callContext.job.invokeOnCompletion { waiter.signal() }
+            callContext.job.invokeOnCompletion {
+                if (!content.isClosedForRead) {
+                    content.cancel()
+                }
+                waiter.signal()
+            }
 
-            val body = KtorHttpBody(httpResp.contentLength(), httpResp.content)
+            val body = KtorHttpBody(httpResp.contentLength(), content)
 
             // copy the headers so that we no longer depend on the underlying ktor HttpResponse object
             // outside of the body content (which will signal once read that it is safe to exit the block)
