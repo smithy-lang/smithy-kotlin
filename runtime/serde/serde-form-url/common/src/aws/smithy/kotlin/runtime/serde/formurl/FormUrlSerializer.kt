@@ -81,7 +81,7 @@ private class FormUrlStructSerializer(
     }
 
     private fun writeField(descriptor: SdkFieldDescriptor, block: () -> Unit) {
-        if (buffer.writePosition> 0u) {
+        if (buffer.writePosition > 0u) {
             buffer.write("&")
         }
         if (prefix.isNotBlank()) buffer.write(prefix)
