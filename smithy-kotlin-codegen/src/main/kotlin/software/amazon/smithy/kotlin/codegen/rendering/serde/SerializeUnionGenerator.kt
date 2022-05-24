@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerato
 import software.amazon.smithy.model.shapes.CollectionShape
 import software.amazon.smithy.model.shapes.MapShape
 import software.amazon.smithy.model.shapes.MemberShape
+import software.amazon.smithy.model.shapes.UnionShape
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
@@ -34,6 +35,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
  */
 class SerializeUnionGenerator(
     ctx: ProtocolGenerator.GenerationContext,
+    private val shape: UnionShape,
     members: List<MemberShape>,
     writer: KotlinWriter,
     defaultTimestampFormat: TimestampFormatTrait.Format
@@ -60,12 +62,19 @@ class SerializeUnionGenerator(
      * ```
      */
     override fun render() {
+        val unionSymbol = ctx.symbolProvider.toSymbol(shape)
         val objDescriptor = if (members.isNotEmpty()) "OBJ_DESCRIPTOR" else "SdkObjectDescriptor.build{}"
         writer.withBlock("serializer.serializeStruct($objDescriptor) {", "}") {
             writer.withBlock("when (input) {", "}") {
                 members.forEach { memberShape ->
                     renderMemberShape(memberShape)
                 }
+
+                write(
+                    """is #T.SdkUnknown -> throw #T("Cannot serialize SdkUnknown")""",
+                    unionSymbol,
+                    RuntimeTypes.Serde.SerializationException,
+                )
             }
         }
     }

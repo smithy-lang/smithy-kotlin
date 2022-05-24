@@ -11,6 +11,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.expectShape
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.model.Model
@@ -80,22 +81,16 @@ internal fun codegenDeserializerForShape(model: Model, shapeId: String, location
 internal fun codegenUnionSerializerForShape(model: Model, shapeId: String): String {
     val ctx = model.newTestContext()
 
-    val testMembers = when (val shape = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))) {
-        is OperationShape -> {
-            val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
-            val requestBindings = bindingIndex.getRequestBindings(shape)
-            val unionShape = ctx.generationCtx.model.expectShape(requestBindings.values.first().member.target)
-            unionShape.members().toList().sortedBy { it.memberName }
-        }
-        is StructureShape -> {
-            shape.members().toList().sortedBy { it.memberName }
-        }
-        else -> throw RuntimeException("unknown conversion for $shapeId")
-    }
+    val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
+    val operationShape = ctx.generationCtx.model.expectShape<OperationShape>(shapeId)
+    val requestBindings = bindingIndex.getRequestBindings(operationShape)
+    val unionShape = ctx.generationCtx.model.expectShape<UnionShape>(requestBindings.values.first().member.target)
+    val testMembers = unionShape.members().toList().sortedBy { it.memberName }
 
     return testRender(testMembers) { members, writer ->
         SerializeUnionGenerator(
             ctx.generationCtx,
+            unionShape,
             members,
             writer,
             TimestampFormatTrait.Format.EPOCH_SECONDS

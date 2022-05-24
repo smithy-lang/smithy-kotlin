@@ -57,7 +57,7 @@ class UnionGeneratorTest {
             
                     override fun equals(other: kotlin.Any?): kotlin.Boolean {
                         if (this === other) return true
-                        if (javaClass != other?.javaClass) return false
+                        if (other == null || this::class != other::class) return false
             
                         other as Blz
             
