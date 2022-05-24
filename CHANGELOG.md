@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.10.0] - 05/24/2022
+
+### Features
+* add additional trace logging to default HTTP client engine
+* [#460](https://github.com/awslabs/aws-sdk-kotlin/issues/460) Enhance generic codegen to be more KMP-friendly
+
+### Fixes
+* [#480](https://github.com/awslabs/aws-sdk-kotlin/issues/480) Upgrade to ktor-2.x
+
+### Miscellaneous
+* upgrade kotlin to 1.6.21 and other deps to latest
+
 ## [0.9.2] - 05/19/2022
 
 ### Features

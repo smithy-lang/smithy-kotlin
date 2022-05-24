@@ -1,8 +1,0 @@
-{
-    "id": "08a2127b-379a-43e5-902d-14325cdf933b",
-    "type": "feature",
-    "description": "Enhance generic codegen to be more KMP-friendly",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#460"
-    ]
-}
