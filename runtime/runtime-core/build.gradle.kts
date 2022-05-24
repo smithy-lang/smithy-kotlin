@@ -12,7 +12,6 @@ extra["displayName"] = "Smithy :: Kotlin :: Client Runtime"
 extra["moduleName"] = "aws.smithy.kotlin.runtime"
 
 val coroutinesVersion: String by project
-val kotlinxSerializationVersion: String by project
 
 kotlin {
     sourceSets {
@@ -25,9 +24,6 @@ kotlin {
                 api(project(":runtime:utils"))
                 // Coroutines' locking features are used in retry token bucket implementations
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-                implementation(
-                    "org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion"
-                )
             }
         }
 

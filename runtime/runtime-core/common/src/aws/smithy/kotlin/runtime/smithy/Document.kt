@@ -4,79 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.smithy
 
-import kotlinx.serialization.json.*
-
 /**
  * A `Document` is used to store arbitrary or unstructured data.
  *
  * The provided casting functions (eg. [asInt], [asMap]) allow callers to unwrap contents of the Document at runtime.
- *
- * Document serializes to and from JSON, both over the wire and when converting to or from caller classes that implement
- * [Transformable].
  */
 sealed class Document {
-    companion object {
-        /**
-         * Builds a Document using the given [Builder].
-         */
-        operator fun invoke(init: Builder.() -> Unit): Document {
-            val builder = Builder()
-            builder.init()
-            return Map(builder.content)
-        }
-
-        operator fun invoke(value: kotlin.Number): Document = Number(value)
-        operator fun invoke(value: kotlin.String): Document = String(value)
-        operator fun invoke(value: kotlin.Boolean): Document = Boolean(value)
-        operator fun invoke(value: Transformable): Document = fromString(value.serialize())
-
-        /**
-         * Creates a Document from a serialized value.
-         */
-        fun fromString(value: kotlin.String): Document =
-            fromJsonElement(
-                Json.parseToJsonElement(value)
-            )
-
-        private fun fromJsonElement(value: JsonElement): Document =
-            when (value) {
-                is JsonPrimitive -> fromJsonPrimitive(value)
-                is JsonArray -> List(value.map { fromJsonElement(it) })
-                is JsonObject -> Map(value.mapValues { fromJsonElement(it.value) })
-                JsonNull -> Null
-            }
-
-        private fun fromJsonPrimitive(value: JsonPrimitive): Document =
-            when {
-                value.intOrNull != null -> Number(value.int)
-                value.longOrNull != null -> Number(value.long)
-                value.floatOrNull != null -> Number(value.float)
-                value.doubleOrNull != null -> Number(value.double)
-                value.isString -> String(value.content)
-                value.booleanOrNull != null -> Boolean(value.boolean)
-                else -> throw IllegalArgumentException("json value $value could not be deserialized")
-            }
-
-        /**
-         * Creates a [List] from the provided values.
-         */
-        fun listOf(vararg values: Any?): Document =
-            List(
-                values.map {
-                    when (it) {
-                        is kotlin.Number -> Number(it)
-                        is kotlin.String -> String(it)
-                        is kotlin.Boolean -> Boolean(it)
-                        is List -> it
-                        is Map -> it
-                        is Transformable -> fromString(it.serialize())
-                        null -> Null
-                        else -> throw IllegalArgumentException("incompatible value $it used to construct document list")
-                    }
-                }
-            )
-    }
-
     /**
      * Wraps a [kotlin.Number].
      */
@@ -101,14 +34,16 @@ sealed class Document {
     /**
      * Wraps a [kotlin.collections.List].
      */
-    data class List(val value: kotlin.collections.List<Document>) : Document() {
+    data class List(val value: kotlin.collections.List<Document>) :
+        Document(), kotlin.collections.List<Document> by value {
         override fun toString() = value.joinToString(separator = ",", prefix = "[", postfix = "]")
     }
 
     /**
      * Wraps a [kotlin.collections.Map].
      */
-    data class Map(val value: kotlin.collections.Map<kotlin.String, Document>) : Document() {
+    data class Map(val value: kotlin.collections.Map<kotlin.String, Document>) :
+        Document(), kotlin.collections.Map<kotlin.String, Document> by value {
         override fun toString() = value
             .entries
             .joinToString(
@@ -126,63 +61,64 @@ sealed class Document {
         override fun toString() = "null"
     }
 
-    fun asNumber() = (this as Number).value
-    fun asString() = (this as String).value
-    fun asBoolean() = (this as Boolean).value
-    fun asList() = (this as List).value
-    fun asMap() = (this as Map).value
+    private fun asNumber(): kotlin.Number = (this as Number).value
+    private fun asNumberOrNull(): kotlin.Number? = (this as? Number)?.value
 
-    fun asInt() = asNumber().toInt()
-    fun asByte() = asNumber().toByte()
-    fun asLong() = asNumber().toLong()
-    fun asFloat() = asNumber().toFloat()
-    fun asDouble() = asNumber().toDouble()
+    fun asString(): kotlin.String = (this as String).value
+    fun asStringOrNull(): kotlin.String? = (this as? String)?.value
+
+    fun asBoolean(): kotlin.Boolean = (this as Boolean).value
+    fun asBooleanOrNull(): kotlin.Boolean? = (this as? Boolean)?.value
+
+    fun asList(): kotlin.collections.List<Document> = (this as List).value
+    fun asListOrNull(): kotlin.collections.List<Document>? = (this as? List)?.value
+
+    fun asMap(): kotlin.collections.Map<kotlin.String, Document> = (this as Map).value
+    fun asMapOrNull(): kotlin.collections.Map<kotlin.String, Document>? = (this as? Map)?.value
+
+    fun asInt(): Int = asNumber().toInt()
+    fun asIntOrNull(): Int? = asNumberOrNull()?.toInt()
+
+    fun asByte(): Byte = asNumber().toByte()
+    fun asByteOrNull(): Byte? = asNumberOrNull()?.toByte()
+
+    fun asShort(): Short = asNumber().toShort()
+    fun asShortOrNull(): Short? = asNumberOrNull()?.toShort()
+
+    fun asLong(): Long = asNumber().toLong()
+    fun asLongOrNull(): Long? = asNumberOrNull()?.toLong()
+
+    fun asFloat(): Float = asNumber().toFloat()
+    fun asFloatOrNull(): Float? = asNumberOrNull()?.toFloat()
+
+    fun asDouble(): Double = asNumber().toDouble()
+    fun asDoubleOrNull(): Double? = asNumberOrNull()?.toDouble()
 
     val isNull: kotlin.Boolean
         get() = this == Null
-
-    operator fun get(i: Int) = asList()[i]
-    operator fun get(i: kotlin.String) = asMap()[i]
-
-    /**
-     * DSL builder for a [Map]-based [Document].
-     */
-    class Builder internal constructor() {
-        internal val content: MutableMap<kotlin.String, Document> = linkedMapOf()
-
-        infix fun kotlin.String.to(value: kotlin.Number) {
-            require(content[this] == null) { "Key $this is already registered in builder" }
-            content[this] = Document(value)
-        }
-
-        infix fun kotlin.String.to(value: kotlin.Boolean) {
-            require(content[this] == null) { "Key $this is already registered in builder" }
-            content[this] = Document(value)
-        }
-
-        infix fun kotlin.String.to(value: kotlin.String) {
-            require(content[this] == null) { "Key $this is already registered in builder" }
-            content[this] = Document(value)
-        }
-
-        infix fun kotlin.String.to(value: Document) {
-            require(content[this] == null) { "Key $this is already registered in builder" }
-            content[this] = value
-        }
-
-        infix fun kotlin.String.to(value: Transformable) {
-            require(content[this] == null) { "Key $this is already registered in builder" }
-            content[this] = fromString(value.serialize())
-        }
-    }
-
-    /**
-     * Implemented by structures that can be transformed into a serialized Document.
-     */
-    interface Transformable {
-        /**
-         * Returns a JSON-encoded representation of this object.
-         */
-        fun serialize(): kotlin.String
-    }
 }
+
+/**
+ * Construct a [Document] from a [Number].
+ */
+fun Document(value: Number): Document = Document.Number(value)
+
+/**
+ * Construct a [Document] from a [String].
+ */
+fun Document(value: String): Document = Document.String(value)
+
+/**
+ * Construct a [Document] from a [Boolean].
+ */
+fun Document(value: Boolean): Document = Document.Boolean(value)
+
+/**
+ * Construct a [Document] from a [List].
+ */
+fun Document(value: List<Document>): Document = Document.List(value)
+
+/**
+ * Construct a [Document] from a [Map].
+ */
+fun Document(value: Map<String, Document>): Document = Document.Map(value)
