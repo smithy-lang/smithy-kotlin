@@ -4,22 +4,24 @@
  */
 package aws.smithy.kotlin.runtime.smithy
 
+import kotlin.jvm.JvmName
+
 class DocumentBuilder internal constructor() {
     val content: MutableMap<String, Document> = linkedMapOf()
 
-    infix fun String.to(value: Number) {
+    infix fun String.to(value: Number?) {
         require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = Document(value)
+        content[this] = if (value != null) Document(value) else Document.Null
     }
 
-    infix fun String.to(value: String) {
+    infix fun String.to(value: String?) {
         require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = Document(value)
+        content[this] = if (value != null) Document(value) else Document.Null
     }
 
-    infix fun String.to(value: Boolean) {
+    infix fun String.to(value: Boolean?) {
         require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = Document(value)
+        content[this] = if (value != null) Document(value) else Document.Null
     }
 
     infix fun String.to(value: Document?) {
@@ -30,21 +32,19 @@ class DocumentBuilder internal constructor() {
     class ListBuilder internal constructor() {
         val content: MutableList<Document> = mutableListOf()
 
-        fun add(value: Number) {
-            content.add(Document(value))
-        }
-
-        fun add(value: String) {
-            content.add(Document(value))
-        }
-
-        fun add(value: Boolean) {
-            content.add(Document(value))
-        }
-
-        fun add(value: Document?) {
+        fun add(value: Number?): Boolean =
+            content.add(if (value != null) Document(value) else Document.Null)
+        fun add(value: String?): Boolean =
+            content.add(if (value != null) Document(value) else Document.Null)
+        fun add(value: Boolean?): Boolean =
+            content.add(if (value != null) Document(value) else Document.Null)
+        fun add(value: Document?): Boolean =
             content.add(value ?: Document.Null)
-        }
+
+        @JvmName("addAllNumbers") fun addAll(value: List<Number?>) = value.forEach(::add)
+        @JvmName("addAllStrings") fun addAll(value: List<String?>) = value.forEach(::add)
+        @JvmName("addAllBooleans") fun addAll(value: List<Boolean?>) = value.forEach(::add)
+        @JvmName("addAllDocuments") fun addAll(value: List<Document?>) = value.forEach(::add)
     }
 
     /**

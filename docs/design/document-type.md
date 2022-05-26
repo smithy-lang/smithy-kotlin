@@ -3,10 +3,6 @@
 * **Type**: Design
 * **Author(s)**: Aaron Todd, Luc Talatinian
 
-## Work in progress
-
-**Note**: This design is a work in progress and is subject to change.
-
 # Abstract
 
 This design discusses the treatment of Smithy `document` shapes in Kotlin generated code. It does not cover other shapes
@@ -18,7 +14,7 @@ The `document` type is an untyped JSON-like value that can take on the following
 * null
 * boolean
 * string
-* number (byte, short, integer, long, float, double)
+* number of arbitrary precision (eg. byte, int, long, double)
 * an array of these types
 * a map of these types, keyed by string
 
@@ -27,12 +23,13 @@ This type is best represented as a sum type (sealed class is closest we can get 
 from the kotlinx.serialization lib for an example on which the following is derived.
 
 # Document
-Document directly implements the subclasses that wrap all the possible values the type can hold.
+The Document shape will be represented as a sealed class in Kotlin with each variant (subclass) representing one of the
+possible values the type can hold.
 
 List and Map subtypes implement their corresponding `kotlin.collections` interfaces.
 
 Included for ease of use are a host of basic typecasts, eg. `asInt` (and its `asIntOrNull` counterpart). These types of
-convencience getters can be expanded/evolved based on future user feedback.
+convenience getters can be expanded/evolved based on future user feedback.
 
 ```kotlin
 package aws.smithy.kotlin.runtime.smithy
@@ -63,16 +60,21 @@ A DSL builder is exposed for idiomatic construction of arbitrary documents.
 package aws.smithy.kotlin.runtime.smithy
 
 class DocumentBuilder internal constructor() {
-    infix fun String.to(value: Number)
-    infix fun String.to(value: String)
-    infix fun String.to(value: Boolean)
+    infix fun String.to(value: Number?)
+    infix fun String.to(value: String?)
+    infix fun String.to(value: Boolean?)
     infix fun String.to(value: Document?)
 
     class ListBuilder internal constructor() {
-        fun add(value: Number)
-        fun add(value: String)
-        fun add(value: Boolean)
+        fun add(value: Number?)
+        fun add(value: String?)
+        fun add(value: Boolean?)
         fun add(value: Document?)
+
+        fun addAll(value: List<Number?>)
+        fun addAll(value: List<String?>)
+        fun addAll(value: List<Boolean?>)
+        fun addAll(value: List<Document?>)
     }
 
     fun buildList(init: ListBuilder.() -> Unit): Document

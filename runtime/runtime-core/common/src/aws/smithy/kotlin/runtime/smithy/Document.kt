@@ -11,7 +11,7 @@ package aws.smithy.kotlin.runtime.smithy
  */
 sealed class Document {
     /**
-     * Wraps a [kotlin.Number].
+     * Wraps a [kotlin.Number] of arbitrary precision.
      */
     data class Number(val value: kotlin.Number) : Document() {
         override fun toString() = value.toString()
@@ -99,7 +99,7 @@ sealed class Document {
 }
 
 /**
- * Construct a [Document] from a [Number].
+ * Construct a [Document] from a [Number] of arbitrary precision.
  */
 fun Document(value: Number): Document = Document.Number(value)
 

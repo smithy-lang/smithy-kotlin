@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime
 
+import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.smithy.buildDocument
 import kotlin.test.*
 
@@ -18,12 +19,13 @@ class DocumentBuilderTest {
                 add(12)
                 add(true)
                 add("blah")
-                add(null)
+                add(Document.Null)
+                addAll(listOf(9, 10, 12))
             }
-            "qux" to null
+            "qux" to Document.Null
         }
 
-        val expected = """{"foo":1,"baz":[202,12,true,"blah",null],"qux":null}"""
+        val expected = """{"foo":1,"baz":[202,12,true,"blah",null,9,10,12],"qux":null}"""
 
         assertEquals(expected, "$doc")
         assertEquals(1, doc.asMap()["foo"]?.asInt())
