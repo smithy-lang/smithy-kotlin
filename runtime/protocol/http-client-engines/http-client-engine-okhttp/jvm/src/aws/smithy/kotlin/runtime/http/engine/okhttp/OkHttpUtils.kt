@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import kotlinx.coroutines.*
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.internal.http.HttpMethod
 import kotlin.coroutines.CoroutineContext
 import okhttp3.Request as OkHttpRequest
 import okhttp3.Response as OkHttpResponse
@@ -26,9 +27,6 @@ internal data class SdkRequestTag(val execContext: ExecutionContext)
 // matches segment size used by okio
 // see https://github.com/square/okio/blob/parent-3.1.0/okio/src/commonMain/kotlin/okio/Segment.kt#L179
 internal const val DEFAULT_BUFFER_SIZE: Int = 8192
-
-// TODO - do we need this
-// private val emptyRequestBody = ByteArray(0).toRequestBody(null, 0, 0)
 
 /**
  * Convert SDK [HttpRequest] to an [okhttp3.Request] instance
@@ -48,10 +46,14 @@ internal fun HttpRequest.toOkHttpRequest(
         }
     }
 
-    val engineBody = when (val body = body) {
-        is HttpBody.Empty -> null
-        is HttpBody.Bytes -> body.bytes().let { it.toRequestBody(null, 0, it.size) }
-        is HttpBody.Streaming -> ByteChannelRequestBody(body, callContext)
+    val engineBody = if (HttpMethod.permitsRequestBody(method.name)) {
+        when (val body = body) {
+            is HttpBody.Empty -> ByteArray(0).toRequestBody(null, 0, 0)
+            is HttpBody.Bytes -> body.bytes().let { it.toRequestBody(null, 0, it.size) }
+            is HttpBody.Streaming -> ByteChannelRequestBody(body, callContext)
+        }
+    } else {
+        null
     }
 
     builder.method(method.name, engineBody)
