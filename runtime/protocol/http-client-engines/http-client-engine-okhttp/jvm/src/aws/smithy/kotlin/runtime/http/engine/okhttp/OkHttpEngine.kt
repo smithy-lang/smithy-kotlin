@@ -29,9 +29,18 @@ class OkHttpEngine(
     // TODO - expose thread count and use custom dispatcher/ExecutionService
 
     private val client = OkHttpClient.Builder().apply {
+        // don't follow redirects
+        followRedirects(false)
+        followSslRedirects(false)
+
+        // see: https://github.com/ktorio/ktor/issues/1708#issuecomment-609988128
+        retryOnConnectionFailure(true)
+
         connectTimeout(config.connectTimeout.toJavaDuration())
         readTimeout(config.socketReadTimeout.toJavaDuration())
         writeTimeout(config.socketWriteTimeout.toJavaDuration())
+
+        // use our own pool configured with the settings taken from config
         val pool = ConnectionPool(
             maxIdleConnections = config.maxConnections.toInt(),
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
@@ -39,8 +48,10 @@ class OkHttpEngine(
         )
         connectionPool(pool)
 
+        // log events coming from okhttp
         eventListener(HttpEngineEventListener(pool))
 
+        // map protocols
         if (config.alpn.isNotEmpty()) {
             val protocols = config.alpn.mapNotNull {
                 when (it) {
