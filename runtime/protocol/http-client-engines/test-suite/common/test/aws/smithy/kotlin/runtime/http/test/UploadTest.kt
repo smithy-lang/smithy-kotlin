@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
+import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
@@ -37,7 +38,7 @@ class UploadTest : AbstractEngineTest() {
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                url(env.testServer)
+                testSetup(env)
                 url.path = "/upload/content"
                 body = ByteArrayContent(data)
             }
@@ -62,7 +63,7 @@ class UploadTest : AbstractEngineTest() {
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                url(env.testServer)
+                testSetup(env)
                 url.path = "/upload/content"
                 body = content
             }
@@ -102,7 +103,7 @@ class UploadTest : AbstractEngineTest() {
 
             val req = HttpRequest {
                 method = HttpMethod.POST
-                url(env.testServer)
+                testSetup(env)
                 url.path = "/upload/content"
                 body = wrappedStream.toHttpBody()
             }
@@ -124,7 +125,7 @@ class UploadTest : AbstractEngineTest() {
                 headers {
                     append("Content-Type", "application/xml")
                 }
-                url(env.testServer)
+                testSetup(env)
                 url.path = "/upload/content"
                 body = HttpBody.Empty
             }

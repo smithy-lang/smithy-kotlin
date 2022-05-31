@@ -69,7 +69,8 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
     val sdkHeaders = OkHttpHeadersAdapter(headers)
     val httpBody = if (body.contentLength() > 0L) {
         val ch = SdkByteChannel(true)
-        val job = GlobalScope.launch(callContext + Dispatchers.IO) {
+        val writerContext = callContext + Dispatchers.IO + callContext.derivedName("response-body-writer")
+        val job = GlobalScope.launch(writerContext) {
             val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
             val source = body.source()
 
@@ -93,4 +94,14 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
     }
 
     return HttpResponse(HttpStatusCode.fromValue(code), sdkHeaders, httpBody)
+}
+
+/**
+ * Append to the existing coroutine name if it exists in the context otherwise
+ * use [name] as is.
+ * @return the [CoroutineName] context element
+ */
+private fun CoroutineContext.derivedName(name: String): CoroutineName {
+    val existing = get(CoroutineName)?.name ?: return CoroutineName(name)
+    return CoroutineName("$existing:$name")
 }

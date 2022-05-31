@@ -12,6 +12,7 @@ extra["skipPublish"] = true
 
 val coroutinesVersion: String by project
 val ktorVersion: String by project
+val slf4jVersion: String by project
 
 kotlin {
     sourceSets {
@@ -30,6 +31,8 @@ kotlin {
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
+
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         }
 

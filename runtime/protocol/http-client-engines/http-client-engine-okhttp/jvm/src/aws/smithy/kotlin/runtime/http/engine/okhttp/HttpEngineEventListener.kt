@@ -20,7 +20,7 @@ internal class HttpEngineEventListener(
 
     private inline fun traceCall(call: Call, crossinline msg: () -> Any) {
         val sdkRequestTag = call.request().tag<SdkRequestTag>()
-        val sdkRequestId = sdkRequestTag?.execContext?.get(HttpOperationContext.SdkRequestId)
+        val sdkRequestId = sdkRequestTag?.execContext?.getOrNull(HttpOperationContext.SdkRequestId)
         logger.trace { "[sdkRequestId=$sdkRequestId] ${msg()}" }
     }
 

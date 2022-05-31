@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
+import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlin.test.Test
@@ -66,7 +67,7 @@ class DownloadTest : AbstractEngineTest() {
     private fun runReadSuspendIntegrityTest(reader: suspend (SdkByteReadChannel, Int) -> String) = testEngines {
         test { env, client ->
             val req = HttpRequest {
-                url(env.testServer)
+                testSetup(env)
                 url.path = "/download/integrity"
             }
 
