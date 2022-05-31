@@ -13,11 +13,11 @@ import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.testing.IgnoreWindows
-import io.ktor.application.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking

@@ -40,6 +40,10 @@ object KotlinTypes {
         val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
     }
 
+    object Jvm {
+        val JvmName = builtInSymbol("JvmName", "kotlin.jvm")
+    }
+
     object Text {
         val encodeToByteArray = builtInSymbol("encodeToByteArray", "kotlin.text")
     }

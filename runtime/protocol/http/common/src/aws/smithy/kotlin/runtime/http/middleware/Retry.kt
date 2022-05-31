@@ -23,9 +23,9 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * @param policy the [RetryPolicy] used to determine when to retry
  */
 @InternalApi
-class Retry<O>(
-    private val strategy: RetryStrategy,
-    private val policy: RetryPolicy<Any?>
+open class Retry<O>(
+    protected val strategy: RetryStrategy,
+    protected val policy: RetryPolicy<Any?>
 ) : MutateMiddleware<O> {
 
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
@@ -41,6 +41,7 @@ class Retry<O>(
                 // Deep copy the request because later middlewares (e.g., signing) mutate it
                 val requestCopy = request.deepCopy()
 
+                onAttempt(requestCopy, attempt)
                 when (val body = requestCopy.subject.body) {
                     // Reset streaming bodies back to beginning
                     is HttpBody.Streaming -> body.reset()
@@ -54,6 +55,13 @@ class Retry<O>(
         } else {
             next.call(request)
         }
+
+    /**
+     * Hook for subclasses to intercept on attempt start
+     * @param request the request for this attempt
+     * @param attempt the current attempt number (1 based)
+     */
+    protected open fun onAttempt(request: SdkHttpRequest, attempt: Int) {}
 }
 
 /**
@@ -74,7 +82,7 @@ private class PolicyLogger(
  * Indicates whether this HTTP request could be retried. Some requests with streaming bodies are unsuitable for
  * retries.
  */
-val HttpRequestBuilder.isRetryable: Boolean
+private val HttpRequestBuilder.isRetryable: Boolean
     get() = when (val body = this.body) {
         is HttpBody.Empty, is HttpBody.Bytes -> true
         is HttpBody.Streaming -> body.isReplayable

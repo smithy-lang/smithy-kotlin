@@ -124,10 +124,10 @@ class PaginatorGenerator : KotlinIntegration {
         writer
             .dokka(
                 """
-                    $docBody
-                    @param initialRequest A [${inputSymbol.name}] to start pagination
-                    $docReturn
-                """.trimIndent()
+                    |$docBody
+                    |@param initialRequest A [${inputSymbol.name}] to start pagination
+                    |$docReturn
+                """.trimMargin()
             )
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
@@ -162,10 +162,10 @@ class PaginatorGenerator : KotlinIntegration {
         writer
             .dokka(
                 """
-                    $docBody
-                    @param block A builder block used for DSL-style invocation of the operation
-                    $docReturn
-                """.trimIndent()
+                    |$docBody
+                    |@param block A builder block used for DSL-style invocation of the operation
+                    |$docReturn
+                """.trimMargin()
             )
             .withBlock(
                 "fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",
@@ -205,7 +205,8 @@ class PaginatorGenerator : KotlinIntegration {
             // Multiple functions may have the same name and the generic does not disambiguate the type in Java.
             // NOTE: This does not mean these functions are callable from Java.
             .write(
-                """@JvmName("#L#L")""",
+                """@#T("#L#L")""",
+                KotlinTypes.Jvm.JvmName,
                 outputSymbol.name.replaceFirstChar(Char::lowercaseChar),
                 itemDesc.targetMember.defaultName(serviceShape)
             )

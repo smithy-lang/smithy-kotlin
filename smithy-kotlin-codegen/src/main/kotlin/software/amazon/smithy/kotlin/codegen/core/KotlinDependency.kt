@@ -34,24 +34,33 @@ private fun getDefaultRuntimeVersion(): String {
 // publishing info
 const val RUNTIME_GROUP: String = "aws.smithy.kotlin"
 val RUNTIME_VERSION: String = System.getProperty("smithy.kotlin.codegen.clientRuntimeVersion", getDefaultRuntimeVersion())
-val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.6.10")
+val KOTLIN_COMPILER_VERSION: String = System.getProperty("smithy.kotlin.codegen.kotlinCompilerVersion", "1.6.21")
+
+enum class SourceSet {
+    CommonMain,
+    CommonTest,
+    ;
+
+    override fun toString(): String = StringUtils.uncapitalize(name)
+}
 
 // See: https://docs.gradle.org/current/userguide/java_library_plugin.html#sec:java_library_configurations_graph
-enum class GradleConfiguration {
+enum class GradleConfiguration(val sourceSet: SourceSet) {
     // purely internal and not meant to be exposed to consumers.
-    Implementation,
+    Implementation(SourceSet.CommonMain),
     // transitively exported to consumers, for compile.
-    Api,
+    Api(SourceSet.CommonMain),
     // only required at compile time, but should not leak into the runtime
-    CompileOnly,
+    CompileOnly(SourceSet.CommonMain),
     // only required at runtime
-    RuntimeOnly,
+    RuntimeOnly(SourceSet.CommonMain),
     // internal test
-    TestImplementation,
+    TestImplementation(SourceSet.CommonTest),
     // compile time test only
-    TestCompileOnly,
+    TestCompileOnly(SourceSet.CommonTest),
     // compile time runtime only
-    TestRuntimeOnly;
+    TestRuntimeOnly(SourceSet.CommonTest),
+    ;
 
     override fun toString(): String = StringUtils.uncapitalize(this.name)
 
@@ -59,7 +68,18 @@ enum class GradleConfiguration {
      * Return true if the dependency is in the test scope
      */
     val isTestScope
-        get() = this == TestImplementation || this == TestCompileOnly || this == TestRuntimeOnly
+        get() = sourceSet == SourceSet.CommonTest
+
+    /**
+     * The name of the dependency type in Gradle when used in a KMP project. For instance, [TestImplementation] would be
+     * called `implementation` when used in the `commonTest` source set for KMP (vs `testImplementation` when used in a
+     * non-KMP project).
+     */
+    val kmpName: String
+        get() = when {
+            isTestScope -> name.removePrefix("Test")
+            else -> name
+        }.let(StringUtils::uncapitalize)
 }
 
 data class KotlinDependency(

@@ -8,6 +8,8 @@ service Test {
     version: "1.0.0",
     operations: [
         GetFoo,
+        GetFooNoRequired,
+        GetFooSomeRequired,
         GetFooNoInput,
         GetFooNoOutput,
         GetFooStreamingInput,
@@ -25,12 +27,41 @@ operation GetFoo {
     errors: [GetFooError]
 }
 
-structure GetFooRequest {}
+structure GetFooRequest {
+    @required
+    @httpQuery("q")
+    query: String
+}
 structure GetFooResponse {}
 
 @error("client")
 structure GetFooError {}
 
+@http(method: "GET", uri: "/foo-no-required")
+operation GetFooNoRequired {
+    input: GetFooNoRequiredRequest,
+    output: GetFooResponse
+}
+
+structure GetFooNoRequiredRequest {
+    @httpQuery("q0")
+    q0: String,
+    @httpQuery("q1")
+    q1: String
+}
+
+@http(method: "GET", uri: "/foo-some-required")
+operation GetFooSomeRequired {
+    input: GetFooSomeRequiredRequest,
+    output: GetFooResponse
+}
+
+structure GetFooSomeRequiredRequest {
+    @required @httpQuery("q0")
+    q0: String,
+    @httpQuery("q1")
+    q1: String
+}
 
 @http(method: "GET", uri: "/foo-no-input")
 operation GetFooNoInput {
@@ -46,6 +77,7 @@ operation GetFooNoOutput {
 blob BodyStream
 
 structure GetFooStreamingRequest {
+    @required
     body: BodyStream
 }
 

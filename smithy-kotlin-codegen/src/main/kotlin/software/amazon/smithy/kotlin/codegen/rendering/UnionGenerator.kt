@@ -44,9 +44,9 @@ class UnionGenerator(
             writer.renderMemberDocumentation(model, it)
             writer.renderAnnotations(it)
             val variantName = it.unionVariantName()
-            val targetType = model.expectShape(it.target).type
-            writer.writeInline("data class #L(val value: #Q) : #Q()", variantName, symbolProvider.toSymbol(it), symbol)
-            when (targetType) {
+            val variantSymbol = symbolProvider.toSymbol(it)
+            writer.writeInline("data class #L(val value: #Q) : #Q()", variantName, variantSymbol, symbol)
+            when (model.expectShape(it.target).type) {
                 ShapeType.BLOB -> {
                     writer.withBlock(" {", "}") {
                         renderHashCode(model, listOf(it), symbolProvider, this)
@@ -56,9 +56,62 @@ class UnionGenerator(
                 else -> writer.write("")
             }
         }
+
         // generate the unknown which will always be last
         writer.write("object SdkUnknown : #Q()", symbol)
+
+        members.sortedBy { it.memberName }.forEach {
+            val variantName = it.unionVariantName()
+            val variantSymbol = symbolProvider.toSymbol(it)
+
+            writer.write("")
+            writer.dokka {
+                write(
+                    """
+                        Casts this [#T] as a [#L] and retrieves its [#Q] value. Throws an exception if the [#T] is not a
+                        [#L].
+                    """.trimIndent(),
+                    symbol,
+                    variantName,
+                    variantSymbol,
+                    symbol,
+                    variantName,
+                )
+            }
+            writer.write("fun as#L(): #Q = (this as #T.#L).value", variantName, variantSymbol, symbol, variantName)
+
+            writer.write("")
+            writer.dokka {
+                write(
+                    "Casts this [#T] as a [#L] and retrieves its [#Q] value. Returns null if the [#T] is not a [#L].",
+                    symbol,
+                    variantName,
+                    variantSymbol,
+                    symbol,
+                    variantName,
+                )
+            }
+            writer.write(
+                "fun as#LOrNull(): #Q? = (this as? #T.#L)?.value",
+                variantName,
+                variantSymbol,
+                symbol,
+                variantName,
+            )
+        }
+
         writer.closeBlock("}").write("")
+
+        members.sortedBy { it.memberName }.forEach {
+            val variantName = it.unionVariantName()
+            val variantSymbol = symbolProvider.toSymbol(it)
+
+            writer.write("")
+            writer.dokka {
+                write("Casts this [#T] as a [#L] and retrieves its [#Q] value.", symbol, variantName, variantSymbol)
+            }
+            writer.write("val #T.#L get() = (this as #T.#L).value", symbol, variantName, symbol, variantName)
+        }
     }
 
     // generate a `hashCode()` implementation
@@ -107,7 +160,7 @@ class UnionGenerator(
         writer.write("")
         writer.withBlock("override fun equals(other: #Q?): #Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
-            write("if (javaClass != other?.javaClass) return false")
+            write("if (other == null || this::class != other::class) return false")
             write("")
             write("other as $typeName")
             write("")

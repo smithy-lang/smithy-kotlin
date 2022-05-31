@@ -38,6 +38,7 @@ class SerializeUnionGeneratorTest {
                     is FooUnion.IntVal -> field(INTVAL_DESCRIPTOR, input.value)
                     is FooUnion.StrVal -> field(STRVAL_DESCRIPTOR, input.value)
                     is FooUnion.Timestamp4 -> field(TIMESTAMP4_DESCRIPTOR, input.value, TimestampFormat.ISO_8601)
+                    is FooUnion.SdkUnknown -> throw SerializationException("Cannot serialize SdkUnknown")
                 }
             }
         """.trimIndent()
@@ -117,6 +118,7 @@ class SerializeUnionGeneratorTest {
                             input.value.forEach { (key, value) -> entry(key, value) }
                         }
                     }
+                    is FooUnion.SdkUnknown -> throw SerializationException("Cannot serialize SdkUnknown")
                 }
             }
         """.trimIndent()
@@ -149,6 +151,7 @@ class SerializeUnionGeneratorTest {
             serializer.serializeStruct(OBJ_DESCRIPTOR) {
                 when (input) {
                     is MyAggregateUnion.Nested3 -> field(NESTED3_DESCRIPTOR, input.value, ::serializeNestedDocument)
+                    is MyAggregateUnion.SdkUnknown -> throw SerializationException("Cannot serialize SdkUnknown")
                 }
             }
         """.trimIndent()
@@ -202,6 +205,7 @@ class SerializeUnionGeneratorTest {
                             }
                         }
                     }
+                    is FooUnion.SdkUnknown -> throw SerializationException("Cannot serialize SdkUnknown")
                 }
             }
         """.trimIndent()

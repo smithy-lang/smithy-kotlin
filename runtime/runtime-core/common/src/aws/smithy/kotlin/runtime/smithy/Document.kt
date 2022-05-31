@@ -5,160 +5,120 @@
 package aws.smithy.kotlin.runtime.smithy
 
 /**
- * Class representing a Smithy Document type.
- * Can be a [SmithyNumber], [SmithyBool], [SmithyString], [SmithyNull], [SmithyArray], or [SmithyMap]
+ * A `Document` is used to store arbitrary or unstructured data.
+ *
+ * The provided casting functions (eg. [asInt], [asMap]) allow callers to unwrap contents of the Document at runtime.
  */
 sealed class Document {
     /**
-     * Checks whether the current element is [SmithyNull]
+     * Wraps a [kotlin.Number] of arbitrary precision.
      */
-    val isNull: Boolean
-        get() = this == SmithyNull
-}
-
-/**
- * Class representing document `null` type.
- */
-object SmithyNull : Document() {
-    override fun toString(): String = "null"
-}
-
-/**
- * Class representing document `bool` type
- */
-data class SmithyBool(val value: Boolean) : Document() {
-    override fun toString(): String = when (value) {
-        true -> "true"
-        false -> "false"
+    data class Number(val value: kotlin.Number) : Document() {
+        override fun toString() = value.toString()
     }
+
+    /**
+     * Wraps a [kotlin.String].
+     */
+    data class String(val value: kotlin.String) : Document() {
+        override fun toString() = "\"$value\""
+    }
+
+    /**
+     * Wraps a [kotlin.Boolean].
+     */
+    data class Boolean(val value: kotlin.Boolean) : Document() {
+        override fun toString() = value.toString()
+    }
+
+    /**
+     * Wraps a [kotlin.collections.List].
+     */
+    data class List(val value: kotlin.collections.List<Document>) :
+        Document(), kotlin.collections.List<Document> by value {
+        override fun toString() = value.joinToString(separator = ",", prefix = "[", postfix = "]")
+    }
+
+    /**
+     * Wraps a [kotlin.collections.Map].
+     */
+    data class Map(val value: kotlin.collections.Map<kotlin.String, Document>) :
+        Document(), kotlin.collections.Map<kotlin.String, Document> by value {
+        override fun toString() = value
+            .entries
+            .joinToString(
+                separator = ",",
+                prefix = "{",
+                postfix = "}",
+                transform = { (k, v) -> """"$k":$v""" }
+            )
+    }
+
+    /**
+     * Represents a `null` value.
+     */
+    object Null : Document() {
+        override fun toString() = "null"
+    }
+
+    private fun asNumber(): kotlin.Number = (this as Number).value
+    private fun asNumberOrNull(): kotlin.Number? = (this as? Number)?.value
+
+    fun asString(): kotlin.String = (this as String).value
+    fun asStringOrNull(): kotlin.String? = (this as? String)?.value
+
+    fun asBoolean(): kotlin.Boolean = (this as Boolean).value
+    fun asBooleanOrNull(): kotlin.Boolean? = (this as? Boolean)?.value
+
+    fun asList(): kotlin.collections.List<Document> = (this as List).value
+    fun asListOrNull(): kotlin.collections.List<Document>? = (this as? List)?.value
+
+    fun asMap(): kotlin.collections.Map<kotlin.String, Document> = (this as Map).value
+    fun asMapOrNull(): kotlin.collections.Map<kotlin.String, Document>? = (this as? Map)?.value
+
+    fun asInt(): Int = asNumber().toInt()
+    fun asIntOrNull(): Int? = asNumberOrNull()?.toInt()
+
+    fun asByte(): Byte = asNumber().toByte()
+    fun asByteOrNull(): Byte? = asNumberOrNull()?.toByte()
+
+    fun asShort(): Short = asNumber().toShort()
+    fun asShortOrNull(): Short? = asNumberOrNull()?.toShort()
+
+    fun asLong(): Long = asNumber().toLong()
+    fun asLongOrNull(): Long? = asNumberOrNull()?.toLong()
+
+    fun asFloat(): Float = asNumber().toFloat()
+    fun asFloatOrNull(): Float? = asNumberOrNull()?.toFloat()
+
+    fun asDouble(): Double = asNumber().toDouble()
+    fun asDoubleOrNull(): Double? = asNumberOrNull()?.toDouble()
+
+    val isNull: kotlin.Boolean
+        get() = this == Null
 }
 
 /**
- * Class representing document `string` type
+ * Construct a [Document] from a [Number] of arbitrary precision.
  */
-data class SmithyString(val value: String) : Document() {
-    override fun toString(): String = "\"$value\""
-}
+fun Document(value: Number): Document = Document.Number(value)
 
 /**
- * Class representing document numeric types.
- *
- * Creates a Document from a number literal: Int, Long, Short, Byte, Float, Double
+ * Construct a [Document] from a [String].
  */
-class SmithyNumber(val content: Number) : Document() {
-
-    /**
-     * Returns the content as a byte which may involve rounding
-     */
-    val byte: Byte get() = content.toByte()
-
-    /**
-     * Returns the content as a int which may involve rounding
-     */
-    val int: Int get() = content.toInt()
-
-    /**
-     * Returns the content as a long which may involve rounding
-     */
-    val long: Long get() = content.toLong()
-
-    /**
-     * Returns the content as a float which may involve rounding
-     */
-    val float: Float get() = content.toFloat()
-
-    /**
-     * Returns the content as a double which may involve rounding
-     */
-    val double: Double get() = content.toDouble()
-
-    override fun toString(): String = content.toString()
-}
+fun Document(value: String): Document = Document.String(value)
 
 /**
- * Class representing document `array` type
+ * Construct a [Document] from a [Boolean].
  */
-data class SmithyArray(val content: List<Document>) : Document(), List<Document> by content {
-    /**
-     * Returns [index] th element of an array as [SmithyNumber] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getNumber(index: Int) = content[index] as? SmithyNumber
-
-    /**
-     * Returns [index] th element of an array as [SmithyBool] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getBoolean(index: Int) = content[index] as? SmithyBool
-
-    /**
-     * Returns [index] th element of an array as [SmithyString] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getString(index: Int) = content[index] as? SmithyString
-
-    /**
-     * Returns [index] th element of an array as [SmithyArray] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getArray(index: Int) = content[index] as? SmithyArray
-
-    /**
-     * Returns [index] th element of an array as [SmithyMap] if the element is of that type or null if not.
-     *
-     * @throws IndexOutOfBoundsException if there is no element with given index
-     */
-    fun getMap(index: Int) = content[index] as? SmithyMap
-
-    override fun toString(): String = content.joinToString(separator = ",", prefix = "[", postfix = "]")
-}
+fun Document(value: Boolean): Document = Document.Boolean(value)
 
 /**
- * Class representing document `map` type
- *
- * Map consists of name-value pairs, where the value is an arbitrary Document. This is much like a JSON object.
+ * Construct a [Document] from a [List].
  */
-data class SmithyMap(val content: Map<String, Document>) : Document(), Map<String, Document> by content {
+fun Document(value: List<Document>): Document = Document.List(value)
 
-    /**
-     * Returns [SmithyNumber] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getNumber(key: String): SmithyNumber? = getValue(key) as? SmithyNumber
-
-    /**
-     * Returns [SmithyBool] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getBoolean(key: String): SmithyBool? = getValue(key) as? SmithyBool
-
-    /**
-     * Returns [SmithyString] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getString(key: String): SmithyString? = getValue(key) as? SmithyString
-
-    /**
-     * Returns [SmithyArray] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getArray(key: String): SmithyArray? = getValue(key) as? SmithyArray
-
-    /**
-     * Returns [SmithyMap] associated with given [key] or `null` if element is not present or has a different type
-     */
-    fun getMap(key: String): SmithyMap? = getValue(key) as? SmithyMap
-
-    override fun toString(): String = content
-        .entries
-        .joinToString(
-            separator = ",",
-            prefix = "{",
-            postfix = "}",
-            transform = { (k, v) -> """"$k":$v""" }
-        )
-}
-
-fun Boolean.toDocument() = SmithyBool(this)
-fun Number.toDocument() = SmithyNumber(this)
-fun String.toDocument() = SmithyString(this)
+/**
+ * Construct a [Document] from a [Map].
+ */
+fun Document(value: Map<String, Document>): Document = Document.Map(value)

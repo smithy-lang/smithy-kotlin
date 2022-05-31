@@ -7,10 +7,10 @@ package aws.smithy.kotlin.runtime.http.test.suite
 
 import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.util.encodeToHex
-import io.ktor.application.*
 import io.ktor.http.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
 
 private const val CHUNK_SIZE = 1024 * 8
 

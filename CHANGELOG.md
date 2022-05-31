@@ -1,5 +1,39 @@
 # Changelog
 
+## [0.10.0] - 05/24/2022
+
+### Features
+* add additional trace logging to default HTTP client engine
+* [#460](https://github.com/awslabs/aws-sdk-kotlin/issues/460) Enhance generic codegen to be more KMP-friendly
+
+### Fixes
+* [#480](https://github.com/awslabs/aws-sdk-kotlin/issues/480) Upgrade to ktor-2.x
+
+### Miscellaneous
+* upgrade kotlin to 1.6.21 and other deps to latest
+
+## [0.9.2] - 05/19/2022
+
+### Features
+* [#129](https://github.com/awslabs/smithy-kotlin/issues/129) Allow omission of input in service method calls where no parameters are required.
+
+### Fixes
+* Handle invalid (empty) description term headers when generating documentation.
+* Don't escape markdown within preformat blocks in documentation.
+
+## [0.9.1] - 05/13/2022
+
+### Features
+* [#393](https://github.com/awslabs/aws-sdk-kotlin/issues/393) Add convenience getters for union members
+* [#530](https://github.com/awslabs/aws-sdk-kotlin/issues/530) Add partial-file ByteStream support.
+
+### Fixes
+* [#136](https://github.com/awslabs/smithy-kotlin/issues/136) Convert HTML to Markdown for improved Dokka compatibility.
+
+### Miscellaneous
+* [#575](https://github.com/awslabs/aws-sdk-kotlin/issues/575) Add support for getting all env vars and system properties (i.e., not just by a single key)
+* Expose Byte.percentEncodeTo for downstream recursion detection.
+
 ## [0.9.0] - 04/29/2022
 
 ### Miscellaneous

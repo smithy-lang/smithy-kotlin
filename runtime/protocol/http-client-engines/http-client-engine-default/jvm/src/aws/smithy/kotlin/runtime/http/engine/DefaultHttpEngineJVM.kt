@@ -25,6 +25,8 @@ internal actual fun newDefaultHttpEngine(config: HttpClientEngineConfig): HttpCl
             )
             connectionPool(pool)
 
+            eventListener(HttpEngineEventListener(pool))
+
             if (config.alpn.isNotEmpty()) {
                 val protocols = config.alpn.mapNotNull {
                     when (it) {

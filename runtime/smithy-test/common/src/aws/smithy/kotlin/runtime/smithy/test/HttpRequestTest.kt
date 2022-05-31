@@ -6,6 +6,7 @@
 
 package aws.smithy.kotlin.runtime.smithy.test
 
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpMethod
@@ -56,7 +57,7 @@ fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runTest {
     // provide the mock engine
     lateinit var actual: HttpRequest
     val mockEngine = object : HttpClientEngineBase("smithy-test-mock-engine") {
-        override suspend fun roundTrip(request: HttpRequest): HttpCall {
+        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             val testHeaders = HeadersBuilder().apply {
                 appendAll(request.headers)
             }

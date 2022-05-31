@@ -23,7 +23,7 @@ fun String.urlEncodeComponent(
             ' ' -> if (formUrlEncode) sb.append("+") else sb.append("%20")
             // $2.3 Unreserved characters
             in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.', '~' -> sb.append(chr)
-            else -> sb.append(cbyte.percentEncode())
+            else -> cbyte.percentEncodeTo(sb)
         }
     }
 
@@ -87,7 +87,7 @@ fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolea
         when (val chr = cbyte.toInt().toChar()) {
             // unreserved
             in 'a'..'z', in 'A'..'Z', in '0'..'9', in validDelimiters -> sb.append(chr)
-            else -> sb.append(cbyte.percentEncode())
+            else -> cbyte.percentEncodeTo(sb)
         }
         i++
     }
@@ -131,12 +131,16 @@ private const val upperHex: String = "0123456789ABCDEF"
 private val upperHexSet = upperHex.toSet()
 
 // $2.1 Percent-Encoding
-private fun Byte.percentEncode(): String = buildString(3) {
+@InternalApi
+fun Byte.percentEncodeTo(out: Appendable) {
     val code = toInt() and 0xff
-    append('%')
-    append(upperHex[code shr 4])
-    append(upperHex[code and 0x0f])
+    out.append('%')
+    out.append(upperHex[code shr 4])
+    out.append(upperHex[code and 0x0f])
 }
+
+@InternalApi
+fun Byte.percentEncode(): String = StringBuilder(3).also(::percentEncodeTo).toString()
 
 /**
  * Split a (decoded) query string "foo=baz&bar=quux" into it's component parts

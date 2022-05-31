@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.util.text.byteCountUtf8
 import io.ktor.utils.io.*
-import io.ktor.utils.io.core.*
 
 internal const val DEFAULT_BUFFER_SIZE: Int = 4096
 
@@ -136,7 +135,6 @@ public suspend fun SdkByteReadChannel.readByte(): Byte {
 /**
  * Reads all available bytes to [dest] buffer and returns immediately or suspends if no bytes available
  */
-@OptIn(ExperimentalIoApi::class)
 public suspend fun SdkByteReadChannel.readAvailable(dest: SdkByteBuffer, limit: Long = dest.writeRemaining.toLong()): Long {
     if (this is KtorReadChannel) {
         return chan.read { source, start, endExclusive ->

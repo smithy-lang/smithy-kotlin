@@ -14,10 +14,12 @@ import java.io.File
  */
 public class FileContent(
     public val file: File,
+    public val start: Long = 0,
+    public val endInclusive: Long = file.length() - 1
 ) : ByteStream.ReplayableStream() {
 
     override val contentLength: Long
-        get() = file.length()
+        get() = endInclusive - start + 1
 
-    override fun newReader(): SdkByteReadChannel = file.readChannel()
+    override fun newReader(): SdkByteReadChannel = file.readChannel(start, endInclusive)
 }

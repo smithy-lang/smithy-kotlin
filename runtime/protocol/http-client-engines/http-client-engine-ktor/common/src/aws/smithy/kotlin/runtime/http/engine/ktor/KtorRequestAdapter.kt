@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.ktor
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import io.ktor.client.request.*
 import io.ktor.http.*
 import io.ktor.http.content.ByteArrayContent
 import io.ktor.http.content.OutgoingContent
@@ -47,11 +48,13 @@ internal class KtorRequestAdapter(
         val contentType: ContentType? = contentHeaders?.let(ContentType::parse)
 
         // convert the request body
-        builder.body = when (val body = sdkRequest.body) {
+        val ktorBody = when (val body = sdkRequest.body) {
             is HttpBody.Empty -> emptyContent(contentType)
             is HttpBody.Bytes -> ByteArrayContent(body.bytes(), contentType)
             is HttpBody.Streaming -> proxyRequestStream(body, contentType)
         }
+
+        builder.setBody(ktorBody)
 
         return builder
     }

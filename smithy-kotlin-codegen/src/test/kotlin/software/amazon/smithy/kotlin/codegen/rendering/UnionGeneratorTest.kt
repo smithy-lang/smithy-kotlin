@@ -57,7 +57,7 @@ class UnionGeneratorTest {
             
                     override fun equals(other: kotlin.Any?): kotlin.Boolean {
                         if (this === other) return true
-                        if (javaClass != other?.javaClass) return false
+                        if (other == null || this::class != other::class) return false
             
                         other as Blz
             
@@ -72,6 +72,61 @@ class UnionGeneratorTest {
                 data class Foo(val value: kotlin.String) : test.model.MyUnion()
                 data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
                 object SdkUnknown : test.model.MyUnion()
+            
+                /**
+                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
+                 * [Bar].
+                 */
+                fun asBar(): kotlin.Int = (this as MyUnion.Bar).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Returns null if the [MyUnion] is not a [Bar].
+                 */
+                fun asBarOrNull(): kotlin.Int? = (this as? MyUnion.Bar)?.value
+            
+                /**
+                 * Casts this [MyUnion] as a [Baz] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
+                 * [Baz].
+                 */
+                fun asBaz(): kotlin.Int = (this as MyUnion.Baz).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Baz] and retrieves its [kotlin.Int] value. Returns null if the [MyUnion] is not a [Baz].
+                 */
+                fun asBazOrNull(): kotlin.Int? = (this as? MyUnion.Baz)?.value
+            
+                /**
+                 * Casts this [MyUnion] as a [Blz] and retrieves its [kotlin.ByteArray] value. Throws an exception if the [MyUnion] is not a
+                 * [Blz].
+                 */
+                fun asBlz(): kotlin.ByteArray = (this as MyUnion.Blz).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Blz] and retrieves its [kotlin.ByteArray] value. Returns null if the [MyUnion] is not a [Blz].
+                 */
+                fun asBlzOrNull(): kotlin.ByteArray? = (this as? MyUnion.Blz)?.value
+            
+                /**
+                 * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Throws an exception if the [MyUnion] is not a
+                 * [Foo].
+                 */
+                fun asFoo(): kotlin.String = (this as MyUnion.Foo).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Returns null if the [MyUnion] is not a [Foo].
+                 */
+                fun asFooOrNull(): kotlin.String? = (this as? MyUnion.Foo)?.value
+            
+                /**
+                 * Casts this [MyUnion] as a [MyStruct] and retrieves its [test.model.MyStruct] value. Throws an exception if the [MyUnion] is not a
+                 * [MyStruct].
+                 */
+                fun asMyStruct(): test.model.MyStruct = (this as MyUnion.MyStruct).value
+            
+                /**
+                 * Casts this [MyUnion] as a [MyStruct] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [MyStruct].
+                 */
+                fun asMyStructOrNull(): test.model.MyStruct? = (this as? MyUnion.MyStruct)?.value
             }
         """.trimIndent()
 
@@ -166,6 +221,17 @@ class UnionGeneratorTest {
             sealed class MyUnion {
                 data class Foo(val value: test.model.MyStruct) : test.model.MyUnion()
                 object SdkUnknown : test.model.MyUnion()
+            
+                /**
+                 * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Throws an exception if the [MyUnion] is not a
+                 * [Foo].
+                 */
+                fun asFoo(): test.model.MyStruct = (this as MyUnion.Foo).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [Foo].
+                 */
+                fun asFooOrNull(): test.model.MyStruct? = (this as? MyUnion.Foo)?.value
             }
         """.trimIndent()
 
