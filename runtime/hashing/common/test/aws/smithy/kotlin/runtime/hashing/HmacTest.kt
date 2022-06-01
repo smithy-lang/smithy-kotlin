@@ -97,7 +97,7 @@ class HmacTest {
     @Test
     fun testRfc4231Case7() {
         val payload = "This is a test using a larger than block-size key and a larger than block-size data. The key " +
-                "needs to be hashed before being used by the HMAC algorithm."
+            "needs to be hashed before being used by the HMAC algorithm."
         assertEquals(
             "9b09ffa71b942fcb27635fbcd5b0e944bfdc63644f0713938a7f51535c3a35e2",
             hmacTest(bytes(131) { 0xaa }, payload, ::Sha256),
