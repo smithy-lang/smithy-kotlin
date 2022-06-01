@@ -103,7 +103,8 @@ actual abstract class SigningSuiteTestBase : HasSigner {
             .map { it.parent }
     }
 
-    protected open val disabledTests = setOf<String>(
+    protected open val disabledTests = setOf(
+        // TODO https://github.com/awslabs/smithy-kotlin/issues/653
         // ktor-http-cio parser doesn't support parsing multiline headers since they are deprecated in RFC7230
         "get-header-value-multiline",
         // ktor fails to parse with space in it (expects it to be a valid request already encoded)
