@@ -79,7 +79,7 @@ private suspend fun AwsSigningConfig.toCrtSigningConfig(): CrtSigningConfig {
         useDoubleUriEncode = src.useDoubleUriEncode
         normalizeUriPath = src.normalizeUriPath
         omitSessionToken = src.omitSessionToken
-        signedBodyValue = src.bodyHash.hash
+        signedBodyValue = src.hashSpecification.toCrtSignedBodyValue()
         signedBodyHeader = src.signedBodyHeader.toCrtSignedBodyHeaderType()
         credentials = srcCredentials.toCrtCredentials()
         expirationInSeconds = src.expiresAfter?.inWholeSeconds ?: 0
@@ -87,6 +87,11 @@ private suspend fun AwsSigningConfig.toCrtSigningConfig(): CrtSigningConfig {
 }
 
 private fun Credentials.toCrtCredentials() = CrtCredentials(accessKeyId, secretAccessKey, sessionToken)
+
+private fun HashSpecification.toCrtSignedBodyValue(): String? = when (this) {
+    is HashSpecification.CalculateFromPayload -> null
+    is HashSpecification.HashLiteral -> hash
+}
 
 private fun Headers.toCrtHeaders(): CrtHeaders {
     val headersBuilder = aws.sdk.kotlin.crt.http.HeadersBuilder()

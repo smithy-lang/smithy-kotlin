@@ -246,7 +246,10 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         when (format) {
             TimestampFormat.EPOCH_SECONDS -> jsonWriter.writeRawValue(value.format(format))
             TimestampFormat.ISO_8601,
-            TimestampFormat.RFC_5322 -> jsonWriter.writeValue(value.format(format))
+            TimestampFormat.ISO_8601_CONDENSED,
+            TimestampFormat.ISO_8601_CONDENSED_DATE,
+            TimestampFormat.RFC_5322,
+            -> jsonWriter.writeValue(value.format(format))
         }
     }
 }

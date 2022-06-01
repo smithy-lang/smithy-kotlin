@@ -80,7 +80,7 @@ abstract class BasicSigningTestBase : HasSigner {
     }
 
     @Test
-    fun testSignRequestSigV4Asymmetric() = runTest {
+    open fun testSignRequestSigV4Asymmetric() = runTest {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST
@@ -118,7 +118,7 @@ abstract class BasicSigningTestBase : HasSigner {
         useDoubleUriEncode = false
         normalizeUriPath = true
         signedBodyHeader = AwsSignedBodyHeader.X_AMZ_CONTENT_SHA256
-        bodyHash = BodyHash.StreamingAws4HmacSha256Payload
+        hashSpecification = HashSpecification.StreamingAws4HmacSha256Payload
         credentialsProvider = CHUNKED_TEST_CREDENTIALS_PROVIDER
     }
 

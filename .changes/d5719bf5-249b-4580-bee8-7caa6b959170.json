@@ -1,0 +1,8 @@
+{
+    "id": "d5719bf5-249b-4580-bee8-7caa6b959170",
+    "type": "feature",
+    "description": "Add a new non-CRT SigV4 signer and use it as the default. This removes the CRT as a hard dependency for using the SDK (although the CRT signer can still be used via explicit configuration on client creation).",
+    "issues": [
+        "awslabs/smithy-kotlin#617"
+    ]
+}

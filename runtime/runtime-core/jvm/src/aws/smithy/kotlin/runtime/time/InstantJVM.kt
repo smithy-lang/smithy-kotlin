@@ -11,6 +11,7 @@ package aws.smithy.kotlin.runtime.time
 // See: https://developer.android.com/studio/write/java8-support-table
 
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.chrono.IsoChronology
@@ -61,6 +62,8 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
      */
     actual fun format(fmt: TimestampFormat): String = when (fmt) {
         TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value.truncatedTo(ChronoUnit.MICROS))
+        TimestampFormat.ISO_8601_CONDENSED -> ISO_8601_CONDENSED.format(value)
+        TimestampFormat.ISO_8601_CONDENSED_DATE -> ISO_8601_CONDENSED_DATE.format(value)
         TimestampFormat.RFC_5322 -> RFC_5322_FIXED_DATE_TIME.format(ZonedDateTime.ofInstant(value, ZoneOffset.UTC))
         TimestampFormat.EPOCH_SECONDS -> {
             val sb = StringBuffer("$epochSeconds")
@@ -80,6 +83,16 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
     actual companion object {
 
         private val RFC_5322_FIXED_DATE_TIME: DateTimeFormatter = buildRfc5322Formatter()
+
+        private val utcZone = ZoneId.of("Z")
+
+        private val ISO_8601_CONDENSED: DateTimeFormatter = DateTimeFormatter
+            .ofPattern("yyyyMMdd'T'HHmmss'Z'")
+            .withZone(utcZone)
+
+        private val ISO_8601_CONDENSED_DATE: DateTimeFormatter = DateTimeFormatter
+            .ofPattern("yyyyMMdd")
+            .withZone(utcZone)
 
         /**
          * Parse an ISO-8601 formatted string into an [Instant]
