@@ -58,7 +58,7 @@ class AsyncStressTest : TestWithLocalServer() {
             }
         }
 
-        withTimeout(5.seconds) {
+        withTimeout(10.seconds) {
             repeat(1_000) {
                 async {
                     try {
