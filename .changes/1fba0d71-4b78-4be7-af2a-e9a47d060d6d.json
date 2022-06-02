@@ -1,8 +1,0 @@
-{
-    "id": "1fba0d71-4b78-4be7-af2a-e9a47d060d6d",
-    "type": "bugfix",
-    "description": "Upgrade aws-crt-kotlin to latest",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#473"
-    ]
-}
