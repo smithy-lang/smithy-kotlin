@@ -149,7 +149,21 @@ class TextTest {
     @Test
     fun decodeUrlComponent() {
         val component = "a%3Bb+c%7Ed%20e%2Bf+g%3D%E1%88%B4"
+        val expected = "a;b c~d e+f+g=ሴ"
+        assertEquals(expected, component.urlDecodeComponent())
+    }
+
+    @Test
+    fun decodeUrlComponentWithFormUrl() {
+        val component = "a%3Bb+c%7Ed%20e%2Bf+g%3D%E1%88%B4"
         val expected = "a;b c~d e+f g=ሴ"
+        assertEquals(expected, component.urlDecodeComponent(true))
+    }
+
+    @Test
+    fun decodeUrlComponentInvalidSequence() {
+        val component = "%20%&'%%%f"
+        val expected = " %&'%%%f" // Only the %20 was valid
         assertEquals(expected, component.urlDecodeComponent())
     }
 
