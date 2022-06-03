@@ -1,0 +1,8 @@
+{
+    "id": "922b32ef-f194-4e5f-9ff2-9eca98246755",
+    "type": "bugfix",
+    "description": "Fix bugs with signing for query parameters containing '+' and '%'",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#619"
+    ]
+}
