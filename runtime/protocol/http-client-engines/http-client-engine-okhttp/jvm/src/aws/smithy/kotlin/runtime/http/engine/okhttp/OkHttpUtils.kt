@@ -67,7 +67,7 @@ internal fun HttpRequest.toOkHttpRequest(
 @OptIn(DelicateCoroutinesApi::class)
 internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpResponse {
     val sdkHeaders = OkHttpHeadersAdapter(headers)
-    val httpBody = if (body.contentLength() > 0L) {
+    val httpBody = if (body.contentLength() != 0L) {
         val ch = SdkByteChannel(true)
         val writerContext = callContext + Dispatchers.IO + callContext.derivedName("response-body-writer")
         val job = GlobalScope.launch(writerContext) {
@@ -86,7 +86,8 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
         }
 
         object : HttpBody.Streaming() {
-            override val contentLength: Long = body.contentLength()
+            // -1 is used by okhttp as transfer-encoding chunked
+            override val contentLength: Long? = if (body.contentLength() >= 0L) body.contentLength() else null
             override fun readFrom(): SdkByteReadChannel = ch
         }
     } else {
