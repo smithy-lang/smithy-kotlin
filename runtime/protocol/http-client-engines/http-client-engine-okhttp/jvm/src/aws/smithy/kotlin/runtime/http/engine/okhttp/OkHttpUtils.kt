@@ -53,6 +53,8 @@ internal fun HttpRequest.toOkHttpRequest(
             is HttpBody.Streaming -> ByteChannelRequestBody(body, callContext)
         }
     } else {
+        // assert we don't silently ignore a body even though one is unexpected here
+        check(body is HttpBody.Empty) { "unexpected HTTP body for method $method" }
         null
     }
 
