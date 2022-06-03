@@ -5,6 +5,8 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.smithy.Document
+import aws.smithy.kotlin.runtime.smithy.buildDocument
 import io.kotest.matchers.collections.shouldContainExactly
 import io.kotest.matchers.maps.shouldContainExactly
 import kotlin.math.abs
@@ -552,5 +554,237 @@ class JsonDeserializerTest {
         assertEquals(1, x)
         assertNull(y)
         assertEquals(2, z)
+    }
+
+    private fun testDeserializeDocument(doc: String, expected: Document) {
+        // pad the end to verify that the parser token index isn't misaligned after handling the document field
+        val payload = """
+         {
+             "SerializedDocument": $doc,
+             "i": 1
+         }
+        """.trimIndent().encodeToByteArray()
+
+        val deserializer = JsonDeserializer(payload)
+        val serializedDocumentField = SdkFieldDescriptor(SerialKind.Document, JsonSerialName("SerializedDocument"))
+        val iField = SdkFieldDescriptor(SerialKind.Integer, JsonSerialName("i"))
+        val struct = SdkObjectDescriptor.build {
+            field(serializedDocumentField)
+            field(iField)
+        }
+
+        var actual: Document? = null
+        var i: Int? = null
+        deserializer.deserializeStruct(struct) {
+            loop@ while (true) {
+                when (findNextFieldIndex()) {
+                    serializedDocumentField.index -> actual = deserializeDocument()
+                    iField.index -> i = deserializeInt()
+                    null -> break@loop
+                }
+            }
+        }
+
+        if (actual == null) {
+            fail("deserialized document should not be null")
+        }
+        assertDocumentEquals(expected, actual!!)
+        assertEquals(1, i)
+    }
+
+    @Test
+    fun canDeserializeDocumentDouble() =
+        testDeserializeDocument(
+            "10.0",
+            Document(10.0),
+        )
+
+    @Test
+    fun canDeserializeDocumentLong() =
+        testDeserializeDocument(
+            "10",
+            Document(10L),
+        )
+
+    @Test
+    fun canDeserializeDocumentStringField() =
+        testDeserializeDocument(
+            "\"foo\"",
+            Document("foo")
+        )
+
+    @Test
+    fun canDeserializeDocumentBooleanField() =
+        testDeserializeDocument(
+            "false",
+            Document(false)
+        )
+
+    @Test
+    fun canDeserializeDocumentListField() =
+        testDeserializeDocument(
+            """[1,"foo",true,null]""",
+            Document.List(
+                listOf(
+                    Document(1L),
+                    Document("foo"),
+                    Document(true),
+                    Document.Null
+                )
+            )
+        )
+
+    @Test
+    fun canDeserializeDocumentMapField() =
+        testDeserializeDocument(
+            """{"number":12,"string":"foo","bool":true,"null":null}""",
+            buildDocument {
+                "number" to 12L
+                "string" to "foo"
+                "bool" to true
+                "null" to null as Int?
+            }
+        )
+
+    @Test
+    fun canDeserializeComplexDocument() {
+        val doc = """
+        {
+            "number": 12,
+            "string": "foo",
+            "bool": true,
+            "null": null,
+            "list": [
+                12.0,
+                "foo",
+                true,
+                null,
+                [
+                    12.0,
+                    "foo",
+                    true,
+                    null
+                ],
+                {
+                    "number": 12.0,
+                    "string": "foo",
+                    "bool": true,
+                    "null": null
+                }
+            ],
+            "map": {
+                "number": 12,
+                "string": "foo",
+                "bool": false,
+                "null": null,
+                "list": [
+                    12,
+                    "foo",
+                    false,
+                    null
+                ],
+                "map": {
+                    "number": 12,
+                    "string": "foo",
+                    "bool": false,
+                    "null": null
+                }
+            }
+        }
+        """
+            .replace("\n", "")
+            .replace(" ", "")
+        val expected = buildDocument {
+            "number" to 12L
+            "string" to "foo"
+            "bool" to true
+            "null" to null as Int?
+            "list" to buildList {
+                add(12.0)
+                add("foo")
+                add(true)
+                add(null as Int?)
+                add(
+                    buildList {
+                        add(12.0)
+                        add("foo")
+                        add(true)
+                        add(null as Int?)
+                    }
+                )
+                add(
+                    buildDocument {
+                        "number" to 12.0
+                        "string" to "foo"
+                        "bool" to true
+                        "null" to null as Int?
+                    }
+                )
+            }
+            "map" to buildDocument {
+                "number" to 12L
+                "string" to "foo"
+                "bool" to false
+                "null" to null as Int?
+                "list" to buildList {
+                    add(12L)
+                    add("foo")
+                    add(false)
+                    add(null as Int?)
+                }
+                "map" to buildDocument {
+                    "number" to 12L
+                    "string" to "foo"
+                    "bool" to false
+                    "null" to null as Int?
+                }
+            }
+        }
+
+        testDeserializeDocument(doc, expected)
+    }
+
+    private fun assertDocumentEquals(expected: Document, actual: Document) {
+        when (expected) {
+            is Document.Number -> {
+                if (expected.value != (actual as? Document.Number)?.value) {
+                    fail("expected document number $expected, but received $actual")
+                }
+            }
+            is Document.String -> {
+                if (expected.value != actual.asStringOrNull()) {
+                    fail("expected document string $expected, but received $actual")
+                }
+            }
+            is Document.Boolean -> {
+                if (expected.value != actual.asBooleanOrNull()) {
+                    fail("expected document boolean $expected, but received $actual")
+                }
+            }
+            Document.Null -> {
+                if (actual != Document.Null) {
+                    fail("expected a document null, but received $actual")
+                }
+            }
+            is Document.List -> {
+                val actualValue =
+                    actual.asListOrNull() ?: fail("expected a document list, but actual value is not a list")
+                assertEquals(expected.value.size, actualValue.size)
+
+                for (i in 0 until expected.value.size) {
+                    assertDocumentEquals(expected.value[i], actualValue[i])
+                }
+            }
+            is Document.Map -> {
+                val actualValue =
+                    actual.asMapOrNull() ?: fail("expected a document map, but actual value is not a map")
+                assertEquals(expected.value.size, actualValue.size)
+
+                expected.value.keys.forEach {
+                    assertContains(actualValue, it)
+                    assertDocumentEquals(expected.value[it]!!, actualValue[it]!!)
+                }
+            }
+        }
     }
 }
