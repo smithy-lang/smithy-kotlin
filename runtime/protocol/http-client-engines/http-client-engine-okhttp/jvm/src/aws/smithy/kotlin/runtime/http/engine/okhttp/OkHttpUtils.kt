@@ -104,7 +104,7 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
  * use [name] as is.
  * @return the [CoroutineName] context element
  */
-private fun CoroutineContext.derivedName(name: String): CoroutineName {
+internal fun CoroutineContext.derivedName(name: String): CoroutineName {
     val existing = get(CoroutineName)?.name ?: return CoroutineName(name)
     return CoroutineName("$existing:$name")
 }

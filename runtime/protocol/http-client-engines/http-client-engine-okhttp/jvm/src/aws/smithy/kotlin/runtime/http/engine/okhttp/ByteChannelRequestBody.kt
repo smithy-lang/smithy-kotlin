@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.runBlocking
 import okhttp3.MediaType
 import okhttp3.RequestBody
@@ -33,7 +32,7 @@ internal class ByteChannelRequestBody(
     override fun writeTo(sink: BufferedSink) {
         // remove the current dispatcher (if it exists) and use the internal
         // runBlocking dispatcher that blocks the current thread
-        val sendContext = callContext.minusKey(CoroutineDispatcher) + CoroutineName("okhttp-send-request-body")
+        val sendContext = callContext.minusKey(CoroutineDispatcher) + callContext.derivedName("send-request-body")
 
         // Non-duplex (aka "normal") requests MUST write all of their request body
         // before this function returns. Requests are given a background thread to

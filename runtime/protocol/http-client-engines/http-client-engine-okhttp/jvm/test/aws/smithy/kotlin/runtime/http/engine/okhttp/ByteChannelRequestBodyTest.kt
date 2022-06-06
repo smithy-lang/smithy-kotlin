@@ -76,7 +76,8 @@ class ByteChannelRequestBodyTest {
             override fun readFrom(): SdkByteReadChannel = chan
         }
 
-        val callContext = coroutineContext + Job()
+        val callJob = Job()
+        val callContext = coroutineContext + callJob
         val actual = ByteChannelRequestBody(body, callContext)
 
         val job = launch(Dispatchers.IO) {
@@ -85,8 +86,12 @@ class ByteChannelRequestBodyTest {
         }
         delay(100.milliseconds)
 
+        val child = callJob.children.first()
+        assertTrue(child.isActive)
+
         chan.close()
         job.join()
+        assertTrue(child.isCompleted)
     }
 
     @Test
