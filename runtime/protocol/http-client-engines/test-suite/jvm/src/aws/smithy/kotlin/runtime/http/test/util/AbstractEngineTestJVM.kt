@@ -17,7 +17,8 @@ import kotlin.time.Duration
 internal actual fun engines(): List<HttpClientEngine> =
     listOf(
         DefaultHttpEngine(),
-        CrtHttpEngine()
+        CrtHttpEngine(),
+        KtorOkHttpEngine()
     )
 
 internal actual fun runBlockingTest(
