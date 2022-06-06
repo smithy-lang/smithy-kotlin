@@ -117,7 +117,7 @@ class OkHttpResponseTest {
 
         // replace default exception handler which will print out the stack trace by default.
         // We are expecting an exception so this message is misleading/confusing
-        val exHandler = CoroutineExceptionHandler { coroutineContext, throwable -> }
+        val exHandler = CoroutineExceptionHandler { _, _ -> }
 
         // don't tie this to the current job or else it will tear down the test as well
         val callJob = Job()
