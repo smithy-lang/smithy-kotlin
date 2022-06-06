@@ -75,7 +75,7 @@ class OkHttpRequestTest {
     @Test
     fun itConvertsEmptyHttpBody() {
         val url = Url.parse("https://aws.amazon.com")
-        val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.Empty)
+        val request = HttpRequest(HttpMethod.GET, url, Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
         val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
 
