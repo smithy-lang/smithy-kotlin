@@ -17,5 +17,7 @@ sealed class ProxyConfig {
     /**
      * HTTP based proxy
      */
-    data class Http(val url: Url) : ProxyConfig()
+    data class Http(val url: Url) : ProxyConfig() {
+        constructor(url: String) : this(Url.parse(url))
+    }
 }

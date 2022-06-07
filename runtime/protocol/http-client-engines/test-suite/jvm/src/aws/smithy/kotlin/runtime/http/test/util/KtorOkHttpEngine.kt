@@ -9,12 +9,15 @@ import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.ktor.KtorEngine
+import io.ktor.client.engine.*
 import io.ktor.client.engine.okhttp.*
 import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
+import aws.smithy.kotlin.runtime.http.engine.ProxyConfig as SdkProxyConfig
 
+// Example KtorEngine that can be used to verify the implementation against the test suite
 internal fun KtorOkHttpEngine(config: HttpClientEngineConfig = HttpClientEngineConfig.Default): HttpClientEngine {
     val okHttpEngine = OkHttp.create {
         config {
@@ -38,6 +41,11 @@ internal fun KtorOkHttpEngine(config: HttpClientEngineConfig = HttpClientEngineC
                 }
                 protocols(protocols)
             }
+        }
+
+        proxy = when (val proxyConfig = config.proxyConfig) {
+            is SdkProxyConfig.Http -> ProxyBuilder.http(proxyConfig.url.toString())
+            else -> null
         }
     }
 

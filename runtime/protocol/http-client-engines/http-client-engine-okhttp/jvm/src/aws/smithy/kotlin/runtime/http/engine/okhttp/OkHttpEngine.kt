@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -15,6 +16,8 @@ import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlinx.coroutines.job
 import okhttp3.*
+import java.net.InetSocketAddress
+import java.net.Proxy
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
 
@@ -97,6 +100,15 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
                 }
             }
             protocols(protocols)
+        }
+
+        when (val proxyConfig = config.proxyConfig) {
+            is ProxyConfig.Http -> {
+                val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host, proxyConfig.url.port))
+                proxy(okProxy)
+                // TODO - proxy authentication?
+            }
+            else -> {}
         }
     }.build()
 }

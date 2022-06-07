@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.operation.withContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -67,6 +68,11 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         initialWindowSize = config.initialWindowSizeBytes
         maxConnections = config.maxConnections.toInt()
         maxConnectionIdleMs = config.connectionIdleTimeout.inWholeMilliseconds
+
+        proxyOptions = when (val proxyConfig = config.proxyConfig) {
+            is ProxyConfig.Http -> HttpProxyOptions(proxyConfig.url.host, proxyConfig.url.port)
+            else -> null
+        }
     }
 
     // connection managers are per host
