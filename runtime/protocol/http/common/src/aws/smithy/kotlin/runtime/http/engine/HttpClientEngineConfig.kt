@@ -64,6 +64,11 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
      */
     val alpn: List<AlpnId> = builder.alpn
 
+    /**
+     * Set the proxy configuration
+     */
+    val proxyConfig: ProxyConfig? = builder.proxyConfig
+
     open class Builder {
         /**
          * Timeout for each read to an underlying socket
@@ -100,6 +105,11 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
          * Set the ALPN protocol list when a TLS connection starts
          */
         var alpn: List<AlpnId> = emptyList()
+
+        /**
+         * Proxy configuration
+         */
+        var proxyConfig: ProxyConfig? = null
     }
 }
 
