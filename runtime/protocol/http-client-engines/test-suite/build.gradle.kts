@@ -40,6 +40,13 @@ kotlin {
             }
         }
 
+        jvmTest {
+            dependencies {
+                implementation("org.testcontainers:testcontainers:1.17.2")
+                implementation("org.testcontainers:junit-jupiter:1.17.2")
+            }
+        }
+
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
         }
@@ -98,6 +105,12 @@ val testTasks = listOf("allTests", "jvmTest")
             dependsOn(startTestServer)
         }
     }
+
+tasks.jvmTest {
+    systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
+    val enableProxyTestsProp = "aws.test.http.enableProxyTests"
+    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, "false"))
+}
 
 gradle.buildFinished {
     startTestServer.stop()

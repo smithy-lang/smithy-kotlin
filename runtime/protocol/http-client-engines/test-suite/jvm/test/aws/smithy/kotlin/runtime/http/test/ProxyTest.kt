@@ -17,16 +17,33 @@ import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.engineConfig
 import aws.smithy.kotlin.runtime.http.test.util.test
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
+import org.testcontainers.containers.BindMode
+import org.testcontainers.containers.GenericContainer
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
+import org.testcontainers.utility.DockerImageName
 import kotlin.test.assertEquals
-
-private const val PROXY_SERVER: String = "http://127.0.0.1:8020"
-
+@Testcontainers
+@EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyTest : AbstractEngineTest() {
+    // defined by gradle script
+    val proxyScriptRoot = System.getProperty("MITM_PROXY_SCRIPTS_ROOT")
+
+    @Container
+    val mitmProxy = GenericContainer(DockerImageName.parse("mitmproxy/mitmproxy:8.1.0"))
+        .withExposedPorts(8080)
+        .withFileSystemBind(proxyScriptRoot, "/home/mitmproxy/scripts", BindMode.READ_ONLY)
+        .withLogConsumer {
+            print(it.utf8String)
+        }
+        .withCommand("mitmdump --flow-detail 2 -s /home/mitmproxy/scripts/proxy-test.py")
 
     @Test
     fun testHttpProxy() = testEngines {
         engineConfig {
-            proxyConfig = ProxyConfig.Http(PROXY_SERVER)
+            val proxyPort = mitmProxy.getMappedPort(8080)
+            proxyConfig = ProxyConfig.Http("http://127.0.0.1:$proxyPort")
         }
 
         test { _, client ->
