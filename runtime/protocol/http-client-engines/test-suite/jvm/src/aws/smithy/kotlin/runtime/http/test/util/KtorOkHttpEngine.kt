@@ -43,3 +43,8 @@ internal fun KtorOkHttpEngine(config: HttpClientEngineConfig = HttpClientEngineC
 
     return KtorEngine(okHttpEngine)
 }
+internal fun KtorOkHttpEngine(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine {
+    val builder = HttpClientEngineConfig.Builder().apply(block)
+    val config = HttpClientEngineConfig(builder)
+    return KtorOkHttpEngine(config)
+}

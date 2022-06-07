@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.test.util
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
@@ -24,7 +25,7 @@ private val TEST_SERVER = Url.parse("http://127.0.0.1:8082")
 /**
  * Abstract base class that all engine test suite test classes should inherit from.
  */
-abstract class AbstractEngineTest() {
+abstract class AbstractEngineTest {
 
     /**
      * Build a test that will run against each engine in the test suite.
@@ -33,9 +34,11 @@ abstract class AbstractEngineTest() {
      * supported by that platform and executing the test
      */
     fun testEngines(block: EngineTestBuilder.() -> Unit) {
-        engines().forEach { engine ->
+        val builder = EngineTestBuilder().apply(block)
+        engineFactories().forEach { engineFactory ->
+            val engine = engineFactory.create(builder.engineConfig)
             sdkHttpClient(engine, manageEngine = true).use { client ->
-                testWithClient(client, block = block)
+                testWithClient(client, builder = builder)
             }
         }
     }
@@ -45,7 +48,7 @@ abstract class AbstractEngineTest() {
  * Concrete implementations for each KMP target are responsible for loading the engines
  * supported by that platform and executing the test
  */
-internal expect fun engines(): List<HttpClientEngine>
+internal expect fun engineFactories(): List<EngineFactory>
 
 /**
  * Container for current engine test environment
@@ -61,9 +64,15 @@ data class TestEnvironment(val testServer: Url, val coroutineId: Int, val attemp
  */
 class EngineTestBuilder {
     /**
+     * Lambda function invoked to configure the [HttpClientEngineConfig] to use for the test. If not specified
+     * [HttpClientEngineConfig.Default] is used
+     */
+    var engineConfig: HttpClientEngineConfig.Builder.() -> Unit = {}
+
+    /**
      * Lambda function that is invoked with the current test environment and an [SdkHttpClient]
      * configured with an engine loaded by [AbstractEngineTest]. Invoke calls against test routes and make
-     * assertions here
+     * assertions here. This will potentially be invoked multiple times (once for each engine supported by a platform).
      */
     var test: (suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) = { _, _ -> error("engine test not configured") }
 
@@ -84,9 +93,8 @@ class EngineTestBuilder {
 fun testWithClient(
     client: SdkHttpClient,
     timeout: Duration = 60.seconds,
-    block: suspend EngineTestBuilder.() -> Unit
+    builder: EngineTestBuilder
 ): Unit = runBlockingTest(timeout = timeout) {
-    val builder = EngineTestBuilder().apply { block() }
     runConcurrently(builder.concurrency) { coroutineId ->
         repeat(builder.repeat) { attempt ->
             val env = TestEnvironment(TEST_SERVER, coroutineId, attempt)
@@ -120,4 +128,15 @@ fun EngineTestBuilder.test(block: suspend (env: TestEnvironment, client: SdkHttp
 fun HttpRequestBuilder.testSetup(env: TestEnvironment) {
     url(env.testServer)
     headers.append("Host", "${env.testServer.host}:${env.testServer.port}")
+}
+
+fun EngineTestBuilder.engineConfig(block: HttpClientEngineConfig.Builder.() -> Unit) {
+    engineConfig = block
+}
+
+internal fun interface EngineFactory {
+    /**
+     * Create a new [HttpClientEngine] instance configured by [block]
+     */
+    fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine
 }
