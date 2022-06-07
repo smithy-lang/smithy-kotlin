@@ -72,24 +72,24 @@ class TextTest {
     @Test
     fun testNormalizePathSegments() {
         fun assertNormalize(unnormalized: String, expected: String) {
-            val actual = unnormalized.normalizePathSegments()
+            val actual = unnormalized.normalizePathSegments(String::uppercase)
             assertEquals(expected, actual, "Unexpected normalization for `$unnormalized`")
         }
 
         val tests = mapOf(
             "" to "/",
             "/" to "/",
-            "foo" to "/foo",
-            "/foo" to "/foo",
-            "foo/" to "/foo/",
-            "/foo/" to "/foo/",
-            "/a/b/c" to "/a/b/c",
-            "/a/b/../c" to "/a/c",
-            "/a/./c" to "/a/c",
+            "foo" to "/FOO",
+            "/foo" to "/FOO",
+            "foo/" to "/FOO/",
+            "/foo/" to "/FOO/",
+            "/a/b/c" to "/A/B/C",
+            "/a/b/../c" to "/A/C",
+            "/a/./c" to "/A/C",
             "/./" to "/",
-            "/a/b/./../c" to "/a/c",
-            "/a/b/c/d/../e/../../f/../../../g" to "/g",
-            "//a//b//c//" to "/a/b/c/",
+            "/a/b/./../c" to "/A/C",
+            "/a/b/c/d/../e/../../f/../../../g" to "/G",
+            "//a//b//c//" to "/A/B/C/",
         )
         tests.forEach { (unnormalized, expected) -> assertNormalize(unnormalized, expected) }
     }
@@ -97,7 +97,7 @@ class TextTest {
     @Test
     fun testNormalizePathSegmentsError() {
         assertFailsWith(IllegalArgumentException::class) {
-            "/a/b/../../..".normalizePathSegments()
+            "/a/b/../../..".normalizePathSegments { it }
         }
     }
 

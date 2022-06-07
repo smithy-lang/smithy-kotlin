@@ -13,13 +13,11 @@ import aws.smithy.kotlin.runtime.http.UrlBuilder
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
+import aws.smithy.kotlin.runtime.http.util.encodeLabel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.*
-import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
-import aws.smithy.kotlin.runtime.util.text.normalizePathSegments
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
-import aws.smithy.kotlin.runtime.util.text.urlReencodeComponent
+import aws.smithy.kotlin.runtime.util.text.*
 
 /**
  * The data for a canonical request.
@@ -171,11 +169,11 @@ private const val STREAM_CHUNK_BYTES = 16384 // 16KB
  * @param config The signing configuration to use
  * @return The canonicalized path
  */
-private fun UrlBuilder.canonicalPath(config: AwsSigningConfig): String {
-    val raw = path.trim()
-    val normalized = if (config.normalizeUriPath) raw.normalizePathSegments() else raw
-    val preEncoded = normalized.encodeUrlPath()
-    return if (config.useDoubleUriEncode) preEncoded.encodeUrlPath() else preEncoded
+@InternalApi
+fun UrlBuilder.canonicalPath(config: AwsSigningConfig): String {
+    val segmentTransform = if (config.useDoubleUriEncode) { s: String -> s.encodeLabel() } else null
+    val pathTransform = if (config.normalizeUriPath) String::normalizePathSegments else String::transformPathSegments
+    return pathTransform(path.trim(), segmentTransform)
 }
 
 /**
