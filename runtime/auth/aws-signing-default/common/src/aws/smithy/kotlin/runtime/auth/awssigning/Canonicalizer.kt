@@ -169,8 +169,7 @@ private const val STREAM_CHUNK_BYTES = 16384 // 16KB
  * @param config The signing configuration to use
  * @return The canonicalized path
  */
-@InternalApi
-fun UrlBuilder.canonicalPath(config: AwsSigningConfig): String {
+internal fun UrlBuilder.canonicalPath(config: AwsSigningConfig): String {
     val segmentTransform = if (config.useDoubleUriEncode) { s: String -> s.encodeLabel() } else null
     val pathTransform = if (config.normalizeUriPath) String::normalizePathSegments else String::transformPathSegments
     return pathTransform(path.trim(), segmentTransform)
