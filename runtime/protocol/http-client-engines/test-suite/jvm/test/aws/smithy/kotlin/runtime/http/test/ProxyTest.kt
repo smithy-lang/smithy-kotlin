@@ -17,7 +17,7 @@ import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.engineConfig
 import aws.smithy.kotlin.runtime.http.test.util.test
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.condition.DisabledIfSystemProperty
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty
 import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.junit.jupiter.Container
@@ -44,7 +44,7 @@ private fun mitmProxyContainer(
     }
 
 @Testcontainers
-@DisabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "false")
+@EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyTest : AbstractEngineTest() {
 
     @Container
@@ -83,7 +83,7 @@ class ProxyTest : AbstractEngineTest() {
 }
 
 @Testcontainers
-@DisabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "false")
+@EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyAuthTest : AbstractEngineTest() {
 
     @Container
