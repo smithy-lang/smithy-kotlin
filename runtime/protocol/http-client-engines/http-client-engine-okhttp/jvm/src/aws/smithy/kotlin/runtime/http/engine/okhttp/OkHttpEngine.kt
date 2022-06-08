@@ -106,7 +106,9 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
             is ProxyConfig.Http -> {
                 val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host, proxyConfig.url.port))
                 proxy(okProxy)
-                // TODO - proxy authentication?
+                if (proxyConfig.url.userInfo != null) {
+                    proxyAuthenticator(OkHttpProxyAuthenticator(proxyConfig.url.userInfo!!))
+                }
             }
             else -> {}
         }

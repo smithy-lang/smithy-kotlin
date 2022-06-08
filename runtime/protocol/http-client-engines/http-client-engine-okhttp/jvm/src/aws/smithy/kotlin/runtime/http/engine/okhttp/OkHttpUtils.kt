@@ -8,12 +8,16 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.UserInfo
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import kotlinx.coroutines.*
+import okhttp3.Authenticator
+import okhttp3.Credentials
 import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Route
 import okhttp3.internal.http.HttpMethod
 import kotlin.coroutines.CoroutineContext
 import okhttp3.Request as OkHttpRequest
@@ -111,4 +115,25 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
 internal fun CoroutineContext.derivedName(name: String): CoroutineName {
     val existing = get(CoroutineName)?.name ?: return CoroutineName(name)
     return CoroutineName("$existing:$name")
+}
+
+internal class OkHttpProxyAuthenticator(
+    private val userInfo: UserInfo
+) : Authenticator {
+    override fun authenticate(route: Route?, response: okhttp3.Response): okhttp3.Request? {
+        if (response.request.header("Proxy-Authorization") != null) {
+            // Give up, we've already failed to authenticate.
+            return null
+        }
+
+        for (challenge in response.challenges()) {
+            if (challenge.scheme.lowercase() == "okhttp-preemptive" || challenge.scheme == "Basic") {
+                return response.request.newBuilder()
+                    .header("Proxy-Authorization", Credentials.basic(userInfo.username, userInfo.password))
+                    .build()
+            }
+        }
+
+        return null
+    }
 }

@@ -107,9 +107,10 @@ val testTasks = listOf("allTests", "jvmTest")
     }
 
 tasks.jvmTest {
+    // set test environment for proxy tests
     systemProperty("MITM_PROXY_SCRIPTS_ROOT", projectDir.resolve("proxy-scripts").absolutePath)
     val enableProxyTestsProp = "aws.test.http.enableProxyTests"
-    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, "false"))
+    systemProperty(enableProxyTestsProp, System.getProperties().getOrDefault(enableProxyTestsProp, "true"))
 }
 
 gradle.buildFinished {

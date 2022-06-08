@@ -70,7 +70,13 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         maxConnectionIdleMs = config.connectionIdleTimeout.inWholeMilliseconds
 
         proxyOptions = when (val proxyConfig = config.proxyConfig) {
-            is ProxyConfig.Http -> HttpProxyOptions(proxyConfig.url.host, proxyConfig.url.port)
+            is ProxyConfig.Http -> HttpProxyOptions(
+                proxyConfig.url.host,
+                proxyConfig.url.port,
+                authUsername = proxyConfig.url.userInfo?.username,
+                authPassword = proxyConfig.url.userInfo?.password,
+                authType = if (proxyConfig.url.userInfo != null) HttpProxyAuthorizationType.Basic else HttpProxyAuthorizationType.None
+            )
             else -> null
         }
     }
