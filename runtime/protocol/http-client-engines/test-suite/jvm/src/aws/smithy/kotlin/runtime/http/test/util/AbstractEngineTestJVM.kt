@@ -13,11 +13,11 @@ import kotlinx.coroutines.withTimeout
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
 
-internal actual fun engineFactories(): List<EngineFactory> =
+internal actual fun engineFactories(): List<TestEngineFactory> =
     listOf(
-        EngineFactory { DefaultHttpEngine(it) },
-        EngineFactory { CrtHttpEngine(it) },
-        EngineFactory { KtorOkHttpEngine(it) }
+        TestEngineFactory("DefaultHttpEngine") { DefaultHttpEngine(it) },
+        TestEngineFactory("CrtHttpEngine") { CrtHttpEngine(it) },
+        TestEngineFactory("KtorEngine") { KtorOkHttpEngine(it) }
     )
 
 internal actual fun runBlockingTest(

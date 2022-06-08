@@ -36,6 +36,7 @@ private fun mitmProxyContainer(
         print(it.utf8String)
     }.apply {
         val command = buildString {
+            // load the custom addon which by default does nothing without setting additional options
             append("mitmdump --flow-detail 2 -s /home/mitmproxy/scripts/fakeupstream.py")
             append(options.joinToString(separator = " ", prefix = " "))
         }
@@ -58,6 +59,11 @@ class ProxyTest : AbstractEngineTest() {
 
         test { _, client ->
             val req = HttpRequest {
+                // Use http for two reasons (1) mitmproxy wants to sniff traffic by default
+                // and (2) we know the response code will be a redirect if our setup fails.
+                // NOTE: you can still use mitmproxy to proxy https traffic without intercepting it
+                // like any normal proxy by setting the `--ignore-hosts` option to forward all traffic
+                // but that would mean we make an actual request to the origin
                 url(Url.parse("http://aws.amazon.com"))
                 url.path = "/"
                 header("Host", "aws.amazon.com")
@@ -84,7 +90,11 @@ class ProxyAuthTest : AbstractEngineTest() {
     val mitmProxy = mitmProxyContainer("--proxyauth testuser:testpass --set fakeupstream=aws.amazon.com")
 
     @Test
-    fun testHttpProxyAuth() = testEngines {
+    fun testHttpProxyAuth() = testEngines(
+        // ktor does not support proxy auth generically - they would just expect you to configure it explicitly on
+        // the real underlying engine
+        skipEngines = setOf("KtorEngine")
+    ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)
             proxyConfig = ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$proxyPort")

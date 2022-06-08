@@ -33,14 +33,16 @@ abstract class AbstractEngineTest {
      * Concrete implementations for each KMP target are responsible for loading the engines
      * supported by that platform and executing the test
      */
-    fun testEngines(block: EngineTestBuilder.() -> Unit) {
+    fun testEngines(skipEngines: Set<String> = emptySet(), block: EngineTestBuilder.() -> Unit) {
         val builder = EngineTestBuilder().apply(block)
-        engineFactories().forEach { engineFactory ->
-            val engine = engineFactory.create(builder.engineConfig)
-            sdkHttpClient(engine, manageEngine = true).use { client ->
-                testWithClient(client, builder = builder)
+        engineFactories()
+            .filter { it.name !in skipEngines }
+            .forEach { engineFactory ->
+                val engine = engineFactory.create(builder.engineConfig)
+                sdkHttpClient(engine, manageEngine = true).use { client ->
+                    testWithClient(client, builder = builder)
+                }
             }
-        }
     }
 }
 
@@ -48,7 +50,7 @@ abstract class AbstractEngineTest {
  * Concrete implementations for each KMP target are responsible for loading the engines
  * supported by that platform and executing the test
  */
-internal expect fun engineFactories(): List<EngineFactory>
+internal expect fun engineFactories(): List<TestEngineFactory>
 
 /**
  * Container for current engine test environment
@@ -134,9 +136,20 @@ fun EngineTestBuilder.engineConfig(block: HttpClientEngineConfig.Builder.() -> U
     engineConfig = block
 }
 
-internal fun interface EngineFactory {
+internal interface TestEngineFactory {
+    /**
+     * Unique name for the engine
+     */
+    val name: String
+
     /**
      * Create a new [HttpClientEngine] instance configured by [block]
      */
     fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine
 }
+
+internal fun TestEngineFactory(name: String, configure: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine): TestEngineFactory =
+    object : TestEngineFactory {
+        override val name: String = name
+        override fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine = configure(block)
+    }
