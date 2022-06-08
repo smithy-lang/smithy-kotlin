@@ -42,11 +42,6 @@ internal fun KtorOkHttpEngine(config: HttpClientEngineConfig = HttpClientEngineC
                 protocols(protocols)
             }
         }
-
-        proxy = when (val proxyConfig = config.proxyConfig) {
-            is SdkProxyConfig.Http -> ProxyBuilder.http(proxyConfig.url.toString())
-            else -> null
-        }
     }
 
     return KtorEngine(okHttpEngine)

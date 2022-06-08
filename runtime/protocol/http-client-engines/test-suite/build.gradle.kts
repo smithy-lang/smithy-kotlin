@@ -13,6 +13,7 @@ extra["skipPublish"] = true
 val coroutinesVersion: String by project
 val ktorVersion: String by project
 val slf4jVersion: String by project
+val testContainersVersion: String by project
 
 kotlin {
     sourceSets {
@@ -42,8 +43,8 @@ kotlin {
 
         jvmTest {
             dependencies {
-                implementation("org.testcontainers:testcontainers:1.17.2")
-                implementation("org.testcontainers:junit-jupiter:1.17.2")
+                implementation("org.testcontainers:testcontainers:$testContainersVersion")
+                implementation("org.testcontainers:junit-jupiter:$testContainersVersion")
             }
         }
 

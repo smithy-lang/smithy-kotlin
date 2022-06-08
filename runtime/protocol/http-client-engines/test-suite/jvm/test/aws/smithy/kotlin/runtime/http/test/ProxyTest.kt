@@ -51,7 +51,10 @@ class ProxyTest : AbstractEngineTest() {
     val mitmProxy = mitmProxyContainer("--set fakeupstream=aws.amazon.com")
 
     @Test
-    fun testHttpProxy() = testEngines {
+    fun testHttpProxy() = testEngines(
+        // we would expect a customer to configure proxy support on the underlying engine
+        skipEngines = setOf("KtorEngine")
+    ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)
             proxyConfig = ProxyConfig.Http("http://127.0.0.1:$proxyPort")
@@ -91,8 +94,7 @@ class ProxyAuthTest : AbstractEngineTest() {
 
     @Test
     fun testHttpProxyAuth() = testEngines(
-        // ktor does not support proxy auth generically - they would just expect you to configure it explicitly on
-        // the real underlying engine
+        // we would expect a customer to configure proxy support on the underlying engine
         skipEngines = setOf("KtorEngine")
     ) {
         engineConfig {
