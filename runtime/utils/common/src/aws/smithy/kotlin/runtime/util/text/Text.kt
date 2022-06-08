@@ -105,7 +105,7 @@ fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolea
  * * All other segments are unmodified
  */
 @InternalApi
-public fun String.normalizePathSegments(): String {
+public fun String.normalizePathSegments(segmentTransform: ((String) -> String)?): String {
     val segments = split("/").filter(String::isNotEmpty)
     var skip = 0
     val normalizedSegments = buildList {
@@ -124,8 +124,13 @@ public fun String.normalizePathSegments(): String {
         separator = "/",
         prefix = "/",
         postfix = if (normalizedSegments.isNotEmpty() && endsWith("/")) "/" else "",
+        transform = segmentTransform,
     )
 }
+
+@InternalApi
+public fun String.transformPathSegments(segmentTransform: ((String) -> String)?): String =
+    split("/").joinToString(separator = "/", transform = segmentTransform)
 
 private const val upperHex: String = "0123456789ABCDEF"
 private val upperHexSet = upperHex.toSet()
