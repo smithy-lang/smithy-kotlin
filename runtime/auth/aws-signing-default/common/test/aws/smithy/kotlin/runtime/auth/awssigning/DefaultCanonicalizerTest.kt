@@ -6,10 +6,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
-import aws.smithy.kotlin.runtime.http.Headers
-import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.HttpMethod
-import aws.smithy.kotlin.runtime.http.parameters
+import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -79,5 +76,22 @@ class DefaultCanonicalizerTest {
             append("X-Amz-Date", signingDateString)
         }.entries()
         assertEquals(expectedHeaders, actual.request.headers.entries())
+    }
+
+    // Targeted test for proper URI path escaping. See https://github.com/awslabs/smithy-kotlin/issues/657
+    @Test
+    fun testEscapablePath() {
+        val uri = UrlBuilder()
+        uri.path = "/2013-04-01/healthcheck/foo%3Cbar%3Ebaz%3C%2Fbar%3E"
+
+        val config = AwsSigningConfig {
+            normalizeUriPath = true
+            useDoubleUriEncode = true
+            region = "the-moon"
+            service = "landing-pad"
+            credentialsProvider = testCredentialsProvider
+        }
+
+        assertEquals("/2013-04-01/healthcheck/foo%253Cbar%253Ebaz%253C%252Fbar%253E", uri.canonicalPath(config))
     }
 }

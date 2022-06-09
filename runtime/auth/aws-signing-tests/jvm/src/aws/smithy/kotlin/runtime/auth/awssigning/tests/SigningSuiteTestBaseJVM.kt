@@ -338,6 +338,10 @@ actual abstract class SigningSuiteTestBase : HasSigner {
             config.normalizeUriPath = it
         }
 
+        json["double_uri_encode"]?.jsonPrimitive?.boolean?.let {
+            config.useDoubleUriEncode = it
+        }
+
         val isoDate = json["timestamp"]?.jsonPrimitive?.content ?: DEFAULT_SIGNING_ISO_DATE
         config.signingDate = Instant.fromIso8601(isoDate)
 

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.2] - 06/09/2022
+
+### Fixes
+* [#619](https://github.com/awslabs/aws-sdk-kotlin/issues/619) Fix bugs with signing for query parameters containing '+' and '%'
+* [#657](https://github.com/awslabs/smithy-kotlin/issues/657) Fix bug in URI encoding during signing when dealing with special characters like '<', '>', and '/'
+
 ## [0.10.1] - 06/02/2022
 
 ### Features

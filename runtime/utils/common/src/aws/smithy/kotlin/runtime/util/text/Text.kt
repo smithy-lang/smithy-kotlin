@@ -105,7 +105,7 @@ fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolea
  * * All other segments are unmodified
  */
 @InternalApi
-public fun String.normalizePathSegments(): String {
+public fun String.normalizePathSegments(segmentTransform: ((String) -> String)?): String {
     val segments = split("/").filter(String::isNotEmpty)
     var skip = 0
     val normalizedSegments = buildList {
@@ -124,8 +124,13 @@ public fun String.normalizePathSegments(): String {
         separator = "/",
         prefix = "/",
         postfix = if (normalizedSegments.isNotEmpty() && endsWith("/")) "/" else "",
+        transform = segmentTransform,
     )
 }
+
+@InternalApi
+public fun String.transformPathSegments(segmentTransform: ((String) -> String)?): String =
+    split("/").joinToString(separator = "/", transform = segmentTransform)
 
 private const val upperHex: String = "0123456789ABCDEF"
 private val upperHexSet = upperHex.toSet()
@@ -170,7 +175,7 @@ public fun String.splitAsQueryString(): Map<String, List<String>> {
  * Decode a URL's query string, resolving percent-encoding (e.g., "%3B" → ";").
  */
 @InternalApi
-public fun String.urlDecodeComponent(): String {
+public fun String.urlDecodeComponent(formUrlDecode: Boolean = false): String {
     val orig = this
     return buildString(orig.length) {
         var byteBuffer: ByteArray? = null // Do not initialize unless needed
@@ -178,29 +183,32 @@ public fun String.urlDecodeComponent(): String {
         var c: Char
         while (i < orig.length) {
             c = orig[i]
-            when (c) {
-                '+' -> {
+            when {
+                c == '+' && formUrlDecode -> {
                     append(' ')
                     i++
                 }
 
-                '%' -> {
+                c == '%' -> {
                     if (byteBuffer == null) {
                         byteBuffer = ByteArray((orig.length - i) / 3) // Max remaining percent-encoded bytes
                     }
 
                     var byteCount = 0
                     while ((i + 2) < orig.length && c == '%') {
-                        val byte = orig.substring(i + 1, i + 3).toInt(radix = 16).toByte()
+                        val byte = orig.substring(i + 1, i + 3).toIntOrNull(radix = 16)?.toByte() ?: break
                         byteBuffer[byteCount++] = byte
 
                         i += 3
                         if (i < orig.length) c = orig[i]
                     }
 
-                    require(i == orig.length || c != '%') { "Incomplete escape pattern at end of string" }
-
                     append(byteBuffer.decodeToString(endIndex = byteCount))
+
+                    if (i != orig.length && c == '%') {
+                        append(c)
+                        i++
+                    }
                 }
 
                 else -> {
@@ -213,5 +221,5 @@ public fun String.urlDecodeComponent(): String {
 }
 
 @InternalApi
-public fun String.urlReencodeComponent(formUrlEncode: Boolean = false): String =
-    urlDecodeComponent().urlEncodeComponent(formUrlEncode)
+public fun String.urlReencodeComponent(formUrlDecode: Boolean = false, formUrlEncode: Boolean = false): String =
+    urlDecodeComponent(formUrlDecode).urlEncodeComponent(formUrlEncode)
