@@ -588,7 +588,7 @@ class JsonDeserializerTest {
         if (actual == null) {
             fail("deserialized document should not be null")
         }
-        assertDocumentEquals(expected, actual!!)
+        assertEquals(expected, actual)
         assertEquals(1, i)
     }
 
@@ -692,8 +692,7 @@ class JsonDeserializerTest {
             }
         }
         """
-            .replace("\n", "")
-            .replace(" ", "")
+
         val expected = buildDocument {
             "number" to 12L
             "string" to "foo"
@@ -742,49 +741,5 @@ class JsonDeserializerTest {
         }
 
         testDeserializeDocument(doc, expected)
-    }
-
-    private fun assertDocumentEquals(expected: Document, actual: Document) {
-        when (expected) {
-            is Document.Number -> {
-                if (expected.value != (actual as? Document.Number)?.value) {
-                    fail("expected document number $expected, but received $actual")
-                }
-            }
-            is Document.String -> {
-                if (expected.value != actual.asStringOrNull()) {
-                    fail("expected document string $expected, but received $actual")
-                }
-            }
-            is Document.Boolean -> {
-                if (expected.value != actual.asBooleanOrNull()) {
-                    fail("expected document boolean $expected, but received $actual")
-                }
-            }
-            Document.Null -> {
-                if (actual != Document.Null) {
-                    fail("expected a document null, but received $actual")
-                }
-            }
-            is Document.List -> {
-                val actualValue =
-                    actual.asListOrNull() ?: fail("expected a document list, but actual value is not a list")
-                assertEquals(expected.value.size, actualValue.size)
-
-                for (i in 0 until expected.value.size) {
-                    assertDocumentEquals(expected.value[i], actualValue[i])
-                }
-            }
-            is Document.Map -> {
-                val actualValue =
-                    actual.asMapOrNull() ?: fail("expected a document map, but actual value is not a map")
-                assertEquals(expected.value.size, actualValue.size)
-
-                expected.value.keys.forEach {
-                    assertContains(actualValue, it)
-                    assertDocumentEquals(expected.value[it]!!, actualValue[it]!!)
-                }
-            }
-        }
     }
 }

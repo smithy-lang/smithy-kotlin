@@ -108,6 +108,7 @@ internal class JsonEncoder(private val pretty: Boolean = false) : JsonStreamWrit
 
     private fun writeNumber(value: Number) = encodeValue(value.toString())
 
+    override fun writeValue(value: Number) = writeNumber(value)
     override fun writeValue(value: Byte) = writeNumber(value)
     override fun writeValue(value: Long) = writeNumber(value)
     override fun writeValue(value: Short) = writeNumber(value)
