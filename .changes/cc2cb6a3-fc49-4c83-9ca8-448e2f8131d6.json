@@ -1,8 +1,0 @@
-{
-    "id": "cc2cb6a3-fc49-4c83-9ca8-448e2f8131d6",
-    "type": "bugfix",
-    "description": "Fix bug in URI encoding during signing when dealing with special characters like '<', '>', and '/'",
-    "issues": [
-        "awslabs/smithy-kotlin#657"
-    ]
-}
