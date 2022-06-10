@@ -87,7 +87,7 @@ internal class HttpEngineEventListener(
     }
 
     override fun proxySelectEnd(call: Call, url: HttpUrl, proxies: List<Proxy>) {
-        traceCall(call) { "proxy select end: url=$url" }
+        traceCall(call) { "proxy select end: url=$url; proxies=$proxies" }
     }
 
     override fun requestBodyStart(call: Call) {
