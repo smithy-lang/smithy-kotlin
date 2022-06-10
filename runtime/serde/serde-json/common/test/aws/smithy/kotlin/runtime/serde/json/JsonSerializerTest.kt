@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.smithy.buildDocument
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 private val testAnonObjDescriptor = SdkObjectDescriptor.build { }
 
@@ -240,6 +241,21 @@ class JsonSerializerTest {
             Document(10.5),
             "10.5"
         )
+
+    @Test
+    fun cannotSerializeDocumentInfinity() {
+        val s = JsonSerializer()
+        val documentField = SdkFieldDescriptor(SerialKind.Document, JsonSerialName("SerializedDocument"))
+        val struct = SdkObjectDescriptor.build {
+            field(documentField)
+        }
+
+        assertFailsWith<SerializationException>("cannot serialize ") {
+            s.serializeStruct(struct) {
+                field(documentField, Document(Double.POSITIVE_INFINITY))
+            }
+        }
+    }
 
     @Test
     fun canSerializeDocumentStringField() =

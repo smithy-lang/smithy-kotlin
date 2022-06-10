@@ -14,6 +14,17 @@ sealed class Document {
      * Wraps a [kotlin.Number] of arbitrary precision.
      */
     data class Number(val value: kotlin.Number) : Document() {
+        init {
+            if (value == Double.POSITIVE_INFINITY ||
+                value == Double.NEGATIVE_INFINITY ||
+                value == Double.NaN
+            ) {
+                throw IllegalArgumentException(
+                    "a document number cannot be $value, as its value cannot be preserved across serde"
+                )
+            }
+        }
+
         override fun toString() = value.toString()
     }
 
