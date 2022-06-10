@@ -13,18 +13,18 @@ import aws.smithy.kotlin.runtime.util.*
  * Select a proxy via environment. This selector will look for
  */
 internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = Platform) : ProxySelector {
-    private val httpProxyHost =
+    private val httpProxy =
         resolveProxyByProperty(provider, Protocol.HTTP) ?: resolveProxyByEnvironment(provider, Protocol.HTTP)
-    private val httpsProxyHost =
+    private val httpsProxy =
         resolveProxyByProperty(provider, Protocol.HTTPS) ?: resolveProxyByEnvironment(provider, Protocol.HTTPS)
     private val noProxyHosts = resolveNoProxyHosts(provider)
 
     override fun select(url: Url): ProxyConfig {
-        if (httpProxyHost == null && httpsProxyHost == null || noProxy(url)) return ProxyConfig.Direct
+        if (httpProxy == null && httpsProxy == null || noProxy(url)) return ProxyConfig.Direct
 
         val proxyConfig = when (url.scheme) {
-            Protocol.HTTP -> httpProxyHost
-            Protocol.HTTPS -> httpsProxyHost
+            Protocol.HTTP -> httpProxy
+            Protocol.HTTPS -> httpsProxy
             else -> null
         }
 
