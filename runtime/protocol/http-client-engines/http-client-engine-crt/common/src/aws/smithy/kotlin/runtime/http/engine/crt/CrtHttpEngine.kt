@@ -68,17 +68,6 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         initialWindowSize = config.initialWindowSizeBytes
         maxConnections = config.maxConnections.toInt()
         maxConnectionIdleMs = config.connectionIdleTimeout.inWholeMilliseconds
-
-        proxyOptions = when (val proxyConfig = config.proxyConfig) {
-            is ProxyConfig.Http -> HttpProxyOptions(
-                proxyConfig.url.host,
-                proxyConfig.url.port,
-                authUsername = proxyConfig.url.userInfo?.username,
-                authPassword = proxyConfig.url.userInfo?.password,
-                authType = if (proxyConfig.url.userInfo != null) HttpProxyAuthorizationType.Basic else HttpProxyAuthorizationType.None
-            )
-            else -> null
-        }
     }
 
     // connection managers are per host
@@ -88,7 +77,9 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
         val reqLogger = logger.withContext(context)
-        val manager = getManagerForUri(request.uri)
+
+        val proxyConfig = config.proxySelector.select(request.url)
+        val manager = getManagerForUri(request.uri, proxyConfig)
 
         // LIFETIME: connection will be released back to the pool/manager when
         // the response completes OR on exception (both handled by the completion handler registered on the stream
@@ -122,9 +113,22 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         customTlsContext?.close()
     }
 
-    private suspend fun getManagerForUri(uri: Uri): HttpClientConnectionManager = mutex.withLock {
+    private suspend fun getManagerForUri(uri: Uri, proxyConfig: ProxyConfig): HttpClientConnectionManager = mutex.withLock {
         connManagers.getOrPut(uri.authority) {
-            HttpClientConnectionManager(options.apply { this.uri = uri }.build())
+            val connOpts = options.apply {
+                this.uri = uri
+                proxyOptions = when (proxyConfig) {
+                    is ProxyConfig.Http -> HttpProxyOptions(
+                        proxyConfig.url.host,
+                        proxyConfig.url.port,
+                        authUsername = proxyConfig.url.userInfo?.username,
+                        authPassword = proxyConfig.url.userInfo?.password,
+                        authType = if (proxyConfig.url.userInfo != null) HttpProxyAuthorizationType.Basic else HttpProxyAuthorizationType.None
+                    )
+                    else -> null
+                }
+            }.build()
+            HttpClientConnectionManager(connOpts)
         }
     }
 }

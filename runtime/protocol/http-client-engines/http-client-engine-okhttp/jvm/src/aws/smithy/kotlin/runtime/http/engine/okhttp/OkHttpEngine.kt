@@ -16,8 +16,6 @@ import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.fromEpochMilliseconds
 import kotlinx.coroutines.job
 import okhttp3.*
-import java.net.InetSocketAddress
-import java.net.Proxy
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
 
@@ -102,15 +100,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
             protocols(protocols)
         }
 
-        when (val proxyConfig = config.proxyConfig) {
-            is ProxyConfig.Http -> {
-                val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host, proxyConfig.url.port))
-                proxy(okProxy)
-                if (proxyConfig.url.userInfo != null) {
-                    proxyAuthenticator(OkHttpProxyAuthenticator(proxyConfig.url.userInfo!!))
-                }
-            }
-            else -> {}
-        }
+        proxySelector(OkHttpProxySelector(config.proxySelector))
+        proxyAuthenticator(OkHttpProxyAuthenticator(config.proxySelector))
     }.build()
 }

@@ -60,14 +60,14 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
     val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
 
     /**
-     * Set the ALPN protocol list when a TLS connection starts
+     * The ALPN protocol list when a TLS connection starts
      */
     val alpn: List<AlpnId> = builder.alpn
 
     /**
-     * Set the proxy configuration
+     * The proxy selection policy
      */
-    val proxyConfig: ProxyConfig? = builder.proxyConfig
+    val proxySelector: ProxySelector = builder.proxySelector
 
     open class Builder {
         /**
@@ -107,9 +107,29 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
         var alpn: List<AlpnId> = emptyList()
 
         /**
-         * Proxy configuration
+         * Set the proxy selection policy to be used.
+         *
+         * The default behavior is to respect common proxy system properties and environment variables.
+         *
+         * **JVM System Properties**:
+         * - `http.proxyHost`
+         * - `http.proxyPort`
+         * - `https.proxyHost`
+         * - `https.proxyPort`
+         * - `http.noProxyHosts`
+         *
+         * **Environment variables in the given order**:
+         * - `http_proxy`, `HTTP_PROXY`
+         * - `https_proxy`, `HTTPS_PROXY`
+         * - `no_proxy`, `NO_PROXY`
+         *
+         * # Disabling proxy selection explicitly
+         *
+         * ```
+         * proxySelector = ProxySelector { _ -> ProxyConfig.Direct }
+         * ```
          */
-        var proxyConfig: ProxyConfig? = null
+        var proxySelector: ProxySelector = EnvironmentProxySelector()
     }
 }
 

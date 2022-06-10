@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.test
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
+import aws.smithy.kotlin.runtime.http.engine.ProxySelector
 import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.header
@@ -57,7 +58,9 @@ class ProxyTest : AbstractEngineTest() {
     ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)
-            proxyConfig = ProxyConfig.Http("http://127.0.0.1:$proxyPort")
+            proxySelector = ProxySelector { _ ->
+                ProxyConfig.Http("http://127.0.0.1:$proxyPort")
+            }
         }
 
         test { _, client ->
@@ -99,7 +102,9 @@ class ProxyAuthTest : AbstractEngineTest() {
     ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)
-            proxyConfig = ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$proxyPort")
+            proxySelector = ProxySelector { _ ->
+                ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$proxyPort")
+            }
         }
 
         test { _, client ->

@@ -6,20 +6,23 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
-import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.HttpStatusCode
-import aws.smithy.kotlin.runtime.http.UserInfo
+import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.logging.Logger
 import kotlinx.coroutines.*
 import okhttp3.Authenticator
 import okhttp3.Credentials
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Route
 import okhttp3.internal.http.HttpMethod
+import java.io.IOException
+import java.net.*
 import kotlin.coroutines.CoroutineContext
+import aws.smithy.kotlin.runtime.http.engine.ProxySelector as SdkProxySelector
 import okhttp3.Request as OkHttpRequest
 import okhttp3.Response as OkHttpResponse
 
@@ -118,13 +121,26 @@ internal fun CoroutineContext.derivedName(name: String): CoroutineName {
 }
 
 internal class OkHttpProxyAuthenticator(
-    private val userInfo: UserInfo
+    private val selector: SdkProxySelector,
 ) : Authenticator {
     override fun authenticate(route: Route?, response: okhttp3.Response): okhttp3.Request? {
         if (response.request.header("Proxy-Authorization") != null) {
             // Give up, we've already failed to authenticate.
             return null
         }
+
+        val url = response.request.url.let {
+            Url(scheme = Protocol(it.scheme, it.port), host = it.host, port = it.port)
+        }
+
+        // NOTE: We will end up querying the proxy selector twice. We do this to allow
+        // the url.userInfo be used for Basic auth scheme. Supporting other auth schemes
+        // will require defining dedicated proxy auth configuration APIs that work
+        // on a per/request basis (much like the okhttp interface we are implementing here...)
+        val userInfo = when (val proxyConfig = selector.select(url)) {
+            is ProxyConfig.Http -> proxyConfig.url.userInfo
+            else -> null
+        } ?: return null
 
         for (challenge in response.challenges()) {
             if (challenge.scheme.lowercase() == "okhttp-preemptive" || challenge.scheme == "Basic") {
@@ -135,5 +151,28 @@ internal class OkHttpProxyAuthenticator(
         }
 
         return null
+    }
+}
+
+private val emptyProxyList = mutableListOf<Proxy>()
+
+internal class OkHttpProxySelector(
+    private val sdkSelector: SdkProxySelector
+) : ProxySelector() {
+    override fun select(uri: URI?): MutableList<Proxy> {
+        if (uri == null) return emptyProxyList
+        val url = uri.toUrl()
+
+        return when (val proxyConfig = sdkSelector.select(url)) {
+            is ProxyConfig.Http -> {
+                val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host, proxyConfig.url.port))
+                return mutableListOf(okProxy)
+            }
+            else -> emptyProxyList
+        }
+    }
+    override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
+        val logger = Logger.getLogger<OkHttpProxySelector>()
+        logger.error { "failed to connect to proxy: uri=$uri; socketAddress: $sa; exception: $ioe" }
     }
 }

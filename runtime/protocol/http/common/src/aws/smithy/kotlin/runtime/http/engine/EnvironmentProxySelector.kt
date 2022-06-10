@@ -11,18 +11,6 @@ import aws.smithy.kotlin.runtime.util.*
 
 /**
  * Select a proxy via environment. This selector will look for
- *
- * JVM System Properties:
- * * `http.proxyHost`
- * * `http.proxyPort`
- * * `https.proxyHost`
- * * `https.proxyPort`
- * * `http.noProxyHosts`
- *
- * Environment variables in the given order:
- * * `http_proxy`, `HTTP_PROXY`
- * * `https_proxy`, `HTTPS_PROXY`
- * * `no_proxy`, `NO_PROXY`
  */
 internal class EnvironmentProxySelector(provider: PlatformEnvironProvider = Platform) : ProxySelector {
     private val httpProxyHost =

@@ -6,10 +6,20 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
+import aws.smithy.kotlin.runtime.util.InternalApi
 import java.net.URI
 
 internal actual fun platformUrlParse(url: String): Url {
     val uri = URI.create(url)
+    return uri.toUrl()
+}
+
+/**
+ * Convert a [java.net.URI] to a [Url]
+ */
+@InternalApi
+fun URI.toUrl(): Url {
+    val uri = this
     return UrlBuilder {
         scheme = Protocol.parse(uri.scheme)
         host = uri.host
