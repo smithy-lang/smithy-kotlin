@@ -15,7 +15,6 @@ import okhttp3.ConnectionPool
 import okhttp3.Protocol
 import java.util.concurrent.TimeUnit
 import kotlin.time.toJavaDuration
-import aws.smithy.kotlin.runtime.http.engine.ProxyConfig as SdkProxyConfig
 
 // Example KtorEngine that can be used to verify the implementation against the test suite
 internal fun KtorOkHttpEngine(config: HttpClientEngineConfig = HttpClientEngineConfig.Default): HttpClientEngine {

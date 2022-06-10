@@ -11,11 +11,14 @@ import aws.smithy.kotlin.runtime.http.Url
  * A proxy configuration
  */
 sealed class ProxyConfig {
-    // TODO - TLS / auth config for proxy
-    // FIXME - support env/system properties by default
+    /**
+     * Represents a direct connection or absence of a proxy. Can be used to disable proxy support inferred from
+     * environment for example.
+     */
+    object Direct : ProxyConfig()
 
     /**
-     * HTTP based proxy
+     * HTTP based proxy (with or without user/password auth)
      */
     data class Http(val url: Url) : ProxyConfig() {
         constructor(url: String) : this(Url.parse(url))
