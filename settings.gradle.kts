@@ -61,6 +61,7 @@ include(":smithy-kotlin-codegen")
 
 include(":tests")
 include(":tests:benchmarks:aws-signing-benchmarks")
+include(":tests:benchmarks:http-benchmarks")
 include(":tests:benchmarks:serde-benchmarks-codegen")
 include(":tests:benchmarks:serde-benchmarks")
 include(":tests:compile")
