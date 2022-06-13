@@ -81,7 +81,7 @@ open class HttpEngineBenchmarks {
      * Sequential requests raw throughput
      */
     @Benchmark
-    fun roundTripSequential(blackhole: Blackhole) = runBlocking {
+    fun roundTripSequentialNoTls(blackhole: Blackhole) = runBlocking {
         val call = httpClient.call(request)
         try {
             val body = call.response.body.readAll()
@@ -98,7 +98,7 @@ open class HttpEngineBenchmarks {
      */
     @Benchmark
     @OperationsPerInvocation(CONCURRENT_CALLS)
-    fun roundTripConcurrent(blackhole: Blackhole) = runBlocking {
+    fun roundTripConcurrentNoTls(blackhole: Blackhole) = runBlocking {
         repeat(CONCURRENT_CALLS) {
             // scope should wait for all children to complete
             launch {
@@ -115,7 +115,6 @@ open class HttpEngineBenchmarks {
             }
         }
     }
-
 }
 
 // TODO - sequential/concurrent requests internal buffering overhead (aka large response)

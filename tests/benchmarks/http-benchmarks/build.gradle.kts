@@ -54,7 +54,7 @@ benchmark {
     configurations {
         getByName("main") {
             iterations = 5
-            iterationTime = 3
+            iterationTime = 5
             iterationTimeUnit = "s"
             warmups = 3
             outputTimeUnit = "s"
