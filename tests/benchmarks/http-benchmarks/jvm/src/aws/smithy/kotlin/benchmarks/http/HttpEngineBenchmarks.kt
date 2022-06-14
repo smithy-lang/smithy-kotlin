@@ -106,6 +106,7 @@ open class HttpEngineBenchmarks {
     private val uploadRequest = HttpRequest {
         url {
             scheme = Protocol.HTTP
+            method = HttpMethod.POST
             host = "localhost"
             port = serverPort
             path = "/upload"
@@ -129,7 +130,7 @@ open class HttpEngineBenchmarks {
         httpClient.close()
         // give time to background threads to complete asynchronous shutdown
         Thread.sleep(4000)
-        println("destroy existing")
+        println("destroy exiting")
     }
 
 
