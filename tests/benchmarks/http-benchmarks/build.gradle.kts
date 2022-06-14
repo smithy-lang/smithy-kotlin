@@ -45,6 +45,9 @@ kotlin {
                 val ktorVersion: String by project
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-ktor"))
                 implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+
+                // mock/embedded server
+                implementation("io.ktor:ktor-server-netty:$ktorVersion")
             }
         }
     }
