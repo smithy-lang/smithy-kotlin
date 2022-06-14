@@ -28,6 +28,7 @@ private const val CONCURRENT_CALLS = 50
 // TODO - add TLS overhead
 private const val OKHTTP_ENGINE = "OkHttp"
 private const val CRT_ENGINE = "CRT"
+private const val KTOR_OKHTTP = "Ktor_OkHttp"
 
 fun interface BenchmarkEngineFactory {
     fun create(): HttpClientEngine
@@ -35,7 +36,8 @@ fun interface BenchmarkEngineFactory {
 
 private val engines = mapOf<String, BenchmarkEngineFactory>(
     OKHTTP_ENGINE to BenchmarkEngineFactory { OkHttpEngine() },
-    CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() }
+    CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() },
+    KTOR_OKHTTP to BenchmarkEngineFactory { KtorOkHttpEngine() }
 )
 
 @BenchmarkMode(Mode.Throughput)
@@ -45,7 +47,7 @@ open class HttpEngineBenchmarks {
 
     lateinit var httpClient: SdkHttpClient
 
-    @Param(OKHTTP_ENGINE, CRT_ENGINE)
+    @Param(OKHTTP_ENGINE, CRT_ENGINE, KTOR_OKHTTP)
     var httpClientName: String = ""
 
     val request = HttpRequest {
@@ -107,8 +109,8 @@ open class HttpEngineBenchmarks {
                     val body = call.response.body.readAll()
                     blackhole.consume(body)
                 }catch (ex: Exception) {
-                    println("failed to consume body: ${ex.message}")
-                    println("stacktrace: ${ex.stackTraceToString()}")
+                    // println("failed to consume body: ${ex.message}")
+                    // println("stacktrace: ${ex.stackTraceToString()}")
                 }finally {
                     call.complete()
                 }
