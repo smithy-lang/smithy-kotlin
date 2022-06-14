@@ -8,7 +8,6 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.engine.AlpnId
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
 import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -23,12 +22,49 @@ import kotlin.time.toJavaDuration
  * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp.
  */
 class OkHttpEngine(
-    private val config: HttpClientEngineConfig = HttpClientEngineConfig.Default
+    private val config: OkHttpEngineConfig
 ) : HttpClientEngineBase("OkHttp") {
+    public constructor() : this(OkHttpEngineConfig.Default)
 
-    // TODO - expose thread count and use custom dispatcher/ExecutionService
+    public companion object {
+        public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine = OkHttpEngine(
+            OkHttpEngineConfig.Builder().apply(block).build()
+        )
+    }
 
-    private val client = OkHttpClient.Builder().apply {
+    private val client = config.buildClient()
+
+    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+        val callContext = callContext()
+
+        val engineRequest = request.toOkHttpRequest(context, callContext)
+        val engineCall = client.newCall(engineRequest)
+        val engineResponse = engineCall.executeAsync()
+
+        callContext.job.invokeOnCompletion {
+            engineResponse.body.close()
+        }
+
+        val response = engineResponse.toSdkResponse(callContext)
+        val requestTime = Instant.fromEpochMilliseconds(engineResponse.sentRequestAtMillis)
+        val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
+
+        return HttpCall(request, response, requestTime, responseTime, callContext)
+    }
+
+    override fun shutdown() {
+        client.connectionPool.evictAll()
+        client.dispatcher.executorService.shutdown()
+    }
+}
+
+/**
+ * Convert SDK version of HTTP configuration to OkHttp specific configuration and return the configured client
+ */
+private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
+    val config = this
+
+    return OkHttpClient.Builder().apply {
         // don't follow redirects
         followRedirects(false)
         followSslRedirects(false)
@@ -63,27 +99,4 @@ class OkHttpEngine(
             protocols(protocols)
         }
     }.build()
-
-    override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-        val callContext = callContext()
-
-        val engineRequest = request.toOkHttpRequest(context, callContext)
-        val engineCall = client.newCall(engineRequest)
-        val engineResponse = engineCall.executeAsync()
-
-        callContext.job.invokeOnCompletion {
-            engineResponse.body.close()
-        }
-
-        val response = engineResponse.toSdkResponse(callContext)
-        val requestTime = Instant.fromEpochMilliseconds(engineResponse.sentRequestAtMillis)
-        val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
-
-        return HttpCall(request, response, requestTime, responseTime, callContext)
-    }
-
-    override fun shutdown() {
-        client.connectionPool.evictAll()
-        client.dispatcher.executorService.shutdown()
-    }
 }
