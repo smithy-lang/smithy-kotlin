@@ -14,12 +14,10 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
+import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.encodeToHex
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertIs
-import kotlin.test.fail
+import kotlin.test.*
 
 class DownloadTest : AbstractEngineTest() {
 
@@ -66,7 +64,7 @@ class DownloadTest : AbstractEngineTest() {
     private fun runReadSuspendIntegrityTest(reader: suspend (SdkByteReadChannel, Int) -> String) = testEngines {
         test { env, client ->
             val req = HttpRequest {
-                url(env.testServer)
+                testSetup(env)
                 url.path = "/download/integrity"
             }
 
@@ -84,6 +82,35 @@ class DownloadTest : AbstractEngineTest() {
 
                 val readSha256 = reader(chan, contentLength.toInt())
                 assertEquals(expectedSha256, readSha256)
+            } finally {
+                call.complete()
+            }
+        }
+    }
+    @Test
+    fun testChunkedResponse() = testEngines {
+        test { env, client ->
+            val req = HttpRequest {
+                testSetup(env)
+                url.path = "/download/integrity"
+                url.parameters.append("chunked-response", "true")
+            }
+
+            val call = client.call(req)
+            try {
+                assertEquals(HttpStatusCode.OK, call.response.status)
+
+                assertEquals("chunked", call.response.headers["Transfer-Encoding"]?.lowercase())
+
+                val expectedSha256 = call.response.headers["expected-sha256"] ?: fail("missing expected-sha256 header")
+                assertNull(call.response.body.contentLength, "${client.engine}")
+
+                val body = call.response.body
+                assertIs<HttpBody.Streaming>(body)
+                val chan = body.readFrom()
+                val bytes = chan.readRemaining()
+                val actualSha256 = bytes.sha256().encodeToHex()
+                assertEquals(expectedSha256, actualSha256)
             } finally {
                 call.complete()
             }

@@ -12,11 +12,9 @@ import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
+import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import kotlinx.coroutines.*
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
 class AsyncStressTest : AbstractEngineTest() {
@@ -28,7 +26,7 @@ class AsyncStressTest : AbstractEngineTest() {
 
         test { env, client ->
             val req = HttpRequest {
-                url(env.testServer)
+                testSetup(env)
                 url.path = "concurrent"
             }
 
@@ -54,7 +52,7 @@ class AsyncStressTest : AbstractEngineTest() {
 
         test { env, client ->
             val req = HttpRequest {
-                url(env.testServer)
+                testSetup(env)
                 url.path = "concurrent"
             }
 

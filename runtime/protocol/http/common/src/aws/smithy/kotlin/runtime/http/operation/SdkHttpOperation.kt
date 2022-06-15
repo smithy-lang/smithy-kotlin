@@ -84,7 +84,7 @@ suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
         return block(output)
     } finally {
         // pull the raw response(s) out of the context and cleanup any resources
-        val httpResp = context.getOrNull(HttpOperationContext.HttpCallList)?.forEach { it.complete() }
+        context.getOrNull(HttpOperationContext.HttpCallList)?.forEach { it.complete() }
     }
 }
 
