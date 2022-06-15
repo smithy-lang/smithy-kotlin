@@ -45,7 +45,7 @@ private val engines = mapOf(
 )
 
 // 12MB
-private val largeData = ByteArray(MB_PER_THROUGHPUT_OP*1024*1024)
+private val largeData = ByteArray(MB_PER_THROUGHPUT_OP * 1024 * 1024)
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
@@ -55,7 +55,6 @@ open class HttpEngineBenchmarks {
     var httpClientName: String = ""
 
     lateinit var httpClient: SdkHttpClient
-
 
     private val serverPort: Int = ServerSocket(0).use { it.localPort }
     private val server = embeddedServer(Netty, port = serverPort) {
@@ -70,7 +69,7 @@ open class HttpEngineBenchmarks {
                 call.response.header("x-foobar", "foobar")
                 call.respondBytes(largeData)
             }
-            post("/upload" ) {
+            post("/upload") {
                 val packet = call.request.receiveChannel().readRemaining()
                 call.respondText("read ${packet.remaining} bytes")
                 packet.close()
@@ -134,7 +133,6 @@ open class HttpEngineBenchmarks {
         println("destroy exiting")
     }
 
-
     /**
      * Sequential requests raw throughput
      */
@@ -144,9 +142,9 @@ open class HttpEngineBenchmarks {
         try {
             val body = call.response.body.readAll()
             blackhole.consume(body)
-        }catch (ex: Exception) {
+        } catch (ex: Exception) {
             println(ex)
-        }finally {
+        } finally {
             call.complete()
         }
     }
@@ -164,9 +162,9 @@ open class HttpEngineBenchmarks {
                 try {
                     val body = call.response.body.readAll()
                     blackhole.consume(body)
-                }catch (ex: Exception) {
+                } catch (ex: Exception) {
                     println("failed to consume body: ${ex.message}")
-                }finally {
+                } finally {
                     call.complete()
                 }
             }
@@ -183,9 +181,9 @@ open class HttpEngineBenchmarks {
         try {
             val body = call.response.body.readAll()
             blackhole.consume(body)
-        }catch (ex: Exception) {
+        } catch (ex: Exception) {
             println("failed to consume body: ${ex.message}")
-        }finally {
+        } finally {
             call.complete()
         }
     }
@@ -200,9 +198,9 @@ open class HttpEngineBenchmarks {
         try {
             val body = call.response.body.readAll()
             blackhole.consume(body)
-        }catch (ex: Exception) {
+        } catch (ex: Exception) {
             println("failed to consume body: ${ex.message}")
-        }finally {
+        } finally {
             call.complete()
         }
     }
