@@ -32,7 +32,7 @@ class DocumentBuilderTest {
     }
 
     @Test
-    fun itRejectsInfinity() {
+    fun itRejectsDoubleInfinity() {
         assertFailsWith<IllegalArgumentException>(
             "a document number cannot be Infinity, as its value cannot be preserved across serde"
         ) {
@@ -41,7 +41,7 @@ class DocumentBuilderTest {
     }
 
     @Test
-    fun itRejectsNegativeInfinity() {
+    fun itRejectsDoubleNegativeInfinity() {
         assertFailsWith<IllegalArgumentException>(
             "a document number cannot be -Infinity, as its value cannot be preserved across serde"
         ) {
@@ -50,11 +50,38 @@ class DocumentBuilderTest {
     }
 
     @Test
-    fun itRejectsNaN() {
+    fun itRejectsDoubleNaN() {
         assertFailsWith<IllegalArgumentException>(
             "a document number cannot be NaN, as its value cannot be preserved across serde"
         ) {
             Document(Double.NaN)
+        }
+    }
+
+    @Test
+    fun itRejectsFloatInfinity() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be Infinity, as its value cannot be preserved across serde"
+        ) {
+            Document(Float.POSITIVE_INFINITY)
+        }
+    }
+
+    @Test
+    fun itRejectsFloatNegativeInfinity() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be -Infinity, as its value cannot be preserved across serde"
+        ) {
+            Document(Float.NEGATIVE_INFINITY)
+        }
+    }
+
+    @Test
+    fun itRejectsFloatNaN() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be NaN, as its value cannot be preserved across serde"
+        ) {
+            Document(Float.NaN)
         }
     }
 }

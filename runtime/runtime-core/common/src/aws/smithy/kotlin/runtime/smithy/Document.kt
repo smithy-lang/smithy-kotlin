@@ -15,10 +15,7 @@ sealed class Document {
      */
     data class Number(val value: kotlin.Number) : Document() {
         init {
-            if (value == Double.POSITIVE_INFINITY ||
-                value == Double.NEGATIVE_INFINITY ||
-                value == Double.NaN
-            ) {
+            if (value is Double && !value.isFinite() || value is Float && !value.isFinite()) {
                 throw IllegalArgumentException(
                     "a document number cannot be $value, as its value cannot be preserved across serde"
                 )

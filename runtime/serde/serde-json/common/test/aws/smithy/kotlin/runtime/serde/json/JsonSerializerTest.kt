@@ -283,7 +283,7 @@ class JsonSerializerTest {
                 "number" to 12L
                 "string" to "foo"
                 "bool" to true
-                "null" to null as Int?
+                "null" to null
             },
             """{"number":12,"string":"foo","bool":true,"null":null}"""
         )
@@ -294,18 +294,18 @@ class JsonSerializerTest {
             "number" to 12
             "string" to "foo"
             "bool" to true
-            "null" to null as Int?
+            "null" to null
             "list" to buildList {
                 add(12.0)
                 add("foo")
                 add(true)
-                add(null as Int?)
+                add(null)
                 add(
                     buildList {
                         add(12.0)
                         add("foo")
                         add(true)
-                        add(null as Int?)
+                        add(null)
                     }
                 )
                 add(
@@ -313,7 +313,7 @@ class JsonSerializerTest {
                         "number" to 12.0
                         "string" to "foo"
                         "bool" to true
-                        "null" to null as Int?
+                        "null" to null
                     }
                 )
             }
@@ -321,18 +321,18 @@ class JsonSerializerTest {
                 "number" to 12L
                 "string" to "foo"
                 "bool" to false
-                "null" to null as Int?
+                "null" to null
                 "list" to buildList {
                     add(12L)
                     add("foo")
                     add(false)
-                    add(null as Int?)
+                    add(null)
                 }
                 "map" to buildDocument {
                     "number" to 12L
                     "string" to "foo"
                     "bool" to false
-                    "null" to null as Int?
+                    "null" to null
                 }
             }
         }
