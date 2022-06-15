@@ -74,10 +74,10 @@ internal class SdkStreamResponseHandler(
         }
     }
 
-    private fun createHttpResponseBody(contentLength: Long): HttpBody {
+    private fun createHttpResponseBody(contentLength: Long?): HttpBody {
         sdkBody = bufferedReadChannel(::onDataConsumed)
         return object : HttpBody.Streaming() {
-            override val contentLength: Long = contentLength
+            override val contentLength: Long? = contentLength
             override fun readFrom(): SdkByteReadChannel =
                 sdkBody!!
         }
@@ -90,10 +90,10 @@ internal class SdkStreamResponseHandler(
 
         val transferEncoding = headers["Transfer-Encoding"]?.lowercase()
         val chunked = transferEncoding == "chunked"
-        val contentLength = headers["Content-Length"]?.toLong() ?: 0
+        val contentLength = headers["Content-Length"]?.toLong()
         val status = HttpStatusCode.fromValue(stream.responseStatusCode)
 
-        val hasBody = (contentLength > 0 || chunked) &&
+        val hasBody = ((contentLength != null && contentLength > 0) || chunked) &&
             (status !in listOf(HttpStatusCode.NotModified, HttpStatusCode.NoContent)) &&
             !status.isInformational()
 

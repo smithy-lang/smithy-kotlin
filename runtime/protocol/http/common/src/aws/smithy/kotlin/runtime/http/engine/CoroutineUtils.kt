@@ -36,7 +36,7 @@ private fun attachToOuterJob(outerContext: CoroutineContext, requestJob: Job) {
     val parentJob = outerContext[Job] ?: return
     val cleanupHandler = parentJob.invokeOnCompletion(onCancelling = true) { cause ->
         cause ?: return@invokeOnCompletion
-        requestJob.cancel(CancellationException(cause.message))
+        requestJob.cancel(CancellationException(cause.message, cause))
     }
 
     requestJob.invokeOnCompletion {

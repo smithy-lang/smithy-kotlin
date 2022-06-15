@@ -8,7 +8,10 @@ package aws.smithy.kotlin.runtime.http.test.util
 import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
+import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
+import aws.smithy.kotlin.runtime.io.use
 import kotlinx.coroutines.*
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -31,8 +34,9 @@ abstract class AbstractEngineTest() {
      */
     fun testEngines(block: EngineTestBuilder.() -> Unit) {
         engines().forEach { engine ->
-            val client = sdkHttpClient(engine)
-            testWithClient(client, block = block)
+            sdkHttpClient(engine, manageEngine = true).use { client ->
+                testWithClient(client, block = block)
+            }
         }
     }
 }
@@ -89,7 +93,6 @@ fun testWithClient(
             builder.test(env, client)
         }
     }
-    client.close()
 }
 
 // Use a real dispatcher rather than `runTest` (e.g. runBlocking for JVM/Native) which more appropriately matches
@@ -112,4 +115,9 @@ private suspend fun runConcurrently(level: Int, block: suspend (Int) -> Unit) {
 
 fun EngineTestBuilder.test(block: suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) {
     test = block
+}
+
+fun HttpRequestBuilder.testSetup(env: TestEnvironment) {
+    url(env.testServer)
+    headers.append("Host", "${env.testServer.host}:${env.testServer.port}")
 }
