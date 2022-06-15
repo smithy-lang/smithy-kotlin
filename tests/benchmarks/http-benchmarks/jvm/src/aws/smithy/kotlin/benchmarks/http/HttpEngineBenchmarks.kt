@@ -27,8 +27,9 @@ import java.net.ServerSocket
 import java.util.concurrent.TimeUnit
 
 private const val CONCURRENT_CALLS = 50
+private const val MB_PER_THROUGHPUT_OP = 12
 
-// TODO - add TLS overhead
+// TODO - add TLS tests to benchmarks (or just move existing tests to use TLS since we expect that to be the norm)
 private const val OKHTTP_ENGINE = "OkHttp"
 private const val CRT_ENGINE = "CRT"
 private const val KTOR_OKHTTP = "Ktor_OkHttp"
@@ -37,14 +38,14 @@ fun interface BenchmarkEngineFactory {
     fun create(): HttpClientEngine
 }
 
-private val engines = mapOf<String, BenchmarkEngineFactory>(
+private val engines = mapOf(
     OKHTTP_ENGINE to BenchmarkEngineFactory { OkHttpEngine() },
     CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() },
     KTOR_OKHTTP to BenchmarkEngineFactory { KtorOkHttpEngine() }
 )
 
 // 12MB
-private val largeResponse = ByteArray(12*1024*1024)
+private val largeData = ByteArray(MB_PER_THROUGHPUT_OP*1024*1024)
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
@@ -67,7 +68,7 @@ open class HttpEngineBenchmarks {
                 call.response.header("x-bar", "bar")
                 call.response.header("x-baz", "baz")
                 call.response.header("x-foobar", "foobar")
-                call.respondBytes(largeResponse)
+                call.respondBytes(largeData)
             }
             post("/upload" ) {
                 val packet = call.request.receiveChannel().readRemaining()
@@ -111,7 +112,7 @@ open class HttpEngineBenchmarks {
             port = serverPort
             path = "/upload"
         }
-        body = HttpBody.fromBytes(largeResponse)
+        body = HttpBody.fromBytes(largeData)
     }
 
     @Setup(Level.Trial)
@@ -176,6 +177,7 @@ open class HttpEngineBenchmarks {
      * Raw download throughput (output MB/s will be roughly op/sec * MB/op)
      */
     @Benchmark
+    @OperationsPerInvocation(MB_PER_THROUGHPUT_OP)
     fun downloadThroughputNoTls(blackhole: Blackhole) = runBlocking {
         val call = httpClient.call(downloadRequest)
         try {
@@ -192,6 +194,7 @@ open class HttpEngineBenchmarks {
      * Raw upload throughput (output MB/s will be roughly op/sec * MB/op)
      */
     @Benchmark
+    @OperationsPerInvocation(MB_PER_THROUGHPUT_OP)
     fun uploadThroughputNoTls(blackhole: Blackhole) = runBlocking {
         val call = httpClient.call(uploadRequest)
         try {

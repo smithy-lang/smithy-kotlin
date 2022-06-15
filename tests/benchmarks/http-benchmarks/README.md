@@ -10,6 +10,8 @@ This project contains benchmarks for the [HTTP engine implementations](../../../
 
 Baseline `0.10.3-SNAPSHOT` on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-types/m5/)** with **Corretto-11.0.15.9.1**:
 
+The download/upload throughput benchmarks are an approximation of how much data in MB/s we are able to process.
+
 ```
 jvm summary:
 Benchmark                                      (httpClientName)   Mode  Cnt      Score     Error  Units
