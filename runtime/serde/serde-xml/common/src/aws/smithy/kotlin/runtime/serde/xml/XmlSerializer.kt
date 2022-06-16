@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.*
@@ -119,6 +120,12 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         tagOrAttribute(descriptor, value, ::serializeString)
 
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) = field(descriptor, value.format(format))
+
+    override fun field(descriptor: SdkFieldDescriptor, value: Document) {
+        throw SerializationException(
+            "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding"
+        )
+    }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
         xmlWriter.writeTag(descriptor.serialName.name) {

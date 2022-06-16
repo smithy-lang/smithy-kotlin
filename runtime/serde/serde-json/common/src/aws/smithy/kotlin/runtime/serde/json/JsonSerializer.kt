@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
@@ -99,6 +100,11 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) {
         jsonWriter.writeName(descriptor.serialName)
         serializeInstant(value, format)
+    }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: Document) {
+        jsonWriter.writeName(descriptor.serialName)
+        serializeDocument(value)
     }
 
     override fun nullField(descriptor: SdkFieldDescriptor) {
@@ -250,6 +256,28 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
             TimestampFormat.ISO_8601_CONDENSED_DATE,
             TimestampFormat.RFC_5322,
             -> jsonWriter.writeValue(value.format(format))
+        }
+    }
+
+    fun serializeDocument(value: Document) {
+        when (value) {
+            is Document.Number -> jsonWriter.writeValue(value.value)
+            is Document.String -> jsonWriter.writeValue(value.value)
+            is Document.Boolean -> jsonWriter.writeValue(value.value)
+            is Document.Null -> jsonWriter.writeNull()
+            is Document.List -> {
+                jsonWriter.beginArray()
+                value.value.forEach(::serializeDocument)
+                jsonWriter.endArray()
+            }
+            is Document.Map -> {
+                jsonWriter.beginObject()
+                value.value.entries.forEach {
+                    jsonWriter.writeName(it.key)
+                    serializeDocument(it.value)
+                }
+                jsonWriter.endObject()
+            }
         }
     }
 }

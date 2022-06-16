@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 package aws.smithy.kotlin.runtime.serde
+import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
@@ -128,6 +129,15 @@ interface StructSerializer : PrimitiveSerializer {
      * @param value
      */
     fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat)
+
+    /**
+     * Writes the field name given in the descriptor, and then
+     * serializes value.
+     *
+     * @param descriptor
+     * @param value
+     */
+    fun field(descriptor: SdkFieldDescriptor, value: Document)
 
     /**
      * Writes the field name given in the descriptor, and then

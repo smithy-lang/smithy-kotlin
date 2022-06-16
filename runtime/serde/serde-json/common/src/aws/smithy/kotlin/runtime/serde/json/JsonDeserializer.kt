@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.smithy.Document
 
 /**
  * Provides a deserializer for JSON documents
@@ -33,6 +34,10 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
 
     override fun deserializeDouble(): Double = nextNumberValue { it.toDouble() }
 
+    // deserializes the next token as a number with the maximum discernible precision
+    private fun deserializeNumber(): Number =
+        nextNumberValue { if (it.contains('.')) it.toDouble() else it.toLong() }
+
     // assert the next token is a Number and execute [block] with the raw value as a string. Returns result
     // of executing the block. This is mostly so that numeric conversions can keep as much precision as possible
     private fun <T> nextNumberValue(block: (value: String) -> T): T {
@@ -57,6 +62,41 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         val token = reader.nextTokenOf<JsonToken.Bool>()
         return token.value
     }
+
+    override fun deserializeDocument(): Document =
+        when (val token = reader.peek()) {
+            is JsonToken.Number -> Document(deserializeNumber())
+            is JsonToken.String -> Document(deserializeString())
+            is JsonToken.Bool -> Document(deserializeBoolean())
+            JsonToken.Null -> {
+                reader.nextToken()
+                Document.Null
+            }
+            JsonToken.BeginArray ->
+                deserializeList(SdkFieldDescriptor(SerialKind.Document)) {
+                    val values = mutableListOf<Document>()
+                    while (hasNextElement()) {
+                        values.add(deserializeDocument())
+                    }
+                    Document.List(values)
+                }
+            JsonToken.BeginObject ->
+                deserializeMap(SdkFieldDescriptor(SerialKind.Document)) {
+                    val values = mutableMapOf<String, Document>()
+                    while (hasNextEntry()) {
+                        values[key()] = deserializeDocument()
+                    }
+                    Document.Map(values)
+                }
+            JsonToken.EndArray, JsonToken.EndObject, JsonToken.EndDocument ->
+                throw DeserializationException(
+                    "encountered unexpected json token \"$token\" while deserializing document"
+                )
+            is JsonToken.Name ->
+                throw DeserializationException(
+                    "encountered unexpected json field declaration \"${token.value}\" while deserializing document"
+                )
+        }
 
     override fun deserializeNull(): Nothing? {
         reader.nextTokenOf<JsonToken.Null>()

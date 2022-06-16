@@ -5,6 +5,8 @@
 package aws.smithy.kotlin.runtime.serde.json
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.smithy.Document
+import aws.smithy.kotlin.runtime.smithy.buildDocument
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -215,6 +217,173 @@ class JsonSerializerTest {
 
             assertEquals(expected, actual)
         }
+    }
+
+    private fun testSerializeDocument(doc: Document, expected: String) {
+        val s = JsonSerializer()
+        val documentField = SdkFieldDescriptor(SerialKind.Document, JsonSerialName("SerializedDocument"))
+        val struct = SdkObjectDescriptor.build {
+            field(documentField)
+        }
+
+        s.serializeStruct(struct) {
+            field(documentField, doc)
+        }
+
+        val actual = s.toByteArray().decodeToString()
+        assertEquals("{\"SerializedDocument\":$expected}", actual)
+    }
+
+    @Test
+    fun canSerializeDocumentNumberField() =
+        testSerializeDocument(
+            Document(10.5),
+            "10.5"
+        )
+
+    @Test
+    fun canSerializeDocumentStringField() =
+        testSerializeDocument(
+            Document("foo"),
+            "\"foo\""
+        )
+
+    @Test
+    fun canSerializeDocumentBooleanField() =
+        testSerializeDocument(
+            Document(false),
+            "false"
+        )
+
+    @Test
+    fun canSerializeDocumentNullField() =
+        testSerializeDocument(
+            Document.Null,
+            "null"
+        )
+
+    @Test
+    fun canSerializeDocumentListField() =
+        testSerializeDocument(
+            Document.List(
+                listOf(
+                    Document(1),
+                    Document("foo"),
+                    Document(true),
+                    Document.Null
+                )
+            ),
+            "[1,\"foo\",true,null]"
+        )
+
+    @Test
+    fun canSerializeDocumentMapField() =
+        testSerializeDocument(
+            buildDocument {
+                "number" to 12L
+                "string" to "foo"
+                "bool" to true
+                "null" to null
+            },
+            """{"number":12,"string":"foo","bool":true,"null":null}"""
+        )
+
+    @Test
+    fun canSerializeComplexDocument() {
+        val doc = buildDocument {
+            "number" to 12
+            "string" to "foo"
+            "bool" to true
+            "null" to null
+            "list" to buildList {
+                add(12.0)
+                add("foo")
+                add(true)
+                add(null)
+                add(
+                    buildList {
+                        add(12.0)
+                        add("foo")
+                        add(true)
+                        add(null)
+                    }
+                )
+                add(
+                    buildDocument {
+                        "number" to 12.0
+                        "string" to "foo"
+                        "bool" to true
+                        "null" to null
+                    }
+                )
+            }
+            "map" to buildDocument {
+                "number" to 12L
+                "string" to "foo"
+                "bool" to false
+                "null" to null
+                "list" to buildList {
+                    add(12L)
+                    add("foo")
+                    add(false)
+                    add(null)
+                }
+                "map" to buildDocument {
+                    "number" to 12L
+                    "string" to "foo"
+                    "bool" to false
+                    "null" to null
+                }
+            }
+        }
+        val expected = """
+        {
+            "number": 12,
+            "string": "foo",
+            "bool": true,
+            "null": null,
+            "list": [
+                12.0,
+                "foo",
+                true,
+                null,
+                [
+                    12.0,
+                    "foo",
+                    true,
+                    null
+                ],
+                {
+                    "number": 12.0,
+                    "string": "foo",
+                    "bool": true,
+                    "null": null
+                }
+            ],
+            "map": {
+                "number": 12,
+                "string": "foo",
+                "bool": false,
+                "null": null,
+                "list": [
+                    12,
+                    "foo",
+                    false,
+                    null
+                ],
+                "map": {
+                    "number": 12,
+                    "string": "foo",
+                    "bool": false,
+                    "null": null
+                }
+            }
+        }
+        """
+            .replace("\n", "")
+            .replace(" ", "")
+
+        testSerializeDocument(doc, expected)
     }
 }
 

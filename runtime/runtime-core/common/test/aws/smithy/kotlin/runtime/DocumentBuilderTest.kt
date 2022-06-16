@@ -11,7 +11,7 @@ import kotlin.test.*
 
 class DocumentBuilderTest {
     @Test
-    fun buildsAnObject() {
+    fun itBuildsAnObject() {
         val doc = buildDocument {
             "foo" to 1
             "baz" to buildList {
@@ -29,5 +29,59 @@ class DocumentBuilderTest {
 
         assertEquals(expected, "$doc")
         assertEquals(1, doc.asMap()["foo"]?.asInt())
+    }
+
+    @Test
+    fun itRejectsDoubleInfinity() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be Infinity, as its value cannot be preserved across serde"
+        ) {
+            Document(Double.POSITIVE_INFINITY)
+        }
+    }
+
+    @Test
+    fun itRejectsDoubleNegativeInfinity() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be -Infinity, as its value cannot be preserved across serde"
+        ) {
+            Document(Double.NEGATIVE_INFINITY)
+        }
+    }
+
+    @Test
+    fun itRejectsDoubleNaN() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be NaN, as its value cannot be preserved across serde"
+        ) {
+            Document(Double.NaN)
+        }
+    }
+
+    @Test
+    fun itRejectsFloatInfinity() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be Infinity, as its value cannot be preserved across serde"
+        ) {
+            Document(Float.POSITIVE_INFINITY)
+        }
+    }
+
+    @Test
+    fun itRejectsFloatNegativeInfinity() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be -Infinity, as its value cannot be preserved across serde"
+        ) {
+            Document(Float.NEGATIVE_INFINITY)
+        }
+    }
+
+    @Test
+    fun itRejectsFloatNaN() {
+        assertFailsWith<IllegalArgumentException>(
+            "a document number cannot be NaN, as its value cannot be preserved across serde"
+        ) {
+            Document(Float.NaN)
+        }
     }
 }

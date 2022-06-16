@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.serde
 
+import aws.smithy.kotlin.runtime.smithy.Document
+
 /**
  * Deserializer is a format agnostic deserialization interface. Specific formats (e.g. JSON, XML, etc) implement
  * this interface and handle the underlying raw decoding process and deal with details specific to that format.
@@ -189,6 +191,14 @@ interface PrimitiveDeserializer {
      * Deserialize and return the next token as a [Boolean]
      */
     fun deserializeBoolean(): Boolean
+
+    /**
+     * Deserialize and return the next token as a [Document].
+     *
+     * If the document's value is a list or map, this method will deserialize all elements or fields recursively - the
+     * caller need not further inspect the value to attempt to do so manually.
+     */
+    fun deserializeDocument(): Document
 
     /**
      * Consume the next token if represents a null value. Always returns null.

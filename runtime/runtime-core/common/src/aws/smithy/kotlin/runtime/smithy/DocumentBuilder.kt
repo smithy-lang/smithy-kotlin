@@ -29,6 +29,11 @@ class DocumentBuilder internal constructor() {
         content[this] = value ?: Document.Null
     }
 
+    infix fun String.to(@Suppress("UNUSED_PARAMETER") value: Nothing?) {
+        require(content[this] == null) { "Key $this is already registered in builder" }
+        content[this] = Document.Null
+    }
+
     class ListBuilder internal constructor() {
         val content: MutableList<Document> = mutableListOf()
 
@@ -40,6 +45,8 @@ class DocumentBuilder internal constructor() {
             content.add(if (value != null) Document(value) else Document.Null)
         fun add(value: Document?): Boolean =
             content.add(value ?: Document.Null)
+        fun add(@Suppress("UNUSED_PARAMETER") value: Nothing?): Boolean =
+            content.add(Document.Null)
 
         @JvmName("addAllNumbers") fun addAll(value: List<Number?>) = value.forEach(::add)
         @JvmName("addAllStrings") fun addAll(value: List<String?>) = value.forEach(::add)

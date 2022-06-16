@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.io.SdkByteBuffer
 import aws.smithy.kotlin.runtime.io.bytes
 import aws.smithy.kotlin.runtime.io.write
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
@@ -128,6 +129,12 @@ private class FormUrlStructSerializer(
 
     override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) = writeField(descriptor) {
         serializeInstant(value, format)
+    }
+
+    override fun field(descriptor: SdkFieldDescriptor, value: Document) {
+        throw SerializationException(
+            "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding"
+        )
     }
 
     override fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable) {

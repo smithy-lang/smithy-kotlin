@@ -61,6 +61,11 @@ interface JsonStreamWriter {
     /**
      * Encodes {@code value}.
      */
+    fun writeValue(value: Number)
+
+    /**
+     * Encodes {@code value}.
+     */
     fun writeValue(value: Long)
 
     /**

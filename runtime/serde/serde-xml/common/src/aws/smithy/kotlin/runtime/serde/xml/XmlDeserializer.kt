@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.serde.xml
 
 import aws.smithy.kotlin.runtime.serde.*
+import aws.smithy.kotlin.runtime.smithy.Document
 
 // Represents aspects of SdkFieldDescriptor that are particular to the Xml format
 internal sealed class FieldLocation {
@@ -277,6 +278,10 @@ internal class XmlStructDeserializer(
     override fun deserializeString(): String = deserializeValue { it }
 
     override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
+
+    override fun deserializeDocument(): Document {
+        throw DeserializationException("cannot deserialize unsupported Document type in xml")
+    }
 
     override fun deserializeNull(): Nothing? {
         reader.takeNextAs<XmlToken.EndElement>()
