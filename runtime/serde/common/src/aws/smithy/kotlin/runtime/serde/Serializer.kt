@@ -137,7 +137,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Document)
+    fun field(descriptor: SdkFieldDescriptor, value: Document?)
 
     /**
      * Writes the field name given in the descriptor, and then

@@ -63,18 +63,18 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    override fun deserializeDocument(): Document =
+    override fun deserializeDocument(): Document? =
         when (val token = reader.peek()) {
             is JsonToken.Number -> Document(deserializeNumber())
             is JsonToken.String -> Document(deserializeString())
             is JsonToken.Bool -> Document(deserializeBoolean())
             JsonToken.Null -> {
                 reader.nextToken()
-                Document.Null
+                null
             }
             JsonToken.BeginArray ->
                 deserializeList(SdkFieldDescriptor(SerialKind.Document)) {
-                    val values = mutableListOf<Document>()
+                    val values = mutableListOf<Document?>()
                     while (hasNextElement()) {
                         values.add(deserializeDocument())
                     }
@@ -82,7 +82,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
                 }
             JsonToken.BeginObject ->
                 deserializeMap(SdkFieldDescriptor(SerialKind.Document)) {
-                    val values = mutableMapOf<String, Document>()
+                    val values = mutableMapOf<String, Document?>()
                     while (hasNextEntry()) {
                         values[key()] = deserializeDocument()
                     }

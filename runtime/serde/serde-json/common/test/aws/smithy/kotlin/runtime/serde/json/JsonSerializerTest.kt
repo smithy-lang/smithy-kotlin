@@ -219,7 +219,7 @@ class JsonSerializerTest {
         }
     }
 
-    private fun testSerializeDocument(doc: Document, expected: String) {
+    private fun testSerializeDocument(doc: Document?, expected: String) {
         val s = JsonSerializer()
         val documentField = SdkFieldDescriptor(SerialKind.Document, JsonSerialName("SerializedDocument"))
         val struct = SdkObjectDescriptor.build {
@@ -258,7 +258,7 @@ class JsonSerializerTest {
     @Test
     fun canSerializeDocumentNullField() =
         testSerializeDocument(
-            Document.Null,
+            null,
             "null"
         )
 
@@ -270,7 +270,7 @@ class JsonSerializerTest {
                     Document(1),
                     Document("foo"),
                     Document(true),
-                    Document.Null
+                    null
                 )
             ),
             "[1,\"foo\",true,null]"
