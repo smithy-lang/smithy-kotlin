@@ -7,4 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.http.engine.okhttp.OkHttpEngine
 
-internal actual fun newDefaultHttpEngine(config: HttpClientEngineConfig): HttpClientEngine = OkHttpEngine(config)
+internal actual fun newDefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)?): HttpClientEngine = if (block != null) {
+    OkHttpEngine(block)
+} else {
+    OkHttpEngine()
+}

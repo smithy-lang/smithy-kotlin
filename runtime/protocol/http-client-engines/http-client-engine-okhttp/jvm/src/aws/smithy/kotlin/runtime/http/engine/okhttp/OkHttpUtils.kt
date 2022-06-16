@@ -81,10 +81,14 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
                 if (rc == -1) break
                 ch.writeFully(buffer, 0, rc)
             }
+
+            // immediately close when done to signal end of body stream
+            ch.close()
         }
 
-        job.invokeOnCompletion {
-            ch.close(it)
+        job.invokeOnCompletion { cause ->
+            // close is idempotent, if not previously closed then close with cause
+            ch.close(cause)
         }
 
         object : HttpBody.Streaming() {
