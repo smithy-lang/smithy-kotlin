@@ -44,7 +44,7 @@ private fun mitmProxyContainer(
         withCommand(command)
     }
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyTest : AbstractEngineTest() {
 
@@ -88,7 +88,7 @@ class ProxyTest : AbstractEngineTest() {
     }
 }
 
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 @EnabledIfSystemProperty(named = "aws.test.http.enableProxyTests", matches = "true")
 class ProxyAuthTest : AbstractEngineTest() {
 
