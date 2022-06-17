@@ -129,7 +129,13 @@ suspend fun HttpBody.readAll(): ByteArray? = when (this) {
         // the stream is closed and no more bytes remain.
         // This is usually sufficient to consume the stream but technically that's not what it's doing.
         // Save us a painful debug session later in the very rare chance this were to occur.
-        check(readChan.isClosedForRead) { "failed to read all HttpBody bytes from stream" }
+        val isClosedForRead = readChan.isClosedForRead
+        val isClosedForWrite = readChan.isClosedForWrite
+        val availableForRead = readChan.availableForRead
+        check(readChan.isClosedForRead) {
+            "failed to read all HttpBody bytes from stream: isClosedForRead: $isClosedForRead/${readChan.isClosedForRead}; isClosedForWrite: $isClosedForWrite/${readChan.isClosedForWrite}; availableForRead: $availableForRead/${readChan.availableForRead}: ${bytes.decodeToString()}"
+        }
+
         bytes
     }
 }

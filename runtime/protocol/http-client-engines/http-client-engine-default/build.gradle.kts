@@ -18,9 +18,8 @@ kotlin {
         }
         jvmMain {
             dependencies {
-                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-ktor"))
                 // okhttp works on both JVM and Android
-                implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-okhttp"))
             }
         }
         all {

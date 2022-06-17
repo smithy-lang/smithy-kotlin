@@ -2,17 +2,16 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package aws.smithy.kotlin.runtime.http.engine
+package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.util.get
 import okhttp3.*
 import java.io.IOException
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
-
-// FIXME - propagate call metadata (e.g. sdkRequestId) using Request.tag instead of abusing AMZ_SDK_INVOCATION_ID. Requires more direct integration with okhttp though.
-private const val AMZ_SDK_INVOCATION_ID_HEADER = "amz-sdk-invocation-id"
 
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool
@@ -20,12 +19,14 @@ internal class HttpEngineEventListener(
     private val logger = Logger.getLogger<HttpEngineEventListener>()
 
     private inline fun traceCall(call: Call, crossinline msg: () -> Any) {
-        val sdkRequestId = call.request().header(AMZ_SDK_INVOCATION_ID_HEADER)
+        val sdkRequestTag = call.request().tag<SdkRequestTag>()
+        val sdkRequestId = sdkRequestTag?.execContext?.getOrNull(HttpOperationContext.SdkRequestId)
         logger.trace { "[sdkRequestId=$sdkRequestId] ${msg()}" }
     }
 
     private inline fun traceCall(call: Call, throwable: Throwable, crossinline msg: () -> Any) {
-        val sdkRequestId = call.request().header(AMZ_SDK_INVOCATION_ID_HEADER)
+        val sdkRequestTag = call.request().tag<SdkRequestTag>()
+        val sdkRequestId = sdkRequestTag?.execContext?.getOrNull(HttpOperationContext.SdkRequestId)
         logger.trace(throwable) { "[sdkRequestId=$sdkRequestId] ${msg()}" }
     }
 
@@ -126,7 +127,7 @@ internal class HttpEngineEventListener(
     }
 
     override fun responseHeadersEnd(call: Call, response: Response) {
-        val contentLength = response.body?.contentLength()
+        val contentLength = response.body.contentLength()
         traceCall(call) { "response headers end: contentLengthHeader=$contentLength" }
     }
 

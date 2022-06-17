@@ -8,7 +8,6 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.*
-import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.operation.withContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -16,10 +15,10 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.logging.trace
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.InternalApi
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
 import io.ktor.util.*
 import io.ktor.utils.io.*
@@ -38,6 +37,7 @@ import io.ktor.client.engine.HttpClientEngine as KtorHttpClientEngine
  * This class can be used to wrap any Ktor compliant engine (though not all engines
  * may support HTTP features required by any given SDK).
  */
+@InternalApi // FIXME - decide on whether to support in GA or not. Most use cases would be better off by wrapping the underlying ktor engine directly
 class KtorEngine(
     private val engine: KtorHttpClientEngine
 ) : HttpClientEngineBase("ktor") {

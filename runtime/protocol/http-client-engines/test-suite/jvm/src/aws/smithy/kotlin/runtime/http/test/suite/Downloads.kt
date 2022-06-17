@@ -25,10 +25,11 @@ internal fun Application.downloadTests() {
                 val data = ByteArray(16 * 1024 * 1024) { it.toByte() }
                 val writeSha = data.sha256().encodeToHex()
                 call.response.header("expected-sha256", writeSha)
+                val chunked = call.request.queryParameters["chunked-response"]?.toBoolean() ?: false
 
                 val ch = ByteChannel(autoFlush = true)
                 val content = object : OutgoingContent.ReadChannelContent() {
-                    override val contentLength: Long = data.size.toLong()
+                    override val contentLength: Long? = if (chunked) null else data.size.toLong()
                     override fun readFrom(): ByteReadChannel = ch
                     override val contentType: ContentType = ContentType.Application.OctetStream
                 }
