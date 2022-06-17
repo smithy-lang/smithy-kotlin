@@ -279,7 +279,7 @@ internal class XmlStructDeserializer(
 
     override fun deserializeBoolean(): Boolean = deserializeValue { it.toBoolean() }
 
-    override fun deserializeDocument(): Document? {
+    override fun deserializeDocument(): Document {
         throw DeserializationException("cannot deserialize unsupported Document type in xml")
     }
 

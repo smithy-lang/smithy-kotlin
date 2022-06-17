@@ -198,7 +198,7 @@ interface PrimitiveDeserializer {
      * If the document's value is a list or map, this method will deserialize all elements or fields recursively - the
      * caller need not further inspect the value to attempt to do so manually.
      */
-    fun deserializeDocument(): Document?
+    fun deserializeDocument(): Document
 
     /**
      * Consume the next token if represents a null value. Always returns null.

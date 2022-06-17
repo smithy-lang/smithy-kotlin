@@ -63,7 +63,10 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
         return token.value
     }
 
-    override fun deserializeDocument(): Document? =
+    override fun deserializeDocument(): Document =
+        checkNotNull(deserializeDocumentImpl()) { "expected non-null document field" }
+
+    private fun deserializeDocumentImpl(): Document? =
         when (val token = reader.peek()) {
             is JsonToken.Number -> Document(deserializeNumber())
             is JsonToken.String -> Document(deserializeString())
@@ -76,7 +79,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
                 deserializeList(SdkFieldDescriptor(SerialKind.Document)) {
                     val values = mutableListOf<Document?>()
                     while (hasNextElement()) {
-                        values.add(deserializeDocument())
+                        values.add(deserializeDocumentImpl())
                     }
                     Document.List(values)
                 }
@@ -84,7 +87,7 @@ class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementI
                 deserializeMap(SdkFieldDescriptor(SerialKind.Document)) {
                     val values = mutableMapOf<String, Document?>()
                     while (hasNextEntry()) {
-                        values[key()] = deserializeDocument()
+                        values[key()] = deserializeDocumentImpl()
                     }
                     Document.Map(values)
                 }

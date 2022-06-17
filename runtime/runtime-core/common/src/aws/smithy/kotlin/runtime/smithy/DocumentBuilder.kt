@@ -10,27 +10,27 @@ class DocumentBuilder internal constructor() {
     val content: MutableMap<String, Document?> = linkedMapOf()
 
     infix fun String.to(value: Number?) {
-        require(!content.containsKey(this)) { "Key $this is already registered in builder" }
+        require(this !in content) { "Key $this is already registered in builder" }
         content[this] = if (value != null) Document(value) else null
     }
 
     infix fun String.to(value: String?) {
-        require(!content.containsKey(this)) { "Key $this is already registered in builder" }
+        require(this !in content) { "Key $this is already registered in builder" }
         content[this] = if (value != null) Document(value) else null
     }
 
     infix fun String.to(value: Boolean?) {
-        require(!content.containsKey(this)) { "Key $this is already registered in builder" }
+        require(this !in content) { "Key $this is already registered in builder" }
         content[this] = if (value != null) Document(value) else null
     }
 
     infix fun String.to(value: Document?) {
-        require(!content.containsKey(this)) { "Key $this is already registered in builder" }
+        require(this !in content) { "Key $this is already registered in builder" }
         content[this] = value
     }
 
     infix fun String.to(@Suppress("UNUSED_PARAMETER") value: Nothing?) {
-        require(!content.containsKey(this)) { "Key $this is already registered in builder" }
+        require(this !in content) { "Key $this is already registered in builder" }
         content[this] = null
     }
 
