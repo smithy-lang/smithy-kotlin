@@ -154,23 +154,22 @@ internal class OkHttpProxyAuthenticator(
     }
 }
 
-private val emptyProxyList = mutableListOf<Proxy>()
-
 internal class OkHttpProxySelector(
     private val sdkSelector: SdkProxySelector
 ) : ProxySelector() {
-    override fun select(uri: URI?): MutableList<Proxy> {
-        if (uri == null) return emptyProxyList
+    override fun select(uri: URI?): List<Proxy> {
+        if (uri == null) return emptyList()
         val url = uri.toUrl()
 
         return when (val proxyConfig = sdkSelector.select(url)) {
             is ProxyConfig.Http -> {
                 val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host, proxyConfig.url.port))
-                return mutableListOf(okProxy)
+                return listOf(okProxy)
             }
-            else -> emptyProxyList
+            else -> emptyList()
         }
     }
+
     override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
         val logger = Logger.getLogger<OkHttpProxySelector>()
         logger.error { "failed to connect to proxy: uri=$uri; socketAddress: $sa; exception: $ioe" }

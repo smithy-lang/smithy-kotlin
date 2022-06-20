@@ -1,9 +1,6 @@
 """
-Addon fakes responses from an upstream origin for use in unit tests. 
-
-usage: mitmdump -s fakeupstream.py --set fakeupstream=aws.amazon.com
-
-see https://docs.mitmproxy.org/stable/api/events.html
+Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+SPDX-License-Identifier: Apache-2.0.
 """
 from mitmproxy import http, ctx
 from typing import Optional
@@ -11,7 +8,11 @@ from typing import Optional
 
 class FakeUpstreamResponse:
     """
-    Generate a fake upstream server response for a given host
+    Generate a fake upstream server response for a given host for use in unit tests.
+
+    usage: mitmdump -s fakeupstream.py --set fakeupstream=aws.amazon.com
+
+    see https://docs.mitmproxy.org/stable/api/events.html
     """
 
     def load(self, loader):

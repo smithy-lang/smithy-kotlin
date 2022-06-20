@@ -123,10 +123,10 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
          * - `https_proxy`, `HTTPS_PROXY`
          * - `no_proxy`, `NO_PROXY`
          *
-         * # Disabling proxy selection explicitly
+         * # Disabling proxy selection explicitly by using [ProxySelector.NoProxy]
          *
          * ```
-         * proxySelector = ProxySelector { _ -> ProxyConfig.Direct }
+         * proxySelector = ProxySelector.NoProxy
          * ```
          */
         var proxySelector: ProxySelector = EnvironmentProxySelector()

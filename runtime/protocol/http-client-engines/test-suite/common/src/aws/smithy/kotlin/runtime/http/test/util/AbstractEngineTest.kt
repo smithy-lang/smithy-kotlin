@@ -136,20 +136,15 @@ fun EngineTestBuilder.engineConfig(block: HttpClientEngineConfig.Builder.() -> U
     engineConfig = block
 }
 
-internal interface TestEngineFactory {
+internal data class TestEngineFactory(
     /**
      * Unique name for the engine
      */
-    val name: String
-
+    val name: String,
     /**
-     * Create a new [HttpClientEngine] instance configured by [block]
+     * Configure a new [HttpClientEngine] instance and return it
      */
-    fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine
+    val configure: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine
+) {
+    fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine = configure(block)
 }
-
-internal fun TestEngineFactory(name: String, configure: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine): TestEngineFactory =
-    object : TestEngineFactory {
-        override val name: String = name
-        override fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine = configure(block)
-    }

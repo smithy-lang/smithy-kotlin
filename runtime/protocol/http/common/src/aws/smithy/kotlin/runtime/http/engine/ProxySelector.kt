@@ -15,4 +15,11 @@ fun interface ProxySelector {
      * Return the proxy configuration to use for [Url]
      */
     fun select(url: Url): ProxyConfig
+
+    companion object {
+        /**
+         * Explicitly disable proxy selection
+         */
+        val NoProxy = ProxySelector { ProxyConfig.Direct }
+    }
 }

@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.test
 
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.ProxySelector
@@ -58,32 +59,13 @@ class ProxyTest : AbstractEngineTest() {
     ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)
-            proxySelector = ProxySelector { _ ->
+            proxySelector = ProxySelector {
                 ProxyConfig.Http("http://127.0.0.1:$proxyPort")
             }
         }
 
         test { _, client ->
-            val req = HttpRequest {
-                // Use http for two reasons (1) mitmproxy wants to sniff traffic by default
-                // and (2) we know the response code will be a redirect if our setup fails.
-                // NOTE: you can still use mitmproxy to proxy https traffic without intercepting it
-                // like any normal proxy by setting the `--ignore-hosts` option to forward all traffic
-                // but that would mean we make an actual request to the origin
-                url(Url.parse("http://aws.amazon.com"))
-                url.path = "/"
-                header("Host", "aws.amazon.com")
-            }
-
-            val call = client.call(req)
-            try {
-                // will be a 301 for http -> https if proxy isn't setup or not configured properly
-                assertEquals(HttpStatusCode.OK, call.response.status, "${client.engine}")
-                val body = call.response.body.readAll()!!.decodeToString()
-                assertEquals("hello proxy", body)
-            } finally {
-                call.complete()
-            }
+            testProxyResponse(client)
         }
     }
 }
@@ -102,27 +84,36 @@ class ProxyAuthTest : AbstractEngineTest() {
     ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)
-            proxySelector = ProxySelector { _ ->
+            proxySelector = ProxySelector {
                 ProxyConfig.Http("http://testuser:testpass@127.0.0.1:$proxyPort")
             }
         }
 
         test { _, client ->
-            val req = HttpRequest {
-                url(Url.parse("http://aws.amazon.com"))
-                url.path = "/"
-                header("Host", "aws.amazon.com")
-            }
-
-            val call = client.call(req)
-            try {
-                // will be a 301 for http -> https if proxy isn't setup or not configured properly
-                assertEquals(HttpStatusCode.OK, call.response.status, "${client.engine}")
-                val body = call.response.body.readAll()!!.decodeToString()
-                assertEquals("hello proxy", body)
-            } finally {
-                call.complete()
-            }
+            testProxyResponse(client)
         }
+    }
+}
+
+private suspend fun testProxyResponse(client: SdkHttpClient) {
+    val req = HttpRequest {
+        // Use http for two reasons (1) mitmproxy wants to sniff traffic by default
+        // and (2) we know the response code will be a redirect if our setup fails.
+        // NOTE: you can still use mitmproxy to proxy https traffic without intercepting it
+        // like any normal proxy by setting the `--ignore-hosts` option to forward all traffic
+        // but that would mean we make an actual request to the origin
+        url(Url.parse("http://aws.amazon.com"))
+        url.path = "/"
+        header("Host", "aws.amazon.com")
+    }
+
+    val call = client.call(req)
+    try {
+        // will be a 301 for http -> https if proxy isn't setup or not configured properly
+        assertEquals(HttpStatusCode.OK, call.response.status, "${client.engine}")
+        val body = call.response.body.readAll()!!.decodeToString()
+        assertEquals("hello proxy", body)
+    } finally {
+        call.complete()
     }
 }
