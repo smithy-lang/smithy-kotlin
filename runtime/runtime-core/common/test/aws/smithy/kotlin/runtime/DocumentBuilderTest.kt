@@ -19,10 +19,10 @@ class DocumentBuilderTest {
                 add(12)
                 add(true)
                 add("blah")
-                add(Document.Null)
+                add(null)
                 addAll(listOf(9, 10, 12))
             }
-            "qux" to Document.Null
+            "qux" to null
         }
 
         val expected = """{"foo":1,"baz":[202,12,true,"blah",null,9,10,12],"qux":null}"""

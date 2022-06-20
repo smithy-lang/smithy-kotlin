@@ -556,7 +556,7 @@ class JsonDeserializerTest {
         assertEquals(2, z)
     }
 
-    private fun testDeserializeDocument(doc: String, expected: Document) {
+    private fun testDeserializeDocument(doc: String, expected: Document?) {
         // pad the end to verify that the parser token index isn't misaligned after handling the document field
         val payload = """
          {
@@ -629,7 +629,7 @@ class JsonDeserializerTest {
                     Document(1L),
                     Document("foo"),
                     Document(true),
-                    Document.Null
+                    null
                 )
             )
         )

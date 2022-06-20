@@ -38,19 +38,16 @@ sealed class Document {
     data class Number(val value: kotlin.Number) : Document()
     data class String(val value: kotlin.String) : Document()
     data class Boolean(val value: kotlin.Boolean) : Document()
-    data class List(val value: kotlin.collections.List<Document>) :
-        Document(), kotlin.collections.List<Document> by value
-    data class Map(val value: kotlin.collections.Map<kotlin.String, Document>) :
-        Document(), kotlin.collections.Map<kotlin.String, Document> by value
-    object Null : Document()
+    data class List(val value: kotlin.collections.List<Document?>) :
+        Document(), kotlin.collections.List<Document?> by value
+    data class Map(val value: kotlin.collections.Map<kotlin.String, Document?>) :
+        Document(), kotlin.collections.Map<kotlin.String, Document?> by value
 
     fun asString(): kotlin.String
     fun asStringOrNull(): kotlin.String?
     fun asInt(): Int
     fun asIntOrNull(): Int?
     // etc...
-    val isNull: kotlin.Boolean
-        get() = this == Null
 }
 ```
 
@@ -64,12 +61,14 @@ class DocumentBuilder internal constructor() {
     infix fun String.to(value: String?)
     infix fun String.to(value: Boolean?)
     infix fun String.to(value: Document?)
+    infix fun String.to(value: Nothing?)
 
     class ListBuilder internal constructor() {
         fun add(value: Number?)
         fun add(value: String?)
         fun add(value: Boolean?)
         fun add(value: Document?)
+        fun add(value: Nothing?)
 
         fun addAll(value: List<Number?>)
         fun addAll(value: List<String?>)
@@ -107,3 +106,4 @@ fun main() {
 
 * 5/27/2021 - Initial upload
 * 5/22/2022 - Refine/extend structure and use of interface
+* 6/16/2022 - Refactor nullability to use kotlin instead of explicit subclass

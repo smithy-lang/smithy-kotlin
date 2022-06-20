@@ -42,16 +42,16 @@ sealed class Document {
     /**
      * Wraps a [kotlin.collections.List].
      */
-    data class List(val value: kotlin.collections.List<Document>) :
-        Document(), kotlin.collections.List<Document> by value {
+    data class List(val value: kotlin.collections.List<Document?>) :
+        Document(), kotlin.collections.List<Document?> by value {
         override fun toString() = value.joinToString(separator = ",", prefix = "[", postfix = "]")
     }
 
     /**
      * Wraps a [kotlin.collections.Map].
      */
-    data class Map(val value: kotlin.collections.Map<kotlin.String, Document>) :
-        Document(), kotlin.collections.Map<kotlin.String, Document> by value {
+    data class Map(val value: kotlin.collections.Map<kotlin.String, Document?>) :
+        Document(), kotlin.collections.Map<kotlin.String, Document?> by value {
         override fun toString() = value
             .entries
             .joinToString(
@@ -60,13 +60,6 @@ sealed class Document {
                 postfix = "}",
                 transform = { (k, v) -> """"$k":$v""" }
             )
-    }
-
-    /**
-     * Represents a `null` value.
-     */
-    object Null : Document() {
-        override fun toString() = "null"
     }
 
     private fun asNumber(): kotlin.Number = (this as Number).value
@@ -78,11 +71,11 @@ sealed class Document {
     fun asBoolean(): kotlin.Boolean = (this as Boolean).value
     fun asBooleanOrNull(): kotlin.Boolean? = (this as? Boolean)?.value
 
-    fun asList(): kotlin.collections.List<Document> = (this as List).value
-    fun asListOrNull(): kotlin.collections.List<Document>? = (this as? List)?.value
+    fun asList(): kotlin.collections.List<Document?> = (this as List).value
+    fun asListOrNull(): kotlin.collections.List<Document?>? = (this as? List)?.value
 
-    fun asMap(): kotlin.collections.Map<kotlin.String, Document> = (this as Map).value
-    fun asMapOrNull(): kotlin.collections.Map<kotlin.String, Document>? = (this as? Map)?.value
+    fun asMap(): kotlin.collections.Map<kotlin.String, Document?> = (this as Map).value
+    fun asMapOrNull(): kotlin.collections.Map<kotlin.String, Document?>? = (this as? Map)?.value
 
     fun asInt(): Int = asNumber().toInt()
     fun asIntOrNull(): Int? = asNumberOrNull()?.toInt()
@@ -101,9 +94,6 @@ sealed class Document {
 
     fun asDouble(): Double = asNumber().toDouble()
     fun asDoubleOrNull(): Double? = asNumberOrNull()?.toDouble()
-
-    val isNull: kotlin.Boolean
-        get() = this == Null
 }
 
 /**
@@ -124,9 +114,9 @@ fun Document(value: Boolean): Document = Document.Boolean(value)
 /**
  * Construct a [Document] from a [List].
  */
-fun Document(value: List<Document>): Document = Document.List(value)
+fun Document(value: List<Document?>): Document = Document.List(value)
 
 /**
  * Construct a [Document] from a [Map].
  */
-fun Document(value: Map<String, Document>): Document = Document.Map(value)
+fun Document(value: Map<String, Document?>): Document = Document.Map(value)

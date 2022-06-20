@@ -102,7 +102,7 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         serializeInstant(value, format)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Document) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
         jsonWriter.writeName(descriptor.serialName)
         serializeDocument(value)
     }
@@ -259,12 +259,12 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         }
     }
 
-    fun serializeDocument(value: Document) {
+    fun serializeDocument(value: Document?) {
         when (value) {
             is Document.Number -> jsonWriter.writeValue(value.value)
             is Document.String -> jsonWriter.writeValue(value.value)
             is Document.Boolean -> jsonWriter.writeValue(value.value)
-            is Document.Null -> jsonWriter.writeNull()
+            null -> jsonWriter.writeNull()
             is Document.List -> {
                 jsonWriter.beginArray()
                 value.value.forEach(::serializeDocument)

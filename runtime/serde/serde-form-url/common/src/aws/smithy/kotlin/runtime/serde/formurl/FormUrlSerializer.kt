@@ -131,7 +131,7 @@ private class FormUrlStructSerializer(
         serializeInstant(value, format)
     }
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Document) {
+    override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
         throw SerializationException(
             "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding"
         )

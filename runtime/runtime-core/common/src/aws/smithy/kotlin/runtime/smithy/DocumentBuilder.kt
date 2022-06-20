@@ -7,46 +7,46 @@ package aws.smithy.kotlin.runtime.smithy
 import kotlin.jvm.JvmName
 
 class DocumentBuilder internal constructor() {
-    val content: MutableMap<String, Document> = linkedMapOf()
+    val content: MutableMap<String, Document?> = linkedMapOf()
 
     infix fun String.to(value: Number?) {
-        require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = if (value != null) Document(value) else Document.Null
+        require(this !in content) { "Key $this is already registered in builder" }
+        content[this] = if (value != null) Document(value) else null
     }
 
     infix fun String.to(value: String?) {
-        require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = if (value != null) Document(value) else Document.Null
+        require(this !in content) { "Key $this is already registered in builder" }
+        content[this] = if (value != null) Document(value) else null
     }
 
     infix fun String.to(value: Boolean?) {
-        require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = if (value != null) Document(value) else Document.Null
+        require(this !in content) { "Key $this is already registered in builder" }
+        content[this] = if (value != null) Document(value) else null
     }
 
     infix fun String.to(value: Document?) {
-        require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = value ?: Document.Null
+        require(this !in content) { "Key $this is already registered in builder" }
+        content[this] = value
     }
 
     infix fun String.to(@Suppress("UNUSED_PARAMETER") value: Nothing?) {
-        require(content[this] == null) { "Key $this is already registered in builder" }
-        content[this] = Document.Null
+        require(this !in content) { "Key $this is already registered in builder" }
+        content[this] = null
     }
 
     class ListBuilder internal constructor() {
-        val content: MutableList<Document> = mutableListOf()
+        val content: MutableList<Document?> = mutableListOf()
 
         fun add(value: Number?): Boolean =
-            content.add(if (value != null) Document(value) else Document.Null)
+            content.add(if (value != null) Document(value) else null)
         fun add(value: String?): Boolean =
-            content.add(if (value != null) Document(value) else Document.Null)
+            content.add(if (value != null) Document(value) else null)
         fun add(value: Boolean?): Boolean =
-            content.add(if (value != null) Document(value) else Document.Null)
+            content.add(if (value != null) Document(value) else null)
         fun add(value: Document?): Boolean =
-            content.add(value ?: Document.Null)
+            content.add(value)
         fun add(@Suppress("UNUSED_PARAMETER") value: Nothing?): Boolean =
-            content.add(Document.Null)
+            content.add(null)
 
         @JvmName("addAllNumbers") fun addAll(value: List<Number?>) = value.forEach(::add)
         @JvmName("addAllStrings") fun addAll(value: List<String?>) = value.forEach(::add)
