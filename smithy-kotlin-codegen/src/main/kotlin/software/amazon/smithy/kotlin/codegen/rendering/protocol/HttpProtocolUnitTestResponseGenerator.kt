@@ -6,10 +6,12 @@ package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.model.defaultUnboxedValue
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 
@@ -80,8 +82,15 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     val inputShape = model.expectShape(it)
                     val inputSymbol = symbolProvider.toSymbol(inputShape)
 
+                    val labelMembers = inputShape.members().filter { it.hasTrait<HttpLabelTrait>() }
+
                     // invoke the DSL builder for the input type
-                    writer.write("val input = ${inputSymbol.name}{}")
+                    writer.withBlock("val input = #T {", "}", inputSymbol) {
+                        labelMembers.forEach { memberShape ->
+                            val memberSymbol = symbolProvider.toSymbol(memberShape)
+                            write("#L = #L", memberShape.defaultName(), memberSymbol.defaultUnboxedValue())
+                        }
+                    }
                 }
 
                 val service = symbolProvider.toSymbol(serviceShape)

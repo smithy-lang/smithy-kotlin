@@ -281,6 +281,44 @@ class StructureGeneratorTest {
     }
 
     @Test
+    fun `it handles HTTP labels in initializers`() {
+        val model = """
+            @http(method: "POST", uri: "/foo/{bar}/{baz}")
+            operation Foo {
+                input: FooRequest
+            }
+            
+            structure FooRequest {
+                @required
+                @httpLabel
+                bar: String,
+                
+                @required
+                @httpLabel
+                baz: Integer,
+                
+                @httpPayload
+                qux: String
+            }
+        """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val struct = model.expectShape<StructureShape>("com.test#FooRequest")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
+
+        val generated = writer.toString()
+        val expected = """
+            class FooRequest private constructor(builder: Builder) {
+                val bar: kotlin.String? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
+                val baz: kotlin.Int? = requireNotNull(builder.baz) { "A non-null value must be provided for baz" }
+                val qux: kotlin.String? = builder.qux
+        """.formatForTest(indent = "")
+        generated.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it handles blob shapes`() {
         // blobs (with and without streaming) require special attention in equals() and hashCode() implementations
         val model = """

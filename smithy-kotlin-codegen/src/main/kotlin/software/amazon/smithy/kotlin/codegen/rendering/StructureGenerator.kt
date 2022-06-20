@@ -14,6 +14,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
+import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -69,16 +70,29 @@ class StructureGenerator(
             val (memberName, memberSymbol) = memberNameSymbolIndex[it]!!
             writer.renderMemberDocumentation(model, it)
             writer.renderAnnotations(it)
-            if (shape.isError && "message" == memberName) {
-                val targetShape = model.expectShape(it.target)
+            renderImmutableProperty(it, memberName, memberSymbol)
+        }
+    }
+
+    private fun renderImmutableProperty(memberShape: MemberShape, memberName: String, memberSymbol: Symbol) {
+        when {
+            shape.isError && memberName == "message" -> {
+                val targetShape = model.expectShape(memberShape.target)
                 if (!targetShape.isStringShape) {
                     throw CodegenException("Message is a reserved name for exception types and cannot be used for any other property")
                 }
                 // override Throwable's message property
                 writer.write("override val #1L: #2F = builder.#1L", memberName, memberSymbol)
-            } else {
-                writer.write("val #1L: #2F = builder.#1L", memberName, memberSymbol)
             }
+
+            memberShape.hasTrait<HttpLabelTrait>() ->
+                writer.write(
+                    """val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
+                    memberName,
+                    memberSymbol,
+                )
+
+            else -> writer.write("val #1L: #2F = builder.#1L", memberName, memberSymbol)
         }
     }
 
