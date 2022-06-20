@@ -98,5 +98,8 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
             }
             protocols(protocols)
         }
+
+        proxySelector(OkHttpProxySelector(config.proxySelector))
+        proxyAuthenticator(OkHttpProxyAuthenticator(config.proxySelector))
     }.build()
 }

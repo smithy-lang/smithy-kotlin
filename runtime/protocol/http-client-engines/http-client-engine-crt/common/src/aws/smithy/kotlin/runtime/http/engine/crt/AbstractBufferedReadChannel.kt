@@ -223,6 +223,10 @@ internal abstract class AbstractBufferedReadChannel(
 
         val segment = newReadableSegment(bytesIn)
         val result = segments.trySend(segment)
+
+        // nothing to do, channel is closed no more data is expected
+        if (result.isClosed) return
+
         check(result.isSuccess) { "failed to queue segment" }
 
         // advertise bytes available
