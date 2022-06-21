@@ -55,6 +55,12 @@ internal fun Application.downloadTests() {
 
                 call.respond(content)
             }
+
+            get("/empty") {
+                call.response.status(HttpStatusCode.OK)
+                call.response.header("x-foo", "foo")
+                call.response.header("x-bar", "bar")
+            }
         }
     }
 }

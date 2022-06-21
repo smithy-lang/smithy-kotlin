@@ -1,0 +1,8 @@
+{
+    "id": "04cb3052-4479-4b00-a08c-f7b5fbe1d59a",
+    "type": "bugfix",
+    "description": "Fix ktor engine representation of empty payload",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#638"
+    ]
+}
