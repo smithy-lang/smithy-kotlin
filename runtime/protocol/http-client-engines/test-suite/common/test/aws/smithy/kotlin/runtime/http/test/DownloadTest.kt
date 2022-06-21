@@ -116,4 +116,27 @@ class DownloadTest : AbstractEngineTest() {
             }
         }
     }
+
+    @Test
+    fun testEmptyPayloadRepresentation() = testEngines {
+        // We have behavior built on top of how an empty payload is represented, ensure it is consitent
+        // across engines, see https://github.com/awslabs/aws-sdk-kotlin/issues/638
+        test { env, client ->
+            val req = HttpRequest {
+                testSetup(env)
+                url.path = "/download/empty"
+            }
+
+            val call = client.call(req)
+            try {
+                assertEquals(HttpStatusCode.OK, call.response.status)
+                assertEquals(0, call.response.body.contentLength, "${client.engine}")
+
+                val body = call.response.body
+                assertIs<HttpBody.Empty>(body, "${client.engine}")
+            } finally {
+                call.complete()
+            }
+        }
+    }
 }

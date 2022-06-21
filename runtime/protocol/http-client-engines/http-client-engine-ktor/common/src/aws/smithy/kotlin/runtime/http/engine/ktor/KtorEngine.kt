@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http.engine.ktor
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.operation.withContext
@@ -121,7 +122,12 @@ class KtorEngine(
                 waiter.signal()
             }
 
-            val body = KtorHttpBody(httpResp.contentLength(), content)
+            val contentLength = httpResp.contentLength()
+            val body = if (contentLength == 0L) {
+                HttpBody.Empty
+            } else {
+                KtorHttpBody(httpResp.contentLength(), content)
+            }
 
             // copy the headers so that we no longer depend on the underlying ktor HttpResponse object
             // outside of the body content (which will signal once read that it is safe to exit the block)
