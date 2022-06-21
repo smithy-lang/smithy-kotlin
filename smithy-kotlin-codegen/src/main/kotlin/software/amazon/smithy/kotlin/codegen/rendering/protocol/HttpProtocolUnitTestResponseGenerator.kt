@@ -4,11 +4,12 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.defaultUnboxedValue
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.shape
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.HttpLabelTrait
@@ -186,4 +187,14 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> =
             HttpProtocolUnitTestResponseGenerator(this)
     }
+}
+
+private fun Symbol.defaultUnboxedValue(): String = when (shape) {
+    is LongShape -> "0L"
+    is FloatShape -> "0.0f"
+    is DoubleShape -> "0.0"
+    is NumberShape -> "0"
+    is StringShape -> "\"\""
+    is BooleanShape -> "false"
+    else -> throw CodegenException("Cannot determine default value for unsupported shape $shape")
 }

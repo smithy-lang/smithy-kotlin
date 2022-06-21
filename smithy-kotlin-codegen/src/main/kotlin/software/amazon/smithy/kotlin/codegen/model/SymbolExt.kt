@@ -58,9 +58,12 @@ val Symbol.isNotBoxed: Boolean
  * Gets the default value for the symbol if present, else null
  * @param defaultBoxed the string to pass back for boxed values
  */
-fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? = if (isBoxed) defaultBoxed else defaultUnboxedValue()
+fun Symbol.defaultValue(defaultBoxed: String? = "null"): String? {
+    // boxed types should always be defaulted to null
+    if (isBoxed) {
+        return defaultBoxed
+    }
 
-fun Symbol.defaultUnboxedValue(): String? {
     val default = getProperty(SymbolProperty.DEFAULT_VALUE_KEY, String::class.java)
     return if (default.isPresent) default.get() else null
 }

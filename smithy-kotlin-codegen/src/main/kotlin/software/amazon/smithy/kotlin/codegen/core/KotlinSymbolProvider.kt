@@ -91,9 +91,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun stringShape(shape: StringShape): Symbol = if (shape.isEnum) {
         createEnumSymbol(shape)
     } else {
-        createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin")
-            .defaultValue("\"\"")
-            .build()
+        createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
     }
 
     fun createEnumSymbol(shape: StringShape): Symbol {
