@@ -4,12 +4,15 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.hasStreamingMember
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.shape
 import software.amazon.smithy.kotlin.codegen.rendering.ShapeValueGenerator
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import software.amazon.smithy.protocoltests.traits.HttpResponseTestCase
 
@@ -80,8 +83,15 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
                     val inputShape = model.expectShape(it)
                     val inputSymbol = symbolProvider.toSymbol(inputShape)
 
+                    val labelMembers = inputShape.members().filter { it.hasTrait<HttpLabelTrait>() }
+
                     // invoke the DSL builder for the input type
-                    writer.write("val input = ${inputSymbol.name}{}")
+                    writer.withBlock("val input = #T {", "}", inputSymbol) {
+                        labelMembers.forEach { memberShape ->
+                            val memberSymbol = symbolProvider.toSymbol(memberShape)
+                            write("#L = #L", memberShape.defaultName(), memberSymbol.defaultUnboxedValue())
+                        }
+                    }
                 }
 
                 val service = symbolProvider.toSymbol(serviceShape)
@@ -177,4 +187,14 @@ open class HttpProtocolUnitTestResponseGenerator protected constructor(builder: 
         override fun build(): HttpProtocolUnitTestGenerator<HttpResponseTestCase> =
             HttpProtocolUnitTestResponseGenerator(this)
     }
+}
+
+private fun Symbol.defaultUnboxedValue(): String = when (shape) {
+    is LongShape -> "0L"
+    is FloatShape -> "0.0f"
+    is DoubleShape -> "0.0"
+    is NumberShape -> "0"
+    is StringShape -> "\"\""
+    is BooleanShape -> "false"
+    else -> throw CodegenException("Cannot determine default value for unsupported shape $shape")
 }
