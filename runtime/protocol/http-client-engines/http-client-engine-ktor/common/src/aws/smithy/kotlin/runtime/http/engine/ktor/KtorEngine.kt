@@ -123,7 +123,7 @@ class KtorEngine(
             }
 
             val contentLength = httpResp.contentLength()
-            val body = if (contentLength == 0L && content.isClosedForRead) {
+            val body = if (contentLength == 0L) {
                 HttpBody.Empty
             } else {
                 KtorHttpBody(httpResp.contentLength(), content)

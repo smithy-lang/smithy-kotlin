@@ -134,7 +134,6 @@ class DownloadTest : AbstractEngineTest() {
 
                 val body = call.response.body
                 assertIs<HttpBody.Empty>(body, "${client.engine}")
-                println("${client.engine} was empty body")
             } finally {
                 call.complete()
             }
