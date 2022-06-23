@@ -1,8 +1,0 @@
-{
-    "id": "c6d1863b-170d-4622-8900-19a75a9ebf9d",
-    "type": "misc",
-    "description": "Refactor to bind directly to okhttp and remove ktor as a middleman",
-    "issues": [
-        "awslabs/smithy-kotlin#629"
-    ]
-}

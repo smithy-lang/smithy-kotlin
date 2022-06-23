@@ -1,5 +1,0 @@
-{
-    "id": "1a759771-971f-4354-838f-ee7b0364e379",
-    "type": "feature",
-    "description": "(breaking) Use kotlin nullability to represent null Documents instead of an explicit subclass."
-}

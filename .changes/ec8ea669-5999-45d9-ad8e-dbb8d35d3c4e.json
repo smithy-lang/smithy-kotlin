@@ -1,8 +1,0 @@
-{
-    "id": "ec8ea669-5999-45d9-ad8e-dbb8d35d3c4e",
-    "type": "bugfix",
-    "description": "Validate that members bound to URI paths are non-null at object construction",
-    "issues": [
-        "awslabs/smithy-kotlin#139"
-    ]
-}

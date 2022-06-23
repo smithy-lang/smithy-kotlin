@@ -1,8 +1,0 @@
-{
-    "id": "32235989-e284-4cec-aafc-0f73b941cfa1",
-    "type": "feature",
-    "description": "Add support for HTTP proxies",
-    "issues": [
-        "awslabs/smithy-kotlin#494"
-    ]
-}

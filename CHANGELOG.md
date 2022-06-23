@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.11.0] - 06/23/2022
+
+### Features
+* (breaking) Use kotlin nullability to represent null Documents instead of an explicit subclass.
+* [#494](https://github.com/awslabs/smithy-kotlin/issues/494) Add support for HTTP proxies
+
+### Fixes
+* [#638](https://github.com/awslabs/aws-sdk-kotlin/issues/638) Fix ktor engine representation of empty payload
+* [#139](https://github.com/awslabs/smithy-kotlin/issues/139) Validate that members bound to URI paths are non-null at object construction
+
+### Miscellaneous
+* [#629](https://github.com/awslabs/smithy-kotlin/issues/629) Refactor to bind directly to okhttp and remove ktor as a middleman
+
 ## [0.10.2] - 06/09/2022
 
 ### Fixes
