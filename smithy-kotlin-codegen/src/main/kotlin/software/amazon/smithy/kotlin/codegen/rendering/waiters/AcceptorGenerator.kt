@@ -83,8 +83,11 @@ private fun KotlinWriter.renderPathAcceptor(directive: String, includeInput: Boo
             PathComparator.STRING_EQUALS -> "$actual?.toString() == ${expected.dq()}"
             PathComparator.BOOLEAN_EQUALS -> "$actual == ${expected.toBoolean()}"
             PathComparator.ANY_STRING_EQUALS -> "$actual?.any { it?.toString() == ${expected.dq()} } ?: false"
+
+            // NOTE: the size > 0 check is necessary because the waiter spec says that `allStringEquals` requires
+            // at least one value unlike Kotlin's `all` which returns true if the collection is empty
             PathComparator.ALL_STRING_EQUALS ->
-                "($actual?.size ?: 0) > 1 && $actual?.all { it?.toString() == ${expected.dq()} }"
+                "$actual != null && $actual.size > 0 && $actual.all { it?.toString() == ${expected.dq()} }"
         }
         write(comparison)
     }

@@ -77,7 +77,7 @@ class AcceptorGeneratorTest {
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
                     val output = it?.output
                     val tags = output?.tags
-                    (tags?.size ?: 0) > 1 && tags?.all { it?.toString() == "foo" }
+                    tags != null && tags.size > 0 && tags.all { it?.toString() == "foo" }
                 },
                 InputOutputAcceptor(RetryDirective.TerminateAndSucceed) {
                     val output = it?.output
