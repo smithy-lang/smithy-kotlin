@@ -13,6 +13,7 @@ service Test {
         ExplicitBlob,
         ExplicitBlobStream,
         ExplicitStruct,
+        ExplicitDocument,
         ListInput,
         MapInput,
         EnumInput,
@@ -150,6 +151,22 @@ structure ExplicitBlobStreamResponse {
 operation ExplicitStruct {
     input: ExplicitStructRequest,
     output: ExplicitStructResponse
+}
+
+@http(method: "POST", uri: "/explicit/document")
+operation ExplicitDocument {
+    input: ExplicitDocumentRequest,
+    output: ExplicitDocumentResponse
+}
+
+structure ExplicitDocumentRequest {
+    @httpPayload
+    payload1: Document
+}
+
+structure ExplicitDocumentResponse {
+    @httpPayload
+    payload1: Document
 }
 
 structure Nested4 {

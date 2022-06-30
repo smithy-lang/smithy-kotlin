@@ -454,7 +454,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
             }
             ShapeType.DOCUMENT -> {
-                // TODO - deal with document members
+                writer
+                    .write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
+                    .write("serializer.serializeDocument(input.#L)", memberName)
+                    .write("builder.body = #T(serializer.toByteArray())", RuntimeTypes.Http.ByteArrayContent)
             }
             else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
         }
@@ -908,7 +911,10 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
             }
             ShapeType.DOCUMENT -> {
-                // TODO - implement document support
+                writer.write("val payload = response.body.#T()", RuntimeTypes.Http.readAll)
+                    .withBlock("if (payload != null) {", "}") {
+                        write("builder.#L = #T(payload).deserializeDocument()", memberName, RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
+                    }
             }
             else -> throw CodegenException("member shape ${binding.member} deserializer not implemented")
         }
