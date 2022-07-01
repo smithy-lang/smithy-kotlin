@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
+import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.decodeHexBytes
 import aws.smithy.kotlin.runtime.util.encodeToHex
@@ -79,5 +80,45 @@ class DefaultSignatureCalculatorTest {
         """.trimIndent()
         val actual = SignatureCalculator.Default.stringToSign(canonicalRequest, config)
         assertEquals(expected, actual)
+    }
+
+    private data class ChunkStringToSignTest(val signatureType: AwsSignatureType, val expectedNonSignatureHeaderHash: String)
+    @Test
+    fun testChunkStringToSign() {
+        // Test event stream signing
+        // https://docs.aws.amazon.com/transcribe/latest/dg/streaming-http2.html
+        // Adapted from: https://github.com/awslabs/smithy-rs/blob/v0.38.0/aws/rust-runtime/aws-sigv4/src/event_stream.rs#L166
+        val tests = listOf(
+            ChunkStringToSignTest(AwsSignatureType.HTTP_REQUEST_CHUNK, HashSpecification.EmptyBody.hash),
+            ChunkStringToSignTest(
+                AwsSignatureType.HTTP_REQUEST_EVENT,
+                "0c0e3b3bf66b59b976181bd7d401927bbd624107303c713fd1e5f3d3c8dd1b1e"
+            )
+        )
+
+        val epoch = Instant.fromEpochSeconds(123_456_789L, 1234)
+        val prevSignature = "last message sts".encodeToByteArray().sha256().encodeToHex().encodeToByteArray()
+        val chunkBody = "test payload".encodeToByteArray()
+
+        for (test in tests) {
+            val config = AwsSigningConfig {
+                credentialsProvider = testCredentialsProvider
+                signingDate = epoch
+                region = "us-east-1"
+                service = "testservice"
+                signatureType = test.signatureType
+            }
+            val expected = """
+            AWS4-HMAC-SHA256-PAYLOAD
+            19731129T213309Z
+            19731129/us-east-1/testservice/aws4_request
+            be1f8c7d79ef8e1abc5254a2c70e4da3bfaf4f07328f527444e1fc6ea67273e2
+            ${test.expectedNonSignatureHeaderHash}
+            813ca5285c28ccee5cab8b10ebda9c908fd6d78ed9dc94cc65ea6cb67a7f13ae
+            """.trimIndent()
+
+            val actual = SignatureCalculator.Default.chunkStringToSign(chunkBody, prevSignature, config)
+            assertEquals(expected, actual)
+        }
     }
 }

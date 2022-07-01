@@ -21,7 +21,7 @@ data class AwsSigningResult<T>(
      * * `HTTP_REQUEST_VIA_QUERY_PARAMS` - hex encoding of the binary signature value
      * * `HTTP_REQUEST_CHUNK/SIGV4` - hex encoding of the binary signature value
      * * `HTTP_REQUEST_CHUNK/SIGV4_ASYMMETRIC` - '*'-padded hex encoding of the binary signature value
-     * * `HTTP_REQUEST_EVENT` - binary signature value
+     * * `HTTP_REQUEST_EVENT` - hex encoding of the binary signature value
      */
     val signature: ByteArray,
 ) {
