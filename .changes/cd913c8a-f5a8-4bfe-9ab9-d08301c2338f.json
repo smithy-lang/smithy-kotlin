@@ -1,5 +1,0 @@
-{
-    "id": "cd913c8a-f5a8-4bfe-9ab9-d08301c2338f",
-    "type": "feature",
-    "description": "Add support for HTTP_REQUEST_EVENT chunked signing"
-}

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.11.1] - 07/01/2022
+
+### Features
+* Add support for HTTP_REQUEST_EVENT chunked signing
+
+### Miscellaneous
+* Upgrade Kotlin to 1.7
+
 ## [0.11.0] - 06/23/2022
 
 ### Features
