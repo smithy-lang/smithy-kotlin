@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.asStaticProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
 import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.time.Instant
@@ -103,7 +102,7 @@ class DefaultSignatureCalculatorTest {
 
         for (test in tests) {
             val config = AwsSigningConfig {
-                credentialsProvider = Credentials("fake access key", "fake secret key").asStaticProvider()
+                credentialsProvider = testCredentialsProvider
                 signingDate = epoch
                 region = "us-east-1"
                 service = "testservice"
