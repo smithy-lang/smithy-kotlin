@@ -138,7 +138,7 @@ class ShapeValueGenerator(
     ) : NodeVisitor<Unit> {
 
         override fun objectNode(node: ObjectNode) {
-            if (currShape.type === ShapeType.DOCUMENT) {
+            if (currShape.type == ShapeType.DOCUMENT) {
                 writer
                     .writeInline("#T {\n", RuntimeTypes.Core.Smithy.buildDocument)
                     .indent()
@@ -229,22 +229,16 @@ class ShapeValueGenerator(
         override fun arrayNode(node: ArrayNode) {
             when (currShape.type) {
                 ShapeType.DOCUMENT -> {
-                    writer
-                        .writeInline("#T(\n", RuntimeTypes.Core.Smithy.Document)
-                        .indent()
-                        .writeInline("listOf(\n")
-                        .indent()
-
-                    node.elements.forEach {
-                        generator.writeShapeValueInline(writer, currShape, it)
-                        writer.writeInline(",\n")
+                    writer.withInlineBlock("#T(", ")", RuntimeTypes.Core.Smithy.Document) {
+                        writer.withInlineBlock("listOf(", ")") {
+                            node.elements.forEachIndexed { index, it ->
+                                generator.writeShapeValueInline(writer, currShape, it)
+                                if (index < node.elements.size - 1) {
+                                    writer.writeInline(",\n")
+                                }
+                            }
+                        }
                     }
-
-                    writer
-                        .dedent()
-                        .writeInline(")\n")
-                        .dedent()
-                        .writeInline(")")
                 }
 
                 else -> {

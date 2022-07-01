@@ -34,6 +34,21 @@ fun <T : CodeWriter> T.withBlock(
 ): T = wrapBlockIf(true, textBeforeNewLine, textAfterNewLine, *args) { block(this) }
 
 /**
+ * Like [withBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
+ */
+fun <T : CodeWriter> T.withInlineBlock(
+    textBeforeNewLine: String,
+    textAfterNewLine: String,
+    vararg args: Any,
+    block: T.() -> Unit
+): T {
+    openBlock(textBeforeNewLine, *args)
+    block(this)
+    closeInlineBlock(textAfterNewLine)
+    return this
+}
+
+/**
  * Extension function that is more idiomatic Kotlin that is roughly the same purpose as an if block wrapped around
  * the provided function `openBlock(String textBeforeNewline, String textAfterNewline, Runnable r)`
  *
@@ -61,6 +76,16 @@ fun <T : CodeWriter> T.wrapBlockIf(
     if (condition) openBlock(textBeforeNewLine, *args)
     block(this)
     if (condition) closeBlock(textAfterNewLine)
+    return this
+}
+
+/**
+ * Like [CodeWriter.closeBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
+ */
+fun <T : CodeWriter> T.closeInlineBlock(textAfterNewLine: String): T {
+    writeInline("\n")
+    dedent()
+    writeInline(textAfterNewLine)
     return this
 }
 
