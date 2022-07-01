@@ -46,8 +46,7 @@ class DeserializeUnionGenerator(
      */
     override fun renderMemberShape(memberShape: MemberShape) {
         when (val targetShape = ctx.model.expectShape(memberShape.target)) {
-            is ListShape,
-            is SetShape -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
+            is ListShape -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
             is MapShape -> renderMapMemberDeserializer(memberShape, targetShape)
             is StructureShape,
             is UnionShape -> renderShapeDeserializer(memberShape)

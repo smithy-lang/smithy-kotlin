@@ -7,7 +7,7 @@ package software.amazon.smithy.kotlin.codegen.rendering
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.utils.CodeWriter
+import software.amazon.smithy.utils.AbstractCodeWriter
 
 // Determines the jvmTarget version emitted to the build file
 private val JVM_TARGET_VERSION: String = System.getProperty("smithy.kotlin.codegen.jvmTargetVersion", "1.8")
@@ -23,7 +23,7 @@ fun writeGradleBuild(
     manifest: FileManifest,
     dependencies: List<KotlinDependency>
 ) {
-    val writer = createCodeWriter()
+    val writer = GradleWriter()
 
     val isKmp = settings.build.generateMultiplatformProject
     val isRootModule = settings.build.generateFullProject
@@ -47,7 +47,7 @@ fun writeGradleBuild(
 
         write(
             "kotlin(\"$pluginName\") #W",
-            { w: CodeWriter ->
+            { w: AbstractCodeWriter<*> ->
                 if (isRootModule) {
                     w.write("version #S", KOTLIN_COMPILER_VERSION)
                 }
@@ -82,7 +82,7 @@ fun writeGradleBuild(
 }
 
 fun renderKmpGradleBuild(
-    writer: CodeWriter,
+    writer: GradleWriter,
     isRootModule: Boolean,
     dependencies: List<KotlinDependency>,
     pluginsRenderer: InlineCodeWriter,
@@ -119,15 +119,15 @@ fun renderKmpGradleBuild(
         }
         """.trimIndent(),
         pluginsRenderer,
-        { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
-        { w: CodeWriter -> if (isRootModule) renderRootJvmPluginConfig(w) else w.write("jvm()") },
-        { w: CodeWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = true, dependencies = dependencies) },
-        { w: CodeWriter -> renderDependencies(w, scope = Scope.TEST, isKmp = true, dependencies = dependencies) },
+        { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
+        { w: GradleWriter -> if (isRootModule) renderRootJvmPluginConfig(w) else w.write("jvm()") },
+        { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = true, dependencies = dependencies) },
+        { w: GradleWriter -> renderDependencies(w, scope = Scope.TEST, isKmp = true, dependencies = dependencies) },
         annotationRenderer
     )
 }
 
-fun renderRootJvmPluginConfig(writer: CodeWriter) {
+fun renderRootJvmPluginConfig(writer: GradleWriter) {
     writer.write(
         """
             jvm {
@@ -148,7 +148,7 @@ fun renderRootJvmPluginConfig(writer: CodeWriter) {
 }
 
 fun renderJvmGradleBuild(
-    writer: CodeWriter,
+    writer: GradleWriter,
     isRootModule: Boolean,
     dependencies: List<KotlinDependency>,
     pluginsRenderer: InlineCodeWriter,
@@ -181,8 +181,8 @@ fun renderJvmGradleBuild(
         }
         """.trimIndent(),
         pluginsRenderer,
-        { w: CodeWriter -> if (isRootModule) repositoryRenderer(w) },
-        { w: CodeWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
+        { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
+        { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
         annotationRenderer
     )
 }
@@ -192,7 +192,7 @@ private enum class Scope {
     SOURCE, TEST;
 }
 
-private fun renderDependencies(writer: CodeWriter, scope: Scope, isKmp: Boolean, dependencies: List<KotlinDependency>) {
+private fun renderDependencies(writer: GradleWriter, scope: Scope, isKmp: Boolean, dependencies: List<KotlinDependency>) {
     if (!isKmp) {
         writer.write("implementation(kotlin(\"stdlib\"))")
     }
@@ -229,14 +229,12 @@ private val repositoryRenderer: InlineCodeWriter = {
     )
 }
 
-// Create a new [CodeWriter] for Gradle kts files
-// FIXME ~ new codewriter should use settings from parent. Support from Smithy is needed
-//  for this however.  See https://github.com/awslabs/smithy/issues/1066
-private fun createCodeWriter(): CodeWriter =
-    CodeWriter().apply {
-        trimBlankLines()
-        trimTrailingSpaces()
-        setIndentText("    ")
-        expressionStart = '#'
-        putFormatter('W', InlineCodeWriterFormatter(::createCodeWriter))
+class GradleWriter(parent: GradleWriter? = null) : AbstractCodeWriter<GradleWriter>() {
+    init {
+        trimBlankLines(parent?.trimBlankLines ?: 1)
+        trimTrailingSpaces(parent?.trimTrailingSpaces ?: true)
+        indentText = parent?.indentText ?: "    "
+        expressionStart = parent?.expressionStart ?: '#'
+        putFormatter('W', InlineCodeWriterFormatter(::GradleWriter))
     }
+}

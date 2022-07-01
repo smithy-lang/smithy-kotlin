@@ -177,13 +177,14 @@ class SymbolProviderTest {
         val model = """
             structure Record { }
 
-            set Records {
+            @uniqueItems
+            list Records {
                 member: Record,
             }
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-        val setShape = model.expectShape<SetShape>("foo.bar#Records")
+        val setShape = model.expectShape<ListShape>("foo.bar#Records")
         val setSymbol = provider.toSymbol(setShape)
 
         assertEquals("Set<Record>", setSymbol.name)
@@ -328,7 +329,7 @@ class SymbolProviderTest {
         assertEquals("Document", documentSymbol.name)
         assertEquals("null", documentSymbol.defaultValue())
         assertEquals(true, documentSymbol.isBoxed)
-        assertEquals("${KotlinDependency.CORE.namespace}.smithy", documentSymbol.namespace)
+        assertEquals("${CORE.namespace}.smithy", documentSymbol.namespace)
         assertEquals(1, documentSymbol.dependencies.size)
     }
 

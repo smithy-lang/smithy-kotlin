@@ -22,7 +22,7 @@ import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.traits.DocumentationTrait
 import software.amazon.smithy.model.traits.EnumDefinition
-import software.amazon.smithy.utils.CodeWriter
+import software.amazon.smithy.utils.AbstractCodeWriter
 import java.util.function.BiFunction
 
 /**
@@ -42,16 +42,18 @@ class KotlinWriter(
     val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf(),
     val dependencies: MutableSet<SymbolDependency> = mutableSetOf(),
     val imports: ImportDeclarations = ImportDeclarations()
-) : CodeWriter() {
+) : AbstractCodeWriter<KotlinWriter>() {
 
     init {
         trimBlankLines()
         trimTrailingSpaces()
-        setIndentText("    ")
+
+        indentText = "    "
         expressionStart = '#'
 
         // type name: `Foo`
         putFormatter('T', KotlinSymbolFormatter(this) { symbol -> fullyQualifiedSymbols.contains(symbol.toFullyQualifiedSymbolName()) })
+
         // fully qualified type: `aws.sdk.kotlin.model.Foo`
         putFormatter('Q', KotlinSymbolFormatter(this) { true })
 
@@ -173,7 +175,7 @@ class KotlinWriter(
     fun dokka(block: KotlinWriter.() -> Unit): KotlinWriter {
         pushState()
         write("/**")
-        setNewlinePrefix(" * ")
+        newlinePrefix = " * "
         block(this)
         popState()
         write(" */")
@@ -234,7 +236,7 @@ class KotlinWriter(
 /**
  * Registers a [SectionWriter] given a [SectionId] to a specific writer.  This will cause the
  * [SectionWriter.write] to be called at the point in which the section is declared via
- * the [CodeWriter.declareSection] function.
+ * the [declareSection] function.
  */
 fun KotlinWriter.registerSectionWriter(id: SectionId, writer: SectionWriter): KotlinWriter {
     onSection(id.javaClass.canonicalName) { default ->
@@ -334,7 +336,7 @@ class KotlinPropertyFormatter(
 typealias InlineKotlinWriter = KotlinWriter.() -> Unit
 /**
  * Formatter to enable passing a writing function
- * @param codeWriterCreator function that creates a new [CodeWriter] instance used to generate output of inline content
+ * @param parent a [KotlinWriter] which provides inherited state for this inner writer.
  */
 class InlineKotlinWriterFormatter(private val parent: KotlinWriter) : BiFunction<Any, String, String> {
     @Suppress("UNCHECKED_CAST")
@@ -349,14 +351,6 @@ class InlineKotlinWriterFormatter(private val parent: KotlinWriter) : BiFunction
         func(innerWriter)
         return innerWriter.rawString().trimEnd()
     }
-}
-
-// Remove all strings from source string and return the result
-private fun String.stripAll(stripList: List<String>): String {
-    var newStr = this
-    for (item in stripList) newStr = newStr.replace(item, "")
-
-    return newStr
 }
 
 // Remove leading, trailing, and consecutive blank lines

@@ -557,7 +557,8 @@ class SerializeStructGeneratorTest {
                 payload: IntegerSet
             }
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }            
         """
@@ -588,7 +589,8 @@ class SerializeStructGeneratorTest {
                 payload: IntegerSet
             }
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: StringMap
             }
             
@@ -626,7 +628,8 @@ class SerializeStructGeneratorTest {
                 payload: IntegerSet
             }
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: StringList
             }
             
@@ -669,7 +672,8 @@ class SerializeStructGeneratorTest {
                 payload: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """
@@ -698,7 +702,8 @@ class SerializeStructGeneratorTest {
                 member: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """
@@ -738,7 +743,8 @@ class SerializeStructGeneratorTest {
                 value: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """
@@ -779,7 +785,8 @@ class SerializeStructGeneratorTest {
                 value: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """

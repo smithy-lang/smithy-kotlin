@@ -415,7 +415,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
      * Render serialization for a member bound with the `httpPayload` trait
      *
      * @param ctx The code generation context
-     * @param op The operation shape
      * @param binding The explicit payload binding
      * @param writer The code writer to render to
      */
@@ -794,8 +793,8 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     }
 
                     val toCollectionType = when {
+                        memberTarget.isListShape && memberTarget.hasTrait<UniqueItemsTrait>() -> "?.toSet()"
                         memberTarget.isListShape -> ""
-                        memberTarget.isSetShape -> "?.toSet()"
                         else -> throw CodegenException("unknown collection shape: $memberTarget")
                     }
 
@@ -842,10 +841,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .write("val map = mutableMapOf<String, #T>()", targetValueSymbol)
             .openBlock("for (hdrKey in $keyCollName) {")
             .call {
-                val getFn = when (targetValueShape) {
-                    is StringShape -> "[hdrKey]"
-                    is ListShape -> ".getAll(hdrKey)"
-                    is SetShape -> ".getAll(hdrKey)?.toSet()"
+                val getFn = when {
+                    targetValueShape.isStringShape -> "[hdrKey]"
+                    targetValueShape.isListShape && targetValueShape.hasTrait<UniqueItemsTrait>() ->
+                        ".getAll(hdrKey)?.toSet()"
+                    targetValueShape.isListShape -> ".getAll(hdrKey)"
                     else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
                 }
                 // get()/getAll() returns String? or List<String>?, this shouldn't ever trigger the continue though...

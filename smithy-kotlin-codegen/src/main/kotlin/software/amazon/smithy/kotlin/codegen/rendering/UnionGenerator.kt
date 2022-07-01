@@ -13,7 +13,6 @@ import software.amazon.smithy.kotlin.codegen.model.isBoxed
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.utils.CodeWriter
 
 /**
  * Renders Smithy union shapes
@@ -115,7 +114,12 @@ class UnionGenerator(
     }
 
     // generate a `hashCode()` implementation
-    private fun renderHashCode(model: Model, sortedMembers: List<MemberShape>, symbolProvider: SymbolProvider, writer: CodeWriter) {
+    private fun renderHashCode(
+        model: Model,
+        sortedMembers: List<MemberShape>,
+        symbolProvider: SymbolProvider,
+        writer: KotlinWriter,
+    ) {
         writer.write("")
         writer.withBlock("override fun hashCode(): #Q {", "}", KotlinTypes.Int) {
             write("return value#L", selectHashFunctionForShape(model, sortedMembers[0], symbolProvider))
@@ -156,7 +160,7 @@ class UnionGenerator(
     }
 
     // generate a `equals()` implementation
-    private fun renderEquals(model: Model, sortedMembers: List<MemberShape>, typeName: String, writer: CodeWriter) {
+    private fun renderEquals(model: Model, sortedMembers: List<MemberShape>, typeName: String, writer: KotlinWriter) {
         writer.write("")
         writer.withBlock("override fun equals(other: #Q?): #Q {", "}", KotlinTypes.Any, KotlinTypes.Boolean) {
             write("if (this === other) return true")
