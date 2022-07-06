@@ -259,7 +259,7 @@ class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializ
         }
     }
 
-    fun serializeDocument(value: Document?) {
+    override fun serializeDocument(value: Document?) {
         when (value) {
             is Document.Number -> jsonWriter.writeValue(value.value)
             is Document.String -> jsonWriter.writeValue(value.value)

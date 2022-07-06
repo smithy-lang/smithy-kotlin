@@ -122,6 +122,11 @@ object RuntimeTypes {
                 val SuccessAcceptor = runtimeSymbol("SuccessAcceptor", KotlinDependency.CORE, "retries.policy")
             }
         }
+
+        object Smithy {
+            val Document = runtimeSymbol("Document", KotlinDependency.CORE, "smithy")
+            val buildDocument = runtimeSymbol("buildDocument", KotlinDependency.CORE, "smithy")
+        }
     }
 
     object Hashing {

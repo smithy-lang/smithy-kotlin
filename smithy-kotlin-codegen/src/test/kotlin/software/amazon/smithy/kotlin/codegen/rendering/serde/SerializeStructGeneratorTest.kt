@@ -136,6 +136,26 @@ class SerializeStructGeneratorTest {
     }
 
     @Test
+    fun `it serializes a structure with a document field`() {
+        val model = (
+            modelPrefix + """            
+            structure FooRequest {
+                payload: Document
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            serializer.serializeStruct(OBJ_DESCRIPTOR) {
+                input.payload?.let { field(PAYLOAD_DESCRIPTOR, it) }
+            }
+        """.trimIndent()
+
+        val actual = codegenSerializerForShape(model, "com.test#Foo")
+        actual.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
     fun `it serializes a structure with a list of epoch timestamp values`() {
         val model = (
             modelPrefix + """            
@@ -234,8 +254,6 @@ class SerializeStructGeneratorTest {
 
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
-
-    // TODO ~ Support Document Type
 
     @Test
     fun `it serializes a structure with a nested structure`() {

@@ -90,7 +90,6 @@ open class DeserializeStructGenerator(
             ShapeType.MAP -> renderMapMemberDeserializer(memberShape, targetShape as MapShape)
             ShapeType.STRUCTURE,
             ShapeType.UNION -> renderShapeDeserializer(memberShape)
-            ShapeType.DOCUMENT -> renderDocumentShapeDeserializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
             ShapeType.STRING,
@@ -101,15 +100,11 @@ open class DeserializeStructGenerator(
             ShapeType.LONG,
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
+            ShapeType.DOCUMENT,
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER -> renderShapeDeserializer(memberShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
-    }
-
-    // TODO ~ Not yet implemented
-    @Suppress("UNUSED_PARAMETER") // Until method is implemented
-    protected fun renderDocumentShapeDeserializer(memberShape: MemberShape) {
     }
 
     /**
@@ -179,6 +174,7 @@ open class DeserializeStructGenerator(
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER,
             ShapeType.BLOB,
+            ShapeType.DOCUMENT,
             ShapeType.TIMESTAMP -> renderEntry(elementShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.SET,
             ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
@@ -380,6 +376,7 @@ open class DeserializeStructGenerator(
             ShapeType.BIG_DECIMAL,
             ShapeType.BIG_INTEGER,
             ShapeType.BLOB,
+            ShapeType.DOCUMENT,
             ShapeType.TIMESTAMP -> renderElement(elementShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.LIST,
             ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
@@ -513,6 +510,7 @@ open class DeserializeStructGenerator(
             ShapeType.LONG -> "deserializeLong()"
             ShapeType.FLOAT -> "deserializeFloat()"
             ShapeType.DOUBLE -> "deserializeDouble()"
+            ShapeType.DOCUMENT -> "deserializeDocument()"
             ShapeType.BLOB -> {
                 writer.addImport("decodeBase64Bytes", KotlinDependency.UTILS)
                 "deserializeString().decodeBase64Bytes()"

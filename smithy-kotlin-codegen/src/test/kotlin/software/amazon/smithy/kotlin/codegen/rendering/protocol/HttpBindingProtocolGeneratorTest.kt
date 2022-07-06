@@ -35,7 +35,7 @@ class HttpBindingProtocolGeneratorTest {
         .expectFileString("src/main/kotlin/com/test/transform/$filename")
 
     @Test
-    fun `it creates serialize transforms in correct package`() {
+    fun itCreatesSerializeTransformsInCorrectPackage() {
         val (ctx, manifest, generator) = defaultModel.newTestContext()
         generator.generateProtocolClient(ctx)
         ctx.delegator.flushWriters()
@@ -43,7 +43,7 @@ class HttpBindingProtocolGeneratorTest {
     }
 
     @Test
-    fun `it creates smoke test request serializer`() {
+    fun itCreatesSmokeTestRequestSerializer() {
         val contents = getTransformFileContents("SmokeTestOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val label1 = "\${input.label1}" // workaround for raw strings not being able to contain escapes
@@ -85,7 +85,7 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
     }
 
     @Test
-    fun `it serializes explicit string payloads`() {
+    fun itSerializesExplicitStringPayloads() {
         val contents = getTransformFileContents("ExplicitStringOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -112,7 +112,7 @@ internal class ExplicitStringOperationSerializer: HttpSerialize<ExplicitStringRe
     }
 
     @Test
-    fun `it serializes explicit blob payloads`() {
+    fun itSerializesExplicitBlobPayloads() {
         val contents = getTransformFileContents("ExplicitBlobOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -139,7 +139,7 @@ internal class ExplicitBlobOperationSerializer: HttpSerialize<ExplicitBlobReques
     }
 
     @Test
-    fun `it serializes explicit streaming blob payloads`() {
+    fun itSerializesExplicitStreamingBlobPayloads() {
         val contents = getTransformFileContents("ExplicitBlobStreamOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -166,7 +166,7 @@ internal class ExplicitBlobStreamOperationSerializer: HttpSerialize<ExplicitBlob
     }
 
     @Test
-    fun `it serializes explicit struct payloads`() {
+    fun itSerializesExplicitStructPayloads() {
         val contents = getTransformFileContents("ExplicitStructOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -194,7 +194,35 @@ internal class ExplicitStructOperationSerializer: HttpSerialize<ExplicitStructRe
     }
 
     @Test
-    fun `it serializes operation inputs with enums`() {
+    fun itSerializesExplicitDocumentPayloads() {
+        val contents = getTransformFileContents("ExplicitDocumentOperationSerializer.kt")
+        contents.assertBalancedBracesAndParens()
+        val expectedContents = """
+internal class ExplicitDocumentOperationSerializer: HttpSerialize<ExplicitDocumentRequest> {
+    override suspend fun serialize(context: ExecutionContext, input: ExplicitDocumentRequest): HttpRequestBuilder {
+        val builder = HttpRequestBuilder()
+        builder.method = HttpMethod.POST
+
+        builder.url {
+            path = "/explicit/document"
+        }
+
+        if (input.payload1 != null) {
+            val payload = serializeDocumentPayload(input.payload1)
+            builder.body = ByteArrayContent(payload)
+        }
+        if (builder.body !is HttpBody.Empty) {
+            builder.headers.setMissing("Content-Type", "application/json")
+        }
+        return builder
+    }
+}
+"""
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
+    }
+
+    @Test
+    fun itSerializesOperationInputsWithEnums() {
         val contents = getTransformFileContents("EnumInputOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -224,7 +252,7 @@ internal class EnumInputOperationSerializer: HttpSerialize<EnumInputRequest> {
     }
 
     @Test
-    fun `it serializes operation inputs with timestamps`() {
+    fun itSerializesOperationInputsWithTimestamps() {
         val contents = getTransformFileContents("TimestampInputOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val tsLabel = "\${input.tsLabel?.format(TimestampFormat.ISO_8601)}" // workaround for raw strings not being able to contain escapes
@@ -267,7 +295,7 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
     }
 
     @Test
-    fun `it creates blob input request serializer`() {
+    fun itCreatesBlobInputRequestSerializer() {
         // base64 encoding is protocol dependent. The mock protocol generator is based on
         // json protocol though which does encode to base64
         val contents = getTransformFileContents("BlobInputOperationSerializer.kt")
@@ -301,7 +329,7 @@ internal class BlobInputOperationSerializer: HttpSerialize<BlobInputRequest> {
     }
 
     @Test
-    fun `it handles query string literals`() {
+    fun itHandlesQueryStringLiterals() {
         val contents = getTransformFileContents("ConstantQueryStringOperationSerializer.kt")
         contents.assertBalancedBracesAndParens()
         val label1 = "\${input.hello}" // workaround for raw strings not being able to contain escapes
@@ -331,7 +359,7 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
     }
 
     @Test
-    fun `it creates smoke test response deserializer`() {
+    fun itCreatesSmokeTestResponseDeserializer() {
         val contents = getTransformFileContents("SmokeTestOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -359,7 +387,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun `it deserializes prefix headers`() {
+    fun itDeserializesPrefixHeaders() {
         val contents = getTransformFileContents("PrefixHeadersOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -380,7 +408,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun `it deserializes primitive headers`() {
+    fun itDeserializesPrimitiveHeaders() {
         val contents = getTransformFileContents("PrimitiveShapesOperationOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -394,7 +422,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun `it deserializes explicit string payloads`() {
+    fun itDeserializesExplicitStringPayloads() {
         val contents = getTransformFileContents("ExplicitStringOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -405,7 +433,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun `it deserializes explicit blob payloads`() {
+    fun itDeserializesExplicitBlobPayloads() {
         val contents = getTransformFileContents("ExplicitBlobOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -415,7 +443,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun `it deserializes explicit streaming blob payloads`() {
+    fun itDeserializesExplicitStreamingBlobPayloads() {
         val contents = getTransformFileContents("ExplicitBlobStreamOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -425,7 +453,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun `it deserializes explicit struct payloads`() {
+    fun itDeserializesExplicitStructPayloads() {
         val contents = getTransformFileContents("ExplicitStructOperationDeserializer.kt")
         contents.assertBalancedBracesAndParens()
         val expectedContents = """
@@ -438,14 +466,27 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
     }
 
     @Test
-    fun `it leaves off content-type`() {
+    fun itDeserializesExplicitDocumentPayloads() {
+        val contents = getTransformFileContents("ExplicitDocumentOperationDeserializer.kt")
+        contents.assertBalancedBracesAndParens()
+        val expectedContents = """
+        val payload = response.body.readAll()
+        if (payload != null) {
+            builder.payload1 = deserializeDocumentPayload(payload)
+        }
+"""
+        contents.shouldContainOnlyOnceWithDiff(expectedContents)
+    }
+
+    @Test
+    fun itLeavesOffContentType() {
         // GET/HEAD/TRACE/OPTIONS/CONNECT shouldn't specify content-type
         val contents = getTransformFileContents("ConstantQueryStringOperationSerializer.kt")
         contents.shouldNotContain("Content-Type")
     }
 
     @Test
-    fun `it escapes uri literals`() {
+    fun itEscapesUriLiterals() {
         // https://github.com/awslabs/smithy-kotlin/issues/65
         // https://github.com/awslabs/smithy-kotlin/issues/395
         val uri = "/test/\$LATEST"
