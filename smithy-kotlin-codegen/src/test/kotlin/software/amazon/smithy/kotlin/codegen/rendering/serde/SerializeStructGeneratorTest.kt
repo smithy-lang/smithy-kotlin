@@ -138,12 +138,12 @@ class SerializeStructGeneratorTest {
     @Test
     fun `it serializes a structure with a document field`() {
         val model = (
-                modelPrefix + """            
+            modelPrefix + """            
             structure FooRequest {
                 payload: Document
             }
         """
-                ).toSmithyModel()
+            ).toSmithyModel()
 
         val expected = """
             serializer.serializeStruct(OBJ_DESCRIPTOR) {

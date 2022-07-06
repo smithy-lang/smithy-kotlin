@@ -73,19 +73,29 @@ open class JsonParserGenerator(
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
             writer.openBlock("internal fun #identifier.name:L(deserializer: #T): #T {", RuntimeTypes.Serde.Deserializer, symbol)
                 .call {
-                    if (shape.isDocumentShape) {
-                        // the serde interfaces aren't symmetric - Serializer explicitly implements PrimitiveSerializer,
-                        // while Deserializer doesn't implement PrimitiveDeserializer. We can safely cast to JsonDeserializer
-                        // here since we're specifically in the JSON generator.
-                        writer.write("return (deserializer as #T).deserializeDocument()", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
-                    } else if (shape.isUnionShape) {
-                        writer.write("var value: #T? = null", symbol)
-                        renderDeserializerBody(ctx, shape, members.toList(), writer)
-                        writer.write("return value ?: throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "Deserialized union value unexpectedly null: ${symbol.name}")
-                    } else {
-                        writer.write("val builder = #T.Builder()", symbol)
-                        renderDeserializerBody(ctx, shape, members.toList(), writer)
-                        writer.write("return builder.build()")
+                    when (shape.type) {
+                        ShapeType.DOCUMENT ->
+                            // the serde interfaces aren't symmetric - Serializer explicitly implements PrimitiveSerializer,
+                            // while Deserializer doesn't implement PrimitiveDeserializer. We can safely cast to JsonDeserializer
+                            // here since we're specifically in the JSON generator.
+                            writer.write(
+                                "return (deserializer as #T).deserializeDocument()",
+                                RuntimeTypes.Serde.SerdeJson.JsonDeserializer
+                            )
+                        ShapeType.UNION -> {
+                            writer.write("var value: #T? = null", symbol)
+                            renderDeserializerBody(ctx, shape, members.toList(), writer)
+                            writer.write(
+                                "return value ?: throw #T(#S)",
+                                RuntimeTypes.Serde.DeserializationException,
+                                "Deserialized union value unexpectedly null: ${symbol.name}"
+                            )
+                        }
+                        else -> {
+                            writer.write("val builder = #T.Builder()", symbol)
+                            renderDeserializerBody(ctx, shape, members.toList(), writer)
+                            writer.write("return builder.build()")
+                        }
                     }
                 }
                 .closeBlock("}")
