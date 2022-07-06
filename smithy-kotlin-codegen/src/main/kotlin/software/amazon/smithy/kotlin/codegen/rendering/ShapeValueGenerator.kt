@@ -231,11 +231,9 @@ class ShapeValueGenerator(
                 ShapeType.DOCUMENT -> {
                     writer.withInlineBlock("#T(", ")", RuntimeTypes.Core.Smithy.Document) {
                         writer.withInlineBlock("listOf(", ")") {
-                            node.elements.forEachIndexed { index, it ->
+                            node.elements.forEach {
                                 generator.writeShapeValueInline(writer, currShape, it)
-                                if (index < node.elements.size - 1) {
-                                    writer.writeInline(",\n")
-                                }
+                                writer.writeInline(",\n")
                             }
                         }
                     }
