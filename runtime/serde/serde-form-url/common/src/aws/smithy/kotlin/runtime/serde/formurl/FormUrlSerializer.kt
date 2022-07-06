@@ -61,6 +61,10 @@ private class FormUrlSerializer(
     override fun serializeNull() {
         throw SerializationException("null values not supported by form-url serializer")
     }
+
+    override fun serializeDocument(value: Document?) {
+        throw SerializationException("document values not supported by form-url serializer")
+    }
 }
 
 private class FormUrlStructSerializer(
@@ -212,6 +216,9 @@ private class FormUrlListSerializer(
     }
 
     override fun serializeNull() {}
+    override fun serializeDocument(value: Document?) {
+        throw SerializationException("document values not supported by form-url serializer")
+    }
 }
 
 private class FormUrlMapSerializer(

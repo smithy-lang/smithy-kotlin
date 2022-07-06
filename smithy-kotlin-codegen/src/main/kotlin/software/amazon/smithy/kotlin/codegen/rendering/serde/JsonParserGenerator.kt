@@ -13,10 +13,7 @@ import software.amazon.smithy.kotlin.codegen.model.knowledge.SerdeIndex
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.toRenderingContext
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.OperationShape
-import software.amazon.smithy.model.shapes.Shape
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 open class JsonParserGenerator(
@@ -76,7 +73,12 @@ open class JsonParserGenerator(
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
             writer.openBlock("internal fun #identifier.name:L(deserializer: #T): #T {", RuntimeTypes.Serde.Deserializer, symbol)
                 .call {
-                    if (shape.isUnionShape) {
+                    if (shape.isDocumentShape) {
+                        // the serde interfaces aren't symmetric - Serializer explicitly implements PrimitiveSerializer,
+                        // while Deserializer doesn't implement PrimitiveDeserializer. We can safely cast to JsonDeserializer
+                        // here since we're specifically in the JSON generator.
+                        writer.write("return (deserializer as #T).deserializeDocument()", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
+                    } else if (shape.isUnionShape) {
                         writer.write("var value: #T? = null", symbol)
                         renderDeserializerBody(ctx, shape, members.toList(), writer)
                         writer.write("return value ?: throw #T(#S)", RuntimeTypes.Serde.DeserializationException, "Deserialized union value unexpectedly null: ${symbol.name}")
@@ -131,7 +133,7 @@ open class JsonParserGenerator(
         return target.payloadDeserializer(ctx.settings, symbol, forMembers) { writer ->
             addNestedDocumentDeserializers(ctx, target, writer)
             writer.withBlock("internal fun #identifier.name:L(payload: ByteArray): #T {", "}", symbol) {
-                if (target.members().isEmpty()) {
+                if (target.members().isEmpty() && !target.isDocumentShape) {
                     // short circuit when the shape has no modeled members to deserialize
                     write("return #T.Builder().build()", symbol)
                 } else {

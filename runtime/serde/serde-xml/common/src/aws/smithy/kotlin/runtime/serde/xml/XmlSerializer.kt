@@ -149,6 +149,10 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         // NOP
     }
 
+    override fun serializeDocument(value: Document?) {
+        throw SerializationException("document values not supported by xml serializer")
+    }
+
     override fun serializeBoolean(value: Boolean) { xmlWriter.text(value.toString()) }
 
     override fun serializeByte(value: Byte) = serializeNumber(value)
@@ -286,6 +290,10 @@ private class XmlMapSerializer(
         xmlWriter.writeTag(tagName, ns)
     }
 
+    override fun serializeDocument(value: Document?) {
+        throw SerializationException("document values not supported by xml serializer")
+    }
+
     private fun serializePrimitive(value: Any) {
         val tagName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
         val ns = descriptor.findTrait<XmlCollectionValueNamespace>()
@@ -342,6 +350,10 @@ private class XmlListSerializer(
     override fun serializeNull() {
         val ns = descriptor.findTrait<XmlCollectionValueNamespace>()
         xmlWriter.writeTag(memberTagName, ns)
+    }
+
+    override fun serializeDocument(value: Document?) {
+        throw SerializationException("document values not supported by xml serializer")
     }
 
     override fun serializeInstant(value: Instant, format: TimestampFormat) = serializeString(value.format(format))

@@ -414,6 +414,11 @@ interface PrimitiveSerializer {
      * Serializes the given value.
      */
     fun serializeNull()
+
+    /**
+     * Serializes the given value.
+     */
+    fun serializeDocument(value: Document?)
 }
 
 /**
