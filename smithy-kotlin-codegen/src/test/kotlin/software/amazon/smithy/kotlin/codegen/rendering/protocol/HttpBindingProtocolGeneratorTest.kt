@@ -208,9 +208,8 @@ internal class ExplicitDocumentOperationSerializer: HttpSerialize<ExplicitDocume
         }
 
         if (input.payload1 != null) {
-            val serializer = JsonSerializer()
-            serializer.serializeDocument(input.payload1)
-            builder.body = ByteArrayContent(serializer.toByteArray())
+            val payload = serializeDocumentPayload(input.payload1)
+            builder.body = ByteArrayContent(payload)
         }
         if (builder.body !is HttpBody.Empty) {
             builder.headers.setMissing("Content-Type", "application/json")
@@ -473,7 +472,7 @@ internal class SmokeTestOperationDeserializer: HttpDeserialize<SmokeTestResponse
         val expectedContents = """
         val payload = response.body.readAll()
         if (payload != null) {
-            builder.payload1 = JsonDeserializer(payload).deserializeDocument()
+            builder.payload1 = deserializeDocumentPayload(payload)
         }
 """
         contents.shouldContainOnlyOnceWithDiff(expectedContents)
