@@ -73,12 +73,10 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     override fun visitAnd(expression: AndExpression): String {
         writer.addImport(RuntimeTypes.Utils.truthiness)
 
-        val left = expression.left
-        val leftName = left.accept(this)
+        val leftName = expression.left.accept(this)
         val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
 
-        val right = expression.right
-        val rightName = right.accept(this)
+        val rightName = expression.right.accept(this)
 
         return addTempVar("and", "if ($leftTruthinessName) $rightName else $leftName")
     }
@@ -208,12 +206,10 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     override fun visitOr(expression: OrExpression): String {
         writer.addImport(RuntimeTypes.Utils.truthiness)
 
-        val left = expression.left
-        val leftName = left.accept(this)
+        val leftName = expression.left.accept(this)
         val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
 
-        val right = expression.right
-        val rightName = right.accept(this)
+        val rightName = expression.right.accept(this)
 
         return addTempVar("or", "if ($leftTruthinessName) $leftName else $rightName")
     }
