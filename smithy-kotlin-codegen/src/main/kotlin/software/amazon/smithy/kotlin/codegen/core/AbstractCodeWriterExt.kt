@@ -37,7 +37,7 @@ fun <T : AbstractCodeWriter<T>> T.withBlock(
 /**
  * Like [withBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
  */
-fun <T : CodeWriter> T.withInlineBlock(
+fun <T : AbstractCodeWriter<T>> T.withInlineBlock(
     textBeforeNewLine: String,
     textAfterNewLine: String,
     vararg args: Any,
@@ -81,9 +81,9 @@ fun <T : AbstractCodeWriter<T>> T.wrapBlockIf(
 }
 
 /**
- * Like [CodeWriter.closeBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
+ * Like [AbstractCodeWriter.closeBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
  */
-fun <T : CodeWriter> T.closeInlineBlock(textAfterNewLine: String): T {
+fun <T : AbstractCodeWriter<T>> T.closeInlineBlock(textAfterNewLine: String): T {
     writeInline("\n")
     dedent()
     writeInline(textAfterNewLine)

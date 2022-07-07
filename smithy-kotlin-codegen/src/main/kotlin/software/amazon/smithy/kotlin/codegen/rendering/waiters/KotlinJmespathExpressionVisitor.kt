@@ -196,7 +196,7 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
         val operandName = expression.expression.accept(this)
         val truthinessName = addTempVar("${operandName}Truthiness", "truthiness($operandName)")
         val notName = "not${operandName.replaceFirstChar(Char::uppercaseChar)}"
-        return addTempVar(notName, "!${truthinessName}")
+        return addTempVar(notName, "!$truthinessName")
     }
 
     override fun visitObjectProjection(expression: ObjectProjectionExpression): String {
