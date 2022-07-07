@@ -71,11 +71,20 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitAnd(expression: AndExpression): String {
-        throw CodegenException("AndExpression is unsupported")
+        writer.addImport(RuntimeTypes.Utils.truthiness)
+
+        val left = expression.left
+        val leftName = left.accept(this)
+        val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
+
+        val right = expression.right
+        val rightName = right.accept(this)
+
+        return addTempVar("and", "if ($leftTruthinessName) $rightName else $leftName")
     }
 
     override fun visitComparator(expression: ComparatorExpression): String {
-        val left = expression.left!!
+        val left = expression.left
         val leftBaseName = left.accept(this)
 
         val right = expression.right
@@ -103,24 +112,24 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     override fun visitField(expression: FieldExpression): String = subfield(expression, "it")
 
     override fun visitFilterProjection(expression: FilterProjectionExpression): String {
-        val leftName = expression.left!!.accept(this)
+        val leftName = expression.left.accept(this)
         val filteredName = bestTempVarName("${leftName}Filtered")
 
         writer.openBlock("val #L = (#L ?: listOf()).filter {", filteredName, leftName)
 
-        val comparisonName = childBlock(expression.comparison!!)
+        val comparisonName = childBlock(expression.comparison)
         writer.write("#L == true", comparisonName)
 
         writer.closeBlock("}")
 
-        val right = expression.right!!
+        val right = expression.right
         return flatMappingBlock(right, filteredName)
     }
 
     override fun visitFlatten(expression: FlattenExpression): String {
         writer.addImport(RuntimeTypes.Utils.flattenIfPossible)
 
-        val innerName = expression.expression!!.accept(this)
+        val innerName = expression.expression.accept(this)
         return addTempVar("${innerName}OrEmpty", "$innerName?.flattenIfPossible() ?: listOf()")
     }
 
@@ -182,22 +191,36 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitNot(expression: NotExpression): String {
-        throw CodegenException("NotExpression is unsupported")
+        writer.addImport(RuntimeTypes.Utils.truthiness)
+
+        val operandName = expression.expression.accept(this)
+        val truthinessName = addTempVar("${operandName}Truthiness", "truthiness($operandName)")
+        val notName = "not${operandName.replaceFirstChar(Char::uppercaseChar)}"
+        return addTempVar(notName, "!${truthinessName}")
     }
 
     override fun visitObjectProjection(expression: ObjectProjectionExpression): String {
-        val leftName = expression.left!!.accept(this)
+        val leftName = expression.left.accept(this)
         val valuesName = addTempVar("${leftName}Values", "$leftName?.values ?: listOf()")
-        return flatMappingBlock(expression.right!!, valuesName)
+        return flatMappingBlock(expression.right, valuesName)
     }
 
     override fun visitOr(expression: OrExpression): String {
-        throw CodegenException("OrExpression is unsupported")
+        writer.addImport(RuntimeTypes.Utils.truthiness)
+
+        val left = expression.left
+        val leftName = left.accept(this)
+        val leftTruthinessName = addTempVar("${leftName}Truthiness", "truthiness($leftName)")
+
+        val right = expression.right
+        val rightName = right.accept(this)
+
+        return addTempVar("or", "if ($leftTruthinessName) $leftName else $rightName")
     }
 
     override fun visitProjection(expression: ProjectionExpression): String {
-        val leftName = expression.left!!.accept(this)
-        return flatMappingBlock(expression.right!!, leftName)
+        val leftName = expression.left.accept(this)
+        return flatMappingBlock(expression.right, leftName)
     }
 
     override fun visitSlice(expression: SliceExpression): String {
@@ -205,9 +228,9 @@ class KotlinJmespathExpressionVisitor(val writer: KotlinWriter) : ExpressionVisi
     }
 
     override fun visitSubexpression(expression: Subexpression): String {
-        val leftName = expression.left!!.accept(this)
+        val leftName = expression.left.accept(this)
 
-        return when (val right = expression.right!!) {
+        return when (val right = expression.right) {
             is FieldExpression -> subfield(right, leftName)
             else -> throw CodegenException("Subexpression type $right is unsupported")
         }

@@ -18,3 +18,16 @@ inline fun <reified T> Collection<T>.flattenIfPossible(): Collection<T> = this
 
 @JvmName("flattenNestedCollection")
 inline fun <reified T> Collection<Collection<T>>.flattenIfPossible(): Collection<T> = flatten()
+
+/**
+ * Evaluates the "truthiness" of a value based on
+ * [JMESPath definitions](https://jmespath.org/specification.html#or-expressions).
+ */
+fun truthiness(value: Any?): Boolean = when (value) {
+    is Boolean -> value
+    is Collection<*> -> value.isNotEmpty()
+    is Map<*, *> -> value.isNotEmpty()
+    is String -> value.isNotEmpty()
+    null -> false
+    else -> true
+}
