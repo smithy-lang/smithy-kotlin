@@ -91,7 +91,6 @@ open class SerializeStructGenerator(
             ShapeType.MAP -> renderMapMemberSerializer(memberShape, targetShape as MapShape)
             ShapeType.STRUCTURE,
             ShapeType.UNION -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
-            ShapeType.DOCUMENT -> renderDocumentShapeSerializer(memberShape)
             ShapeType.TIMESTAMP -> renderTimestampMemberSerializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
@@ -103,6 +102,7 @@ open class SerializeStructGenerator(
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
+            ShapeType.DOCUMENT,
             ShapeType.BIG_INTEGER -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
@@ -169,6 +169,7 @@ open class SerializeStructGenerator(
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
+            ShapeType.DOCUMENT,
             ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
             ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampEntry(mapShape.value, elementShape, nestingLevel, parentMemberName)
@@ -198,6 +199,7 @@ open class SerializeStructGenerator(
             ShapeType.FLOAT,
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
+            ShapeType.DOCUMENT,
             ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, elementShape, nestingLevel, parentMemberName)
@@ -517,11 +519,6 @@ open class SerializeStructGenerator(
         }
     }
 
-    @Suppress("UNUSED_PARAMETER") // Until method is implemented
-    private fun renderDocumentShapeSerializer(memberShape: MemberShape) {
-        // TODO("Not yet implemented")
-    }
-
     /**
      * Render code to serialize a primitive or structure shape. Example:
      *
@@ -621,6 +618,7 @@ open class SerializeStructGenerator(
             ShapeType.INTEGER,
             ShapeType.LONG,
             ShapeType.FLOAT,
+            ShapeType.DOCUMENT,
             ShapeType.DOUBLE -> defaultIdentifier
             ShapeType.BLOB -> {
                 writer.addImport("encodeBase64String", KotlinDependency.UTILS)
@@ -667,6 +665,7 @@ open class SerializeStructGenerator(
             ShapeType.LONG -> "Long"
             ShapeType.FLOAT -> "Float"
             ShapeType.DOUBLE -> "Double"
+            ShapeType.DOCUMENT -> "Document"
             ShapeType.STRUCTURE, ShapeType.UNION -> "SdkSerializable"
             else -> throw CodegenException("$this has no primitive serialize function on the Serializer interface")
         }

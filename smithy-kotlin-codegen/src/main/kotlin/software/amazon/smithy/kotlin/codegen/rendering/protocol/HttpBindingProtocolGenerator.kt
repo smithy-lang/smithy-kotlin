@@ -446,14 +446,11 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 writer.write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, KotlinTypes.Text.encodeToByteArray)
             }
-            ShapeType.STRUCTURE, ShapeType.UNION -> {
+            ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 val sdg = structuredDataSerializer(ctx)
                 val payloadSerializerFn = sdg.payloadSerializer(ctx, binding.member)
                 writer.write("val payload = #T(input.#L)", payloadSerializerFn, memberName)
                 writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
-            }
-            ShapeType.DOCUMENT -> {
-                // TODO - deal with document members
             }
             else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
         }
@@ -897,7 +894,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 writer.write("builder.$memberName = response.body.$conversion")
             }
-            ShapeType.STRUCTURE, ShapeType.UNION -> {
+            ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 // delegate to the payload deserializer
                 val sdg = structuredDataParser(ctx)
                 val payloadDeserializerFn = sdg.payloadDeserializer(ctx, binding.member)
@@ -906,9 +903,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     .withBlock("if (payload != null) {", "}") {
                         write("builder.#L = #T(payload)", memberName, payloadDeserializerFn)
                     }
-            }
-            ShapeType.DOCUMENT -> {
-                // TODO - implement document support
             }
             else -> throw CodegenException("member shape ${binding.member} deserializer not implemented")
         }
