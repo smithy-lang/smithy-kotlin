@@ -18,7 +18,18 @@ import kotlin.test.fail
 class KotlinJmespathExpressionVisitorTest {
     @Test
     fun testAndExpression() {
-        assertUnimplemented(path = "foo && bar")
+        assertVisit(
+            path = "foo && bar",
+            expectedActualName = "and",
+            expectedCodegen = """
+                import aws.smithy.kotlin.runtime.util.truthiness
+                
+                val foo = it?.foo
+                val fooTruthiness = truthiness(foo)
+                val bar = it?.bar
+                val and = if (fooTruthiness) bar else foo
+            """.trimIndent(),
+        )
     }
 
     @Test
@@ -205,7 +216,17 @@ class KotlinJmespathExpressionVisitorTest {
 
     @Test
     fun testNotExpression() {
-        assertUnimplemented(path = "!foo")
+        assertVisit(
+            path = "!foo",
+            expectedActualName = "notFoo",
+            expectedCodegen = """
+                import aws.smithy.kotlin.runtime.util.truthiness
+                
+                val foo = it?.foo
+                val fooTruthiness = truthiness(foo)
+                val notFoo = !fooTruthiness
+            """.trimIndent(),
+        )
     }
 
     @Test
@@ -220,6 +241,22 @@ class KotlinJmespathExpressionVisitorTest {
                     val bar = it?.bar
                     listOfNotNull(bar)
                 }
+            """.trimIndent(),
+        )
+    }
+
+    @Test
+    fun testOrExpression() {
+        assertVisit(
+            path = "foo || bar",
+            expectedActualName = "or",
+            expectedCodegen = """
+                import aws.smithy.kotlin.runtime.util.truthiness
+                
+                val foo = it?.foo
+                val fooTruthiness = truthiness(foo)
+                val bar = it?.bar
+                val or = if (fooTruthiness) foo else bar
             """.trimIndent(),
         )
     }
@@ -240,11 +277,6 @@ class KotlinJmespathExpressionVisitorTest {
                 }
             """.trimIndent(),
         )
-    }
-
-    @Test
-    fun testOrExpression() {
-        assertUnimplemented(path = "foo || bar")
     }
 
     @Test

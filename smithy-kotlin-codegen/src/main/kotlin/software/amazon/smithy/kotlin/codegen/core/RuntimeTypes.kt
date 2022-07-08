@@ -137,6 +137,7 @@ object RuntimeTypes {
         val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
         val flattenIfPossible = runtimeSymbol("flattenIfPossible", KotlinDependency.UTILS)
         val length = runtimeSymbol("length", KotlinDependency.UTILS)
+        val truthiness = runtimeSymbol("truthiness", KotlinDependency.UTILS)
         val urlEncodeComponent = runtimeSymbol("urlEncodeComponent", KotlinDependency.UTILS, "text")
     }
 

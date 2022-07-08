@@ -553,7 +553,8 @@ class DeserializeStructGeneratorTest {
                 payload: IntegerSet
             }
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }            
         """
@@ -592,7 +593,8 @@ class DeserializeStructGeneratorTest {
                 payload: IntegerSet
             }
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: StringMap
             }
             
@@ -644,7 +646,8 @@ class DeserializeStructGeneratorTest {
                 payload: IntegerSet
             }
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: StringList
             }
             
@@ -698,7 +701,8 @@ class DeserializeStructGeneratorTest {
                 payload: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """
@@ -733,7 +737,8 @@ class DeserializeStructGeneratorTest {
                 member: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """
@@ -784,7 +789,8 @@ class DeserializeStructGeneratorTest {
                 value: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """
@@ -841,7 +847,8 @@ class DeserializeStructGeneratorTest {
                 value: IntegerSet
             }            
             
-            set IntegerSet {
+            @uniqueItems
+            list IntegerSet {
                 member: Integer
             }
         """

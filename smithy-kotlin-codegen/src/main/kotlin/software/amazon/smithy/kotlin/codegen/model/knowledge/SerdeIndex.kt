@@ -129,7 +129,6 @@ private fun walkNestedShapesRequiringSerde(model: Model, shapes: Set<Shape>): Se
                 RelationshipType.MEMBER_TARGET,
                 RelationshipType.STRUCTURE_MEMBER,
                 RelationshipType.LIST_MEMBER,
-                RelationshipType.SET_MEMBER,
                 RelationshipType.MAP_VALUE,
                 RelationshipType.UNION_MEMBER -> true
                 else -> false

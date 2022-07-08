@@ -13,6 +13,7 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
+import software.amazon.smithy.model.traits.UniqueItemsTrait
 import java.util.logging.Logger
 
 /**
@@ -94,7 +95,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         createSymbolBuilder(shape, "String", boxed = true, namespace = "kotlin").build()
     }
 
-    fun createEnumSymbol(shape: StringShape): Symbol {
+    private fun createEnumSymbol(shape: StringShape): Symbol {
         val namespace = "$rootNamespace.model"
         return createSymbolBuilder(shape, shape.defaultName(service), namespace, boxed = true)
             .definitionFile("${shape.defaultName(service)}.kt")
@@ -146,12 +147,19 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
-
-        return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
-            .addReferences(reference)
-            .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
-            .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
-            .build()
+        return if (shape.hasTrait<UniqueItemsTrait>()) {
+            createSymbolBuilder(shape, "Set<$valueType>", boxed = true)
+                .addReference(reference)
+                .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableSetOf<$valueType>")
+                .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "setOf<$valueType>")
+                .build()
+        } else {
+            createSymbolBuilder(shape, "List<$valueType>", boxed = true)
+                .addReferences(reference)
+                .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
+                .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
+                .build()
+        }
     }
 
     override fun mapShape(shape: MapShape): Symbol {
@@ -163,15 +171,6 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableMapOf<String, $valueType>")
             .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "mapOf<String, $valueType>")
             .putProperty(SymbolProperty.ENTRY_EXPRESSION, "Map.Entry<String, $valueType>")
-            .build()
-    }
-
-    override fun setShape(shape: SetShape): Symbol {
-        val reference = toSymbol(shape.member)
-        return createSymbolBuilder(shape, "Set<${reference.name}>", boxed = true)
-            .addReference(reference)
-            .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableSetOf<${reference.name}>")
-            .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "setOf<${reference.name}>")
             .build()
     }
 

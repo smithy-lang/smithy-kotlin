@@ -5,7 +5,8 @@
 package software.amazon.smithy.kotlin.codegen.core
 
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
-import software.amazon.smithy.utils.CodeWriter
+import software.amazon.smithy.utils.AbstractCodeWriter
+import software.amazon.smithy.utils.SimpleCodeWriter
 import java.util.function.BiFunction
 
 /**
@@ -26,7 +27,7 @@ import java.util.function.BiFunction
  * writer.closeBlock("}")
  * ```
  */
-fun <T : CodeWriter> T.withBlock(
+fun <T : AbstractCodeWriter<T>> T.withBlock(
     textBeforeNewLine: String,
     textAfterNewLine: String,
     vararg args: Any,
@@ -36,7 +37,7 @@ fun <T : CodeWriter> T.withBlock(
 /**
  * Like [withBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
  */
-fun <T : CodeWriter> T.withInlineBlock(
+fun <T : AbstractCodeWriter<T>> T.withInlineBlock(
     textBeforeNewLine: String,
     textAfterNewLine: String,
     vararg args: Any,
@@ -66,7 +67,7 @@ fun <T : CodeWriter> T.withInlineBlock(
  * if (foo == bar) writer.closeBlock("}")
  * ```
  */
-fun <T : CodeWriter> T.wrapBlockIf(
+fun <T : AbstractCodeWriter<T>> T.wrapBlockIf(
     condition: Boolean,
     textBeforeNewLine: String,
     textAfterNewLine: String,
@@ -80,9 +81,9 @@ fun <T : CodeWriter> T.wrapBlockIf(
 }
 
 /**
- * Like [CodeWriter.closeBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
+ * Like [AbstractCodeWriter.closeBlock], except the closing write of [textAfterNewLine] does NOT include a line break.
  */
-fun <T : CodeWriter> T.closeInlineBlock(textAfterNewLine: String): T {
+fun <T : AbstractCodeWriter<T>> T.closeInlineBlock(textAfterNewLine: String): T {
     writeInline("\n")
     dedent()
     writeInline(textAfterNewLine)
@@ -103,7 +104,7 @@ fun <T : CodeWriter> T.closeInlineBlock(textAfterNewLine: String): T {
  *     .closeBlock("}")
  * ```
  */
-fun <T : CodeWriter> T.closeAndOpenBlock(
+fun <T : AbstractCodeWriter<T>> T.closeAndOpenBlock(
     textBeforeNewLine: String,
     vararg args: Any,
 ): T = apply {
@@ -116,7 +117,11 @@ fun <T : CodeWriter> T.closeAndOpenBlock(
  * of the type housing the codegen associated with the section. This keeps [SectionId]s closely
  * associated with their targets.
  */
-fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> = emptyMap(), block: T.() -> Unit = {}): T {
+fun <T : AbstractCodeWriter<T>> T.declareSection(
+    id: SectionId,
+    context: Map<String, Any?> = emptyMap(),
+    block: T.() -> Unit = { },
+): T {
     putContext(context)
     pushState(id.javaClass.canonicalName)
     block(this)
@@ -125,25 +130,27 @@ fun <T : CodeWriter> T.declareSection(id: SectionId, context: Map<String, Any?> 
     return this
 }
 
-private fun <T : CodeWriter> T.removeContext(context: Map<String, Any?>): Unit =
+private fun <T : AbstractCodeWriter<T>> T.removeContext(context: Map<String, Any?>): Unit =
     context.keys.forEach { key -> removeContext(key) }
 
 /**
  * Convenience function to get a typed value out of the context or throw if the key doesn't exist
  * or the type is wrong
  */
-inline fun <reified T> CodeWriter.getContextValue(key: String): T = checkNotNull(getContext(key) as? T) {
-    "Expected `$key` in CodeWriter context"
-}
+inline fun <W : AbstractCodeWriter<W>, reified V> AbstractCodeWriter<W>.getContextValue(key: String): V =
+    checkNotNull(getContext(key) as? V) {
+        "Expected `$key` in CodeWriter context"
+    }
 
-// Specifies a function that receives a [CodeWriter]
-typealias InlineCodeWriter = CodeWriter.() -> Unit
+typealias InlineCodeWriter = AbstractCodeWriter<*>.() -> Unit
+
 /**
  * Formatter to enable passing a writing function
- * @param codeWriterCreator function that creates a new [CodeWriter] instance used to generate output of inline content
+ * @param codeWriterCreator function that creates a new [AbstractCodeWriter] instance used to generate output of inline
+ * content
  */
 class InlineCodeWriterFormatter(
-    private val codeWriterCreator: () -> CodeWriter = { CodeWriter() }
+    private val codeWriterCreator: () -> AbstractCodeWriter<*> = ::SimpleCodeWriter
 ) : BiFunction<Any, String, String> {
     @Suppress("UNCHECKED_CAST")
     override fun apply(t: Any, u: String): String {
@@ -158,7 +165,7 @@ class InlineCodeWriterFormatter(
  * Optionally call the [Runnable] if [test] is true, otherwise do nothing and return the instance without
  * running the block
  */
-fun CodeWriter.callIf(test: Boolean, runnable: Runnable): CodeWriter {
+fun <T : AbstractCodeWriter<T>> T.callIf(test: Boolean, runnable: Runnable): T {
     if (test) {
         runnable.run()
     }

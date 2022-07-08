@@ -4,19 +4,19 @@
  */
 package software.amazon.smithy.kotlin.codegen.core
 
-import software.amazon.smithy.utils.CodeWriter
+import software.amazon.smithy.utils.AbstractCodeWriter
+import software.amazon.smithy.utils.SimpleCodeWriter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class CodeWriterTest {
-
+class AbstractCodeWriterTest {
     @Test
     fun itSupportsInlineCodegen() {
-        val unit = CodeWriter()
+        val unit = SimpleCodeWriter()
 
         unit.putFormatter('W', InlineCodeWriterFormatter())
 
-        unit.write("Here is \$W content", { writer: CodeWriter -> writer.write("inline") })
+        unit.write("Here is \$W content", { writer: AbstractCodeWriter<*> -> writer.write("inline") })
 
         val actual = unit.toString()
 
@@ -25,7 +25,7 @@ class CodeWriterTest {
 
     @Test
     fun itSupportsDiscreteInlineWriters() {
-        val unit = CodeWriter()
+        val unit = SimpleCodeWriter()
 
         unit.putFormatter('W', InlineCodeWriterFormatter())
 
@@ -40,7 +40,7 @@ class CodeWriterTest {
 
     @Test
     fun itSupportsMultiLineInlineWriters() {
-        val unit = CodeWriter()
+        val unit = SimpleCodeWriter()
 
         unit.putFormatter('W', InlineCodeWriterFormatter())
 
