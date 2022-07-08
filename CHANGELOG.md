@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.11.2] - 07/08/2022
+
+### Features
+* Add support for NOT, OR, and AND JMESPath expressions in waiters
+* [#123](https://github.com/awslabs/smithy-kotlin/issues/123) Add support for smithy Document type.
+
+### Miscellaneous
+* [#599](https://github.com/awslabs/smithy-kotlin/issues/599) Upgrade Smithy version to 1.22
+
 ## [0.11.1] - 07/01/2022
 
 ### Features

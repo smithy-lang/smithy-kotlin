@@ -1,8 +1,0 @@
-{
-    "id": "fc4060e3-a826-46dd-a1f7-8fb041c77fd2",
-    "type": "feature",
-    "description": "Add support for smithy Document type.",
-    "issues": [
-        "awslabs/smithy-kotlin#123"
-    ]
-}
