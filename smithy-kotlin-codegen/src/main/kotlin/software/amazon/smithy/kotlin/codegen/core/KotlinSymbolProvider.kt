@@ -13,7 +13,6 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
-import software.amazon.smithy.model.traits.UniqueItemsTrait
 import java.util.logging.Logger
 
 /**
@@ -147,19 +146,11 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     override fun listShape(shape: ListShape): Symbol {
         val reference = toSymbol(shape.member)
         val valueType = if (shape.hasTrait<SparseTrait>()) "${reference.name}?" else reference.name
-        return if (shape.hasTrait<UniqueItemsTrait>()) {
-            createSymbolBuilder(shape, "Set<$valueType>", boxed = true)
-                .addReference(reference)
-                .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableSetOf<$valueType>")
-                .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "setOf<$valueType>")
-                .build()
-        } else {
-            createSymbolBuilder(shape, "List<$valueType>", boxed = true)
-                .addReferences(reference)
-                .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
-                .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
-                .build()
-        }
+        return createSymbolBuilder(shape, "List<$valueType>", boxed = true)
+            .addReferences(reference)
+            .putProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION, "mutableListOf<$valueType>")
+            .putProperty(SymbolProperty.IMMUTABLE_COLLECTION_FUNCTION, "listOf<$valueType>")
+            .build()
     }
 
     override fun mapShape(shape: MapShape): Symbol {

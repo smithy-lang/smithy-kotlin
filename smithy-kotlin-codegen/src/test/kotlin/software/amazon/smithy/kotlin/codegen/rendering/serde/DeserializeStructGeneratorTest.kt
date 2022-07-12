@@ -546,7 +546,7 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a set of primitive values`() {
+    fun `it deserializes a structure containing a list of unique primitive values`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -566,7 +566,7 @@ class DeserializeStructGeneratorTest {
                     when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val col0 = mutableSetOf<Int>()
+                                val col0 = mutableListOf<Int>()
                                 while (hasNextElement()) {
                                     val el0 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                     col0.add(el0)
@@ -586,15 +586,15 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a set of a map primitive values`() {
+    fun `it deserializes a structure containing a list of unique maps`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
-                payload: IntegerSet
+                payload: MapSet
             }
             
             @uniqueItems
-            list IntegerSet {
+            list MapSet {
                 member: StringMap
             }
             
@@ -611,7 +611,7 @@ class DeserializeStructGeneratorTest {
                     when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val col0 = mutableSetOf<Map<String, String>>()
+                                val col0 = mutableListOf<Map<String, String>>()
                                 while (hasNextElement()) {
                                     val el0 = deserializer.deserializeMap(PAYLOAD_C0_DESCRIPTOR) {
                                         val map1 = mutableMapOf<String, String>()
@@ -639,15 +639,15 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a set of a list of primitive values`() {
+    fun `it deserializes a structure containing a list of unique lists of primitive values`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
-                payload: IntegerSet
+                payload: ListSet
             }
             
             @uniqueItems
-            list IntegerSet {
+            list ListSet {
                 member: StringList
             }
             
@@ -663,7 +663,7 @@ class DeserializeStructGeneratorTest {
                     when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val col0 = mutableSetOf<List<String>>()
+                                val col0 = mutableListOf<List<String>>()
                                 while (hasNextElement()) {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
                                         val col1 = mutableListOf<String>()
@@ -690,7 +690,7 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a nested structure of a set of primitive values`() {
+    fun `it deserializes a structure containing a nested structure of a list of unique primitive values`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -726,7 +726,7 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a list of a set of primitive values`() {
+    fun `it deserializes a structure containing a list of a list of unique primitive values`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -750,10 +750,10 @@ class DeserializeStructGeneratorTest {
                     when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
-                                val col0 = mutableListOf<Set<Int>>()
+                                val col0 = mutableListOf<List<Int>>()
                                 while (hasNextElement()) {
                                     val el0 = deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                        val col1 = mutableSetOf<Int>()
+                                        val col1 = mutableListOf<Int>()
                                         while (hasNextElement()) {
                                             val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                             col1.add(el1)
@@ -777,7 +777,7 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a map of a set of primitive values`() {
+    fun `it deserializes a structure containing a map of a list of unique primitive values`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -802,13 +802,13 @@ class DeserializeStructGeneratorTest {
                     when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
-                                val map0 = mutableMapOf<String, Set<Int>>()
+                                val map0 = mutableMapOf<String, List<Int>>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 =
                                         if (nextHasValue()) {
                                             deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                                val col1 = mutableSetOf<Int>()
+                                                val col1 = mutableListOf<Int>()
                                                 while (hasNextElement()) {
                                                     val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                                     col1.add(el1)
@@ -834,7 +834,7 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
-    fun `it deserializes a structure containing a sparse map of a set of primitive values`() {
+    fun `it deserializes a structure containing a sparse map of a list of unique primitive values`() {
         val model = (
             modelPrefix + """            
             structure FooResponse { 
@@ -860,13 +860,13 @@ class DeserializeStructGeneratorTest {
                     when (findNextFieldIndex()) {
                         PAYLOAD_DESCRIPTOR.index -> builder.payload =
                             deserializer.deserializeMap(PAYLOAD_DESCRIPTOR) {
-                                val map0 = mutableMapOf<String, Set<Int>?>()
+                                val map0 = mutableMapOf<String, List<Int>?>()
                                 while (hasNextEntry()) {
                                     val k0 = key()
                                     val v0 =
                                         if (nextHasValue()) {
                                             deserializer.deserializeList(PAYLOAD_C0_DESCRIPTOR) {
-                                                val col1 = mutableSetOf<Int>()
+                                                val col1 = mutableListOf<Int>()
                                                 while (hasNextElement()) {
                                                     val el1 = if (nextHasValue()) { deserializeInt() } else { deserializeNull(); continue }
                                                     col1.add(el1)
