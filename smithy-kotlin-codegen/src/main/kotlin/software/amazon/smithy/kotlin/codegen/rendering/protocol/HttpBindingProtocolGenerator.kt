@@ -750,7 +750,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                             memberName, headerName, parseInstant("it", tsFormat)
                         )
                 }
-                is CollectionShape -> {
+                is ListShape -> {
                     // member > boolean, number, string, or timestamp
                     // headers are List<String>, get the internal mapping function contents (if any) to convert
                     // to the target symbol type
@@ -789,12 +789,6 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         else -> throw CodegenException("invalid member type for header collection: binding: $hdrBinding; member: $memberName")
                     }
 
-                    val toCollectionType = when {
-                        memberTarget.isListShape && memberTarget.hasTrait<UniqueItemsTrait>() -> "?.toSet()"
-                        memberTarget.isListShape -> ""
-                        else -> throw CodegenException("unknown collection shape: $memberTarget")
-                    }
-
                     val mapFn = if (conversion.isNotEmpty()) {
                         "?.map { $conversion }"
                     } else {
@@ -804,7 +798,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     // writer.addImport("${KotlinDependency.CLIENT_RT_HTTP.namespace}.util", splitFn)
                     writer
                         .addImport(splitFn, KotlinDependency.HTTP, subpackage = "util")
-                        .write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)${mapFn}$toCollectionType", memberName, headerName)
+                        .write("builder.#L = response.headers.getAll(#S)?.flatMap(::$splitFn)$mapFn", memberName, headerName)
                 }
                 else -> throw CodegenException("unknown deserialization: header binding: $hdrBinding; member: `$memberName`")
             }
@@ -838,11 +832,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             .write("val map = mutableMapOf<String, #T>()", targetValueSymbol)
             .openBlock("for (hdrKey in $keyCollName) {")
             .call {
-                val getFn = when {
-                    targetValueShape.isStringShape -> "[hdrKey]"
-                    targetValueShape.isListShape && targetValueShape.hasTrait<UniqueItemsTrait>() ->
-                        ".getAll(hdrKey)?.toSet()"
-                    targetValueShape.isListShape -> ".getAll(hdrKey)"
+                val getFn = when (targetValueShape) {
+                    is StringShape -> "[hdrKey]"
+                    is ListShape -> ".getAll(hdrKey)"
                     else -> throw CodegenException("invalid httpPrefixHeaders usage on ${binding.member}")
                 }
                 // get()/getAll() returns String? or List<String>?, this shouldn't ever trigger the continue though...

@@ -1,0 +1,5 @@
+{
+    "id": "9bbbf88e-193f-4efa-955a-10c17c1d7e83",
+    "type": "bugfix",
+    "description": "**Breaking**: Generate `List<T>` members for all collection types. (Previously, `Set<T>` would be generated for lists decorated with `@uniqueItems`.)"
+}

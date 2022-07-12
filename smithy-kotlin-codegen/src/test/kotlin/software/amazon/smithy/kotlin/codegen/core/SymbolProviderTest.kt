@@ -173,7 +173,7 @@ class SymbolProviderTest {
     }
 
     @Test
-    fun `creates sets`() {
+    fun `creates lists even when @uniqueItems is present`() {
         val model = """
             structure Record { }
 
@@ -184,15 +184,15 @@ class SymbolProviderTest {
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
-        val setShape = model.expectShape<ListShape>("foo.bar#Records")
-        val setSymbol = provider.toSymbol(setShape)
+        val listShape = model.expectShape<ListShape>("foo.bar#Records")
+        val listSymbol = provider.toSymbol(listShape)
 
-        assertEquals("Set<Record>", setSymbol.name)
-        assertEquals(true, setSymbol.isBoxed)
-        assertEquals("null", setSymbol.defaultValue())
+        assertEquals("List<Record>", listSymbol.name)
+        assertEquals(true, listSymbol.isBoxed)
+        assertEquals("null", listSymbol.defaultValue())
 
         // collections should contain a reference to the member type
-        assertEquals("Record", setSymbol.references[0].symbol.name)
+        assertEquals("Record", listSymbol.references[0].symbol.name)
     }
 
     @Test
