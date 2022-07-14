@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.0] - 07/14/2022
+
+### Fixes
+* **Breaking**: Generate `List<T>` members for all collection types. (Previously, `Set<T>` would be generated for lists decorated with `@uniqueItems`.)
+* **Breaking**: Move DSL overloads on generated clients to extension methods
+
 ## [0.11.2] - 07/08/2022
 
 ### Features
