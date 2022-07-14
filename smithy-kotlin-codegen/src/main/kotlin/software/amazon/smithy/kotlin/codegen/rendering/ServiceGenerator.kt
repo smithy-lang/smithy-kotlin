@@ -80,16 +80,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 renderServiceConfig()
             }
             .call {
-                operations.forEach { op ->
-                    renderOperation(operationsIndex, op)
-                }
+                operations.forEach { renderOperation(operationsIndex, it) }
             }
             .closeBlock("}")
             .write("")
 
-        operations.forEach { op ->
-            renderOperationDslOverload(operationsIndex, op)
-        }
+        operations.forEach { renderOperationDslOverload(operationsIndex, it) }
     }
 
     private fun renderServiceConfig() {
