@@ -174,6 +174,7 @@ class StructureGeneratorTest {
                 var `object`: kotlin.String? = null
                 var quux: com.test.model.Qux? = null
         
+                @PublishedApi
                 internal constructor()
                 @PublishedApi
                 internal constructor(x: com.test.model.MyStruct) : this() {

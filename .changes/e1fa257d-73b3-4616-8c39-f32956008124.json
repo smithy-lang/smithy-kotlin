@@ -1,0 +1,5 @@
+{
+    "id": "e1fa257d-73b3-4616-8c39-f32956008124",
+    "type": "bugfix",
+    "description": "**Breaking**: Move DSL overloads on generated clients to extension methods"
+}

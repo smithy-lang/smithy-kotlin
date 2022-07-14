@@ -80,12 +80,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 renderServiceConfig()
             }
             .call {
-                operations.forEach { op ->
-                    renderOperation(operationsIndex, op)
-                }
+                operations.forEach { renderOperation(operationsIndex, it) }
             }
             .closeBlock("}")
             .write("")
+
+        operations.forEach { renderOperationDslOverload(operationsIndex, it) }
     }
 
     private fun renderServiceConfig() {
@@ -154,7 +154,9 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.renderDocumentation(op)
         writer.renderAnnotations(op)
         writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op, includeOptionalDefault = true))
+    }
 
+    private fun renderOperationDslOverload(opIndex: OperationIndex, op: OperationShape) {
         // Add DSL overload (if appropriate)
         opIndex.getInput(op).ifPresent { inputShape ->
             val outputShape = opIndex.getOutput(op)
@@ -167,7 +169,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 writer.write("")
                 writer.renderDocumentation(op)
                 writer.renderAnnotations(op)
-                val signature = "suspend fun $operationName(block: $input.Builder.() -> Unit)"
+                val signature = "suspend inline fun ${serviceSymbol.name}.$operationName(crossinline block: $input.Builder.() -> Unit)"
                 val impl = "$operationName($input.Builder().apply(block).build())"
                 writer.write("$signature = $impl")
             }

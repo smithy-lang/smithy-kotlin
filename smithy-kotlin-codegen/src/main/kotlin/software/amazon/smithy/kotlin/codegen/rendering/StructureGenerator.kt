@@ -233,6 +233,7 @@ class StructureGenerator(
                 write("")
 
                 // generate the constructor used internally by serde
+                write("@PublishedApi")
                 write("internal constructor()")
                 // generate the constructor that converts from the underlying immutable class to a builder instance
                 writer.write("@PublishedApi")
