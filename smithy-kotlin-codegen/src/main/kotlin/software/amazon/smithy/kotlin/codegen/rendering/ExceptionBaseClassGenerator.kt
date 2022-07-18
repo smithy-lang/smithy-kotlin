@@ -34,14 +34,14 @@ object ExceptionBaseClassGenerator {
         val name = clientName(ctx.settings.sdkId)
         writer.dokka("Base class for all service related exceptions thrown by the $name client")
         writer.withBlock(
-            "open class #T : #T {", "}",
+            "public open class #T : #T {", "}",
             serviceException,
             baseException
         ) {
-            write("constructor() : super()")
-            write("constructor(message: String?) : super(message)")
-            write("constructor(message: String?, cause: Throwable?) : super(message, cause)")
-            write("constructor(cause: Throwable?) : super(cause)")
+            write("public constructor() : super()")
+            write("public constructor(message: String?) : super(message)")
+            write("public constructor(message: String?, cause: Throwable?) : super(message, cause)")
+            write("public constructor(cause: Throwable?) : super(cause)")
 
             writer.declareSection(ExceptionBaseClassSection)
         }

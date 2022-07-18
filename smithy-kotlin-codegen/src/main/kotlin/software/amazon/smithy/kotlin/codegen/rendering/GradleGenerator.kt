@@ -98,6 +98,7 @@ fun renderKmpGradleBuild(
         
         kotlin {
             #W
+            #W
             sourceSets {
                 val commonMain by getting {
                     dependencies {
@@ -119,6 +120,7 @@ fun renderKmpGradleBuild(
         }
         """.trimIndent(),
         pluginsRenderer,
+        { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },
         { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
         { w: GradleWriter -> if (isRootModule) renderRootJvmPluginConfig(w) else w.write("jvm()") },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = true, dependencies = dependencies) },
@@ -168,8 +170,11 @@ fun renderJvmGradleBuild(
         val optInAnnotations = listOf(
             #W
         )
-        kotlin.sourceSets.all {
-            optInAnnotations.forEach { languageSettings.optIn(it) }
+        kotlin {
+            #W
+            sourceSets.all {
+                optInAnnotations.forEach { languageSettings.optIn(it) }
+            }
         }
 
         tasks.test {
@@ -183,7 +188,8 @@ fun renderJvmGradleBuild(
         pluginsRenderer,
         { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
-        annotationRenderer
+        annotationRenderer,
+        { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },
     )
 }
 

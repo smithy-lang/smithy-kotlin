@@ -65,7 +65,7 @@ class ApiEvolutionTest {
             import test.model.PostFooRequest
             import kotlinx.coroutines.runBlocking
             
-            fun main() {
+            public fun main() {
                 val testClient = ExampleClient { }
                 runBlocking {
                     val resp = testClient.postFoo(PostFooRequest{})
@@ -130,7 +130,7 @@ class ApiEvolutionTest {
             import test.model.PostFooRequest
             import kotlinx.coroutines.runBlocking
             
-            fun main() {
+            public fun main() {
                 val testClient = ExampleClient { }
                 runBlocking {
                     val resp = testClient.postFoo(PostFooRequest {})
@@ -189,7 +189,7 @@ class ApiEvolutionTest {
             import test.model.PostFooRequest
             import kotlinx.coroutines.runBlocking
             
-            fun main() {
+            public fun main() {
                 val testClient = ExampleClient { }
                 runBlocking {
                     val resp = testClient.postFoo(PostFooRequest{})
@@ -254,7 +254,7 @@ class ApiEvolutionTest {
             import test.model.PostFooRequest
             import kotlinx.coroutines.runBlocking
             
-            fun main() {
+            public fun main() {
                 val testClient = ExampleClient { }
                 runBlocking {
                     val resp = testClient.postFoo(PostFooRequest{})
