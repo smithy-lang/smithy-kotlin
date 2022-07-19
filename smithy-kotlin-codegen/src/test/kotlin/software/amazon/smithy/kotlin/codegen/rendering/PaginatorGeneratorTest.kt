@@ -151,7 +151,7 @@ class PaginatorGeneratorTest {
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var isFirstPage: Boolean = true
@@ -178,7 +178,7 @@ class PaginatorGeneratorTest {
              * @param block A builder block used for DSL-style invocation of the operation
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            fun TestClient.listFunctionsPaginated(block: ListFunctionsRequest.Builder.() -> Unit): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(block: ListFunctionsRequest.Builder.() -> Unit): Flow<ListFunctionsResponse> =
                 listFunctionsPaginated(ListFunctionsRequest.Builder().apply(block).build())
         """.trimIndent()
 
@@ -206,7 +206,7 @@ class PaginatorGeneratorTest {
              * @param initialRequest A [ListFunctionsRequest] to start pagination
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(initialRequest: ListFunctionsRequest): Flow<ListFunctionsResponse> =
                 flow {
                     var cursor: kotlin.String? = null
                     var isFirstPage: Boolean = true
@@ -233,7 +233,7 @@ class PaginatorGeneratorTest {
              * @param block A builder block used for DSL-style invocation of the operation
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [ListFunctionsResponse]
              */
-            fun TestClient.listFunctionsPaginated(block: ListFunctionsRequest.Builder.() -> Unit): Flow<ListFunctionsResponse> =
+            public fun TestClient.listFunctionsPaginated(block: ListFunctionsRequest.Builder.() -> Unit): Flow<ListFunctionsResponse> =
                 listFunctionsPaginated(ListFunctionsRequest.Builder().apply(block).build())
             
             /**
@@ -242,7 +242,7 @@ class PaginatorGeneratorTest {
              * @return A [kotlinx.coroutines.flow.Flow] that can collect [FunctionConfiguration]
              */
             @JvmName("listFunctionsResponseFunctionConfiguration")
-            fun Flow<ListFunctionsResponse>.functions(): Flow<FunctionConfiguration> =
+            public fun Flow<ListFunctionsResponse>.functions(): Flow<FunctionConfiguration> =
                 transform() { response ->
                     response.functions?.forEach {
                         emit(it)
