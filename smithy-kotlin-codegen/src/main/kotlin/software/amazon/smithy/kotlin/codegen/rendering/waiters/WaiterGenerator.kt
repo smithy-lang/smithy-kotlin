@@ -59,7 +59,7 @@ internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
     write("")
     wi.waiter.documentation.ifPresent(::dokka)
     withBlock(
-        "suspend fun #T.#L(request: #T): Outcome<#T> {",
+        "public suspend fun #T.#L(request: #T): Outcome<#T> {",
         "}",
         wi.serviceSymbol,
         wi.methodName,
@@ -77,7 +77,7 @@ internal fun KotlinWriter.renderWaiter(wi: WaiterInfo) {
     write("")
     wi.waiter.documentation.ifPresent(this::dokka)
     write(
-        "suspend fun #T.#L(block: #T.Builder.() -> Unit): Outcome<#T> =",
+        "public suspend fun #T.#L(block: #T.Builder.() -> Unit): Outcome<#T> =",
         wi.serviceSymbol,
         wi.methodName,
         wi.inputSymbol,

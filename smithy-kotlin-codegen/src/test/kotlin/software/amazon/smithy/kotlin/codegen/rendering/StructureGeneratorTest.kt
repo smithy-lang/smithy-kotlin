@@ -72,16 +72,16 @@ class StructureGeneratorTest {
     @Test
     fun `it renders constructors`() {
         val expectedClassDecl = """
-            class MyStruct private constructor(builder: Builder) {
+            public class MyStruct private constructor(builder: Builder) {
                 /**
                  * This *is* documentation about the member.
                  */
-                val bar: kotlin.Int = builder.bar
-                val baz: kotlin.Int? = builder.baz
-                val byteValue: kotlin.Byte? = builder.byteValue
-                val foo: kotlin.String? = builder.foo
-                val `object`: kotlin.String? = builder.`object`
-                val quux: com.test.model.Qux? = builder.quux
+                public val bar: kotlin.Int = builder.bar
+                public val baz: kotlin.Int? = builder.baz
+                public val byteValue: kotlin.Byte? = builder.byteValue
+                public val foo: kotlin.String? = builder.foo
+                public val `object`: kotlin.String? = builder.`object`
+                public val quux: com.test.model.Qux? = builder.quux
         """.formatForTest(indent = "")
 
         commonTestContents.shouldContainOnlyOnceWithDiff(expectedClassDecl)
@@ -90,8 +90,8 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a companion object`() {
         val expected = """
-            companion object {
-                operator fun invoke(block: Builder.() -> kotlin.Unit): com.test.model.MyStruct = Builder().apply(block).build()
+            public companion object {
+                public operator fun invoke(block: Builder.() -> kotlin.Unit): com.test.model.MyStruct = Builder().apply(block).build()
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -155,7 +155,7 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a copy implementation`() {
         val expected = """
-            inline fun copy(block: Builder.() -> kotlin.Unit = {}): com.test.model.MyStruct = Builder(this).apply(block).build()
+            public inline fun copy(block: Builder.() -> kotlin.Unit = {}): com.test.model.MyStruct = Builder(this).apply(block).build()
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -163,16 +163,16 @@ class StructureGeneratorTest {
     @Test
     fun `it renders a builder impl`() {
         val expected = """
-            class Builder {
+            public class Builder {
                 /**
                  * This *is* documentation about the member.
                  */
-                var bar: kotlin.Int = 0
-                var baz: kotlin.Int? = null
-                var byteValue: kotlin.Byte? = null
-                var foo: kotlin.String? = null
-                var `object`: kotlin.String? = null
-                var quux: com.test.model.Qux? = null
+                public var bar: kotlin.Int = 0
+                public var baz: kotlin.Int? = null
+                public var byteValue: kotlin.Byte? = null
+                public var foo: kotlin.String? = null
+                public var `object`: kotlin.String? = null
+                public var quux: com.test.model.Qux? = null
         
                 @PublishedApi
                 internal constructor()
@@ -192,7 +192,7 @@ class StructureGeneratorTest {
                 /**
                  * construct an [com.test.model.Qux] inside the given [block]
                  */
-                fun quux(block: com.test.model.Qux.Builder.() -> kotlin.Unit) {
+                public fun quux(block: com.test.model.Qux.Builder.() -> kotlin.Unit) {
                     this.quux = com.test.model.Qux.invoke(block)
                 }
             }
@@ -234,8 +234,6 @@ class StructureGeneratorTest {
             the effective documentation of Foo$baz resolves to "Member documentation", Foo$bar resolves to "Shape documentation",
             Foo$qux is not documented, Baz resolves to "Shape documentation", and Foo is not documented.
         */
-
-        println(model.toSmithyIDL())
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
@@ -311,10 +309,10 @@ class StructureGeneratorTest {
 
         val generated = writer.toString()
         val expected = """
-            class FooRequest private constructor(builder: Builder) {
-                val bar: kotlin.String? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
-                val baz: kotlin.Int? = requireNotNull(builder.baz) { "A non-null value must be provided for baz" }
-                val qux: kotlin.String? = builder.qux
+            public class FooRequest private constructor(builder: Builder) {
+                public val bar: kotlin.String? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
+                public val baz: kotlin.Int? = requireNotNull(builder.baz) { "A non-null value must be provided for baz" }
+                public val qux: kotlin.String? = builder.qux
         """.formatForTest(indent = "")
         generated.shouldContainOnlyOnceWithDiff(expected)
     }
@@ -407,8 +405,8 @@ class StructureGeneratorTest {
         val contents = writer.toString()
 
         listOf(
-            "val enumMap: Map<String, MyEnum>? = builder.enumMap",
-            "var enumMap: Map<String, MyEnum>? = null"
+            "public val enumMap: Map<String, MyEnum>? = builder.enumMap",
+            "public var enumMap: Map<String, MyEnum>? = null"
         ).forEach { line ->
             contents.shouldContainOnlyOnceWithDiff(line)
         }
@@ -454,8 +452,8 @@ class StructureGeneratorTest {
         val contents = writer.toString()
 
         listOf(
-            "val enumMap: Map<String, MyEnum?>? = builder.enumMap",
-            "var enumMap: Map<String, MyEnum?>? = null"
+            "public val enumMap: Map<String, MyEnum?>? = builder.enumMap",
+            "public var enumMap: Map<String, MyEnum?>? = null"
         ).forEach { line ->
             contents.shouldContainOnlyOnceWithDiff(line)
         }
@@ -466,18 +464,17 @@ class StructureGeneratorTest {
         deprecatedTestContents.shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                class MyStruct private constructor(builder: Builder) {
+                public class MyStruct private constructor(builder: Builder) {
             """.trimIndent()
         )
     }
 
     @Test
     fun `it annotates deprecated members`() {
-        println(deprecatedTestContents)
         deprecatedTestContents.trimEveryLine().shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                val baz: com.test.model.Qux? = builder.baz
+                public val baz: com.test.model.Qux? = builder.baz
             """.trimIndent()
         )
     }
@@ -487,7 +484,7 @@ class StructureGeneratorTest {
         deprecatedTestContents.trimEveryLine().shouldContainOnlyOnceWithDiff(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                val baz: com.test.model.Qux? = builder.baz
+                public val baz: com.test.model.Qux? = builder.baz
             """.trimIndent()
         )
     }
@@ -621,7 +618,7 @@ class StructureGeneratorTest {
         val contents = writer.toString()
 
         val expectedProperty = """
-            val events: Flow<com.test.model.Events>? = builder.events
+            public val events: Flow<com.test.model.Events>? = builder.events
         """.formatForTest()
         contents.shouldContainOnlyOnceWithDiff(expectedProperty)
 

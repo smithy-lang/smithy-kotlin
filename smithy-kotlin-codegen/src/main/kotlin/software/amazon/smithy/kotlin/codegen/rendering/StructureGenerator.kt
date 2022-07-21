@@ -51,7 +51,7 @@ class StructureGenerator(
      * Renders a normal (non-error) Smithy structure to a Kotlin class
      */
     private fun renderStructure() {
-        writer.openBlock("class #T private constructor(builder: Builder) {", symbol)
+        writer.openBlock("public class #T private constructor(builder: Builder) {", symbol)
             .call { renderImmutableProperties() }
             .write("")
             .call { renderCompanionObject() }
@@ -87,18 +87,18 @@ class StructureGenerator(
 
             memberShape.hasTrait<HttpLabelTrait>() ->
                 writer.write(
-                    """val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
+                    """public val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
                     memberName,
                     memberSymbol,
                 )
 
-            else -> writer.write("val #1L: #2F = builder.#1L", memberName, memberSymbol)
+            else -> writer.write("public val #1L: #2F = builder.#1L", memberName, memberSymbol)
         }
     }
 
     private fun renderCompanionObject() {
-        writer.withBlock("companion object {", "}") {
-            write("operator fun invoke(block: Builder.() -> #Q): #Q = Builder().apply(block).build()", KotlinTypes.Unit, symbol)
+        writer.withBlock("public companion object {", "}") {
+            write("public operator fun invoke(block: Builder.() -> #Q): #Q = Builder().apply(block).build()", KotlinTypes.Unit, symbol)
         }
     }
 
@@ -216,19 +216,19 @@ class StructureGenerator(
         // situation we have with constructors and positional arguments not playing well
         // with models evolving over time (e.g. new fields in different positions)
         writer.write("")
-            .write("inline fun copy(block: Builder.() -> #Q = {}): #Q = Builder(this).apply(block).build()", KotlinTypes.Unit, symbol)
+            .write("public inline fun copy(block: Builder.() -> #Q = {}): #Q = Builder(this).apply(block).build()", KotlinTypes.Unit, symbol)
             .write("")
     }
 
     private fun renderBuilder() {
         writer.write("")
-            .withBlock("class Builder {", "}") {
+            .withBlock("public class Builder {", "}") {
                 for (member in sortedMembers) {
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     // we want the type names sans nullability (?) for arguments
                     writer.renderMemberDocumentation(model, member)
                     writer.renderAnnotations(member)
-                    write("var #L: #E", memberName, memberSymbol)
+                    write("public var #L: #E", memberName, memberSymbol)
                 }
                 write("")
 
@@ -258,7 +258,7 @@ class StructureGenerator(
                     val (memberName, memberSymbol) = memberNameSymbolIndex[member]!!
                     writer.dokka("construct an [${memberSymbol.fullName}] inside the given [block]")
                     writer.renderAnnotations(member)
-                    openBlock("fun #L(block: #Q.Builder.() -> #Q) {", memberName, memberSymbol, KotlinTypes.Unit)
+                    openBlock("public fun #L(block: #Q.Builder.() -> #Q) {", memberName, memberSymbol, KotlinTypes.Unit)
                         .write("this.#L = #Q.invoke(block)", memberName, memberSymbol)
                         .closeBlock("}")
                 }
@@ -280,7 +280,7 @@ class StructureGenerator(
         val exceptionBaseClass = ExceptionBaseClassGenerator.baseExceptionSymbol(ctx.settings)
         writer.addImport(exceptionBaseClass)
 
-        writer.openBlock("class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {", symbol)
+        writer.openBlock("public class #T private constructor(builder: Builder) : ${exceptionBaseClass.name}() {", symbol)
             .write("")
             .call { renderImmutableProperties() }
             .write("")

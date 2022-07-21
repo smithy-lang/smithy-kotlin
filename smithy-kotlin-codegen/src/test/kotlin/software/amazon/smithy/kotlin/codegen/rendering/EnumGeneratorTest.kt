@@ -45,32 +45,32 @@ class EnumGeneratorTest {
 /**
  * Documentation for this enum
  */
-sealed class Baz {
+public sealed class Baz {
 
-    abstract val value: kotlin.String
+    public abstract val value: kotlin.String
 
     /**
      * Documentation for bar
      */
-    object Bar : test.model.Baz() {
+    public object Bar : test.model.Baz() {
         override val value: kotlin.String = "BAR"
         override fun toString(): kotlin.String = value
     }
 
-    object Foo : test.model.Baz() {
+    public object Foo : test.model.Baz() {
         override val value: kotlin.String = "FOO"
         override fun toString(): kotlin.String = value
     }
 
-    data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
+    public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
         override fun toString(): kotlin.String = value
     }
 
-    companion object {
+    public companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
+        public fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
             "BAR" -> Bar
             "FOO" -> Foo
             else -> SdkUnknown(str)
@@ -79,7 +79,7 @@ sealed class Baz {
         /**
          * Get a list of all possible variants
          */
-        fun values(): kotlin.collections.List<test.model.Baz> = listOf(
+        public fun values(): kotlin.collections.List<test.model.Baz> = listOf(
             Bar,
             Foo
         )
@@ -125,9 +125,9 @@ sealed class Baz {
 /**
  * Documentation for this enum
  */
-sealed class Baz {
+public sealed class Baz {
 
-    abstract val value: kotlin.String
+    public abstract val value: kotlin.String
 
     /**
      * T2 instances are Burstable Performance
@@ -135,25 +135,25 @@ sealed class Baz {
      * performance with the ability to burst above the
      * baseline.
      */
-    object T2Micro : test.model.Baz() {
+    public object T2Micro : test.model.Baz() {
         override val value: kotlin.String = "t2.micro"
         override fun toString(): kotlin.String = value
     }
 
-    object T2Nano : test.model.Baz() {
+    public object T2Nano : test.model.Baz() {
         override val value: kotlin.String = "t2.nano"
         override fun toString(): kotlin.String = value
     }
 
-    data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
+    public data class SdkUnknown(override val value: kotlin.String) : test.model.Baz() {
         override fun toString(): kotlin.String = value
     }
 
-    companion object {
+    public companion object {
         /**
          * Convert a raw value to one of the sealed variants or [SdkUnknown]
          */
-        fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
+        public fun fromValue(str: kotlin.String): test.model.Baz = when(str) {
             "t2.micro" -> T2Micro
             "t2.nano" -> T2Nano
             else -> SdkUnknown(str)
@@ -162,7 +162,7 @@ sealed class Baz {
         /**
          * Get a list of all possible variants
          */
-        fun values(): kotlin.collections.List<test.model.Baz> = listOf(
+        public fun values(): kotlin.collections.List<test.model.Baz> = listOf(
             T2Micro,
             T2Nano
         )
@@ -226,7 +226,7 @@ sealed class Baz {
         contents.shouldContainOnlyOnce(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                sealed class Fruit {
+                public sealed class Fruit {
             """.trimIndent()
         )
     }

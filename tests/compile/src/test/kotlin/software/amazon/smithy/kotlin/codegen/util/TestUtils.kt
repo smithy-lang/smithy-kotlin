@@ -104,11 +104,15 @@ fun compileSdkAndTest(
 
     // Run test against
     return KotlinCompilation().apply {
-        kotlincArguments = listOf("-Xopt-in=aws.smithy.kotlin.runtime.util.InternalApi")
+        kotlincArguments = listOf(
+            "-Xopt-in=aws.smithy.kotlin.runtime.util.InternalApi",
+            "-Xexplicit-api=strict",
+        )
         sources = sdkSources
         inheritClassPath = true
         messageOutputStream = outputSink
         jvmTarget = "1.8"
+
     }.compile()
 }
 

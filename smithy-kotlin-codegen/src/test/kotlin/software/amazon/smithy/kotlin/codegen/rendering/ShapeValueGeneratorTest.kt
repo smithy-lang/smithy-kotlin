@@ -60,8 +60,6 @@ mapOf<String, Int>(
             }
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
 
-        println(model.toSmithyIDL())
-
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
         val mapShape = model.expectShape(ShapeId.from("foo.bar#MyList"))
         val writer = KotlinWriter("test")
@@ -179,8 +177,6 @@ MyStruct {
             ])
             string MyEnum
         """.prependNamespaceAndService(namespace = "foo.bar").toSmithyModel()
-
-        println(model.toSmithyIDL())
 
         val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model, rootNamespace = "foo.bar")
 

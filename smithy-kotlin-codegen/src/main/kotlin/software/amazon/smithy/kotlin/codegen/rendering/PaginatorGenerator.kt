@@ -131,7 +131,7 @@ class PaginatorGenerator : KotlinIntegration {
             )
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
-                "fun #T.#LPaginated(initialRequest: #T): #T<#T> =",
+                "public fun #T.#LPaginated(initialRequest: #T): #T<#T> =",
                 "",
                 serviceSymbol,
                 operationShape.defaultName(),
@@ -168,7 +168,7 @@ class PaginatorGenerator : KotlinIntegration {
                 """.trimMargin()
             )
             .withBlock(
-                "fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",
+                "public fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",
                 "",
                 serviceSymbol,
                 operationShape.defaultName(),
@@ -211,7 +211,7 @@ class PaginatorGenerator : KotlinIntegration {
                 itemDesc.targetMember.defaultName(serviceShape)
             )
             .withBlock(
-                "fun #T<#T>.#L(): #T<#L> =", "",
+                "public fun #T<#T>.#L(): #T<#L> =", "",
                 ExternalTypes.KotlinxCoroutines.Flow,
                 outputSymbol,
                 itemDesc.itemLiteral,

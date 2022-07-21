@@ -60,12 +60,12 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
 
         writer.renderDocumentation(service)
         writer.renderAnnotations(service)
-        writer.openBlock("interface ${serviceSymbol.name} : SdkClient {")
+        writer.openBlock("public interface ${serviceSymbol.name} : SdkClient {")
             .call { overrideServiceName() }
             .call {
                 // allow access to client's Config
                 writer.dokka("${serviceSymbol.name}'s configuration")
-                writer.write("val config: Config")
+                writer.write("public val config: Config")
             }
             .call {
                 // allow integrations to add additional fields to companion object or configuration
@@ -113,16 +113,16 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
      * ```
      */
     private fun renderCompanionObject() {
-        writer.withBlock("companion object {", "}") {
+        writer.withBlock("public companion object {", "}") {
             val hasProtocolGenerator = ctx.protocolGenerator != null
             // If there is no ProtocolGenerator, do not codegen references to the non-existent default client.
             callIf(hasProtocolGenerator) {
-                withBlock("operator fun invoke(block: Config.Builder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
+                withBlock("public operator fun invoke(block: Config.Builder.() -> Unit = {}): ${serviceSymbol.name} {", "}") {
                     write("val config = Config.Builder().apply(block).build()")
                     write("return Default${serviceSymbol.name}(config)")
                 }
                 write("")
-                write("operator fun invoke(config: Config): ${serviceSymbol.name} = Default${serviceSymbol.name}(config)")
+                write("public operator fun invoke(config: Config): ${serviceSymbol.name} = Default${serviceSymbol.name}(config)")
             }
         }
     }
@@ -153,25 +153,35 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.write("")
         writer.renderDocumentation(op)
         writer.renderAnnotations(op)
-        writer.write(opIndex.operationSignature(ctx.model, ctx.symbolProvider, op, includeOptionalDefault = true))
+
+        val signature = opIndex.operationSignature(ctx.model, ctx.symbolProvider, op, includeOptionalDefault = true)
+        writer.write("public #L", signature)
     }
 
     private fun renderOperationDslOverload(opIndex: OperationIndex, op: OperationShape) {
         // Add DSL overload (if appropriate)
         opIndex.getInput(op).ifPresent { inputShape ->
-            val outputShape = opIndex.getOutput(op)
-            val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
+            opIndex.getOutput(op).ifPresent { outputShape ->
+                val hasOutputStream = outputShape.hasStreamingMember(ctx.model)
 
-            if (!hasOutputStream) {
-                val input = ctx.symbolProvider.toSymbol(inputShape).name
-                val operationName = op.defaultName()
+                if (!hasOutputStream) {
+                    val inputSymbol = ctx.symbolProvider.toSymbol(inputShape)
+                    val outputSymbol = ctx.symbolProvider.toSymbol(outputShape)
+                    val operationName = op.defaultName()
 
-                writer.write("")
-                writer.renderDocumentation(op)
-                writer.renderAnnotations(op)
-                val signature = "suspend inline fun ${serviceSymbol.name}.$operationName(crossinline block: $input.Builder.() -> Unit)"
-                val impl = "$operationName($input.Builder().apply(block).build())"
-                writer.write("$signature = $impl")
+                    writer.write("")
+                    writer.renderDocumentation(op)
+                    writer.renderAnnotations(op)
+                    writer.write(
+                        "public suspend inline fun #T.#L(crossinline block: #T.Builder.() -> Unit): #T = #L(#T.Builder().apply(block).build())",
+                        serviceSymbol,
+                        operationName,
+                        inputSymbol,
+                        outputSymbol,
+                        operationName,
+                        inputSymbol,
+                    )
+                }
             }
         }
     }

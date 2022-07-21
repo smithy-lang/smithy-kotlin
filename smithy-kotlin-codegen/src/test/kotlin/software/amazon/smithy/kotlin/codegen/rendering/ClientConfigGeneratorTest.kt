@@ -35,37 +35,37 @@ class ClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
+public class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
-    val endpointResolver: EndpointResolver = requireNotNull(builder.endpointResolver) { "endpointResolver is a required configuration property" }
+    public val endpointResolver: EndpointResolver = requireNotNull(builder.endpointResolver) { "endpointResolver is a required configuration property" }
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
-    val retryStrategy: RetryStrategy = StandardRetryStrategy()
+    public val retryStrategy: RetryStrategy = StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
-    class Builder {
+    public class Builder {
         /**
          * Set the [aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver] used to resolve service endpoints. Operation requests will be
          * made against the endpoint returned by the resolver.
          */
-        var endpointResolver: EndpointResolver? = null
+        public var endpointResolver: EndpointResolver? = null
         /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
          * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
          * client will not close it when the client is closed.
          */
-        var httpClientEngine: HttpClientEngine? = null
+        public var httpClientEngine: HttpClientEngine? = null
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
          * that represent idempotent tokens when not explicitly set by the caller using this generator.
          */
-        var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+        public var idempotencyTokenProvider: IdempotencyTokenProvider? = null
         /**
          * Configure events that will be logged. By default clients will not output
          * raw requests or responses. Use this setting to opt-in to additional debug logging.
@@ -76,7 +76,7 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
          * performance considerations when dumping the request/response body. This is primarily a tool for
          * debug purposes.
          */
-        var sdkLogMode: SdkLogMode = SdkLogMode.Default
+        public var sdkLogMode: SdkLogMode = SdkLogMode.Default
 
         @PublishedApi
         internal fun build(): Config = Config(this)
@@ -120,29 +120,29 @@ class Config private constructor(builder: Builder): HttpClientConfig, Idempotenc
 
         // we should have no base classes when not using the default and no inheritFrom specified
         val expectedCtor = """
-class Config private constructor(builder: Builder) {
+public class Config private constructor(builder: Builder) {
 """
         contents.shouldContain(expectedCtor)
 
         val expectedProps = """
-        var boolProp: Boolean? = null
+        public var boolProp: Boolean? = null
         /**
          * non-null-int
          */
-        var intProp: Int = 1
-        var nullIntProp: Int? = null
-        var stringProp: String? = null
+        public var intProp: Int = 1
+        public var nullIntProp: Int? = null
+        public var stringProp: String? = null
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilderProps = """
-        var boolProp: Boolean? = null
+        public var boolProp: Boolean? = null
         /**
          * non-null-int
          */
-        var intProp: Int = 1
-        var nullIntProp: Int? = null
-        var stringProp: String? = null
+        public var intProp: Int = 1
+        public var nullIntProp: Int? = null
+        public var stringProp: String? = null
 """
         contents.shouldContainWithDiff(expectedBuilderProps)
     }
@@ -167,7 +167,7 @@ class Config private constructor(builder: Builder) {
         val contents = writer.toString()
 
         val expectedProps = """
-    val customProp: Int? = builder.customProp
+    public val customProp: Int? = builder.customProp
 """
         contents.shouldContain(expectedProps)
     }
@@ -251,8 +251,8 @@ class Config private constructor(builder: Builder) {
         contents.assertBalancedBracesAndParens()
 
         val expectedCompanion = """
-    companion object {
-        inline operator fun invoke(block: Builder.() -> kotlin.Unit): Config = Builder().apply(block).build()
+    public companion object {
+        public inline operator fun invoke(block: Builder.() -> kotlin.Unit): Config = Builder().apply(block).build()
     }
 """
         contents.shouldContainWithDiff(expectedCompanion)
@@ -303,21 +303,21 @@ class Config private constructor(builder: Builder) {
         val contents = writer.toString()
 
         val expectedProps = """
-    val constFoo: Foo = ConstantFoo
-    val defaultFoo: Foo = builder.defaultFoo
-    val nullFoo: Foo? = builder.nullFoo
-    val requiredDefaultedFoo: Foo = builder.requiredDefaultedFoo ?: DefaultedFoo()
-    val requiredFoo: Foo = requireNotNull(builder.requiredFoo) { "requiredFoo is a required configuration property" }
-    val requiredFoo2: Foo = requireNotNull(builder.requiredFoo2) { "override message" }
+    public val constFoo: Foo = ConstantFoo
+    public val defaultFoo: Foo = builder.defaultFoo
+    public val nullFoo: Foo? = builder.nullFoo
+    public val requiredDefaultedFoo: Foo = builder.requiredDefaultedFoo ?: DefaultedFoo()
+    public val requiredFoo: Foo = requireNotNull(builder.requiredFoo) { "requiredFoo is a required configuration property" }
+    public val requiredFoo2: Foo = requireNotNull(builder.requiredFoo2) { "override message" }
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedImplProps = """
-        var defaultFoo: Foo = DefaultFoo
-        var nullFoo: Foo? = null
-        var requiredDefaultedFoo: Foo? = null
-        var requiredFoo: Foo? = null
-        var requiredFoo2: Foo? = null
+        public var defaultFoo: Foo = DefaultFoo
+        public var nullFoo: Foo? = null
+        public var requiredDefaultedFoo: Foo? = null
+        public var requiredFoo: Foo? = null
+        public var requiredFoo2: Foo? = null
 """
         contents.shouldContainWithDiff(expectedImplProps)
     }

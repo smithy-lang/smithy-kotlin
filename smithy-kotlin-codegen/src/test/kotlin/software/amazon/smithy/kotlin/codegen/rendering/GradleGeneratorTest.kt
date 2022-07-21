@@ -15,7 +15,6 @@ import software.amazon.smithy.model.node.Node
 import kotlin.test.Test
 
 class GradleGeneratorTest {
-
     @Test
     fun `it writes dependencies`() {
         val model = loadModelFromResource("simple-service.smithy")
@@ -80,9 +79,13 @@ class GradleGeneratorTest {
         val expectedVersion = """
             kotlin("jvm") version
         """.trimIndent()
+        val expectedExplicitApi = """
+            explicitApi()
+        """.trimIndent()
 
         contents.shouldContain(expectedRepositories)
         contents.shouldContain(expectedVersion)
+        contents.shouldContain(expectedExplicitApi)
     }
 
     @Test
@@ -114,7 +117,11 @@ class GradleGeneratorTest {
         val expectedVersion = """
             kotlin("multiplatform") version
         """.trimIndent()
+        val expectedExplicitApi = """
+            explicitApi()
+        """.trimIndent()
 
         contents.shouldContain(expectedVersion)
+        contents.shouldContain(expectedExplicitApi)
     }
 }

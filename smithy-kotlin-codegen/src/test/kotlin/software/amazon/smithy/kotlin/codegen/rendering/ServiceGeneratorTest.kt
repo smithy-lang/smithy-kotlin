@@ -34,7 +34,7 @@ class ServiceGeneratorTest {
 
     @Test
     fun `it renders interface`() {
-        commonTestContents.shouldContainOnlyOnce("interface TestClient : SdkClient {")
+        commonTestContents.shouldContainOnlyOnce("public interface TestClient : SdkClient {")
     }
 
     @Test
@@ -49,15 +49,15 @@ class ServiceGeneratorTest {
     @Test
     fun `it renders signatures correctly`() {
         val expectedSignatures = listOf(
-            "suspend fun getFoo(input: GetFooRequest): GetFooResponse",
-            "suspend fun getFooNoRequired(input: GetFooNoRequiredRequest = GetFooNoRequiredRequest {}): GetFooNoRequiredResponse",
-            "suspend fun getFooSomeRequired(input: GetFooSomeRequiredRequest): GetFooSomeRequiredResponse",
-            "suspend fun getFooNoInput(input: GetFooNoInputRequest = GetFooNoInputRequest {}): GetFooNoInputResponse",
-            "suspend fun getFooNoOutput(input: GetFooNoOutputRequest): GetFooNoOutputResponse",
-            "suspend fun getFooStreamingInput(input: GetFooStreamingInputRequest): GetFooStreamingInputResponse",
-            "suspend fun <T> getFooStreamingOutput(input: GetFooStreamingOutputRequest, block: suspend (GetFooStreamingOutputResponse) -> T): T",
-            "suspend fun <T> getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputRequest = GetFooStreamingOutputNoInputRequest {}, block: suspend (GetFooStreamingOutputNoInputResponse) -> T): T",
-            "suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputRequest): GetFooStreamingInputNoOutputResponse"
+            "public suspend fun getFoo(input: GetFooRequest): GetFooResponse",
+            "public suspend fun getFooNoRequired(input: GetFooNoRequiredRequest = GetFooNoRequiredRequest {}): GetFooNoRequiredResponse",
+            "public suspend fun getFooSomeRequired(input: GetFooSomeRequiredRequest): GetFooSomeRequiredResponse",
+            "public suspend fun getFooNoInput(input: GetFooNoInputRequest = GetFooNoInputRequest {}): GetFooNoInputResponse",
+            "public suspend fun getFooNoOutput(input: GetFooNoOutputRequest): GetFooNoOutputResponse",
+            "public suspend fun getFooStreamingInput(input: GetFooStreamingInputRequest): GetFooStreamingInputResponse",
+            "public suspend fun <T> getFooStreamingOutput(input: GetFooStreamingOutputRequest, block: suspend (GetFooStreamingOutputResponse) -> T): T",
+            "public suspend fun <T> getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputRequest = GetFooStreamingOutputNoInputRequest {}, block: suspend (GetFooStreamingOutputNoInputResponse) -> T): T",
+            "public suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputRequest): GetFooStreamingInputNoOutputResponse"
         )
         expectedSignatures.forEach {
             commonTestContents.shouldContainOnlyOnceWithDiff(it)
@@ -67,13 +67,13 @@ class ServiceGeneratorTest {
     @Test
     fun `it renders a companion object with default client factory if protocol generator`() {
         val expected = """
-            companion object {
-                operator fun invoke(block: Config.Builder.() -> Unit = {}): TestClient {
+            public companion object {
+                public operator fun invoke(block: Config.Builder.() -> Unit = {}): TestClient {
                     val config = Config.Builder().apply(block).build()
                     return DefaultTestClient(config)
                 }
 
-                operator fun invoke(config: Config): TestClient = DefaultTestClient(config)
+                public operator fun invoke(config: Config): TestClient = DefaultTestClient(config)
             }
         """.formatForTest()
         val testContents = generateService("service-generator-test-operations.smithy", true)
@@ -83,7 +83,7 @@ class ServiceGeneratorTest {
     @Test
     fun `it renders a companion object without default client factory if no protocol generator`() {
         val expected = """
-            companion object {
+            public companion object {
             }
         """.formatForTest()
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -91,7 +91,7 @@ class ServiceGeneratorTest {
 
     @Test
     fun `it generates config`() {
-        val expected = "class Config"
+        val expected = "public class Config"
         commonTestContents.shouldContainOnlyOnce(expected)
     }
 
@@ -109,14 +109,14 @@ class ServiceGeneratorTest {
         val writer = KotlinWriter(TestModelDefault.NAMESPACE)
         val service = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
         writer.registerSectionWriter(ServiceGenerator.SectionServiceCompanionObject) { codeWriter, _ ->
-            codeWriter.openBlock("companion object {")
-                .write("fun foo(): Int = 1")
+            codeWriter.openBlock("public companion object {")
+                .write("public fun foo(): Int = 1")
                 .closeBlock("}")
         }
 
         writer.registerSectionWriter(ServiceGenerator.SectionServiceConfig) { codeWriter, _ ->
-            codeWriter.openBlock("class Config {")
-                .write("var bar: Int = 2")
+            codeWriter.openBlock("public class Config {")
+                .write("public var bar: Int = 2")
                 .closeBlock("}")
         }
 
@@ -127,15 +127,15 @@ class ServiceGeneratorTest {
         val contents = writer.toString()
 
         val expectedCompanionOverride = """
-            companion object {
-                fun foo(): Int = 1
+            public companion object {
+                public fun foo(): Int = 1
             }
         """.formatForTest()
         contents.shouldContainOnlyOnce(expectedCompanionOverride)
 
         val expectedConfigOverride = """
-            class Config {
-                var bar: Int = 2
+            public class Config {
+                public var bar: Int = 2
             }
         """.formatForTest()
         contents.shouldContainOnlyOnce(expectedConfigOverride)
@@ -146,7 +146,7 @@ class ServiceGeneratorTest {
         deprecatedTestContents.shouldContainOnlyOnce(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                interface TestClient : SdkClient {
+                public interface TestClient : SdkClient {
             """.trimIndent()
         )
     }
@@ -156,22 +156,27 @@ class ServiceGeneratorTest {
         deprecatedTestContents.trimEveryLine().shouldContainOnlyOnce(
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
-                suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse
+                public suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse
             """.trimIndent()
         )
     }
 
     @Test
     fun `it adds DSL overloads for operations`() {
-        val expectedSignatures = listOf(
-            "suspend inline fun TestClient.getFoo(crossinline block: GetFooRequest.Builder.() -> Unit) = getFoo(GetFooRequest.Builder().apply(block).build())",
-            "suspend inline fun TestClient.getFooNoInput(crossinline block: GetFooNoInputRequest.Builder.() -> Unit) = getFooNoInput(GetFooNoInputRequest.Builder().apply(block).build())",
-            "suspend inline fun TestClient.getFooNoOutput(crossinline block: GetFooNoOutputRequest.Builder.() -> Unit) = getFooNoOutput(GetFooNoOutputRequest.Builder().apply(block).build())",
-            "suspend inline fun TestClient.getFooStreamingInput(crossinline block: GetFooStreamingInputRequest.Builder.() -> Unit) = getFooStreamingInput(GetFooStreamingInputRequest.Builder().apply(block).build())",
-            "suspend inline fun TestClient.getFooStreamingInputNoOutput(crossinline block: GetFooStreamingInputNoOutputRequest.Builder.() -> Unit) = getFooStreamingInputNoOutput(GetFooStreamingInputNoOutputRequest.Builder().apply(block).build())",
-        )
-        expectedSignatures.forEach {
-            commonTestContents.shouldContainOnlyOnceWithDiff(it)
+        listOf(
+            "GetFoo",
+            "GetFooNoInput",
+            "GetFooNoOutput",
+            "GetFooStreamingInput",
+            "GetFooStreamingInputNoOutput",
+        ).forEach { op ->
+            val modifiers = "public suspend inline fun"
+            val method = op.replaceFirstChar(Char::lowercaseChar)
+            val params = "(crossinline block: ${op}Request.Builder.() -> Unit)"
+            val impl = "$method(${op}Request.Builder().apply(block).build())"
+
+            val expected = "$modifiers TestClient.$method$params: ${op}Response = $impl"
+            commonTestContents.shouldContainOnlyOnceWithDiff(expected)
         }
     }
 

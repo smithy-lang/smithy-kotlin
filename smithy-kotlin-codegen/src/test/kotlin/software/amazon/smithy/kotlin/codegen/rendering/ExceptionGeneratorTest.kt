@@ -188,11 +188,11 @@ class ExceptionGeneratorTest {
             val contents = writer.toString()
 
             val expected = """
-                open class TestException : ServiceException {
-                    constructor() : super()
-                    constructor(message: String?) : super(message)
-                    constructor(message: String?, cause: Throwable?) : super(message, cause)
-                    constructor(cause: Throwable?) : super(cause)
+                public open class TestException : ServiceException {
+                    public constructor() : super()
+                    public constructor(message: String?) : super(message)
+                    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+                    public constructor(cause: Throwable?) : super(cause)
                 }
             """.trimIndent()
 
@@ -233,11 +233,11 @@ class ExceptionGeneratorTest {
             val contents = writer.toString()
 
             val expected = """
-                open class TestException : QuxException {
-                    constructor() : super()
-                    constructor(message: String?) : super(message)
-                    constructor(message: String?, cause: Throwable?) : super(message, cause)
-                    constructor(cause: Throwable?) : super(cause)
+                public open class TestException : QuxException {
+                    public constructor() : super()
+                    public constructor(message: String?) : super(message)
+                    public constructor(message: String?, cause: Throwable?) : super(message, cause)
+                    public constructor(cause: Throwable?) : super(cause)
                 }
             """.trimIndent()
 

@@ -75,7 +75,7 @@ class ClientConfigGenerator(
             .joinToString(", ")
 
         val formattedBaseClasses = if (baseClasses.isNotEmpty()) ": $baseClasses" else ""
-        ctx.writer.openBlock("class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {")
+        ctx.writer.openBlock("public class #configClass.name:L private constructor(builder: Builder)$formattedBaseClasses {")
             .call { renderImmutableProperties() }
             .call { renderCompanionObject() }
             .call { renderBuilder() }
@@ -85,14 +85,14 @@ class ClientConfigGenerator(
     }
 
     private fun renderCompanionObject() {
-        ctx.writer.withBlock("companion object {", "}") {
+        ctx.writer.withBlock("public companion object {", "}") {
             if (builderReturnType != null) {
                 write(
-                    "inline operator fun invoke(block: Builder.() -> kotlin.Unit): #T = Builder().apply(block).build()",
+                    "public inline operator fun invoke(block: Builder.() -> kotlin.Unit): #T = Builder().apply(block).build()",
                     builderReturnType
                 )
             } else {
-                write("inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
+                write("public inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
             }
         }
     }
@@ -115,18 +115,18 @@ class ClientConfigGenerator(
 
     private fun renderImmutableProperties() {
         props.forEach { prop ->
-            val override = if (prop.requiresOverride) "override " else ""
+            val override = if (prop.requiresOverride) "override" else "public"
 
             when (prop.propertyType) {
                 is ClientConfigPropertyType.SymbolDefault -> {
-                    ctx.writer.write("${override}val #1L: #2P = builder.#1L", prop.propertyName, prop.symbol)
+                    ctx.writer.write("$override val #1L: #2P = builder.#1L", prop.propertyName, prop.symbol)
                 }
                 is ClientConfigPropertyType.ConstantValue -> {
-                    ctx.writer.write("${override}val #1L: #2T = #3L", prop.propertyName, prop.symbol, prop.propertyType.value)
+                    ctx.writer.write("$override val #1L: #2T = #3L", prop.propertyName, prop.symbol, prop.propertyType.value)
                 }
                 is ClientConfigPropertyType.Required -> {
                     ctx.writer.write(
-                        "${override}val #1L: #2T = requireNotNull(builder.#1L) { #3S }",
+                        "$override val #1L: #2T = requireNotNull(builder.#1L) { #3S }",
                         prop.propertyName,
                         prop.symbol,
                         prop.propertyType.message ?: "${prop.propertyName} is a required configuration property"
@@ -134,7 +134,7 @@ class ClientConfigGenerator(
                 }
                 is ClientConfigPropertyType.RequiredWithDefault -> {
                     ctx.writer.write(
-                        "${override}val #1L: #2T = builder.#1L ?: #3L",
+                        "$override val #1L: #2T = builder.#1L ?: #3L",
                         prop.propertyName,
                         prop.symbol,
                         prop.propertyType.default
@@ -147,13 +147,13 @@ class ClientConfigGenerator(
 
     private fun renderBuilder() {
         ctx.writer.write("")
-            .withBlock("class Builder {", "}") {
+            .withBlock("public class Builder {", "}") {
                 // override DSL properties
                 props
                     .filter { it.propertyType !is ClientConfigPropertyType.ConstantValue }
                     .forEach { prop ->
                         prop.documentation?.let { ctx.writer.dokka(it) }
-                        write("var #L: #D", prop.propertyName, prop.symbol)
+                        write("public var #L: #D", prop.propertyName, prop.symbol)
                     }
                 write("")
 

@@ -32,7 +32,7 @@ class UnionGenerator(
         val symbol = symbolProvider.toSymbol(shape)
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
-        writer.openBlock("sealed class #T {", symbol)
+        writer.openBlock("public sealed class #T {", symbol)
 
         // event streams (@streaming union) MAY have variants that target errors.
         // These errors if encountered on the stream will be thrown as an exception rather
@@ -44,7 +44,7 @@ class UnionGenerator(
             writer.renderAnnotations(it)
             val variantName = it.unionVariantName()
             val variantSymbol = symbolProvider.toSymbol(it)
-            writer.writeInline("data class #L(val value: #Q) : #Q()", variantName, variantSymbol, symbol)
+            writer.writeInline("public data class #L(val value: #Q) : #Q()", variantName, variantSymbol, symbol)
             when (model.expectShape(it.target).type) {
                 ShapeType.BLOB -> {
                     writer.withBlock(" {", "}") {
@@ -57,7 +57,7 @@ class UnionGenerator(
         }
 
         // generate the unknown which will always be last
-        writer.write("object SdkUnknown : #Q()", symbol)
+        writer.write("public object SdkUnknown : #Q()", symbol)
 
         members.sortedBy { it.memberName }.forEach {
             val variantName = it.unionVariantName()
@@ -77,7 +77,7 @@ class UnionGenerator(
                     variantName,
                 )
             }
-            writer.write("fun as#L(): #Q = (this as #T.#L).value", variantName, variantSymbol, symbol, variantName)
+            writer.write("public fun as#L(): #Q = (this as #T.#L).value", variantName, variantSymbol, symbol, variantName)
 
             writer.write("")
             writer.dokka {
@@ -91,7 +91,7 @@ class UnionGenerator(
                 )
             }
             writer.write(
-                "fun as#LOrNull(): #Q? = (this as? #T.#L)?.value",
+                "public fun as#LOrNull(): #Q? = (this as? #T.#L)?.value",
                 variantName,
                 variantSymbol,
                 symbol,
@@ -100,17 +100,6 @@ class UnionGenerator(
         }
 
         writer.closeBlock("}").write("")
-
-        members.sortedBy { it.memberName }.forEach {
-            val variantName = it.unionVariantName()
-            val variantSymbol = symbolProvider.toSymbol(it)
-
-            writer.write("")
-            writer.dokka {
-                write("Casts this [#T] as a [#L] and retrieves its [#Q] value.", symbol, variantName, variantSymbol)
-            }
-            writer.write("val #T.#L get() = (this as #T.#L).value", symbol, variantName, symbol, variantName)
-        }
     }
 
     // generate a `hashCode()` implementation
