@@ -35,7 +35,7 @@ public abstract class ClientOptionsBuilder(protected val options: Attributes = A
     /**
      * Build the options into an [ExecutionContext]
      */
-    fun build(): ExecutionContext {
+    public fun build(): ExecutionContext {
         val builder = this
 
         // verify the required properties were set

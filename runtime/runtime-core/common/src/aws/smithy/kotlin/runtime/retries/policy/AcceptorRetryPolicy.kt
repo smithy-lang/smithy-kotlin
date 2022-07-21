@@ -14,7 +14,7 @@ package aws.smithy.kotlin.runtime.retries.policy
  * @param input The input to the operation.
  * @param acceptors A list of [Acceptor] instances to be tried in order.
  */
-class AcceptorRetryPolicy<in I, in O>(
+public class AcceptorRetryPolicy<in I, in O>(
     private val input: I,
     private val acceptors: List<Acceptor<I, O>>,
 ) : RetryPolicy<O> {

@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -43,9 +44,9 @@ private const val EXPECTED_FINAL_CHUNK_SIGNATURE = "b6c6ea8a5354eaf15b3cb7646744
 
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class BasicSigningTestBase : HasSigner {
+public abstract class BasicSigningTestBase : HasSigner {
     @Test
-    fun testSignRequestSigV4() = runTest {
+    public fun testSignRequestSigV4(): TestResult = runTest {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST
@@ -80,7 +81,7 @@ abstract class BasicSigningTestBase : HasSigner {
     }
 
     @Test
-    open fun testSignRequestSigV4Asymmetric() = runTest {
+    public open fun testSignRequestSigV4Asymmetric(): TestResult = runTest {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST
@@ -163,7 +164,7 @@ abstract class BasicSigningTestBase : HasSigner {
     }
 
     @Test
-    fun testSignChunks() = runTest {
+    public fun testSignChunks(): TestResult = runTest {
         val request = createChunkedTestRequest()
         val chunkedRequestConfig = createChunkedRequestSigningConfig()
         val requestResult = signer.sign(request, chunkedRequestConfig)

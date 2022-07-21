@@ -11,48 +11,48 @@ public actual interface SdkByteWriteChannel : Closeable {
      * suspend and return immediately when this number is at least the number of bytes requested for
      * write.
      */
-    actual val availableForWrite: Int
+    public actual val availableForWrite: Int
 
     /**
      * Returns true if channel has been closed. Attempting to write to the channel will throw an exception
      */
-    actual val isClosedForWrite: Boolean
+    public actual val isClosedForWrite: Boolean
 
     /**
      * Total number of bytes written to the channel.
      *
      * NOTE: not guaranteed to be atomic and may be updated in middle of a write operation
      */
-    actual val totalBytesWritten: Long
+    public actual val totalBytesWritten: Long
 
     /**
      * Returns `true` if the channel flushes automatically all pending bytes after every write operation.
      * If `false` then flush only happens when [flush] is explicitly called or when the buffer is full.
      */
-    actual val autoFlush: Boolean
+    public actual val autoFlush: Boolean
 
     /**
      * Writes all [src] bytes and suspends until all bytes written.
      */
-    actual suspend fun writeFully(src: ByteArray, offset: Int, length: Int)
+    public actual suspend fun writeFully(src: ByteArray, offset: Int, length: Int)
 
     /**
      * Writes as much as possible and only suspends if buffer is full
      * Returns the byte count written.
      */
-    actual suspend fun writeAvailable(src: ByteArray, offset: Int, length: Int): Int
+    public actual suspend fun writeAvailable(src: ByteArray, offset: Int, length: Int): Int
 
     /**
      * Closes this channel with an optional exceptional [cause]. All pending bytes are flushed.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      */
-    actual fun close(cause: Throwable?): Boolean
+    public actual fun close(cause: Throwable?): Boolean
 
     /**
      * Flushes all pending write bytes making them available for read.
      * Thread safe and can be invoked at any time. It does nothing when invoked on a closed channel.
      */
-    actual fun flush()
+    public actual fun flush()
 
     override fun close() { close(null) }
 }

@@ -68,7 +68,7 @@ private fun attachToOuterJob(outerContext: CoroutineContext, requestJob: Job) {
  * ```
  */
 @InternalApi
-suspend fun callContext(): CoroutineContext = coroutineContext[SdkRequestContextElement]!!.callContext
+public suspend fun callContext(): CoroutineContext = coroutineContext[SdkRequestContextElement]!!.callContext
 
 /**
  * Stores the request context

@@ -10,8 +10,8 @@ import aws.smithy.kotlin.runtime.io.Handler
 /**
  * A transform that only modifies the input type
  */
-interface ModifyRequest<Request> {
-    suspend fun modifyRequest(req: Request): Request
+public interface ModifyRequest<Request> {
+    public suspend fun modifyRequest(req: Request): Request
 }
 
 /**

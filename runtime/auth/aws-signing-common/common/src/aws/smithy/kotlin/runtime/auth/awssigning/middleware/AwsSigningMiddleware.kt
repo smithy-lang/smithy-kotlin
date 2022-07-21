@@ -18,9 +18,9 @@ import kotlin.time.Duration
  * HTTP request pipeline middleware that signs outgoing requests
  */
 @InternalApi
-class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware {
-    companion object {
-        inline operator fun invoke(block: Config.() -> Unit): AwsSigningMiddleware {
+public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware {
+    public companion object {
+        public inline operator fun invoke(block: Config.() -> Unit): AwsSigningMiddleware {
             val config = Config().apply(block)
             requireNotNull(config.credentialsProvider) { "A credentials provider must be specified for the middleware" }
             requireNotNull(config.service) { "A service must be specified for the middleware" }
@@ -29,71 +29,71 @@ class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware
         }
     }
 
-    class Config {
+    public class Config {
         /**
          * The signer implementation to use for signing
          */
-        var signer: AwsSigner? = null
+        public var signer: AwsSigner? = null
 
         /**
          * The credentials provider used to sign requests with
          */
-        var credentialsProvider: CredentialsProvider? = null
+        public var credentialsProvider: CredentialsProvider? = null
 
         /**
          * The credential scope service name to sign requests for
          * NOTE: The operation context is favored when [AwsSigningAttributes.SigningService] is set
          */
-        var service: String? = null
+        public var service: String? = null
 
         /**
          * Sets what signature should be computed
          */
-        var signatureType: AwsSignatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
+        public var signatureType: AwsSignatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
 
         /**
          * The algorithm to sign with
          */
-        var algorithm: AwsSigningAlgorithm = AwsSigningAlgorithm.SIGV4
+        public var algorithm: AwsSigningAlgorithm = AwsSigningAlgorithm.SIGV4
 
         /**
          * Indicates whether the payload should be unsigned _even_ in cases where it would otherwise be signable (e.g.,
          * a replayable stream or byte buffer). Setting this value to `false` will _not_ allow signing a non-replayable
          * stream.
          */
-        var isUnsignedPayload: Boolean = false
+        public var isUnsignedPayload: Boolean = false
 
         /**
          * The uri is assumed to be encoded once in preparation for transmission.  Certain services
          * do not decode before checking signature, requiring double-encoding the uri in the canonical
          * request in order to pass a signature check.
          */
-        var useDoubleUriEncode: Boolean = true
+        public var useDoubleUriEncode: Boolean = true
 
         /**
          * Controls whether or not the uri paths should be normalized when building the canonical request
          */
-        var normalizeUriPath: Boolean = true
+        public var normalizeUriPath: Boolean = true
 
         /**
          * Flag indicating if the "X-Amz-Security-Token" query param should be omitted.
          * Normally, this parameter is added during signing if the credentials have a session token.
          * The only known case where this should be true is when signing a websocket handshake to IoT Core.
          */
-        var omitSessionToken: Boolean = false
+        public var omitSessionToken: Boolean = false
 
         /**
          * Controls what body "hash" header, if any, should be added to the canonical request and the signed request.
          * Most services do not require this additional header.
          */
-        var signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE
+        public var signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE
 
         /**
          * If non-zero and the signing transform is query param, then signing will add X-Amz-Expires to the query
          * string, equal to the value specified here.  If this value is zero or if header signing is being used then
          * this parameter has no effect.
          */
-        var expiresAfter: Duration? = null
+        public var expiresAfter: Duration? = null
     }
 
     override fun install(op: SdkHttpOperation<*, *>) {

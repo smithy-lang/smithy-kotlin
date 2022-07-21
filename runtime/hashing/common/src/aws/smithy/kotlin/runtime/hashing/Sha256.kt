@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.hashing
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 @InternalApi
-abstract class Sha256Base : HashFunction {
+public abstract class Sha256Base : HashFunction {
     override val blockSizeBytes: Int = 64
     override val digestSizeBytes: Int = 32
 }
@@ -17,10 +17,10 @@ abstract class Sha256Base : HashFunction {
 
  */
 @InternalApi
-expect class Sha256() : Sha256Base
+public expect class Sha256() : Sha256Base
 
 /**
  * Compute the SHA-256 hash of the current [ByteArray]
  */
 @InternalApi
-fun ByteArray.sha256(): ByteArray = hash(Sha256(), this)
+public fun ByteArray.sha256(): ByteArray = hash(Sha256(), this)

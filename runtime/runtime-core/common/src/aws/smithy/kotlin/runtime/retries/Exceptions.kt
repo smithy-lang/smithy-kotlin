@@ -16,12 +16,12 @@ import aws.smithy.kotlin.runtime.ClientException
  * @param lastException The exception caught by the retry strategy before this failure was encountered. Note that the
  * [Throwable] in this parameter isn't necessarily the cause of this exception.
  */
-sealed class RetryException(
+public sealed class RetryException(
     message: String,
     cause: Throwable?,
-    val attempts: Int,
-    val lastResponse: Any?,
-    val lastException: Throwable?,
+    public val attempts: Int,
+    public val lastResponse: Any?,
+    public val lastException: Throwable?,
 ) : ClientException(message, cause)
 
 /**
@@ -32,7 +32,7 @@ sealed class RetryException(
  * @param lastException The exception caught by the retry strategy before this failure was encountered. Note that the
  * [Throwable] in this parameter isn't necessarily the cause of this exception.
  */
-class TooManyAttemptsException(
+public class TooManyAttemptsException(
     message: String,
     cause: Throwable?,
     attempts: Int,
@@ -48,7 +48,7 @@ class TooManyAttemptsException(
  * @param lastException The exception caught by the retry strategy before this failure was encountered. Note that the
  * [Throwable] in this parameter isn't necessarily the cause of this exception.
  */
-class TimedOutException(
+public class TimedOutException(
     message: String,
     attempts: Int,
     lastResponse: Any?,
@@ -62,7 +62,7 @@ class TimedOutException(
  * @param attempts The number of attempts made before this failure was encountered.
  * @param lastResponse The last response received from the retry strategy before this failure was encountered.
  */
-class RetryFailureException(
+public class RetryFailureException(
     message: String,
     cause: Throwable?,
     attempts: Int,

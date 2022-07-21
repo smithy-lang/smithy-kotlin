@@ -10,7 +10,7 @@ public interface PlatformProvider : PlatformEnvironProvider, Filesystem {
     /**
      * Get the operating system info
      */
-    fun osInfo(): OperatingSystem
+    public fun osInfo(): OperatingSystem
 }
 
 /**
@@ -18,14 +18,14 @@ public interface PlatformProvider : PlatformEnvironProvider, Filesystem {
  */
 @InternalApi
 public expect object Platform : PlatformProvider {
-    val isJvm: Boolean
-    val isAndroid: Boolean
-    val isBrowser: Boolean
-    val isNode: Boolean
-    val isNative: Boolean
+    public val isJvm: Boolean
+    public val isAndroid: Boolean
+    public val isBrowser: Boolean
+    public val isNode: Boolean
+    public val isNative: Boolean
 }
 
-data class OperatingSystem(val family: OsFamily, val version: String?)
+public data class OperatingSystem(val family: OsFamily, val version: String?)
 
 public enum class OsFamily {
     Linux,

@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.http
 /**
  * Represents an HTTP verb
  */
-enum class HttpMethod {
+public enum class HttpMethod {
     GET,
     POST,
     PUT,
@@ -16,13 +16,13 @@ enum class HttpMethod {
     HEAD,
     OPTIONS;
 
-    companion object {
+    public companion object {
         /**
          * Parse from a raw string representation of an HTTP method (e.g. "get")
          * @return [HttpMethod] for the given string
          * @throws IllegalArgumentException if the method is unknown
          */
-        fun parse(method: String): HttpMethod = when (method.uppercase()) {
+        public fun parse(method: String): HttpMethod = when (method.uppercase()) {
             GET.name -> GET
             POST.name -> POST
             PUT.name -> PUT

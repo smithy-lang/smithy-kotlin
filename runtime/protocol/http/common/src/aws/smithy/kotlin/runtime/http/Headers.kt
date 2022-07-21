@@ -10,15 +10,15 @@ import aws.smithy.kotlin.runtime.http.util.StringValuesMapImpl
 /**
  * Immutable mapping of case insensitive HTTP header names to list of [String] values.
  */
-interface Headers : StringValuesMap {
-    companion object {
-        operator fun invoke(block: HeadersBuilder.() -> Unit): Headers = HeadersBuilder()
+public interface Headers : StringValuesMap {
+    public companion object {
+        public operator fun invoke(block: HeadersBuilder.() -> Unit): Headers = HeadersBuilder()
             .apply(block).build()
 
         /**
          * Empty [Headers] instance
          */
-        val Empty: Headers = EmptyHeaders
+        public val Empty: Headers = EmptyHeaders
     }
 }
 
@@ -34,7 +34,7 @@ private object EmptyHeaders : Headers {
 /**
  * Build an immutable HTTP header map
  */
-class HeadersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<HeadersBuilder> {
+public class HeadersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<HeadersBuilder> {
     override fun toString(): String = "HeadersBuilder ${entries()} "
     override fun build(): Headers = HeadersImpl(values)
 

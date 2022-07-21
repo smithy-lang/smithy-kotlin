@@ -27,9 +27,9 @@ import aws.smithy.kotlin.runtime.http.Url
  * is expected to be mutable and the client cannot modify the endpoint correctly, the operation
  * will likely fail.
  */
-data class Endpoint(
-    val uri: Url,
-    val isHostnameImmutable: Boolean = false,
+public data class Endpoint(
+    public val uri: Url,
+    public val isHostnameImmutable: Boolean = false,
 ) {
-    constructor(uri: String) : this(Url.parse(uri))
+    public constructor(uri: String) : this(Url.parse(uri))
 }

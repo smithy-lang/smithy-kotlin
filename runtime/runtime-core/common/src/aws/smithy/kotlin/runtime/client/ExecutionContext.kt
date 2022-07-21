@@ -15,20 +15,20 @@ public class ExecutionContext private constructor(builder: ExecutionContextBuild
     /**
      * Default construct an [ExecutionContext]. Note: this is not usually useful without configuring the call attributes
      */
-    constructor() : this(ExecutionContextBuilder())
+    public constructor() : this(ExecutionContextBuilder())
 
     /**
      * Attributes associated with this particular execution/call
      */
-    val attributes: Attributes = builder.attributes
+    public val attributes: Attributes = builder.attributes
 
-    companion object {
-        fun build(block: ExecutionContextBuilder.() -> Unit): ExecutionContext = ExecutionContextBuilder().apply(block).build()
+    public companion object {
+        public fun build(block: ExecutionContextBuilder.() -> Unit): ExecutionContext = ExecutionContextBuilder().apply(block).build()
     }
 
-    class ExecutionContextBuilder {
-        var attributes: Attributes = Attributes()
+    public class ExecutionContextBuilder {
+        public var attributes: Attributes = Attributes()
 
-        fun build(): ExecutionContext = ExecutionContext(this)
+        public fun build(): ExecutionContext = ExecutionContext(this)
     }
 }

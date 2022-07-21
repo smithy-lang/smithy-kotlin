@@ -9,9 +9,9 @@ package aws.smithy.kotlin.runtime.http.util
  * Indicates that an object supports a [deepCopy] operation which will return a copy that can be safely mutated without
  * affecting other instances.
  */
-interface CanDeepCopy<out T> {
+public interface CanDeepCopy<out T> {
     /**
      * Returns a deep copy of this object.
      */
-    fun deepCopy(): T
+    public fun deepCopy(): T
 }

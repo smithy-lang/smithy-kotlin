@@ -25,12 +25,12 @@ import kotlin.test.assertTrue
  * @param expected the expected request. If null no assertions are made on the request
  * @param respondWith the response to return for this request. If null it defaults to an empty 200-OK response
  */
-data class MockRoundTrip(val expected: HttpRequest?, val respondWith: HttpResponse? = null)
+public data class MockRoundTrip(public val expected: HttpRequest?, public val respondWith: HttpResponse? = null)
 
 /**
  * Actual and expected [HttpRequest] pair
  */
-data class CallAssertion(val expected: HttpRequest?, val actual: HttpRequest) {
+public data class CallAssertion(public val expected: HttpRequest?, public val actual: HttpRequest) {
     /**
      * Assert that all of the components set on [expected] are also the same on [actual]. The actual request
      * may have additional headers, only the ones set in [expected] are compared.
@@ -61,12 +61,14 @@ data class CallAssertion(val expected: HttpRequest?, val actual: HttpRequest) {
  * NOTE: This engine is only capable of modeling request/response pairs. More complicated interactions such as duplex
  * streaming are not implemented.
  */
-class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) : HttpClientEngineBase("TestConnection") {
+public class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) :
+    HttpClientEngineBase("TestConnection") {
+
     // expected is mutated in-flight, store original size
     private val iter = expected.iterator()
     private var calls = mutableListOf<CallAssertion>()
 
-    companion object {
+    public companion object {
         /**
          * Construct a [TestConnection] from a JSON payload. The payload should be an array of request-response object
          * pairs.
@@ -110,7 +112,7 @@ class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) : 
          *
          * ```
          */
-        fun fromJson(payload: String): TestConnection = parseHttpTraffic(payload)
+        public fun fromJson(payload: String): TestConnection = parseHttpTraffic(payload)
     }
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -126,12 +128,12 @@ class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) : 
     /**
      * Get the list of captured HTTP requests so far
      */
-    fun requests(): List<CallAssertion> = calls
+    public fun requests(): List<CallAssertion> = calls
 
     /**
      * Assert that each captured request matches the expected
      */
-    suspend fun assertRequests() {
+    public suspend fun assertRequests() {
         assertEquals(expected.size, calls.size)
         calls.forEachIndexed { idx, captured ->
             captured.assertRequest(idx)
@@ -142,25 +144,25 @@ class TestConnection(private val expected: List<MockRoundTrip> = emptyList()) : 
 /**
  * DSL builder for [TestConnection]
  */
-class HttpTestConnectionBuilder {
-    val requests = mutableListOf<MockRoundTrip>()
+public class HttpTestConnectionBuilder {
+    public val requests: MutableList<MockRoundTrip> = mutableListOf<MockRoundTrip>()
 
-    class HttpRequestResponsePairBuilder {
+    public class HttpRequestResponsePairBuilder {
         internal val requestBuilder = HttpRequestBuilder()
-        var response: HttpResponse? = null
-        fun request(block: HttpRequestBuilder.() -> Unit) = requestBuilder.apply(block)
+        public var response: HttpResponse? = null
+        public fun request(block: HttpRequestBuilder.() -> Unit): HttpRequestBuilder = requestBuilder.apply(block)
     }
 
-    fun expect(block: HttpRequestResponsePairBuilder.() -> Unit) {
+    public fun expect(block: HttpRequestResponsePairBuilder.() -> Unit) {
         val builder = HttpRequestResponsePairBuilder().apply(block)
         requests.add(MockRoundTrip(builder.requestBuilder.build(), builder.response))
     }
 
-    fun expect(request: HttpRequest, response: HttpResponse? = null) {
+    public fun expect(request: HttpRequest, response: HttpResponse? = null) {
         requests.add(MockRoundTrip(request, response))
     }
 
-    fun expect(response: HttpResponse? = null) {
+    public fun expect(response: HttpResponse? = null) {
         requests.add(MockRoundTrip(null, response))
     }
 }
@@ -181,7 +183,7 @@ class HttpTestConnectionBuilder {
  * }
  * ```
  */
-fun buildTestConnection(block: HttpTestConnectionBuilder.() -> Unit): TestConnection {
+public fun buildTestConnection(block: HttpTestConnectionBuilder.() -> Unit): TestConnection {
     val builder = HttpTestConnectionBuilder().apply(block)
     return TestConnection(builder.requests)
 }

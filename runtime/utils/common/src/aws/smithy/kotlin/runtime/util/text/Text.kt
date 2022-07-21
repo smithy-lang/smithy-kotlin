@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * https://tools.ietf.org/html/rfc3986#section-2
  */
 @InternalApi
-fun String.urlEncodeComponent(
+public fun String.urlEncodeComponent(
     formUrlEncode: Boolean = false
 ): String {
     val sb = StringBuilder(this.length)
@@ -36,7 +36,7 @@ fun String.urlEncodeComponent(
  * See 'pchar': https://tools.ietf.org/html/rfc3986#section-3.3
  */
 @InternalApi
-val VALID_PCHAR_DELIMS = setOf(
+public val VALID_PCHAR_DELIMS: Set<Char> = setOf(
     '/',
     ':', '@',
     // sub-delims from section-2.2
@@ -58,7 +58,7 @@ private fun isPercentEncodedAt(d: ByteArray, i: Int): Boolean =
  * https://tools.ietf.org/html/rfc3986#section-3.3
  */
 @InternalApi
-fun String.encodeUrlPath() = encodeUrlPath(VALID_PCHAR_DELIMS, checkPercentEncoded = true)
+public fun String.encodeUrlPath(): String = encodeUrlPath(VALID_PCHAR_DELIMS, checkPercentEncoded = true)
 
 /**
  * Encode a string that represents a raw URL path component. Everything EXCEPT alphanumeric characters
@@ -69,7 +69,7 @@ fun String.encodeUrlPath() = encodeUrlPath(VALID_PCHAR_DELIMS, checkPercentEncod
  * characters and pass them through as is or not.
  */
 @InternalApi
-fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolean): String {
+public fun String.encodeUrlPath(validDelimiters: Set<Char>, checkPercentEncoded: Boolean): String {
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
 
@@ -137,15 +137,12 @@ private val upperHexSet = upperHex.toSet()
 
 // $2.1 Percent-Encoding
 @InternalApi
-fun Byte.percentEncodeTo(out: Appendable) {
+public fun Byte.percentEncodeTo(out: Appendable) {
     val code = toInt() and 0xff
     out.append('%')
     out.append(upperHex[code shr 4])
     out.append(upperHex[code and 0x0f])
 }
-
-@InternalApi
-fun Byte.percentEncode(): String = StringBuilder(3).also(::percentEncodeTo).toString()
 
 /**
  * Split a (decoded) query string "foo=baz&bar=quux" into it's component parts

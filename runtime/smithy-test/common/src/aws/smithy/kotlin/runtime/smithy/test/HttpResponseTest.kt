@@ -16,26 +16,27 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 
-typealias HttpResponseTestFn<T> = suspend (expectedResponse: T?, mockEngine: HttpClientEngine) -> Unit
+public typealias HttpResponseTestFn<T> = suspend (expectedResponse: T?, mockEngine: HttpClientEngine) -> Unit
 
-class ExpectedHttpResponse<T> {
-    var statusCode: HttpStatusCode = HttpStatusCode.OK
-    var headers: Map<String, String> = mapOf()
-    var body: String? = null
-    var bodyMediaType: String? = null
-    var response: T? = null
+public class ExpectedHttpResponse<T> {
+    public var statusCode: HttpStatusCode = HttpStatusCode.OK
+    public var headers: Map<String, String> = mapOf()
+    public var body: String? = null
+    public var bodyMediaType: String? = null
+    public var response: T? = null
 }
 
-class HttpResponseTestBuilder<T> {
+public class HttpResponseTestBuilder<T> {
     internal var expected: ExpectedHttpResponse<T> = ExpectedHttpResponse()
     internal var testFn: HttpResponseTestFn<T> = { _, _ -> }
 
     /**
      * Setup the expected HTTP response that the service operation should consume
      */
-    fun expected(block: ExpectedHttpResponse<T>.() -> Unit) {
+    public fun expected(block: ExpectedHttpResponse<T>.() -> Unit) {
         expected.apply(block)
     }
 
@@ -45,7 +46,7 @@ class HttpResponseTestBuilder<T> {
      * service client with the provided engine, providing the input, and executing the
      * operation.
      */
-    fun test(block: HttpResponseTestFn<T>) {
+    public fun test(block: HttpResponseTestFn<T>) {
         testFn = block
     }
 }
@@ -77,7 +78,7 @@ class HttpResponseTestBuilder<T> {
  * ```
  */
 @OptIn(ExperimentalStdlibApi::class, ExperimentalCoroutinesApi::class)
-fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit) = runTest {
+public fun <T> httpResponseTest(block: HttpResponseTestBuilder<T>.() -> Unit): TestResult = runTest {
     val testBuilder = HttpResponseTestBuilder<T>().apply(block)
 
     // provide the mock engine

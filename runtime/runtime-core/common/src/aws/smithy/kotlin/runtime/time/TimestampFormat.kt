@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.time
 /**
  * Timestamp formats supported
  */
-enum class TimestampFormat {
+public enum class TimestampFormat {
     /**
      * ISO-8601/RFC5399 timestamp including fractional seconds at microsecond precision (e.g.,
      * "2022-04-25T16:44:13.667307Z")

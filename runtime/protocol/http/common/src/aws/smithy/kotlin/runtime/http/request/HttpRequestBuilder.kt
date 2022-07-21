@@ -17,15 +17,16 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * @param headers HTTP headers
  * @param body Outgoing payload. Initially empty
  */
-class HttpRequestBuilder private constructor(
-    var method: HttpMethod,
-    val url: UrlBuilder,
-    val headers: HeadersBuilder,
-    var body: HttpBody,
+public class HttpRequestBuilder private constructor(
+    public var method: HttpMethod,
+    public val url: UrlBuilder,
+    public val headers: HeadersBuilder,
+    public var body: HttpBody,
 ) : CanDeepCopy<HttpRequestBuilder> {
-    constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty)
+    public constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty)
 
-    fun build(): HttpRequest = HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)
+    public fun build(): HttpRequest =
+        HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)
 
     override fun deepCopy(): HttpRequestBuilder =
         HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body)
@@ -40,31 +41,37 @@ class HttpRequestBuilder private constructor(
 /**
  * Modify the URL inside the block
  */
-fun HttpRequestBuilder.url(block: UrlBuilder.() -> Unit) = url.apply(block)
+public fun HttpRequestBuilder.url(block: UrlBuilder.() -> Unit) {
+    url.apply(block)
+}
 
 /**
  * Set values from an existing [Url] instance
  */
-fun HttpRequestBuilder.url(value: Url) = url.apply {
-    scheme = value.scheme
-    host = value.host
-    port = value.port
-    path = value.path
-    parameters.appendAll(value.parameters)
-    fragment = value.fragment
-    userInfo = value.userInfo
-    forceQuery = value.forceQuery
+public fun HttpRequestBuilder.url(value: Url) {
+    url.apply {
+        scheme = value.scheme
+        host = value.host
+        port = value.port
+        path = value.path
+        parameters.appendAll(value.parameters)
+        fragment = value.fragment
+        userInfo = value.userInfo
+        forceQuery = value.forceQuery
+    }
 }
 
 /**
  * Modify the headers inside the given block
  */
-fun HttpRequestBuilder.headers(block: HeadersBuilder.() -> Unit) = headers.apply(block)
+public fun HttpRequestBuilder.headers(block: HeadersBuilder.() -> Unit) {
+    headers.apply(block)
+}
 
 /**
  * Add a single header. This will append to any existing headers with the same name.
  */
-fun HttpRequestBuilder.header(name: String, value: String) = headers.append(name, value)
+public fun HttpRequestBuilder.header(name: String, value: String): Unit = headers.append(name, value)
 
 /**
  * Dump a debug description of the request
@@ -73,7 +80,7 @@ fun HttpRequestBuilder.header(name: String, value: String) = headers.append(name
  * replaced.
  */
 @InternalApi
-suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
+public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
     val buffer = SdkByteBuffer(256u)
 
     // TODO - we have no way to know the http version at this level to set HTTP/x.x

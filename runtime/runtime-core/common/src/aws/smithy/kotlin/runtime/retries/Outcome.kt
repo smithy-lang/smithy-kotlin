@@ -10,11 +10,11 @@ package aws.smithy.kotlin.runtime.retries
  * no flag for "success" since exceptional outcomes do not necessarily represent "failure".
  * @param T The type of non-exception result (if present).
  */
-sealed class Outcome<out T> {
+public sealed class Outcome<out T> {
     /**
      * The number of attempts executed in order to reach the outcome. Starts at 1.
      */
-    abstract val attempts: Int
+    public abstract val attempts: Int
 
     /**
      * An outcome that includes a normal (i.e., non-exceptional) response.
@@ -22,20 +22,20 @@ sealed class Outcome<out T> {
      * @param attempts The number of attempts executed in order to reach the outcome. Starts at 1.
      * @param response The response to an operation.
      */
-    data class Response<out T>(override val attempts: Int, val response: T) : Outcome<T>()
+    public data class Response<out T>(override val attempts: Int, val response: T) : Outcome<T>()
 
     /**
      * An outcome that includes an exception.
      * @param attempts The number of attempts executed in order to reach the outcome. Starts at 1.
      * @param exception The exception resulting from the operation.
      */
-    data class Exception(override val attempts: Int, val exception: Throwable) : Outcome<Nothing>()
+    public data class Exception(override val attempts: Int, val exception: Throwable) : Outcome<Nothing>()
 }
 
 /**
  * Gets the non-exceptional response in this outcome if it exists. Otherwise, throws the exception in this outcome.
  */
-fun <T> Outcome<T>.getOrThrow(): T = when (this) {
+public fun <T> Outcome<T>.getOrThrow(): T = when (this) {
     is Outcome.Response -> response
     is Outcome.Exception -> throw exception
 }

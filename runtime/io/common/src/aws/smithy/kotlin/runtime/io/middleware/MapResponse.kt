@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.io.Handler
 /**
  * Implements [Handler] interface that transforms the response from [R1] to [R2]
  */
-class MapResponse<Request, R1, R2, H>(
+public class MapResponse<Request, R1, R2, H>(
     private val inner: H,
     private val fn: suspend (R1) -> R2
 ) : Handler<Request, R2>

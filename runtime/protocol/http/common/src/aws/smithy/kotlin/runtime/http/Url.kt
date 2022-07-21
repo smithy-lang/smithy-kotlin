@@ -21,16 +21,16 @@ import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
  * @property forceQuery keep trailing question mark regardless of whether there are any query parameters
  * @property encodeParameters configures if parameter values are encoded (default) or left as-is.
  */
-data class Url(
-    val scheme: Protocol,
-    val host: String,
-    val port: Int = scheme.defaultPort,
-    val path: String = "",
-    val parameters: QueryParameters = QueryParameters.Empty,
-    val fragment: String? = null,
-    val userInfo: UserInfo? = null,
-    val forceQuery: Boolean = false,
-    val encodeParameters: Boolean = true
+public data class Url(
+    public val scheme: Protocol,
+    public val host: String,
+    public val port: Int = scheme.defaultPort,
+    public val path: String = "",
+    public val parameters: QueryParameters = QueryParameters.Empty,
+    public val fragment: String? = null,
+    public val userInfo: UserInfo? = null,
+    public val forceQuery: Boolean = false,
+    public val encodeParameters: Boolean = true
 ) {
     init {
         require(port in 1..65536) { "port must be in between 1 and 65536" }
@@ -101,26 +101,26 @@ private fun encodePath(
 /**
  * URL username and password
  */
-data class UserInfo(val username: String, val password: String)
+public data class UserInfo(public val username: String, public val password: String)
 
 /**
  * Construct a URL by it's individual components
  */
-class UrlBuilder : CanDeepCopy<UrlBuilder> {
-    var scheme = Protocol.HTTPS
-    var host: String = ""
-    var port: Int? = null
-    var path: String = ""
-    var parameters: QueryParametersBuilder = QueryParametersBuilder()
-    var fragment: String? = null
-    var userInfo: UserInfo? = null
-    var forceQuery: Boolean = false
+public class UrlBuilder : CanDeepCopy<UrlBuilder> {
+    public var scheme: Protocol = Protocol.HTTPS
+    public var host: String = ""
+    public var port: Int? = null
+    public var path: String = ""
+    public var parameters: QueryParametersBuilder = QueryParametersBuilder()
+    public var fragment: String? = null
+    public var userInfo: UserInfo? = null
+    public var forceQuery: Boolean = false
 
-    companion object {
-        operator fun invoke(block: UrlBuilder.() -> Unit): Url = UrlBuilder().apply(block).build()
+    public companion object {
+        public operator fun invoke(block: UrlBuilder.() -> Unit): Url = UrlBuilder().apply(block).build()
     }
 
-    fun build(): Url = Url(
+    public fun build(): Url = Url(
         scheme,
         host,
         port ?: scheme.defaultPort,
@@ -149,12 +149,14 @@ class UrlBuilder : CanDeepCopy<UrlBuilder> {
         "UrlBuilder(scheme=$scheme, host='$host', port=$port, path='$path', parameters=$parameters, fragment=$fragment, userInfo=$userInfo, forceQuery=$forceQuery)"
 }
 
-fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) = parameters.apply(block)
+public fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) {
+    parameters.apply(block)
+}
 
 // TODO - when we get to other platforms we will likely just roll our own - for now we are going to punt and use JVM
 // capabilities to bootstrap this
 internal expect fun platformUrlParse(url: String): Url
 
 @InternalApi
-val UrlBuilder.encodedPath: String
+public val UrlBuilder.encodedPath: String
     get() = encodePath(path, parameters.entries(), fragment, forceQuery)

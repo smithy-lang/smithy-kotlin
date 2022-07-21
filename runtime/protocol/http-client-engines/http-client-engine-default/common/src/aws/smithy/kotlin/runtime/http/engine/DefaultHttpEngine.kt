@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.engine
 /**
  * Factory function to create a new HTTP client engine using the default for the current KMP target
  */
-fun DefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)? = null): HttpClientEngine = newDefaultHttpEngine(block)
+public fun DefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)? = null): HttpClientEngine =
+    newDefaultHttpEngine(block)
 
 internal expect fun newDefaultHttpEngine(block: (HttpClientEngineConfig.Builder.() -> Unit)?): HttpClientEngine

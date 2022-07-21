@@ -7,18 +7,18 @@ package aws.smithy.kotlin.runtime.http
 /**
  * Container for an HTTP status code
  */
-data class HttpStatusCode(val value: Int, val description: String) {
+public data class HttpStatusCode(public val value: Int, public val description: String) {
     // NOTE: data class over enum here to be forward compatible with potentially unknown status codes
 
-    enum class Category(private val range: IntRange) : Comparable<Category>, ClosedRange<Int> by range {
+    public enum class Category(private val range: IntRange) : Comparable<Category>, ClosedRange<Int> by range {
         INFORMATION(IntRange(100, 199)),
         SUCCESS(IntRange(200, 299)),
         REDIRECT(IntRange(300, 399)),
         CLIENT_ERROR(IntRange(400, 499)),
         SERVER_ERROR(IntRange(500, 599));
 
-        companion object {
-            fun fromCode(value: Int): Category =
+        public companion object {
+            public fun fromCode(value: Int): Category =
                 values().find { value in it.range } ?: error("Invalid HTTP code $value")
         }
     }
@@ -27,96 +27,97 @@ data class HttpStatusCode(val value: Int, val description: String) {
     override fun equals(other: Any?): Boolean = other is HttpStatusCode && other.value == value
     override fun hashCode(): Int = value.hashCode()
 
-    companion object {
+    public companion object {
         // If you add additional codes update the mapping
 
         // 1xx Informational
-        val Continue = HttpStatusCode(100, "Continue")
-        val SwitchingProtocols = HttpStatusCode(101, "Switching Protocols")
-        val Processing = HttpStatusCode(102, "Processing")
+        public val Continue: HttpStatusCode = HttpStatusCode(100, "Continue")
+        public val SwitchingProtocols: HttpStatusCode = HttpStatusCode(101, "Switching Protocols")
+        public val Processing: HttpStatusCode = HttpStatusCode(102, "Processing")
 
         // 2xx Success
-        val OK = HttpStatusCode(200, "OK")
-        val Created = HttpStatusCode(201, "Created")
-        val Accepted = HttpStatusCode(202, "Accepted")
-        val NonAuthoritativeInformation = HttpStatusCode(203, "Non-Authoritative Information")
-        val NoContent = HttpStatusCode(204, "No Content")
-        val ResetContent = HttpStatusCode(205, "Reset Content")
-        val PartialContent = HttpStatusCode(206, "Partial Content")
-        val MultiStatus = HttpStatusCode(207, "Multi-Status")
+        public val OK: HttpStatusCode = HttpStatusCode(200, "OK")
+        public val Created: HttpStatusCode = HttpStatusCode(201, "Created")
+        public val Accepted: HttpStatusCode = HttpStatusCode(202, "Accepted")
+        public val NonAuthoritativeInformation: HttpStatusCode = HttpStatusCode(203, "Non-Authoritative Information")
+        public val NoContent: HttpStatusCode = HttpStatusCode(204, "No Content")
+        public val ResetContent: HttpStatusCode = HttpStatusCode(205, "Reset Content")
+        public val PartialContent: HttpStatusCode = HttpStatusCode(206, "Partial Content")
+        public val MultiStatus: HttpStatusCode = HttpStatusCode(207, "Multi-Status")
 
         // 3xx Redirection
-        val MultipleChoices = HttpStatusCode(300, "Multiple Choices")
-        val MovedPermanently = HttpStatusCode(301, "Moved Permanently")
-        val Found = HttpStatusCode(302, "Found")
-        val SeeOther = HttpStatusCode(303, "See Other")
-        val NotModified = HttpStatusCode(304, "Not Modified")
-        val UseProxy = HttpStatusCode(305, "Use Proxy")
-        val TemporaryRedirect = HttpStatusCode(307, "Temporary Redirect")
-        val PermanentRedirect = HttpStatusCode(308, "Permanent Redirect")
+        public val MultipleChoices: HttpStatusCode = HttpStatusCode(300, "Multiple Choices")
+        public val MovedPermanently: HttpStatusCode = HttpStatusCode(301, "Moved Permanently")
+        public val Found: HttpStatusCode = HttpStatusCode(302, "Found")
+        public val SeeOther: HttpStatusCode = HttpStatusCode(303, "See Other")
+        public val NotModified: HttpStatusCode = HttpStatusCode(304, "Not Modified")
+        public val UseProxy: HttpStatusCode = HttpStatusCode(305, "Use Proxy")
+        public val TemporaryRedirect: HttpStatusCode = HttpStatusCode(307, "Temporary Redirect")
+        public val PermanentRedirect: HttpStatusCode = HttpStatusCode(308, "Permanent Redirect")
 
         // 4xx Client Error
-        val BadRequest = HttpStatusCode(400, "Bad Request")
-        val Unauthorized = HttpStatusCode(401, "Unauthorized")
-        val PaymentRequired = HttpStatusCode(402, "Payment Required")
-        val Forbidden = HttpStatusCode(403, "Forbidden")
-        val NotFound = HttpStatusCode(404, "Not Found")
-        val MethodNotAllowed = HttpStatusCode(405, "Method Not Allowed")
-        val NotAcceptable = HttpStatusCode(406, "Not Acceptable")
-        val ProxyAuthenticationRequired = HttpStatusCode(407, "Proxy Authentication Required")
-        val RequestTimeout = HttpStatusCode(408, "Request Timeout")
-        val Conflict = HttpStatusCode(409, "Conflict")
-        val Gone = HttpStatusCode(410, "Gone")
-        val LengthRequired = HttpStatusCode(411, "Length Required")
-        val PreconditionFailed = HttpStatusCode(412, "Precondition Failed")
-        val PayloadTooLarge = HttpStatusCode(413, "Payload Too Large")
-        val RequestURITooLong = HttpStatusCode(414, "Request-URI Too Long")
-        val UnsupportedMediaType = HttpStatusCode(415, "Unsupported Media Type")
-        val RequestedRangeNotSatisfiable = HttpStatusCode(416, "Requested Range Not Satisfiable")
-        val ExpectationFailed = HttpStatusCode(417, "Expectation Failed")
-        val UnprocessableEntity = HttpStatusCode(422, "Unprocessable Entity")
-        val Locked = HttpStatusCode(423, "Locked")
-        val FailedDependency = HttpStatusCode(424, "Failed Dependency")
-        val TooEarly = HttpStatusCode(425, "Too Early")
-        val UpgradeRequired = HttpStatusCode(426, "Upgrade Required")
-        val PreconditionRequired = HttpStatusCode(428, "Precondition Required")
-        val TooManyRequests = HttpStatusCode(429, "Too Many Requests")
-        val RequestHeaderFieldTooLarge = HttpStatusCode(431, "Request Header Fields Too Large")
-        val UnavailableForLegalReason = HttpStatusCode(451, "Unavailable For Legal Reason")
+        public val BadRequest: HttpStatusCode = HttpStatusCode(400, "Bad Request")
+        public val Unauthorized: HttpStatusCode = HttpStatusCode(401, "Unauthorized")
+        public val PaymentRequired: HttpStatusCode = HttpStatusCode(402, "Payment Required")
+        public val Forbidden: HttpStatusCode = HttpStatusCode(403, "Forbidden")
+        public val NotFound: HttpStatusCode = HttpStatusCode(404, "Not Found")
+        public val MethodNotAllowed: HttpStatusCode = HttpStatusCode(405, "Method Not Allowed")
+        public val NotAcceptable: HttpStatusCode = HttpStatusCode(406, "Not Acceptable")
+        public val ProxyAuthenticationRequired: HttpStatusCode = HttpStatusCode(407, "Proxy Authentication Required")
+        public val RequestTimeout: HttpStatusCode = HttpStatusCode(408, "Request Timeout")
+        public val Conflict: HttpStatusCode = HttpStatusCode(409, "Conflict")
+        public val Gone: HttpStatusCode = HttpStatusCode(410, "Gone")
+        public val LengthRequired: HttpStatusCode = HttpStatusCode(411, "Length Required")
+        public val PreconditionFailed: HttpStatusCode = HttpStatusCode(412, "Precondition Failed")
+        public val PayloadTooLarge: HttpStatusCode = HttpStatusCode(413, "Payload Too Large")
+        public val RequestURITooLong: HttpStatusCode = HttpStatusCode(414, "Request-URI Too Long")
+        public val UnsupportedMediaType: HttpStatusCode = HttpStatusCode(415, "Unsupported Media Type")
+        public val RequestedRangeNotSatisfiable: HttpStatusCode = HttpStatusCode(416, "Requested Range Not Satisfiable")
+        public val ExpectationFailed: HttpStatusCode = HttpStatusCode(417, "Expectation Failed")
+        public val UnprocessableEntity: HttpStatusCode = HttpStatusCode(422, "Unprocessable Entity")
+        public val Locked: HttpStatusCode = HttpStatusCode(423, "Locked")
+        public val FailedDependency: HttpStatusCode = HttpStatusCode(424, "Failed Dependency")
+        public val TooEarly: HttpStatusCode = HttpStatusCode(425, "Too Early")
+        public val UpgradeRequired: HttpStatusCode = HttpStatusCode(426, "Upgrade Required")
+        public val PreconditionRequired: HttpStatusCode = HttpStatusCode(428, "Precondition Required")
+        public val TooManyRequests: HttpStatusCode = HttpStatusCode(429, "Too Many Requests")
+        public val RequestHeaderFieldTooLarge: HttpStatusCode = HttpStatusCode(431, "Request Header Fields Too Large")
+        public val UnavailableForLegalReason: HttpStatusCode = HttpStatusCode(451, "Unavailable For Legal Reason")
 
         // 5xx Server Error
-        val InternalServerError = HttpStatusCode(500, "Internal Server Error")
-        val NotImplemented = HttpStatusCode(501, "Not Implemented")
-        val BadGateway = HttpStatusCode(502, "Bad Gateway")
-        val ServiceUnavailable = HttpStatusCode(503, "Service Unavailable")
-        val GatewayTimeout = HttpStatusCode(504, "Gateway Timeout")
-        val VersionNotSupported = HttpStatusCode(505, "HTTP Version Not Supported")
-        val VariantAlsoNegotiates = HttpStatusCode(506, "Variant Also Negotiates")
-        val InsufficientStorage = HttpStatusCode(507, "Insufficient Storage")
-        val LoopDetected = HttpStatusCode(508, "Loop Detected")
-        val NotExtended = HttpStatusCode(510, "Not Extended")
-        val NetworkAuthenticationRequired = HttpStatusCode(511, "Network Authentication Required")
+        public val InternalServerError: HttpStatusCode = HttpStatusCode(500, "Internal Server Error")
+        public val NotImplemented: HttpStatusCode = HttpStatusCode(501, "Not Implemented")
+        public val BadGateway: HttpStatusCode = HttpStatusCode(502, "Bad Gateway")
+        public val ServiceUnavailable: HttpStatusCode = HttpStatusCode(503, "Service Unavailable")
+        public val GatewayTimeout: HttpStatusCode = HttpStatusCode(504, "Gateway Timeout")
+        public val VersionNotSupported: HttpStatusCode = HttpStatusCode(505, "HTTP Version Not Supported")
+        public val VariantAlsoNegotiates: HttpStatusCode = HttpStatusCode(506, "Variant Also Negotiates")
+        public val InsufficientStorage: HttpStatusCode = HttpStatusCode(507, "Insufficient Storage")
+        public val LoopDetected: HttpStatusCode = HttpStatusCode(508, "Loop Detected")
+        public val NotExtended: HttpStatusCode = HttpStatusCode(510, "Not Extended")
+        public val NetworkAuthenticationRequired: HttpStatusCode = HttpStatusCode(511, "Network Authentication Required")
 
         private val byValue: Map<Int, HttpStatusCode> = statusCodeMap()
 
         /**
          * Convert a raw status code integer to an [HttpStatusCode] instance
          */
-        fun fromValue(status: Int): HttpStatusCode = byValue[status] ?: HttpStatusCode(status, "Unknown HttpStatusCode")
+        public fun fromValue(status: Int): HttpStatusCode =
+            byValue[status] ?: HttpStatusCode(status, "Unknown HttpStatusCode")
     }
 }
 
 /**
  * Check if the given status code is a success code (HTTP codes 200 to 299 are considered successful)
  */
-fun HttpStatusCode.isSuccess(): Boolean = value in HttpStatusCode.Category.SUCCESS
+public fun HttpStatusCode.isSuccess(): Boolean = value in HttpStatusCode.Category.SUCCESS
 
 /**
  * Check if the given status code is an informational code (HTTP codes 100 to 199 are considered informational)
  */
-fun HttpStatusCode.isInformational(): Boolean = value in HttpStatusCode.Category.INFORMATION
+public fun HttpStatusCode.isInformational(): Boolean = value in HttpStatusCode.Category.INFORMATION
 
-fun HttpStatusCode.category(): HttpStatusCode.Category = HttpStatusCode.Category.fromCode(this.value)
+public fun HttpStatusCode.category(): HttpStatusCode.Category = HttpStatusCode.Category.fromCode(this.value)
 
 private fun statusCodeMap(): Map<Int, HttpStatusCode> = mapOf(
     // 1xx Informational

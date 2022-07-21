@@ -9,14 +9,14 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 /**
  * A component capable of signing requests and request chunks for AWS APIs.
  */
-interface AwsSigner {
+public interface AwsSigner {
     /**
      * Signs an HTTP request according to the supplied signing configuration
      * @param request The request to sign
      * @param config The signing configuration
      * @return The signed request
      */
-    suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest>
+    public suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest>
 
     /**
      * Signs a body chunk according to the supplied signing configuration
@@ -26,7 +26,7 @@ interface AwsSigner {
      * @param config The signing configuration
      * @return The signing result, which provides access to all signing-related result properties
      */
-    suspend fun signChunk(
+    public suspend fun signChunk(
         chunkBody: ByteArray,
         prevSignature: ByteArray,
         config: AwsSigningConfig,

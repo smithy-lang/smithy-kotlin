@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 
 @InternalApi
 @Suppress("NOTHING_TO_INLINE")
-inline fun byteCountUtf8(start: Byte): Int {
+public inline fun byteCountUtf8(start: Byte): Int {
     val x = start.toUInt()
     return when {
         x <= 0x7fu -> 1 // 0xxx xxxx one byte
@@ -34,7 +34,7 @@ private const val MAX_CODEPOINT: Int = 0X10FFFF
  * Checks to see if a codepoint is in the supplementary plane or not (surrogate pair)
  */
 @InternalApi
-fun Char.Companion.isSupplementaryCodePoint(codePoint: Int): Boolean = codePoint in SUPPLEMENTARY_PLANE_LOW..MAX_CODEPOINT
+public fun Char.Companion.isSupplementaryCodePoint(codePoint: Int): Boolean = codePoint in SUPPLEMENTARY_PLANE_LOW..MAX_CODEPOINT
 
 /**
  * Converts the [codePoint] to a char array. If the codepoint is in the supplementary plane then it will
@@ -42,7 +42,7 @@ fun Char.Companion.isSupplementaryCodePoint(codePoint: Int): Boolean = codePoint
  * array with a single character.
  */
 @InternalApi
-fun Char.Companion.codePointToChars(codePoint: Int): CharArray = when (codePoint) {
+public fun Char.Companion.codePointToChars(codePoint: Int): CharArray = when (codePoint) {
     in 0 until SUPPLEMENTARY_PLANE_LOW -> charArrayOf(codePoint.toChar())
     in SUPPLEMENTARY_PLANE_LOW..MAX_CODEPOINT -> {
         val low = MIN_LOW_SURROGATE.code + ((codePoint - 0x10000) and 0x3FF)

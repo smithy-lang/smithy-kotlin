@@ -7,39 +7,40 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 /**
  * Specifies a hash for a signable request
  */
-sealed class HashSpecification {
+public sealed class HashSpecification {
     /**
      * Indicates that the hash value should be calculated from the body payload of the request
      */
-    object CalculateFromPayload : HashSpecification()
+    public object CalculateFromPayload : HashSpecification()
 
     /**
      * Specifies a literal value to use as a hash
      */
-    sealed class HashLiteral(open val hash: String) : HashSpecification()
+    public sealed class HashLiteral(public open val hash: String) : HashSpecification()
 
     /**
      * The hash value should indicate an unsigned payload
      */
-    object UnsignedPayload : HashLiteral("UNSIGNED-PAYLOAD")
+    public object UnsignedPayload : HashLiteral("UNSIGNED-PAYLOAD")
 
     /**
-     * The hash value should indicate an empty body
+     * The hash value should indicate an empty body. The resulting hash literal is the SHA256 calculation for the empty
+     * string.
      */
-    object EmptyBody : HashLiteral("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855") // hash of ""
+    public object EmptyBody : HashLiteral("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 
     /**
      * The hash value should indicate that signature covers only headers and that there is no payload
      */
-    object StreamingAws4HmacSha256Payload : HashLiteral("STREAMING-AWS4-HMAC-SHA256-PAYLOAD")
+    public object StreamingAws4HmacSha256Payload : HashLiteral("STREAMING-AWS4-HMAC-SHA256-PAYLOAD")
 
     /**
      * The hash value should indicate ???
      */
-    object StreamingAws4HmacSha256Events : HashLiteral("STREAMING-AWS4-HMAC-SHA256-EVENTS")
+    public object StreamingAws4HmacSha256Events : HashLiteral("STREAMING-AWS4-HMAC-SHA256-EVENTS")
 
     /**
      * Use an explicit, precalculated value for the hash
      */
-    data class Precalculated(override val hash: String) : HashLiteral(hash)
+    public data class Precalculated(override val hash: String) : HashLiteral(hash)
 }

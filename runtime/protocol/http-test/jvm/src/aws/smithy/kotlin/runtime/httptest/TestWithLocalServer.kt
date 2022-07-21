@@ -28,7 +28,7 @@ public abstract class TestWithLocalServer {
     private val logger = Logger.getLogger<TestWithLocalServer>()
 
     @BeforeTest
-    public fun startServer() = runBlocking {
+    public fun startServer(): Unit = runBlocking {
         withTimeout(5.seconds) {
             var attempt = 0
 

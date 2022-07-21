@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.retries.policy
 /**
  * A type of error that may be retried.
  */
-enum class RetryErrorType {
+public enum class RetryErrorType {
     /**
      * A general server-side error.
      */

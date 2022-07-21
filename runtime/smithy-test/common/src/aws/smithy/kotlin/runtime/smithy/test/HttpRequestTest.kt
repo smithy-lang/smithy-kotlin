@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -50,7 +51,7 @@ private class MockEngineException : RuntimeException()
  * }
  * ```
  */
-fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit) = runTest {
+public fun httpRequestTest(block: HttpRequestTestBuilder.() -> Unit): TestResult = runTest {
     // setup expectations
     val testBuilder = HttpRequestTestBuilder().apply(block)
 
@@ -142,31 +143,31 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
     expected.bodyAssert?.invoke(expectedBody, actual.body)
 }
 
-data class ExpectedHttpRequest(
+public data class ExpectedHttpRequest(
     // the HTTP method expected
-    val method: HttpMethod = HttpMethod.GET,
+    public val method: HttpMethod = HttpMethod.GET,
     // expected path without the query string (e.g. /foo/bar)
-    val uri: String = "",
+    public val uri: String = "",
     // query parameter names AND the associated values that must appear
-    val queryParams: List<Pair<String, String>> = listOf(),
+    public val queryParams: List<Pair<String, String>> = listOf(),
     // query parameter names that MUST not appear
-    val forbiddenQueryParams: List<String> = listOf(),
+    public val forbiddenQueryParams: List<String> = listOf(),
     // query parameter names that MUST appear but no assertion on values
-    val requiredQueryParams: List<String> = listOf(),
+    public val requiredQueryParams: List<String> = listOf(),
     // header names AND values that must appear
-    val headers: Map<String, String> = mapOf(),
+    public val headers: Map<String, String> = mapOf(),
     // header names that must not appear
-    val forbiddenHeaders: List<String> = listOf(),
+    public val forbiddenHeaders: List<String> = listOf(),
     // header names that must appear but no assertion on values
-    val requiredHeaders: List<String> = listOf(),
+    public val requiredHeaders: List<String> = listOf(),
     // the host / endpoint that the client should send to, not including the path or scheme
-    var resolvedHost: String? = null,
+    public var resolvedHost: String? = null,
     // if no body is defined no assertions are made about it
-    val body: String? = null,
+    public val body: String? = null,
     // actual function to use for the assertion
-    val bodyAssert: BodyAssertFn? = null,
+    public val bodyAssert: BodyAssertFn? = null,
     // if not defined no assertion is made
-    val bodyMediaType: String? = null
+    public val bodyMediaType: String? = null
 )
 
 /**
@@ -177,23 +178,23 @@ data class ExpectedHttpRequest(
  * The function will be passed the [expected] contents and the [actual] read contents
  * from the built request as a string.
  */
-typealias BodyAssertFn = suspend (expected: HttpBody?, actual: HttpBody?) -> Unit
+public typealias BodyAssertFn = suspend (expected: HttpBody?, actual: HttpBody?) -> Unit
 
-class ExpectedHttpRequestBuilder {
-    var method: HttpMethod = HttpMethod.GET
-    var uri: String = ""
-    var queryParams: List<Pair<String, String>> = listOf()
-    var forbiddenQueryParams: List<String> = listOf()
-    var requiredQueryParams: List<String> = listOf()
-    var headers: Map<String, String> = mapOf()
-    var forbiddenHeaders: List<String> = listOf()
-    var requiredHeaders: List<String> = listOf()
-    var resolvedHost: String? = null
-    var body: String? = null
-    var bodyAssert: BodyAssertFn? = null
-    var bodyMediaType: String? = null
+public class ExpectedHttpRequestBuilder {
+    public var method: HttpMethod = HttpMethod.GET
+    public var uri: String = ""
+    public var queryParams: List<Pair<String, String>> = listOf()
+    public var forbiddenQueryParams: List<String> = listOf()
+    public var requiredQueryParams: List<String> = listOf()
+    public var headers: Map<String, String> = mapOf()
+    public var forbiddenHeaders: List<String> = listOf()
+    public var requiredHeaders: List<String> = listOf()
+    public var resolvedHost: String? = null
+    public var body: String? = null
+    public var bodyAssert: BodyAssertFn? = null
+    public var bodyMediaType: String? = null
 
-    fun build(): ExpectedHttpRequest =
+    public fun build(): ExpectedHttpRequest =
         ExpectedHttpRequest(
             this.method,
             this.uri,
@@ -210,14 +211,14 @@ class ExpectedHttpRequestBuilder {
         )
 }
 
-class HttpRequestTestBuilder {
+public class HttpRequestTestBuilder {
     internal var runOperation: suspend (mockEngine: HttpClientEngine) -> Unit = {}
     internal var expected = ExpectedHttpRequestBuilder()
 
     /**
      * Setup the expected HTTP request that the service operation should produce
      */
-    fun expected(block: ExpectedHttpRequestBuilder.() -> Unit) {
+    public fun expected(block: ExpectedHttpRequestBuilder.() -> Unit) {
         expected.apply(block)
     }
 
@@ -227,7 +228,7 @@ class HttpRequestTestBuilder {
      * service client with the provided engine, providing the input, and executing the
      * operation (which *MUST* be the last statement in the block).
      */
-    fun operation(block: suspend (mockEngine: HttpClientEngine) -> Unit) {
+    public fun operation(block: suspend (mockEngine: HttpClientEngine) -> Unit) {
         runOperation = block
     }
 }

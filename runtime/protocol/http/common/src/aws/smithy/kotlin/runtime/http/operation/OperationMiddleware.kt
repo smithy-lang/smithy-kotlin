@@ -12,8 +12,8 @@ import aws.smithy.kotlin.runtime.io.middleware.ModifyRequest
 /**
  * Middleware that intercepts the [SdkOperationExecution.initialize] phase
  */
-interface InitializeMiddleware<Request, Response> : Middleware<OperationRequest<Request>, Response> {
-    fun install(op: SdkHttpOperation<Request, Response>) {
+public interface InitializeMiddleware<Request, Response> : Middleware<OperationRequest<Request>, Response> {
+    public fun install(op: SdkHttpOperation<Request, Response>) {
         op.execution.initialize.register(this)
     }
 }
@@ -21,8 +21,8 @@ interface InitializeMiddleware<Request, Response> : Middleware<OperationRequest<
 /**
  * Middleware that intercepts the [SdkOperationExecution.mutate] phase
  */
-interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
-    fun install(op: SdkHttpOperation<*, Response>) {
+public interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
+    public fun install(op: SdkHttpOperation<*, Response>) {
         op.execution.mutate.register(this)
     }
 }
@@ -32,13 +32,13 @@ interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
  *
  * NOTE: This can be applied to any phase that uses [SdkHttpRequest] as it's input type (e.g. mutate, finalize, receive)
  */
-interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
+public interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
     /**
      * Register this transform with the operation's execution
      *
      * NOTE: the default implementation will register with the [SdkOperationExecution.mutate] phase.
      */
-    fun install(op: SdkHttpOperation<*, *>) {
+    public fun install(op: SdkHttpOperation<*, *>) {
         op.execution.mutate.register(this)
     }
 }
@@ -46,8 +46,8 @@ interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
 /**
  * Middleware that intercepts the [SdkOperationExecution.finalize] phase
  */
-interface FinalizeMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
-    fun install(op: SdkHttpOperation<*, Response>) {
+public interface FinalizeMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
+    public fun install(op: SdkHttpOperation<*, Response>) {
         op.execution.finalize.register(this)
     }
 }
@@ -55,8 +55,8 @@ interface FinalizeMiddleware<Response> : Middleware<SdkHttpRequest, Response> {
 /**
  * Middleware that intercepts the [SdkOperationExecution.receive] phase
  */
-interface ReceiveMiddleware : Middleware<SdkHttpRequest, HttpCall> {
-    fun install(op: SdkHttpOperation<*, *>) {
+public interface ReceiveMiddleware : Middleware<SdkHttpRequest, HttpCall> {
+    public fun install(op: SdkHttpOperation<*, *>) {
         op.execution.receive.register(this)
     }
 }
@@ -76,6 +76,6 @@ interface ReceiveMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  *
  * ```
  */
-interface InlineMiddleware<I, O> {
-    fun install(op: SdkHttpOperation<I, O>)
+public interface InlineMiddleware<I, O> {
+    public fun install(op: SdkHttpOperation<I, O>)
 }

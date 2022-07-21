@@ -7,27 +7,27 @@ import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
-interface Serializer : PrimitiveSerializer {
+public interface Serializer : PrimitiveSerializer {
     /**
      * Begin a struct (i.e. in JSON this would be a '{') and return a [StructSerializer] that can be used to serialize the struct's fields.
      *
      * @param descriptor SdkFieldDescriptor of container for formats that require them.
      */
-    fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer
+    public fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer
 
     /**
      * Begin a list (i.e. in JSON this would be a '[') and return a [ListSerializer] that can be used to serialize the list's elements.
      *
      * @param descriptor SdkFieldDescriptor of container for formats that require them.
      */
-    fun beginList(descriptor: SdkFieldDescriptor): ListSerializer
+    public fun beginList(descriptor: SdkFieldDescriptor): ListSerializer
 
     /**
      * Begin a map (i.e. in JSON this would be a '{') and return a [MapSerializer] that can be used to serialize the map's entries.
      *
      * @param descriptor SdkFieldDescriptor of container for formats that require them.
      */
-    fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer
+    public fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer
 
     // FIXME - we should commonize how we deal with buffers internally and rely on `SdkBuffer`
     //  (likely once we roll our own json/xml serializers). Until then this should probably return a ByteStream?
@@ -35,10 +35,10 @@ interface Serializer : PrimitiveSerializer {
     /**
      * Consume the serializer and get the payload as a [ByteArray]
      */
-    fun toByteArray(): ByteArray
+    public fun toByteArray(): ByteArray
 }
 
-interface StructSerializer : PrimitiveSerializer {
+public interface StructSerializer : PrimitiveSerializer {
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -47,7 +47,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Boolean)
+    public fun field(descriptor: SdkFieldDescriptor, value: Boolean)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -56,7 +56,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Byte)
+    public fun field(descriptor: SdkFieldDescriptor, value: Byte)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -65,7 +65,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Short)
+    public fun field(descriptor: SdkFieldDescriptor, value: Short)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -74,7 +74,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Char)
+    public fun field(descriptor: SdkFieldDescriptor, value: Char)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -83,7 +83,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Int)
+    public fun field(descriptor: SdkFieldDescriptor, value: Int)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -92,7 +92,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Long)
+    public fun field(descriptor: SdkFieldDescriptor, value: Long)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -101,7 +101,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Float)
+    public fun field(descriptor: SdkFieldDescriptor, value: Float)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -110,7 +110,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Double)
+    public fun field(descriptor: SdkFieldDescriptor, value: Double)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -119,7 +119,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: String)
+    public fun field(descriptor: SdkFieldDescriptor, value: String)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -128,7 +128,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat)
+    public fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -137,7 +137,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: Document?)
+    public fun field(descriptor: SdkFieldDescriptor, value: Document?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -146,7 +146,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param value
      */
-    fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable)
+    public fun field(descriptor: SdkFieldDescriptor, value: SdkSerializable)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -155,7 +155,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param block
      */
-    fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit)
+    public fun structField(descriptor: SdkFieldDescriptor, block: StructSerializer.() -> Unit)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -164,7 +164,7 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param block
      */
-    fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit)
+    public fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -173,35 +173,35 @@ interface StructSerializer : PrimitiveSerializer {
      * @param descriptor
      * @param block
      */
-    fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
+    public fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
 
     /**
      * Writes the field name given in the descriptor, and then
      * serializes null.
      */
-    fun nullField(descriptor: SdkFieldDescriptor)
+    public fun nullField(descriptor: SdkFieldDescriptor)
 
     /**
      * Ends the struct that was started (i.e. in JSON this would be a '}').
      */
-    fun endStruct()
+    public fun endStruct()
 }
 
 /**
  * Serializes a list.
  */
-interface ListSerializer : PrimitiveSerializer {
+public interface ListSerializer : PrimitiveSerializer {
 
     /**
      * Ends the list that was started (i.e. in JSON this would be a ']').
      */
-    fun endList()
+    public fun endList()
 }
 
 /**
  * Serializes a map. In Smithy, keys in maps are always Strings.
  */
-interface MapSerializer : PrimitiveSerializer {
+public interface MapSerializer : PrimitiveSerializer {
 
     /**
      * Writes the key given in the descriptor, and then
@@ -210,7 +210,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Boolean?)
+    public fun entry(key: String, value: Boolean?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -219,7 +219,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Byte?)
+    public fun entry(key: String, value: Byte?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -228,7 +228,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Short?)
+    public fun entry(key: String, value: Short?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -237,7 +237,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Char?)
+    public fun entry(key: String, value: Char?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -246,7 +246,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Int?)
+    public fun entry(key: String, value: Int?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -255,7 +255,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Long?)
+    public fun entry(key: String, value: Long?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -264,7 +264,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Float?)
+    public fun entry(key: String, value: Float?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -273,7 +273,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Double?)
+    public fun entry(key: String, value: Double?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -282,7 +282,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: String?)
+    public fun entry(key: String, value: String?)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -291,7 +291,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: Instant?, format: TimestampFormat)
+    public fun entry(key: String, value: Instant?, format: TimestampFormat)
 
     /**
      * Writes the key given in the descriptor, and then
@@ -300,7 +300,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param key
      * @param value
      */
-    fun entry(key: String, value: SdkSerializable?)
+    public fun entry(key: String, value: SdkSerializable?)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -310,7 +310,7 @@ interface MapSerializer : PrimitiveSerializer {
      * @param listDescriptor
      * @param block
      */
-    fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit)
+    public fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit)
 
     /**
      * Writes the field name given in the descriptor, and then
@@ -320,111 +320,111 @@ interface MapSerializer : PrimitiveSerializer {
      * @param mapDescriptor
      * @param block
      */
-    fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
+    public fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit)
 
     /**
      * Ends the map that was started (i.e. in JSON this would be a '}').
      */
-    fun endMap()
+    public fun endMap()
 }
 
 /**
  * Used to serialize primitive values.
  */
-interface PrimitiveSerializer {
+public interface PrimitiveSerializer {
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeBoolean(value: Boolean)
+    public fun serializeBoolean(value: Boolean)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeByte(value: Byte)
+    public fun serializeByte(value: Byte)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeShort(value: Short)
+    public fun serializeShort(value: Short)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeChar(value: Char)
+    public fun serializeChar(value: Char)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeInt(value: Int)
+    public fun serializeInt(value: Int)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeLong(value: Long)
+    public fun serializeLong(value: Long)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeFloat(value: Float)
+    public fun serializeFloat(value: Float)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeDouble(value: Double)
+    public fun serializeDouble(value: Double)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeString(value: String)
+    public fun serializeString(value: String)
 
     /**
      * Serializes the given value.
      *
      * @param value
      */
-    fun serializeInstant(value: Instant, format: TimestampFormat)
+    public fun serializeInstant(value: Instant, format: TimestampFormat)
 
     /**
      * Calls the serialize method on the given object.
      *
      * @param value
      */
-    fun serializeSdkSerializable(value: SdkSerializable)
+    public fun serializeSdkSerializable(value: SdkSerializable)
 
     /**
      * Serializes the given value.
      */
-    fun serializeNull()
+    public fun serializeNull()
 
     /**
      * Serializes the given value.
      */
-    fun serializeDocument(value: Document?)
+    public fun serializeDocument(value: Document?)
 }
 
 /**
  * All components of a struct are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: StructSerializer.() -> Unit) {
+public inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: StructSerializer.() -> Unit) {
     val struct = beginStruct(sdkFieldDescriptor)
     struct.block()
     struct.endStruct()
@@ -433,7 +433,7 @@ inline fun Serializer.serializeStruct(sdkFieldDescriptor: SdkFieldDescriptor, cr
 /**
  * All elements of a list are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: ListSerializer.() -> Unit) {
+public inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: ListSerializer.() -> Unit) {
     val list = beginList(sdkFieldDescriptor)
     list.block()
     list.endList()
@@ -442,7 +442,7 @@ inline fun Serializer.serializeList(sdkFieldDescriptor: SdkFieldDescriptor, cros
 /**
  * All entries of a map are expected to be serialized in the given block.
  */
-inline fun Serializer.serializeMap(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: MapSerializer.() -> Unit) {
+public inline fun Serializer.serializeMap(sdkFieldDescriptor: SdkFieldDescriptor, crossinline block: MapSerializer.() -> Unit) {
     val map = beginMap(sdkFieldDescriptor)
     map.block()
     map.endMap()

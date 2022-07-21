@@ -16,7 +16,7 @@ import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkByteBuffer(256u))
+public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkByteBuffer(256u))
 
 private class FormUrlSerializer(
     val buffer: SdkByteBuffer,

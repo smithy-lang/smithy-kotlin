@@ -16,7 +16,7 @@ private val nonAscii = """[^\x20-\x7E]""".toRegex()
  * stream is **not** advanced by `peek` operations.
  * @param source The source text for this stream.
  */
-class StringTextStream(private val source: String) {
+public class StringTextStream(private val source: String) {
     private val end = source.length
     private var offset = 0
 
@@ -25,7 +25,7 @@ class StringTextStream(private val source: String) {
      * stream.
      * @param length The length by which to advance the stream position.
      */
-    fun advance(length: Int, errCondition: String) {
+    public fun advance(length: Int, errCondition: String) {
         checkBounds(length, errCondition)
         offset += length
     }
@@ -35,7 +35,7 @@ class StringTextStream(private val source: String) {
      * @param text The text to look for at the current offset.
      * @return True if the given [text] was found and the offset was advanced; otherwise, false.
      */
-    fun advanceIf(text: String): Boolean =
+    public fun advanceIf(text: String): Boolean =
         if (source.startsWith(text, offset)) {
             offset += text.length
             true
@@ -46,7 +46,7 @@ class StringTextStream(private val source: String) {
     /**
      * Advances the position until a whitespace character is found (i.e., one of ' ', '\r', '\n', '\t').
      */
-    fun advanceUntilSpace() {
+    public fun advanceUntilSpace() {
         while (offset < end) {
             val ch = source[offset]
             if (ch == ' ' || ch == '\r' || ch == '\n' || ch == '\t') return
@@ -57,7 +57,7 @@ class StringTextStream(private val source: String) {
     /**
      * Advances the position until a non-whitespace character is found (i.e., not one of ' ', '\r', '\n', '\t').
      */
-    fun advanceWhileSpace() {
+    public fun advanceWhileSpace() {
         while (offset < end) {
             val ch = source[offset]
             if (ch != ' ' && ch != '\r' && ch != '\n' && ch != '\t') return
@@ -106,7 +106,7 @@ class StringTextStream(private val source: String) {
     /**
      * Determines if the next several characters in the stream match the given text without advancing the position.
      */
-    fun peekMatches(text: String): Boolean {
+    public fun peekMatches(text: String): Boolean {
         val actualLength = min(text.length, end - offset)
         return sliceByLength(actualLength) == text
     }
@@ -116,7 +116,7 @@ class StringTextStream(private val source: String) {
      * would be exceeded.
      * @param errCondition The condition to include in an error message if necessary.
      */
-    fun readOrThrow(errCondition: String): Char {
+    public fun readOrThrow(errCondition: String): Char {
         checkBounds(1, errCondition)
         return source[offset++]
     }
@@ -128,7 +128,7 @@ class StringTextStream(private val source: String) {
      * @param errCondition The condition to include in an error message if necessary.
      * @return The stream contents from the current position up to and including [text].
      */
-    fun readThrough(text: String, errCondition: String): String {
+    public fun readThrough(text: String, errCondition: String): String {
         val charIndex = source.indexOf(text, startIndex = offset)
         if (charIndex < 0) error("Unexpected end-of-doc while $errCondition")
 
@@ -145,7 +145,7 @@ class StringTextStream(private val source: String) {
      * @param errCondition The condition to include in an error message if necessary.
      * @return The stream contents from the current position up to but not including [text].
      */
-    fun readUntil(text: String, errCondition: String): String {
+    public fun readUntil(text: String, errCondition: String): String {
         val charIndex = source.indexOf(text, startIndex = offset)
         if (charIndex < 0) error("Unexpected end-of-doc while $errCondition")
 
@@ -158,7 +158,7 @@ class StringTextStream(private val source: String) {
      * Returns an XML name from the stream and advances the position. Throws an exception if unable to find a valid XML
      * name start character. See https://www.w3.org/TR/xml/#NT-Name for name character rules.
      */
-    fun readWhileXmlName(): String {
+    public fun readWhileXmlName(): String {
         val c = source[offset]
         if (
             !(
@@ -221,7 +221,7 @@ class StringTextStream(private val source: String) {
      * @param length The amount of characters to go back.
      * @param errCondition The condition to include in an error message if necessary.
      */
-    fun rewind(length: Int, errCondition: String) {
+    public fun rewind(length: Int, errCondition: String) {
         checkBounds(-length, errCondition)
         offset -= length
     }

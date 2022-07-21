@@ -18,7 +18,7 @@ internal actual fun platformUrlParse(url: String): Url {
  * Convert a [java.net.URI] to a [Url]
  */
 @InternalApi
-fun URI.toUrl(): Url {
+public fun URI.toUrl(): Url {
     val uri = this
     return UrlBuilder {
         scheme = Protocol.parse(uri.scheme)

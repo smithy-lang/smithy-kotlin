@@ -25,7 +25,7 @@ private val TEST_SERVER = Url.parse("http://127.0.0.1:8082")
 /**
  * Abstract base class that all engine test suite test classes should inherit from.
  */
-abstract class AbstractEngineTest {
+public abstract class AbstractEngineTest {
 
     /**
      * Build a test that will run against each engine in the test suite.
@@ -33,7 +33,7 @@ abstract class AbstractEngineTest {
      * Concrete implementations for each KMP target are responsible for loading the engines
      * supported by that platform and executing the test
      */
-    fun testEngines(skipEngines: Set<String> = emptySet(), block: EngineTestBuilder.() -> Unit) {
+    public fun testEngines(skipEngines: Set<String> = emptySet(), block: EngineTestBuilder.() -> Unit) {
         val builder = EngineTestBuilder().apply(block)
         engineFactories()
             .filter { it.name !in skipEngines }
@@ -59,40 +59,41 @@ internal expect fun engineFactories(): List<TestEngineFactory>
  * @param coroutineId unique ID for current coroutine/job (concurrency > 1)
  * @param attempt the current attempt number when repeat > 1
  */
-data class TestEnvironment(val testServer: Url, val coroutineId: Int, val attempt: Int)
+public data class TestEnvironment(public val testServer: Url, public val coroutineId: Int, public val attempt: Int)
 
 /**
  * Configure the test
  */
-class EngineTestBuilder {
+public class EngineTestBuilder {
     /**
      * Lambda function invoked to configure the [HttpClientEngineConfig] to use for the test. If not specified
      * [HttpClientEngineConfig.Default] is used
      */
-    var engineConfig: HttpClientEngineConfig.Builder.() -> Unit = {}
+    public var engineConfig: HttpClientEngineConfig.Builder.() -> Unit = {}
 
     /**
      * Lambda function that is invoked with the current test environment and an [SdkHttpClient]
      * configured with an engine loaded by [AbstractEngineTest]. Invoke calls against test routes and make
      * assertions here. This will potentially be invoked multiple times (once for each engine supported by a platform).
      */
-    var test: (suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) = { _, _ -> error("engine test not configured") }
+    public var test: (suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) =
+        { _, _ -> error("engine test not configured") }
 
     /**
      * Number of times to repeat [test]
      */
-    var repeat: Int = 1
+    public var repeat: Int = 1
 
     /**
      * The number of coroutines to launch. Each coroutine will invoke [test]
      */
-    var concurrency: Int = 1
+    public var concurrency: Int = 1
 }
 
 /**
  * Shared entry point usable by implementations of [AbstractEngineTest.testEngines]
  */
-fun testWithClient(
+public fun testWithClient(
     client: SdkHttpClient,
     timeout: Duration = 60.seconds,
     builder: EngineTestBuilder
@@ -123,16 +124,16 @@ private suspend fun runConcurrently(level: Int, block: suspend (Int) -> Unit) {
     }
 }
 
-fun EngineTestBuilder.test(block: suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) {
+public fun EngineTestBuilder.test(block: suspend (env: TestEnvironment, client: SdkHttpClient) -> Unit) {
     test = block
 }
 
-fun HttpRequestBuilder.testSetup(env: TestEnvironment) {
+public fun HttpRequestBuilder.testSetup(env: TestEnvironment) {
     url(env.testServer)
     headers.append("Host", "${env.testServer.host}:${env.testServer.port}")
 }
 
-fun EngineTestBuilder.engineConfig(block: HttpClientEngineConfig.Builder.() -> Unit) {
+public fun EngineTestBuilder.engineConfig(block: HttpClientEngineConfig.Builder.() -> Unit) {
     engineConfig = block
 }
 

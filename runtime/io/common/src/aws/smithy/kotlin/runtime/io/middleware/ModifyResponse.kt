@@ -10,8 +10,8 @@ import aws.smithy.kotlin.runtime.io.Handler
 /**
  * A transform that only modifies the output type
  */
-interface ModifyResponse<Response> {
-    suspend fun modifyResponse(resp: Response): Response
+public interface ModifyResponse<Response> {
+    public suspend fun modifyResponse(resp: Response): Response
 }
 
 /**

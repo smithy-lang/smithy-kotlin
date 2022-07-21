@@ -19,7 +19,7 @@ import aws.smithy.kotlin.runtime.util.encodeBase64String
  *   - https://datatracker.ietf.org/doc/html/rfc1864.html
  */
 @InternalApi
-class Md5Checksum : ModifyRequestMiddleware {
+public class Md5Checksum : ModifyRequestMiddleware {
 
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val checksum = when (val body = req.subject.body) {

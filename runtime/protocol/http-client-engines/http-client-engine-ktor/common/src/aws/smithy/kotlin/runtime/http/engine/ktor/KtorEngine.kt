@@ -39,7 +39,7 @@ import io.ktor.client.engine.HttpClientEngine as KtorHttpClientEngine
  * may support HTTP features required by any given SDK).
  */
 @InternalApi // FIXME - decide on whether to support in GA or not. Most use cases would be better off by wrapping the underlying ktor engine directly
-class KtorEngine(
+public class KtorEngine(
     private val engine: KtorHttpClientEngine
 ) : HttpClientEngineBase("ktor") {
 
@@ -51,9 +51,9 @@ class KtorEngine(
             "use KtorEngine to wrap it. This constructor will be removed in a future release before GA.",
         level = DeprecationLevel.ERROR
     )
-    constructor(config: HttpClientEngineConfig = HttpClientEngineConfig.Default) : this(DeprecationEngine)
+    public constructor(config: HttpClientEngineConfig = HttpClientEngineConfig.Default) : this(DeprecationEngine)
 
-    val client: HttpClient = HttpClient(engine) {
+    public val client: HttpClient = HttpClient(engine) {
         // do not throw exceptions if status code < 300, error handling is expected by generated clients
         expectSuccess = false
 

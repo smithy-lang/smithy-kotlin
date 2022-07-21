@@ -14,7 +14,7 @@ public interface Filesystem {
      * The delimiter of segments in a path. For example in Linux: /home/user/documents
      * or Windows: C:\Program Files\Notepad.EXE
      */
-    val filePathSeparator: String
+    public val filePathSeparator: String
 
     /**
      * Read the contents of a file as a [String] or return null on any error.
@@ -24,11 +24,11 @@ public interface Filesystem {
      */
     public suspend fun readFileOrNull(path: String): ByteArray?
 
-    companion object {
+    public companion object {
         /**
          * Construct a fake filesystem from a mapping of paths to contents
          */
-        fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(data, filePathSeparator)
+        public fun fromMap(data: Map<String, ByteArray>, filePathSeparator: String = "/"): Filesystem = MapFilesystem(data, filePathSeparator)
     }
 }
 

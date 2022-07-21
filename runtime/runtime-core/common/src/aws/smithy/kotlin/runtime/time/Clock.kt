@@ -21,5 +21,5 @@ public interface Clock {
         override fun now(): Instant = Instant.now()
     }
 
-    public companion object {}
+    public companion object
 }

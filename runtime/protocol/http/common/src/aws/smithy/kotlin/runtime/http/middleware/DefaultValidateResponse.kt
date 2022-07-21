@@ -15,35 +15,35 @@ import aws.smithy.kotlin.runtime.io.Handler
 /**
  * Generic HTTP service exception
  */
-class HttpResponseException : SdkBaseException {
+public class HttpResponseException : SdkBaseException {
 
-    constructor() : super()
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 
     /**
      * The HTTP response status code
      */
-    var statusCode: HttpStatusCode? = null
+    public var statusCode: HttpStatusCode? = null
 
     /**
      * The response headers
      */
-    var headers: Headers? = null
+    public var headers: Headers? = null
 
     /**
      * The response payload, if available
      */
-    var body: ByteArray? = null
+    public var body: ByteArray? = null
 
     /**
      * The original request
      */
-    var request: HttpRequest? = null
+    public var request: HttpRequest? = null
 }
 
 /**
@@ -54,7 +54,7 @@ class HttpResponseException : SdkBaseException {
  * so all we can do is throw a generic exception with the code and let the user figure out what modeled error it was
  * using whatever matching mechanism they want.
  */
-class DefaultValidateResponse : ReceiveMiddleware {
+public class DefaultValidateResponse : ReceiveMiddleware {
 
     override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {
         val call = next.call(request)

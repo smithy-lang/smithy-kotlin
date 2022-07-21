@@ -9,27 +9,27 @@ import aws.smithy.kotlin.runtime.ClientException
 /**
  * Exception class for all serialization errors
  */
-class SerializationException : ClientException {
+public class SerializationException : ClientException {
 
-    constructor() : super()
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 }
 
 /**
  * Exception class for all deserialization errors
  */
-class DeserializationException : ClientException {
+public class DeserializationException : ClientException {
 
-    constructor() : super()
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 }

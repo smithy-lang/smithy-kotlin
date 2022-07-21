@@ -25,7 +25,7 @@ import aws.sdk.kotlin.crt.auth.signing.AwsSigningConfig as CrtSigningConfig
 import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
 import aws.sdk.kotlin.crt.http.HttpRequest as CrtHttpRequest
 
-object CrtAwsSigner : AwsSigner {
+public object CrtAwsSigner : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val crtRequest = request.toSignableCrtRequest()
         val crtConfig = config.toCrtSigningConfig()

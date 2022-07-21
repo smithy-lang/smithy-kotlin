@@ -7,9 +7,9 @@ package aws.smithy.kotlin.runtime.time
 /**
  * Converts this [aws.smithy.kotlin.runtime.time.Instant] to a [java.time.Instant].
  */
-fun Instant.toJvmInstant(): java.time.Instant = value
+public fun Instant.toJvmInstant(): java.time.Instant = value
 
 /**
  * Converts this [java.time.Instant] to a [aws.smithy.kotlin.runtime.time.Instant].
  */
-fun java.time.Instant.toSdkInstant(): Instant = Instant(this)
+public fun java.time.Instant.toSdkInstant(): Instant = Instant(this)

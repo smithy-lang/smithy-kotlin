@@ -17,32 +17,32 @@ import kotlin.coroutines.EmptyCoroutineContext
 /**
  * A single request/response pair
  */
-data class HttpCall(
+public data class HttpCall(
     /**
      * The original complete request
      */
-    val request: HttpRequest,
+    public val request: HttpRequest,
 
     /**
      * The [HttpResponse] for the given [request]
      */
-    val response: HttpResponse,
+    public val response: HttpResponse,
 
     /**
      * The time the request was made by the engine
      */
-    val requestTime: Instant,
+    public val requestTime: Instant,
 
     /**
      * The time the response was received. This is a rough estimate of Time-to-first-header (TTFH) as
      * reported by the engine.
      */
-    val responseTime: Instant,
+    public val responseTime: Instant,
 
     /**
      * The context associated with this call
      */
-    val callContext: CoroutineContext = EmptyCoroutineContext
+    public val callContext: CoroutineContext = EmptyCoroutineContext
 )
 
 /**
@@ -52,7 +52,7 @@ data class HttpCall(
  * This must be called when finished with the response!
  */
 @InternalApi
-fun HttpCall.complete() {
+public fun HttpCall.complete() {
     val job = callContext[Job] as? CompletableJob ?: return
 
     // FIXME - make suspend and join() the call context job

@@ -8,25 +8,25 @@ package aws.smithy.kotlin.runtime.io
 /**
  * Exception thrown when a content-mutation method such as `write` is invoked upon a read-only buffer.
  */
-class ReadOnlyBufferException : UnsupportedOperationException {
-    constructor() : super()
+public class ReadOnlyBufferException : UnsupportedOperationException {
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 }
 
 /**
  * Exception thrown when a content-mutation method such as `write` is invoked upon a buffer that cannot grow
  */
-class FixedBufferSizeException : UnsupportedOperationException {
-    constructor() : super()
+public class FixedBufferSizeException : UnsupportedOperationException {
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 }

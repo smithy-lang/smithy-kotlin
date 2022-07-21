@@ -13,10 +13,10 @@ import aws.smithy.kotlin.runtime.SdkBaseException
  * @property pos The current position parsed to (i.e. the next position to continue parsing the input from)
  * @property result The result type of the parse function
  */
-data class ParseResult<out T>(val pos: Int, val result: T)
+public data class ParseResult<out T>(public val pos: Int, public val result: T)
 
 // takes the input string and the current position to parse from, must return a tuple of (nestPosition, parsed result)
-typealias Parser<T> = (str: String, pos: Int) -> ParseResult<T>
+public typealias Parser<T> = (str: String, pos: Int) -> ParseResult<T>
 
 /**
  * Base parsing exception
@@ -24,21 +24,26 @@ typealias Parser<T> = (str: String, pos: Int) -> ParseResult<T>
  * @param message Additional contextual message around what the failure was
  * @param position The position where the parse failure happened
  */
-open class ParseException(input: String, message: String, position: Int) :
+public open class ParseException(input: String, message: String, position: Int) :
     SdkBaseException("parse `$input`: error at $position: $message")
 
 // internal marker exception
-class TakeWhileMNException(input: String, val lastPos: Int, val expected: Int, val matched: Int) : ParseException(input, "expected at least $expected matches of predicate; only matched $matched", lastPos)
+public class TakeWhileMNException(
+    input: String,
+    lastPos: Int,
+    public val expected: Int,
+    public val matched: Int,
+) : ParseException(input, "expected at least $expected matches of predicate; only matched $matched", lastPos)
 
 /**
  * Contains information on needed data if a parser throws [IncompleteException]
  */
-sealed class Needed {
-    object Unknown : Needed() {
+public sealed class Needed {
+    public object Unknown : Needed() {
         override fun toString(): String = "incomplete input"
     }
 
-    data class Size(val size: Int) : Needed() {
+    public data class Size(public val size: Int) : Needed() {
         override fun toString(): String = "incomplete input needed ($size)"
     }
 }
@@ -49,7 +54,10 @@ sealed class Needed {
  * @param input The input string being parsed
  * @param needed Description of the number of chars still needed (if known)
  */
-class IncompleteException(input: String, val needed: Needed) : ParseException(input, needed.toString(), input.length - 1)
+public class IncompleteException(
+    input: String,
+    public val needed: Needed,
+) : ParseException(input, needed.toString(), input.length - 1)
 
 // parser precondition check. Ensure that the current position is in bounds of the input
 internal fun precond(input: String, pos: Int, need: Int = 0) {
@@ -66,7 +74,7 @@ internal fun precond(input: String, pos: Int, need: Int = 0) {
 /**
  * Test whether the input character is a digit or not
  */
-fun isDigit(chr: Char): Boolean = chr in '0'..'9'
+public fun isDigit(chr: Char): Boolean = chr in '0'..'9'
 
 /**
  * Parse a literal character

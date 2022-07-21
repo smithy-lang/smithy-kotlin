@@ -25,8 +25,8 @@ import kotlin.time.DurationUnit
  *
  * @param options The configuration to use for this delayer.
  */
-class ExponentialBackoffWithJitter(
-    val options: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions.Default
+public class ExponentialBackoffWithJitter(
+    public val options: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions.Default
 ) : DelayProvider {
     private val random = Random.Default
 
@@ -50,11 +50,11 @@ class ExponentialBackoffWithJitter(
  * @param jitter amount of jitter used in calculating delay
  * @param maxBackoff maximum amount of delay
  */
-data class ExponentialBackoffWithJitterOptions(
-    val initialDelay: Duration,
-    val scaleFactor: Double,
-    val jitter: Double,
-    val maxBackoff: Duration,
+public data class ExponentialBackoffWithJitterOptions(
+    public val initialDelay: Duration,
+    public val scaleFactor: Double,
+    public val jitter: Double,
+    public val maxBackoff: Duration,
 ) {
     init {
         require(initialDelay.isPositive()) { "initialDelayMs must be at least 0" }
@@ -63,11 +63,11 @@ data class ExponentialBackoffWithJitterOptions(
         require(!maxBackoff.isNegative()) { "maxBackoffMs must be at least 0" }
     }
 
-    companion object {
+    public companion object {
         /**
          * The default backoff configuration to use.
          */
-        val Default = ExponentialBackoffWithJitterOptions(
+        public val Default: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions(
             initialDelay = 10.milliseconds, // start with 10ms
             scaleFactor = 1.5, // 10ms -> 15ms -> 22.5ms -> 33.8ms -> 50.6ms -> …
             jitter = 1.0, // Full jitter,

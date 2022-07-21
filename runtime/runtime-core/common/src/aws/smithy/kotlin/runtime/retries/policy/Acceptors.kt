@@ -14,14 +14,14 @@ import kotlin.reflect.KClass
  * @param O The type of the output from the operation.
  * @param state The [RetryDirective] that applies when the acceptor's condition is matched.
  */
-abstract class Acceptor<in I, in O>(val state: RetryDirective) {
+public abstract class Acceptor<in I, in O>(public val state: RetryDirective) {
     /**
      * Evaluates an operation request and result.
      * @param request The input to the operation.
      * @param result The output of the operation (either a regular response or an exception).
      * @return If this acceptor's condition is matched, then the acceptor's [state] is returned. Otherwise, null.
      */
-    fun evaluate(request: I, result: Result<O>): RetryDirective? =
+    public fun evaluate(request: I, result: Result<O>): RetryDirective? =
         if (matches(request, result)) state else null
 
     /**
@@ -39,7 +39,7 @@ abstract class Acceptor<in I, in O>(val state: RetryDirective) {
  * @param success If true, matches when the response is non-exceptional. Otherwise, matches when the response is
  * exceptional.
  */
-class SuccessAcceptor(state: RetryDirective, val success: Boolean) : Acceptor<Any, Any>(state) {
+public class SuccessAcceptor(state: RetryDirective, public val success: Boolean) : Acceptor<Any, Any>(state) {
     override fun matches(request: Any, result: Result<Any>): Boolean =
         result.isSuccess == success
 }
@@ -49,7 +49,7 @@ class SuccessAcceptor(state: RetryDirective, val success: Boolean) : Acceptor<An
  * @param state The [RetryDirective] that applies when the acceptor's condition is matched.
  * @param errorType The [KClass] of error for this acceptor.
  */
-class ErrorTypeAcceptor(state: RetryDirective, val errorType: String) : Acceptor<Any, Any>(state) {
+public class ErrorTypeAcceptor(state: RetryDirective, public val errorType: String) : Acceptor<Any, Any>(state) {
     override fun matches(request: Any, result: Result<Any>): Boolean =
         (result.exceptionOrNull() as? ServiceException)?.sdkErrorMetadata?.errorCode == errorType
 }
@@ -59,7 +59,7 @@ class ErrorTypeAcceptor(state: RetryDirective, val errorType: String) : Acceptor
  * @param state The [RetryDirective] that applies when the acceptor's condition is matched.
  * @param matcher The logic for determining if this acceptor's condition is matched based on the operation's output.
  */
-class OutputAcceptor<O>(state: RetryDirective, val matcher: (O) -> Boolean) : Acceptor<Any, O>(state) {
+public class OutputAcceptor<O>(state: RetryDirective, public val matcher: (O) -> Boolean) : Acceptor<Any, O>(state) {
     override fun matches(request: Any, result: Result<O>): Boolean =
         result.getOrNull()?.run(matcher) ?: false
 }
@@ -70,14 +70,14 @@ class OutputAcceptor<O>(state: RetryDirective, val matcher: (O) -> Boolean) : Ac
  * @param matcher The logic for determining if this acceptor's condition is matched based on the operation's input and
  * output.
  */
-class InputOutputAcceptor<I, O>(
+public class InputOutputAcceptor<I, O>(
     state: RetryDirective,
-    val matcher: (InputOutput<I, O>) -> Boolean,
+    public val matcher: (InputOutput<I, O>) -> Boolean,
 ) : Acceptor<I, O>(state) {
     /**
      * A utility class holding the input and output to an operation.
      */
-    data class InputOutput<I, O>(val input: I, val output: O)
+    public data class InputOutput<I, O>(public val input: I, public val output: O)
 
     override fun matches(request: I, result: Result<O>): Boolean =
         result.getOrNull()?.let { matcher(InputOutput(request, it)) } ?: false

@@ -10,4 +10,4 @@ package aws.smithy.kotlin.runtime.testing
  */
 @Target(AnnotationTarget.CLASS, AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)
-expect annotation class IgnoreWindows(val reason: String = "")
+public expect annotation class IgnoreWindows(val reason: String = "")

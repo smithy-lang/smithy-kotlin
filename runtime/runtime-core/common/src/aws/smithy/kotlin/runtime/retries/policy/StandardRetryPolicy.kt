@@ -15,9 +15,9 @@ import kotlin.reflect.safeCast
 /**
  * A standard retry policy which attempts to derive information from the Smithy exception hierarchy.
  */
-open class StandardRetryPolicy : RetryPolicy<Any?> {
-    companion object {
-        val Default = StandardRetryPolicy()
+public open class StandardRetryPolicy : RetryPolicy<Any?> {
+    public companion object {
+        public val Default: StandardRetryPolicy = StandardRetryPolicy()
     }
 
     private val evaluationStrategies = sequenceOf(

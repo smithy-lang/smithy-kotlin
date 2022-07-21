@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 /**
  * Assert x-www-form-url strings for equality ignoring key order
  */
-fun assertFormUrlStringsEqual(expected: String, actual: String) {
+public fun assertFormUrlStringsEqual(expected: String, actual: String) {
     val expectedAsMap = expected.parseAsFormUrlMap()
     val actualAsMap = actual.parseAsFormUrlMap()
 
@@ -25,7 +25,7 @@ fun assertFormUrlStringsEqual(expected: String, actual: String) {
 /**
  * Assert HTTP bodies are equal as x-www-form-url documents
  */
-suspend fun assertFormUrlBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
+public suspend fun assertFormUrlBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
     val expectedStr = expected?.readAll()?.decodeToString()
     val actualStr = actual?.readAll()?.decodeToString()
     if (expectedStr == null && actualStr == null) {

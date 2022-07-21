@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.client.SdkLogMode
 /**
  * Common configuration options for any generated SDK client
  */
-interface SdkClientConfig {
+public interface SdkClientConfig {
     /**
      * Configure events that will be logged. By default clients will not output
      * raw requests or responses. Use this setting to opt-in to additional debug logging.
@@ -20,6 +20,6 @@ interface SdkClientConfig {
      * performance considerations when dumping the request/response body. This is primarily a tool for
      * debug purposes.
      */
-    val sdkLogMode: SdkLogMode
+    public val sdkLogMode: SdkLogMode
         get() = SdkLogMode.Default
 }

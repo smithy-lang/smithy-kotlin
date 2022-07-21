@@ -9,21 +9,22 @@ import aws.smithy.kotlin.runtime.http.*
 /**
  * Immutable representation of an HTTP request
  */
-data class HttpRequest(
-    val method: HttpMethod,
-    val url: Url,
-    val headers: Headers,
-    val body: HttpBody
+public data class HttpRequest(
+    public val method: HttpMethod,
+    public val url: Url,
+    public val headers: Headers,
+    public val body: HttpBody
 ) {
-    companion object {
-        operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest = HttpRequestBuilder().apply(block).build()
+    public companion object {
+        public operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest =
+            HttpRequestBuilder().apply(block).build()
     }
 }
 
 /**
  * Convert an HttpRequest back to an [HttpRequestBuilder]
  */
-fun HttpRequest.toBuilder(): HttpRequestBuilder {
+public fun HttpRequest.toBuilder(): HttpRequestBuilder {
     val req = this
     return HttpRequestBuilder().apply {
         method = req.method

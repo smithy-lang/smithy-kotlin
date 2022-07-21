@@ -37,9 +37,9 @@ private class ContextualLogger(
 /**
  * Return a new logger with the given key-value pairs as contextual data added to all requests logged
  */
-fun Logger.withContext(vararg pairs: Pair<String, Any>): Logger = ContextualLogger(this, pairs.toMap())
+public fun Logger.withContext(vararg pairs: Pair<String, Any>): Logger = ContextualLogger(this, pairs.toMap())
 
 /**
  * Return a new logger with the given map as contextual data added to all requests logged
  */
-fun Logger.withContext(context: Map<String, Any>): Logger = ContextualLogger(this, context)
+public fun Logger.withContext(context: Map<String, Any>): Logger = ContextualLogger(this, context)

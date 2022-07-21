@@ -10,63 +10,63 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * Interface for serialization. Specific formats should implement this interface according to their
  * own requirements. Currently only aws.smithy.kotlin.runtime.serde.json.JsonSerializer implements this interface.
  */
-interface JsonStreamWriter {
+public interface JsonStreamWriter {
 
     /**
      * Begins encoding a new array. Each call to this method must be paired with
      * a call to {@link #endArray}.
      */
-    fun beginArray()
+    public fun beginArray()
 
     /**
      * Ends encoding the current array.
      */
-    fun endArray()
+    public fun endArray()
 
     /**
      * Encodes {@code null}.
      */
-    fun writeNull()
+    public fun writeNull()
 
     /**
      * Begins encoding a new object. Each call to this method must be paired
      * with a call to {@link #endObject}.
      */
-    fun beginObject()
+    public fun beginObject()
 
     /**
      * Ends encoding the current object.
      */
-    fun endObject()
+    public fun endObject()
 
     /**
      * Encodes the property name.
      *
      * @param name the name of the forthcoming value. May not be null.
      */
-    fun writeName(name: String)
+    public fun writeName(name: String)
 
     /**
      * Encodes {@code value}.
      *
      * @param value the literal string value, or null to encode a null literal.
      */
-    fun writeValue(value: String)
+    public fun writeValue(value: String)
 
     /**
      * Encodes {@code value}.
      */
-    fun writeValue(bool: Boolean)
+    public fun writeValue(bool: Boolean)
 
     /**
      * Encodes {@code value}.
      */
-    fun writeValue(value: Number)
+    public fun writeValue(value: Number)
 
     /**
      * Encodes {@code value}.
      */
-    fun writeValue(value: Long)
+    public fun writeValue(value: Long)
 
     /**
      * Encodes {@code value}.
@@ -74,41 +74,41 @@ interface JsonStreamWriter {
      * @param value a finite value. May not be {@link Double#isNaN() NaNs} or
      *     {@link Double#isInfinite() infinities}.
      */
-    fun writeValue(value: Double)
+    public fun writeValue(value: Double)
 
     /**
      * Encodes {@code value}.
      */
-    fun writeValue(value: Float)
+    public fun writeValue(value: Float)
 
     /**
      * Encodes {@code value}.
      */
-    fun writeValue(value: Short)
+    public fun writeValue(value: Short)
 
     /**
      * Encodes {@code value}.
      */
-    fun writeValue(value: Int)
+    public fun writeValue(value: Int)
 
     /**
      * Encodes {@code value}.
      */
-    fun writeValue(value: Byte)
+    public fun writeValue(value: Byte)
 
     /**
      * Appends the contents of [value] *without* any additional formatting or escaping. Use with caution
      */
-    fun writeRawValue(value: String)
+    public fun writeRawValue(value: String)
 
     /**
      * Json content will be constructed in this UTF-8 encoded byte array.
      */
-    val bytes: ByteArray?
+    public val bytes: ByteArray?
 }
 
 /**
  * Creates a [JsonStreamWriter] instance to write JSON
  */
 @InternalApi
-fun jsonStreamWriter(pretty: Boolean = false): JsonStreamWriter = JsonEncoder(pretty)
+public fun jsonStreamWriter(pretty: Boolean = false): JsonStreamWriter = JsonEncoder(pretty)

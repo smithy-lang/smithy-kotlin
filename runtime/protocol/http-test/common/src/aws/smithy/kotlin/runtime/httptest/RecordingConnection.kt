@@ -31,7 +31,7 @@ import kotlinx.serialization.json.*
  * @param wrapped The "real" engine to wrap and record requests and responses from
  */
 @InternalApi
-class RecordingEngine(private val wrapped: HttpClientEngine) : HttpClientEngine by wrapped {
+public class RecordingEngine(private val wrapped: HttpClientEngine) : HttpClientEngine by wrapped {
     private val captured = mutableListOf<HttpCall>()
 
     private suspend fun copyHttpBody(name: String, body: HttpBody): HttpBody = when (body) {
@@ -103,7 +103,7 @@ class RecordingEngine(private val wrapped: HttpClientEngine) : HttpClientEngine 
         put("response", response.toJson())
     }
 
-    fun toJson(): String {
+    public fun toJson(): String {
         val arr = buildJsonArray {
             captured.forEach {
                 add(it.toJson())
