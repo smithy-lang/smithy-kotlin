@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.1] - 07/21/2022
+
+### Miscellaneous
+* Enable [Explicit API mode](https://github.com/Kotlin/KEEP/blob/master/proposals/explicit-api-mode.md)
+
 ## [0.12.0] - 07/14/2022
 
 ### Fixes
