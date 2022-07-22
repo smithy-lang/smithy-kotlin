@@ -13,7 +13,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * specification for header values.
  */
 @InternalApi
-fun splitHeaderListValues(value: String): List<String> {
+public fun splitHeaderListValues(value: String): List<String> {
     val results = mutableListOf<String>()
     var currIdx = 0
     while (currIdx < value.length) {
@@ -88,7 +88,7 @@ private fun String.readNextUnquoted(startIdx: Int, delim: Char = ','): Pair<Int,
  * a comma within the timestamp value.
  */
 @InternalApi
-fun splitHttpDateHeaderListValues(value: String): List<String> {
+public fun splitHttpDateHeaderListValues(value: String): List<String> {
     val n = value.count { it == ',' }
     if (n <= 1) {
         return listOf(value)
@@ -125,7 +125,7 @@ private const val QUOTABLE_HEADER_VALUE_CHARS = "\",()"
  * Conditionally quotes and escapes a header value if the header value contains a comma or quote
  */
 @InternalApi
-fun quoteHeaderValue(value: String): String =
+public fun quoteHeaderValue(value: String): String =
     if (value.trim().length != value.length || QUOTABLE_HEADER_VALUE_CHARS.any { value.contains(it) }) {
         val formatted = value.replace("\\", "\\\\").replace("\"", "\\\"")
         "\"$formatted\""

@@ -24,7 +24,7 @@ import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 
-typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
+public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
 
 /**
  * Configure the execution of an operation from [Request] to [Response]
@@ -32,7 +32,7 @@ typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  * An operation has several "phases" of its lifecycle that can be intercepted and customized.
  */
 @InternalApi
-class SdkOperationExecution<Request, Response> {
+public class SdkOperationExecution<Request, Response> {
 
     // technically any phase can act as on the request or the response. The phases
     // are described with their intended use, nothing prevents e.g. registering
@@ -41,25 +41,25 @@ class SdkOperationExecution<Request, Response> {
     /**
      * Prepare the input [Request] (or finalize the [Response]) e.g. set any default parameters if needed
      */
-    val initialize = Phase<OperationRequest<Request>, Response>()
+    public val initialize: Phase<OperationRequest<Request>, Response> = Phase<OperationRequest<Request>, Response>()
 
     /**
      * Modify the outgoing HTTP request
      *
      * At this phase the [Request] (operation input) has been serialized to an HTTP request.
      */
-    val mutate = Phase<SdkHttpRequest, Response>()
+    public val mutate: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
     /**
      * Last chance to intercept before requests are sent (e.g. signing, retries, etc).
      * First chance to intercept after deserialization.
      */
-    val finalize = Phase<SdkHttpRequest, Response>()
+    public val finalize: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
     /**
      * First chance to intercept before deserialization into operation output type [Response].
      */
-    val receive = Phase<SdkHttpRequest, HttpCall>()
+    public val receive: Phase<SdkHttpRequest, HttpCall> = Phase<SdkHttpRequest, HttpCall>()
 }
 
 /**

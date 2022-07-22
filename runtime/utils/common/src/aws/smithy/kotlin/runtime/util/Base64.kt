@@ -47,18 +47,18 @@ private fun base64DecodedLen(encoded: ByteArray): Int {
  * Encode [String] in base64 format and UTF-8 character encoding.
  */
 @OptIn(ExperimentalStdlibApi::class)
-fun String.encodeBase64(): String = encodeToByteArray().encodeBase64().decodeToString()
+public fun String.encodeBase64(): String = encodeToByteArray().encodeBase64().decodeToString()
 
 /**
  * Encode [ByteArray] in base64 format and UTF-8 character encoding as a [String].
  */
 @OptIn(ExperimentalStdlibApi::class)
-fun ByteArray.encodeBase64String(): String = encodeBase64().decodeToString()
+public fun ByteArray.encodeBase64String(): String = encodeBase64().decodeToString()
 
 /**
  * Encode [ByteArray] in base64 format and UTF-8 character encoding.
  */
-fun ByteArray.encodeBase64(): ByteArray {
+public fun ByteArray.encodeBase64(): ByteArray {
     val output = ByteArray(base64EncodedLen(size))
     val remainderCnt = size % 3
     val blockCnt = (size + 2) / 3
@@ -91,18 +91,18 @@ fun ByteArray.encodeBase64(): ByteArray {
  * Decode [String] from base64 format
  */
 @OptIn(ExperimentalStdlibApi::class)
-fun String.decodeBase64(): String = decodeBase64Bytes().decodeToString()
+public fun String.decodeBase64(): String = decodeBase64Bytes().decodeToString()
 
 /**
  * Decode [String] from base64 format to a [ByteArray]
  */
 @OptIn(ExperimentalStdlibApi::class)
-fun String.decodeBase64Bytes(): ByteArray = encodeToByteArray().decodeBase64()
+public fun String.decodeBase64Bytes(): ByteArray = encodeToByteArray().decodeBase64()
 
 /**
  * Decode [ByteArray] from base64 format
  */
-fun ByteArray.decodeBase64(): ByteArray {
+public fun ByteArray.decodeBase64(): ByteArray {
     val encoded = this
     val decodedLen = base64DecodedLen(encoded)
     val decoded = ByteArray(decodedLen)

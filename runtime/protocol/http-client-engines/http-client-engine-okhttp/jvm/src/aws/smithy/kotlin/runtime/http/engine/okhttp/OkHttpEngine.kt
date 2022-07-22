@@ -21,7 +21,7 @@ import kotlin.time.toJavaDuration
 /**
  * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp.
  */
-class OkHttpEngine(
+public class OkHttpEngine(
     private val config: OkHttpEngineConfig
 ) : HttpClientEngineBase("OkHttp") {
     public constructor() : this(OkHttpEngineConfig.Default)

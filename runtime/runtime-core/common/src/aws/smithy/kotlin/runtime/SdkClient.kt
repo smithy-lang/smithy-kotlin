@@ -9,8 +9,8 @@ import aws.smithy.kotlin.runtime.io.Closeable
 /**
  * Common interface all generated service clients implement
  */
-interface SdkClient : Closeable {
-    val serviceName: String
+public interface SdkClient : Closeable {
+    public val serviceName: String
 
     override fun close() {}
 }

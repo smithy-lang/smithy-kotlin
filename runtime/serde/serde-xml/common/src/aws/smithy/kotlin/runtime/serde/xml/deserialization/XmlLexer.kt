@@ -34,10 +34,10 @@ private fun AttributeMap.extractNsDeclarations(): Pair<AttributeMap, List<XmlTok
 /**
  * A lexer that scans a [StringTextStream] and reads [XmlToken] elements.
  */
-class XmlLexer(internal val source: StringTextStream) {
+public class XmlLexer(internal val source: StringTextStream) {
     private var state: LexerState = LexerState.Initial
 
-    val endOfDocument: Boolean
+    public val endOfDocument: Boolean
         get() = state == LexerState.EndOfDocument
 
     /**
@@ -51,7 +51,7 @@ class XmlLexer(internal val source: StringTextStream) {
      * Parses the next token from the source.
      * @return The next [XmlToken] in the source, or null if the end of the source has been reached.
      */
-    fun parseNext(): XmlToken? = when (val currentState = this.state) {
+    public fun parseNext(): XmlToken? = when (val currentState = this.state) {
         LexerState.EndOfDocument -> null
 
         is LexerState.Tag.EmptyTag -> {

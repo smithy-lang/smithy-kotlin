@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 /**
  * Implementation of [HttpBody.Bytes] backed by a byte array
  */
-class ByteArrayContent(private val bytes: ByteArray) : HttpBody.Bytes() {
+public class ByteArrayContent(private val bytes: ByteArray) : HttpBody.Bytes() {
     override val contentLength: Long = bytes.size.toLong()
     override fun bytes(): ByteArray = bytes
 }

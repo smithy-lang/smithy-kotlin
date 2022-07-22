@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.hashing
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 @InternalApi
-abstract class Md5Base : HashFunction {
+public abstract class Md5Base : HashFunction {
     override val blockSizeBytes: Int = 64
     override val digestSizeBytes: Int = 16
 }
@@ -16,10 +16,10 @@ abstract class Md5Base : HashFunction {
  * Implementation of RFC1321 MD5 digest
  */
 @InternalApi
-expect class Md5() : Md5Base
+public expect class Md5() : Md5Base
 
 /**
  * Compute the MD5 hash of the current [ByteArray]
  */
 @InternalApi
-fun ByteArray.md5(): ByteArray = hash(Md5(), this)
+public fun ByteArray.md5(): ByteArray = hash(Md5(), this)

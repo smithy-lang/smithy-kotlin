@@ -14,7 +14,7 @@ import kotlin.test.assertEquals
 /**
  * Assert XML strings for equality ignoring key order
  */
-suspend fun assertXmlStringsEqual(expected: String, actual: String) {
+public suspend fun assertXmlStringsEqual(expected: String, actual: String) {
     // parse into a dom representation and sort the dom into a canonical form for comparison
     val expectedNode = XmlNode.parse(expected.encodeToByteArray()).apply { toCanonicalForm() }
     val actualNode = XmlNode.parse(actual.encodeToByteArray()).apply { toCanonicalForm() }
@@ -27,7 +27,7 @@ suspend fun assertXmlStringsEqual(expected: String, actual: String) {
 /**
  * Assert HTTP bodies are equal as XML documents
  */
-suspend fun assertXmlBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
+public suspend fun assertXmlBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
     val expectedStr = expected?.readAll()?.decodeToString()
     val actualStr = actual?.readAll()?.decodeToString()
     if (expectedStr == null && actualStr == null) {
@@ -43,7 +43,7 @@ suspend fun assertXmlBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
 /**
  * Sort the XML dom node into a canonical representation
  */
-fun XmlNode.toCanonicalForm() = toCanonical(this)
+public fun XmlNode.toCanonicalForm(): Unit = toCanonical(this)
 
 private fun toCanonical(root: XmlNode) {
     // attributes by name

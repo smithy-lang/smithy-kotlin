@@ -20,17 +20,17 @@ import aws.smithy.kotlin.runtime.serde.*
  * @param key the name of the key field
  * @param value the name of the value field
  */
-data class XmlMapName(
-    val entry: String? = Default.entry,
-    val key: String = Default.key,
-    val value: String = Default.value
+public data class XmlMapName(
+    public val entry: String? = Default.entry,
+    public val key: String = Default.key,
+    public val value: String = Default.value
 ) : FieldTrait {
-    companion object {
+    public companion object {
         /**
          * The default serialized names for aspects of a Map in XML.
          * These defaults are specified here: https://awslabs.github.io/smithy/spec/xml.html#map-serialization
          */
-        val Default = XmlMapName("entry", "key", "value")
+        public val Default: XmlMapName = XmlMapName("entry", "key", "value")
     }
 }
 
@@ -43,15 +43,15 @@ data class XmlMapName(
  *
  * @param element the name of the XML node which wraps each list or set entry.
  */
-data class XmlCollectionName(
-    val element: String
+public data class XmlCollectionName(
+    public val element: String
 ) : FieldTrait {
-    companion object {
+    public companion object {
         /**
          * The default serialized name for a list or set element.
          * This default is specified here: https://awslabs.github.io/smithy/spec/xml.html#list-and-set-serialization
          */
-        val Default = XmlCollectionName("member")
+        public val Default: XmlCollectionName = XmlCollectionName("member")
     }
 }
 
@@ -59,7 +59,7 @@ data class XmlCollectionName(
  * Denotes a collection type that uses a flattened XML representation
  * see: [xmlflattened trait](https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html#xmlflattened-trait)
  */
-object Flattened : FieldTrait
+public object Flattened : FieldTrait
 
 /**
  * Denotes a structure that represents an error.  There are special rules for error deserialization
@@ -71,15 +71,15 @@ object Flattened : FieldTrait
  * NOTE/FIXME: This type was written to handle the restXml protocol handling but could be refactored to be more
  *       general purpose if/when necessary to support other XML-based protocols.
  */
-object XmlError : FieldTrait {
-    val errorTag: XmlToken.QualifiedName = XmlToken.QualifiedName("Error")
+public object XmlError : FieldTrait {
+    public val errorTag: XmlToken.QualifiedName = XmlToken.QualifiedName("Error")
 }
 
 /**
  * Base class for more specific XML namespace traits
  */
-open class AbstractXmlNamespaceTrait(val uri: String, val prefix: String? = null) {
-    fun isDefault() = prefix == null
+public open class AbstractXmlNamespaceTrait(public val uri: String, public val prefix: String? = null) {
+    public fun isDefault(): Boolean = prefix == null
     override fun toString(): String = "AbstractXmlNamespace(uri=$uri, prefix=$prefix)"
 }
 
@@ -87,30 +87,32 @@ open class AbstractXmlNamespaceTrait(val uri: String, val prefix: String? = null
  * Describes the namespace associated with a field.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlnamespace-trait
  */
-class XmlNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+public class XmlNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
 
 /**
  * Describes the namespace of a list or map's value element
  * Applies to [SerialKind.List] or [SerialKind.Map]
  */
-class XmlCollectionValueNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+public class XmlCollectionValueNamespace(uri: String, prefix: String? = null) :
+    AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
 
 /**
  * Describes the namespace associated with a map's key element
  * Applies to [SerialKind.Map]
  */
-class XmlMapKeyNamespace(uri: String, prefix: String? = null) : AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
+public class XmlMapKeyNamespace(uri: String, prefix: String? = null) :
+    AbstractXmlNamespaceTrait(uri, prefix), FieldTrait
 
 /**
  * Specifies the name that a field is encoded into for Xml nodes.
  * See https://awslabs.github.io/smithy/1.0/spec/core/xml-traits.html?highlight=xmlname#xmlname-trait
  */
-data class XmlSerialName(val name: String) : FieldTrait
+public data class XmlSerialName(public val name: String) : FieldTrait
 
 /**
  * Specifies an alternate name that can be used to match an XML node.
  */
-data class XmlAliasName(val name: String) : FieldTrait
+public data class XmlAliasName(public val name: String) : FieldTrait
 
 private fun toQualifiedName(xmlNamespace: XmlNamespace?, name: String?): XmlToken.QualifiedName {
     val (localName, prefix) = name
@@ -182,7 +184,7 @@ internal fun String.parseNodeWithPrefix(): Pair<String, String?> =
  * Specifies that a field is encoded into an XML attribute and describes the XML.
  * See https://awslabs.github.io/smithy/spec/xml.html#xmlattribute-trait
  */
-object XmlAttribute : FieldTrait
+public object XmlAttribute : FieldTrait
 
 /**
  * Provides the serialized name of the field.

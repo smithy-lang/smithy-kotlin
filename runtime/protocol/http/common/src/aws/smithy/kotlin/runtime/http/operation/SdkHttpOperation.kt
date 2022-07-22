@@ -20,9 +20,9 @@ import aws.smithy.kotlin.runtime.util.get
  */
 @OptIn(Uuid.WeakRng::class)
 @InternalApi
-class SdkHttpOperation<I, O>(
-    val execution: SdkOperationExecution<I, O>,
-    val context: ExecutionContext,
+public class SdkHttpOperation<I, O>(
+    public val execution: SdkOperationExecution<I, O>,
+    public val context: ExecutionContext,
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
 ) {
@@ -40,18 +40,18 @@ class SdkHttpOperation<I, O>(
     /**
      * Install a middleware into this operation's execution stack
      */
-    fun install(middleware: ModifyRequestMiddleware) { middleware.install(this) }
+    public fun install(middleware: ModifyRequestMiddleware) { middleware.install(this) }
 
     // Convenience overloads for various types of middleware that target different phases
     // NOTE: Using install isn't strictly necessary, it's just a pattern for self registration
-    fun install(middleware: InitializeMiddleware<I, O>) { middleware.install(this) }
-    fun install(middleware: MutateMiddleware<O>) { middleware.install(this) }
-    fun install(middleware: FinalizeMiddleware<O>) { middleware.install(this) }
-    fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
-    fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
+    public fun install(middleware: InitializeMiddleware<I, O>) { middleware.install(this) }
+    public fun install(middleware: MutateMiddleware<O>) { middleware.install(this) }
+    public fun install(middleware: FinalizeMiddleware<O>) { middleware.install(this) }
+    public fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
+    public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
-    companion object {
-        inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
+    public companion object {
+        public inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
             SdkHttpOperationBuilder<I, O>().apply(block).build()
     }
 }
@@ -60,7 +60,7 @@ class SdkHttpOperation<I, O>(
  * Round trip an operation using the given [HttpHandler]
  */
 @InternalApi
-suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
+public suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
     httpHandler: HttpHandler,
     input: I,
 ): O = execute(httpHandler, input) { it }
@@ -72,7 +72,7 @@ suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
  * output responses where the underlying raw HTTP connection needs to remain open
  */
 @InternalApi
-suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
+public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     httpHandler: HttpHandler,
     input: I,
     block: suspend (O) -> R
@@ -89,13 +89,13 @@ suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
 }
 
 @InternalApi
-class SdkHttpOperationBuilder<I, O> {
-    var serializer: HttpSerialize<I>? = null
-    var deserializer: HttpDeserialize<O>? = null
-    val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
-    val context = HttpOperationContext.Builder()
+public class SdkHttpOperationBuilder<I, O> {
+    public var serializer: HttpSerialize<I>? = null
+    public var deserializer: HttpDeserialize<O>? = null
+    public val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
+    public val context: HttpOperationContext.Builder = HttpOperationContext.Builder()
 
-    fun build(): SdkHttpOperation<I, O> {
+    public fun build(): SdkHttpOperation<I, O> {
         val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
         val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
         return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer)
@@ -104,4 +104,6 @@ class SdkHttpOperationBuilder<I, O> {
 /**
  * Configure HTTP operation context elements
  */
-inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) = context.apply(block)
+public inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) {
+    context.apply(block)
+}

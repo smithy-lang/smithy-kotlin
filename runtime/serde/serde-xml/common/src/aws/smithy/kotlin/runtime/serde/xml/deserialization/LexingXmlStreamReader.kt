@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.serde.xml.terminates
  * state, [lastToken], etc., but delegates all parsing operations to the scanner.
  * @param source The [XmlLexer] to use for XML parsing.
  */
-class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamReader {
+public class LexingXmlStreamReader(private val source: XmlLexer) : XmlStreamReader {
     private val peekQueue = ArrayDeque<XmlToken>()
 
     /**

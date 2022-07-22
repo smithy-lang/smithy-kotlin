@@ -25,4 +25,4 @@ package aws.smithy.kotlin.runtime.util
     AnnotationTarget.FIELD,
     AnnotationTarget.CONSTRUCTOR
 )
-annotation class InternalApi
+public annotation class InternalApi

@@ -9,8 +9,8 @@ import kotlin.random.Random
 /**
  * A KMP-compatible implementation of UUID, necessary because no cross-platform implementation exists yet.
  */
-data class Uuid(val high: Long, val low: Long) {
-    companion object {
+public data class Uuid(val high: Long, val low: Long) {
+    public companion object {
         private val nibbleChars = "0123456789abcdef".toCharArray()
         private val random = Random
 
@@ -26,7 +26,7 @@ data class Uuid(val high: Long, val low: Long) {
          * UUIDs are not generated with a cryptographically-strong random number generator.
          */
         @WeakRng
-        fun random(): Uuid {
+        public fun random(): Uuid {
             val high = random.nextLong() and v4Mask.inv() or v4Set
             val low = random.nextLong() and type2Mask.inv() or type2Set
             return Uuid(high, low)
@@ -82,5 +82,5 @@ data class Uuid(val high: Long, val low: Long) {
     @RequiresOptIn("This API doesn't use cryptographically-strong random number generation.")
     @Retention(AnnotationRetention.BINARY)
     @Target(AnnotationTarget.FUNCTION)
-    annotation class WeakRng
+    public annotation class WeakRng
 }

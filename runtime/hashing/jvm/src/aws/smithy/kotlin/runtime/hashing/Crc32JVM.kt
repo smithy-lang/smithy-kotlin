@@ -6,10 +6,10 @@ package aws.smithy.kotlin.runtime.hashing
 
 import java.util.zip.CRC32
 
-actual class Crc32 : Crc32Base() {
+public actual class Crc32 : Crc32Base() {
     private val md = CRC32()
 
-    override fun update(input: ByteArray, offset: Int, length: Int) = md.update(input, offset, length)
+    override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
 
     override fun digest(): ByteArray {
         val x = digestValue()
@@ -24,5 +24,5 @@ actual class Crc32 : Crc32Base() {
 
     override fun digestValue(): UInt = md.value.toUInt()
 
-    override fun reset() = md.reset()
+    override fun reset(): Unit = md.reset()
 }

@@ -12,8 +12,8 @@ import aws.smithy.kotlin.runtime.smithy.Document
  *
  * @param payload underlying document from which tokens are read
  */
-class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
-    companion object {
+public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.ElementIterator, Deserializer.EntryIterator, PrimitiveDeserializer {
+    public companion object {
         private val validNumberStrings = setOf("Infinity", "-Infinity", "NaN")
     }
 

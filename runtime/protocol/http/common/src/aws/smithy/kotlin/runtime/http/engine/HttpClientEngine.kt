@@ -18,12 +18,12 @@ import kotlin.coroutines.CoroutineContext
  * Functionality a real HTTP client must provide.
  * NOTE: Implementations SHOULD inherit from [HttpClientEngineBase] rather than implementing this interface directly.
  */
-interface HttpClientEngine : Closeable, CoroutineScope {
+public interface HttpClientEngine : Closeable, CoroutineScope {
     /**
      * Execute a single HTTP request and return the response.
      * Consumers *MUST* call `HttpCall.complete()` when finished processing the response
      */
-    suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall
+    public suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall
 
     /**
      * Shutdown and cleanup any resources
@@ -62,4 +62,4 @@ public abstract class HttpClientEngineBase(engineName: String) : HttpClientEngin
 /**
  * Indicates an [HttpClientEngine] is closed already and no further requests should be initiated.
  */
-class HttpClientEngineClosedException(override val cause: Throwable? = null) : ClientException("HttpClientEngine already closed")
+public class HttpClientEngineClosedException(override val cause: Throwable? = null) : ClientException("HttpClientEngine already closed")

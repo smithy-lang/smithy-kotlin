@@ -20,11 +20,11 @@ public actual object Platform : PlatformProvider {
      */
     override fun getenv(key: String): String? = System.getenv()[key]
 
-    actual val isJvm: Boolean = true
-    actual val isAndroid: Boolean by lazy { isAndroid() }
-    actual val isBrowser: Boolean = false
-    actual val isNode: Boolean = false
-    actual val isNative: Boolean = false
+    public actual val isJvm: Boolean = true
+    public actual val isAndroid: Boolean by lazy { isAndroid() }
+    public actual val isBrowser: Boolean = false
+    public actual val isNode: Boolean = false
+    public actual val isNative: Boolean = false
 
     override fun osInfo(): OperatingSystem = getOsInfo()
 
@@ -42,8 +42,8 @@ public actual object Platform : PlatformProvider {
         null
     }
 
-    suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
-    suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
+    public suspend fun readFileOrNull(path: Path): ByteArray? = readFileOrNull(path.toAbsolutePath().toString())
+    public suspend fun readFileOrNull(file: File): ByteArray? = readFileOrNull(file.absolutePath)
 
     override fun getAllProperties(): Map<String, String> = System
         .getProperties()

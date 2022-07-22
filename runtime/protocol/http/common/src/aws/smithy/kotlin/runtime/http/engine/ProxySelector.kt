@@ -11,16 +11,16 @@ import aws.smithy.kotlin.runtime.http.Url
  * Selects the proxy to use for a given [Url]. Implementations **MUST** be stable and return the
  * same [ProxyConfig] for a given [Url].
  */
-fun interface ProxySelector {
+public fun interface ProxySelector {
     /**
      * Return the proxy configuration to use for [Url]
      */
-    fun select(url: Url): ProxyConfig
+    public fun select(url: Url): ProxyConfig
 
-    companion object {
+    public companion object {
         /**
          * Explicitly disable proxy selection
          */
-        val NoProxy = ProxySelector { ProxyConfig.Direct }
+        public val NoProxy: ProxySelector = ProxySelector { ProxyConfig.Direct }
     }
 }

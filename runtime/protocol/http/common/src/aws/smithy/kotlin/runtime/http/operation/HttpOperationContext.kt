@@ -19,76 +19,77 @@ import aws.smithy.kotlin.runtime.util.get
  * Common configuration for an SDK (HTTP) operation/call
  */
 @InternalApi
-open class HttpOperationContext {
+public open class HttpOperationContext {
 
-    companion object {
+    public companion object {
         /**
          * The expected HTTP status code of a successful response is stored under this key
          */
-        val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("ExpectedHttpStatus")
+        public val ExpectedHttpStatus: AttributeKey<Int> = AttributeKey("ExpectedHttpStatus")
 
         /**
          * A prefix to prepend the resolved hostname with.
          * See [endpointTrait](https://awslabs.github.io/smithy/1.0/spec/core/endpoint-traits.html#endpoint-trait)
          */
-        val HostPrefix: AttributeKey<String> = AttributeKey("HostPrefix")
+        public val HostPrefix: AttributeKey<String> = AttributeKey("HostPrefix")
 
         /**
          * The HTTP calls made for this operation (this may be > 1 if for example retries are involved)
          */
-        val HttpCallList: AttributeKey<List<HttpCall>> = AttributeKey("HttpCallList")
+        public val HttpCallList: AttributeKey<List<HttpCall>> = AttributeKey("HttpCallList")
 
         /**
          * The per/request logging context.
          */
-        val LoggingContext: AttributeKey<Map<String, Any>> = AttributeKey("LoggingContext")
+        public val LoggingContext: AttributeKey<Map<String, Any>> = AttributeKey("LoggingContext")
 
         /**
          * The unique request ID generated for tracking the request in-flight client side.
          *
          * NOTE: This is guaranteed to exist.
          */
-        val SdkRequestId: AttributeKey<String> = AttributeKey("SdkRequestId")
+        public val SdkRequestId: AttributeKey<String> = AttributeKey("SdkRequestId")
 
         /**
          * Build this operation into an HTTP [ExecutionContext]
          */
-        fun build(block: Builder.() -> Unit): ExecutionContext = Builder().apply(block).build()
+        public fun build(block: Builder.() -> Unit): ExecutionContext = Builder().apply(block).build()
     }
 
     /**
      * Convenience builder for constructing HTTP client operations
      */
-    open class Builder : ClientOptionsBuilder() {
+    public open class Builder : ClientOptionsBuilder() {
 
         /**
          * The service name
          */
-        var service: String? by requiredOption(SdkClientOption.ServiceName)
+        public var service: String? by requiredOption(SdkClientOption.ServiceName)
 
         /**
          * The name of the operation
          */
-        var operationName: String? by requiredOption(SdkClientOption.OperationName)
+        public var operationName: String? by requiredOption(SdkClientOption.OperationName)
 
         /**
          * The expected HTTP status code on success
          */
-        var expectedHttpStatus: Int? by option(ExpectedHttpStatus)
+        public var expectedHttpStatus: Int? by option(ExpectedHttpStatus)
 
         /**
          * (Optional) prefix to prepend to a (resolved) hostname
          */
-        var hostPrefix: String? by option(HostPrefix)
+        public var hostPrefix: String? by option(HostPrefix)
     }
 }
 
 @InternalApi
-fun ExecutionContext.getLogger(name: String): Logger {
+public fun ExecutionContext.getLogger(name: String): Logger {
     val instance = Logger.getLogger(name)
     val logCtx = this[HttpOperationContext.LoggingContext]
     return instance.withContext(logCtx)
 }
 
 @InternalApi
-fun Logger.withContext(context: ExecutionContext): Logger = withContext(context.getOrNull(HttpOperationContext.LoggingContext) ?: emptyMap())
+public fun Logger.withContext(context: ExecutionContext): Logger =
+    withContext(context.getOrNull(HttpOperationContext.LoggingContext) ?: emptyMap())

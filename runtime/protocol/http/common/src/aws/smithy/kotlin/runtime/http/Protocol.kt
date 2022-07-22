@@ -16,22 +16,22 @@ public data class Protocol(val protocolName: String, val defaultPort: Int) {
         /**
          * HTTPS over port 443
          */
-        public val HTTPS = Protocol("https", 443)
+        public val HTTPS: Protocol = Protocol("https", 443)
 
         /**
          * HTTP over port 80
          */
-        public val HTTP = Protocol("http", 80)
+        public val HTTP: Protocol = Protocol("http", 80)
 
         /**
          * WebSocket over port 80
          */
-        public val WS = Protocol("ws", 80)
+        public val WS: Protocol = Protocol("ws", 80)
 
         /**
          * Secure WebSocket over port 443
          */
-        public val WSS = Protocol("wss", 443)
+        public val WSS: Protocol = Protocol("wss", 443)
 
         /**
          * Protocols by names map

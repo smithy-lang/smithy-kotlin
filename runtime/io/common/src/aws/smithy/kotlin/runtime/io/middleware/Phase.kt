@@ -15,8 +15,8 @@ import aws.smithy.kotlin.runtime.io.Handler
  * Giving these individual steps names and types allows for targeted application of middleware at
  * the (most) appropriate step.
  */
-class Phase<Request, Response> : Middleware<Request, Response> {
-    enum class Order {
+public class Phase<Request, Response> : Middleware<Request, Response> {
+    public enum class Order {
         Before, After
     }
 
@@ -25,7 +25,7 @@ class Phase<Request, Response> : Middleware<Request, Response> {
     /**
      * Insert [interceptor] in a specific order into the set of interceptors for this phase
      */
-    fun intercept(order: Order = Order.After, interceptor: suspend (req: Request, next: Handler<Request, Response>) -> Response) {
+    public fun intercept(order: Order = Order.After, interceptor: suspend (req: Request, next: Handler<Request, Response>) -> Response) {
         val wrapped = MiddlewareLambda(interceptor)
         register(wrapped, order)
     }
@@ -33,21 +33,21 @@ class Phase<Request, Response> : Middleware<Request, Response> {
     /**
      * Insert a [transform] that only modifies the request of this phase
      */
-    fun register(transform: ModifyRequest<Request>, order: Order = Order.After) {
+    public fun register(transform: ModifyRequest<Request>, order: Order = Order.After) {
         register(ModifyRequestMiddleware(transform), order)
     }
 
     /**
      * Insert a [transform] that only modifies the response of this phase
      */
-    fun register(transform: ModifyResponse<Response>, order: Order = Order.After) {
+    public fun register(transform: ModifyResponse<Response>, order: Order = Order.After) {
         register(ModifyResponseMiddleware(transform), order)
     }
 
     /**
      * Register a middleware in a specific order
      */
-    fun register(middleware: Middleware<Request, Response>, order: Order = Order.After) {
+    public fun register(middleware: Middleware<Request, Response>, order: Order = Order.After) {
         when (order) {
             Order.Before -> middlewares.addFirst(middleware)
             Order.After -> middlewares.addLast(middleware)

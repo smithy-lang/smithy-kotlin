@@ -20,16 +20,16 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * @property [headers] response headers
  * @property [body] response body content
  */
-data class HttpResponse(
-    val status: HttpStatusCode,
-    val headers: Headers,
-    val body: HttpBody,
+public data class HttpResponse(
+    public val status: HttpStatusCode,
+    public val headers: Headers,
+    public val body: HttpBody,
 ) : ProtocolResponse
 
 /**
  * Get an HTTP header value by name. Returns the first header if multiple headers are set
  */
-fun ProtocolResponse.header(name: String): String? {
+public fun ProtocolResponse.header(name: String): String? {
     val httpResp = this as? HttpResponse
     return httpResp?.headers?.get(name)
 }
@@ -37,7 +37,7 @@ fun ProtocolResponse.header(name: String): String? {
 /**
  * Get all HTTP header values associated with the given name.
  */
-fun ProtocolResponse.getAllHeaders(name: String): List<String>? {
+public fun ProtocolResponse.getAllHeaders(name: String): List<String>? {
     val httpResp = this as? HttpResponse
     return httpResp?.headers?.getAll(name)
 }
@@ -45,7 +45,7 @@ fun ProtocolResponse.getAllHeaders(name: String): List<String>? {
 /**
  * Get the HTTP status code of the response
  */
-fun ProtocolResponse.statusCode(): HttpStatusCode? {
+public fun ProtocolResponse.statusCode(): HttpStatusCode? {
     val httpResp = this as? HttpResponse
     return httpResp?.status
 }
@@ -58,7 +58,7 @@ fun ProtocolResponse.statusCode(): HttpStatusCode? {
  * replaced.
  */
 @InternalApi
-suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpResponse, String> {
+public suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpResponse, String> {
     val buffer = SdkByteBuffer(256u)
     buffer.write("HTTP ${response.status}\r\n")
     response.headers.forEach { key, values ->

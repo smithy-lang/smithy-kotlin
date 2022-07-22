@@ -14,34 +14,34 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 /**
  * Implemented by types that know how to serialize to the HTTP protocol.
  */
-interface HttpSerialize<T> {
-    suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
+public interface HttpSerialize<T> {
+    public suspend fun serialize(context: ExecutionContext, input: T): HttpRequestBuilder
 }
 
 /**
  * Implemented by types that know how to deserialize from the HTTP protocol.
  */
-interface HttpDeserialize<T> {
-    suspend fun deserialize(context: ExecutionContext, response: HttpResponse): T
+public interface HttpDeserialize<T> {
+    public suspend fun deserialize(context: ExecutionContext, response: HttpResponse): T
 }
 
 /**
  * Convenience deserialize implementation for a type with no output type
  */
-object UnitDeserializer : HttpDeserialize<Unit> {
+public object UnitDeserializer : HttpDeserialize<Unit> {
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse) {}
 }
 
 /**
  * Convenience serialize implementation for a type with no input type
  */
-object UnitSerializer : HttpSerialize<Unit> {
+public object UnitSerializer : HttpSerialize<Unit> {
     override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = HttpRequestBuilder()
 }
 
 /**
  * Convenience deserialize implementation that returns the response without modification
  */
-object IdentityDeserializer : HttpDeserialize<HttpResponse> {
+public object IdentityDeserializer : HttpDeserialize<HttpResponse> {
     override suspend fun deserialize(context: ExecutionContext, response: HttpResponse): HttpResponse = response
 }

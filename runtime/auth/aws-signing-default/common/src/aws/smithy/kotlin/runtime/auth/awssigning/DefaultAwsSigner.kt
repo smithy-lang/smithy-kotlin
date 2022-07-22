@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
 /** The default implementation of [AwsSigner] */
-val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
+public val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
 
 internal class DefaultAwsSignerImpl(
     private val canonicalizer: Canonicalizer = Canonicalizer.Default,

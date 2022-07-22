@@ -19,13 +19,14 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
-abstract class MiddlewareSigningTestBase : HasSigner {
+public abstract class MiddlewareSigningTestBase : HasSigner {
     private fun buildOperation(streaming: Boolean = false, replayable: Boolean = true): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
         serializer = object : HttpSerialize<Unit> {
             override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
@@ -86,7 +87,7 @@ abstract class MiddlewareSigningTestBase : HasSigner {
     }
 
     @Test
-    fun testSignRequest() = runTest {
+    public fun testSignRequest(): TestResult = runTest {
         val op = buildOperation()
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
@@ -99,7 +100,7 @@ abstract class MiddlewareSigningTestBase : HasSigner {
     }
 
     @Test
-    fun testUnsignedRequest() = runTest {
+    public fun testUnsignedRequest(): TestResult = runTest {
         val op = buildOperation()
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
@@ -112,7 +113,7 @@ abstract class MiddlewareSigningTestBase : HasSigner {
     }
 
     @Test
-    fun testSignReplayableStreamingRequest() = runTest {
+    public fun testSignReplayableStreamingRequest(): TestResult = runTest {
         val op = buildOperation(streaming = true)
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
@@ -125,7 +126,7 @@ abstract class MiddlewareSigningTestBase : HasSigner {
     }
 
     @Test
-    fun testSignOneShotStream() = runTest {
+    public fun testSignOneShotStream(): TestResult = runTest {
         val op = buildOperation(streaming = true, replayable = false)
         val expectedDate = "20201016T195600Z"
         // should have same signature as testUnsignedRequest()

@@ -11,18 +11,18 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 /**
  * Defines an interface to serialization of an XML Infoset.
  */
-interface XmlStreamWriter {
+public interface XmlStreamWriter {
 
     /**
      * Write the XML declaration.
      */
-    fun startDocument()
+    public fun startDocument()
 
     /**
      * Finish writing. All unclosed start tags will be closed and output
      * will be flushed.
      */
-    fun endDocument()
+    public fun endDocument()
 
     /**
      * Writes a start tag with the given namespace and name.
@@ -36,7 +36,7 @@ interface XmlStreamWriter {
      * or throw IllegalStateException if default namespace is already bound
      * to non-empty string.
      */
-    fun startTag(name: String, namespace: String? = null): XmlStreamWriter
+    public fun startTag(name: String, namespace: String? = null): XmlStreamWriter
 
     /**
      * Write an attribute. Calls to attribute() MUST follow a call to
@@ -45,35 +45,35 @@ interface XmlStreamWriter {
      * If namespace is null or empty string
      * no namespace prefix is printed but just name.
      */
-    fun attribute(name: String, value: String?, namespace: String? = null): XmlStreamWriter
+    public fun attribute(name: String, value: String?, namespace: String? = null): XmlStreamWriter
 
     /**
      * Write end tag. Repetition of namespace and name is just for avoiding errors.
      */
-    fun endTag(name: String, namespace: String? = null): XmlStreamWriter
+    public fun endTag(name: String, namespace: String? = null): XmlStreamWriter
 
     /**
      * Writes text, where special XML chars are escaped automatically
      */
-    fun text(text: String): XmlStreamWriter
+    public fun text(text: String): XmlStreamWriter
 
     /**
      * Set the namespace prefix
      */
-    fun namespacePrefix(uri: String, prefix: String? = null)
+    public fun namespacePrefix(uri: String, prefix: String? = null)
 
     /**
      * Gets the byte serialization for this writer. Note that this will call [endDocument] first, closing all open tags.
      */
-    val bytes: ByteArray
+    public val bytes: ByteArray
 
     /**
      *
      */
-    val text: String
+    public val text: String
 }
 
-fun XmlStreamWriter.text(text: Number) {
+public fun XmlStreamWriter.text(text: Number) {
     this.text(text.toString())
 }
 
@@ -81,4 +81,4 @@ fun XmlStreamWriter.text(text: Number) {
 * Creates a [XmlStreamWriter] instance to write XML
 */
 @InternalApi
-fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter = BufferingXmlStreamWriter(pretty)
+public fun xmlStreamWriter(pretty: Boolean = false): XmlStreamWriter = BufferingXmlStreamWriter(pretty)

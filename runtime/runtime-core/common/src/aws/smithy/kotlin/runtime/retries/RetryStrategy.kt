@@ -10,11 +10,11 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 /**
  * A strategy for trying a block of code one or more times.
  */
-interface RetryStrategy {
+public interface RetryStrategy {
     /**
      * Common retry strategy options
      */
-    val options: RetryOptions
+    public val options: RetryOptions
 
     /**
      * Retry the given block of code until it's successful. Note this method throws exceptions for non-successful
@@ -23,13 +23,13 @@ interface RetryStrategy {
      * @param block The block of code to retry.
      * @return The successful [Outcome] of the final retry attempt.
      */
-    suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R>
+    public suspend fun <R> retry(policy: RetryPolicy<R>, block: suspend () -> R): Outcome<R>
 }
 
-interface RetryOptions {
+public interface RetryOptions {
     /**
      * Maximum retry attempts allowed by a strategy
      */
-    val maxAttempts: Int?
+    public val maxAttempts: Int?
         get() = null
 }

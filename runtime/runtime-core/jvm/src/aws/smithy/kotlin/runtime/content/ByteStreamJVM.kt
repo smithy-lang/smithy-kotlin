@@ -16,12 +16,12 @@ import java.nio.file.Path
 /**
  * Create a [ByteStream] from a file
  */
-fun ByteStream.Companion.fromFile(file: File): ByteStream = file.asByteStream()
+public fun ByteStream.Companion.fromFile(file: File): ByteStream = file.asByteStream()
 
 /**
  * Create a [ByteStream] from a file
  */
-fun File.asByteStream(start: Long = 0, endInclusive: Long = length() - 1): ByteStream {
+public fun File.asByteStream(start: Long = 0, endInclusive: Long = length() - 1): ByteStream {
     require(start >= 0) { "start index $start cannot be negative" }
     require(endInclusive == -1L || endInclusive >= start) {
         "end index $endInclusive must be greater than or equal to start index $start"
@@ -36,12 +36,12 @@ fun File.asByteStream(start: Long = 0, endInclusive: Long = length() - 1): ByteS
 /**
  * Create a [ByteStream] from a file with the given range
  */
-fun File.asByteStream(range: LongRange) = asByteStream(range.first, range.last)
+public fun File.asByteStream(range: LongRange): ByteStream = asByteStream(range.first, range.last)
 
 /**
  * Create a [ByteStream] from a path
  */
-fun Path.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
+public fun Path.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
     val f = toFile()
     require(f.exists()) { "cannot create ByteStream, file does not exist: $this" }
     require(f.isFile) { "cannot create a ByteStream from a directory: $this" }
@@ -51,13 +51,13 @@ fun Path.asByteStream(start: Long = 0, endInclusive: Long = -1): ByteStream {
 /**
  * Create a [ByteStream] from a path with the given range
  */
-fun Path.asByteStream(range: LongRange) = asByteStream(range.first, range.last)
+public fun Path.asByteStream(range: LongRange): ByteStream = asByteStream(range.first, range.last)
 
 /**
  * Write the contents of this ByteStream to file and close it
  * @return the number of bytes written
  */
-suspend fun ByteStream.writeToFile(file: File): Long {
+public suspend fun ByteStream.writeToFile(file: File): Long {
     val writer = file.writeChannel()
     val src = when (this) {
         is ByteStream.Buffer -> SdkByteReadChannel(bytes())
@@ -77,4 +77,4 @@ suspend fun ByteStream.writeToFile(file: File): Long {
  * Write the contents of this ByteStream to file at the given path
  * @return the number of bytes written
  */
-suspend fun ByteStream.writeToFile(path: Path): Long = writeToFile(path.toFile())
+public suspend fun ByteStream.writeToFile(path: Path): Long = writeToFile(path.toFile())

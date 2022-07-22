@@ -19,13 +19,13 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
 
-typealias HttpHandler = Handler<SdkHttpRequest, HttpCall>
+public typealias HttpHandler = Handler<SdkHttpRequest, HttpCall>
 
 /**
  * Create an [SdkHttpClient] with the given engine, and optionally configure it
  * This will **not** manage the engine lifetime, the caller is expected to close it.
  */
-fun sdkHttpClient(
+public fun sdkHttpClient(
     engine: HttpClientEngine,
     manageEngine: Boolean = false,
 ): SdkHttpClient = SdkHttpClient(engine, manageEngine)
@@ -35,14 +35,14 @@ fun sdkHttpClient(
  *
  * **NOTE**: This is not a general purpose HTTP client. It is meant for generated SDK use.
  */
-class SdkHttpClient(
-    val engine: HttpClientEngine,
+public class SdkHttpClient(
+    public val engine: HttpClientEngine,
     private val manageEngine: Boolean = false
 ) : HttpHandler, Closeable {
     private val closed = atomic(false)
 
-    suspend fun call(request: HttpRequest): HttpCall = executeWithCallContext(ExecutionContext(), request)
-    suspend fun call(request: HttpRequestBuilder): HttpCall = call(request.build())
+    public suspend fun call(request: HttpRequest): HttpCall = executeWithCallContext(ExecutionContext(), request)
+    public suspend fun call(request: HttpRequestBuilder): HttpCall = call(request.build())
     override suspend fun call(request: SdkHttpRequest): HttpCall = executeWithCallContext(request.context, request.subject.build())
 
     // FIXME - can we relocate to engine?

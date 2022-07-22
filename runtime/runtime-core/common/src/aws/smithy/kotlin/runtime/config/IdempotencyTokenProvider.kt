@@ -10,30 +10,30 @@ import aws.smithy.kotlin.runtime.util.Uuid.WeakRng
 /**
  * User-accessible configuration for client-side token generation.
  */
-interface IdempotencyTokenConfig {
+public interface IdempotencyTokenConfig {
 
     /**
      * Allows to supply a custom function generate idempotency tokens.
      */
-    val idempotencyTokenProvider: IdempotencyTokenProvider?
+    public val idempotencyTokenProvider: IdempotencyTokenProvider?
 }
 
 /**
  * Describes a function and default implementation to produce a string used as a token to dedupe
  * requests from the client.
  */
-fun interface IdempotencyTokenProvider {
+public fun interface IdempotencyTokenProvider {
 
     /**
      * Generate a unique, UUID-like string that can be used to track unique client-side requests.
      */
-    fun generateToken(): String
+    public fun generateToken(): String
 
-    companion object {
+    public companion object {
         /**
          * Creates the default token provider.
          */
-        val Default: IdempotencyTokenProvider = DefaultIdempotencyTokenProvider()
+        public val Default: IdempotencyTokenProvider = DefaultIdempotencyTokenProvider()
     }
 }
 

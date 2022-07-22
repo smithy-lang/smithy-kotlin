@@ -9,11 +9,11 @@ package aws.smithy.kotlin.runtime.smithy
  *
  * The provided casting functions (eg. [asInt], [asMap]) allow callers to unwrap contents of the Document at runtime.
  */
-sealed class Document {
+public sealed class Document {
     /**
      * Wraps a [kotlin.Number] of arbitrary precision.
      */
-    data class Number(val value: kotlin.Number) : Document() {
+    public data class Number(val value: kotlin.Number) : Document() {
         init {
             if (value is Double && !value.isFinite() || value is Float && !value.isFinite()) {
                 throw IllegalArgumentException(
@@ -22,37 +22,37 @@ sealed class Document {
             }
         }
 
-        override fun toString() = value.toString()
+        override fun toString(): kotlin.String = value.toString()
     }
 
     /**
      * Wraps a [kotlin.String].
      */
-    data class String(val value: kotlin.String) : Document() {
-        override fun toString() = "\"$value\""
+    public data class String(val value: kotlin.String) : Document() {
+        override fun toString(): kotlin.String = "\"$value\""
     }
 
     /**
      * Wraps a [kotlin.Boolean].
      */
-    data class Boolean(val value: kotlin.Boolean) : Document() {
-        override fun toString() = value.toString()
+    public data class Boolean(val value: kotlin.Boolean) : Document() {
+        override fun toString(): kotlin.String = value.toString()
     }
 
     /**
      * Wraps a [kotlin.collections.List].
      */
-    data class List(val value: kotlin.collections.List<Document?>) :
+    public data class List(val value: kotlin.collections.List<Document?>) :
         Document(), kotlin.collections.List<Document?> by value {
-        override fun toString() = value.joinToString(separator = ",", prefix = "[", postfix = "]")
+        override fun toString(): kotlin.String = value.joinToString(separator = ",", prefix = "[", postfix = "]")
     }
 
     /**
      * Wraps a [kotlin.collections.Map].
      */
-    data class Map(val value: kotlin.collections.Map<kotlin.String, Document?>) :
+    public data class Map(val value: kotlin.collections.Map<kotlin.String, Document?>) :
         Document(), kotlin.collections.Map<kotlin.String, Document?> by value {
-        override fun toString() = value
+        override fun toString(): kotlin.String = value
             .entries
             .joinToString(
                 separator = ",",
@@ -65,58 +65,58 @@ sealed class Document {
     private fun asNumber(): kotlin.Number = (this as Number).value
     private fun asNumberOrNull(): kotlin.Number? = (this as? Number)?.value
 
-    fun asString(): kotlin.String = (this as String).value
-    fun asStringOrNull(): kotlin.String? = (this as? String)?.value
+    public fun asString(): kotlin.String = (this as String).value
+    public fun asStringOrNull(): kotlin.String? = (this as? String)?.value
 
-    fun asBoolean(): kotlin.Boolean = (this as Boolean).value
-    fun asBooleanOrNull(): kotlin.Boolean? = (this as? Boolean)?.value
+    public fun asBoolean(): kotlin.Boolean = (this as Boolean).value
+    public fun asBooleanOrNull(): kotlin.Boolean? = (this as? Boolean)?.value
 
-    fun asList(): kotlin.collections.List<Document?> = (this as List).value
-    fun asListOrNull(): kotlin.collections.List<Document?>? = (this as? List)?.value
+    public fun asList(): kotlin.collections.List<Document?> = (this as List).value
+    public fun asListOrNull(): kotlin.collections.List<Document?>? = (this as? List)?.value
 
-    fun asMap(): kotlin.collections.Map<kotlin.String, Document?> = (this as Map).value
-    fun asMapOrNull(): kotlin.collections.Map<kotlin.String, Document?>? = (this as? Map)?.value
+    public fun asMap(): kotlin.collections.Map<kotlin.String, Document?> = (this as Map).value
+    public fun asMapOrNull(): kotlin.collections.Map<kotlin.String, Document?>? = (this as? Map)?.value
 
-    fun asInt(): Int = asNumber().toInt()
-    fun asIntOrNull(): Int? = asNumberOrNull()?.toInt()
+    public fun asInt(): Int = asNumber().toInt()
+    public fun asIntOrNull(): Int? = asNumberOrNull()?.toInt()
 
-    fun asByte(): Byte = asNumber().toByte()
-    fun asByteOrNull(): Byte? = asNumberOrNull()?.toByte()
+    public fun asByte(): Byte = asNumber().toByte()
+    public fun asByteOrNull(): Byte? = asNumberOrNull()?.toByte()
 
-    fun asShort(): Short = asNumber().toShort()
-    fun asShortOrNull(): Short? = asNumberOrNull()?.toShort()
+    public fun asShort(): Short = asNumber().toShort()
+    public fun asShortOrNull(): Short? = asNumberOrNull()?.toShort()
 
-    fun asLong(): Long = asNumber().toLong()
-    fun asLongOrNull(): Long? = asNumberOrNull()?.toLong()
+    public fun asLong(): Long = asNumber().toLong()
+    public fun asLongOrNull(): Long? = asNumberOrNull()?.toLong()
 
-    fun asFloat(): Float = asNumber().toFloat()
-    fun asFloatOrNull(): Float? = asNumberOrNull()?.toFloat()
+    public fun asFloat(): Float = asNumber().toFloat()
+    public fun asFloatOrNull(): Float? = asNumberOrNull()?.toFloat()
 
-    fun asDouble(): Double = asNumber().toDouble()
-    fun asDoubleOrNull(): Double? = asNumberOrNull()?.toDouble()
+    public fun asDouble(): Double = asNumber().toDouble()
+    public fun asDoubleOrNull(): Double? = asNumberOrNull()?.toDouble()
 }
 
 /**
  * Construct a [Document] from a [Number] of arbitrary precision.
  */
-fun Document(value: Number): Document = Document.Number(value)
+public fun Document(value: Number): Document = Document.Number(value)
 
 /**
  * Construct a [Document] from a [String].
  */
-fun Document(value: String): Document = Document.String(value)
+public fun Document(value: String): Document = Document.String(value)
 
 /**
  * Construct a [Document] from a [Boolean].
  */
-fun Document(value: Boolean): Document = Document.Boolean(value)
+public fun Document(value: Boolean): Document = Document.Boolean(value)
 
 /**
  * Construct a [Document] from a [List].
  */
-fun Document(value: List<Document?>): Document = Document.List(value)
+public fun Document(value: List<Document?>): Document = Document.List(value)
 
 /**
  * Construct a [Document] from a [Map].
  */
-fun Document(value: Map<String, Document?>): Document = Document.Map(value)
+public fun Document(value: Map<String, Document?>): Document = Document.Map(value)

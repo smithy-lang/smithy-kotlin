@@ -21,17 +21,17 @@ public interface ClientOptions {
     /**
      * Check if the specified [option] exists
      */
-    operator fun contains(option: ClientOption<*>): Boolean
+    public operator fun contains(option: ClientOption<*>): Boolean
 
     /**
      * Creates or changes an [option] with the specified [value]
      */
-    fun <T : Any> set(option: ClientOption<T>, value: T)
+    public fun <T : Any> set(option: ClientOption<T>, value: T)
 
     /**
      * Removes an option with the specified [option] if it exists
      */
-    fun <T : Any> remove(option: ClientOption<T>)
+    public fun <T : Any> remove(option: ClientOption<T>)
 }
 
 /**
@@ -43,5 +43,5 @@ public class ClientOptionsImpl(private val attributes: Attributes) : ClientOptio
         attributes[option] = value
     }
     override fun contains(option: ClientOption<*>): Boolean = attributes.contains(option)
-    override fun <T : Any> remove(option: ClientOption<T>) = attributes.remove(option)
+    override fun <T : Any> remove(option: ClientOption<T>): Unit = attributes.remove(option)
 }

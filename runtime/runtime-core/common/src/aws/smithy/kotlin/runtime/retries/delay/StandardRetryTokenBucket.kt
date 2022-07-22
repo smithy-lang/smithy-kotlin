@@ -22,8 +22,8 @@ private const val MS_PER_S = 1_000
  * @param options The configuration to use for this bucket.
  * @param clock A clock to use for time calculations.
  */
-class StandardRetryTokenBucket(
-    val options: StandardRetryTokenBucketOptions = StandardRetryTokenBucketOptions.Default,
+public class StandardRetryTokenBucket(
+    public val options: StandardRetryTokenBucketOptions = StandardRetryTokenBucketOptions.Default,
     private val clock: Clock = Clock.System,
 ) : RetryTokenBucket {
     internal var capacity = options.maxCapacity
@@ -80,7 +80,7 @@ class StandardRetryTokenBucket(
      * A standard implementation of a [RetryToken].
      * @param returnSize The amount of capacity to return to the bucket on a successful try.
      */
-    inner class StandardRetryToken(val returnSize: Int) : RetryToken {
+    internal inner class StandardRetryToken(public val returnSize: Int) : RetryToken {
         /**
          * Completes this token because retrying has been abandoned. This implementation doesn't actually increment any
          * capacity upon failure...capacity just refills based on time.
@@ -122,20 +122,20 @@ class StandardRetryTokenBucket(
  * @param initialTryCost The amount of capacity to decrement for the initial try.
  * @param initialTrySuccessIncrement The amount of capacity to return if the initial try is successful.
  */
-data class StandardRetryTokenBucketOptions(
-    val maxCapacity: Int,
-    val refillUnitsPerSecond: Int,
-    val circuitBreakerMode: Boolean,
-    val retryCost: Int,
-    val timeoutRetryCost: Int,
-    val initialTryCost: Int,
-    val initialTrySuccessIncrement: Int,
+public data class StandardRetryTokenBucketOptions(
+    public val maxCapacity: Int,
+    public val refillUnitsPerSecond: Int,
+    public val circuitBreakerMode: Boolean,
+    public val retryCost: Int,
+    public val timeoutRetryCost: Int,
+    public val initialTryCost: Int,
+    public val initialTrySuccessIncrement: Int,
 ) {
-    companion object {
+    public companion object {
         /**
          * The default configuration for a [StandardRetryTokenBucket].
          */
-        val Default = StandardRetryTokenBucketOptions(
+        public val Default: StandardRetryTokenBucketOptions = StandardRetryTokenBucketOptions(
             maxCapacity = 500,
             refillUnitsPerSecond = 10,
             circuitBreakerMode = false,

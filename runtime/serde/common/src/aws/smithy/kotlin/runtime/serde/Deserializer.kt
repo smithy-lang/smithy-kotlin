@@ -53,7 +53,7 @@ import aws.smithy.kotlin.runtime.smithy.Document
  * until it is exhausted and for each element/entry call the appropriate `deserialize*` methods.
  *
  */
-interface Deserializer {
+public interface Deserializer {
     /**
      * Begin deserialization of a structured type. Use the returned [FieldIterator] to drive
      * the deserialization process of the struct to completion.
@@ -64,7 +64,7 @@ interface Deserializer {
      *
      * @param descriptor SdkObjectDescriptor the structure descriptor
      */
-    fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
+    public fun deserializeStruct(descriptor: SdkObjectDescriptor): FieldIterator
 
     /**
      * Begin deserialization of a list type. Use the returned [ElementIterator] to drive
@@ -75,7 +75,7 @@ interface Deserializer {
      *
      * @param descriptor SdkFieldDescriptor the structure descriptor
      */
-    fun deserializeList(descriptor: SdkFieldDescriptor): ElementIterator
+    public fun deserializeList(descriptor: SdkFieldDescriptor): ElementIterator
 
     /**
      * Begin deserialization of a map type. Use the returned [EntryIterator] to drive
@@ -86,64 +86,64 @@ interface Deserializer {
      *
      * @param descriptor SdkFieldDescriptor the structure descriptor
      */
-    fun deserializeMap(descriptor: SdkFieldDescriptor): EntryIterator
+    public fun deserializeMap(descriptor: SdkFieldDescriptor): EntryIterator
 
     /**
      * Iterator over raw elements in a collection
      */
-    interface ElementIterator : PrimitiveDeserializer {
+    public interface ElementIterator : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the list
          * or the document has been read completely.
          */
-        fun hasNextElement(): Boolean
+        public fun hasNextElement(): Boolean
 
         /**
          * Returns true if the next token contains a value, or false otherwise.
          */
-        fun nextHasValue(): Boolean
+        public fun nextHasValue(): Boolean
     }
 
     /**
      * Iterator over map entries
      */
-    interface EntryIterator : PrimitiveDeserializer {
+    public interface EntryIterator : PrimitiveDeserializer {
         /**
          * Advance to the next element. Returns false when no more elements are in the map
          * or the document has been read completely.
          */
-        fun hasNextEntry(): Boolean
+        public fun hasNextEntry(): Boolean
 
         /**
          * Read the next key
          */
-        fun key(): String
+        public fun key(): String
 
         /**
          * Returns true if the next token contains a value, or false otherwise.
          */
-        fun nextHasValue(): Boolean
+        public fun nextHasValue(): Boolean
     }
 
     /**
      * Iterator over struct fields
      */
-    interface FieldIterator : PrimitiveDeserializer {
+    public interface FieldIterator : PrimitiveDeserializer {
         /**
          * Returns the index of the next field found, null if fields exhausted, or [UNKNOWN_FIELD].
          */
-        fun findNextFieldIndex(): Int?
+        public fun findNextFieldIndex(): Int?
 
         /**
          * Skip the next field value recursively. Meant for discarding unknown fields
          */
-        fun skipValue()
+        public fun skipValue()
 
-        companion object {
+        public companion object {
             /**
              * An unknown field was encountered
              */
-            const val UNKNOWN_FIELD = -1
+            public const val UNKNOWN_FIELD: Int = -1
         }
     }
 }
@@ -151,46 +151,46 @@ interface Deserializer {
 /**
  * Common interface for deserializing primitive values
  */
-interface PrimitiveDeserializer {
+public interface PrimitiveDeserializer {
     /**
      * Deserialize and return the next token as a [Byte]
      */
-    fun deserializeByte(): Byte
+    public fun deserializeByte(): Byte
 
     /**
      * Deserialize and return the next token as an [Int]
      */
-    fun deserializeInt(): Int
+    public fun deserializeInt(): Int
 
     /**
      * Deserialize and return the next token as a [Short]
      */
-    fun deserializeShort(): Short
+    public fun deserializeShort(): Short
 
     /**
      * Deserialize and return the next token as a [Long]
      */
-    fun deserializeLong(): Long
+    public fun deserializeLong(): Long
 
     /**
      * Deserialize and return the next token as a [Float]
      */
-    fun deserializeFloat(): Float
+    public fun deserializeFloat(): Float
 
     /**
      * Deserialize and return the next token as a [Double]
      */
-    fun deserializeDouble(): Double
+    public fun deserializeDouble(): Double
 
     /**
      * Deserialize and return the next token as a [String]
      */
-    fun deserializeString(): String
+    public fun deserializeString(): String
 
     /**
      * Deserialize and return the next token as a [Boolean]
      */
-    fun deserializeBoolean(): Boolean
+    public fun deserializeBoolean(): Boolean
 
     /**
      * Deserialize and return the next token as a [Document].
@@ -198,25 +198,25 @@ interface PrimitiveDeserializer {
      * If the document's value is a list or map, this method will deserialize all elements or fields recursively - the
      * caller need not further inspect the value to attempt to do so manually.
      */
-    fun deserializeDocument(): Document
+    public fun deserializeDocument(): Document
 
     /**
      * Consume the next token if represents a null value. Always returns null.
      */
-    fun deserializeNull(): Nothing?
+    public fun deserializeNull(): Nothing?
 }
 
-inline fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
+public inline fun Deserializer.deserializeStruct(descriptor: SdkObjectDescriptor, block: Deserializer.FieldIterator.() -> Unit) {
     val deserializer = deserializeStruct(descriptor)
     block(deserializer)
 }
 
-inline fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: Deserializer.ElementIterator.() -> T): T {
+public inline fun <T> Deserializer.deserializeList(descriptor: SdkFieldDescriptor, block: Deserializer.ElementIterator.() -> T): T {
     val deserializer = deserializeList(descriptor)
     return block(deserializer)
 }
 
-inline fun <T> Deserializer.deserializeMap(descriptor: SdkFieldDescriptor, block: Deserializer.EntryIterator.() -> T): T {
+public inline fun <T> Deserializer.deserializeMap(descriptor: SdkFieldDescriptor, block: Deserializer.EntryIterator.() -> T): T {
     val deserializer = deserializeMap(descriptor)
     return block(deserializer)
 }

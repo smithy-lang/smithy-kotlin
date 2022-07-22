@@ -10,20 +10,20 @@ import aws.smithy.kotlin.runtime.io.Handler
 /**
  * Decorates a [Handler], transforming either the request or the response
  */
-interface Middleware<Request, Response> {
-    suspend fun <H> handle(request: Request, next: H): Response
+public interface Middleware<Request, Response> {
+    public suspend fun <H> handle(request: Request, next: H): Response
             where H : Handler<Request, Response>
 }
 
 /**
  * Alias for a lambda based [Middleware]
  */
-typealias MiddlewareFn<Request, Response> = suspend (Request, Handler<Request, Response>) -> Response
+public typealias MiddlewareFn<Request, Response> = suspend (Request, Handler<Request, Response>) -> Response
 
 /**
  * Adapter for [MiddlewareFn] that implements [Middleware]
  */
-data class MiddlewareLambda<Request, Response>(
+public data class MiddlewareLambda<Request, Response>(
     private val fn: MiddlewareFn<Request, Response>
 ) : Middleware<Request, Response> {
     override suspend fun <H : Handler<Request, Response>> handle(request: Request, next: H): Response =
@@ -43,7 +43,7 @@ private data class DecoratedHandler<Request, Response>(
 /**
  * decorate [handler] with the given [middleware] returning a new wrapped service
  */
-fun <Request, Response> decorate(
+public fun <Request, Response> decorate(
     handler: Handler<Request, Response>,
     vararg middleware: Middleware<Request, Response>
 ): Handler<Request, Response> {

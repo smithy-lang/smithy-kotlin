@@ -67,6 +67,8 @@ subprojects {
     }
 
     kotlin {
+        explicitApi()
+
         sourceSets {
             all {
                 val srcDir = if (name.endsWith("Main")) "src" else "test"

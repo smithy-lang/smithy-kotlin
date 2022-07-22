@@ -23,7 +23,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * @param policy the [RetryPolicy] used to determine when to retry
  */
 @InternalApi
-open class Retry<O>(
+public open class Retry<O>(
     protected val strategy: RetryStrategy,
     protected val policy: RetryPolicy<Any?>
 ) : MutateMiddleware<O> {

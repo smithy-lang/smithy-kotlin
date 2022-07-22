@@ -13,23 +13,23 @@ internal const val DEFAULT_BUFFER_SIZE: Int = 4096
  * Supplies an asynchronous stream of bytes. Use this interface to read data from wherever it’s located:
  * from the network, storage, or a buffer in memory. This is a **single-reader channel**.
  */
-expect interface SdkByteReadChannel : Closeable {
+public expect interface SdkByteReadChannel : Closeable {
     /**
      * Returns number of bytes that can be read without suspension. Read operations do no suspend and
      * return immediately when this number is at least the number of bytes requested for read.
      */
-    val availableForRead: Int
+    public val availableForRead: Int
 
     /**
      * Returns `true` if the channel is closed and no remaining bytes are available for read. It implies
      * that availableForRead is zero.
      */
-    val isClosedForRead: Boolean
+    public val isClosedForRead: Boolean
 
     /**
      * Returns `true` if the channel is closed from the writer side. [availableForRead] may be > 0
      */
-    val isClosedForWrite: Boolean
+    public val isClosedForWrite: Boolean
 
     /**
      * Read up to [limit] bytes into a [ByteArray] suspending until [limit] is reached or the channel
@@ -39,29 +39,29 @@ expect interface SdkByteReadChannel : Closeable {
      *
      * Check [availableForRead] and/or [isClosedForRead] to see if there is additional data left
      */
-    suspend fun readRemaining(limit: Int = Int.MAX_VALUE): ByteArray
+    public suspend fun readRemaining(limit: Int = Int.MAX_VALUE): ByteArray
 
     /**
      * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough
      * bytes available.
      */
-    suspend fun readFully(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset)
+    public suspend fun readFully(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset)
 
     /**
      * Reads all available bytes to [sink] buffer and returns immediately or suspends if no bytes available
      */
-    suspend fun readAvailable(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset): Int
+    public suspend fun readAvailable(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset): Int
 
     /**
      * Suspend until *some* data is available or channel is closed
      */
-    suspend fun awaitContent()
+    public suspend fun awaitContent()
 
     /**
      * Close channel with optional cause cancellation.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      */
-    fun cancel(cause: Throwable?): Boolean
+    public fun cancel(cause: Throwable?): Boolean
 }
 
 /**
@@ -164,7 +164,7 @@ internal suspend fun SdkByteReadChannel.readAvailableFallback(dest: SdkByteBuffe
 /**
  * Reads a UTF-8 code point from the channel. Returns `null` if closed
  */
-suspend fun SdkByteReadChannel.readUtf8CodePoint(): Int? {
+public suspend fun SdkByteReadChannel.readUtf8CodePoint(): Int? {
     awaitContent()
     if (availableForRead == 0 && isClosedForRead) return null
 

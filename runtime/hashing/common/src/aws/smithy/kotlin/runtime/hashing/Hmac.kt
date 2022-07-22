@@ -15,7 +15,7 @@ import kotlin.experimental.xor
  * @param hashFunction The hashing algorithm to use.
  */
 @InternalApi
-fun hmac(key: ByteArray, message: ByteArray, hashFunction: HashFunction): ByteArray {
+public fun hmac(key: ByteArray, message: ByteArray, hashFunction: HashFunction): ByteArray {
     val blockSizedKey = key.resizeToBlock(hashFunction)
 
     val innerKey = blockSizedKey xor 0x36
@@ -38,7 +38,7 @@ fun hmac(key: ByteArray, message: ByteArray, hashFunction: HashFunction): ByteAr
  * @param hashSupplier A supplier that yields a hashing algorithm to use.
  */
 @InternalApi
-fun hmac(key: ByteArray, message: ByteArray, hashSupplier: HashSupplier): ByteArray =
+public fun hmac(key: ByteArray, message: ByteArray, hashSupplier: HashSupplier): ByteArray =
     hmac(key, message, hashSupplier())
 
 private fun ByteArray.resizeToBlock(hashFunction: HashFunction): ByteArray {

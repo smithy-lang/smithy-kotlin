@@ -8,11 +8,11 @@ package aws.smithy.kotlin.runtime.auth.awssigning
  * The result of an AWS signing operation
  * @param T The type of the result
  */
-data class AwsSigningResult<T>(
+public data class AwsSigningResult<T>(
     /**
      * The signed output.
      */
-    val output: T,
+    public val output: T,
 
     /**
      * The signature value from the result. Depending on the requested signature type and algorithm, this value will be
@@ -23,7 +23,7 @@ data class AwsSigningResult<T>(
      * * `HTTP_REQUEST_CHUNK/SIGV4_ASYMMETRIC` - '*'-padded hex encoding of the binary signature value
      * * `HTTP_REQUEST_EVENT` - hex encoding of the binary signature value
      */
-    val signature: ByteArray,
+    public val signature: ByteArray,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -12,81 +12,81 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 /**
  * Additional metadata about an error
  */
-open class ErrorMetadata {
+public open class ErrorMetadata {
     @InternalApi
-    val attributes: Attributes = Attributes()
+    public val attributes: Attributes = Attributes()
 
-    companion object {
+    public companion object {
         /**
          * Set if an error is retryable
          */
-        val Retryable: AttributeKey<Boolean> = AttributeKey("Retryable")
+        public val Retryable: AttributeKey<Boolean> = AttributeKey("Retryable")
 
         /**
          * Set if an error represents a throttling condition
          */
-        val ThrottlingError: AttributeKey<Boolean> = AttributeKey("ThrottlingError")
+        public val ThrottlingError: AttributeKey<Boolean> = AttributeKey("ThrottlingError")
     }
 
-    val isRetryable: Boolean
+    public val isRetryable: Boolean
         get() = attributes.getOrNull(Retryable) ?: false
 
-    val isThrottling: Boolean
+    public val isThrottling: Boolean
         get() = attributes.getOrNull(ThrottlingError) ?: false
 }
 
 /**
  * Base exception class for all exceptions thrown by the SDK. Exception may be a client side exception or a service exception
  */
-open class SdkBaseException : RuntimeException {
+public open class SdkBaseException : RuntimeException {
 
-    constructor() : super()
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 
     /**
      * Additional metadata about the error
      */
-    open val sdkErrorMetadata: ErrorMetadata = ErrorMetadata()
+    public open val sdkErrorMetadata: ErrorMetadata = ErrorMetadata()
 }
 
 /**
  * Base exception class for any errors that occur while attempting to use an SDK client to make (Smithy) service calls.
  */
-open class ClientException : SdkBaseException {
-    constructor() : super()
+public open class ClientException : SdkBaseException {
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 }
 
 /**
  * Generic interface that any protocol (e.g. HTTP, MQTT, etc) can extend to provide additional access to
  * protocol specific details.
  */
-interface ProtocolResponse
+public interface ProtocolResponse
 
 private object EmptyProtocolResponse : ProtocolResponse
 
-open class ServiceErrorMetadata : ErrorMetadata() {
-    companion object {
-        val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
-        val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
-        val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
-        val RequestId: AttributeKey<String> = AttributeKey("RequestId")
+public open class ServiceErrorMetadata : ErrorMetadata() {
+    public companion object {
+        public val ErrorCode: AttributeKey<String> = AttributeKey("ErrorCode")
+        public val ErrorType: AttributeKey<ServiceException.ErrorType> = AttributeKey("ErrorType")
+        public val ProtocolResponse: AttributeKey<ProtocolResponse> = AttributeKey("ProtocolResponse")
+        public val RequestId: AttributeKey<String> = AttributeKey("RequestId")
     }
 
     /**
      * The name of the service that sent this error response
      */
-    val serviceName: String
+    public val serviceName: String
         get() = attributes.getOrNull(SdkClientOption.ServiceName) ?: ""
 
     /**
@@ -97,19 +97,19 @@ open class ServiceErrorMetadata : ErrorMetadata() {
      * [restJson1 protocol errors](https://awslabs.github.io/smithy/1.0/spec/aws/aws-restjson1-protocol.html#operation-error-serialization)
      * for details).
      */
-    val errorCode: String?
+    public val errorCode: String?
         get() = attributes.getOrNull(ErrorCode)
 
     /**
      * Indicates who is responsible for this exception (caller, service, or unknown)
      */
-    val errorType: ServiceException.ErrorType
+    public val errorType: ServiceException.ErrorType
         get() = attributes.getOrNull(ErrorType) ?: ServiceException.ErrorType.Unknown
 
     /**
      * The protocol response if available (this will differ depending on the underlying protocol e.g. HTTP, MQTT, etc)
      */
-    val protocolResponse: ProtocolResponse
+    public val protocolResponse: ProtocolResponse
         get() = attributes.getOrNull(ProtocolResponse) ?: EmptyProtocolResponse
 
     /**
@@ -118,7 +118,7 @@ open class ServiceErrorMetadata : ErrorMetadata() {
      * This value is implementation-defined. For example, AWS services trace and return unique request IDs for API
      * calls.
      */
-    val requestId: String?
+    public val requestId: String?
         get() = attributes.getOrNull(RequestId)
 }
 
@@ -127,24 +127,24 @@ open class ServiceErrorMetadata : ErrorMetadata() {
  * type indicates that the caller's request was successfully transmitted to the service and the service sent back an
  * error response.
  */
-open class ServiceException : SdkBaseException {
+public open class ServiceException : SdkBaseException {
 
     /**
      * Indicates who (if known) is at fault for this exception.
      */
-    enum class ErrorType {
+    public enum class ErrorType {
         Client,
         Server,
         Unknown
     }
 
-    constructor() : super()
+    public constructor() : super()
 
-    constructor(message: String?) : super(message)
+    public constructor(message: String?) : super(message)
 
-    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    public constructor(message: String?, cause: Throwable?) : super(message, cause)
 
-    constructor(cause: Throwable?) : super(cause)
+    public constructor(cause: Throwable?) : super(cause)
 
     override val sdkErrorMetadata: ServiceErrorMetadata = ServiceErrorMetadata()
 }

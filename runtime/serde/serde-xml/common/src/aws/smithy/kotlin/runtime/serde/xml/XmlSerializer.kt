@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.util.*
  * @param xmlWriter where content is serialize to
  */
 // TODO - mark class internal and remove integration tests once serde is stable
-class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
+public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) : Serializer, StructSerializer {
 
     // FIXME - clean up stack to distinguish between mutable/immutable and move to utils? (e.g. MutableStack<T> = mutableStackOf())
     private var nodeStack: ListStack<String> = mutableListOf()
@@ -98,28 +98,29 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
     private fun numberField(descriptor: SdkFieldDescriptor, value: Number) =
         tagOrAttribute(descriptor, value, ::serializeNumber)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Boolean) =
+    override fun field(descriptor: SdkFieldDescriptor, value: Boolean): Unit =
         tagOrAttribute(descriptor, value, ::serializeBoolean)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Byte) = numberField(descriptor, value)
+    override fun field(descriptor: SdkFieldDescriptor, value: Byte): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Char) =
+    override fun field(descriptor: SdkFieldDescriptor, value: Char): Unit =
         tagOrAttribute(descriptor, value, ::serializeChar)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Short) = numberField(descriptor, value)
+    override fun field(descriptor: SdkFieldDescriptor, value: Short): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Int) = numberField(descriptor, value)
+    override fun field(descriptor: SdkFieldDescriptor, value: Int): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Long) = numberField(descriptor, value)
+    override fun field(descriptor: SdkFieldDescriptor, value: Long): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Float) = numberField(descriptor, value)
+    override fun field(descriptor: SdkFieldDescriptor, value: Float): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Double) = numberField(descriptor, value)
+    override fun field(descriptor: SdkFieldDescriptor, value: Double): Unit = numberField(descriptor, value)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: String) =
+    override fun field(descriptor: SdkFieldDescriptor, value: String): Unit =
         tagOrAttribute(descriptor, value, ::serializeString)
 
-    override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat) = field(descriptor, value.format(format))
+    override fun field(descriptor: SdkFieldDescriptor, value: Instant, format: TimestampFormat): Unit =
+        field(descriptor, value.format(format))
 
     override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
         throw SerializationException(
@@ -155,21 +156,21 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
 
     override fun serializeBoolean(value: Boolean) { xmlWriter.text(value.toString()) }
 
-    override fun serializeByte(value: Byte) = serializeNumber(value)
+    override fun serializeByte(value: Byte): Unit = serializeNumber(value)
 
     override fun serializeChar(value: Char) { xmlWriter.text(value.toString()) }
 
-    override fun serializeShort(value: Short) = serializeNumber(value)
+    override fun serializeShort(value: Short): Unit = serializeNumber(value)
 
-    override fun serializeInt(value: Int) = serializeNumber(value)
+    override fun serializeInt(value: Int): Unit = serializeNumber(value)
 
-    override fun serializeLong(value: Long) = serializeNumber(value)
+    override fun serializeLong(value: Long): Unit = serializeNumber(value)
 
-    override fun serializeFloat(value: Float) = serializeNumber(value)
+    override fun serializeFloat(value: Float): Unit = serializeNumber(value)
 
-    override fun serializeDouble(value: Double) = serializeNumber(value)
+    override fun serializeDouble(value: Double): Unit = serializeNumber(value)
 
-    private fun serializeNumber(value: Number) = xmlWriter.text(value)
+    private fun serializeNumber(value: Number): Unit = xmlWriter.text(value)
 
     override fun serializeString(value: String) {
         xmlWriter.text(value)
@@ -179,7 +180,7 @@ class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWriter()) 
         xmlWriter.text(value.format(format))
     }
 
-    override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(this)
+    override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(this)
 }
 
 private class XmlMapSerializer(
@@ -214,15 +215,15 @@ private class XmlMapSerializer(
         }
     }
 
-    override fun entry(key: String, value: Int?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Int?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Long?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Long?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Float?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Float?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: String?) = writeEntry(key) { xmlWriter.text(value ?: "") }
+    override fun entry(key: String, value: String?): Unit = writeEntry(key) { xmlWriter.text(value ?: "") }
 
-    override fun entry(key: String, value: SdkSerializable?) = writeEntry(key) {
+    override fun entry(key: String, value: SdkSerializable?): Unit = writeEntry(key) {
         if (value == null) {
             xmlWriter.text("")
             return@writeEntry
@@ -233,17 +234,17 @@ private class XmlMapSerializer(
         xmlSerializer.parentDescriptorStack.pop()
     }
 
-    override fun entry(key: String, value: Double?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Double?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Boolean?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Boolean?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Byte?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Byte?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Short?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Short?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Char?) = writeEntry(key) { xmlWriter.text(value.toString()) }
+    override fun entry(key: String, value: Char?): Unit = writeEntry(key) { xmlWriter.text(value.toString()) }
 
-    override fun entry(key: String, value: Instant?, format: TimestampFormat) = entry(key, value?.format(format))
+    override fun entry(key: String, value: Instant?, format: TimestampFormat): Unit = entry(key, value?.format(format))
 
     override fun listEntry(key: String, listDescriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         writeEntry(key) {
@@ -262,27 +263,27 @@ private class XmlMapSerializer(
         }
     }
 
-    override fun serializeBoolean(value: Boolean) = serializePrimitive(value)
+    override fun serializeBoolean(value: Boolean): Unit = serializePrimitive(value)
 
-    override fun serializeByte(value: Byte) = serializePrimitive(value)
+    override fun serializeByte(value: Byte): Unit = serializePrimitive(value)
 
-    override fun serializeShort(value: Short) = serializePrimitive(value)
+    override fun serializeShort(value: Short): Unit = serializePrimitive(value)
 
-    override fun serializeChar(value: Char) = serializePrimitive(value)
+    override fun serializeChar(value: Char): Unit = serializePrimitive(value)
 
-    override fun serializeInt(value: Int) = serializePrimitive(value)
+    override fun serializeInt(value: Int): Unit = serializePrimitive(value)
 
-    override fun serializeLong(value: Long) = serializePrimitive(value)
+    override fun serializeLong(value: Long): Unit = serializePrimitive(value)
 
-    override fun serializeFloat(value: Float) = serializePrimitive(value)
+    override fun serializeFloat(value: Float): Unit = serializePrimitive(value)
 
-    override fun serializeDouble(value: Double) = serializePrimitive(value)
+    override fun serializeDouble(value: Double): Unit = serializePrimitive(value)
 
-    override fun serializeString(value: String) = serializePrimitive(value)
+    override fun serializeString(value: String): Unit = serializePrimitive(value)
 
-    override fun serializeSdkSerializable(value: SdkSerializable) = value.serialize(xmlSerializer)
+    override fun serializeSdkSerializable(value: SdkSerializable): Unit = value.serialize(xmlSerializer)
 
-    override fun serializeInstant(value: Instant, format: TimestampFormat) = serializeString(value.format(format))
+    override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeString(value.format(format))
 
     override fun serializeNull() {
         val tagName = descriptor.findTrait<XmlMapName>()?.value ?: XmlMapName.Default.value
@@ -320,23 +321,23 @@ private class XmlListSerializer(
             else -> descriptor.findTrait<XmlCollectionName>()?.element ?: XmlCollectionName.Default.element
         }
 
-    override fun serializeBoolean(value: Boolean) = serializePrimitive(value)
+    override fun serializeBoolean(value: Boolean): Unit = serializePrimitive(value)
 
-    override fun serializeByte(value: Byte) = serializePrimitive(value)
+    override fun serializeByte(value: Byte): Unit = serializePrimitive(value)
 
-    override fun serializeShort(value: Short) = serializePrimitive(value)
+    override fun serializeShort(value: Short): Unit = serializePrimitive(value)
 
-    override fun serializeChar(value: Char) = serializePrimitive(value)
+    override fun serializeChar(value: Char): Unit = serializePrimitive(value)
 
-    override fun serializeInt(value: Int) = serializePrimitive(value)
+    override fun serializeInt(value: Int): Unit = serializePrimitive(value)
 
-    override fun serializeLong(value: Long) = serializePrimitive(value)
+    override fun serializeLong(value: Long): Unit = serializePrimitive(value)
 
-    override fun serializeFloat(value: Float) = serializePrimitive(value)
+    override fun serializeFloat(value: Float): Unit = serializePrimitive(value)
 
-    override fun serializeDouble(value: Double) = serializePrimitive(value)
+    override fun serializeDouble(value: Double): Unit = serializePrimitive(value)
 
-    override fun serializeString(value: String) = serializePrimitive(value)
+    override fun serializeString(value: String): Unit = serializePrimitive(value)
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         xmlSerializer.parentDescriptorStack.push(descriptor)
@@ -356,7 +357,7 @@ private class XmlListSerializer(
         throw SerializationException("document values not supported by xml serializer")
     }
 
-    override fun serializeInstant(value: Instant, format: TimestampFormat) = serializeString(value.format(format))
+    override fun serializeInstant(value: Instant, format: TimestampFormat): Unit = serializeString(value.format(format))
 
     private fun serializePrimitive(value: Any) {
         val ns = descriptor.findTrait<XmlCollectionValueNamespace>()

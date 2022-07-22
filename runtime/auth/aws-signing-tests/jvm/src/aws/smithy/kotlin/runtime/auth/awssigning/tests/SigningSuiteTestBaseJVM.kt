@@ -62,16 +62,16 @@ private val defaultTestSigningConfig = AwsSigningConfig.Builder().apply {
     normalizeUriPath = true
 }
 
-data class Sigv4TestSuiteTest(
-    val path: Path,
-    val request: HttpRequestBuilder,
-    val canonicalRequest: String,
-    val stringToSign: String,
-    val signature: String,
-    val signedRequest: HttpRequestBuilder,
-    val config: AwsSigningConfig = defaultTestSigningConfig.build(),
+public data class Sigv4TestSuiteTest(
+    public val path: Path,
+    public val request: HttpRequestBuilder,
+    public val canonicalRequest: String,
+    public val stringToSign: String,
+    public val signature: String,
+    public val signedRequest: HttpRequestBuilder,
+    public val config: AwsSigningConfig = defaultTestSigningConfig.build(),
 ) {
-    override fun toString() = path.fileName.toString()
+    override fun toString(): String = path.fileName.toString()
 }
 
 private val testSuitePath: Path by lazy {
@@ -88,12 +88,12 @@ private val AwsSignatureType.fileNamePart: String
         else -> error("Unsupported signature type $this for test suite")
     }
 
-typealias SigningStateProvider = suspend (HttpRequest, AwsSigningConfig) -> String
+public typealias SigningStateProvider = suspend (HttpRequest, AwsSigningConfig) -> String
 
 // FIXME - move to common test (will require ability to access test resources in a KMP compatible way)
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS) // necessary so arg factory methods can handle disabledTests
-actual abstract class SigningSuiteTestBase : HasSigner {
+public actual abstract class SigningSuiteTestBase : HasSigner {
     private val testDirPaths: List<Path> by lazy {
         Files
             .walk(testSuitePath)
@@ -103,7 +103,7 @@ actual abstract class SigningSuiteTestBase : HasSigner {
             .map { it.parent }
     }
 
-    protected open val disabledTests = setOf(
+    protected open val disabledTests: Set<String> = setOf(
         // TODO https://github.com/awslabs/smithy-kotlin/issues/653
         // ktor-http-cio parser doesn't support parsing multiline headers since they are deprecated in RFC7230
         "get-header-value-multiline",
@@ -116,11 +116,11 @@ actual abstract class SigningSuiteTestBase : HasSigner {
         "get-vanilla-query-order-value",
     )
 
-    fun headerTestArgs(): List<Sigv4TestSuiteTest> = getTests(AwsSignatureType.HTTP_REQUEST_VIA_HEADERS)
-    fun queryTestArgs(): List<Sigv4TestSuiteTest> = getTests(AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS)
+    public fun headerTestArgs(): List<Sigv4TestSuiteTest> = getTests(AwsSignatureType.HTTP_REQUEST_VIA_HEADERS)
+    public fun queryTestArgs(): List<Sigv4TestSuiteTest> = getTests(AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS)
 
     @Test
-    fun testParseRequest() {
+    public fun testParseRequest() {
         // sanity test that we are converting requests from file correctly
         val noBodyTest = testSuitePath.resolve("post-vanilla")
         val actual = getSignedRequest(noBodyTest, AwsSignatureType.HTTP_REQUEST_VIA_HEADERS)
@@ -137,13 +137,13 @@ actual abstract class SigningSuiteTestBase : HasSigner {
 
     @ParameterizedTest(name = "header middleware test {0} (#{index})")
     @MethodSource("headerTestArgs")
-    fun testSigv4TestSuiteHeaders(test: Sigv4TestSuiteTest) {
+    public fun testSigv4TestSuiteHeaders(test: Sigv4TestSuiteTest) {
         testSigv4Middleware(test)
     }
 
     @ParameterizedTest(name = "query param middleware test {0} (#{index})")
     @MethodSource("queryTestArgs")
-    fun testSigv4TestSuiteQuery(test: Sigv4TestSuiteTest) {
+    public fun testSigv4TestSuiteQuery(test: Sigv4TestSuiteTest) {
         testSigv4Middleware(test)
     }
 
@@ -182,17 +182,17 @@ actual abstract class SigningSuiteTestBase : HasSigner {
 
     @ParameterizedTest(name = "header canonical request test {0} (#{index})")
     @MethodSource("headerTestArgs")
-    fun testCanonicalRequestHeaders(test: Sigv4TestSuiteTest) {
+    public fun testCanonicalRequestHeaders(test: Sigv4TestSuiteTest) {
         testCanonicalRequest(test)
     }
 
     @ParameterizedTest(name = "query param canonical request test {0} (#{index})")
     @MethodSource("queryTestArgs")
-    fun testCanonicalRequestQuery(test: Sigv4TestSuiteTest) {
+    public fun testCanonicalRequestQuery(test: Sigv4TestSuiteTest) {
         testCanonicalRequest(test)
     }
 
-    open val canonicalRequestProvider: SigningStateProvider? = null
+    public open val canonicalRequestProvider: SigningStateProvider? = null
 
     private fun testCanonicalRequest(test: Sigv4TestSuiteTest) = runBlocking {
         assumeTrue(canonicalRequestProvider != null)
@@ -203,17 +203,17 @@ actual abstract class SigningSuiteTestBase : HasSigner {
 
     @ParameterizedTest(name = "header signature test {0} (#{index})")
     @MethodSource("headerTestArgs")
-    fun testSignatureHeaders(test: Sigv4TestSuiteTest) {
+    public fun testSignatureHeaders(test: Sigv4TestSuiteTest) {
         testSignature(test)
     }
 
     @ParameterizedTest(name = "query param signature test {0} (#{index})")
     @MethodSource("queryTestArgs")
-    fun testSignatureQuery(test: Sigv4TestSuiteTest) {
+    public fun testSignatureQuery(test: Sigv4TestSuiteTest) {
         testSignature(test)
     }
 
-    open val signatureProvider: SigningStateProvider? = null
+    public open val signatureProvider: SigningStateProvider? = null
 
     private fun testSignature(test: Sigv4TestSuiteTest) = runBlocking {
         assumeTrue(signatureProvider != null)
@@ -224,17 +224,17 @@ actual abstract class SigningSuiteTestBase : HasSigner {
 
     @ParameterizedTest(name = "header string to sign test {0} (#{index})")
     @MethodSource("headerTestArgs")
-    fun testStringToSignHeaders(test: Sigv4TestSuiteTest) {
+    public fun testStringToSignHeaders(test: Sigv4TestSuiteTest) {
         testStringToSign(test)
     }
 
     @ParameterizedTest(name = "query param string to sign test {0} (#{index})")
     @MethodSource("queryTestArgs")
-    fun testStringToSignQuery(test: Sigv4TestSuiteTest) {
+    public fun testStringToSignQuery(test: Sigv4TestSuiteTest) {
         testStringToSign(test)
     }
 
-    open val stringToSignProvider: SigningStateProvider? = null
+    public open val stringToSignProvider: SigningStateProvider? = null
 
     private fun testStringToSign(test: Sigv4TestSuiteTest) = runBlocking {
         assumeTrue(stringToSignProvider != null)

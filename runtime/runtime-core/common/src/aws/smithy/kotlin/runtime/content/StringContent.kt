@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.content
 /**
  * Container for wrapping a String as a [ByteStream]
  */
-class StringContent(str: String) : ByteStream.Buffer() {
+public class StringContent(str: String) : ByteStream.Buffer() {
     @OptIn(ExperimentalStdlibApi::class)
     private val asBytes: ByteArray = str.encodeToByteArray()
 

@@ -8,12 +8,12 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlin.time.Duration
 
-typealias ShouldSignHeaderPredicate = (String) -> Boolean
+public typealias ShouldSignHeaderPredicate = (String) -> Boolean
 
 /**
  * Defines the AWS signature version to use
  */
-enum class AwsSigningAlgorithm {
+public enum class AwsSigningAlgorithm {
     /**
      * AWS Signature Version 4
      * see: https://docs.aws.amazon.com/general/latest/gr/signature-version-4.html
@@ -29,7 +29,7 @@ enum class AwsSigningAlgorithm {
 /**
  * Defines the type of signature to compute
  */
-enum class AwsSignatureType {
+public enum class AwsSignatureType {
     /**
      * A signature for a full http request should be computed and applied via headers
      */
@@ -51,7 +51,7 @@ enum class AwsSignatureType {
     HTTP_REQUEST_EVENT,
 }
 
-enum class AwsSignedBodyHeader {
+public enum class AwsSignedBodyHeader {
     /**
      * Do not add a header.
      */
@@ -66,26 +66,26 @@ enum class AwsSignedBodyHeader {
 /**
  * The configuration for an individual signing operation.
  */
-class AwsSigningConfig(builder: Builder) {
-    companion object {
-        inline operator fun invoke(block: Builder.() -> Unit): AwsSigningConfig = Builder().apply(block).build()
+public class AwsSigningConfig(builder: Builder) {
+    public companion object {
+        public inline operator fun invoke(block: Builder.() -> Unit): AwsSigningConfig = Builder().apply(block).build()
     }
 
     /**
      * The region for which requests will be signed.
      */
-    val region: String = requireNotNull(builder.region) { "Signing config must specify a region" }
+    public val region: String = requireNotNull(builder.region) { "Signing config must specify a region" }
 
     /**
      * The name of service for which requests will be signed.
      */
-    val service: String = requireNotNull(builder.service) { "Signing config must specify a service" }
+    public val service: String = requireNotNull(builder.service) { "Signing config must specify a service" }
 
     /**
      * Indicates the signing date/timestamp to use for the signature. Defaults to the current date at config
      * construction time.
      */
-    val signingDate: Instant = builder.signingDate ?: Instant.now()
+    public val signingDate: Instant = builder.signingDate ?: Instant.now()
 
     /**
      * A predicate to control which headers are a part of the canonical request. Note that skipping auth-required
@@ -97,29 +97,29 @@ class AwsSigningConfig(builder: Builder) {
      *
      * The default predicate is to not reject signing any headers (i.e., `_ -> true`).
      */
-    val shouldSignHeader: ShouldSignHeaderPredicate = builder.shouldSignHeader
+    public val shouldSignHeader: ShouldSignHeaderPredicate = builder.shouldSignHeader
 
     /**
      * The algorithm to use when signing requests.
      */
-    val algorithm: AwsSigningAlgorithm = builder.algorithm
+    public val algorithm: AwsSigningAlgorithm = builder.algorithm
 
     /**
      * Indicates what type of signature to compute.
      */
-    val signatureType: AwsSignatureType = builder.signatureType
+    public val signatureType: AwsSignatureType = builder.signatureType
 
     /**
      * Normally we assume the URI will be encoded once in preparation for transmission. Certain services do not decode
      * before checking signature, requiring the URI to be double-encoded in the canonical request in order to match a
      * signature check.
      */
-    val useDoubleUriEncode: Boolean = builder.useDoubleUriEncode
+    public val useDoubleUriEncode: Boolean = builder.useDoubleUriEncode
 
     /**
      * Controls whether URI paths should be normalized when building the canonical request.
      */
-    val normalizeUriPath: Boolean = builder.normalizeUriPath
+    public val normalizeUriPath: Boolean = builder.normalizeUriPath
 
     /**
      * Determines whether the `X-Amz-Security-Token` query param should be omitted from the canonical signing
@@ -129,24 +129,25 @@ class AwsSigningConfig(builder: Builder) {
      * If this value is false, a non-null security token is _still added to the request_ but it is not used in signature
      * calculation.
      */
-    val omitSessionToken: Boolean = builder.omitSessionToken
+    public val omitSessionToken: Boolean = builder.omitSessionToken
 
     /**
      * Determines the source of the canonical request's body public value. The default is
      * [HashSpecification.CalculateFromPayload], indicating that a public value will be calculated from the payload
      * during signing.
      */
-    val hashSpecification: HashSpecification = builder.hashSpecification ?: HashSpecification.CalculateFromPayload
+    public val hashSpecification: HashSpecification =
+        builder.hashSpecification ?: HashSpecification.CalculateFromPayload
 
     /**
      * Determines which body "hash" header, if any, should be added to the canonical request and the signed request.
      */
-    val signedBodyHeader: AwsSignedBodyHeader = builder.signedBodyHeader
+    public val signedBodyHeader: AwsSignedBodyHeader = builder.signedBodyHeader
 
     /**
      * Indicates the AWS credentials provider from which to fetch credentials.
      */
-    val credentialsProvider: CredentialsProvider = requireNotNull(builder.credentialsProvider) {
+    public val credentialsProvider: CredentialsProvider = requireNotNull(builder.credentialsProvider) {
         "Signing config must specify a credentials provider"
     }
 
@@ -156,9 +157,9 @@ class AwsSigningConfig(builder: Builder) {
      * value is null or if header signing is being used then this parameter has no effect. Note that the resolution of
      * expiration is in seconds.
      */
-    val expiresAfter: Duration? = builder.expiresAfter
+    public val expiresAfter: Duration? = builder.expiresAfter
 
-    fun toBuilder(): Builder = Builder().also {
+    public fun toBuilder(): Builder = Builder().also {
         it.region = region
         it.service = service
         it.signingDate = signingDate
@@ -174,21 +175,21 @@ class AwsSigningConfig(builder: Builder) {
         it.expiresAfter = expiresAfter
     }
 
-    class Builder {
-        var region: String? = null
-        var service: String? = null
-        var signingDate: Instant? = null
-        var shouldSignHeader: ShouldSignHeaderPredicate = { _ -> true } // Don't reject signing any headers by default
-        var algorithm: AwsSigningAlgorithm = AwsSigningAlgorithm.SIGV4
-        var signatureType: AwsSignatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
-        var useDoubleUriEncode: Boolean = true
-        var normalizeUriPath: Boolean = true
-        var omitSessionToken: Boolean = false
-        var hashSpecification: HashSpecification? = null
-        var signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE
-        var credentialsProvider: CredentialsProvider? = null
-        var expiresAfter: Duration? = null
+    public class Builder {
+        public var region: String? = null
+        public var service: String? = null
+        public var signingDate: Instant? = null
+        public var shouldSignHeader: ShouldSignHeaderPredicate = { _ -> true } // Don't reject any headers by default
+        public var algorithm: AwsSigningAlgorithm = AwsSigningAlgorithm.SIGV4
+        public var signatureType: AwsSignatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
+        public var useDoubleUriEncode: Boolean = true
+        public var normalizeUriPath: Boolean = true
+        public var omitSessionToken: Boolean = false
+        public var hashSpecification: HashSpecification? = null
+        public var signedBodyHeader: AwsSignedBodyHeader = AwsSignedBodyHeader.NONE
+        public var credentialsProvider: CredentialsProvider? = null
+        public var expiresAfter: Duration? = null
 
-        fun build(): AwsSigningConfig = AwsSigningConfig(this)
+        public fun build(): AwsSigningConfig = AwsSigningConfig(this)
     }
 }

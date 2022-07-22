@@ -9,8 +9,8 @@ import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 
-class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
-    companion object {
+public class JsonSerializer : Serializer, ListSerializer, MapSerializer, StructSerializer {
+    public companion object {
         private val doublesToStringify = setOf(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NaN)
         private val floatsToStringify = setOf(Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NaN)
     }

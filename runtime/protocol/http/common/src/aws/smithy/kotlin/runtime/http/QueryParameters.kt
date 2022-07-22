@@ -10,15 +10,15 @@ import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 /**
  * Container for HTTP query parameters
  */
-interface QueryParameters : StringValuesMap {
-    companion object {
-        operator fun invoke(block: QueryParametersBuilder.() -> Unit): QueryParameters = QueryParametersBuilder()
+public interface QueryParameters : StringValuesMap {
+    public companion object {
+        public operator fun invoke(block: QueryParametersBuilder.() -> Unit): QueryParameters = QueryParametersBuilder()
             .apply(block).build()
 
         /**
          * Empty [QueryParameters] instance
          */
-        val Empty: QueryParameters = EmptyQueryParameters
+        public val Empty: QueryParameters = EmptyQueryParameters
     }
 }
 
@@ -31,7 +31,7 @@ private object EmptyQueryParameters : QueryParameters {
     override fun isEmpty(): Boolean = true
 }
 
-class QueryParametersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<QueryParametersBuilder> {
+public class QueryParametersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<QueryParametersBuilder> {
     override fun toString(): String = "QueryParametersBuilder ${entries()} "
     override fun build(): QueryParameters = QueryParametersImpl(values)
 
@@ -41,7 +41,7 @@ class QueryParametersBuilder : StringValuesMapBuilder(true, 8), CanDeepCopy<Quer
     }
 }
 
-fun Map<String, String>.toQueryParameters(): QueryParameters {
+public fun Map<String, String>.toQueryParameters(): QueryParameters {
     val builder = QueryParametersBuilder()
     entries.forEach { entry -> builder.append(entry.key, entry.value) }
     return builder.build()
@@ -54,14 +54,14 @@ private class QueryParametersImpl(values: Map<String, List<String>> = emptyMap()
 /**
  * Return the encoded query parameter string (without leading '?')
  */
-fun QueryParameters.urlEncode(): String = buildString {
+public fun QueryParameters.urlEncode(): String = buildString {
     urlEncodeTo(this)
 }
 
 /**
  * URL encode the query parameters components to the appendable output (without the leading '?')
  */
-fun QueryParameters.urlEncodeTo(out: Appendable) = urlEncodeQueryParametersTo(entries(), out)
+public fun QueryParameters.urlEncodeTo(out: Appendable): Unit = urlEncodeQueryParametersTo(entries(), out)
 
 internal fun urlEncodeQueryParametersTo(entries: Set<Map.Entry<String, List<String>>>, out: Appendable, encodeFn: (String) -> String = { it.urlEncodeComponent() }) {
     entries.sortedBy { it.key }.forEachIndexed { i, entry ->

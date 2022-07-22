@@ -10,32 +10,32 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * A cryptographic hash function (algorithm)
  */
 @InternalApi
-interface HashFunction {
+public interface HashFunction {
     /**
      * The size of the hashing block in bytes.
      */
-    val blockSizeBytes: Int
+    public val blockSizeBytes: Int
 
     /**
      * The size of the digest output in bytes.
      */
-    val digestSizeBytes: Int
+    public val digestSizeBytes: Int
 
     /**
      * Update the running hash with [input] bytes. This can be called multiple times.
      */
-    fun update(input: ByteArray, offset: Int = 0, length: Int = input.size)
+    public fun update(input: ByteArray, offset: Int = 0, length: Int = input.size)
 
     /**
      * Finalize the hash computation and return the digest bytes. The hash function will be [reset] after the call is
      * made.
      */
-    fun digest(): ByteArray
+    public fun digest(): ByteArray
 
     /**
      * Resets the digest to its initial state discarding any accumulated digest state.
      */
-    fun reset()
+    public fun reset()
 }
 
 internal fun hash(fn: HashFunction, input: ByteArray): ByteArray = fn.apply { update(input) }.digest()
@@ -44,16 +44,16 @@ internal fun hash(fn: HashFunction, input: ByteArray): ByteArray = fn.apply { up
  * Compute a hash of the current [ByteArray]
  */
 @InternalApi
-fun ByteArray.hash(fn: HashFunction): ByteArray = hash(fn, this)
+public fun ByteArray.hash(fn: HashFunction): ByteArray = hash(fn, this)
 
 /**
  * A function that returns a new instance of a [HashFunction].
  */
 @InternalApi
-typealias HashSupplier = () -> HashFunction
+public typealias HashSupplier = () -> HashFunction
 
 /**
  * Compute a hash of the current [ByteArray]
  */
 @InternalApi
-fun ByteArray.hash(hashSupplier: HashSupplier): ByteArray = hash(hashSupplier(), this)
+public fun ByteArray.hash(hashSupplier: HashSupplier): ByteArray = hash(hashSupplier(), this)

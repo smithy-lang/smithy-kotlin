@@ -26,16 +26,16 @@ internal expect fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int = 0
  * **concurrent unsafe**: Do not read/write using the same [SdkByteBuffer] instance from different threads.
  */
 @InternalApi
-class SdkByteBuffer internal constructor(
+public class SdkByteBuffer internal constructor(
     // we make use of ktor-io's `Memory` type which already implements most of the functionality in a platform
     // agnostic way. We just need to wrap some methods around it
     internal var memory: Memory,
-    val isReadOnly: Boolean = false,
-    val allowReallocation: Boolean = true
+    public val isReadOnly: Boolean = false,
+    public val allowReallocation: Boolean = true
 ) : Buffer, MutableBuffer {
-    constructor(initialCapacity: ULong, readOnly: Boolean = false, allowReallocation: Boolean = true) : this(DefaultAllocator.alloc(initialCapacity), readOnly, allowReallocation)
+    public constructor(initialCapacity: ULong, readOnly: Boolean = false, allowReallocation: Boolean = true) : this(DefaultAllocator.alloc(initialCapacity), readOnly, allowReallocation)
 
-    companion object {
+    public companion object {
         /**
          * Create an SdkBuffer backed by the given ByteArray.
          *
@@ -46,7 +46,7 @@ class SdkByteBuffer internal constructor(
          * @param offset the offset into the array that will mark the first byte written/read
          * @param length the number of bytes to make available for reading/writing
          */
-        fun of(
+        public fun of(
             src: ByteArray,
             offset: Int = 0,
             length: Int = src.size - offset,
@@ -58,19 +58,19 @@ class SdkByteBuffer internal constructor(
     /**
      * The total capacity of the buffer
      */
-    val capacity: ULong
+    public val capacity: ULong
         get() = memory.size.toULong()
 
     /**
      * The current read position. Always non-negative and <= [writePosition].
      */
-    val readPosition: ULong
+    public val readPosition: ULong
         get() = state.readHead
 
     /**
      * The current write position. Will never run ahead of [capacity] and always greater than [readPosition]
      */
-    val writePosition: ULong
+    public val writePosition: ULong
         get() = state.writeHead
 
     /**
@@ -90,7 +90,7 @@ class SdkByteBuffer internal constructor(
      *
      * More than [count] bytes may be allocated in order to avoid frequent re-allocations.
      */
-    fun reserve(count: Long) {
+    public fun reserve(count: Long) {
         if (writeRemaining >= count.toULong()) return
         if (!allowReallocation) throw FixedBufferSizeException("SdkBuffer is of fixed size, cannot satisfy request to reserve $count bytes; writeRemaining: $writeRemaining")
 
@@ -113,7 +113,7 @@ class SdkByteBuffer internal constructor(
     /**
      * Rewind [readPosition] making [count] bytes available for reading again
      */
-    fun rewind(count: ULong = readPosition) {
+    public fun rewind(count: ULong = readPosition) {
         val size = minOf(count, readPosition)
         state.readHead -= size
     }
@@ -121,7 +121,7 @@ class SdkByteBuffer internal constructor(
     /**
      * Reset [readPosition] and [writePosition] making all bytes available for write and no bytes available to read
      */
-    fun reset() {
+    public fun reset() {
         state.readHead = 0u
         state.writeHead = 0u
     }
@@ -346,13 +346,13 @@ public inline val SdkByteBuffer.canRead: Boolean
  * Creates a new, read-only byte buffer that shares this buffer's content.
  * Any attempts to write to the buffer will fail with [ReadOnlyBufferException]
  */
-fun SdkByteBuffer.asReadOnly(): SdkByteBuffer = if (isReadOnly) this else SdkByteBuffer(memory, isReadOnly = true)
+public fun SdkByteBuffer.asReadOnly(): SdkByteBuffer = if (isReadOnly) this else SdkByteBuffer(memory, isReadOnly = true)
 
 /**
  * Reads at most [length] bytes from this buffer into the [dst] buffer
  * @return the number of bytes read
  */
-fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong {
+public fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong {
     require(length <= Int.MAX_VALUE.toULong()) { "Unable to satisfy read request for $length bytes" }
     val rc = minOf(readRemaining, length).toLong()
     if (rc == 0L) return 0UL
@@ -368,7 +368,7 @@ fun SdkByteBuffer.readFully(dst: SdkByteBuffer, length: ULong = dst.writeRemaini
  * Reads at most [length] bytes from this buffer or `-1` if no bytes are available for read.
  * @return the number of bytes read or -1 if the buffer is empty
  */
-fun SdkByteBuffer.readAvailable(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong? {
+public fun SdkByteBuffer.readAvailable(dst: SdkByteBuffer, length: ULong = dst.writeRemaining): ULong? {
     if (!canRead) return null
     val rc = minOf(readRemaining, length)
     return readFully(dst, rc)
@@ -377,7 +377,7 @@ fun SdkByteBuffer.readAvailable(dst: SdkByteBuffer, length: ULong = dst.writeRem
 /**
  * Write exactly [length] bytes from [src] to this buffer
  */
-fun SdkByteBuffer.writeFully(src: SdkByteBuffer, length: ULong = src.readRemaining) {
+public fun SdkByteBuffer.writeFully(src: SdkByteBuffer, length: ULong = src.readRemaining) {
     require(length <= src.readRemaining) {
         "not enough bytes in source buffer to read $length bytes (${src.readRemaining} remaining)"
     }
@@ -395,12 +395,12 @@ fun SdkByteBuffer.writeFully(src: SdkByteBuffer, length: ULong = src.readRemaini
  * Write the bytes of [str] as UTF-8
  */
 // TODO - remove in favor of implementing Appendable in such a way as to not allocate an entire new byte array
-fun SdkByteBuffer.write(str: String) = writeFully(str.encodeToByteArray())
+public fun SdkByteBuffer.write(str: String): Unit = writeFully(str.encodeToByteArray())
 
 /**
  * Read the available (unread) contents as a UTF-8 string
  */
-fun SdkByteBuffer.decodeToString() = bytes().decodeToString(0, readRemaining.toInt())
+public fun SdkByteBuffer.decodeToString(): String = bytes().decodeToString(0, readRemaining.toInt())
 
 /**
  * Get the available (unread) contents as a ByteArray.
@@ -408,7 +408,7 @@ fun SdkByteBuffer.decodeToString() = bytes().decodeToString(0, readRemaining.toI
  * NOTE: This may or may not create a new backing array and perform a copy depending on the platform
  * and current buffer status.
  */
-expect fun SdkByteBuffer.bytes(): ByteArray
+public expect fun SdkByteBuffer.bytes(): ByteArray
 
 internal inline fun SdkByteBuffer.read(block: (memory: Memory, readStart: Long, endExclusive: Long) -> Long): Long {
     val rc = block(memory, readPosition.toLong(), writePosition.toLong())

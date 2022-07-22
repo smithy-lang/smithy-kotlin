@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
  * Assert JSON strings for equality ignoring key order
  */
 @OptIn(UnstableDefault::class)
-fun assertJsonStringsEqual(expected: String, actual: String) {
+public fun assertJsonStringsEqual(expected: String, actual: String) {
     val config = JsonConfiguration()
     val expectedElement = Json(config).parseJson(expected)
     val actualElement = Json(config).parseJson(actual)
@@ -26,7 +26,7 @@ fun assertJsonStringsEqual(expected: String, actual: String) {
 /**
  * Assert HTTP bodies are equal as JSON documents
  */
-suspend fun assertJsonBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
+public suspend fun assertJsonBodiesEqual(expected: HttpBody?, actual: HttpBody?) {
     val expectedStr = expected?.readAll()?.decodeToString()
     val actualStr = actual?.readAll()?.decodeToString()
     if (expectedStr == null && actualStr == null) {

@@ -4,4 +4,4 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
-expect abstract class SigningSuiteTestBase : HasSigner
+public expect abstract class SigningSuiteTestBase : HasSigner

@@ -12,17 +12,17 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  */
 @InternalApi
 public interface Logger {
-    companion object {
+    public companion object {
         /**
          * Get the logger for the class [T]
          */
-        inline fun <reified T> getLogger(): Logger =
+        public inline fun <reified T> getLogger(): Logger =
             getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })
 
         /**
          * Get the logger for the given [name]
          */
-        fun getLogger(name: String): Logger = KotlinLoggingAdapter(name)
+        public fun getLogger(name: String): Logger = KotlinLoggingAdapter(name)
     }
 
     /**
@@ -89,24 +89,24 @@ public interface Logger {
 /**
  * Add a log message if trace logging is enabled
  */
-public fun Logger.trace(msg: String) = trace { msg }
+public fun Logger.trace(msg: String): Unit = trace { msg }
 
 /**
  * Add a log message if debug logging is enabled
  */
-public fun Logger.debug(msg: String) = debug { msg }
+public fun Logger.debug(msg: String): Unit = debug { msg }
 
 /**
  * Add a log message if info logging is enabled
  */
-public fun Logger.info(msg: String) = info { msg }
+public fun Logger.info(msg: String): Unit = info { msg }
 
 /**
  * Add a log message if warn logging is enabled
  */
-public fun Logger.warn(msg: String) = warn { msg }
+public fun Logger.warn(msg: String): Unit = warn { msg }
 
 /**
  * Add a log message if error logging is enabled
  */
-public fun Logger.error(msg: String) = error { msg }
+public fun Logger.error(msg: String): Unit = error { msg }

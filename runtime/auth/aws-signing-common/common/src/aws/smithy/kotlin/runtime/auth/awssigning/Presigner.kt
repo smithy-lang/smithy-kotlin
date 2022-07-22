@@ -26,7 +26,7 @@ import kotlin.time.Duration
  * @param region The region in which the API call would occur. If none is specified then the region in
  * [PresignedRequestConfig] is used instead.
  */
-data class SigningContext(val service: String?, val region: String?)
+public data class SigningContext(public val service: String?, public val region: String?)
 
 /**
  * Represents a endpoint that will be used for signing which has optionally been contextualized with additional signing
@@ -35,12 +35,12 @@ data class SigningContext(val service: String?, val region: String?)
  * @param context The [SigningContext] overrides for signing. If none are specified, the values in
  * [PresignedRequestConfig] are used instead.
  */
-data class SigningContextualizedEndpoint(val endpoint: Endpoint, val context: SigningContext?)
+public data class SigningContextualizedEndpoint(public val endpoint: Endpoint, public val context: SigningContext?)
 
 /**
  * A lambda function that returns an endpoint and optional signing config overrides based on the given service/region.
  */
-typealias SigningEndpointProvider = suspend (SigningContext) -> SigningContextualizedEndpoint
+public typealias SigningEndpointProvider = suspend (SigningContext) -> SigningContextualizedEndpoint
 
 /**
  * The service configuration details for a presigned request
@@ -53,15 +53,15 @@ typealias SigningEndpointProvider = suspend (SigningContext) -> SigningContextua
  * @property useDoubleUriEncode Determines if presigner should double encode Uri
  * @property normalizeUriPath Determines if presigned URI path will be normalized
  */
-interface ServicePresignConfig {
-    val signer: AwsSigner
-    val region: String
-    val signingName: String
-    val serviceId: String
-    val endpointProvider: SigningEndpointProvider
-    val credentialsProvider: CredentialsProvider
-    val useDoubleUriEncode: Boolean
-    val normalizeUriPath: Boolean
+public interface ServicePresignConfig {
+    public val signer: AwsSigner
+    public val region: String
+    public val signingName: String
+    public val serviceId: String
+    public val endpointProvider: SigningEndpointProvider
+    public val credentialsProvider: CredentialsProvider
+    public val useDoubleUriEncode: Boolean
+    public val normalizeUriPath: Boolean
 }
 
 /**
@@ -69,7 +69,7 @@ interface ServicePresignConfig {
  * @property HEADER
  * @property QUERY_STRING
  */
-enum class PresigningLocation {
+public enum class PresigningLocation {
     /**
      * Signing details are to be placed in a header
      */
@@ -91,14 +91,14 @@ enum class PresigningLocation {
  * @property presigningLocation Specifies where the signing information should be placed in the presigned request
  * @property additionalHeaders Custom headers that should be signed as part of the request
  */
-data class PresignedRequestConfig(
-    val method: HttpMethod,
-    val path: String,
-    val queryString: QueryParameters = QueryParameters.Empty,
-    val expiresAfter: Duration,
-    val signBody: Boolean = false,
-    val presigningLocation: PresigningLocation,
-    val additionalHeaders: Headers = Headers.Empty
+public data class PresignedRequestConfig(
+    public val method: HttpMethod,
+    public val path: String,
+    public val queryString: QueryParameters = QueryParameters.Empty,
+    public val expiresAfter: Duration,
+    public val signBody: Boolean = false,
+    public val presigningLocation: PresigningLocation,
+    public val additionalHeaders: Headers = Headers.Empty
 )
 
 /**
@@ -108,7 +108,7 @@ data class PresignedRequestConfig(
  * @return a [HttpRequest] that can be executed by any HTTP client within the specified duration
  */
 @InternalApi
-suspend fun createPresignedRequest(
+public suspend fun createPresignedRequest(
     serviceConfig: ServicePresignConfig,
     requestConfig: PresignedRequestConfig,
 ): HttpRequest {

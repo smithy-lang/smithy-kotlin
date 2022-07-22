@@ -24,10 +24,10 @@ import java.time.temporal.ChronoUnit
 import kotlin.time.Duration
 import java.time.Instant as jtInstant
 
-actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
-    actual val epochSeconds: Long
+public actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
+    public actual val epochSeconds: Long
         get() = value.epochSecond
-    actual val nanosecondsOfSecond: Int
+    public actual val nanosecondsOfSecond: Int
         get() = value.nano
 
     actual override operator fun compareTo(other: Instant): Int = value.compareTo(other.value)
@@ -45,7 +45,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
      * If the [duration] is positive, the returned instant is later than this instant.
      * If the [duration] is negative, the returned instant is earlier than this instant.
      */
-    actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
+    public actual operator fun plus(duration: Duration): Instant = duration.toComponents { seconds, nanoseconds ->
         fromEpochSeconds(epochSeconds + seconds, nanosecondsOfSecond + nanoseconds)
     }
 
@@ -55,12 +55,12 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
      * If the [duration] is positive, the returned instant is earlier than this instant.
      * If the [duration] is negative, the returned instant is later than this instant.
      */
-    actual operator fun minus(duration: Duration): Instant = plus(-duration)
+    public actual operator fun minus(duration: Duration): Instant = plus(-duration)
 
     /**
      * Encode the [Instant] as a string into the format specified by [TimestampFormat]
      */
-    actual fun format(fmt: TimestampFormat): String = when (fmt) {
+    public actual fun format(fmt: TimestampFormat): String = when (fmt) {
         TimestampFormat.ISO_8601 -> ISO_INSTANT.format(value.truncatedTo(ChronoUnit.MICROS))
         TimestampFormat.ISO_8601_CONDENSED -> ISO_8601_CONDENSED.format(value)
         TimestampFormat.ISO_8601_CONDENSED_DATE -> ISO_8601_CONDENSED_DATE.format(value)
@@ -80,7 +80,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
         }
     }
 
-    actual companion object {
+    public actual companion object {
 
         private val RFC_5322_FIXED_DATE_TIME: DateTimeFormatter = buildRfc5322Formatter()
 
@@ -97,7 +97,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
         /**
          * Parse an ISO-8601 formatted string into an [Instant]
          */
-        actual fun fromIso8601(ts: String): Instant {
+        public actual fun fromIso8601(ts: String): Instant {
             val parsed = parseIso8601(ts)
             return fromParsedDateTime(parsed)
         }
@@ -105,7 +105,7 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
         /**
          * Parse an RFC5322/RFC-822 formatted string into an [Instant]
          */
-        actual fun fromRfc5322(ts: String): Instant {
+        public actual fun fromRfc5322(ts: String): Instant {
             val parsed = parseRfc5322(ts)
             return fromParsedDateTime(parsed)
         }
@@ -113,18 +113,18 @@ actual class Instant(internal val value: jtInstant) : Comparable<Instant> {
         /**
          * Create an [Instant] from it's parts
          */
-        actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant =
+        public actual fun fromEpochSeconds(seconds: Long, ns: Int): Instant =
             Instant(jtInstant.ofEpochSecond(seconds, ns.toLong()))
 
         /**
          * Parse a string formatted as epoch-seconds into an [Instant]
          */
-        actual fun fromEpochSeconds(ts: String): Instant = parseEpoch(ts)
+        public actual fun fromEpochSeconds(ts: String): Instant = parseEpoch(ts)
 
         /**
          * Create an [Instant] from the current system time
          */
-        actual fun now(): Instant = Instant(jtInstant.now())
+        public actual fun now(): Instant = Instant(jtInstant.now())
     }
 }
 
@@ -167,7 +167,7 @@ private fun fromParsedDateTime(parsed: ParsedDatetime): Instant {
  *
  * See also: https: *tools.ietf.org/html/rfc7231.html#section-7.1.1.1
  */
-fun buildRfc5322Formatter(): DateTimeFormatter {
+public fun buildRfc5322Formatter(): DateTimeFormatter {
     // manually code maps to ensure correct data always used
     // (locale data can be changed by application code)
     val dow: Map<Long, String> = mapOf(

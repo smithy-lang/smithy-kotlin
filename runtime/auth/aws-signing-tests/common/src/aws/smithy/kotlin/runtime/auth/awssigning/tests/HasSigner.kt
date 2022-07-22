@@ -6,6 +6,6 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 
-interface HasSigner {
-    val signer: AwsSigner
+public interface HasSigner {
+    public val signer: AwsSigner
 }

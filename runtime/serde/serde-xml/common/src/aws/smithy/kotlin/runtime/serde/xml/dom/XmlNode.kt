@@ -15,27 +15,27 @@ import aws.smithy.kotlin.runtime.util.*
  * DOM representation of an XML document
  */
 @InternalApi
-class XmlNode {
-    val name: XmlToken.QualifiedName
+public class XmlNode {
+    public val name: XmlToken.QualifiedName
 
     // child element name (local) -> children
-    val children: MutableMap<String, MutableList<XmlNode>> = linkedMapOf()
-    var text: String? = null
-    val attributes: MutableMap<XmlToken.QualifiedName, String> = linkedMapOf()
+    public val children: MutableMap<String, MutableList<XmlNode>> = linkedMapOf()
+    public var text: String? = null
+    public val attributes: MutableMap<XmlToken.QualifiedName, String> = linkedMapOf()
     // namespaces declared by this node
-    val namespaces: MutableList<XmlToken.Namespace> = mutableListOf()
-    var parent: XmlNode? = null
+    public val namespaces: MutableList<XmlToken.Namespace> = mutableListOf()
+    public var parent: XmlNode? = null
 
-    constructor(name: String) : this(XmlToken.QualifiedName(name))
-    constructor(name: XmlToken.QualifiedName) {
+    public constructor(name: String) : this(XmlToken.QualifiedName(name))
+    public constructor(name: XmlToken.QualifiedName) {
         this.name = name
     }
 
     override fun toString(): String = "XmlNode($name)"
 
-    companion object {
+    public companion object {
 
-        fun parse(xmlpayload: ByteArray): XmlNode {
+        public fun parse(xmlpayload: ByteArray): XmlNode {
             val reader = xmlStreamReader(xmlpayload)
             return parseDom(reader)
         }
@@ -46,7 +46,7 @@ class XmlNode {
         }
     }
 
-    fun addChild(child: XmlNode) {
+    public fun addChild(child: XmlNode) {
         val name = requireNotNull(child.name) { "child must have a name" }
         val childNodes = children.getOrPut(name.local) {
             mutableListOf()
@@ -58,7 +58,7 @@ class XmlNode {
 }
 
 // parse a string into a dom representation
-fun parseDom(reader: XmlStreamReader): XmlNode {
+public fun parseDom(reader: XmlStreamReader): XmlNode {
 
     val nodeStack: ListStack<XmlNode> = mutableListOf()
 
@@ -101,7 +101,7 @@ fun parseDom(reader: XmlStreamReader): XmlNode {
     return nodeStack.pop()
 }
 
-fun XmlNode.toXmlString(pretty: Boolean = false): String {
+public fun XmlNode.toXmlString(pretty: Boolean = false): String {
     val sb = StringBuilder()
     formatXmlNode(this, 0, sb, pretty)
     return sb.toString()

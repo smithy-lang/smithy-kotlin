@@ -11,7 +11,7 @@ import aws.smithy.kotlin.runtime.serde.SdkFieldDescriptor
 /**
  * Specifies a name that a field is encoded into for form-url elements.
  */
-data class FormUrlSerialName(val name: String) : FieldTrait
+public data class FormUrlSerialName(public val name: String) : FieldTrait
 
 /**
  * Trait that adds a static `key=value` pair to a form-url encoded object
@@ -27,13 +27,13 @@ data class FormUrlSerialName(val name: String) : FieldTrait
  * }
  * ```
  */
-data class QueryLiteral(val key: String, val value: String) : FieldTrait
+public data class QueryLiteral(public val key: String, public val value: String) : FieldTrait
 
 /**
  * Indicates that the container should be serialized in "flattened" form.
  * See: https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#collections
  */
-object FormUrlFlattened : FieldTrait
+public object FormUrlFlattened : FieldTrait
 
 /**
  * Specifies member name used when encoding a List/Set structure.
@@ -44,15 +44,13 @@ object FormUrlFlattened : FieldTrait
  *
  * @param name the name to use which prefixes each list or set member
  */
-data class FormUrlCollectionName(
-    val member: String
-) : FieldTrait {
-    companion object {
+public data class FormUrlCollectionName(public val member: String) : FieldTrait {
+    public companion object {
         /**
          * The default serialized name for a list or set member.
          * This default is specified here: https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#query-key-resolution
          */
-        val Default = FormUrlCollectionName("member")
+        public val Default: FormUrlCollectionName = FormUrlCollectionName("member")
     }
 }
 /**
@@ -65,15 +63,15 @@ data class FormUrlCollectionName(
  * @param key the name of the key field
  * @param value the name of the value field
  */
-data class FormUrlMapName(
-    val key: String = Default.key,
-    val value: String = Default.value
+public data class FormUrlMapName(
+    public val key: String = Default.key,
+    public val value: String = Default.value,
 ) : FieldTrait {
-    companion object {
+    public companion object {
         /**
          * The default serialized names for aspects of a Map in XML.
          * These defaults are specified here: https://awslabs.github.io/smithy/spec/xml.html#map-serialization
          */
-        val Default = FormUrlMapName("key", "value")
+        public val Default: FormUrlMapName = FormUrlMapName("key", "value")
     }
 }

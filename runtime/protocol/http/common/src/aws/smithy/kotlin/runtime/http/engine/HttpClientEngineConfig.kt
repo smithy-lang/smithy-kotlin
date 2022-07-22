@@ -16,95 +16,96 @@ import kotlin.time.Duration.Companion.seconds
  * NOTE: Not all engines will support every option! Engines *SHOULD* log a warning when given a configuration
  * option they don't understand/support
  */
-open class HttpClientEngineConfig constructor(builder: Builder) {
-    constructor() : this(Builder())
+public open class HttpClientEngineConfig constructor(builder: Builder) {
+    public constructor() : this(Builder())
 
-    companion object {
-        operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig = HttpClientEngineConfig(Builder().apply(block))
+    public companion object {
+        public operator fun invoke(block: Builder.() -> Unit): HttpClientEngineConfig =
+            HttpClientEngineConfig(Builder().apply(block))
 
         /**
          * Default client engine config
          */
-        val Default: HttpClientEngineConfig = HttpClientEngineConfig(Builder())
+        public val Default: HttpClientEngineConfig = HttpClientEngineConfig(Builder())
     }
 
     /**
      * Timeout for each read to an underlying socket
      */
-    val socketReadTimeout: Duration = builder.socketReadTimeout
+    public val socketReadTimeout: Duration = builder.socketReadTimeout
 
     /**
      * Timeout for each write to an underlying socket
      */
-    val socketWriteTimeout: Duration = builder.socketWriteTimeout
+    public val socketWriteTimeout: Duration = builder.socketWriteTimeout
 
     /**
      * Maximum number of open connections
      */
-    val maxConnections: UInt = builder.maxConnections
+    public val maxConnections: UInt = builder.maxConnections
 
     /**
      * The amount of time to wait for a connection to be established
      */
-    val connectTimeout: Duration = builder.connectTimeout
+    public val connectTimeout: Duration = builder.connectTimeout
 
     /**
      * The amount of time to wait for an already-established connection from a connection pool
      */
-    val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
+    public val connectionAcquireTimeout: Duration = builder.connectionAcquireTimeout
 
     /**
      * The amount of time before an idle connection should be reaped from a connection pool. Zero indicates that
      * idle connections should never be reaped.
      */
-    val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
+    public val connectionIdleTimeout: Duration = builder.connectionIdleTimeout
 
     /**
      * The ALPN protocol list when a TLS connection starts
      */
-    val alpn: List<AlpnId> = builder.alpn
+    public val alpn: List<AlpnId> = builder.alpn
 
     /**
      * The proxy selection policy
      */
-    val proxySelector: ProxySelector = builder.proxySelector
+    public val proxySelector: ProxySelector = builder.proxySelector
 
-    open class Builder {
+    public open class Builder {
         /**
          * Timeout for each read to an underlying socket
          */
-        var socketReadTimeout: Duration = 30.seconds
+        public var socketReadTimeout: Duration = 30.seconds
 
         /**
          * Timeout for each write to an underlying socket
          */
-        var socketWriteTimeout: Duration = 30.seconds
+        public var socketWriteTimeout: Duration = 30.seconds
 
         /**
          * Maximum number of open connections
          */
-        var maxConnections: UInt = 16u
+        public var maxConnections: UInt = 16u
 
         /**
          * The amount of time to wait for a connection to be established
          */
-        var connectTimeout: Duration = 2.seconds
+        public var connectTimeout: Duration = 2.seconds
 
         /**
          * The amount of time to wait for an already-established connection from a connection pool
          */
-        var connectionAcquireTimeout: Duration = 10.seconds
+        public var connectionAcquireTimeout: Duration = 10.seconds
 
         /**
          * The amount of time before an idle connection should be reaped from a connection pool. Zero indicates that
          * idle connections should never be reaped.
          */
-        var connectionIdleTimeout: Duration = 60.seconds
+        public var connectionIdleTimeout: Duration = 60.seconds
 
         /**
          * Set the ALPN protocol list when a TLS connection starts
          */
-        var alpn: List<AlpnId> = emptyList()
+        public var alpn: List<AlpnId> = emptyList()
 
         /**
          * Set the proxy selection policy to be used.
@@ -129,7 +130,7 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
          * proxySelector = ProxySelector.NoProxy
          * ```
          */
-        var proxySelector: ProxySelector = EnvironmentProxySelector()
+        public var proxySelector: ProxySelector = EnvironmentProxySelector()
     }
 }
 
@@ -137,7 +138,7 @@ open class HttpClientEngineConfig constructor(builder: Builder) {
  * Common ALPN identifiers
  * See the [IANA registry](https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml#alpn-protocol-ids)
  */
-enum class AlpnId(val protocolId: String) {
+public enum class AlpnId(public val protocolId: String) {
     /**
      * HTTP 1.1
      */

@@ -38,19 +38,19 @@ public object SdkClientOption {
  * Get the [IdempotencyTokenProvider] from the context. If one is not set the default will be returned.
  */
 @InternalApi
-val ExecutionContext.idempotencyTokenProvider: IdempotencyTokenProvider
+public val ExecutionContext.idempotencyTokenProvider: IdempotencyTokenProvider
     get() = getOrNull(SdkClientOption.IdempotencyTokenProvider) ?: IdempotencyTokenProvider.Default
 
 /**
  * Get the [SdkLogMode] from the context. If one is not set a default will be returned
  */
 @InternalApi
-val ExecutionContext.sdkLogMode: SdkLogMode
+public val ExecutionContext.sdkLogMode: SdkLogMode
     get() = getOrNull(SdkClientOption.LogMode) ?: SdkLogMode.Default
 
 /**
  * Get the [OperationName] from the context.
  */
 @InternalApi
-val ExecutionContext.operationName: String?
+public val ExecutionContext.operationName: String?
     get() = getOrNull(SdkClientOption.OperationName)

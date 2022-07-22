@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  *  Http middleware for resolving the service endpoint.
  */
 @InternalApi
-class ResolveEndpoint(
+public class ResolveEndpoint(
     private val resolver: EndpointResolver
 ) : ModifyRequestMiddleware {
 
@@ -31,7 +31,7 @@ class ResolveEndpoint(
  * Populate the request URL parameters from a resolved endpoint
  */
 @InternalApi
-fun setRequestEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
+public fun setRequestEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
     val hostPrefix = req.context.getOrNull(HttpOperationContext.HostPrefix)
     val hostname = if (hostPrefix != null && !endpoint.isHostnameImmutable) {
         "$hostPrefix${endpoint.uri.host}"

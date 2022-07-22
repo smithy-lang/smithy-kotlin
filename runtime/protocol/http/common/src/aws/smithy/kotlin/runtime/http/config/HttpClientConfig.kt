@@ -10,9 +10,9 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 /**
  * The user-accessible configuration properties for the SDKs internal HTTP client facility.
  */
-interface HttpClientConfig {
+public interface HttpClientConfig {
     /**
      * Allows for overriding the default HTTP client engine.
      */
-    val httpClientEngine: HttpClientEngine?
+    public val httpClientEngine: HttpClientEngine?
 }

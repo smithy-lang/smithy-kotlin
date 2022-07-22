@@ -15,13 +15,13 @@ import kotlin.test.fail
  * with opt-in requirements
  */
 @OptIn(ExperimentalStdlibApi::class)
-fun String.encodeAsByteArray(): ByteArray = encodeToByteArray()
+public fun String.encodeAsByteArray(): ByteArray = encodeToByteArray()
 
 /**
  * Assert that the [actual] body is empty
  */
 @OptIn(ExperimentalStdlibApi::class)
-suspend fun assertEmptyBody(@Suppress("UNUSED_PARAMETER") expected: HttpBody?, actual: HttpBody?) {
+public suspend fun assertEmptyBody(@Suppress("UNUSED_PARAMETER") expected: HttpBody?, actual: HttpBody?) {
     if (actual !is HttpBody.Empty) {
         val actualBody = actual?.readAll()?.decodeToString()
         fail("expected an empty HttpBody; found: `$actualBody`")
@@ -32,7 +32,7 @@ suspend fun assertEmptyBody(@Suppress("UNUSED_PARAMETER") expected: HttpBody?, a
  * Assert that [actual] == [expected]
  */
 @OptIn(ExperimentalStdlibApi::class)
-suspend fun assertBytesEqual(expected: HttpBody?, actual: HttpBody?) {
+public suspend fun assertBytesEqual(expected: HttpBody?, actual: HttpBody?) {
     val actualRead = actual?.readAll()
     val expectedRead = expected?.readAll()
     assertBytesEqual(expectedRead, actualRead)
@@ -42,7 +42,7 @@ suspend fun assertBytesEqual(expected: HttpBody?, actual: HttpBody?) {
  * Assert that [actual] == [expected]
  */
 @OptIn(ExperimentalStdlibApi::class)
-fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
+public fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
 
     if (expected == null) {
         assertNull(actual, "expected no content; found ${actual?.decodeToString()}")

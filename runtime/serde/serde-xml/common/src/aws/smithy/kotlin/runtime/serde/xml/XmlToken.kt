@@ -8,24 +8,24 @@ package aws.smithy.kotlin.runtime.serde.xml
 /**
  * Raw tokens produced when reading an XML document as a stream
  */
-sealed class XmlToken {
+public sealed class XmlToken {
 
-    abstract val depth: Int
+    public abstract val depth: Int
 
     /**
      * An namespace declaration (xmlns)
      */
-    data class Namespace(val uri: String, val prefix: String? = null)
+    public data class Namespace(public val uri: String, public val prefix: String? = null)
 
     /**
      * Defines the name and namespace of an element
      * @property local The localized name of an element
      * @property prefix The namespace this element belongs to
      */
-    data class QualifiedName(val local: String, val prefix: String? = null) {
+    public data class QualifiedName(public val local: String, public val prefix: String? = null) {
         override fun toString(): String = tag
 
-        val tag: String get() = when (prefix) {
+        public val tag: String get() = when (prefix) {
             null -> local
             else -> "$prefix:$local"
         }
@@ -34,16 +34,16 @@ sealed class XmlToken {
     /**
      * The opening of an XML element
      */
-    data class BeginElement(
+    public data class BeginElement(
         override val depth: Int,
-        val name: QualifiedName,
-        val attributes: Map<QualifiedName, String> = emptyMap(),
-        val nsDeclarations: List<Namespace> = emptyList()
+        public val name: QualifiedName,
+        public val attributes: Map<QualifiedName, String> = emptyMap(),
+        public val nsDeclarations: List<Namespace> = emptyList()
     ) : XmlToken() {
         // Convenience constructor for name-only nodes.
-        constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
+        public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
         // Convenience constructor for name-only nodes with attributes.
-        constructor(depth: Int, name: String, attributes: Map<QualifiedName, String>) : this(depth, QualifiedName(name), attributes)
+        public constructor(depth: Int, name: String, attributes: Map<QualifiedName, String>) : this(depth, QualifiedName(name), attributes)
 
         override fun toString(): String = "<${this.name} (${this.depth})>"
     }
@@ -51,9 +51,9 @@ sealed class XmlToken {
     /**
      * The closing of an XML element
      */
-    data class EndElement(override val depth: Int, val name: QualifiedName) : XmlToken() {
+    public data class EndElement(override val depth: Int, public val name: QualifiedName) : XmlToken() {
         // Convenience constructor for name-only nodes.
-        constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
+        public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
 
         override fun toString(): String = "</${this.name}> (${this.depth})"
     }
@@ -61,11 +61,11 @@ sealed class XmlToken {
     /**
      * An XML element text as string
      */
-    data class Text(override val depth: Int, val value: String?) : XmlToken() {
+    public data class Text(override val depth: Int, public val value: String?) : XmlToken() {
         override fun toString(): String = "${this.value} (${this.depth})"
     }
 
-    object StartDocument : XmlToken() {
+    public object StartDocument : XmlToken() {
         override val depth: Int = 0
     }
 
@@ -73,7 +73,7 @@ sealed class XmlToken {
      * The end of the XML stream to signal that the XML-encoded value has no more
      * tokens
      */
-    object EndDocument : XmlToken() {
+    public object EndDocument : XmlToken() {
         override val depth: Int
             get() = 0
     }

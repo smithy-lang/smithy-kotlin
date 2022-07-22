@@ -4,16 +4,16 @@
  */
 package aws.smithy.kotlin.runtime.serde
 
-interface SdkSerializable {
-    fun serialize(serializer: Serializer)
+public interface SdkSerializable {
+    public fun serialize(serializer: Serializer)
 }
 
 // FIXME - baby steps
 // Glue code for marrying raw serialize functions to SdkSerializable
 
-typealias SerializeFn<T> = (serializer: Serializer, input: T) -> Unit
+public typealias SerializeFn<T> = (serializer: Serializer, input: T) -> Unit
 
-fun <T> StructSerializer.field(descriptor: SdkFieldDescriptor, input: T, serializeFn: SerializeFn<T>) {
+public fun <T> StructSerializer.field(descriptor: SdkFieldDescriptor, input: T, serializeFn: SerializeFn<T>) {
     field(descriptor, SdkSerializableLambda(input, serializeFn))
 }
 
@@ -27,4 +27,4 @@ private data class SdkSerializableLambda<T>(
 }
 
 // FIXME - this causes backing classes to be generated behind the scenes and contributes to the overall jar size
-fun <T> asSdkSerializable(input: T, serializeFn: SerializeFn<T>): SdkSerializable = SdkSerializableLambda(input, serializeFn)
+public fun <T> asSdkSerializable(input: T, serializeFn: SerializeFn<T>): SdkSerializable = SdkSerializableLambda(input, serializeFn)

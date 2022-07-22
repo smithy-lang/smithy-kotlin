@@ -14,63 +14,64 @@ package aws.smithy.kotlin.runtime.client
  * val mode = LogMode.LogRequest + LogMode.LogRetries
  * ```
  */
-sealed class SdkLogMode(private val mask: Int) {
+public sealed class SdkLogMode(private val mask: Int) {
     /**
      * The default logging mode which does not opt-in to anything
      */
-    object Default : SdkLogMode(0x00) {
+    public object Default : SdkLogMode(0x00) {
         override fun toString(): String = "Default"
     }
 
     /**
      * Log the request details, e.g. url, headers, etc.
      */
-    object LogRequest : SdkLogMode(0x01) {
+    public object LogRequest : SdkLogMode(0x01) {
         override fun toString(): String = "LogRequest"
     }
 
     /**
      * Log the request details as well as the body if possible
      */
-    object LogRequestWithBody : SdkLogMode(0x02) {
+    public object LogRequestWithBody : SdkLogMode(0x02) {
         override fun toString(): String = "LogRequestWithBody"
     }
 
     /**
      * Log the response details, e.g. status, headers, etc
      */
-    object LogResponse : SdkLogMode(0x04) {
+    public object LogResponse : SdkLogMode(0x04) {
         override fun toString(): String = "LogResponse"
     }
 
     /**
      * Log the response details as well as the body if possible
      */
-    object LogResponseWithBody : SdkLogMode(0x08) {
+    public object LogResponseWithBody : SdkLogMode(0x08) {
         override fun toString(): String = "LogResponseWithBody"
     }
 
     internal class Composite(mask: Int) : SdkLogMode(mask)
 
-    operator fun plus(mode: SdkLogMode): SdkLogMode = Composite(mask or mode.mask)
-    operator fun minus(mode: SdkLogMode): SdkLogMode = Composite(mask and mode.mask.inv())
+    public operator fun plus(mode: SdkLogMode): SdkLogMode = Composite(mask or mode.mask)
+    public operator fun minus(mode: SdkLogMode): SdkLogMode = Composite(mask and mode.mask.inv())
 
     /**
      * Test if a particular [SdkLogMode] is enabled
      */
-    fun isEnabled(mode: SdkLogMode): Boolean = mask and mode.mask != 0
+    public fun isEnabled(mode: SdkLogMode): Boolean = mask and mode.mask != 0
 
-    companion object {
+    public companion object {
         /**
          * Get a list of all modes
          */
-        fun allModes(): List<SdkLogMode> = listOf(
+        public fun allModes(): List<SdkLogMode> = listOf(
             LogRequest,
             LogRequestWithBody,
             LogResponse,
             LogResponseWithBody,
         )
     }
+
     override fun toString(): String =
         allModes().joinToString(separator = "|", prefix = "SdkLogMode(", postfix = ")") { mode ->
             if (isEnabled(mode)) mode.toString() else ""

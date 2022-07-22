@@ -17,11 +17,11 @@ import kotlinx.coroutines.sync.withLock
  * NOTE: Properties cannot be loaded asynchronously so unlike `Lazy<T>` a `LazyAsyncValue<T>` cannot be a property
  * delegate.
  */
-interface LazyAsyncValue<out T> {
+public interface LazyAsyncValue<out T> {
     /**
      * Get the cached value or initialize it for the first time. Subsequent calls will return the same value.
      */
-    suspend fun get(): T
+    public suspend fun get(): T
 }
 
 /**

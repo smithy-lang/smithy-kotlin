@@ -9,54 +9,54 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 /**
  * Mapping of String to a List of Strings values
  */
-interface StringValuesMap {
+public interface StringValuesMap {
 
     /**
      * Flag indicating if this map compares keys ignoring case
      */
-    val caseInsensitiveName: Boolean
+    public val caseInsensitiveName: Boolean
 
     /**
      * Gets first value from the list of values associated with a [name], or null if the name is not present
      */
-    operator fun get(name: String): String? = getAll(name)?.firstOrNull()
+    public operator fun get(name: String): String? = getAll(name)?.firstOrNull()
 
     /**
      * Gets all values associated with the [name], or null if the name is not present
      */
-    fun getAll(name: String): List<String>?
+    public fun getAll(name: String): List<String>?
 
     /**
      * Gets all names from the map
      */
-    fun names(): Set<String>
+    public fun names(): Set<String>
 
     /**
      * Gets all entries from the map
      */
-    fun entries(): Set<Map.Entry<String, List<String>>>
+    public fun entries(): Set<Map.Entry<String, List<String>>>
 
     /**
      * Checks if the given [name] exists in the map
      */
-    operator fun contains(name: String): Boolean
+    public operator fun contains(name: String): Boolean
 
     /**
      * Checks if the given [name] and [value] pair exists in the map
      */
-    fun contains(name: String, value: String): Boolean = getAll(name)?.contains(value) ?: false
+    public fun contains(name: String, value: String): Boolean = getAll(name)?.contains(value) ?: false
 
     /**
      * Iterates over all entries in this map and calls [body] for each pair
      *
      * Can be optimized in implementations
      */
-    fun forEach(body: (String, List<String>) -> Unit) = entries().forEach { (k, v) -> body(k, v) }
+    public fun forEach(body: (String, List<String>) -> Unit): Unit = entries().forEach { (k, v) -> body(k, v) }
 
     /**
      * Checks if this map is empty
      */
-    fun isEmpty(): Boolean
+    public fun isEmpty(): Boolean
 }
 
 @InternalApi
@@ -90,51 +90,51 @@ internal open class StringValuesMapImpl(
 internal fun Map<String, List<String>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
 
 @InternalApi
-open class StringValuesMapBuilder(val caseInsensitiveName: Boolean = false, size: Int = 8) {
+public open class StringValuesMapBuilder(public val caseInsensitiveName: Boolean = false, size: Int = 8) {
     protected val values: MutableMap<String, MutableList<String>> =
         if (caseInsensitiveName) CaseInsensitiveMap() else LinkedHashMap(size)
 
-    fun getAll(name: String): List<String>? = values[name]
+    public fun getAll(name: String): List<String>? = values[name]
 
-    operator fun contains(name: String): Boolean = name in values
+    public operator fun contains(name: String): Boolean = name in values
 
-    fun contains(name: String, value: String): Boolean = values[name]?.contains(value) ?: false
+    public fun contains(name: String, value: String): Boolean = values[name]?.contains(value) ?: false
 
-    fun names(): Set<String> = values.keys
+    public fun names(): Set<String> = values.keys
 
-    fun isEmpty(): Boolean = values.isEmpty()
+    public fun isEmpty(): Boolean = values.isEmpty()
 
-    fun entries(): Set<Map.Entry<String, List<String>>> = values.entries
+    public fun entries(): Set<Map.Entry<String, List<String>>> = values.entries
 
-    operator fun set(name: String, value: String) {
+    public operator fun set(name: String, value: String) {
         val list = ensureListForKey(name, 1)
         list.clear()
         list.add(value)
     }
 
-    fun setMissing(name: String, value: String) {
+    public fun setMissing(name: String, value: String) {
         if (!this.values.containsKey(name)) set(name, value)
     }
 
-    operator fun get(name: String): String? = getAll(name)?.firstOrNull()
+    public operator fun get(name: String): String? = getAll(name)?.firstOrNull()
 
-    fun append(name: String, value: String) {
+    public fun append(name: String, value: String) {
         ensureListForKey(name, 1).add(value)
     }
 
-    fun appendAll(stringValues: StringValuesMap) {
+    public fun appendAll(stringValues: StringValuesMap) {
         stringValues.forEach { name, values ->
             appendAll(name, values)
         }
     }
 
-    fun appendMissing(stringValues: StringValuesMap) {
+    public fun appendMissing(stringValues: StringValuesMap) {
         stringValues.forEach { name, values ->
             appendMissing(name, values)
         }
     }
 
-    fun appendAll(name: String, values: Iterable<String>) {
+    public fun appendAll(name: String, values: Iterable<String>) {
         ensureListForKey(name, (values as? Collection)?.size ?: 2).let { list ->
             values.forEach { value ->
                 list.add(value)
@@ -142,25 +142,25 @@ open class StringValuesMapBuilder(val caseInsensitiveName: Boolean = false, size
         }
     }
 
-    fun appendMissing(name: String, values: Iterable<String>) {
+    public fun appendMissing(name: String, values: Iterable<String>) {
         val existing = this.values[name]?.toSet() ?: emptySet()
 
         appendAll(name, values.filter { it !in existing })
     }
 
-    fun remove(name: String) = values.remove(name)
+    public fun remove(name: String): MutableList<String>? = values.remove(name)
 
-    fun removeKeysWithNoEntries() {
+    public fun removeKeysWithNoEntries() {
         for ((k, _) in values.filter { it.value.isEmpty() }) {
             remove(k)
         }
     }
 
-    fun remove(name: String, value: String) = values[name]?.remove(value) ?: false
+    public fun remove(name: String, value: String): Boolean = values[name]?.remove(value) ?: false
 
-    fun clear() = values.clear()
+    public fun clear(): Unit = values.clear()
 
-    open fun build(): StringValuesMap = StringValuesMapImpl(caseInsensitiveName, values)
+    public open fun build(): StringValuesMap = StringValuesMapImpl(caseInsensitiveName, values)
 
     private fun ensureListForKey(name: String, size: Int): MutableList<String> =
         values[name] ?: ArrayList<String>(size).also { values[name] = it }
