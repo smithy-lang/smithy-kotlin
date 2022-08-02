@@ -154,7 +154,7 @@ internal fun parseIso8601(input: String): ParsedDatetime {
     return ParsedDatetime(date.year, date.month, date.day, ts.hour, ts.min, ts.sec, ts.ns, ts.offsetSec)
 }
 
-private val exponentialNotationNumber = """(-)?(\d+(.(\d+))?)E(-?\d+)""".toRegex()
+private val exponentialNotationNumber = """(-)?(\d+(.(\d+))?)E(-?\d+)""".toRegex(RegexOption.IGNORE_CASE)
 
 private fun expandExponent(input: String): String =
     exponentialNotationNumber.matchEntire(input)?.let { match ->
