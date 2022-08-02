@@ -21,6 +21,8 @@ class JsonDeserializerTest {
             "\"-Infinity\"" to Double.NEGATIVE_INFINITY,
             "\"Infinity\"" to Double.POSITIVE_INFINITY,
             "\"NaN\"" to Double.NaN,
+            "1.5e5" to 150000.0,
+            "1.5e-5" to 0.000015,
         )
 
         for ((input, expected) in tests) {
@@ -44,6 +46,8 @@ class JsonDeserializerTest {
             "\"-Infinity\"" to Float.NEGATIVE_INFINITY,
             "\"Infinity\"" to Float.POSITIVE_INFINITY,
             "\"NaN\"" to Float.NaN,
+            "1.5e5" to 150000f,
+            "1.5e-5" to 0.000015f,
         )
 
         for ((input, expected) in tests) {

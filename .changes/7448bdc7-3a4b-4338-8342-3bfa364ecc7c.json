@@ -1,0 +1,8 @@
+{
+    "id": "7448bdc7-3a4b-4338-8342-3bfa364ecc7c",
+    "type": "bugfix",
+    "description": "Parse timestamps correctly when they are written in exponential notation (e.g., `1.924390954E9`)",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#665"
+    ]
+}

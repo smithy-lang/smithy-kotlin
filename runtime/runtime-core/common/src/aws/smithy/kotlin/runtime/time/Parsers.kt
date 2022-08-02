@@ -154,15 +154,49 @@ internal fun parseIso8601(input: String): ParsedDatetime {
     return ParsedDatetime(date.year, date.month, date.day, ts.hour, ts.min, ts.sec, ts.ns, ts.offsetSec)
 }
 
+private val exponentialNotationNumber = """(-)?(\d+(.(\d+))?)E(-?\d+)""".toRegex(RegexOption.IGNORE_CASE)
+
+private fun expandExponent(input: String): String =
+    exponentialNotationNumber.matchEntire(input)?.let { match ->
+        val (baseSign, base, _, _, exp) = match.destructured
+        buildString {
+            append(baseSign)
+            val (mantissa, oldDecimalPos) = base.removeChar('.')
+            val shift = exp.toIntOrNull() ?: throw ParseException(input, "Failed to read exponent", 0)
+            val newDecimalPos = oldDecimalPos + shift
+            val (int, frac) = mantissa.splitAt(newDecimalPos)
+            append(int)
+            append('.')
+            append(frac)
+        }
+    } ?: input
+
+private fun String.splitAt(position: Int, padChar: Char = '0'): Pair<String, String> = when {
+    position <= 0 -> padChar.toString() to padStart(length - position, padChar)
+    position >= length -> padEnd(position, padChar) to padChar.toString()
+    else -> substring(0, position) to substring(position)
+}
+
+private fun String.removeChar(char: Char): Pair<String, Int> = when {
+    contains(char) -> {
+        val pos = indexOf(char)
+        val removed = substring(0, pos) + substring(pos + 1)
+        removed to pos
+    }
+    else -> this to length
+}
+
 /**
  * Parse an epoch timestamp (with or without fractional seconds) into an instant
  */
 internal fun parseEpoch(input: String): Instant {
-    val (pos0, secs) = takeMNDigitsLong(1, 19)(input, 0)
-    return if (pos0 == input.length) {
+    val expandedInput = expandExponent(input)
+
+    val (pos0, secs) = takeMNDigitsLong(1, 19)(expandedInput, 0)
+    return if (pos0 == expandedInput.length) {
         Instant.fromEpochSeconds(secs, 0)
     } else {
-        val (_, ns) = preceded(char('.'), fraction(1, 9, 9))(input, pos0)
+        val (_, ns) = preceded(char('.'), fraction(1, 9, 9))(expandedInput, pos0)
         Instant.fromEpochSeconds(secs, ns)
     }
 }
