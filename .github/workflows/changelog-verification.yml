@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Check for changelog entry
-        if: !contains(github.event.pull_request.labels.*.name, 'no-changelog')
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
         run: |
           git fetch origin ${{ github.base_ref }} --depth 1 && \
           git diff remotes/origin/${{ github.base_ref }} --name-only | grep -P "\.changes/[0-9a-f-]+\.json"
@@ -20,4 +20,5 @@ jobs:
           echo "::error ::No new/updated changelog entry found in /.changes directory. Please either:"
           echo "::error ::* Add a changelog entry (in most cases) –or–"
           echo "::error ::* Add the 'no-changelog' label to this PR (in rare cases not warranting a changelog entry)"
+          echo "::error ::Dumping event: ${{ github.event }}"
           exit 1
