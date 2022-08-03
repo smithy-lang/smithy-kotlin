@@ -16,12 +16,10 @@ jobs:
             git fetch origin ${{ github.base_ref }} --depth 1 && \
             git diff remotes/origin/${{ github.base_ref }} --name-only | grep -P "\.changes/[0-9a-f-]+\.json"
           )
-          CHANGELOG_EXISTS=$?
-          
+          CHANGELOG_EXISTS=$?          
           if [ $CHANGELOG_EXISTS -ne 0 ]; then
             echo "::error ::No new/updated changelog entry found in /.changes directory. Please either:"
             echo "::error ::* Add a changelog entry (in most cases) –or–"
             echo "::error ::* Add the 'no-changelog' label to this PR (in rare cases not warranting a changelog entry)"
-          fi
-          
+          fi          
           exit $CHANGELOG_EXISTS
