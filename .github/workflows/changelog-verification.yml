@@ -1,0 +1,27 @@
+name: Changelog verification
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  changelog-verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Check for changelog entry
+        if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
+        run: |
+          (
+            git fetch origin ${{ github.base_ref }} --depth 1 && \
+            git diff remotes/origin/${{ github.base_ref }} --name-only | grep -P "\.changes/[0-9a-f-]+\.json"
+          )
+          CHANGELOG_EXISTS=$?
+          
+          if [ $CHANGELOG_EXISTS -ne 0 ]; then
+            >&2 echo No new/updated changelog entry found in /.changes directory. Please either:
+            >&2 echo   * Add a changelog entry (in most cases) –or–
+            >&2 echo   * Add the "no-changelog" label to this PR (in rare cases not warranting a changelog entry)
+          fi
+          
+          exit $CHANGELOG_EXISTS
