@@ -12,10 +12,8 @@ jobs:
       - name: Check for changelog entry
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
         run: |
-          (
-            git fetch origin ${{ github.base_ref }} --depth 1 && \
-            git diff remotes/origin/${{ github.base_ref }} --name-only | grep -P "\.changes/[0-9a-f-]+\.json"
-          )
+          git fetch origin ${{ github.base_ref }} --depth 1 && \
+          git diff remotes/origin/${{ github.base_ref }} --name-only | grep -P "\.changes/[0-9a-f-]+\.json"
           CHANGELOG_EXISTS=$?          
           if [ $CHANGELOG_EXISTS -ne 0 ]; then
             echo "::error ::No new/updated changelog entry found in /.changes directory. Please either:"
