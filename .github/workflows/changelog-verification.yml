@@ -20,3 +20,4 @@ jobs:
           echo "::error ::No new/updated changelog entry found in /.changes directory. Please either:"
           echo "::error ::* Add a changelog entry (in most cases) –or–"
           echo "::error ::* Add the 'no-changelog' label to this PR (in rare cases not warranting a changelog entry)"
+          exit 1
