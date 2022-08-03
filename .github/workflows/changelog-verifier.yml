@@ -8,9 +8,9 @@ jobs:
   changelog-verifier:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - name: Check for changelog entry
         if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-changelog') }}
-        uses: actions/checkout@v2
         run: |
           git fetch origin ${{ github.base_ref }} --depth 1 && \
           git diff remotes/origin/${{ github.base_ref }} --name-only | grep -P "\.changes/[0-9a-f-]+\.json"
