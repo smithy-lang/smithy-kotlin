@@ -19,9 +19,9 @@ jobs:
           CHANGELOG_EXISTS=$?
           
           if [ $CHANGELOG_EXISTS -ne 0 ]; then
-            >&2 echo No new/updated changelog entry found in /.changes directory. Please either:
-            >&2 echo   * Add a changelog entry (in most cases) –or–
-            >&2 echo   * Add the "no-changelog" label to this PR (in rare cases not warranting a changelog entry)
+            echo "::error ::No new/updated changelog entry found in /.changes directory. Please either:"
+            echo "::error ::* Add a changelog entry (in most cases) –or–"
+            echo "::error ::* Add the 'no-changelog' label to this PR (in rare cases not warranting a changelog entry)"
           fi
           
           exit $CHANGELOG_EXISTS
