@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.2] - 08/04/2022
+
+### Fixes
+* [#665](https://github.com/awslabs/aws-sdk-kotlin/issues/665) Parse timestamps correctly when they are written in exponential notation (e.g., `1.924390954E9`)
+
 ## [0.12.1] - 07/21/2022
 
 ### Miscellaneous
