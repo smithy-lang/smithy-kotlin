@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.4] - 08/11/2022
+
+### Miscellaneous
+* Upgrade Kotlin version to 1.7.10
+* Bump CRT version.
+
 ## [0.12.2] - 08/04/2022
 
 ### Fixes
