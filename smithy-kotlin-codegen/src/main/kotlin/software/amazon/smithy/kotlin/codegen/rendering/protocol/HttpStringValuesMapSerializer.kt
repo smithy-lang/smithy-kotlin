@@ -144,14 +144,15 @@ class HttpStringValuesMapSerializer(
             writer.write("append(\"#L\", (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
         } else {
             val cond =
-                if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait<EnumTrait>()) {
+                if (location == HttpBinding.Location.QUERY ||
+                    memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()) {
                     "input.$memberName != null"
                 } else {
                     "input.$memberName?.isNotEmpty() == true"
                 }
 
             val suffix = when {
-                memberTarget.hasTrait<EnumTrait>() -> {
+                memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> {
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {

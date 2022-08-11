@@ -635,7 +635,7 @@ open class SerializeStructGenerator(
                 "$defaultIdentifier.encodeBase64String()"
             }
             ShapeType.STRING -> when {
-                target.hasTrait<EnumTrait>() -> "$defaultIdentifier.value"
+                target.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> "$defaultIdentifier.value"
                 else -> defaultIdentifier
             }
             else -> throw CodegenException("unknown serializer for member: $shape; target: $target")
@@ -647,7 +647,8 @@ open class SerializeStructGenerator(
     /**
      * @return true if shape is a String with enum trait, false otherwise.
      */
-    private fun Shape.isEnum() = isStringShape && hasTrait<EnumTrait>()
+    private fun Shape.isEnum() =
+        isStringShape && hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
 
     /**
      * Generate key and value names for iteration based on nesting level

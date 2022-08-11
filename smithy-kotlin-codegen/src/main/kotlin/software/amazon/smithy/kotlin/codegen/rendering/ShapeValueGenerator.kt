@@ -12,7 +12,6 @@ import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 
 /**
@@ -100,7 +99,7 @@ class ShapeValueGenerator(
         )
         val suffix = when (shape.type) {
             ShapeType.STRING -> {
-                if (shape.hasTrait<EnumTrait>()) {
+                if (shape.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()) {
                     val symbol = symbolProvider.toSymbol(shape)
                     writer.writeInline("#L.fromValue(", symbol.name)
                     ")"

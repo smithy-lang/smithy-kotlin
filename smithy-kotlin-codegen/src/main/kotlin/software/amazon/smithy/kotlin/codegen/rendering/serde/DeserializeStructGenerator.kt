@@ -12,7 +12,6 @@ import software.amazon.smithy.kotlin.codegen.model.isSparse
 import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
@@ -539,7 +538,7 @@ open class DeserializeStructGenerator(
                 }
             }
             ShapeType.STRING -> when {
-                target.hasTrait<EnumTrait>() -> {
+                target.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> {
                     val enumSymbol = ctx.symbolProvider.toSymbol(target)
                     writer.addImport(enumSymbol)
                     "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
