@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.logging.Logger
@@ -173,5 +174,31 @@ internal class OkHttpProxySelector(
     override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
         val logger = Logger.getLogger<OkHttpProxySelector>()
         logger.error { "failed to connect to proxy: uri=$uri; socketAddress: $sa; exception: $ioe" }
+    }
+}
+
+private fun URI.toUrl(): Url {
+    val uri = this
+    return UrlBuilder {
+        scheme = Protocol.parse(uri.scheme)
+        host = uri.host
+        if (uri.port > 0) {
+            port = uri.port
+        }
+        path = uri.path
+
+        if (uri.query != null && uri.query.isNotBlank()) {
+            val parsedParameters = uri.query.splitAsQueryParameters()
+            parameters.appendAll(parsedParameters)
+        }
+
+        if (uri.userInfo != null && uri.userInfo.isNotBlank()) {
+            val userInfoParts = uri.userInfo.split(":")
+            val user = userInfoParts[0]
+            val pw = if (userInfoParts.size > 1) userInfoParts[1] else ""
+            userInfo = UserInfo(user, pw)
+        }
+
+        if (uri.fragment != null && uri.fragment.isNotBlank()) fragment = uri.fragment
     }
 }

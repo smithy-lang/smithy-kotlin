@@ -9,6 +9,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
 class UrlTest {
+    private fun testSymmetricParse(url: String) =
+        assertEquals(url, Url.parse(url).toString())
+
     @Test
     fun basicToString() {
         val expected = "https://test.aws.com/kotlin"
@@ -169,9 +172,53 @@ class UrlTest {
     }
 
     @Test
+    fun itParsesMinimum() =
+        testSymmetricParse("http://host")
+
+    @Test
+    fun itParsesFragment() =
+        testSymmetricParse("http://host#fragment")
+
+    @Test
+    fun itParsesQuery() =
+        testSymmetricParse("http://host?n=1")
+
+    @Test
+    fun itParsesQueryFragment() =
+        testSymmetricParse("http://host?n=1#fragment")
+
+    @Test
+    fun itParsesPath() =
+        testSymmetricParse("http://host/path")
+
+    @Test
+    fun itParsesPathFragment() =
+        testSymmetricParse("http://host/path#fragment")
+
+    @Test
+    fun itParsesPathQuery() =
+        testSymmetricParse("http://host/path?n=1")
+
+    @Test
+    fun itParsesExplicitEmptyPath() =
+        assertEquals("http://host", "http://host/".toUrl().toString())
+
+    @Test
+    fun itParsesExplicitEmptyQuery() =
+        assertEquals("http://host", "http://host?".toUrl().toString())
+
+    @Test
+    fun itParsesExplicitEmptyFragment() =
+        assertEquals("http://host", "http://host#".toUrl().toString())
+
+    @Test
+    fun itParsesPathQueryFragment() =
+        testSymmetricParse("http://host/path?n=1#fragment")
+
+    @Test
     fun itParsesIpv6Hosts() {
         val actual = Url.parse("http://[2001:db8::1]:80")
-        assertEquals("[2001:db8::1]", actual.host)
+        assertEquals("2001:db8::1", actual.host)
     }
 
     @Test

@@ -17,6 +17,10 @@ import aws.smithy.kotlin.runtime.http.Url
 
  * @property isHostnameImmutable Flag indicating that the hostname can be modified by the SDK client.
  *
+ * @property attributes A grab-bag property map of endpoint attributes. The values here are considered unstable.
+ *
+ * @property headers A map of additional headers to be set when making calls against this endpoint.
+ *
  * If the hostname is mutable the SDK clients may modify any part of the hostname based
  * on the requirements of the API (e.g. adding or removing content in the hostname).
  *
@@ -30,6 +34,8 @@ import aws.smithy.kotlin.runtime.http.Url
 public data class Endpoint(
     public val uri: Url,
     public val isHostnameImmutable: Boolean = false,
+    public val attributes: Map<String, Any> = mapOf(),
+    public val headers: Map<String, List<String>> = mapOf(),
 ) {
     public constructor(uri: String) : this(Url.parse(uri))
 }

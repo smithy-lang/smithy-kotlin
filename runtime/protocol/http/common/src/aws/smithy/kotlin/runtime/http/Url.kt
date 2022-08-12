@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.util.net.isIpv6
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
 
 /**
@@ -17,7 +18,7 @@ import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
  * @property path (raw) path without the query
  * @property parameters (raw) query parameters
  * @property fragment URL fragment
- * @property userInfo username and pasword (optional)
+ * @property userInfo username and password (optional)
  * @property forceQuery keep trailing question mark regardless of whether there are any query parameters
  * @property encodeParameters configures if parameter values are encoded (default) or left as-is.
  */
@@ -30,14 +31,14 @@ public data class Url(
     public val fragment: String? = null,
     public val userInfo: UserInfo? = null,
     public val forceQuery: Boolean = false,
-    public val encodeParameters: Boolean = true
+    public val encodeParameters: Boolean = true,
 ) {
     init {
         require(port in 1..65536) { "port must be in between 1 and 65536" }
     }
 
     public companion object {
-        public fun parse(url: String): Url = platformUrlParse(url)
+        public fun parse(url: String): Url = url.toUrl()
     }
 
     override fun toString(): String = buildString {
@@ -54,7 +55,7 @@ public data class Url(
             }
         }
 
-        append(host)
+        append(if (host.isIpv6()) "[$host]" else host)
         if (port != scheme.defaultPort) {
             append(":$port")
         }
@@ -104,7 +105,7 @@ private fun encodePath(
 public data class UserInfo(public val username: String, public val password: String)
 
 /**
- * Construct a URL by it's individual components
+ * Construct a URL by its individual components
  */
 public class UrlBuilder : CanDeepCopy<UrlBuilder> {
     public var scheme: Protocol = Protocol.HTTPS
@@ -153,10 +154,15 @@ public fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) {
     parameters.apply(block)
 }
 
-// TODO - when we get to other platforms we will likely just roll our own - for now we are going to punt and use JVM
-// capabilities to bootstrap this
-internal expect fun platformUrlParse(url: String): Url
-
 @InternalApi
 public val UrlBuilder.encodedPath: String
     get() = encodePath(path, parameters.entries(), fragment, forceQuery)
+
+@InternalApi
+public fun UserInfo(value: String): UserInfo {
+    val info = value.split(":")
+    return UserInfo(
+        info[0],
+        if (info.size > 1) info[1] else ""
+    )
+}
