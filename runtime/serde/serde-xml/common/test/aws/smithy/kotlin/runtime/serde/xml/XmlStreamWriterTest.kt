@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -16,19 +16,19 @@ class XmlStreamWriterTest {
             912345678901,
             "How do I stream XML in Java?",
             null,
-            user1
+            user1,
         )
         val msg2 = Message(
             912345678902,
             "@xml_newb just use XmlWriter!",
             arrayOf(50.454722, -104.606667),
-            user2
+            user2,
         )
         assertEquals(
             expected,
             writeXmlStream(
-                listOf(msg1, msg2)
-            )?.decodeToString()
+                listOf(msg1, msg2),
+            )?.decodeToString(),
         )
     }
 
@@ -82,7 +82,7 @@ class XmlStreamWriterTest {
             """hello 🍕!""" to """<a>hello 🍕!</a>""",
             """a<b>c\"d'e&f;;""" to """<a>a&lt;b&gt;c\"d'e&amp;f;;</a>""",
             "\n" to """<a>&#xA;</a>""",
-            "\r" to """<a>&#xD;</a>"""
+            "\r" to """<a>&#xD;</a>""",
         )
 
         testCases.forEach { (input, expected) ->
@@ -129,7 +129,7 @@ class XmlStreamWriterTest {
             "\n \n" to """<a>&#xA; &#xA;</a>""",
             "a\r\n b\n c\r" to """<a>a&#xD;&#xA; b&#xA; c&#xD;</a>""",
             "a\r\u0085 b\u0085" to """<a>a&#xD;&#x85; b&#x85;</a>""",
-            "a\r\u2028 b\u0085 c\u2028" to """<a>a&#xD;&#x2028; b&#x85; c&#x2028;</a>"""
+            "a\r\u2028 b\u0085 c\u2028" to """<a>a&#xD;&#x2028; b&#x85; c&#x2028;</a>""",
         )
 
         testCaseMap.forEach { (input, expected) ->

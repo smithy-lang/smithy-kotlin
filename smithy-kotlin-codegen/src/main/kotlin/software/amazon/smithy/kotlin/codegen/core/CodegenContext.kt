@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.core
@@ -31,7 +31,7 @@ data class GenerationContext(
     override val symbolProvider: SymbolProvider,
     override val settings: KotlinSettings,
     override val protocolGenerator: ProtocolGenerator? = null,
-    override val integrations: List<KotlinIntegration> = listOf()
+    override val integrations: List<KotlinIntegration> = listOf(),
 ) : CodegenContext
 
 /**

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.time
 
@@ -53,7 +53,7 @@ class InstantTest {
         // leap second - dropped to: 2020-12-31T23:59:59
         FromTest("2020-12-31T23:59:60Z", 1609459199, 0),
         // midnight - should be 11/5 12AM
-        FromTest("2020-11-04T24:00:00Z", 1604534400, 0)
+        FromTest("2020-11-04T24:00:00Z", 1604534400, 0),
     )
 
     @Test
@@ -104,8 +104,9 @@ class InstantTest {
         FromTest("Thu, 05 Nov 2020 19:22:37 +0020", 1604602957, 0),
         FromTest("Thu, 05 Nov 2020 19:22:37 -0020", 1604605357, 0),
         FromTest("Thu, 05 Nov 2020 19:22:37 +1245", 1604558257, 0),
-        FromTest("Thu, 05 Nov 2020 19:22:37 -1245", 1604650057, 0)
+        FromTest("Thu, 05 Nov 2020 19:22:37 -1245", 1604650057, 0),
     )
+
     @Test
     fun testFromRfc5322() {
         for ((idx, test) in rfc5322Tests.withIndex()) {
@@ -120,8 +121,9 @@ class InstantTest {
         FmtTest(1604602957, 0, "Thu, 05 Nov 2020 19:02:37 GMT"),
         FmtTest(1604605357, 0, "Thu, 05 Nov 2020 19:42:37 GMT"),
         FmtTest(1604558257, 0, "Thu, 05 Nov 2020 06:37:37 GMT"),
-        FmtTest(1604650057, 0, "Fri, 06 Nov 2020 08:07:37 GMT")
+        FmtTest(1604650057, 0, "Fri, 06 Nov 2020 08:07:37 GMT"),
     )
+
     @Test
     fun testFormatAsRfc5322() {
         for ((idx, test) in rfc5322FmtTests.withIndex()) {
@@ -137,7 +139,7 @@ class InstantTest {
         FmtTest(1604604157, 345, "1604604157.000000345"),
         FmtTest(1604604157, 34_500, "1604604157.0000345"),
         FmtTest(1604604157, 345_000_000, "1604604157.345"),
-        FmtTest(1604604157, 345_006_000, "1604604157.345006")
+        FmtTest(1604604157, 345_006_000, "1604604157.345006"),
     )
 
     @Test

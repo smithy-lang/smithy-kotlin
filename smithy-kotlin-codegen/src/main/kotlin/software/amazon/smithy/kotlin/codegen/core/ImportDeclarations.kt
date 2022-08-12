@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.core
 
@@ -10,6 +10,7 @@ import software.amazon.smithy.codegen.core.Symbol
 typealias FullyQualifiedSymbolName = Pair<String, String>
 
 internal fun Symbol.toFullyQualifiedSymbolName() = namespace to name
+
 /**
  * Container and formatter for Kotlin imports
  */

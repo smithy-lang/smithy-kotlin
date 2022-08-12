@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
@@ -19,7 +19,7 @@ import kotlin.coroutines.CoroutineContext
  */
 internal class ByteChannelRequestBody(
     private val body: HttpBody.Streaming,
-    private val callContext: CoroutineContext
+    private val callContext: CoroutineContext,
 ) : RequestBody() {
     override fun contentType(): MediaType? = null
     override fun contentLength(): Long = body.contentLength ?: -1

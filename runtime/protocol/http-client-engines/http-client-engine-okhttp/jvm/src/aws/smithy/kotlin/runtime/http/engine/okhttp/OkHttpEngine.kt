@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
@@ -22,13 +22,13 @@ import kotlin.time.toJavaDuration
  * [aws.smithy.kotlin.runtime.http.engine.HttpClientEngine] based on OkHttp.
  */
 public class OkHttpEngine(
-    private val config: OkHttpEngineConfig
+    private val config: OkHttpEngineConfig,
 ) : HttpClientEngineBase("OkHttp") {
     public constructor() : this(OkHttpEngineConfig.Default)
 
     public companion object {
         public operator fun invoke(block: OkHttpEngineConfig.Builder.() -> Unit): OkHttpEngine = OkHttpEngine(
-            OkHttpEngineConfig.Builder().apply(block).build()
+            OkHttpEngineConfig.Builder().apply(block).build(),
         )
     }
 
@@ -80,7 +80,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         val pool = ConnectionPool(
             maxIdleConnections = config.maxConnections.toInt(),
             keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
-            TimeUnit.MILLISECONDS
+            TimeUnit.MILLISECONDS,
         )
         connectionPool(pool)
 

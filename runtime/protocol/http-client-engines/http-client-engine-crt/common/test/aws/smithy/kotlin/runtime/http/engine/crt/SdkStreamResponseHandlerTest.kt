@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.crt
@@ -92,7 +92,7 @@ class SdkStreamResponseHandlerTest {
         val stream = MockHttpStream(200)
         launch {
             val headers = listOf(
-                HttpHeader("Content-Length", "72")
+                HttpHeader("Content-Length", "72"),
             )
             handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
             handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
@@ -119,7 +119,7 @@ class SdkStreamResponseHandlerTest {
         val data = "Fool of a Took! Throw yourself in next time and rid us of your stupidity!"
         launch {
             val headers = listOf(
-                HttpHeader("Content-Length", "${data.length}")
+                HttpHeader("Content-Length", "${data.length}"),
             )
             handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
             handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)
@@ -148,7 +148,7 @@ class SdkStreamResponseHandlerTest {
         val socketClosedEc = 1051
         launch {
             val headers = listOf(
-                HttpHeader("Content-Length", "${data.length}")
+                HttpHeader("Content-Length", "${data.length}"),
             )
             handler.onResponseHeaders(stream, 200, HttpHeaderBlock.MAIN.blockType, headers)
             handler.onResponseHeadersDone(stream, HttpHeaderBlock.MAIN.blockType)

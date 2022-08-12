@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.test.util
@@ -26,7 +26,7 @@ internal fun KtorOkHttpEngine(config: HttpClientEngineConfig = HttpClientEngineC
             val pool = ConnectionPool(
                 maxIdleConnections = config.maxConnections.toInt(),
                 keepAliveDuration = config.connectionIdleTimeout.inWholeMilliseconds,
-                TimeUnit.MILLISECONDS
+                TimeUnit.MILLISECONDS,
             )
             connectionPool(pool)
 

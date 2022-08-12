@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.retries.impl
@@ -35,7 +35,7 @@ class StandardRetryIntegrationTest {
                     maxCapacity = tc.given.initialRetryTokens,
                     circuitBreakerMode = true,
                     refillUnitsPerSecond = 0, // None of the tests use refill
-                )
+                ),
             )
             val delayer = ExponentialBackoffWithJitter(
                 ExponentialBackoffWithJitterOptions(
@@ -43,7 +43,7 @@ class StandardRetryIntegrationTest {
                     scaleFactor = tc.given.exponentialPower,
                     jitter = 0.0, // None of the tests use jitter
                     maxBackoff = tc.given.maxBackoffTime.milliseconds,
-                )
+                ),
             )
             val retryer = StandardRetryStrategy(options, tokenBucket, delayer)
 
@@ -72,7 +72,7 @@ class StandardRetryIntegrationTest {
                 // expected, rather than exactly an amount that presumes some obscure optimization.
                 assertTrue(
                     expectedDelayMs <= totalDelayMs.toInt(),
-                    "Unexpected delay for $name. Expected at least $expectedDelayMs but was $totalDelayMs"
+                    "Unexpected delay for $name. Expected at least $expectedDelayMs but was $totalDelayMs",
                 )
             } else {
                 assertEquals(expectedDelayMs, totalDelayMs.toInt(), "Unexpected delay for $name")
@@ -114,9 +114,16 @@ data class Expectation(val outcome: TestOutcome, @SerialName("retry_quota") val 
 
 @Serializable
 enum class TestOutcome {
-    @SerialName("max_attempts_exceeded") MaxAttemptsExceeded,
-    @SerialName("retry_quota_exceeded") RetryQuotaExceeded,
-    @SerialName("retry_request") RetryRequest,
-    @SerialName("success") Success,
+    @SerialName("max_attempts_exceeded")
+    MaxAttemptsExceeded,
+
+    @SerialName("retry_quota_exceeded")
+    RetryQuotaExceeded,
+
+    @SerialName("retry_request")
+    RetryRequest,
+
+    @SerialName("success")
+    Success,
     ;
 }

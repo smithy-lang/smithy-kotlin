@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http
 
@@ -38,13 +38,13 @@ class QueryParametersTest {
                     append("q", "puppies")
                     append("oe", "utf8")
                 },
-                "oe=utf8&q=puppies"
+                "oe=utf8&q=puppies",
             ),
             QueryParamTest(
                 QueryParameters {
                     appendAll("q", listOf("dogs", "&", "7"))
                 },
-                "q=dogs&q=%26&q=7"
+                "q=dogs&q=%26&q=7",
             ),
             QueryParamTest(
                 QueryParameters {
@@ -52,8 +52,8 @@ class QueryParametersTest {
                     appendAll("b", listOf("b1", "b2", "b3"))
                     appendAll("c", listOf("c1", "c2", "c3"))
                 },
-                "a=a1&a=a2&a=a3&b=b1&b=b2&b=b3&c=c1&c=c2&c=c3"
-            )
+                "a=a1&a=a2&a=a3&b=b1&b=b2&b=b3&c=c1&c=c2&c=c3",
+            ),
         )
         for (test in tests) {
             val actual = test.params.urlEncode()

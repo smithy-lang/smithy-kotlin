@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.waiters
@@ -52,7 +52,8 @@ internal fun KotlinWriter.renderAcceptorList(wi: WaiterInfo, asValName: String) 
     addImport(RuntimeTypes.Core.Retries.Policy.Acceptor)
 
     withBlock(
-        "val #L = listOf<Acceptor<#T, #T>>(", ")",
+        "val #L = listOf<Acceptor<#T, #T>>(",
+        ")",
         asValName,
         wi.inputSymbol,
         wi.outputSymbol,

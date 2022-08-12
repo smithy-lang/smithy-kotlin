@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.response
@@ -30,7 +30,7 @@ class HttpResponseTest {
                 append("foo", "v2")
                 append("bar", "v3")
             },
-            HttpBody.Empty
+            HttpBody.Empty,
         )
 
         assertEquals("v1", resp.header("foo"))
@@ -52,7 +52,7 @@ class HttpResponseTest {
             Headers {
                 append("x-foo", "bar")
             },
-            body = stream.toHttpBody()
+            body = stream.toHttpBody(),
         )
 
         val (c1, _) = dumpResponse(resp, false)

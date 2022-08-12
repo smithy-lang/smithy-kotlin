@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.hashing
 
@@ -18,7 +18,7 @@ public actual class Crc32 : Crc32Base() {
             ((x shl 24) and 0xffu).toByte(),
             ((x shl 16) and 0xffu).toByte(),
             ((x shl 8) and 0xffu).toByte(),
-            (x and 0xffu).toByte()
+            (x and 0xffu).toByte(),
         )
     }
 

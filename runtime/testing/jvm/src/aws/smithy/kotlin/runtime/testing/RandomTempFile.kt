@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.testing
 
@@ -25,7 +25,7 @@ import java.util.*
 public class RandomTempFile(
     sizeInBytes: Long,
     filename: String = UUID.randomUUID().toString(),
-    private val binaryData: Boolean = false
+    private val binaryData: Boolean = false,
 ) : File(TEMP_DIR + separator + System.currentTimeMillis().toString() + "-" + filename) {
 
     init {

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -76,8 +76,8 @@ class XmlDeserializerPrimitiveTest {
         }
     }
 
-    @Test
     // TODO: It's unclear if this test should result in an exception or null value.
+    @Test
     fun itFailsMissingTypeSpecificationForInt() {
         val deserializer = XmlPrimitiveDeserializer("<node></node>".wrapInStruct(), SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("node")))
         assertFailsWith(DeserializationException::class) {
@@ -85,8 +85,8 @@ class XmlDeserializerPrimitiveTest {
         }
     }
 
-    @Test
     // TODO: It's unclear if this test should result in an exception or null value.
+    @Test
     fun itFailsWhitespaceTypeSpecificationForInt() {
         val deserializer = XmlPrimitiveDeserializer("<node> </node>".wrapInStruct(), SdkFieldDescriptor(SerialKind.Integer, XmlSerialName("node")))
         assertFailsWith(DeserializationException::class) {

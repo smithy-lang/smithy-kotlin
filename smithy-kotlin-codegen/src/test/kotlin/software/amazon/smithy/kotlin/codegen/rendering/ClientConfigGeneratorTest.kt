@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering
@@ -214,14 +214,14 @@ public class Config private constructor(builder: Builder) {
                     namespace = "test.complex"
                     reference(
                         buildSymbol { name = "SubTypeA"; namespace = "test.complex" },
-                        SymbolReference.ContextOption.USE
+                        SymbolReference.ContextOption.USE,
                     )
                     reference(
                         buildSymbol { name = "SubTypeB"; namespace = "test.complex" },
-                        SymbolReference.ContextOption.USE
+                        SymbolReference.ContextOption.USE,
                     )
                 }
-            }
+            },
         )
 
         ClientConfigGenerator(renderingCtx, detectDefaultProps = false, builderReturnType = null, *customProps).render()

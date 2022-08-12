@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -99,7 +99,7 @@ class XmlStreamReaderTest {
                <?xml version="1.0" encoding="UTF-8"?>
                <!--
                  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-                 ~ SPDX-License-Identifier: Apache-2.0.
+                 ~ SPDX-License-Identifier: Apache-2.0
                  -->
                 
                <payload>
@@ -631,7 +631,7 @@ class XmlStreamReaderTest {
             "&#Q1234;",
             "&#3.14;",
             "&#xZZ",
-            "here is a & but without an escape sequence..."
+            "here is a & but without an escape sequence...",
         )
 
         invalidTextList.forEach { testCase ->

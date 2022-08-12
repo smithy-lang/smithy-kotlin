@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen
@@ -25,6 +25,7 @@ private const val PACKAGE_NAME = "name"
 private const val PACKAGE_VERSION = "version"
 private const val PACKAGE_DESCRIPTION = "description"
 private const val BUILD_SETTINGS = "build"
+
 // Optional specification of sdkId for models that provide them, otherwise Service's shape id name is used
 private const val SDK_ID = "sdkId"
 
@@ -35,7 +36,7 @@ data class KotlinSettings(
     val service: ShapeId,
     val pkg: PackageSettings,
     val sdkId: String,
-    val build: BuildSettings = BuildSettings.Default
+    val build: BuildSettings = BuildSettings.Default,
 ) {
 
     /**
@@ -94,7 +95,7 @@ data class KotlinSettings(
                 serviceId,
                 PackageSettings(packageName, version, desc),
                 sdkId,
-                BuildSettings.fromNode(build)
+                BuildSettings.fromNode(build),
             )
         }
 
@@ -109,13 +110,13 @@ data class KotlinSettings(
                 services.isEmpty() -> {
                     throw CodegenException(
                         "Cannot infer a service to generate because the model does not " +
-                            "contain any service shapes"
+                            "contain any service shapes",
                     )
                 }
                 services.size > 1 -> {
                     throw CodegenException(
                         "Cannot infer service to generate because the model contains " +
-                            "multiple service shapes: " + services
+                            "multiple service shapes: " + services,
                     )
                 }
                 else -> {
@@ -140,13 +141,13 @@ data class KotlinSettings(
     fun resolveServiceProtocol(
         serviceIndex: ServiceIndex,
         service: ServiceShape,
-        supportedProtocolTraits: Set<ShapeId>
+        supportedProtocolTraits: Set<ShapeId>,
     ): ShapeId {
         val resolvedProtocols: Set<ShapeId> = serviceIndex.getProtocols(service).keys
         val protocol = resolvedProtocols.firstOrNull(supportedProtocolTraits::contains)
         return protocol ?: throw UnresolvableProtocolException(
             "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
-                "The following protocol generators were found on the class path: $supportedProtocolTraits"
+                "The following protocol generators were found on the class path: $supportedProtocolTraits",
         )
     }
 }

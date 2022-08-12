@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.json
 
@@ -118,7 +118,7 @@ class JsonDeserializerTest {
             "1",
             "12.7",
             "true",
-            "false"
+            "false",
         )
 
         for (test in tests) {
@@ -380,7 +380,7 @@ class JsonDeserializerTest {
                             NESTED2_FIELD_DESCRIPTOR.index ->
                                 nested.nested2 =
                                     Nested2.deserialize(
-                                        deserializer
+                                        deserializer,
                                     )
                             BOOL2_FIELD_DESCRIPTOR.index -> nested.bool2 = deserializeBoolean()
                             null -> break@loop
@@ -488,7 +488,7 @@ class JsonDeserializerTest {
                 KitchenSinkTest.NESTED_FIELD_DESCRIPTOR.index ->
                     sink.nestedField =
                         Nested.deserialize(
-                            deserializer
+                            deserializer,
                         )
                 KitchenSinkTest.FLOAT_FIELD_DESCRIPTOR.index -> sink.floatField = struct.deserializeFloat()
                 KitchenSinkTest.MAP_FIELD_DESCRIPTOR.index -> sink.mapField = deserializer.deserializeMap(KitchenSinkTest.MAP_FIELD_DESCRIPTOR) {
@@ -614,14 +614,14 @@ class JsonDeserializerTest {
     fun canDeserializeDocumentStringField() =
         testDeserializeDocument(
             "\"foo\"",
-            Document("foo")
+            Document("foo"),
         )
 
     @Test
     fun canDeserializeDocumentBooleanField() =
         testDeserializeDocument(
             "false",
-            Document(false)
+            Document(false),
         )
 
     @Test
@@ -633,9 +633,9 @@ class JsonDeserializerTest {
                     Document(1L),
                     Document("foo"),
                     Document(true),
-                    null
-                )
-            )
+                    null,
+                ),
+            ),
         )
 
     @Test
@@ -647,7 +647,7 @@ class JsonDeserializerTest {
                 "string" to "foo"
                 "bool" to true
                 "null" to null
-            }
+            },
         )
 
     @Test
@@ -713,7 +713,7 @@ class JsonDeserializerTest {
                         add("foo")
                         add(true)
                         add(null)
-                    }
+                    },
                 )
                 add(
                     buildDocument {
@@ -721,7 +721,7 @@ class JsonDeserializerTest {
                         "string" to "foo"
                         "bool" to true
                         "null" to null
-                    }
+                    },
                 )
             }
             "map" to buildDocument {

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.httptest
@@ -157,7 +157,7 @@ class TestConnectionTest {
         client.call(
             HttpRequestBuilder().apply {
                 url.host = "test-anything.com"
-            }
+            },
         )
 
         engine.assertRequests()
@@ -217,7 +217,7 @@ class TestConnectionTest {
         val call2 = client.call(
             HttpRequestBuilder().apply {
                 url.host = "test-anything.com"
-            }
+            },
         )
         call2.complete()
 

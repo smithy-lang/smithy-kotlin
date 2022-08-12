@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -16,7 +16,7 @@ class DeserializeUnionGenerator(
     private val unionName: String,
     members: List<MemberShape>,
     writer: KotlinWriter,
-    defaultTimestampFormat: TimestampFormatTrait.Format
+    defaultTimestampFormat: TimestampFormatTrait.Format,
 ) : DeserializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
 
     /**
@@ -49,7 +49,7 @@ class DeserializeUnionGenerator(
             is ListShape -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
             is MapShape -> renderMapMemberDeserializer(memberShape, targetShape)
             is StructureShape,
-            is UnionShape -> renderShapeDeserializer(memberShape)
+            is UnionShape, -> renderShapeDeserializer(memberShape)
             is BlobShape,
             is BooleanShape,
             is StringShape,
@@ -62,7 +62,7 @@ class DeserializeUnionGenerator(
             is DoubleShape,
             is BigDecimalShape,
             is DocumentShape,
-            is BigIntegerShape -> renderShapeDeserializer(memberShape)
+            is BigIntegerShape, -> renderShapeDeserializer(memberShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }

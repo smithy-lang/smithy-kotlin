@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
@@ -42,7 +42,7 @@ class HttpStringValuesMapSerializer(
     ) : this(ctx.model, ctx.symbolProvider, bindings, resolver, defaultTimestampFormat)
 
     fun render(
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         bindings.sortedBy(HttpBindingDescriptor::memberName).forEach {
             val memberName = symbolProvider.toMemberName(it.member)
@@ -64,7 +64,7 @@ class HttpStringValuesMapSerializer(
                     writer.write(
                         "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.encodeBase64String())",
                         memberName,
-                        paramName
+                        paramName,
                     )
                 }
                 is StringShape -> renderStringShape(it, memberTarget, writer)
@@ -127,7 +127,7 @@ class HttpStringValuesMapSerializer(
             "if (input.#1L?.isNotEmpty() == true) appendAll(\"#2L\", #3L)",
             memberName,
             paramName,
-            param2
+            param2,
         )
     }
 

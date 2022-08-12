@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.lang
@@ -63,7 +63,7 @@ class DocumentationPreprocessor : KotlinIntegration {
             { it is TextNode && it.isBlank },
             // Some docs contain empty definition terms, which we render as section headers. An empty section header
             // (literal "## \n" is invalid markdown according to dokka.
-            { it.nodeName() == "dt" && it.childNodes().isEmpty() }
+            { it.nodeName() == "dt" && it.childNodes().isEmpty() },
         )
 
         return parsed
@@ -176,7 +176,7 @@ class DocumentationPreprocessor : KotlinIntegration {
                     "[$bufferedAnchorText]($bufferedAnchorHref)"
                 } else {
                     bufferedAnchorText
-                }
+                },
             )
 
             bufferedAnchorHref = ""

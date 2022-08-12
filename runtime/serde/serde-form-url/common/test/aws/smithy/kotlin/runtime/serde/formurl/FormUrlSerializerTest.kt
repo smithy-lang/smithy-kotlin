@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.formurl
@@ -21,7 +21,7 @@ class FormUrlSerializerTest {
         val double: Double = 6.2,
         val char: Char = 'c',
         val string: String = "foo",
-        val listInt: List<Int> = listOf(5, 6, 7)
+        val listInt: List<Int> = listOf(5, 6, 7),
 
     ) : SdkSerializable {
         companion object {
@@ -148,12 +148,12 @@ class FormUrlSerializerTest {
 
     data class ListInput(
         val primitiveList: List<String>?,
-        val structList: List<B>?
+        val structList: List<B>?,
     ) {
         fun serialize(
             serializer: Serializer,
             PRIMITIVE_LIST_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("PrimitiveList")),
-            STRUCT_LIST_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("StructList"))
+            STRUCT_LIST_DESCRIPTOR: SdkFieldDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("StructList")),
         ) {
             val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
                 field(PRIMITIVE_LIST_DESCRIPTOR)
@@ -182,7 +182,7 @@ class FormUrlSerializerTest {
     fun itSerializesLists() {
         val input = ListInput(
             primitiveList = listOf("foo", "bar"),
-            structList = listOf(B(5), B(6), B(7))
+            structList = listOf(B(5), B(6), B(7)),
         )
 
         val expected = """
@@ -204,7 +204,7 @@ class FormUrlSerializerTest {
         // xmlFlattened() lists
         val input = ListInput(
             primitiveList = listOf("foo", "bar"),
-            structList = listOf(B(5), B(6), B(7))
+            structList = listOf(B(5), B(6), B(7)),
         )
 
         val expected = """
@@ -228,7 +228,7 @@ class FormUrlSerializerTest {
         // xmlName() trait on list member
         val input = ListInput(
             primitiveList = listOf("foo", "bar"),
-            structList = null
+            structList = null,
         )
 
         val expected = """
@@ -247,7 +247,7 @@ class FormUrlSerializerTest {
     @Test
     fun itSerializesClassWithNestedClassField() {
         val a = A(
-            B(2)
+            B(2),
         )
         val serializer = FormUrlSerializer()
         a.serialize(serializer)
@@ -314,7 +314,7 @@ class FormUrlSerializerTest {
                 "b1" to B(7),
                 "b2" to B(8),
                 "b3" to B(9),
-            )
+            ),
         )
 
         val expected = """
@@ -341,8 +341,8 @@ class FormUrlSerializerTest {
         val input = MapInput(
             mapOfLists = mapOf(
                 "foo" to listOf("A", "B"),
-                "bar" to listOf("C", "D")
-            )
+                "bar" to listOf("C", "D"),
+            ),
         )
 
         val expected = """
@@ -386,7 +386,6 @@ class FormUrlSerializerTest {
 
     @Test
     fun itSerializesMapOfMapOfPrimitive() {
-
         val expected = """
             MapOfMaps.entry.1.key=foo
             &MapOfMaps.entry.1.value.entry.1.key=k1
@@ -397,8 +396,8 @@ class FormUrlSerializerTest {
 
         val input = MapOfMapsInput(
             mapOf(
-                "foo" to mapOf("k1" to "v1", "k2" to "v2")
-            )
+                "foo" to mapOf("k1" to "v1", "k2" to "v2"),
+            ),
         )
         val serializer = FormUrlSerializer()
         input.serialize(serializer)
@@ -412,7 +411,7 @@ class FormUrlSerializerTest {
             primitiveMap = mapOf(
                 "k1" to "v1",
                 "k2" to "v2",
-            )
+            ),
         )
 
         val expected = """
@@ -431,7 +430,7 @@ class FormUrlSerializerTest {
 
     data class NestedStruct(
         val mapInput: Map<String, String>? = null,
-        val listInput: List<String>? = null
+        val listInput: List<String>? = null,
     ) : SdkSerializable {
         override fun serialize(serializer: Serializer) {
             val listDescriptor = SdkFieldDescriptor(SerialKind.Map, FormUrlSerialName("ListArg"))
@@ -477,7 +476,7 @@ class FormUrlSerializerTest {
     @Test
     fun itSerializesNestedMaps() {
         val input = NestedStructureInput(
-            nested = NestedStruct(mapInput = mapOf("k1" to "v1", "k2" to "v2"))
+            nested = NestedStruct(mapInput = mapOf("k1" to "v1", "k2" to "v2")),
         )
 
         val expected = """
@@ -496,7 +495,7 @@ class FormUrlSerializerTest {
     @Test
     fun itSerializesNestedLists() {
         val input = NestedStructureInput(
-            nested = NestedStruct(listInput = listOf("v1", "v2"))
+            nested = NestedStruct(listInput = listOf("v1", "v2")),
         )
 
         val expected = """
@@ -522,7 +521,7 @@ class FormUrlSerializerTest {
                 "b1" to B(7),
                 "b2" to B(8),
                 "b3" to B(9),
-            )
+            ),
         )
 
         val expected = """
@@ -583,8 +582,8 @@ class FormUrlSerializerTest {
         val input = MapInput(
             mapOfLists = mapOf(
                 "foo  " to listOf("A ", " B"),
-                "bar" to listOf("C", "Hello World")
-            )
+                "bar" to listOf("C", "Hello World"),
+            ),
         )
 
         val expected = """

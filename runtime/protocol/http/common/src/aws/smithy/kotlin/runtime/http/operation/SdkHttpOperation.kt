@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.operation
@@ -75,7 +75,7 @@ public suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
 public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     httpHandler: HttpHandler,
     input: I,
-    block: suspend (O) -> R
+    block: suspend (O) -> R,
 ): R {
     val handler = execution.decorate(httpHandler, serializer, deserializer)
     val request = OperationRequest(context, input)
@@ -101,6 +101,7 @@ public class SdkHttpOperationBuilder<I, O> {
         return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer)
     }
 }
+
 /**
  * Configure HTTP operation context elements
  */

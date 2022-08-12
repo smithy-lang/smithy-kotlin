@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.testing
 
@@ -17,7 +17,7 @@ import kotlin.random.Random
  */
 public class RandomInputStream(
     private val lengthInBytes: Long,
-    private val binaryData: Boolean = false
+    private val binaryData: Boolean = false,
 ) : InputStream() {
 
     /** The number of bytes of data remaining in this random stream.  */

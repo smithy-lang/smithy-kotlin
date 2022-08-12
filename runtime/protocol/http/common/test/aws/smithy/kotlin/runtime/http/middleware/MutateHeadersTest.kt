@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.middleware
@@ -51,7 +51,7 @@ class MutateHeadersTest {
             override = mapOf(
                 "foo" to "override",
                 "z" to "zebra",
-            )
+            ),
         )
         op.install(m)
 
@@ -81,7 +81,7 @@ class MutateHeadersTest {
             append = mapOf(
                 "foo" to "appended",
                 "z" to "zebra",
-            )
+            ),
         )
         op.install(m)
 
@@ -111,7 +111,7 @@ class MutateHeadersTest {
             setMissing = mapOf(
                 "foo" to "nope",
                 "z" to "zebra",
-            )
+            ),
         )
         op.install(m)
 

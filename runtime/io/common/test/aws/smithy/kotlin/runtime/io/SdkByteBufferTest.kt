@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io
@@ -115,7 +115,7 @@ class SdkByteBufferTest {
         buf.advance(12u)
         val sink = ByteArray(8)
         assertFailsWith<IllegalArgumentException>(
-            "Invalid read: offset + length should be less than the destination size: 7 + 4 < 8"
+            "Invalid read: offset + length should be less than the destination size: 7 + 4 < 8",
         ) {
             buf.readFully(sink, offset = 7, length = 4)
         }
@@ -216,7 +216,7 @@ class SdkByteBufferTest {
         val buf = SdkByteBuffer(16u)
         val contents = byteArrayOf(1, 2, 3, 4, 5)
         assertFailsWith<IllegalArgumentException>(
-            "Invalid write: offset + length should be less than the source size: 2 + 4 < 5"
+            "Invalid write: offset + length should be less than the source size: 2 + 4 < 5",
         ) {
             buf.writeFully(contents, offset = 2, length = 4)
         }

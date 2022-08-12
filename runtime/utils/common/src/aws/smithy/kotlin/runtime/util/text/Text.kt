@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.util.text
@@ -13,7 +13,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  */
 @InternalApi
 public fun String.urlEncodeComponent(
-    formUrlEncode: Boolean = false
+    formUrlEncode: Boolean = false,
 ): String {
     val sb = StringBuilder(this.length)
     val data = this.encodeToByteArray()
@@ -42,7 +42,7 @@ public val VALID_PCHAR_DELIMS: Set<Char> = setOf(
     // sub-delims from section-2.2
     '!', '$', '&', '\'', '(', ')', '*', '+', ',', ';', '=',
     // unreserved section-2.3
-    '-', '.', '_', '~'
+    '-', '.', '_', '~',
 )
 
 // test if a string encoded to a ByteArray is already percent encoded starting at index [i]

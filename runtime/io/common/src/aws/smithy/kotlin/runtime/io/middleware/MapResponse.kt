@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io.middleware
@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.io.Handler
  */
 public class MapResponse<Request, R1, R2, H>(
     private val inner: H,
-    private val fn: suspend (R1) -> R2
+    private val fn: suspend (R1) -> R2,
 ) : Handler<Request, R2>
         where H : Handler<Request, R1> {
     override suspend fun call(request: Request): R2 {

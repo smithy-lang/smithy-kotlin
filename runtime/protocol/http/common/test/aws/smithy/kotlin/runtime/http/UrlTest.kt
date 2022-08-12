@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http
 
@@ -15,7 +15,7 @@ class UrlTest {
         val url = Url(
             Protocol.HTTPS,
             "test.aws.com",
-            path = "/kotlin"
+            path = "/kotlin",
         )
         assertEquals(expected, url.toString())
     }
@@ -43,7 +43,7 @@ class UrlTest {
             Protocol.HTTPS,
             "test.aws.com",
             path = "/kotlin",
-            parameters = params
+            parameters = params,
         )
         assertEquals(expected, url.toString())
     }
@@ -54,7 +54,7 @@ class UrlTest {
         val url = Url(
             Protocol.HTTPS,
             "test.aws.com",
-            port = 8000
+            port = 8000,
         )
         assertEquals(expected, url.toString())
 
@@ -62,7 +62,7 @@ class UrlTest {
         val url2 = Url(
             Protocol.HTTP,
             "test.aws.com",
-            port = 80
+            port = 80,
         )
         assertEquals(expected2, url2.toString())
     }
@@ -75,8 +75,8 @@ class UrlTest {
                 Url(
                     Protocol.HTTPS,
                     "test.aws.com",
-                    port = n
-                ).port
+                    port = n,
+                ).port,
             )
         }
 
@@ -159,7 +159,7 @@ class UrlTest {
             "https://user:password@test.aws.com",
             "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
             "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
-            "https://test.com/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg"
+            "https://test.com/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg",
         )
 
         for (expected in urls) {

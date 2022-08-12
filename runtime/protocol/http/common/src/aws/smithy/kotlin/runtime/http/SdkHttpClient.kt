@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http
 
@@ -37,7 +37,7 @@ public fun sdkHttpClient(
  */
 public class SdkHttpClient(
     public val engine: HttpClientEngine,
-    private val manageEngine: Boolean = false
+    private val manageEngine: Boolean = false,
 ) : HttpHandler, Closeable {
     private val closed = atomic(false)
 

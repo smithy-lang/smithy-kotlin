@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.content
@@ -15,7 +15,7 @@ import java.io.File
 public class FileContent(
     public val file: File,
     public val start: Long = 0,
-    public val endInclusive: Long = file.length() - 1
+    public val endInclusive: Long = file.length() - 1,
 ) : ByteStream.ReplayableStream() {
 
     override val contentLength: Long

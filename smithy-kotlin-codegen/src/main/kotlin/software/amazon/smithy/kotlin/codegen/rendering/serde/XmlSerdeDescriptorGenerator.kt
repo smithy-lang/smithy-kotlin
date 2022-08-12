@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -20,7 +20,7 @@ private typealias SerdeXml = RuntimeTypes.Serde.SerdeXml
  */
 open class XmlSerdeDescriptorGenerator(
     ctx: RenderingContext<Shape>,
-    memberShapes: List<MemberShape>? = null
+    memberShapes: List<MemberShape>? = null,
 ) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
 
     private val serviceShape = ctx.model.expectShape<ServiceShape>(ctx.settings.service)
@@ -64,9 +64,8 @@ open class XmlSerdeDescriptorGenerator(
     override fun getFieldDescriptorTraits(
         member: MemberShape,
         targetShape: Shape,
-        nameSuffix: String
+        nameSuffix: String,
     ): List<SdkFieldDescriptorTrait> {
-
         ctx.writer.addImport(
             RuntimeTypes.Serde.SerdeXml.XmlDeserializer,
             RuntimeTypes.Serde.SerdeXml.XmlSerialName,

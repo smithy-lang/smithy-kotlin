@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.logging
@@ -11,7 +11,7 @@ package aws.smithy.kotlin.runtime.logging
  */
 private class ContextualLogger(
     private val inner: Logger,
-    logCtx: Map<String, Any>
+    logCtx: Map<String, Any>,
 ) : Logger {
 
     private val formattedCtx by lazy {

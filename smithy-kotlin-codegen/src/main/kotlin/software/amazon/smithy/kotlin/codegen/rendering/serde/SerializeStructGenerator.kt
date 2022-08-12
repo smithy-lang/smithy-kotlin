@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
@@ -40,7 +40,7 @@ open class SerializeStructGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val members: List<MemberShape>,
     protected val writer: KotlinWriter,
-    protected val defaultTimestampFormat: TimestampFormatTrait.Format
+    protected val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) {
     /**
      * Container for serialization information for a particular shape being serialized to
@@ -87,10 +87,12 @@ open class SerializeStructGenerator(
 
         when (targetShape.type) {
             ShapeType.LIST,
-            ShapeType.SET -> renderListMemberSerializer(memberShape, targetShape as CollectionShape)
+            ShapeType.SET,
+            -> renderListMemberSerializer(memberShape, targetShape as CollectionShape)
             ShapeType.MAP -> renderMapMemberSerializer(memberShape, targetShape as MapShape)
             ShapeType.STRUCTURE,
-            ShapeType.UNION -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
+            ShapeType.UNION,
+            -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
             ShapeType.TIMESTAMP -> renderTimestampMemberSerializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
@@ -103,7 +105,8 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.DOCUMENT,
-            ShapeType.BIG_INTEGER -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
+            ShapeType.BIG_INTEGER,
+            -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }
@@ -170,14 +173,17 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.DOCUMENT,
-            ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BIG_INTEGER,
+            -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
             ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampEntry(mapShape.value, elementShape, nestingLevel, parentMemberName)
             ShapeType.SET,
-            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.LIST,
+            -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
+            ShapeType.STRUCTURE,
+            -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -200,14 +206,17 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.DOCUMENT,
-            ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
+            ShapeType.BIG_INTEGER,
+            -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
             ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST,
-            ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
+            ShapeType.SET,
+            -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
+            ShapeType.STRUCTURE,
+            -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -244,7 +253,7 @@ open class SerializeStructGenerator(
         structureShape: Shape,
         nestingLevel: Int,
         parentMemberName: String,
-        isSparse: Boolean
+        isSparse: Boolean,
     ) {
         val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val (keyName, valueName) = keyValueNames(nestingLevel)
@@ -274,7 +283,7 @@ open class SerializeStructGenerator(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -305,7 +314,7 @@ open class SerializeStructGenerator(
         mapShape: MapShape,
         nestingLevel: Int,
         isSparse: Boolean,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
@@ -335,7 +344,7 @@ open class SerializeStructGenerator(
         elementShape: CollectionShape,
         nestingLevel: Int,
         isSparse: Boolean,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
@@ -449,7 +458,7 @@ open class SerializeStructGenerator(
         elementShape: Shape,
         nestingLevel: Int,
         listMemberName: String,
-        isSparse: Boolean
+        isSparse: Boolean,
     ) {
         val serializerFnName = elementShape.type.primitiveSerializerFunctionName()
         val iteratorName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -619,7 +628,8 @@ open class SerializeStructGenerator(
             ShapeType.LONG,
             ShapeType.FLOAT,
             ShapeType.DOCUMENT,
-            ShapeType.DOUBLE -> defaultIdentifier
+            ShapeType.DOUBLE,
+            -> defaultIdentifier
             ShapeType.BLOB -> {
                 writer.addImport("encodeBase64String", KotlinDependency.UTILS)
                 "$defaultIdentifier.encodeBase64String()"

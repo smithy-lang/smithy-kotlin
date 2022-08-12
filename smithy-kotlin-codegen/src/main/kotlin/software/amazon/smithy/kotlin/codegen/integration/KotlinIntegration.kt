@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.integration
 
@@ -93,7 +93,7 @@ interface KotlinIntegration {
     fun decorateSymbolProvider(
         settings: KotlinSettings,
         model: Model,
-        symbolProvider: SymbolProvider
+        symbolProvider: SymbolProvider,
     ): SymbolProvider = symbolProvider
 
     /**
@@ -115,7 +115,7 @@ interface KotlinIntegration {
         model: Model,
         symbolProvider: SymbolProvider,
         writer: KotlinWriter,
-        definedShape: Shape
+        definedShape: Shape,
     ) {
         // pass
     }
@@ -127,7 +127,7 @@ interface KotlinIntegration {
      */
     fun writeAdditionalFiles(
         ctx: CodegenContext,
-        delegator: KotlinDelegator
+        delegator: KotlinDelegator,
     ) {
         // pass
     }
@@ -144,6 +144,6 @@ interface KotlinIntegration {
      */
     fun customizeMiddleware(
         ctx: ProtocolGenerator.GenerationContext,
-        resolved: List<ProtocolMiddleware>
+        resolved: List<ProtocolMiddleware>,
     ): List<ProtocolMiddleware> = resolved
 }

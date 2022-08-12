@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 @file:OptIn(ExperimentalCoroutinesApi::class)
 
@@ -167,7 +167,7 @@ public data class ExpectedHttpRequest(
     // actual function to use for the assertion
     public val bodyAssert: BodyAssertFn? = null,
     // if not defined no assertion is made
-    public val bodyMediaType: String? = null
+    public val bodyMediaType: String? = null,
 )
 
 /**
@@ -207,7 +207,7 @@ public class ExpectedHttpRequestBuilder {
             this.resolvedHost,
             this.body,
             this.bodyAssert,
-            this.bodyMediaType
+            this.bodyMediaType,
         )
 }
 

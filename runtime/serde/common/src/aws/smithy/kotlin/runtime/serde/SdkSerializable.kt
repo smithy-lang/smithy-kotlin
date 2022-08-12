@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde
 
@@ -19,7 +19,7 @@ public fun <T> StructSerializer.field(descriptor: SdkFieldDescriptor, input: T, 
 
 private data class SdkSerializableLambda<T>(
     private val input: T,
-    private val serializeFn: SerializeFn<T>
+    private val serializeFn: SerializeFn<T>,
 ) : SdkSerializable {
     override fun serialize(serializer: Serializer) {
         serializeFn(serializer, input)

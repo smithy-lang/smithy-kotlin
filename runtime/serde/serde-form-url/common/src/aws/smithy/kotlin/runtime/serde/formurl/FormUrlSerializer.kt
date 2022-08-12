@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.formurl
@@ -20,7 +20,7 @@ public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkByteBuffer(256
 
 private class FormUrlSerializer(
     val buffer: SdkByteBuffer,
-    val prefix: String = ""
+    val prefix: String = "",
 ) : Serializer {
 
     override fun beginStruct(descriptor: SdkFieldDescriptor): StructSerializer =
@@ -71,7 +71,7 @@ private class FormUrlStructSerializer(
     private val parent: FormUrlSerializer,
     private val structDescriptor: SdkFieldDescriptor,
     // field prefix (e.g. nested structures, list elements, etc)
-    private val prefix: String
+    private val prefix: String,
 ) : StructSerializer, PrimitiveSerializer by parent {
     private val buffer
         get() = parent.buffer
@@ -137,7 +137,7 @@ private class FormUrlStructSerializer(
 
     override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
         throw SerializationException(
-            "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding"
+            "cannot serialize field ${descriptor.serialName}; Document type is not supported by form-url encoding",
         )
     }
 
@@ -145,7 +145,7 @@ private class FormUrlStructSerializer(
         val nestedPrefix = "${prefix}${descriptor.serialName}."
         // prepend the current prefix if one exists (e.g. deeply nested structures)
         value.serialize(
-            FormUrlSerializer(buffer, nestedPrefix)
+            FormUrlSerializer(buffer, nestedPrefix),
         )
     }
 
@@ -176,7 +176,7 @@ private class FormUrlStructSerializer(
 
 private class FormUrlListSerializer(
     parent: FormUrlSerializer,
-    private val descriptor: SdkFieldDescriptor
+    private val descriptor: SdkFieldDescriptor,
 ) : ListSerializer {
     private val buffer = parent.buffer
     private var idx = 0
@@ -223,7 +223,7 @@ private class FormUrlListSerializer(
 
 private class FormUrlMapSerializer(
     private val parent: FormUrlSerializer,
-    private val descriptor: SdkFieldDescriptor
+    private val descriptor: SdkFieldDescriptor,
 ) : MapSerializer, PrimitiveSerializer by parent {
     private val buffer = parent.buffer
     private var idx = 0

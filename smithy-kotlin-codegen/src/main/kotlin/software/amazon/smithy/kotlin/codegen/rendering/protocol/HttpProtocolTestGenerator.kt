@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
@@ -19,10 +19,12 @@ import java.util.logging.Logger
 enum class TestContainmentMode {
     RUN_TESTS, EXCLUDE_TESTS
 }
+
 /**
  * Specifies tests to add or subtract to the complete set.
  */
 data class TestMemberDelta(val members: Set<String>, val runMode: TestContainmentMode = TestContainmentMode.EXCLUDE_TESTS)
+
 /**
  * Generates protocol unit tests for the HTTP protocol from smithy models.
  */
@@ -32,7 +34,7 @@ class HttpProtocolTestGenerator(
     private val responseTestBuilder: HttpProtocolUnitTestResponseGenerator.Builder,
     private val errorTestBuilder: HttpProtocolUnitTestErrorGenerator.Builder,
     // list of test ID's to ignore/skip
-    private val testDelta: TestMemberDelta = TestMemberDelta(setOf())
+    private val testDelta: TestMemberDelta = TestMemberDelta(setOf()),
 ) {
     private val LOGGER = Logger.getLogger(javaClass.name)
 
@@ -44,7 +46,6 @@ class HttpProtocolTestGenerator(
         val topDownIndex: TopDownIndex = TopDownIndex.of(ctx.model)
 
         for (operation in TreeSet(topDownIndex.getContainedOperations(ctx.service).filterNot(::serverOnly))) {
-
             // 1. Generate test cases for each request.
             val requestTests = operation.getTrait<HttpRequestTestsTrait>()
                 ?.getTestCasesFor(AppliesTo.CLIENT)

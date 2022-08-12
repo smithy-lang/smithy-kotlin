@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime
@@ -34,7 +34,7 @@ class DocumentBuilderTest {
     @Test
     fun itRejectsDoubleInfinity() {
         assertFailsWith<IllegalArgumentException>(
-            "a document number cannot be Infinity, as its value cannot be preserved across serde"
+            "a document number cannot be Infinity, as its value cannot be preserved across serde",
         ) {
             Document(Double.POSITIVE_INFINITY)
         }
@@ -43,7 +43,7 @@ class DocumentBuilderTest {
     @Test
     fun itRejectsDoubleNegativeInfinity() {
         assertFailsWith<IllegalArgumentException>(
-            "a document number cannot be -Infinity, as its value cannot be preserved across serde"
+            "a document number cannot be -Infinity, as its value cannot be preserved across serde",
         ) {
             Document(Double.NEGATIVE_INFINITY)
         }
@@ -52,7 +52,7 @@ class DocumentBuilderTest {
     @Test
     fun itRejectsDoubleNaN() {
         assertFailsWith<IllegalArgumentException>(
-            "a document number cannot be NaN, as its value cannot be preserved across serde"
+            "a document number cannot be NaN, as its value cannot be preserved across serde",
         ) {
             Document(Double.NaN)
         }
@@ -61,7 +61,7 @@ class DocumentBuilderTest {
     @Test
     fun itRejectsFloatInfinity() {
         assertFailsWith<IllegalArgumentException>(
-            "a document number cannot be Infinity, as its value cannot be preserved across serde"
+            "a document number cannot be Infinity, as its value cannot be preserved across serde",
         ) {
             Document(Float.POSITIVE_INFINITY)
         }
@@ -70,7 +70,7 @@ class DocumentBuilderTest {
     @Test
     fun itRejectsFloatNegativeInfinity() {
         assertFailsWith<IllegalArgumentException>(
-            "a document number cannot be -Infinity, as its value cannot be preserved across serde"
+            "a document number cannot be -Infinity, as its value cannot be preserved across serde",
         ) {
             Document(Float.NEGATIVE_INFINITY)
         }
@@ -79,7 +79,7 @@ class DocumentBuilderTest {
     @Test
     fun itRejectsFloatNaN() {
         assertFailsWith<IllegalArgumentException>(
-            "a document number cannot be NaN, as its value cannot be preserved across serde"
+            "a document number cannot be NaN, as its value cannot be preserved across serde",
         ) {
             Document(Float.NaN)
         }

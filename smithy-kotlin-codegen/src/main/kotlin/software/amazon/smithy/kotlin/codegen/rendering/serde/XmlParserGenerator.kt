@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -25,20 +25,20 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 open class XmlParserGenerator(
     // FIXME - shouldn't be necessary but XML serde descriptor generator needs it for rendering context
     private val protocolGenerator: ProtocolGenerator,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    private val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) : StructuredDataParserGenerator {
 
     open fun descriptorGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
         members: List<MemberShape>,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ): XmlSerdeDescriptorGenerator = XmlSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun operationDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
-        members: List<MemberShape>
+        members: List<MemberShape>,
     ): Symbol {
         val outputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.output.get()))
         return op.bodyDeserializer(ctx.settings) { writer ->
@@ -71,7 +71,7 @@ open class XmlParserGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         documentMembers: List<MemberShape>,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeXml.XmlDeserializer)
         val shape = ctx.model.expectShape(op.output.get())
@@ -96,7 +96,7 @@ open class XmlParserGenerator(
     protected fun documentDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape> = shape.members()
+        members: Collection<MemberShape> = shape.members(),
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
@@ -119,7 +119,7 @@ open class XmlParserGenerator(
     override fun errorDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         errorShape: StructureShape,
-        members: List<MemberShape>
+        members: List<MemberShape>,
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(errorShape)
         return symbol.errorDeserializer(ctx.settings) { writer ->
@@ -137,7 +137,7 @@ open class XmlParserGenerator(
     override fun payloadDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape>?
+        members: Collection<MemberShape>?,
     ): Symbol {
         // re-use document deserializer
         val target = shape.targetOrSelf(ctx.model)

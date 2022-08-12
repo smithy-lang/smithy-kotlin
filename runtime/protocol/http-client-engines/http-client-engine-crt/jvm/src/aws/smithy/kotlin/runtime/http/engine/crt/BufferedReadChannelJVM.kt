@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.crt
@@ -13,7 +13,7 @@ internal actual fun bufferedReadChannel(onBytesRead: (n: Int) -> Unit): Buffered
     BufferedReadChannelImpl(onBytesRead)
 
 internal class BufferedReadChannelImpl(
-    onBytesRead: (n: Int) -> Unit
+    onBytesRead: (n: Int) -> Unit,
 ) : AbstractBufferedReadChannel(onBytesRead) {
 
     override suspend fun readAvailable(sink: ByteBuffer): Int {

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.model.knowledge
@@ -130,7 +130,8 @@ private fun walkNestedShapesRequiringSerde(model: Model, shapes: Set<Shape>): Se
                 RelationshipType.STRUCTURE_MEMBER,
                 RelationshipType.LIST_MEMBER,
                 RelationshipType.MAP_VALUE,
-                RelationshipType.UNION_MEMBER -> true
+                RelationshipType.UNION_MEMBER,
+                -> true
                 else -> false
             }
         }.forEach { walkedShape ->

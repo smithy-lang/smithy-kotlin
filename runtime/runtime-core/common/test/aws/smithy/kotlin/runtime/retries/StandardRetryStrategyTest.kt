@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.retries
@@ -52,7 +52,7 @@ class StandardRetryStrategyTest {
                 "timeout",
                 "throttled",
                 "success",
-            )
+            ),
         )
 
         assertEquals(Outcome.Response(5, "success"), result)
@@ -119,7 +119,7 @@ class StandardRetryStrategyTest {
                     ConcurrentModificationException(),
                     ConcurrentModificationException(),
                     ConcurrentModificationException(),
-                )
+                ),
             )
         }
 
@@ -148,7 +148,7 @@ class StandardRetryStrategyTest {
                     "client-error",
                     "server-error",
                     "timeout",
-                )
+                ),
             )
         }
 
@@ -181,7 +181,7 @@ fun block(
                 val expectedRetryDirective = retryPolicy.evaluate(wrap(currentIndex - 1))
                 val expectedRetryError = assertIs<RetryDirective.RetryError>(
                     expectedRetryDirective,
-                    "Unexpected $expectedRetryDirective"
+                    "Unexpected $expectedRetryDirective",
                 )
                 assertEquals(expectedRetryError.reason, lastToken!!.retryReason)
                 lastToken!!.nextToken!!

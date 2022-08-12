@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.hashing
 
@@ -54,7 +54,7 @@ class Md5Test {
         ).map { it.toByte() }.toByteArray()
 
         val expected = intArrayOf(
-            0x79, 0x05, 0x40, 0x25, 0x25, 0x5f, 0xb1, 0xa2, 0x6e, 0x4b, 0xc4, 0x22, 0xae, 0xf5, 0x4e, 0xb4
+            0x79, 0x05, 0x40, 0x25, 0x25, 0x5f, 0xb1, 0xa2, 0x6e, 0x4b, 0xc4, 0x22, 0xae, 0xf5, 0x4e, 0xb4,
         ).map { it.toByte() }.toByteArray()
 
         assertContentEquals(expected, message1.md5())

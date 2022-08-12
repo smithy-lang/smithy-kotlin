@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.util
 
@@ -80,10 +80,10 @@ class HeaderListsTest {
             // with split
             "Mon, 16 Dec 2019 23:48:18 GMT, Tue, 17 Dec 2019 23:48:18 GMT" to listOf(
                 "Mon, 16 Dec 2019 23:48:18 GMT",
-                "Tue, 17 Dec 2019 23:48:18 GMT"
+                "Tue, 17 Dec 2019 23:48:18 GMT",
             ),
             // empty
-            "" to listOf("")
+            "" to listOf(""),
         )
 
         for (test in tests) {

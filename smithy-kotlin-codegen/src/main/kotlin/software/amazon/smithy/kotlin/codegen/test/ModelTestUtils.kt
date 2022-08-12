@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.test
 
@@ -118,7 +118,7 @@ fun Model.newTestContext(
     serviceName: String = TestModelDefault.SERVICE_NAME,
     packageName: String = TestModelDefault.NAMESPACE,
     settings: KotlinSettings = this.defaultSettings(serviceName, packageName),
-    generator: ProtocolGenerator = MockHttpProtocolGenerator()
+    generator: ProtocolGenerator = MockHttpProtocolGenerator(),
 ): TestContext {
     val manifest = MockManifest()
     val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model = this, rootNamespace = packageName, serviceName = serviceName)
@@ -132,7 +132,7 @@ fun Model.newTestContext(
         provider,
         listOf(),
         generator.protocol,
-        delegator
+        delegator,
     )
     return TestContext(ctx, manifest, generator)
 }
@@ -164,7 +164,7 @@ fun Model.defaultSettings(
     packageName: String = TestModelDefault.NAMESPACE,
     packageVersion: String = TestModelDefault.MODEL_VERSION,
     sdkId: String = TestModelDefault.SDK_ID,
-    generateDefaultBuildFiles: Boolean = false
+    generateDefaultBuildFiles: Boolean = false,
 ): KotlinSettings {
     val serviceId = if (serviceName == null) {
         KotlinSettings.inferService(this)
@@ -181,15 +181,15 @@ fun Model.defaultSettings(
                 "package",
                 Node.objectNode()
                     .withMember("name", Node.from(packageName))
-                    .withMember("version", Node.from(packageVersion))
+                    .withMember("version", Node.from(packageVersion)),
             )
             .withMember("sdkId", Node.from(sdkId))
             .withMember(
                 "build",
                 Node.objectNode()
-                    .withMember("generateDefaultBuildFiles", Node.from(generateDefaultBuildFiles))
+                    .withMember("generateDefaultBuildFiles", Node.from(generateDefaultBuildFiles)),
             )
-            .build()
+            .build(),
     )
 }
 
@@ -198,7 +198,7 @@ internal fun String.generateTestModel(
     protocol: String,
     namespace: String = TestModelDefault.NAMESPACE,
     serviceName: String = TestModelDefault.SERVICE_NAME,
-    operations: List<String>
+    operations: List<String>,
 ): Model {
     val completeModel = """
         namespace $namespace
@@ -221,8 +221,8 @@ internal fun String.generateTestModel(
 
 // Specifies AWS protocols that can be set on test models.
 enum class AwsProtocolModelDeclaration(val annotation: String, val import: String) {
-    RestJson("@restJson1", "aws.protocols#restJson1"),
-    AwsJson1_1("@awsJson1_1", "aws.protocols#awsJson1_1")
+    REST_JSON("@restJson1", "aws.protocols#restJson1"),
+    AWS_JSON_1_1("@awsJson1_1", "aws.protocols#awsJson1_1")
 }
 
 // Generates the model header which by default conforms to the conventions defined for test models.
@@ -232,7 +232,7 @@ fun String.prependNamespaceAndService(
     imports: List<String> = emptyList(),
     serviceName: String = TestModelDefault.SERVICE_NAME,
     protocol: AwsProtocolModelDeclaration? = null,
-    operations: List<String> = emptyList()
+    operations: List<String> = emptyList(),
 ): String {
     val versionExpr = "\$version: \"$version\""
     val (modelProtocol, modelImports) = if (protocol == null) {

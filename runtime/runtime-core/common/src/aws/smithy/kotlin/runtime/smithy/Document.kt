@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.smithy
 
@@ -17,7 +17,7 @@ public sealed class Document {
         init {
             if (value is Double && !value.isFinite() || value is Float && !value.isFinite()) {
                 throw IllegalArgumentException(
-                    "a document number cannot be $value, as its value cannot be preserved across serde"
+                    "a document number cannot be $value, as its value cannot be preserved across serde",
                 )
             }
         }
@@ -58,7 +58,7 @@ public sealed class Document {
                 separator = ",",
                 prefix = "{",
                 postfix = "}",
-                transform = { (k, v) -> """"$k":$v""" }
+                transform = { (k, v) -> """"$k":$v""" },
             )
     }
 

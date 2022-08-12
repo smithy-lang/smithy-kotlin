@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io
@@ -9,6 +9,7 @@ import io.ktor.utils.io.bits.*
 
 internal interface Allocator {
     fun alloc(size: ULong): Memory
+
     // FIXME - we should revisit this - Kotlin/Native is only place where we would actually be manually managing memory
     // and that story may change to the point where a free() function isn't even necessary
     fun free(instance: Memory)

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine
@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 
 data class TestPlatformEnvironmentProvider(
     private val env: Map<String, String> = emptyMap(),
-    private val props: Map<String, String> = emptyMap()
+    private val props: Map<String, String> = emptyMap(),
 ) : PlatformEnvironProvider {
     override fun getenv(key: String): String? = env[key]
     override fun getAllEnvVars(): Map<String, String> = env
@@ -25,7 +25,7 @@ class EnvironmentProxySelectorTest {
         val expected: ProxyConfig,
         val url: String = "https://aws.amazon.com",
         val env: Map<String, String> = emptyMap(),
-        val props: Map<String, String> = emptyMap()
+        val props: Map<String, String> = emptyMap(),
     )
 
     private val httpsProxyEnv = mapOf("https_proxy" to "http://test.proxy.aws")
@@ -64,7 +64,7 @@ class EnvironmentProxySelectorTest {
         TestCase(ProxyConfig.Direct, props = httpProxyProps),
 
         // no_proxy set but doesn't match
-        TestCase(expectedProxyConfig, env = httpsProxyEnv + mapOf("no_proxy" to "example.com"))
+        TestCase(expectedProxyConfig, env = httpsProxyEnv + mapOf("no_proxy" to "example.com")),
     )
 
     @Test

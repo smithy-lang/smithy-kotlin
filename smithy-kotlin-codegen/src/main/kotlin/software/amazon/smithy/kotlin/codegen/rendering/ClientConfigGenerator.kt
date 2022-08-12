@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering
@@ -24,7 +24,7 @@ class ClientConfigGenerator(
     private val ctx: RenderingContext<ServiceShape>,
     detectDefaultProps: Boolean = true,
     private val builderReturnType: Symbol? = null,
-    vararg properties: ClientConfigProperty
+    vararg properties: ClientConfigProperty,
 ) {
 
     companion object {
@@ -89,7 +89,7 @@ class ClientConfigGenerator(
             if (builderReturnType != null) {
                 write(
                     "public inline operator fun invoke(block: Builder.() -> kotlin.Unit): #T = Builder().apply(block).build()",
-                    builderReturnType
+                    builderReturnType,
                 )
             } else {
                 write("public inline operator fun invoke(block: Builder.() -> kotlin.Unit): #configClass.name:L = Builder().apply(block).build()")
@@ -129,7 +129,7 @@ class ClientConfigGenerator(
                         "$override val #1L: #2T = requireNotNull(builder.#1L) { #3S }",
                         prop.propertyName,
                         prop.symbol,
-                        prop.propertyType.message ?: "${prop.propertyName} is a required configuration property"
+                        prop.propertyType.message ?: "${prop.propertyName} is a required configuration property",
                     )
                 }
                 is ClientConfigPropertyType.RequiredWithDefault -> {
@@ -137,7 +137,7 @@ class ClientConfigGenerator(
                         "$override val #1L: #2T = builder.#1L ?: #3L",
                         prop.propertyName,
                         prop.symbol,
-                        prop.propertyType.default
+                        prop.propertyType.default,
                     )
                 }
                 is ClientConfigPropertyType.Custom -> prop.propertyType.render(prop, ctx.writer)

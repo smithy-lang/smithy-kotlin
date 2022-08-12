@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
@@ -79,7 +79,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
                 credentialsProvider = testCredentialsProvider
                 service = "demo"
                 isUnsignedPayload = unsigned
-            }
+            },
         )
 
         operation.roundTrip(client, Unit)

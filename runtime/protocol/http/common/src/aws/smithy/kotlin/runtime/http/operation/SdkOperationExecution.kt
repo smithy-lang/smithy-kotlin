@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.operation
@@ -84,7 +84,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
 }
 
 private fun <I, O> HttpSerialize<I>.decorate(
-    inner: Handler<SdkHttpRequest, O>
+    inner: Handler<SdkHttpRequest, O>,
 ): Handler<OperationRequest<I>, O> = SerializeHandler(inner, ::serialize)
 
 private fun <O> HttpDeserialize<O>.decorate(
@@ -94,14 +94,14 @@ private fun <O> HttpDeserialize<O>.decorate(
 // internal glue used to marry one phase to another
 
 private class InitializeHandler<Input, Output>(
-    private val inner: Handler<Input, Output>
+    private val inner: Handler<Input, Output>,
 ) : Handler<Input, Output> {
     override suspend fun call(request: Input): Output = inner.call(request)
 }
 
 private class SerializeHandler<Input, Output> (
     private val inner: Handler<SdkHttpRequest, Output>,
-    private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder
+    private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder,
 ) : Handler<OperationRequest<Input>, Output> {
 
     companion object {
@@ -121,20 +121,20 @@ private class SerializeHandler<Input, Output> (
 }
 
 private class MutateHandler<Output> (
-    private val inner: Handler<SdkHttpRequest, Output>
+    private val inner: Handler<SdkHttpRequest, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
 private class FinalizeHandler<Output> (
-    private val inner: Handler<SdkHttpRequest, Output>
+    private val inner: Handler<SdkHttpRequest, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
 private class DeserializeHandler<Output>(
     private val inner: Handler<SdkHttpRequest, HttpCall>,
-    private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output
+    private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output,
 ) : Handler<SdkHttpRequest, Output> {
 
     companion object {

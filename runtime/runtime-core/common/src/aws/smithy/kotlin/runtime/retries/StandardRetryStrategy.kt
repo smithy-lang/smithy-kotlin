@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.retries
@@ -22,7 +22,7 @@ import kotlinx.coroutines.CancellationException
 public class StandardRetryStrategy(
     override val options: StandardRetryStrategyOptions = StandardRetryStrategyOptions.Default,
     private val tokenBucket: RetryTokenBucket = StandardRetryTokenBucket(),
-    private val delayProvider: DelayProvider = ExponentialBackoffWithJitter()
+    private val delayProvider: DelayProvider = ExponentialBackoffWithJitter(),
 ) : RetryStrategy {
     /**
      * Retry the given block of code until it's successful. Note this method throws exceptions for non-successful

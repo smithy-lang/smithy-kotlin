@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen
@@ -32,7 +32,7 @@ class KotlinSettingsTest {
 
         val settings = KotlinSettings.from(
             model,
-            Node.parse(contents).expectObjectNode()
+            Node.parse(contents).expectObjectNode(),
         )
 
         assertEquals(ShapeId.from(TestModelDefault.SERVICE_SHAPE_ID), settings.service)
@@ -58,7 +58,7 @@ class KotlinSettingsTest {
 
         val settings = KotlinSettings.from(
             model,
-            Node.parse(contents).expectObjectNode()
+            Node.parse(contents).expectObjectNode(),
         )
 
         assertTrue(settings.build.generateFullProject)
@@ -83,7 +83,7 @@ class KotlinSettingsTest {
 
         val settings = KotlinSettings.from(
             model,
-            Node.parse(contents).expectObjectNode()
+            Node.parse(contents).expectObjectNode(),
         )
 
         assertFalse(settings.build.generateFullProject)
@@ -108,7 +108,7 @@ class KotlinSettingsTest {
 
         val settings = KotlinSettings.from(
             model,
-            Node.parse(contents).expectObjectNode()
+            Node.parse(contents).expectObjectNode(),
         )
 
         val expected = listOf("foo", "bar")
@@ -134,7 +134,7 @@ class KotlinSettingsTest {
         assertFailsWith<CodegenException> {
             KotlinSettings.from(
                 model,
-                Node.parse(contents).expectObjectNode()
+                Node.parse(contents).expectObjectNode(),
             )
         }
     }
@@ -158,7 +158,7 @@ class KotlinSettingsTest {
         assertFailsWith<CodegenException> {
             KotlinSettings.from(
                 model,
-                Node.parse(contents).expectObjectNode()
+                Node.parse(contents).expectObjectNode(),
             )
         }
     }
@@ -181,7 +181,7 @@ class KotlinSettingsTest {
 
         KotlinSettings.from(
             model,
-            Node.parse(contents).expectObjectNode()
+            Node.parse(contents).expectObjectNode(),
         )
     }
 }

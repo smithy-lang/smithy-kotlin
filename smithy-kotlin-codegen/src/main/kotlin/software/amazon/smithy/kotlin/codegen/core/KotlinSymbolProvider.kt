@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.core
 
@@ -267,7 +267,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         shape: Shape?,
         typeName: String,
         namespace: String,
-        boxed: Boolean = false
+        boxed: Boolean = false,
     ): Symbol.Builder = createSymbolBuilder(shape, typeName, boxed).namespace(namespace, ".")
 }
 

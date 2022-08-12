@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.smithy
 
@@ -48,10 +48,17 @@ public class DocumentBuilder internal constructor() {
         public fun add(@Suppress("UNUSED_PARAMETER") value: Nothing?): Boolean =
             content.add(null)
 
-        @JvmName("addAllNumbers") public fun addAll(value: List<Number?>): Unit = value.forEach(::add)
-        @JvmName("addAllStrings") public fun addAll(value: List<String?>): Unit = value.forEach(::add)
-        @JvmName("addAllBooleans") public fun addAll(value: List<Boolean?>): Unit = value.forEach(::add)
-        @JvmName("addAllDocuments") public fun addAll(value: List<Document?>): Unit = value.forEach(::add)
+        @JvmName("addAllNumbers")
+        public fun addAll(value: List<Number?>): Unit = value.forEach(::add)
+
+        @JvmName("addAllStrings")
+        public fun addAll(value: List<String?>): Unit = value.forEach(::add)
+
+        @JvmName("addAllBooleans")
+        public fun addAll(value: List<Boolean?>): Unit = value.forEach(::add)
+
+        @JvmName("addAllDocuments")
+        public fun addAll(value: List<Document?>): Unit = value.forEach(::add)
     }
 
     /**

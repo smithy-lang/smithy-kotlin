@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.util
@@ -15,7 +15,7 @@ package aws.smithy.kotlin.runtime.util
 @Suppress("DEPRECATION")
 @RequiresOptIn(
     level = RequiresOptIn.Level.ERROR,
-    message = "This API is internal to the smithy-kotlin runtime and should not be used. It could be removed or changed without notice."
+    message = "This API is internal to the smithy-kotlin runtime and should not be used. It could be removed or changed without notice.",
 )
 @Target(
     AnnotationTarget.CLASS,
@@ -23,6 +23,6 @@ package aws.smithy.kotlin.runtime.util
     AnnotationTarget.FUNCTION,
     AnnotationTarget.PROPERTY,
     AnnotationTarget.FIELD,
-    AnnotationTarget.CONSTRUCTOR
+    AnnotationTarget.CONSTRUCTOR,
 )
 public annotation class InternalApi

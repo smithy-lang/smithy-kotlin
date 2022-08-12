@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.lang
@@ -45,9 +45,9 @@ class BuiltinPreprocessorTest {
             KotlinSettings.PackageSettings(
                 "test",
                 "1.0",
-                ""
+                "",
             ),
-            "Foo"
+            "Foo",
         )
 
         val integration = BuiltinPreprocessor()
@@ -55,7 +55,7 @@ class BuiltinPreprocessorTest {
 
         val originalShapeIds = setOf(
             "com.test#Unit",
-            "smithy.api#FooString" // should not rename builtins
+            "smithy.api#FooString", // should not rename builtins
         ).map(ShapeId::from)
         modified.shapeIds.shouldNotContainAll(originalShapeIds)
 
@@ -68,7 +68,7 @@ class BuiltinPreprocessorTest {
             "com.test#MyUnion\$Integer",
             "com.test#MyUnion\$String",
             "com.test#MyUnion\$Unit",
-            "smithy.api#String"
+            "smithy.api#String",
         ).map(ShapeId::from)
         modified.shapeIds.shouldContainAll(newOrUnmodifiedShapeIds)
 

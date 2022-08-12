@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -20,7 +20,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
  */
 class ShapeValueGenerator(
     internal val model: Model,
-    internal val symbolProvider: SymbolProvider
+    internal val symbolProvider: SymbolProvider,
 ) {
 
     /**
@@ -96,7 +96,7 @@ class ShapeValueGenerator(
             RuntimeTypes.Core.Content.ByteArrayContent,
             RuntimeTypes.Core.Content.ByteStream,
             RuntimeTypes.Core.Content.StringContent,
-            RuntimeTypes.Core.Content.toByteArray
+            RuntimeTypes.Core.Content.toByteArray,
         )
         val suffix = when (shape.type) {
             ShapeType.STRING -> {
@@ -134,7 +134,7 @@ class ShapeValueGenerator(
     private class ShapeValueNodeVisitor(
         val writer: KotlinWriter,
         val generator: ShapeValueGenerator,
-        val currShape: Shape
+        val currShape: Shape,
     ) : NodeVisitor<Unit> {
 
         override fun objectNode(node: ObjectNode) {
@@ -205,7 +205,8 @@ class ShapeValueGenerator(
         override fun stringNode(node: StringNode) {
             when (currShape.type) {
                 ShapeType.DOUBLE,
-                ShapeType.FLOAT -> {
+                ShapeType.FLOAT,
+                -> {
                     val symbolName = generator.symbolProvider.toSymbol(currShape).name
                     val symbolMember = when (node.value) {
                         "Infinity" -> "POSITIVE_INFINITY"
@@ -261,7 +262,8 @@ class ShapeValueGenerator(
                 }
 
                 ShapeType.BYTE, ShapeType.SHORT, ShapeType.INTEGER,
-                ShapeType.LONG -> writer.writeInline("#L", node.value)
+                ShapeType.LONG,
+                -> writer.writeInline("#L", node.value)
 
                 // ensure float/doubles that are represented as integers in the params get converted
                 // since Kotlin doesn't support implicit conversions (e.g. '1' cannot be implicitly converted
@@ -277,7 +279,7 @@ class ShapeValueGenerator(
                     "#T(#L#L)",
                     RuntimeTypes.Core.Smithy.Document,
                     node.value,
-                    if (node.isFloatingPointNumber) "F" else "L"
+                    if (node.isFloatingPointNumber) "F" else "L",
                 )
 
                 else -> throw CodegenException("unexpected shape type $currShape for numberNode")

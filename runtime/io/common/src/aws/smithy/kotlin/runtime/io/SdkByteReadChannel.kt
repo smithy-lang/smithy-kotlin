@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.io
 
@@ -75,7 +75,7 @@ public expect interface SdkByteReadChannel : Closeable {
 public suspend fun SdkByteReadChannel.copyTo(
     dst: SdkByteWriteChannel,
     limit: Long = Long.MAX_VALUE,
-    close: Boolean = true
+    close: Boolean = true,
 ): Long {
     require(this !== dst)
     if (limit == 0L) return 0L

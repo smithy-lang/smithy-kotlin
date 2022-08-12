@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
@@ -17,7 +17,7 @@ class DeserializeUnionGeneratorTest {
             operation Foo {
                 output: FooResponse
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("Foo")).trimIndent()
 
     @Test
     fun `it deserializes a union with primitive values`() {
@@ -243,7 +243,7 @@ class DeserializeUnionGeneratorTest {
                 listOfIntList: ListOfIntList,
                 mapOfLists: MapOfLists
             }  
-        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.AwsJson1_1, operations = listOf("UnionTestOperation")).toSmithyModel()
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.AWS_JSON_1_1, operations = listOf("UnionTestOperation")).toSmithyModel()
 
         val expected = """
             deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
@@ -320,7 +320,7 @@ class DeserializeUnionGeneratorTest {
                 shapeName,
                 members,
                 writer,
-                TimestampFormatTrait.Format.EPOCH_SECONDS
+                TimestampFormatTrait.Format.EPOCH_SECONDS,
             ).render()
         }
     }

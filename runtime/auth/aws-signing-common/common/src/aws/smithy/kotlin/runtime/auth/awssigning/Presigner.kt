@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
@@ -98,7 +98,7 @@ public data class PresignedRequestConfig(
     public val expiresAfter: Duration,
     public val signBody: Boolean = false,
     public val presigningLocation: PresigningLocation,
-    public val additionalHeaders: Headers = Headers.Empty
+    public val additionalHeaders: Headers = Headers.Empty,
 )
 
 /**

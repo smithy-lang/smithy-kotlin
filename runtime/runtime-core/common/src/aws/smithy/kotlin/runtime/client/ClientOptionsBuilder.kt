@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.client
@@ -57,7 +57,7 @@ public abstract class ClientOptionsBuilder(protected val options: Attributes = A
  */
 public class DelegatedClientOption<T : Any>(
     private val key: AttributeKey<T>,
-    private val into: Attributes
+    private val into: Attributes,
 ) : ReadWriteProperty<Any?, T?> {
 
     override fun getValue(thisRef: Any?, property: KProperty<*>): T? =

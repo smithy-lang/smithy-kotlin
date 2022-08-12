@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
@@ -25,7 +25,7 @@ import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 abstract class HttpProtocolClientGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val middleware: List<ProtocolMiddleware>,
-    protected val httpBindingResolver: HttpBindingResolver
+    protected val httpBindingResolver: HttpBindingResolver,
 ) {
 
     object OperationDeserializerBinding : SectionId {
@@ -83,7 +83,7 @@ abstract class HttpProtocolClientGenerator(
             RuntimeTypes.Http.Operation.SdkHttpOperation,
             RuntimeTypes.Http.Operation.context,
             RuntimeTypes.Http.SdkHttpClient,
-            RuntimeTypes.Http.SdkHttpClientFn
+            RuntimeTypes.Http.SdkHttpClientFn,
         )
         writer.addImport(defaultClientSymbols)
         writer.dependencies.addAll(KotlinDependency.HTTP.dependencies)
@@ -137,9 +137,10 @@ abstract class HttpProtocolClientGenerator(
         val (inputSymbolName, outputSymbolName) = ioSymbolNames(op)
 
         writer.openBlock(
-            "val op = SdkHttpOperation.build<#L, #L> {", "}",
+            "val op = SdkHttpOperation.build<#L, #L> {",
+            "}",
             inputSymbolName,
-            outputSymbolName
+            outputSymbolName,
         ) {
             if (inputShape.isPresent) {
                 writer.write("serializer = ${op.serializerName()}()")
@@ -153,7 +154,7 @@ abstract class HttpProtocolClientGenerator(
                     writer.openBlock(
                         "override suspend fun serialize(context: ExecutionContext, input: #Q): HttpRequestBuilder {",
                         "}",
-                        KotlinTypes.Unit
+                        KotlinTypes.Unit,
                     ) {
                         writer.write("val builder = HttpRequestBuilder()")
                         writer.write("builder.method = HttpMethod.#L", httpTrait.method.uppercase())

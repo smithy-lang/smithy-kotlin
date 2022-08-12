@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.retries.delay
@@ -26,7 +26,7 @@ import kotlin.time.DurationUnit
  * @param options The configuration to use for this delayer.
  */
 public class ExponentialBackoffWithJitter(
-    public val options: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions.Default
+    public val options: ExponentialBackoffWithJitterOptions = ExponentialBackoffWithJitterOptions.Default,
 ) : DelayProvider {
     private val random = Random.Default
 

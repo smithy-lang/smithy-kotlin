@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http
 
@@ -30,7 +30,7 @@ public data class Url(
     public val fragment: String? = null,
     public val userInfo: UserInfo? = null,
     public val forceQuery: Boolean = false,
-    public val encodeParameters: Boolean = true
+    public val encodeParameters: Boolean = true,
 ) {
     init {
         require(port in 1..65536) { "port must be in between 1 and 65536" }
@@ -75,7 +75,7 @@ private fun encodePath(
     queryParameters: Set<Map.Entry<String, List<String>>>? = null,
     fragment: String? = null,
     forceQuery: Boolean = false,
-    encodeParameters: Boolean = true
+    encodeParameters: Boolean = true,
 ): String = buildString {
     if (path.isNotBlank()) {
         append("/")
@@ -128,7 +128,7 @@ public class UrlBuilder : CanDeepCopy<UrlBuilder> {
         if (parameters.isEmpty()) QueryParameters.Empty else parameters.build(),
         fragment,
         userInfo,
-        forceQuery
+        forceQuery,
     )
 
     override fun deepCopy(): UrlBuilder {

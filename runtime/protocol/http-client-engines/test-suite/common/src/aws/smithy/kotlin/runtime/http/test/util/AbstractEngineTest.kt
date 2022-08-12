@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.test.util
@@ -96,7 +96,7 @@ public class EngineTestBuilder {
 public fun testWithClient(
     client: SdkHttpClient,
     timeout: Duration = 60.seconds,
-    builder: EngineTestBuilder
+    builder: EngineTestBuilder,
 ): Unit = runBlockingTest(timeout = timeout) {
     runConcurrently(builder.concurrency) { coroutineId ->
         repeat(builder.repeat) { attempt ->
@@ -111,7 +111,7 @@ public fun testWithClient(
 internal expect fun runBlockingTest(
     context: CoroutineContext = EmptyCoroutineContext,
     timeout: Duration? = null,
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
 ): Unit
 
 private suspend fun runConcurrently(level: Int, block: suspend (Int) -> Unit) {
@@ -145,7 +145,7 @@ internal data class TestEngineFactory(
     /**
      * Configure a new [HttpClientEngine] instance and return it
      */
-    val configure: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine
+    val configure: (HttpClientEngineConfig.Builder.() -> Unit) -> HttpClientEngine,
 ) {
     fun create(block: HttpClientEngineConfig.Builder.() -> Unit): HttpClientEngine = configure(block)
 }

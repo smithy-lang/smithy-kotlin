@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.crt
@@ -32,7 +32,7 @@ class RequestConversionTest {
             HttpMethod.GET,
             Url.parse("https://test.aws.com?foo=bar"),
             Headers.Empty,
-            HttpBody.Empty
+            HttpBody.Empty,
         )
         val uri = request.uri
         assertEquals("https://test.aws.com", uri.toString())
@@ -96,7 +96,7 @@ class RequestConversionTest {
             HttpMethod.POST,
             Url.parse("https://test.aws.com?foo=bar"),
             Headers.Empty,
-            HttpBody.Empty
+            HttpBody.Empty,
         )
 
         val testContext = EmptyCoroutineContext + Job()

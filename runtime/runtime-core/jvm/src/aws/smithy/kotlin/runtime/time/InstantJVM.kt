@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.time
@@ -147,7 +147,7 @@ private fun fromParsedDateTime(parsed: ParsedDatetime): Instant {
         hour,
         min,
         sec,
-        parsed.ns
+        parsed.ns,
     ).plusDays(dayOffset.toLong())
     val tzOffset = ZoneOffset.ofTotalSeconds(parsed.offsetSec)
     val odt = ldt.atOffset(tzOffset)
@@ -177,7 +177,7 @@ public fun buildRfc5322Formatter(): DateTimeFormatter {
         4L to "Thu",
         5L to "Fri",
         6L to "Sat",
-        7L to "Sun"
+        7L to "Sun",
     )
 
     val moy: Map<Long, String> = mapOf(
@@ -192,7 +192,7 @@ public fun buildRfc5322Formatter(): DateTimeFormatter {
         9L to "Sep",
         10L to "Oct",
         11L to "Nov",
-        12L to "Dec"
+        12L to "Dec",
     )
 
     val formatter = DateTimeFormatterBuilder()

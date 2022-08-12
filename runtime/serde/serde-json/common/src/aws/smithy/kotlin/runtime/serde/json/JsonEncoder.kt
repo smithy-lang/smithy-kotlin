@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.json
@@ -148,6 +148,7 @@ internal fun String.escape(): String {
 private fun Char.needsEscaped(): Boolean = when (code) {
     CP_QUOTATION,
     CP_BACKSLASH,
-    in 0..0x1F -> true
+    in 0..0x1F,
+    -> true
     else -> false
 }
