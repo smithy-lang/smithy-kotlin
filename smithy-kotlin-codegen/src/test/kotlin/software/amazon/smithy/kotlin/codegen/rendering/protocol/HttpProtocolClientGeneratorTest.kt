@@ -41,6 +41,8 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.sdkRequestId")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.childTraceSpan")
     }
 
     @Test
@@ -65,6 +67,7 @@ class HttpProtocolClientGeneratorTest {
         val expected = """
     override fun close() {
         client.close()
+        rootTraceSpan.close()
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
@@ -82,10 +85,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFoo"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.roundTrip(client, input)
+        }
     }
 """,
 """
@@ -97,10 +103,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooNoInput"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.roundTrip(client, input)
+        }
     }
 """,
 """
@@ -112,10 +121,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooNoOutput"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.roundTrip(client, input)
+        }
     }
 """,
 """
@@ -127,10 +139,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingInput"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.roundTrip(client, input)
+        }
     }
 """,
 """
@@ -142,10 +157,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingOutput"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.execute(client, input, block)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.execute(client, input, block)
+        }
     }
 """,
 """
@@ -157,10 +175,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingOutputNoInput"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.execute(client, input, block)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.execute(client, input, block)
+        }
     }
 """,
 """
@@ -172,10 +193,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooStreamingInputNoOutput"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.roundTrip(client, input)
+        }
     }
 """,
 """
@@ -187,10 +211,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooNoRequired"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.roundTrip(client, input)
+        }
     }
 """,
 """
@@ -202,10 +229,13 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetFooSomeRequired"
+                traceSpan = rootTraceSpan
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return op.context.childTraceSpan(op.context.sdkRequestId) {
+            op.roundTrip(client, input)
+        }
     }
 """,
         )
@@ -273,6 +303,7 @@ class HttpProtocolClientGeneratorTest {
                 expectedHttpStatus = 200
                 service = serviceName
                 operationName = "GetStatus"
+                traceSpan = rootTraceSpan
                 hostPrefix = "$prefix"
             }
         }

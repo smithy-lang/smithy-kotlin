@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.engine.*
-import aws.smithy.kotlin.runtime.http.operation.withContext
+import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -61,11 +61,9 @@ public class KtorEngine(
         followRedirects = false
     }
 
-    private val logger = Logger.getLogger<KtorEngine>()
-
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
-        val reqLogger = logger.withContext(context)
+        val reqLogger = context.getLogger<KtorEngine>()
 
         val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 

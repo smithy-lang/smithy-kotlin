@@ -18,7 +18,6 @@ import aws.smithy.kotlin.runtime.http.response.dumpResponse
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
@@ -104,18 +103,13 @@ private class SerializeHandler<Input, Output> (
     private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder,
 ) : Handler<OperationRequest<Input>, Output> {
 
-    companion object {
-        // generics aren't propagated on names anyway, just fill in a placeholder for type parameters
-        private val logger = Logger.getLogger<SerializeHandler<Unit, Unit>>()
-    }
-
     @OptIn(ExperimentalTime::class)
     override suspend fun call(request: OperationRequest<Input>): Output {
         val tv = measureTimedValue {
             mapRequest(request.context, request.subject)
         }
 
-        logger.withContext(request.context).trace { "request serialized in ${tv.duration}" }
+        request.context.getLogger<SerializeHandler<*, *>>().trace { "request serialized in ${tv.duration}" }
         return inner.call(SdkHttpRequest(request.context, tv.value))
     }
 }
@@ -137,17 +131,13 @@ private class DeserializeHandler<Output>(
     private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output,
 ) : Handler<SdkHttpRequest, Output> {
 
-    companion object {
-        private val logger = Logger.getLogger<DeserializeHandler<Unit>>()
-    }
-
     @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         val call = inner.call(request)
         val tv = measureTimedValue {
             mapResponse(request.context, call.response)
         }
-        logger.withContext(request.context).trace { "response deserialized in: ${tv.duration}" }
+        request.context.getLogger<DeserializeHandler<*>>().trace { "response deserialized in: ${tv.duration}" }
         return tv.value
     }
 }

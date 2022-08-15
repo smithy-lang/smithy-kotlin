@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
-import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -28,15 +27,9 @@ public class SdkHttpOperation<I, O>(
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
 ) {
-
     init {
         val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
-        context[HttpOperationContext.LoggingContext] = mapOf(
-            "sdkRequestId" to sdkRequestId,
-            "service" to context[SdkClientOption.ServiceName],
-            "operation" to context[SdkClientOption.OperationName],
-        )
     }
 
     /**
@@ -57,6 +50,9 @@ public class SdkHttpOperation<I, O>(
             SdkHttpOperationBuilder<I, O>().apply(block).build()
     }
 }
+
+public val ExecutionContext.sdkRequestId: String
+    get() = get(HttpOperationContext.SdkRequestId)
 
 /**
  * Round trip an operation using the given [HttpHandler]

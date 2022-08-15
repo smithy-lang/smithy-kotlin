@@ -20,6 +20,8 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.util.StringValuesMap
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
+import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import io.ktor.http.cio.*
@@ -470,6 +472,7 @@ private fun buildOperation(
             set(AwsSigningAttributes.SigningDate, it)
         }
         set(AwsSigningAttributes.SigningService, config.service)
+        traceSpan = NoOpTraceSpan
     }
 }
 

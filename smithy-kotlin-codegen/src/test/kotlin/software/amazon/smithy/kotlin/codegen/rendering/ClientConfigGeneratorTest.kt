@@ -20,13 +20,16 @@ import kotlin.test.Test
 class ClientConfigGeneratorTest {
     private fun getModel(): Model = loadModelFromResource("idempotent-token-test-model.smithy")
 
+    private fun createWriter() =
+        KotlinWriter(TestModelDefault.NAMESPACE).apply { putContext("service.name", TestModelDefault.SERVICE_NAME) }
+
     @Test
     fun `it detects default properties`() {
         val model = getModel()
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         ClientConfigGenerator(renderingCtx).render()
@@ -35,21 +38,29 @@ class ClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
+public class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
+    override val clientName: String = builder.clientName ?: "${TestModelDefault.SERVICE_NAME}"
     public val endpointResolver: EndpointResolver = requireNotNull(builder.endpointResolver) { "endpointResolver is a required configuration property" }
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
+    override val traceProbe: TraceProbe = builder.traceProbe ?: NoOpTraceProbe
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilder = """
     public class Builder {
+        /**
+         * The name of this client, which will be used in tracing data. If using multiple clients for the same
+         * service simultaneously, giving them unique names can help disambiguate them in logging messages or
+         * metrics. By default, the client name will be the same as the service name.
+         */
+        public var clientName: String? = null
         /**
          * Set the [aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver] used to resolve service endpoints. Operation requests will be
          * made against the endpoint returned by the resolver.
@@ -82,6 +93,11 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * debug purposes.
          */
         public var sdkLogMode: SdkLogMode = SdkLogMode.Default
+        /**
+         * The probe that receives tracing events such as logging messages and metrics. This probe can be used
+         * to send tracing events to other frameworks outside the SDK. By default, a no-op probe is selected.
+         */
+        public var traceProbe: TraceProbe? = null
 
         @PublishedApi
         internal fun build(): Config = Config(this)
@@ -110,7 +126,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(
@@ -158,7 +174,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val customIntegration = object : KotlinIntegration {
 
             override fun additionalServiceConfigProps(ctx: CodegenContext): List<ClientConfigProperty> =
@@ -208,7 +224,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(
@@ -247,7 +263,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         ClientConfigGenerator(renderingCtx).render()
@@ -270,7 +286,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(

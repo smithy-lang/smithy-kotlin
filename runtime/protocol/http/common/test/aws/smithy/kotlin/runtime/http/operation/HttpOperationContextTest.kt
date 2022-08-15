@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.SdkClientOption
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.test.*
 
@@ -17,6 +18,7 @@ class HttpOperationContextTest {
             service = "test"
             operationName = "operation"
             expectedHttpStatus = 418
+            traceSpan = NoOpTraceSpan
         }
 
         assertEquals("test", op[(SdkClientOption.ServiceName)])

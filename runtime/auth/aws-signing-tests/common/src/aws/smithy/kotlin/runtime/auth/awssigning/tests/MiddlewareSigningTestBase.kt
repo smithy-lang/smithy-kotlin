@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
@@ -54,6 +55,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
         context {
             operationName = "testSigningOperation"
             service = "TestService"
+            traceSpan = NoOpTraceSpan
             set(AwsSigningAttributes.SigningRegion, "us-east-1")
             set(AwsSigningAttributes.SigningDate, Instant.fromIso8601("2020-10-16T19:56:00Z"))
             set(AwsSigningAttributes.SigningService, "demo")

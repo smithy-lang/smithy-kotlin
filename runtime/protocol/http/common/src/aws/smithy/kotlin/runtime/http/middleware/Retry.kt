@@ -5,16 +5,17 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.Handler
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
+import aws.smithy.kotlin.runtime.tracing.childTraceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -31,29 +32,32 @@ public open class Retry<O>(
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
         if (request.subject.isRetryable) {
             var attempt = 1
-            val logger = request.context.getLogger("Retry")
-            val wrappedPolicy = PolicyLogger(policy, logger)
+            val wrappedPolicy = PolicyLogger(policy, request.context)
             val outcome = strategy.retry(wrappedPolicy) {
-                if (attempt > 1) {
-                    logger.debug { "retrying request, attempt $attempt" }
+                request.context.childTraceSpan("Attempt-$attempt") {
+                    if (attempt > 1) {
+                        request.context.getLogger<Retry<*>>().debug { "retrying request, attempt $attempt" }
+                    }
+
+                    // Deep copy the request because later middlewares (e.g., signing) mutate it
+                    val requestCopy = request.deepCopy()
+
+                    onAttempt(requestCopy, attempt)
+                    when (val body = requestCopy.subject.body) {
+                        // Reset streaming bodies back to beginning
+                        is HttpBody.Streaming -> body.reset()
+                        else -> {}
+                    }
+
+                    attempt++
+                    next.call(requestCopy)
                 }
-
-                // Deep copy the request because later middlewares (e.g., signing) mutate it
-                val requestCopy = request.deepCopy()
-
-                onAttempt(requestCopy, attempt)
-                when (val body = requestCopy.subject.body) {
-                    // Reset streaming bodies back to beginning
-                    is HttpBody.Streaming -> body.reset()
-                    else -> {}
-                }
-
-                attempt++
-                next.call(requestCopy)
             }
             outcome.getOrThrow()
         } else {
-            next.call(request)
+            request.context.childTraceSpan("Attempt-1") { // Include an attempt trace span even though we won't retry
+                next.call(request)
+            }
         }
 
     /**
@@ -69,11 +73,11 @@ public open class Retry<O>(
  */
 private class PolicyLogger(
     private val policy: RetryPolicy<Any?>,
-    private val logger: Logger,
+    private val ctx: ExecutionContext,
 ) : RetryPolicy<Any?> {
     override fun evaluate(result: Result<Any?>): RetryDirective = policy.evaluate(result).also {
         if (it is RetryDirective.TerminateAndFail) {
-            logger.debug { "request failed with non-retryable error" }
+            ctx.getLogger<Retry<*>>().debug { "request failed with non-retryable error" }
         }
     }
 }
