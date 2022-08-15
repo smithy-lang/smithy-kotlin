@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.xml.dom
@@ -22,6 +22,7 @@ public class XmlNode {
     public val children: MutableMap<String, MutableList<XmlNode>> = linkedMapOf()
     public var text: String? = null
     public val attributes: MutableMap<XmlToken.QualifiedName, String> = linkedMapOf()
+
     // namespaces declared by this node
     public val namespaces: MutableList<XmlToken.Namespace> = mutableListOf()
     public var parent: XmlNode? = null
@@ -59,7 +60,6 @@ public class XmlNode {
 
 // parse a string into a dom representation
 public fun parseDom(reader: XmlStreamReader): XmlNode {
-
     val nodeStack: ListStack<XmlNode> = mutableListOf()
 
     loop@while (true) {
@@ -91,7 +91,8 @@ public fun parseDom(reader: XmlStreamReader): XmlNode {
                 curr.text = token.value
             }
             null,
-            is XmlToken.EndDocument -> break@loop
+            is XmlToken.EndDocument,
+            -> break@loop
             else -> continue // ignore unknown token types
         }
     }

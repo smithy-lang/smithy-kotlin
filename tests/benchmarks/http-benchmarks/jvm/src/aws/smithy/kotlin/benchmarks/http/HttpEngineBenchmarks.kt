@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.benchmarks.http
@@ -41,7 +41,7 @@ fun interface BenchmarkEngineFactory {
 private val engines = mapOf(
     OKHTTP_ENGINE to BenchmarkEngineFactory { OkHttpEngine() },
     CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() },
-    KTOR_OKHTTP to BenchmarkEngineFactory { KtorOkHttpEngine() }
+    KTOR_OKHTTP to BenchmarkEngineFactory { KtorOkHttpEngine() },
 )
 
 // 12MB

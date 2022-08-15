@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.crt
@@ -25,7 +25,7 @@ import kotlinx.coroutines.channels.Channel
  */
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SdkStreamResponseHandler(
-    private val conn: HttpClientConnection
+    private val conn: HttpClientConnection,
 ) : HttpStreamResponseHandler {
     // TODO - need to cancel the stream when the body is closed from the caller side early.
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
@@ -39,6 +39,7 @@ internal class SdkStreamResponseHandler(
 
     private val lock = reentrantLock() // protects crtStream and cancelled state
     private var crtStream: HttpStream? = null
+
     // if the (coroutine) job is completed before the stream's onResponseComplete callback is
     // invoked (for any reason) we consider the stream "cancelled"
     private var cancelled = false
@@ -65,7 +66,7 @@ internal class SdkStreamResponseHandler(
         stream: HttpStream,
         responseStatusCode: Int,
         blockType: Int,
-        nextHeaders: List<HttpHeader>?
+        nextHeaders: List<HttpHeader>?,
     ) {
         if (!blockType.isMainHeadersBlock) return
 
@@ -105,7 +106,7 @@ internal class SdkStreamResponseHandler(
         val resp = HttpResponse(
             status,
             headers.build(),
-            body
+            body,
         )
 
         val result = responseReady.trySend(resp)

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -372,7 +372,7 @@ class XmlDeserializerMapTest {
 
         val expected = mapOf(
             "outer1" to mapOf("inner1" to "innerValue1", "inner2" to "innerValue2"),
-            "outer2" to mapOf("inner3" to "innerValue3", "inner4" to "innerValue4")
+            "outer2" to mapOf("inner3" to "innerValue3", "inner4" to "innerValue4"),
         )
 
         actual.shouldContainExactly(expected)
@@ -380,7 +380,6 @@ class XmlDeserializerMapTest {
 
     @Test
     fun itHandlesNestedStructAsValue() {
-
         val payload = """
             <XmlMapsInputOutput>
                 <myMap>

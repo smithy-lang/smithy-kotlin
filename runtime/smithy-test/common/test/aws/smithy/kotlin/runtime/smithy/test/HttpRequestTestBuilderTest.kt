@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
@@ -16,6 +16,7 @@ import kotlin.test.assertFails
 class HttpRequestTestBuilderTest {
 
     private val execContext = ExecutionContext()
+
     @Test
     fun itAssertsHttpMethod() {
         val ex = assertFails {
@@ -140,7 +141,7 @@ class HttpRequestTestBuilderTest {
                     requiredQueryParams = listOf("requiredQuery")
                     headers = mapOf(
                         "k1" to "v1",
-                        "k2" to "v2"
+                        "k2" to "v2",
                     )
                 }
                 operation { mockEngine ->
@@ -172,7 +173,7 @@ class HttpRequestTestBuilderTest {
                     uri = "/foo"
                     headers = mapOf(
                         "k1" to "v1, v2",
-                        "k2" to "v3, v4, v5"
+                        "k2" to "v3, v4, v5",
                     )
                 }
                 operation { mockEngine ->
@@ -203,7 +204,7 @@ class HttpRequestTestBuilderTest {
                     requiredQueryParams = listOf("requiredQuery")
                     headers = mapOf(
                         "k1" to "v1",
-                        "k2" to "v2"
+                        "k2" to "v2",
                     )
                     forbiddenHeaders = listOf("forbiddenHeader")
                 }
@@ -241,7 +242,7 @@ class HttpRequestTestBuilderTest {
                     requiredQueryParams = listOf("requiredQuery")
                     headers = mapOf(
                         "k1" to "v1",
-                        "k2" to "v2"
+                        "k2" to "v2",
                     )
                     forbiddenHeaders = listOf("forbiddenHeader")
                     requiredHeaders = listOf("requiredHeader")

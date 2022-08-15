@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.time
 
@@ -35,7 +35,7 @@ class ParseIso8601Test {
         ParseTest("1990-12-19T16:39:57-00:02", 1990, 12, 19, 16, 39, 57, 0, -2 * 60),
         // + offset
         ParseTest("1990-12-19T16:39:57+08:00", 1990, 12, 19, 16, 39, 57, 0, 8 * 3600),
-        ParseTest("1990-12-19T16:39:57+00:02", 1990, 12, 19, 16, 39, 57, 0, 2 * 60)
+        ParseTest("1990-12-19T16:39:57+00:02", 1990, 12, 19, 16, 39, 57, 0, 2 * 60),
     )
 
     @Test
@@ -56,7 +56,7 @@ class ParseIso8601Test {
         ParseTest("20201105T02:31:22.1Z", 2020, 11, 5, 2, 31, 22, 100_000_000),
         ParseTest("20201105T023122.1Z", 2020, 11, 5, 2, 31, 22, 100_000_000),
         ParseTest("20201105T02:31:22.12Z", 2020, 11, 5, 2, 31, 22, 120_000_000),
-        ParseTest("20201105T023122.12Z", 2020, 11, 5, 2, 31, 22, 120_000_000)
+        ParseTest("20201105T023122.12Z", 2020, 11, 5, 2, 31, 22, 120_000_000),
     )
 
     @Test
@@ -90,7 +90,7 @@ class ParseIso8601Test {
         // invalid sec - expected 2 digits
         ParseErrorTest("2017-07-22T03:30:0Z", "error at 17: expected exactly 2 digits; found 1"),
         // invalid nanosec - failure again comes trying to parse the timezone after successfully parsing 9 digits of nanosec
-        ParseErrorTest("2017-07-22T03:30:02.1234567891Z", "error at 29: invalid timezone offset")
+        ParseErrorTest("2017-07-22T03:30:02.1234567891Z", "error at 29: invalid timezone offset"),
     )
 
     @Test

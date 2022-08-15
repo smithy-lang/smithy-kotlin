@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.test.util
@@ -17,13 +17,13 @@ internal actual fun engineFactories(): List<TestEngineFactory> =
     listOf(
         TestEngineFactory("DefaultHttpEngine", ::DefaultHttpEngine),
         TestEngineFactory("CrtHttpEngine") { CrtHttpEngine(it) },
-        TestEngineFactory("KtorEngine") { KtorOkHttpEngine(it) }
+        TestEngineFactory("KtorEngine") { KtorOkHttpEngine(it) },
     )
 
 internal actual fun runBlockingTest(
     context: CoroutineContext,
     timeout: Duration?,
-    block: suspend CoroutineScope.() -> Unit
+    block: suspend CoroutineScope.() -> Unit,
 ) {
     runBlocking(context) {
         if (timeout != null) {

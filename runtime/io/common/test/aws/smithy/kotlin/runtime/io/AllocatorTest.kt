@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io
@@ -32,7 +32,7 @@ class AllocatorTest {
             3 to 4,
             4 to 4,
             5 to 8,
-            17 to 32
+            17 to 32,
         )
         tests.forEach { (input, expected) -> assertEquals(expected.toULong(), ceilp2(input.toULong())) }
     }

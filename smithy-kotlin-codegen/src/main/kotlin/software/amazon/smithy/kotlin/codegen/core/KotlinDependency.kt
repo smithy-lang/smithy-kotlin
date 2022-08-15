@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.core
 
@@ -48,16 +48,22 @@ enum class SourceSet {
 enum class GradleConfiguration(val sourceSet: SourceSet) {
     // purely internal and not meant to be exposed to consumers.
     Implementation(SourceSet.CommonMain),
+
     // transitively exported to consumers, for compile.
     Api(SourceSet.CommonMain),
+
     // only required at compile time, but should not leak into the runtime
     CompileOnly(SourceSet.CommonMain),
+
     // only required at runtime
     RuntimeOnly(SourceSet.CommonMain),
+
     // internal test
     TestImplementation(SourceSet.CommonTest),
+
     // compile time test only
     TestCompileOnly(SourceSet.CommonTest),
+
     // compile time runtime only
     TestRuntimeOnly(SourceSet.CommonTest),
     ;
@@ -87,7 +93,7 @@ data class KotlinDependency(
     val namespace: String,
     val group: String,
     val artifact: String,
-    val version: String
+    val version: String,
 ) : SymbolDependencyContainer {
 
     companion object {

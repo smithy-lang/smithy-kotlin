@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.xml
@@ -23,7 +23,7 @@ import aws.smithy.kotlin.runtime.serde.*
 public data class XmlMapName(
     public val entry: String? = Default.entry,
     public val key: String = Default.key,
-    public val value: String = Default.value
+    public val value: String = Default.value,
 ) : FieldTrait {
     public companion object {
         /**
@@ -44,7 +44,7 @@ public data class XmlMapName(
  * @param element the name of the XML node which wraps each list or set entry.
  */
 public data class XmlCollectionName(
-    public val element: String
+    public val element: String,
 ) : FieldTrait {
     public companion object {
         /**
@@ -131,7 +131,7 @@ private fun toQualifiedName(xmlNamespace: XmlNamespace?, name: String?): XmlToke
  * exception is thrown.
  */
 internal fun SdkFieldDescriptor.toQualifiedName(
-    xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()
+    xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>(),
 ): XmlToken.QualifiedName = toQualifiedName(xmlNamespace, findTrait<XmlSerialName>()?.name)
 
 /**
@@ -139,7 +139,7 @@ internal fun SdkFieldDescriptor.toQualifiedName(
  * otherwise an exception is thrown. Any additional names will be found from [XmlAliasName] traits.
  */
 internal fun SdkFieldDescriptor.toQualifiedNames(
-    xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>()
+    xmlNamespace: XmlNamespace? = findTrait<XmlNamespace>(),
 ): Set<XmlToken.QualifiedName> =
     setOf(toQualifiedName()) +
         findTraits<XmlAliasName>().map { toQualifiedName(xmlNamespace, it.name) }

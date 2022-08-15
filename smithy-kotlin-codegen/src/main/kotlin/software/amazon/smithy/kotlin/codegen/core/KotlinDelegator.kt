@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.core
 
@@ -25,10 +25,11 @@ class KotlinDelegator(
     private val model: Model,
     val fileManifest: FileManifest,
     private val symbolProvider: SymbolProvider,
-    private val integrations: List<KotlinIntegration> = listOf()
+    private val integrations: List<KotlinIntegration> = listOf(),
 ) {
 
     private val writers: MutableMap<String, KotlinWriter> = mutableMapOf()
+
     // Tracks dependencies for source not provided by codegen that may reside in the service source tree.
     val runtimeDependencies: MutableList<SymbolDependency> = mutableListOf()
 
@@ -88,7 +89,7 @@ class KotlinDelegator(
      */
     fun useShapeWriter(
         shape: Shape,
-        block: (KotlinWriter) -> Unit
+        block: (KotlinWriter) -> Unit,
     ) {
         val symbol = symbolProvider.toSymbol(shape)
         useSymbolWriter(symbol, block)
@@ -102,7 +103,7 @@ class KotlinDelegator(
      */
     fun useSymbolWriter(
         symbol: Symbol,
-        block: (KotlinWriter) -> Unit
+        block: (KotlinWriter) -> Unit,
     ) {
         val writer: KotlinWriter = checkoutWriter(symbol.definitionFile, symbol.namespace)
 
@@ -152,7 +153,7 @@ class KotlinDelegator(
     private fun checkoutWriter(
         filename: String,
         namespace: String,
-        sourceSetRoot: String = DEFAULT_SOURCE_SET_ROOT
+        sourceSetRoot: String = DEFAULT_SOURCE_SET_ROOT,
     ): KotlinWriter {
         // src/main/kotlin/namespace/filename
         val root = sourceSetRoot + namespace.namespaceToPath()
@@ -193,7 +194,7 @@ internal data class GeneratedDependency(
     val name: String,
     val namespace: String,
     val definitionFile: String,
-    val renderer: SymbolRenderer
+    val renderer: SymbolRenderer,
 ) : SymbolDependencyContainer {
     /**
      * Fully qualified name

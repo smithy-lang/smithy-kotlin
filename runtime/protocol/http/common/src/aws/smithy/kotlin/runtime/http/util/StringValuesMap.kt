@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.util
 
@@ -62,7 +62,7 @@ public interface StringValuesMap {
 @InternalApi
 internal open class StringValuesMapImpl(
     override val caseInsensitiveName: Boolean = false,
-    initialValues: Map<String, List<String>> = emptyMap()
+    initialValues: Map<String, List<String>> = emptyMap(),
 ) : StringValuesMap {
     protected val values: Map<String, List<String>> = run {
         // Make a defensive copy so modifications to the initialValues don't mutate our internal copy

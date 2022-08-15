@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -39,7 +39,7 @@ class StructureGeneratorTest {
                     Quux: Qux,
                     byteValue: Byte
                 }
-            """
+            """,
         )
 
         deprecatedTestContents = generateStructure(
@@ -54,7 +54,7 @@ class StructureGeneratorTest {
                     @deprecated
                     baz: Qux,
                 }
-            """
+            """,
         )
     }
 
@@ -394,7 +394,7 @@ class StructureGeneratorTest {
             structure GetFooInput {
                 enumMap: EnumMap
             }
-        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("GetFoo"), serviceName = "Example")
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("GetFoo"), serviceName = "Example")
             .toSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
@@ -406,7 +406,7 @@ class StructureGeneratorTest {
 
         listOf(
             "public val enumMap: Map<String, MyEnum>? = builder.enumMap",
-            "public var enumMap: Map<String, MyEnum>? = null"
+            "public var enumMap: Map<String, MyEnum>? = null",
         ).forEach { line ->
             contents.shouldContainOnlyOnceWithDiff(line)
         }
@@ -441,7 +441,7 @@ class StructureGeneratorTest {
             structure GetFooInput {
                 enumMap: EnumMap
             }
-        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("GetFoo"), serviceName = "Example")
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("GetFoo"), serviceName = "Example")
             .toSmithyModel()
         val struct = model.expectShape<StructureShape>("com.test#GetFooInput")
 
@@ -453,7 +453,7 @@ class StructureGeneratorTest {
 
         listOf(
             "public val enumMap: Map<String, MyEnum?>? = builder.enumMap",
-            "public var enumMap: Map<String, MyEnum?>? = null"
+            "public var enumMap: Map<String, MyEnum?>? = null",
         ).forEach { line ->
             contents.shouldContainOnlyOnceWithDiff(line)
         }
@@ -465,7 +465,7 @@ class StructureGeneratorTest {
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 public class MyStruct private constructor(builder: Builder) {
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -475,7 +475,7 @@ class StructureGeneratorTest {
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 public val baz: com.test.model.Qux? = builder.baz
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -485,7 +485,7 @@ class StructureGeneratorTest {
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 public val baz: com.test.model.Qux? = builder.baz
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 

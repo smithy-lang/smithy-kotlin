@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
@@ -68,7 +68,7 @@ internal class KtorHeaders(private val headers: Headers) : aws.smithy.kotlin.run
 // wrapper around a ByteReadChannel that implements the content as an SDK (streaming) HttpBody
 internal class KtorHttpBody(
     override val contentLength: Long? = null,
-    channel: ByteReadChannel
+    channel: ByteReadChannel,
 ) : HttpBody.Streaming() {
     private val source = channel.toSdkChannel()
     override fun readFrom(): SdkByteReadChannel = source

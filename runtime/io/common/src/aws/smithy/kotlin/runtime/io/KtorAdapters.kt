@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io
@@ -26,7 +26,7 @@ internal interface KtorWriteChannel {
  * platform specific differences in interfaces need be implemented in inheritors.
  */
 internal abstract class KtorReadChannelAdapterBase(
-    override val chan: KtorByteReadChannel
+    override val chan: KtorByteReadChannel,
 ) : SdkByteReadChannel, KtorReadChannel {
 
     override val availableForRead: Int
@@ -54,7 +54,7 @@ internal abstract class KtorReadChannelAdapterBase(
  * platform specific differences in interfaces need be implemented in inheritors.
  */
 internal abstract class KtorWriteChannelAdapterBase(
-    override val chan: KtorByteWriteChannel
+    override val chan: KtorByteWriteChannel,
 ) : SdkByteWriteChannel, KtorWriteChannel {
     override val availableForWrite: Int
         get() = chan.availableForWrite
@@ -86,7 +86,7 @@ internal abstract class KtorWriteChannelAdapterBase(
  * Wrap ktor's ByteChannel as our own
  */
 internal class KtorByteChannelAdapter(
-    override val chan: KtorByteChannel
+    override val chan: KtorByteChannel,
 ) : SdkByteChannel,
     SdkByteReadChannel by KtorReadChannelAdapter(chan),
     SdkByteWriteChannel by KtorWriteChannelAdapter(chan),

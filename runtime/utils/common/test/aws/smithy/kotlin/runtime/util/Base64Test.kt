@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.util
 
@@ -22,7 +22,7 @@ class Base64Test {
             "foob" to "Zm9vYg==",
             "fooba" to "Zm9vYmE=",
             "foobar" to "Zm9vYmFy",
-            "this is a 32 byte long string!!!" to "dGhpcyBpcyBhIDMyIGJ5dGUgbG9uZyBzdHJpbmchISE="
+            "this is a 32 byte long string!!!" to "dGhpcyBpcyBhIDMyIGJ5dGUgbG9uZyBzdHJpbmchISE=",
         )
 
         for (test in tests) {
@@ -51,7 +51,7 @@ class Base64Test {
             "Thi" to "VGhp",
             "Th" to "VGg=",
             "T" to "VA==",
-            "" to ""
+            "" to "",
         )
 
         cases.forEach { (text, encodedText) ->

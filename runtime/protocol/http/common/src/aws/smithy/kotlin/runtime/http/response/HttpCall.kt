@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.response
@@ -42,7 +42,7 @@ public data class HttpCall(
     /**
      * The context associated with this call
      */
-    public val callContext: CoroutineContext = EmptyCoroutineContext
+    public val callContext: CoroutineContext = EmptyCoroutineContext,
 )
 
 /**

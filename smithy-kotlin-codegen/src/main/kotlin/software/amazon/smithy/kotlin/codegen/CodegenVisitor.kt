@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen
@@ -74,7 +74,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         service = settings.getService(model)
 
         symbolProvider = integrations.fold(
-            KotlinCodegenPlugin.createSymbolProvider(model, settings)
+            KotlinCodegenPlugin.createSymbolProvider(model, settings),
         ) { provider, integration ->
             integration.decorateSymbolProvider(settings, model, provider)
         }
@@ -91,7 +91,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         integrations: List<KotlinIntegration>,
         model: Model,
         service: ServiceShape,
-        settings: KotlinSettings
+        settings: KotlinSettings,
     ): ProtocolGenerator? {
         val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
         val serviceIndex = ServiceIndex.of(model)
@@ -121,7 +121,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 symbolProvider,
                 integrations,
                 protocol,
-                writers
+                writers,
             )
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol $protocol")

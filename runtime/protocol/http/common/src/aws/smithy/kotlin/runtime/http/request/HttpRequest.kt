@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.request
 
@@ -13,7 +13,7 @@ public data class HttpRequest(
     public val method: HttpMethod,
     public val url: Url,
     public val headers: Headers,
-    public val body: HttpBody
+    public val body: HttpBody,
 ) {
     public companion object {
         public operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest =

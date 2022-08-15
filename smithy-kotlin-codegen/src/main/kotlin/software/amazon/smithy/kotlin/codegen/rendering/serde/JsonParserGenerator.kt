@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -19,7 +19,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 open class JsonParserGenerator(
     // FIXME - we shouldn't need this, it's only required by JsonSerdeDescriptorGenerator because of toRenderingContext
     private val protocolGenerator: ProtocolGenerator,
-    private val supportsJsonNameTrait: Boolean = true
+    private val supportsJsonNameTrait: Boolean = true,
 ) : StructuredDataParserGenerator {
 
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
@@ -57,7 +57,7 @@ open class JsonParserGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         documentMembers: List<MemberShape>,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         writer.write("val deserializer = #T(payload)", RuntimeTypes.Serde.SerdeJson.JsonDeserializer)
         val shape = ctx.model.expectShape(op.output.get())
@@ -67,7 +67,7 @@ open class JsonParserGenerator(
     private fun documentDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape> = shape.members()
+        members: Collection<MemberShape> = shape.members(),
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentDeserializer(ctx.settings, symbol, members) { writer ->
@@ -80,7 +80,7 @@ open class JsonParserGenerator(
                             // here since we're specifically in the JSON generator.
                             writer.write(
                                 "return (deserializer as #T).deserializeDocument()",
-                                RuntimeTypes.Serde.SerdeJson.JsonDeserializer
+                                RuntimeTypes.Serde.SerdeJson.JsonDeserializer,
                             )
                         ShapeType.UNION -> {
                             writer.write("var value: #T? = null", symbol)
@@ -88,7 +88,7 @@ open class JsonParserGenerator(
                             writer.write(
                                 "return value ?: throw #T(#S)",
                                 RuntimeTypes.Serde.DeserializationException,
-                                "Deserialized union value unexpectedly null: ${symbol.name}"
+                                "Deserialized union value unexpectedly null: ${symbol.name}",
                             )
                         }
                         else -> {
@@ -134,7 +134,7 @@ open class JsonParserGenerator(
     override fun payloadDeserializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape>?
+        members: Collection<MemberShape>?,
     ): Symbol {
         val target = shape.targetOrSelf(ctx.model)
         val symbol = ctx.symbolProvider.toSymbol(shape)

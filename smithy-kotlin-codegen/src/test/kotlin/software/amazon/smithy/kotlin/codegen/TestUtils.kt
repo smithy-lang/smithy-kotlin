@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen
@@ -13,7 +13,7 @@ import software.amazon.smithy.model.Model
  */
 fun loadModelFromResource(
     modelName: String,
-    path: String = "software/amazon/smithy/kotlin/codegen"
+    path: String = "software/amazon/smithy/kotlin/codegen",
 ): Model = object {}
     .javaClass
     .classLoader

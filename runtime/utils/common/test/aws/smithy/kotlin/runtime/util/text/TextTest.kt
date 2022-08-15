@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.util.text
@@ -27,7 +27,7 @@ class TextTest {
             EscapeTest("a b", "a+b", formUrlEncode = true),
             EscapeTest("10%", "10%25"),
             EscapeTest(nonEncodedCharacters, nonEncodedCharacters),
-            EscapeTest(encodedCharactersInput, encodedCharactersOutput)
+            EscapeTest(encodedCharactersInput, encodedCharactersOutput),
         )
 
         for (test in tests) {
@@ -47,7 +47,7 @@ class TextTest {
             EscapeTest("", ""),
             EscapeTest("a b", "a+b"),
             EscapeTest(nonEncodedCharacters, nonEncodedCharacters),
-            EscapeTest(encodedCharactersInput, encodedCharactersOutput)
+            EscapeTest(encodedCharactersInput, encodedCharactersOutput),
         )
 
         for (test in tests) {
@@ -118,7 +118,7 @@ class TextTest {
         val expected = mapOf(
             "foo" to listOf("baz", "qux"),
             "bar" to listOf("quux"),
-            "a" to listOf("")
+            "a" to listOf(""),
         )
 
         expected.entries.forEach { entry ->

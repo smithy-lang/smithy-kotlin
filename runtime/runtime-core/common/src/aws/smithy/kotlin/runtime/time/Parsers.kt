@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.time
 
@@ -36,13 +36,15 @@ internal data class ParsedDatetime(
     // 0-999_999_999
     val ns: Int,
     // offset from UTC in seconds
-    val offsetSec: Int = 0
+    val offsetSec: Int = 0,
 )
 
 // YYYY
 private fun dateYear(): Parser<Int> = takeNDigits(4)
+
 // MM
 private fun dateMonth(): Parser<Int> = nDigitsInRange(2, 1..12)
+
 // DD (set minDigits to 1 to allow single digit D)
 private fun dateDay(minDigits: Int = 2): Parser<Int> = mnDigitsInRange(minDigits, 2, 1..31)
 
@@ -63,10 +65,13 @@ private fun date(): Parser<ParsedDate> = dateYmd()
 
 // HH
 private fun timeHour(): Parser<Int> = nDigitsInRange(2, 0..24)
+
 // MM
 private fun timeMin(): Parser<Int> = nDigitsInRange(2, 0..59)
+
 // SS (note 60 is valid and denotes a leap second)
 private fun timeSec(): Parser<Int> = nDigitsInRange(2, 0..60)
+
 // .sss
 private fun timeNanos(): Parser<Int> = fraction(1, 9, 9)
 
@@ -208,7 +213,7 @@ private fun dayName(): Parser<String> = alt(
     tag("Thu"),
     tag("Fri"),
     tag("Sat"),
-    tag("Sun")
+    tag("Sun"),
 )
 
 /**
@@ -277,7 +282,6 @@ private fun rfc5322Time(): Parser<ParsedTime> = { str, pos ->
  * - https://tools.ietf.org/html/rfc5322
  */
 internal fun parseRfc5322(input: String): ParsedDatetime {
-
     // dow is optional, if first character is digit skip it
     // otherwise consume it and advance
     val (pos0, _) = if (input.isNotBlank() && !isDigit(input[0])) {
@@ -285,7 +289,7 @@ internal fun parseRfc5322(input: String): ParsedDatetime {
         map(
             dayName()
                 .then(char(','))
-                .then(::sp)
+                .then(::sp),
         ) { null }(input, 0)
     } else {
         ParseResult(0, null)

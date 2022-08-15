@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
@@ -14,7 +14,7 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 
 internal class HttpEngineEventListener(
-    private val pool: ConnectionPool
+    private val pool: ConnectionPool,
 ) : EventListener() {
     private val logger = Logger.getLogger<HttpEngineEventListener>()
 
@@ -59,7 +59,7 @@ internal class HttpEngineEventListener(
         inetSocketAddress: InetSocketAddress,
         proxy: Proxy,
         protocol: Protocol?,
-        ioe: IOException
+        ioe: IOException,
     ) {
         traceCall(call, ioe) { "connect failed: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
     }

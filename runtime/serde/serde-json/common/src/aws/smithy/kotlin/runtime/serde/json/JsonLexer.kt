@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.json
@@ -23,7 +23,7 @@ private typealias StateMutation = (StateStack) -> Unit
  */
 private data class StateManager(
     private val state: StateStack = mutableListOf(LexerState.Initial),
-    private val pendingMutations: MutableList<StateMutation> = mutableListOf()
+    private val pendingMutations: MutableList<StateMutation> = mutableListOf(),
 ) {
 
     /**
@@ -56,7 +56,7 @@ private data class StateManager(
  * Tokenizes JSON documents
  */
 internal class JsonLexer(
-    private val data: ByteArray
+    private val data: ByteArray,
 ) : JsonStreamReader {
     private var peeked: JsonToken? = null
     private val state = StateManager()

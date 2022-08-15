@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http
 
@@ -185,5 +185,5 @@ private fun statusCodeMap(): Map<Int, HttpStatusCode> = mapOf(
     HttpStatusCode.InsufficientStorage.value to HttpStatusCode.InsufficientStorage,
     HttpStatusCode.LoopDetected.value to HttpStatusCode.LoopDetected,
     HttpStatusCode.NotExtended.value to HttpStatusCode.NotExtended,
-    HttpStatusCode.NetworkAuthenticationRequired.value to HttpStatusCode.NetworkAuthenticationRequired
+    HttpStatusCode.NetworkAuthenticationRequired.value to HttpStatusCode.NetworkAuthenticationRequired,
 )

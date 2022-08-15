@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.middleware
@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  */
 @InternalApi
 public class ResolveEndpoint(
-    private val resolver: EndpointResolver
+    private val resolver: EndpointResolver,
 ) : ModifyRequestMiddleware {
 
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {

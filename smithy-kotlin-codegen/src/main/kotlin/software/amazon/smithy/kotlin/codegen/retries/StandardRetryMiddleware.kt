@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.retries
@@ -23,7 +23,7 @@ class StandardRetryMiddleware : ProtocolMiddleware {
 
         writer.write(
             "op.install(#T(config.retryStrategy, StandardRetryPolicy.Default))",
-            RuntimeTypes.Http.Middlware.Retry
+            RuntimeTypes.Http.Middlware.Retry,
         )
     }
 }

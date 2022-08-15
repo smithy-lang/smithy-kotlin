@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
@@ -21,7 +21,7 @@ import io.ktor.client.request.HttpRequestBuilder as KtorRequestBuilder
  */
 internal class KtorRequestAdapter(
     private val sdkRequest: HttpRequest,
-    callContext: CoroutineContext
+    callContext: CoroutineContext,
 ) : CoroutineScope {
 
     internal constructor(builder: HttpRequestBuilder, callContext: CoroutineContext) : this(builder.build(), callContext)

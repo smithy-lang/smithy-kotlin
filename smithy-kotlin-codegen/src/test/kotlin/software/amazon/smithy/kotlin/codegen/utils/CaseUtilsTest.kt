@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.utils
@@ -26,7 +26,7 @@ class CaseUtilsTest {
         val tests = mapOf(
             "apple" to "Apple",
             "Apple" to "apple",
-            "!" to "!"
+            "!" to "!",
         )
         tests.forEach { (start, end) ->
             assertEquals(end, start.toggleFirstCharacterCase(), "$start toggled should've been $end")

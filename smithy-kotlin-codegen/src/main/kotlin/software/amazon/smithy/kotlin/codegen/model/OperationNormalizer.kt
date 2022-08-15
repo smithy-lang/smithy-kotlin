@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.model
@@ -59,7 +59,7 @@ object OperationNormalizer {
                 operation.toBuilder()
                     .input(newInputShape)
                     .output(newOutputShape)
-                    .build()
+                    .build(),
             )
         }
         return builder.build()
@@ -94,7 +94,7 @@ object OperationNormalizer {
                 """renaming operation inputs or outputs will result in a conflict for:
                 |$formatted
                 |Fix by supplying a manual rename customization for the shapes listed.
-                """.trimMargin()
+                """.trimMargin(),
             )
         }
     }

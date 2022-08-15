@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
@@ -38,7 +38,7 @@ class SerializeUnionGenerator(
     private val shape: UnionShape,
     members: List<MemberShape>,
     writer: KotlinWriter,
-    defaultTimestampFormat: TimestampFormatTrait.Format
+    defaultTimestampFormat: TimestampFormatTrait.Format,
 ) : SerializeStructGenerator(ctx, members, writer, defaultTimestampFormat) {
 
     // Unions do not directly nest, so parent is static.
@@ -134,7 +134,7 @@ class SerializeUnionGenerator(
      */
     override fun renderPrimitiveShapeSerializer(
         memberShape: MemberShape,
-        serializerNameFn: (MemberShape) -> SerializeInfo
+        serializerNameFn: (MemberShape) -> SerializeInfo,
     ) {
         val (serializeFn, encoded) = serializerNameFn(memberShape)
         // FIXME - this doesn't account for unboxed primitives

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io
@@ -31,7 +31,7 @@ public class SdkByteBuffer internal constructor(
     // agnostic way. We just need to wrap some methods around it
     internal var memory: Memory,
     public val isReadOnly: Boolean = false,
-    public val allowReallocation: Boolean = true
+    public val allowReallocation: Boolean = true,
 ) : Buffer, MutableBuffer {
     public constructor(initialCapacity: ULong, readOnly: Boolean = false, allowReallocation: Boolean = true) : this(DefaultAllocator.alloc(initialCapacity), readOnly, allowReallocation)
 
@@ -326,6 +326,7 @@ public class SdkByteBuffer internal constructor(
         discard(8u)
         return value
     }
+
     /**
      * Write a 32-bit float in big-endian byte order
      */

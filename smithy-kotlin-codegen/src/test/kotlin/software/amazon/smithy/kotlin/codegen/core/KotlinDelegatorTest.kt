@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.core
 
@@ -36,10 +36,10 @@ class KotlinDelegatorTest {
                         "package",
                         Node.objectNode()
                             .withMember("name", Node.from(TestModelDefault.NAMESPACE))
-                            .withMember("version", Node.from(TestModelDefault.MODEL_VERSION))
+                            .withMember("version", Node.from(TestModelDefault.MODEL_VERSION)),
                     )
                     .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
-                    .build()
+                    .build(),
             )
             .build()
 
@@ -65,10 +65,10 @@ class KotlinDelegatorTest {
                         "package",
                         Node.objectNode()
                             .withMember("name", Node.from(TestModelDefault.NAMESPACE))
-                            .withMember("version", Node.from(TestModelDefault.MODEL_VERSION))
+                            .withMember("version", Node.from(TestModelDefault.MODEL_VERSION)),
                     )
                     .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
-                    .build()
+                    .build(),
             )
             .build()
 
@@ -94,7 +94,7 @@ class KotlinDelegatorTest {
 
         val settings = KotlinSettings.from(
             model,
-            Node.parse(configContents).expectObjectNode()
+            Node.parse(configContents).expectObjectNode(),
         )
         val manifest = MockManifest()
         val delegator = KotlinDelegator(settings, model, manifest, KotlinSymbolProvider(model, settings))

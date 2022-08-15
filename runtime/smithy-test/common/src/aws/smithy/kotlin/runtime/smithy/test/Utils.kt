@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
@@ -43,7 +43,6 @@ public suspend fun assertBytesEqual(expected: HttpBody?, actual: HttpBody?) {
  */
 @OptIn(ExperimentalStdlibApi::class)
 public fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
-
     if (expected == null) {
         assertNull(actual, "expected no content; found ${actual?.decodeToString()}")
         return
@@ -57,6 +56,6 @@ public fun assertBytesEqual(expected: ByteArray?, actual: ByteArray?) {
         expected.contentEquals(actual),
         "actual bytes read does not match expected: \n" +
             "expected: `${expected.decodeToString()}`\n" +
-            "actual: `${actual.decodeToString()}`"
+            "actual: `${actual.decodeToString()}`",
     )
 }

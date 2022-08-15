@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.crt
@@ -34,7 +34,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
     public companion object {
         public operator fun invoke(block: CrtHttpEngineConfig.Builder.() -> Unit): CrtHttpEngine = CrtHttpEngine(
-            CrtHttpEngineConfig.Builder().apply(block).build()
+            CrtHttpEngineConfig.Builder().apply(block).build(),
         )
     }
     private val logger = Logger.getLogger<CrtHttpEngine>()
@@ -63,7 +63,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         tlsContext = customTlsContext ?: config.tlsContext ?: SdkDefaultIO.TlsContext
         manualWindowManagement = true
         socketOptions = SocketOptions(
-            connectTimeoutMs = config.connectTimeout.inWholeMilliseconds.toInt()
+            connectTimeoutMs = config.connectTimeout.inWholeMilliseconds.toInt(),
         )
         initialWindowSize = config.initialWindowSizeBytes
         maxConnections = config.maxConnections.toInt()
@@ -123,7 +123,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
                         proxyConfig.url.port,
                         authUsername = proxyConfig.url.userInfo?.username,
                         authPassword = proxyConfig.url.userInfo?.password,
-                        authType = if (proxyConfig.url.userInfo != null) HttpProxyAuthorizationType.Basic else HttpProxyAuthorizationType.None
+                        authType = if (proxyConfig.url.userInfo != null) HttpProxyAuthorizationType.Basic else HttpProxyAuthorizationType.None,
                     )
                     else -> null
                 }

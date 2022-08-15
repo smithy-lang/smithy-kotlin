@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde
 
@@ -8,7 +8,8 @@ package aws.smithy.kotlin.runtime.serde
  * Metadata container for all fields of an object/class
  */
 public class SdkObjectDescriptor private constructor(builder: Builder) : SdkFieldDescriptor(
-    kind = SerialKind.Struct, traits = builder.traits
+    kind = SerialKind.Struct,
+    traits = builder.traits,
 ) {
     public val fields: List<SdkFieldDescriptor> = builder.fields
 

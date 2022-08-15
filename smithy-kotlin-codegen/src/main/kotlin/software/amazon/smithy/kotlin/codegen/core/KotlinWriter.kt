@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.core
@@ -41,7 +41,7 @@ class KotlinWriter(
     val fullPackageName: String,
     val fullyQualifiedSymbols: MutableSet<FullyQualifiedSymbolName> = mutableSetOf(),
     val dependencies: MutableSet<SymbolDependency> = mutableSetOf(),
-    val imports: ImportDeclarations = ImportDeclarations()
+    val imports: ImportDeclarations = ImportDeclarations(),
 ) : AbstractCodeWriter<KotlinWriter>() {
 
     init {
@@ -187,8 +187,8 @@ class KotlinWriter(
         dokka {
             write(
                 cleanForWriter(
-                    formatDocumentation(docs)
-                )
+                    formatDocumentation(docs),
+                ),
             )
         }
 
@@ -251,7 +251,7 @@ fun KotlinWriter.addImport(
     name: String,
     dependency: KotlinDependency = KotlinDependency.CORE,
     namespace: String = dependency.namespace,
-    subpackage: String? = null
+    subpackage: String? = null,
 ): KotlinWriter {
     val fullNamespace = if (subpackage != null) "$namespace.$subpackage" else namespace
     val importSymbol = Symbol.builder()
@@ -334,6 +334,7 @@ class KotlinPropertyFormatter(
 
 // Specifies a function that receives a [KotlinWriter]
 typealias InlineKotlinWriter = KotlinWriter.() -> Unit
+
 /**
  * Formatter to enable passing a writing function
  * @param parent a [KotlinWriter] which provides inherited state for this inner writer.
@@ -346,7 +347,7 @@ class InlineKotlinWriterFormatter(private val parent: KotlinWriter) : BiFunction
             parent.fullPackageName,
             parent.fullyQualifiedSymbols,
             parent.dependencies,
-            parent.imports
+            parent.imports,
         )
         func(innerWriter)
         return innerWriter.rawString().trimEnd()

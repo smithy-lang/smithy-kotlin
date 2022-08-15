@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.xml
@@ -38,10 +38,11 @@ public sealed class XmlToken {
         override val depth: Int,
         public val name: QualifiedName,
         public val attributes: Map<QualifiedName, String> = emptyMap(),
-        public val nsDeclarations: List<Namespace> = emptyList()
+        public val nsDeclarations: List<Namespace> = emptyList(),
     ) : XmlToken() {
         // Convenience constructor for name-only nodes.
         public constructor(depth: Int, name: String) : this(depth, QualifiedName(name))
+
         // Convenience constructor for name-only nodes with attributes.
         public constructor(depth: Int, name: String, attributes: Map<QualifiedName, String>) : this(depth, QualifiedName(name), attributes)
 

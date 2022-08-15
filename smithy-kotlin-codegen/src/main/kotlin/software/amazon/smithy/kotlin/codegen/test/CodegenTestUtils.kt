@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.test
 
@@ -34,13 +34,13 @@ import software.amazon.smithy.utils.StringUtils
 data class TestContext(
     val generationCtx: ProtocolGenerator.GenerationContext,
     val manifest: MockManifest,
-    val generator: ProtocolGenerator
+    val generator: ProtocolGenerator,
 )
 
 // Execute the codegen and return the generated output
 internal fun testRender(
     members: List<MemberShape>,
-    renderFn: (List<MemberShape>, KotlinWriter) -> Unit
+    renderFn: (List<MemberShape>, KotlinWriter) -> Unit,
 ): String {
     val writer = KotlinWriter(TestModelDefault.NAMESPACE)
     renderFn(members, writer)
@@ -57,7 +57,7 @@ internal fun codegenSerializerForShape(model: Model, shapeId: String, location: 
             ctx.generationCtx,
             members,
             writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
         ).render()
     }
 }
@@ -72,7 +72,7 @@ internal fun codegenDeserializerForShape(model: Model, shapeId: String, location
             ctx.generationCtx,
             members,
             writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
         ).render()
     }
 }
@@ -93,7 +93,7 @@ internal fun codegenUnionSerializerForShape(model: Model, shapeId: String): Stri
             unionShape,
             members,
             writer,
-            TimestampFormatTrait.Format.EPOCH_SECONDS
+            TimestampFormatTrait.Format.EPOCH_SECONDS,
         ).render()
     }
 }
@@ -130,7 +130,7 @@ fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T
 internal class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     features: List<ProtocolMiddleware>,
-    httpBindingResolver: HttpBindingResolver
+    httpBindingResolver: HttpBindingResolver,
 ) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver)
 
 // A HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies)
@@ -155,7 +155,7 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
             override fun errorDeserializer(
                 ctx: ProtocolGenerator.GenerationContext,
                 errorShape: StructureShape,
-                members: List<MemberShape>
+                members: List<MemberShape>,
             ): Symbol = buildSymbol {
                 val errSymbol = ctx.symbolProvider.toSymbol(errorShape)
                 name = errSymbol.errorDeserializerName()
@@ -164,7 +164,7 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
             override fun payloadDeserializer(
                 ctx: ProtocolGenerator.GenerationContext,
                 shape: Shape,
-                members: Collection<MemberShape>?
+                members: Collection<MemberShape>?,
             ): Symbol = buildSymbol {
                 val symbol = ctx.symbolProvider.toSymbol(shape)
                 name = "deserialize" + StringUtils.capitalize(symbol.name) + "Payload"
@@ -180,7 +180,7 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
             override fun payloadSerializer(
                 ctx: ProtocolGenerator.GenerationContext,
                 shape: Shape,
-                members: Collection<MemberShape>?
+                members: Collection<MemberShape>?,
             ): Symbol = buildSymbol {
                 val symbol = ctx.symbolProvider.toSymbol(shape)
                 name = "serialize" + StringUtils.capitalize(symbol.name) + "Payload"
@@ -198,7 +198,7 @@ fun codegenTestHarnessForModelSnippet(
     namespace: String = TestModelDefault.NAMESPACE,
     serviceName: String = TestModelDefault.SERVICE_NAME,
     operations: List<String>,
-    snippet: () -> String
+    snippet: () -> String,
 ): CodegenTestHarness {
     val protocol = generator.protocol.name
     val model = snippet().generateTestModel(protocol, namespace, serviceName, operations)
@@ -216,7 +216,7 @@ data class CodegenTestHarness(
     val generator: ProtocolGenerator,
     val namespace: String,
     val serviceName: String,
-    val protocol: String
+    val protocol: String,
 )
 
 // Create and use a writer to drive codegen from a function taking a writer.

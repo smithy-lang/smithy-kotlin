@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.core
 
@@ -31,7 +31,7 @@ fun <T : AbstractCodeWriter<T>> T.withBlock(
     textBeforeNewLine: String,
     textAfterNewLine: String,
     vararg args: Any,
-    block: T.() -> Unit
+    block: T.() -> Unit,
 ): T = wrapBlockIf(true, textBeforeNewLine, textAfterNewLine, *args) { block(this) }
 
 /**
@@ -41,7 +41,7 @@ fun <T : AbstractCodeWriter<T>> T.withInlineBlock(
     textBeforeNewLine: String,
     textAfterNewLine: String,
     vararg args: Any,
-    block: T.() -> Unit
+    block: T.() -> Unit,
 ): T {
     openBlock(textBeforeNewLine, *args)
     block(this)
@@ -150,7 +150,7 @@ typealias InlineCodeWriter = AbstractCodeWriter<*>.() -> Unit
  * content
  */
 class InlineCodeWriterFormatter(
-    private val codeWriterCreator: () -> AbstractCodeWriter<*> = ::SimpleCodeWriter
+    private val codeWriterCreator: () -> AbstractCodeWriter<*> = ::SimpleCodeWriter,
 ) : BiFunction<Any, String, String> {
     @Suppress("UNCHECKED_CAST")
     override fun apply(t: Any, u: String): String {

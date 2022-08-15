@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -33,7 +33,7 @@ class XmlSerializerTest {
     @Test
     fun canSerializeClassWithClassField() {
         val a = A(
-            B(2)
+            B(2),
         )
         val xml = XmlSerializer()
         a.serialize(xml)
@@ -169,7 +169,7 @@ class XmlSerializerTest {
         val obj = listOf(
             B(1),
             B(2),
-            B(3)
+            B(3),
         )
         val xml = XmlSerializer()
         xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"))) {
@@ -199,7 +199,7 @@ class XmlSerializerTest {
         val obj = listOf(
             B(1),
             B(2),
-            B(3)
+            B(3),
         )
         val xml = XmlSerializer()
         xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("list"), Flattened)) {
@@ -227,8 +227,8 @@ class XmlSerializerTest {
         val foo = Foo(
             mapOf(
                 "example-key1" to "example1",
-                "example-key2" to "example2"
-            )
+                "example-key2" to "example2",
+            ),
         )
         val xml = XmlSerializer()
         foo.serialize(xml)
@@ -258,8 +258,8 @@ class XmlSerializerTest {
             mapOf(
                 "example-key1" to "example1",
                 "example-key2" to "example2",
-                "example-key3" to "example3"
-            )
+                "example-key3" to "example3",
+            ),
         )
         val serializer = XmlSerializer()
         bar.serialize(serializer)
@@ -291,7 +291,7 @@ class XmlSerializerTest {
         val objs = mapOf(
             "A1" to listOf("a", "b", "c"),
             "A2" to listOf("d", "e", "f"),
-            "A3" to listOf("g", "h", "i")
+            "A3" to listOf("g", "h", "i"),
         )
         val xml = XmlSerializer()
         xml.serializeMap(SdkFieldDescriptor(SerialKind.Map, XmlSerialName("objs"))) {
@@ -346,7 +346,7 @@ class XmlSerializerTest {
         val objs = listOf(
             listOf("a", "b", "c"),
             listOf("d", "e", "f"),
-            listOf("g", "h", "i")
+            listOf("g", "h", "i"),
         )
         val xml = XmlSerializer()
         xml.serializeList(SdkFieldDescriptor(SerialKind.List, XmlSerialName("objs"))) {
@@ -578,7 +578,7 @@ class XmlSerializerTest {
         val xml = XmlSerializer()
         val data = Primitives(
             true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-            listOf(1, 2, 3)
+            listOf(1, 2, 3),
         )
         data.serialize(xml)
 
@@ -616,8 +616,8 @@ class XmlSerializerTest {
         val input = XmlNamespacesRequest(
             nested = XmlNamespaceNested(
                 foo = "Foo",
-                values = listOf("Bar", "Baz")
-            )
+                values = listOf("Bar", "Baz"),
+            ),
         )
 
         val serializer = XmlSerializer()
@@ -855,7 +855,7 @@ data class Primitives(
     val char: Char,
     val string: String,
     // val unitNullable: Unit?,
-    val listInt: List<Int>
+    val listInt: List<Int>,
 ) : SdkSerializable {
     companion object {
         val descriptorBoolean = SdkFieldDescriptor(SerialKind.Boolean, XmlSerialName("boolean"))
@@ -867,6 +867,7 @@ data class Primitives(
         val descriptorDouble = SdkFieldDescriptor(SerialKind.Double, XmlSerialName("double"))
         val descriptorChar = SdkFieldDescriptor(SerialKind.Char, XmlSerialName("char"))
         val descriptorString = SdkFieldDescriptor(SerialKind.String, XmlSerialName("string"))
+
         // val descriptorUnitNullable = SdkFieldDescriptor("unitNullable")
         val descriptorListInt = SdkFieldDescriptor(SerialKind.List, XmlSerialName("listInt"), XmlCollectionName(element = "number"))
     }

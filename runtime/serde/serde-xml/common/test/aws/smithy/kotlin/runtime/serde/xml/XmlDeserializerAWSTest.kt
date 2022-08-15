@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -103,7 +103,7 @@ class XmlDeserializerAWSTest {
         val testXml = """
                <?xml version="1.0" encoding="UTF-8"?><!--
                  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-                 ~ SPDX-License-Identifier: Apache-2.0.
+                 ~ SPDX-License-Identifier: Apache-2.0
                  -->
 
                <CreateHostedZoneRequest xmlns="https://route53.amazonaws.com/doc/2013-04-01/">

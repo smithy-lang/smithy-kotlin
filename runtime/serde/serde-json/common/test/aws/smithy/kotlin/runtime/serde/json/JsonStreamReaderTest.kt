@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.json
 
@@ -61,7 +61,7 @@ class JsonStreamReaderTest {
             JsonToken.Name("null"),
             JsonToken.Null,
             JsonToken.EndObject,
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -82,7 +82,7 @@ class JsonStreamReaderTest {
             JsonToken.Name("y"),
             JsonToken.String("2"),
             JsonToken.EndObject,
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -96,7 +96,7 @@ class JsonStreamReaderTest {
             JsonToken.String("hello"),
             JsonToken.String("world"),
             JsonToken.EndArray,
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -139,7 +139,7 @@ class JsonStreamReaderTest {
         val actual = "\"hello\"".allTokens()
         actual.shouldContainExactly(
             JsonToken.String("hello"),
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -149,7 +149,7 @@ class JsonStreamReaderTest {
         val actual = "1.2".allTokens()
         actual.shouldContainExactly(
             JsonToken.Number("1.2"),
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -168,7 +168,7 @@ class JsonStreamReaderTest {
             JsonToken.Number("-34.234e3"),
             JsonToken.Null,
             JsonToken.EndArray,
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -202,7 +202,7 @@ class JsonStreamReaderTest {
             JsonToken.String("value"),
             JsonToken.EndObject,
             JsonToken.EndArray,
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -287,7 +287,7 @@ class JsonStreamReaderTest {
             JsonToken.Name("y"),
             JsonToken.Number("2"),
             JsonToken.EndObject,
-            JsonToken.EndDocument
+            JsonToken.EndDocument,
         )
     }
 
@@ -359,7 +359,7 @@ class JsonStreamReaderTest {
                 JsonToken.Name("foo"),
                 JsonToken.String(it.second),
                 JsonToken.EndObject,
-                JsonToken.EndDocument
+                JsonToken.EndDocument,
             )
         }
     }
@@ -424,14 +424,13 @@ line"]""".allTokens()
 
     @Test
     fun testUnicodeTokens() {
-
         val languages = listOf(
             "こんにちは世界",
             "مرحبا بالعالم",
             "Привет, мир",
             "Γειά σου Κόσμε",
             "नमस्ते दुनिया",
-            "you have summoned ZA̡͊͠͝LGΌ"
+            "you have summoned ZA̡͊͠͝LGΌ",
         )
 
         languages.forEach { lang ->
@@ -449,7 +448,7 @@ line"]""".allTokens()
                 JsonToken.Name(lang),
                 JsonToken.String("bar"),
                 JsonToken.EndObject,
-                JsonToken.EndDocument
+                JsonToken.EndDocument,
             )
         }
     }
