@@ -221,6 +221,16 @@ object RuntimeTypes {
 
     object IO {
         val Closeable = runtimeSymbol("Closeable", KotlinDependency.IO)
+        val use = runtimeSymbol("use", KotlinDependency.IO)
+    }
+
+    object Tracing {
+        object Core {
+            val DefaultTracer = runtimeSymbol("DefaultTracer", KotlinDependency.CORE, "tracing")
+            val NoOpTraceProbe = runtimeSymbol("NoOpTraceProbe", KotlinDependency.CORE, "tracing")
+            val Tracer = runtimeSymbol("Tracer", KotlinDependency.CORE, "tracing")
+            val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.CORE, "tracing")
+        }
     }
 
     object KotlinxCoroutines {

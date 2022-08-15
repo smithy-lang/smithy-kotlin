@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -44,10 +45,10 @@ class DefaultValidateResponseTest {
         op.install(DefaultValidateResponse())
 
         assertFailsWith(HttpResponseException::class) {
-            op.roundTrip(client, "foo")
+            with(NoOpTraceSpan) {
+                op.roundTrip(client, "foo")
+            }
         }
-
-        return@runTest
     }
 
     @Test
@@ -67,9 +68,7 @@ class DefaultValidateResponseTest {
 
         val op = newTestOperation<String, String>(HttpRequestBuilder(), "bar")
         op.install(DefaultValidateResponse())
-        val actual = op.roundTrip(client, "foo")
+        val actual = with(NoOpTraceSpan) { op.roundTrip(client, "foo") }
         assertEquals("bar", actual)
-
-        return@runTest
     }
 }

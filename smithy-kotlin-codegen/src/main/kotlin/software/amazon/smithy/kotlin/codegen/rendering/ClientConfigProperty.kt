@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.boxed
@@ -217,11 +218,13 @@ private fun builtInProperty(
  * Common client runtime related config properties
  */
 object KotlinClientRuntimeConfigProperty {
+    val ClientName: ClientConfigProperty
     val HttpClientEngine: ClientConfigProperty
     val IdempotencyTokenProvider: ClientConfigProperty
     val RetryStrategy: ClientConfigProperty
     val SdkLogMode: ClientConfigProperty
     val EndpointResolver: ClientConfigProperty
+    val TraceProbe: ClientConfigProperty
 
     init {
         val httpClientConfigSymbol = buildSymbol {
@@ -301,6 +304,47 @@ object KotlinClientRuntimeConfigProperty {
             made against the endpoint returned by the resolver.
             """.trimIndent()
             propertyType = ClientConfigPropertyType.Required()
+        }
+
+        val tracingClientConfigSymbol = buildSymbol {
+            name = "TracingClientConfig"
+            namespace(KotlinDependency.TRACING_CORE)
+        }
+
+        ClientName = ClientConfigProperty {
+            name = "clientName"
+            symbol = buildSymbol {
+                name = "String"
+                defaultValue = "null"
+            }
+            baseClass = tracingClientConfigSymbol
+            documentation = """
+                The name of this client, which will be used in tracing data. If using multiple clients for the same
+                service simultaneously, giving them unique names can help disambiguate them in logging messages or
+                metrics. By default, the client name will be the same as the service name.
+            """.trimIndent()
+            propertyType = ClientConfigPropertyType.Custom { prop, writer ->
+                val serviceName = writer.getContext("service.name")?.toString()
+                    ?: throw CodegenException("The service.name context must be set for client config generation")
+                writer.write(
+                    "override val #1L: String = builder.#1L ?: #2S",
+                    prop.propertyName,
+                    serviceName,
+                )
+            }
+        }
+
+        TraceProbe = ClientConfigProperty {
+            symbol = RuntimeTypes.Tracing.Core.TraceProbe
+            baseClass = tracingClientConfigSymbol
+            documentation = """
+                The probe that receives tracing events such as logging messages and metrics. This probe can be used
+                to send tracing events to other frameworks outside the SDK. By default, a no-op probe is selected.
+            """.trimIndent()
+            propertyType = ClientConfigPropertyType.RequiredWithDefault("NoOpTraceProbe")
+            additionalImports = listOf(
+                RuntimeTypes.Tracing.Core.NoOpTraceProbe,
+            )
         }
     }
 }

@@ -21,6 +21,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -48,7 +49,9 @@ class Md5ChecksumTest {
         op.install(Md5Checksum())
 
         val expected = "RG22oBSZFmabBbkzVGRi4w=="
-        op.roundTrip(client, Unit)
+        with(NoOpTraceSpan) {
+            op.roundTrip(client, Unit)
+        }
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(expected, call.request.headers["Content-MD5"])
     }
@@ -64,7 +67,9 @@ class Md5ChecksumTest {
 
         op.install(Md5Checksum())
 
-        op.roundTrip(client, Unit)
+        with(NoOpTraceSpan) {
+            op.roundTrip(client, Unit)
+        }
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertNull(call.request.headers["Content-MD5"])
     }

@@ -51,6 +51,8 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private val writer = ctx.writer
 
     fun render() {
+        writer.putContext("service.name", ctx.settings.sdkId)
+
         importExternalSymbols()
 
         val topDownIndex = TopDownIndex.of(ctx.model)
@@ -144,7 +146,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
         writer.write("")
             .write("override val serviceName: String")
             .indent()
-            .write("get() = #S", ctx.settings.sdkId)
+            .write("get() = #service.name:S")
             .dedent()
     }
 

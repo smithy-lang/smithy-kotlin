@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import software.amazon.smithy.gradle.tasks.SmithyBuild
 
 plugins {
@@ -142,6 +143,6 @@ val stageGeneratedSources = tasks.register("stageGeneratedSources") {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
+tasks.withType<KotlinCompile>{
     dependsOn(stageGeneratedSources)
 }

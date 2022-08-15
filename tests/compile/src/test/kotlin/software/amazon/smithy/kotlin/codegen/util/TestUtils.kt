@@ -107,6 +107,7 @@ fun compileSdkAndTest(
         kotlincArguments = listOf(
             "-Xopt-in=aws.smithy.kotlin.runtime.util.InternalApi",
             "-Xexplicit-api=strict",
+            "-Xcontext-receivers",
         )
         sources = sdkSources
         inheritClassPath = true

@@ -73,6 +73,10 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
+        writer.write(
+            "private val rootTraceSpan = #T(config.traceProbe, config.clientName).createRootSpan()",
+            RuntimeTypes.Tracing.Core.DefaultTracer,
+        )
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -208,16 +212,17 @@ abstract class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
-        if (hasOutputStream) {
-            writer
-                .addImport(RuntimeTypes.Http.Operation.execute)
-                .write("return op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
-        } else {
-            writer.addImport(RuntimeTypes.Http.Operation.roundTrip)
-            if (outputShape.isPresent) {
-                writer.write("return op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
-            } else {
-                writer.write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+        writer.withBlock("return rootTraceSpan.child(op.sdkRequestId).#T { traceSpan ->", "}", RuntimeTypes.IO.use) {
+            withBlock("with(traceSpan) {", "}") {
+                if (hasOutputStream) {
+                    write("op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
+                } else {
+                    if (outputShape.isPresent) {
+                        write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+                    } else {
+                        write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+                    }
+                }
             }
         }
     }

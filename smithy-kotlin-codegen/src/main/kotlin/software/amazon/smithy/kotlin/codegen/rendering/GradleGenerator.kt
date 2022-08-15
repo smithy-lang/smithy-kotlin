@@ -118,6 +118,7 @@ fun renderKmpGradleBuild(
                 optInAnnotations.forEach { languageSettings.optIn(it) }
             }
         }
+        #W
         """.trimIndent(),
         pluginsRenderer,
         { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },
@@ -126,6 +127,7 @@ fun renderKmpGradleBuild(
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = true, dependencies = dependencies) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.TEST, isKmp = true, dependencies = dependencies) },
         annotationRenderer,
+        { w: GradleWriter -> if (isRootModule) renderCompilerFlags(w) },
     )
 }
 
@@ -184,13 +186,22 @@ fun renderJvmGradleBuild(
                 showStandardStreams = true
             }
         }
+        #W
         """.trimIndent(),
         pluginsRenderer,
         { w: GradleWriter -> if (isRootModule) repositoryRenderer(w) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = false, dependencies = dependencies) },
         annotationRenderer,
         { w: GradleWriter -> if (isRootModule) w.write("explicitApi()") },
+        { w: GradleWriter -> if (isRootModule) renderCompilerFlags(w) },
     )
+}
+
+private fun renderCompilerFlags(writer: GradleWriter) = with(writer) {
+    write("")
+    withBlock("tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{", "}") {
+        write("""kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"""")
+    }
 }
 
 // Specifies if a given codegen operation is under a source or test scope

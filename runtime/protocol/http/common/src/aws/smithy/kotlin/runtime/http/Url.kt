@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
  *
  * @property scheme The wire protocol (e.g. http, https, ws, wss, etc)
- * @property host hostname
+ * @property host hostnameAwsProtocolModelDeclaration
  * @property port port to connect to the host on, defaults to [Protocol.defaultPort]
  * @property path (raw) path without the query
  * @property parameters (raw) query parameters

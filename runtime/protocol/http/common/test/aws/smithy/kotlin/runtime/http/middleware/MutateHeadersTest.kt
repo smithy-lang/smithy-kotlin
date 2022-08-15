@@ -20,6 +20,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -28,7 +29,6 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MutateHeadersTest {
-
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
@@ -55,7 +55,9 @@ class MutateHeadersTest {
         )
         op.install(m)
 
-        op.roundTrip(client, Unit)
+        with(NoOpTraceSpan) {
+            op.roundTrip(client, Unit)
+        }
         val call = op.context.attributes[HttpCallList].first()
         // overrides
         assertEquals("override", call.request.headers["foo"])
@@ -85,7 +87,9 @@ class MutateHeadersTest {
         )
         op.install(m)
 
-        op.roundTrip(client, Unit)
+        with(NoOpTraceSpan) {
+            op.roundTrip(client, Unit)
+        }
         val call = op.context.attributes[HttpCallList].first()
         // appends existing
         assertEquals(listOf("bar", "appended"), call.request.headers.getAll("foo"))
@@ -115,7 +119,9 @@ class MutateHeadersTest {
         )
         op.install(m)
 
-        op.roundTrip(client, Unit)
+        with(NoOpTraceSpan) {
+            op.roundTrip(client, Unit)
+        }
         val call = op.context.attributes[HttpCallList].first()
         assertEquals("bar", call.request.headers["foo"])
         assertEquals("zebra", call.request.headers["z"])

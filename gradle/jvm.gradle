@@ -23,6 +23,14 @@ kotlin {
     }
 }
 
+compileKotlinJvm {
+    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
+}
+
+compileTestKotlinJvm {
+    kotlinOptions.freeCompilerArgs += "-Xcontext-receivers"
+}
+
 jvmTest {
     testLogging {
         events("passed", "skipped", "failed")

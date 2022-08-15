@@ -85,7 +85,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.roundTrip(client, input)
+            }
+        }
     }
 """,
 """
@@ -100,7 +104,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.roundTrip(client, input)
+            }
+        }
     }
 """,
 """
@@ -115,7 +123,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.roundTrip(client, input)
+            }
+        }
     }
 """,
 """
@@ -130,7 +142,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.roundTrip(client, input)
+            }
+        }
     }
 """,
 """
@@ -145,7 +161,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.execute(client, input, block)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.execute(client, input, block)
+            }
+        }
     }
 """,
 """
@@ -160,7 +180,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.execute(client, input, block)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.execute(client, input, block)
+            }
+        }
     }
 """,
 """
@@ -175,7 +199,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.roundTrip(client, input)
+            }
+        }
     }
 """,
 """
@@ -190,7 +218,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.roundTrip(client, input)
+            }
+        }
     }
 """,
 """
@@ -205,7 +237,11 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.roundTrip(client, input)
+        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+            with(traceSpan) {
+                op.roundTrip(client, input)
+            }
+        }
     }
 """,
         )

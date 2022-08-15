@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.response.complete
+import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.Uuid
 import aws.smithy.kotlin.runtime.util.get
@@ -26,9 +27,12 @@ public class SdkHttpOperation<I, O>(
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
 ) {
+    /**
+     * The SDK-side request ID for this operation.
+     */
+    public val sdkRequestId: String = Uuid.random().toString()
 
     init {
-        val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
         context[HttpOperationContext.LoggingContext] = mapOf(
             "sdkRequestId" to sdkRequestId,
@@ -59,6 +63,7 @@ public class SdkHttpOperation<I, O>(
 /**
  * Round trip an operation using the given [HttpHandler]
  */
+context(TraceSpan)
 @InternalApi
 public suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
     httpHandler: HttpHandler,

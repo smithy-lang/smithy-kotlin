@@ -22,6 +22,9 @@ kotlin {
                 api(project(":runtime:io"))
                 implementation(project(":runtime:logging"))
 
+                // Necessary for TraceSpan
+                api(project(":runtime:tracing:tracing-core"))
+
                 // HttpClientEngine implements CoroutineScope
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")
@@ -31,6 +34,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(project(":runtime:tracing:tracing-testing"))
             }
         }
 

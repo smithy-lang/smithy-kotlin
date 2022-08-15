@@ -2,6 +2,7 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import software.amazon.smithy.gradle.tasks.SmithyBuild
 
 plugins {
@@ -44,11 +45,11 @@ val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
     inputs.files(configurations.getByName("codegen"))
 }
 
-tasks.compileKotlin {
+tasks.withType<KotlinCompile> {
     dependsOn(generateSdk)
-
     kotlinOptions {
         allWarningsAsErrors = false // FIXME Generated waiters code contains lots of warnings
+        freeCompilerArgs += "-Xcontext-receivers"
     }
 }
 
@@ -68,6 +69,7 @@ dependencies {
 
     compileOnly(project(":smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
+    api(project(":runtime:tracing:tracing-core"))
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }

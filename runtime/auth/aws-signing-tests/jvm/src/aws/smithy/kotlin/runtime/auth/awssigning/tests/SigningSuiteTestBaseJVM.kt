@@ -20,6 +20,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.util.StringValuesMap
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import io.ktor.http.cio.*
@@ -277,7 +278,9 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
             },
         )
 
-        operation.roundTrip(client, Unit)
+        with(NoOpTraceSpan) {
+            operation.roundTrip(client, Unit)
+        }
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 
