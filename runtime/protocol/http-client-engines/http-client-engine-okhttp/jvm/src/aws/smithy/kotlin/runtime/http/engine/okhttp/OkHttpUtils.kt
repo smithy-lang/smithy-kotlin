@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.*
 import okhttp3.Authenticator
 import okhttp3.Credentials
@@ -131,7 +132,7 @@ internal class OkHttpProxyAuthenticator(
         }
 
         val url = response.request.url.let {
-            Url(scheme = Protocol(it.scheme, it.port), host = it.host, port = it.port)
+            Url(scheme = Protocol(it.scheme, it.port), host = Host.parse(it.host), port = it.port)
         }
 
         // NOTE: We will end up querying the proxy selector twice. We do this to allow
@@ -164,7 +165,7 @@ internal class OkHttpProxySelector(
 
         return when (val proxyConfig = sdkSelector.select(url)) {
             is ProxyConfig.Http -> {
-                val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host, proxyConfig.url.port))
+                val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host.toString(), proxyConfig.url.port))
                 return listOf(okProxy)
             }
             else -> emptyList()
@@ -181,10 +182,11 @@ private fun URI.toUrl(): Url {
     val uri = this
     return UrlBuilder {
         scheme = Protocol.parse(uri.scheme)
-        host = uri.host
-        if (uri.port > 0) {
-            port = uri.port
-        }
+
+        // OkHttp documentation calls out that v6 addresses will contain the []s
+        host = Host.parse(if (uri.host.startsWith("[")) uri.host.substring(1 until uri.host.length - 1) else uri.host)
+
+        port = uri.port.takeIf { it > 0 }
         path = uri.path
 
         if (uri.query != null && uri.query.isNotBlank()) {
@@ -192,13 +194,9 @@ private fun URI.toUrl(): Url {
             parameters.appendAll(parsedParameters)
         }
 
-        if (uri.userInfo != null && uri.userInfo.isNotBlank()) {
-            val userInfoParts = uri.userInfo.split(":")
-            val user = userInfoParts[0]
-            val pw = if (userInfoParts.size > 1) userInfoParts[1] else ""
-            userInfo = UserInfo(user, pw)
-        }
+        userInfo = uri.userInfo?.takeIf { it.isNotBlank() }
+            ?.let(::UserInfo)
 
-        if (uri.fragment != null && uri.fragment.isNotBlank()) fragment = uri.fragment
+        fragment = uri.fragment?.takeIf { it.isNotBlank() }
     }
 }

@@ -94,7 +94,7 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
             if (predicate && value != null) params[name] = value
         }
 
-        param("Host", builder.url.host, !(signViaQueryParams || "Host" in params))
+        param("Host", builder.url.host.toString(), !(signViaQueryParams || "Host" in params))
         param("X-Amz-Algorithm", ALGORITHM_NAME, signViaQueryParams)
         param("X-Amz-Credential", credentialValue(config, credentials), signViaQueryParams)
         param("X-Amz-Content-Sha256", hash, addHashHeader)

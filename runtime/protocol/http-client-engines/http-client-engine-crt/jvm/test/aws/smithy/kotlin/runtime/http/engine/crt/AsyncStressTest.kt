@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.testing.IgnoreWindows
+import aws.smithy.kotlin.runtime.util.net.Host
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
@@ -52,7 +53,7 @@ class AsyncStressTest : TestWithLocalServer() {
             url {
                 scheme = Protocol.HTTP
                 method = HttpMethod.GET
-                host = testHost
+                host = Host.Domain(testHost)
                 port = serverPort
                 path = "/largeResponse"
             }

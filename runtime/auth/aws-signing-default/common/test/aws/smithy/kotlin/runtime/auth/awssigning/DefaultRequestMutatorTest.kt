@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.parameters
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -52,7 +53,7 @@ class DefaultRequestMutatorTest {
 private val baseRequest = HttpRequest {
     method = HttpMethod.GET
     url {
-        host = "foo.com"
+        host = Host.Domain("foo.com")
         path = "bar/baz"
         parameters {
             append("a", "apple")

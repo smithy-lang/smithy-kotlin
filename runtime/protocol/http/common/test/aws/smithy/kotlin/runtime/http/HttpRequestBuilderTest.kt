@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -30,7 +31,7 @@ class HttpRequestBuilderTest {
         }
 
         builder.url {
-            host = "test.amazon.com"
+            host = Host.Domain("test.amazon.com")
         }
 
         builder.header("x-baz", "quux")
@@ -38,7 +39,7 @@ class HttpRequestBuilderTest {
         val request = builder.build()
         assertEquals("bar", request.headers["x-foo"])
         assertEquals("quux", request.headers["x-baz"])
-        assertEquals("test.amazon.com", request.url.host)
+        assertEquals(Host.Domain("test.amazon.com"), request.url.host)
         assertEquals(HttpBody.Empty, request.body)
     }
 
@@ -47,7 +48,7 @@ class HttpRequestBuilderTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"
         val builder = HttpRequestBuilder().apply {
             url {
-                host = "test.amazon.com"
+                host = Host.Domain("test.amazon.com")
                 path = "/debug/test"
                 parameters.append("foo", "bar")
             }
@@ -81,7 +82,7 @@ class HttpRequestBuilderTest {
             method = HttpMethod.POST,
             url = Url(
                 Protocol.HTTPS,
-                "test.amazon.com",
+                Host.Domain("test.amazon.com"),
                 path = "/debug/test",
                 parameters = QueryParameters {
                     append("q1", "foo")

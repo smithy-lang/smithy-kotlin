@@ -6,8 +6,9 @@ package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.net.isIpv6
+import aws.smithy.kotlin.runtime.util.net.Host
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
+import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 /**
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
@@ -24,7 +25,7 @@ import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
  */
 public data class Url(
     public val scheme: Protocol,
-    public val host: String,
+    public val host: Host,
     public val port: Int = scheme.defaultPort,
     public val path: String = "",
     public val parameters: QueryParameters = QueryParameters.Empty,
@@ -55,7 +56,7 @@ public data class Url(
             }
         }
 
-        append(if (host.isIpv6()) "[$host]" else host)
+        append(host.toUrlString())
         if (port != scheme.defaultPort) {
             append(":$port")
         }
@@ -109,7 +110,7 @@ public data class UserInfo(public val username: String, public val password: Str
  */
 public class UrlBuilder : CanDeepCopy<UrlBuilder> {
     public var scheme: Protocol = Protocol.HTTPS
-    public var host: String = ""
+    public var host: Host = Host.Domain("")
     public var port: Int? = null
     public var path: String = ""
     public var parameters: QueryParametersBuilder = QueryParametersBuilder()
@@ -166,3 +167,10 @@ public fun UserInfo(value: String): UserInfo {
         if (info.size > 1) info[1] else ""
     )
 }
+
+private fun Host.toUrlString(): String =
+    when (this) {
+        is Host.IPv4 -> address
+        is Host.IPv6 -> if (scopeId == null) "[$address]" else "[$address%25${scopeId!!.urlEncodeComponent()}]"
+        is Host.Domain -> name
+    }

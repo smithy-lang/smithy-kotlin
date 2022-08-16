@@ -8,34 +8,6 @@ import kotlin.test.*
 
 class TextTest {
     @Test
-    fun testSplitHostPortFullyQualified() {
-        val (host, port) = "localhost:1024".splitHostPort()
-        assertEquals("localhost", host)
-        assertEquals(1024, port)
-    }
-
-    @Test
-    fun testSplitHostPortHostnameOnly() {
-        val (host, port) = "localhost".splitHostPort()
-        assertEquals("localhost", host)
-        assertNull(port)
-    }
-
-    @Test
-    fun testSplitHostPortFullyQualifiedIpv6() {
-        val (host, port) = "[fe80::]:1024".splitHostPort()
-        assertEquals("fe80::", host)
-        assertEquals(1024, port)
-    }
-
-    @Test
-    fun testSplitHostPortHostnameOnlyIpv6() {
-        val (host, port) = "[fe80::]".splitHostPort()
-        assertEquals("fe80::", host)
-        assertNull(port)
-    }
-
-    @Test
     fun testInvalidLengthHostname() =
         assertFalse("asdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdfasdf".isValidHostname())
 

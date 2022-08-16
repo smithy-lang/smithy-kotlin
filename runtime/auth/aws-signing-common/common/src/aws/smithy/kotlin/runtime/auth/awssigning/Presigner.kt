@@ -145,7 +145,7 @@ public suspend fun createPresignedRequest(
         requestConfig.method,
         unsignedUrl,
         Headers {
-            append("Host", endpoint.endpoint.uri.host)
+            append("Host", endpoint.endpoint.uri.host.toString())
             appendAll(requestConfig.additionalHeaders)
         },
         HttpBody.Empty,

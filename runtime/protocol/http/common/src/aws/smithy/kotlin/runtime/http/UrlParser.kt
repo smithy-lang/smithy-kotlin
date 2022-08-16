@@ -4,8 +4,10 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import aws.smithy.kotlin.runtime.util.net.splitHostPort
+import aws.smithy.kotlin.runtime.util.net.Host
+import aws.smithy.kotlin.runtime.util.net.isIpv6
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
+import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 
 internal fun String.toUrl(): Url =
     UrlBuilder {
@@ -68,4 +70,38 @@ private fun String.capture(range: IntRange, block: (String) -> Unit): String {
         block(slice)
     }
     return substring(range.last + 1)
+}
+
+/**
+ * Parses a `host[:port]` pair. IPv6 hostnames MUST be enclosed in square brackets (`[]`).
+ */
+internal fun String.splitHostPort(): Pair<Host, Int?> {
+    val lBracketIndex = indexOf('[')
+    val rBracketIndex = indexOf(']')
+    val lastColonIndex = lastIndexOf(":")
+    val hostEndIndex = when {
+        rBracketIndex != -1 -> rBracketIndex + 1
+        lastColonIndex != -1 -> lastColonIndex
+        else -> length
+    }
+
+    require(lBracketIndex == -1 && rBracketIndex == -1 || lBracketIndex < rBracketIndex) { "unmatched [ or ]" }
+    require(lBracketIndex <= 0) { "unexpected characters before [" }
+    require(rBracketIndex == -1 || rBracketIndex == hostEndIndex - 1) { "unexpected characters after ]" }
+
+    val host = if (lBracketIndex != -1) {
+        substring(lBracketIndex + 1 until rBracketIndex)
+    } else {
+        substring(0 until hostEndIndex)
+    }
+
+    val decodedHost = host.urlDecodeComponent()
+    if (lBracketIndex != -1 && rBracketIndex != -1 && !decodedHost.isIpv6()) {
+        throw IllegalArgumentException("non-ipv6 host was enclosed in []-brackets")
+    }
+
+    return Pair(
+        Host.parse(decodedHost),
+        if (hostEndIndex != -1 && hostEndIndex != length) substring(hostEndIndex + 1).toInt() else null,
+    )
 }

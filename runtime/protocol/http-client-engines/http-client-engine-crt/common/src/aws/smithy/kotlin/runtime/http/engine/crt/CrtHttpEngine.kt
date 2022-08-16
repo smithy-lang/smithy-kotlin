@@ -119,7 +119,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
                 this.uri = uri
                 proxyOptions = when (proxyConfig) {
                     is ProxyConfig.Http -> HttpProxyOptions(
-                        proxyConfig.url.host,
+                        proxyConfig.url.host.toString(),
                         proxyConfig.url.port,
                         authUsername = proxyConfig.url.userInfo?.username,
                         authPassword = proxyConfig.url.userInfo?.password,

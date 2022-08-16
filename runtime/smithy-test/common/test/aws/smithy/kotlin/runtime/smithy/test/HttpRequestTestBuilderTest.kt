@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
+import aws.smithy.kotlin.runtime.util.net.Host
 import io.kotest.matchers.string.shouldContain
 import kotlin.test.Test
 import kotlin.test.assertFails
@@ -318,7 +319,7 @@ class HttpRequestTestBuilderTest {
                 operation { mockEngine ->
                     val request = HttpRequest {
                         method = HttpMethod.POST
-                        url.host = "bar.example.com"
+                        url.host = Host.Domain("bar.example.com")
                     }
                     mockEngine.roundTrip(execContext, request)
                 }

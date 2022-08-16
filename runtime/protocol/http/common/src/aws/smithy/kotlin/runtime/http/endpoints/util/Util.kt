@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.http.endpoints.util
 
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.net.isIpv4
+import aws.smithy.kotlin.runtime.util.net.Host
 import aws.smithy.kotlin.runtime.util.net.isIpv6
 import aws.smithy.kotlin.runtime.util.net.isValidHostname
 import aws.smithy.kotlin.runtime.util.text.ensureSuffix
@@ -47,7 +47,7 @@ public fun parseUrl(value: String): Url? {
         return null
     }
 
-    val isIpv6 = sdkUrl.host.isIpv6()
+    val isIpv6 = sdkUrl.host is Host.IPv6
     val authority = buildString {
         append(if (isIpv6) "[${sdkUrl.host}]" else sdkUrl.host)
         if (sdkUrl.port != sdkUrl.scheme.defaultPort) {
@@ -60,7 +60,7 @@ public fun parseUrl(value: String): Url? {
         authority,
         path = sdkUrl.path,
         normalizedPath = sdkUrl.path.ensureSuffix("/"),
-        isIp = isIpv6 || sdkUrl.host.isIpv4(),
+        isIp = isIpv6 || sdkUrl.host is Host.IPv4,
     )
 }
 

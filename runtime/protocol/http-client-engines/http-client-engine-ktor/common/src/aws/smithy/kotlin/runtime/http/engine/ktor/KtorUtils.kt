@@ -27,7 +27,7 @@ internal fun HttpRequest.toKtorRequestBuilder(): KtorHttpRequestBuilder {
     builder.url {
         val protocolName = sdkUrl.scheme.protocolName.replaceFirstChar(Char::lowercaseChar)
         protocol = URLProtocol(protocolName, sdkUrl.scheme.defaultPort)
-        host = sdkUrl.host
+        host = sdkUrl.host.toString()
         port = sdkUrl.port
         encodedPath = sdkUrl.path.encodeUrlPath()
 

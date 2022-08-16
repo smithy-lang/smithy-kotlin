@@ -8,6 +8,7 @@ import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.http.request.url
+import aws.smithy.kotlin.runtime.util.net.Host
 import io.kotest.matchers.booleans.shouldBeFalse
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
 import io.ktor.http.ContentType
@@ -24,7 +25,7 @@ class KtorRequestAdapterTest {
     @Test
     fun itStripsContentTypeHeader() = runTest {
         val sdkBuilder = HttpRequestBuilder()
-        sdkBuilder.url { host = "test.aws.com" }
+        sdkBuilder.url { host = Host.Domain("test.aws.com") }
         sdkBuilder.header("Content-Type", "application/json")
         val actual = KtorRequestAdapter(sdkBuilder, coroutineContext).toBuilder()
         assertFalse("Content-Type" in actual.headers)
@@ -37,7 +38,7 @@ class KtorRequestAdapterTest {
     @Test
     fun itConvertsHttpBodyVariantBytes() = runTest {
         val sdkBuilder = HttpRequestBuilder()
-        sdkBuilder.url { host = "test.aws.com" }
+        sdkBuilder.url { host = Host.Domain("test.aws.com") }
         sdkBuilder.header("Content-Type", "application/json")
         val content = "testing".toByteArray()
         sdkBuilder.body = ByteArrayContent(content)
@@ -51,7 +52,7 @@ class KtorRequestAdapterTest {
     @Test
     fun itConvertsHttpBodyVariantStreaming() = runTest {
         val sdkBuilder = HttpRequestBuilder()
-        sdkBuilder.url { host = "test.aws.com" }
+        sdkBuilder.url { host = Host.Domain("test.aws.com") }
         sdkBuilder.header("Content-Type", "application/octet-stream")
         val content = "testing".toByteArray()
         val sdkSource = ByteReadChannel(content)
@@ -65,7 +66,7 @@ class KtorRequestAdapterTest {
     @Test
     fun itTransfersAStreamingBody() = runTest {
         val sdkBuilder = HttpRequestBuilder()
-        sdkBuilder.url { host = "test.aws.com" }
+        sdkBuilder.url { host = Host.Domain("test.aws.com") }
         sdkBuilder.header("Content-Type", "application/octet-stream")
         val content = "testing".toByteArray()
 
@@ -84,7 +85,7 @@ class KtorRequestAdapterTest {
     @Test
     fun itHandlesPartialStreamReads() = runTest {
         val sdkBuilder = HttpRequestBuilder()
-        sdkBuilder.url { host = "test.aws.com" }
+        sdkBuilder.url { host = Host.Domain("test.aws.com") }
         sdkBuilder.header("Content-Type", "application/octet-stream")
         val content = "testing".toByteArray()
 
@@ -103,7 +104,7 @@ class KtorRequestAdapterTest {
     @Test
     fun itHandlesStreamBackpressure() = runTest {
         val sdkBuilder = HttpRequestBuilder()
-        sdkBuilder.url { host = "test.aws.com" }
+        sdkBuilder.url { host = Host.Domain("test.aws.com") }
         sdkBuilder.header("Content-Type", "application/octet-stream")
         // NOTE: this requires knowing some internal details like the buffer size in use
         // we should end up with two 4096 reads of the source content (and 2 equivalent writes to
@@ -141,7 +142,7 @@ class KtorRequestAdapterTest {
     @Test
     fun itHandlesStreamCancellation() = runTest {
         val sdkBuilder = HttpRequestBuilder()
-        sdkBuilder.url { host = "test.aws.com" }
+        sdkBuilder.url { host = Host.Domain("test.aws.com") }
         sdkBuilder.header("Content-Type", "application/octet-stream")
         val sdkSource = ByteChannel()
         sdkBuilder.body = KtorHttpBody(0L, sdkSource)

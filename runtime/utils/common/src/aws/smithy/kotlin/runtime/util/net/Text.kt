@@ -7,65 +7,11 @@ package aws.smithy.kotlin.runtime.util.net
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
- * Parses a `host[:port]` pair. IPv6 hostnames MUST be enclosed in square brackets (`[]`).
- */
-@InternalApi
-public fun String.splitHostPort(): Pair<String, Int?> {
-    val lBracketIndex = indexOf('[')
-    val rBracketIndex = indexOf(']')
-    val lastColonIndex = lastIndexOf(":")
-    val hostEndIndex = when {
-        rBracketIndex != -1 -> rBracketIndex + 1
-        lastColonIndex != -1 -> lastColonIndex
-        else -> length
-    }
-
-    if (lBracketIndex == -1 && rBracketIndex != -1 ||
-        lBracketIndex != -1 && rBracketIndex == -1 ||
-        lBracketIndex > rBracketIndex
-    ) {
-        throw IllegalArgumentException("unmatched [ or ]")
-    }
-    if (lBracketIndex > 0) {
-        throw IllegalArgumentException("unexpected characters before [")
-    }
-    if (rBracketIndex != -1 && rBracketIndex != hostEndIndex - 1) {
-        throw IllegalArgumentException("unexpected characters after ]")
-    }
-
-    val host = if (lBracketIndex != -1) {
-        substring(lBracketIndex + 1 until rBracketIndex)
-    } else {
-        substring(0 until hostEndIndex)
-    }
-    if (lBracketIndex != -1 && rBracketIndex != -1 && !host.isIpv6()) {
-        throw IllegalArgumentException("non-ipv6 host was enclosed in []-brackets")
-    }
-
-    return Pair(
-        host,
-        if (hostEndIndex != -1 && hostEndIndex != length) substring(hostEndIndex + 1).toInt() else null
-    )
-}
-
-/**
  * Validates a hostname per [RFC 1123](https://www.ietf.org/rfc/rfc1123.txt).
  */
 @InternalApi
-public fun String.isValidHostname(): Boolean {
-    if (length !in 1..63 || !this[0].isLetterOrDigit()) {
-        return false
-    }
-
-    for (i in 1 until length) {
-        val c = this[i]
-        if (!c.isLetterOrDigit() && c != '-') {
-            return false
-        }
-    }
-
-    return true
-}
+public fun String.isValidHostname(): Boolean =
+    length in 1..63 && this[0].isLetterOrDigit() && drop(1).all { it.isLetterOrDigit() || it == '-' }
 
 @InternalApi
 public fun String.isIpv4(): Boolean {
@@ -77,17 +23,15 @@ public fun String.isIpv4(): Boolean {
  * Validates a string as an IPv6 address according to [RFC 4291 §2.2](https://www.rfc-editor.org/rfc/rfc4291.html#section-2.2).
  * Does NOT validate for [address prefixes (§2.3)](https://www.rfc-editor.org/rfc/rfc4291.html#section-2.3).
  *
- * The address MAY include a scope ID which is validated per [RFC 6874](https://www.rfc-editor.org/rfc/rfc6874).
+ * The address MAY include a scope ID which is validated per [RFC 4007](https://www.rfc-editor.org/rfc/rfc4007#section-11.2).
  */
 @InternalApi
 public fun String.isIpv6(): Boolean {
-    val components = split("%25") // delimiter and scope id are %-encoded
+    val components = split('%')
 
     if (components.size > 2) return false
-    if (!components[0].isIpv6Address()) return false
     if (components.size == 2 && !components[1].isIpv6ScopeId()) return false
-
-    return true
+    return components[0].isIpv6Address()
 }
 
 private const val ipv6StandardSegmentCount = 8
@@ -110,9 +54,7 @@ private fun String.getIpv6AddressSegments(): List<String>? {
 
     return buildList {
         addAll(leftSegments)
-        for (i in 0 until implicitSegmentCount) {
-            add("0")
-        }
+        repeat(implicitSegmentCount) { add("0") }
         addAll(rightSegments)
     }
 }
@@ -136,7 +78,7 @@ private fun String.isIpv6Address(): Boolean {
 
 private fun String.isIpv6AddressSegment(): Boolean = length in 1..4 && all(Char::isHexDigit)
 
-private fun String.isIpv6ScopeId(): Boolean = isNotEmpty() && isValidPercentEncoded()
+private fun String.isIpv6ScopeId(): Boolean = isNotEmpty() && '%' !in this
 
 private fun String.isValidPercentEncoded(): Boolean {
     forEachIndexed { index, char ->
