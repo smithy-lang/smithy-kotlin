@@ -13,7 +13,6 @@ import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.model.shapes.StringShape
 import software.amazon.smithy.model.traits.EnumDefinition
-import software.amazon.smithy.model.traits.EnumTrait
 
 /**
  * Generates a Kotlin sealed class from a Smithy enum string
@@ -98,10 +97,9 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     private val generatedNames = mutableSetOf<String>()
 
     init {
-        assert(shape.hasTrait<EnumTrait>())
+        assert(shape.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>())
     }
-
-    val enumTrait: EnumTrait by lazy {
+    val enumTrait: @Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait by lazy {
         shape.expectTrait()
     }
 
