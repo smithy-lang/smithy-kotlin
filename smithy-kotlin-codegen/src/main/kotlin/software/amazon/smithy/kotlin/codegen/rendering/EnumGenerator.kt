@@ -99,7 +99,9 @@ class EnumGenerator(val shape: StringShape, val symbol: Symbol, val writer: Kotl
     init {
         assert(shape.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>())
     }
-    val enumTrait: @Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait by lazy {
+
+    @Suppress("DEPRECATION")
+    val enumTrait: software.amazon.smithy.model.traits.EnumTrait by lazy {
         shape.expectTrait()
     }
 
