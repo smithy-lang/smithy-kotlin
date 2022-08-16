@@ -11,8 +11,8 @@ import kotlin.test.assertFails
 import kotlin.test.assertNull
 
 class UrlTest {
-    private fun testSymmetricParse(url: String) =
-        assertEquals(url, Url.parse(url).toString())
+    private fun testParse(expected: String, url: String = expected) =
+        assertEquals(expected, Url.parse(url).toString())
 
     @Test
     fun testSplitHostPortFullyQualified() {
@@ -203,47 +203,47 @@ class UrlTest {
 
     @Test
     fun itParsesMinimum() =
-        testSymmetricParse("http://host")
+        testParse("http://host")
 
     @Test
     fun itParsesFragment() =
-        testSymmetricParse("http://host#fragment")
+        testParse("http://host#fragment")
 
     @Test
     fun itParsesQuery() =
-        testSymmetricParse("http://host?n=1")
+        testParse("http://host?n=1")
 
     @Test
     fun itParsesQueryFragment() =
-        testSymmetricParse("http://host?n=1#fragment")
+        testParse("http://host?n=1#fragment")
 
     @Test
     fun itParsesPath() =
-        testSymmetricParse("http://host/path")
+        testParse("http://host/path")
 
     @Test
     fun itParsesPathFragment() =
-        testSymmetricParse("http://host/path#fragment")
+        testParse("http://host/path#fragment")
 
     @Test
     fun itParsesPathQuery() =
-        testSymmetricParse("http://host/path?n=1")
+        testParse("http://host/path?n=1")
 
     @Test
     fun itParsesExplicitEmptyPath() =
-        assertEquals("http://host", "http://host/".toUrl().toString())
+        testParse("http://host", "http://host/")
 
     @Test
     fun itParsesExplicitEmptyQuery() =
-        assertEquals("http://host", "http://host?".toUrl().toString())
+        testParse("http://host", "http://host?")
 
     @Test
     fun itParsesExplicitEmptyFragment() =
-        assertEquals("http://host", "http://host#".toUrl().toString())
+        testParse("http://host", "http://host#")
 
     @Test
     fun itParsesPathQueryFragment() =
-        testSymmetricParse("http://host/path?n=1#fragment")
+        testParse("http://host/path?n=1#fragment")
 
     @Test
     fun itParsesIpv6Hosts() {
