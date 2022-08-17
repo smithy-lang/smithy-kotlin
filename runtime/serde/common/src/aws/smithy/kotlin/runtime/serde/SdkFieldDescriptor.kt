@@ -33,6 +33,8 @@ public sealed class SerialKind {
     public object Char : SerialKind()
     public object Short : SerialKind()
     public object Float : SerialKind()
+    public object Enum : SerialKind()
+    public object IntEnum : SerialKind()
     public object Map : SerialKind()
     public object List : SerialKind()
     public object Struct : SerialKind()
