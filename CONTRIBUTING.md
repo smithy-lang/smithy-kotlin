@@ -140,12 +140,12 @@ Breaking changes should also add an exclamation mark `!` after the type/scope (e
 
 A number of automated workflows run when a PR is submitted. Generally speaking, each of these must pass before the PR is
 allowed to be merged. If your PR fails one of the checks, please attempt to address the problem and push a new commit to
-the PR. If you need help understanding or resolving a PR check failure, please reach out via a PR comment, a GitHub
-discussion, or a new issue.
+the PR. If you need help understanding or resolving a PR check failure, please reach out via a PR comment or a GitHub
+discussion. Please file a new issue if you believe there's a pre-existing bug in a PR check.
 
 #### Lint
 
-This repo uses [ktlint](https://github.com/pinterest/ktlint) (via the
+This repo uses [**ktlint**](https://github.com/pinterest/ktlint) (via the
 [ktlint Gradle plugin](https://github.com/JLLeitschuh/ktlint-gradle)). To run a lint check locally, run
 `./gradlew ktlint`.
 
