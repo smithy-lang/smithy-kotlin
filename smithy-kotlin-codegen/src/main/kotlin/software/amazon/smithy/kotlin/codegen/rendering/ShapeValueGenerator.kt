@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.isEnum
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.node.*
 import software.amazon.smithy.model.shapes.*
@@ -97,17 +98,14 @@ class ShapeValueGenerator(
             RuntimeTypes.Core.Content.StringContent,
             RuntimeTypes.Core.Content.toByteArray,
         )
-        val suffix = when (shape.type) {
-            ShapeType.STRING -> {
-                if (shape.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()) {
-                    val symbol = symbolProvider.toSymbol(shape)
-                    writer.writeInline("#L.fromValue(", symbol.name)
-                    ")"
-                } else {
-                    ""
-                }
+        val suffix = when {
+            shape.isEnum -> {
+                val symbol = symbolProvider.toSymbol(shape)
+                writer.writeInline("#L.fromValue(", symbol.name)
+                ")"
             }
-            ShapeType.BLOB -> {
+
+            shape.type == ShapeType.BLOB -> {
                 if (shape.hasTrait<StreamingTrait>()) {
                     writer.addImport(blobHandlingSymbols)
                     writer.writeInline("StringContent(")
@@ -117,6 +115,7 @@ class ShapeValueGenerator(
                     ".encodeAsByteArray()"
                 }
             }
+
             else -> ""
         }
 
