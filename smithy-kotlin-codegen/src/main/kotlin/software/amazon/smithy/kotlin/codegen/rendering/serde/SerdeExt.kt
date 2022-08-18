@@ -235,6 +235,8 @@ fun Shape.serialKind(): String = when (this.type) {
     ShapeType.FLOAT -> "SerialKind.Float"
     ShapeType.DOUBLE -> "SerialKind.Double"
     ShapeType.STRING -> "SerialKind.String"
+    ShapeType.ENUM -> "SerialKind.Enum"
+    ShapeType.INT_ENUM -> "SerialKind.IntEnum"
     ShapeType.BLOB -> "SerialKind.Blob"
     ShapeType.TIMESTAMP -> "SerialKind.Timestamp"
     ShapeType.DOCUMENT -> "SerialKind.Document"
