@@ -154,7 +154,10 @@ val Shape.isDeprecated: Boolean
  * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
  */
 val Shape.isEnum: Boolean
-    get() = isStringShape && hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
+    get() =
+        isStringShape && hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() ||
+            isEnumShape ||
+            isIntEnumShape
 
 /**
  * Test if a shape is an error.

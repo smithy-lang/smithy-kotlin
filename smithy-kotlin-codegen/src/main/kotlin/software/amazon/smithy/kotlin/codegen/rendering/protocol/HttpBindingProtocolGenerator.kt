@@ -437,6 +437,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                     writer.write("builder.body = #T(input.#L)", RuntimeTypes.Http.ByteArrayContent, memberName)
                 }
             }
+
             ShapeType.STRING -> {
                 val contents = if (target.isEnum) {
                     "$memberName.value"
@@ -445,13 +446,26 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 writer.write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, KotlinTypes.Text.encodeToByteArray)
             }
+
+            ShapeType.ENUM ->
+                writer.write(
+                    "builder.body = #T(input.#L.value.#T())",
+                    RuntimeTypes.Http.ByteArrayContent,
+                    memberName,
+                    KotlinTypes.Text.encodeToByteArray,
+                )
+
+            ShapeType.INT_ENUM -> throw CodegenException("IntEnum is not supported until Smithy 2.0")
+
             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 val sdg = structuredDataSerializer(ctx)
                 val payloadSerializerFn = sdg.payloadSerializer(ctx, binding.member)
                 writer.write("val payload = #T(input.#L)", payloadSerializerFn, memberName)
                 writer.write("builder.body = #T(payload)", RuntimeTypes.Http.ByteArrayContent)
             }
-            else -> throw CodegenException("member shape ${binding.member} serializer not implemented yet")
+
+            else ->
+                throw CodegenException("member shape ${binding.member} (${target.type}) serializer not implemented yet")
         }
         writer.closeBlock("}")
     }
@@ -869,16 +883,21 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val targetSymbol = ctx.symbolProvider.toSymbol(target)
         when (target.type) {
             ShapeType.STRING -> {
-                writer
-                    .addImport(RuntimeTypes.Http.readAll)
-                    .write("val contents = response.body.#T()?.decodeToString()", RuntimeTypes.Http.readAll)
+                writer.write("val contents = response.body.#T()?.decodeToString()", RuntimeTypes.Http.readAll)
                 if (target.isEnum) {
-                    writer.addImport(targetSymbol)
                     writer.write("builder.$memberName = contents?.let { #T.fromValue(it) }", targetSymbol)
                 } else {
                     writer.write("builder.$memberName = contents")
                 }
             }
+
+            ShapeType.ENUM -> {
+                writer.write("val contents = response.body.#T()?.decodeToString()", RuntimeTypes.Http.readAll)
+                writer.write("builder.#L = contents?.let { #T.fromValue(it) }", memberName, targetSymbol)
+            }
+
+            ShapeType.INT_ENUM -> throw CodegenException("IntEnum is not supported until Smithy 2.0")
+
             ShapeType.BLOB -> {
                 val isBinaryStream = target.hasTrait<StreamingTrait>()
                 val conversion = if (isBinaryStream) {
@@ -890,6 +909,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
                 writer.write("builder.$memberName = response.body.$conversion")
             }
+
             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 // delegate to the payload deserializer
                 val sdg = structuredDataParser(ctx)
@@ -900,7 +920,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                         write("builder.#L = #T(payload)", memberName, payloadDeserializerFn)
                     }
             }
-            else -> throw CodegenException("member shape ${binding.member} deserializer not implemented")
+
+            else ->
+                throw CodegenException("member shape ${binding.member} (${target.type}) deserializer not implemented")
         }
 
         writer.openBlock("")
