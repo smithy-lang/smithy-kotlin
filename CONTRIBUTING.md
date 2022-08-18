@@ -136,6 +136,51 @@ The last line of commits introducing breaking changes should be in the form `BRE
 
 Breaking changes should also add an exclamation mark `!` after the type/scope (e.g. `refactor(rt)!: drop support for Android API < 20`)
 
+### Automated PR checks
+
+A number of automated workflows run when a PR is submitted. Generally speaking, each of these must pass before the PR is
+allowed to be merged. If your PR fails one of the checks, please attempt to address the problem and push a new commit to
+the PR. If you need help understanding or resolving a PR check failure, please reach out via a PR comment or a GitHub
+discussion. Please file a new issue if you believe there's a pre-existing bug in a PR check.
+
+#### Lint
+
+This repo uses [**ktlint**](https://github.com/pinterest/ktlint) (via the
+[ktlint Gradle plugin](https://github.com/JLLeitschuh/ktlint-gradle)). To run a lint check locally, run
+`./gradlew ktlint`.
+
+#### CI linux/macos/windows-compat
+
+To verify cross-OS compatibility, we build our code against Linux, MacOS, and Windows runners provided by GitHub.
+Running these checks independently requires access to hosts with those operating systems. On a host with the correct
+operating system, run `./gradlew build`.
+
+#### CI downstream
+
+This repo is a core dependency of [**aws-sdk-kotlin**](https://github.com/awslabs/aws-sdk-kotlin) and many changes made
+here could impact that repo as well. To ensure that **aws-sdk-kotlin** continues to function correctly, we run a
+downstream CI check that builds both code bases in a shared workspace. To run this check locally, check out both
+repositories into subdirectories of the same parent, build/publish **smithy-kotlin** followed by
+**aws-sdk-kotlin**, and then run the protocol tests. For example:
+
+```shell
+mkdir path/to/workspace # create a new directory to hold both repositories
+cd path/to/workspace
+git clone -b branch-name https://github.com/awslabs/smithy-kotlin.git  # replace branch-name as appropriate
+git clone -b branch-name https://github.com/awslabs/aws-sdk-kotlin.git # replace branch-name as appropriate
+cd smithy-kotlin
+./gradlew build publishToMavenLocal
+cd ../aws-sdk-kotlin
+./gradlew build publishToMavenLocal testAllProtocols
+```
+
+**Note**: Replace `branch-name` in the above commands with the actual names of your branches. When making linked changes
+across both repos, it's best to create/use the same branch name in both locations.
+
+#### Changelog verification
+
+This check enforces the changelog requirements [described above](#Changelog).
+
 ## Finding contributions to work on
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
 
