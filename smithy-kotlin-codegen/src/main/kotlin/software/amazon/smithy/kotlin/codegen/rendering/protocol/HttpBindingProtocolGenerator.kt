@@ -447,13 +447,15 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 writer.write("builder.body = #T(input.#L.#T())", RuntimeTypes.Http.ByteArrayContent, contents, KotlinTypes.Text.encodeToByteArray)
             }
 
-            ShapeType.ENUM, ShapeType.INT_ENUM ->
+            ShapeType.ENUM ->
                 writer.write(
                     "builder.body = #T(input.#L.value.#T())",
                     RuntimeTypes.Http.ByteArrayContent,
                     memberName,
                     KotlinTypes.Text.encodeToByteArray,
                 )
+
+            ShapeType.INT_ENUM -> throw CodegenException("IntEnum is not supported until Smithy 2.0")
 
             ShapeType.STRUCTURE, ShapeType.UNION, ShapeType.DOCUMENT -> {
                 val sdg = structuredDataSerializer(ctx)
@@ -889,10 +891,12 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
                 }
             }
 
-            ShapeType.ENUM, ShapeType.INT_ENUM -> {
+            ShapeType.ENUM -> {
                 writer.write("val contents = response.body.#T()?.decodeToString()", RuntimeTypes.Http.readAll)
                 writer.write("builder.#L = contents?.let { #T.fromValue(it) }", memberName, targetSymbol)
             }
+
+            ShapeType.INT_ENUM -> throw CodegenException("IntEnum is not supported until Smithy 2.0")
 
             ShapeType.BLOB -> {
                 val isBinaryStream = target.hasTrait<StreamingTrait>()
