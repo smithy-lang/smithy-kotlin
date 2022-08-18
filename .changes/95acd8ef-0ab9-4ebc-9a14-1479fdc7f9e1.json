@@ -1,5 +1,0 @@
-{
-    "id": "95acd8ef-0ab9-4ebc-9a14-1479fdc7f9e1",
-    "type": "misc",
-    "description": "Fix ktlint issues and enable ktlint to run on all pull requests (even from forked repos)"
-}

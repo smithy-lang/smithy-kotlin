@@ -1,8 +1,0 @@
-{
-    "id": "5b2cde72-c99f-4daa-a5c0-3621eed7835c",
-    "type": "bugfix",
-    "description": "Remove incorrect `.` at end of license identifier header in source files.",
-    "issues": [
-        "awslabs/aws-sdk-kotlin#601"
-    ]
-}

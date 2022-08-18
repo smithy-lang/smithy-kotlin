@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.12.5] - 08/18/2022
+
+### Fixes
+* [#55](https://github.com/awslabs/aws-crt-kotlin/issues/55) Upgrade aws-crt-kotlin dependency to fix Mac dlopen issue
+* [#601](https://github.com/awslabs/aws-sdk-kotlin/issues/601) Remove incorrect `.` at end of license identifier header in source files.
+
+### Documentation
+* [#683](https://github.com/awslabs/aws-sdk-kotlin/issues/683) Enhance **CONTRIBUTING.md** with additional details about required PR checks and how to run them locally
+
+### Miscellaneous
+* Upgrade Smithy to 1.23.0, upgrade Smithy Gradle to 0.6.0
+* Upgrade ktlint to 0.46.1.
+* Fix ktlint issues and enable ktlint to run on all pull requests (even from forked repos)
+
 ## [0.12.4] - 08/11/2022
 
 ### Miscellaneous
