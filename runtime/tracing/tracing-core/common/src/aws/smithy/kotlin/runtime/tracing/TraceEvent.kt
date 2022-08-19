@@ -49,14 +49,14 @@ public sealed interface TraceEventData {
      * @param count The value of the count.
      * @param T The type of number utilized by the count.
      */
-    public data class Count<T : Number>(override val metric: String, public val count: T) : Metric
+    public data class Count<T : Number>(override val metric: String, public val count: () -> T) : Metric
 
     /**
      * A metric that consists of a measured duration.
      * @param metric The name of the metric.
      * @param duration The length of time measured by the metric.
      */
-    public data class Timespan(override val metric: String, public val duration: Duration) : Metric
+    public data class Timespan(override val metric: String, public val duration: () -> Duration) : Metric
 }
 
 /**
