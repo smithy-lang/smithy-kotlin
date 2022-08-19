@@ -7,8 +7,8 @@ package aws.smithy.kotlin.runtime.http
 import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.net.Host
+import aws.smithy.kotlin.runtime.util.net.toUrlString
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
-import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 /**
  * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
@@ -167,10 +167,3 @@ public fun UserInfo(value: String): UserInfo {
         if (info.size > 1) info[1] else ""
     )
 }
-
-private fun Host.toUrlString(): String =
-    when (this) {
-        is Host.IPv4 -> address
-        is Host.IPv6 -> if (scopeId == null) "[$address]" else "[$address%25${scopeId!!.urlEncodeComponent()}]"
-        is Host.Domain -> name
-    }

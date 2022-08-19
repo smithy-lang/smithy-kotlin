@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.util.net
 
+import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
+
 /**
  * A [Host] represents a parsed internet host. This may be an internet address (IPv4, IPv6) or a domain name.
  */
@@ -44,4 +46,11 @@ private fun hostParseImpl(host: String): Host =
         }
         host.split('.').all(String::isValidHostname) -> Host.Domain(host)
         else -> throw IllegalArgumentException("$host is not a valid inet host")
+    }
+
+public fun Host.toUrlString(): String =
+    when (this) {
+        is Host.IPv4 -> address
+        is Host.IPv6 -> if (scopeId == null) "[$address]" else "[$address%25${scopeId.urlEncodeComponent()}]"
+        is Host.Domain -> name
     }
