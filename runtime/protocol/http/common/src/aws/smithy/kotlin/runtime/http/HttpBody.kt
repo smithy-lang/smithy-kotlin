@@ -56,6 +56,14 @@ public sealed class HttpBody {
         public open val isReplayable: Boolean = false
 
         /**
+         * Flag indicating that this request body should be handled as a duplex stream by the underlying engine.
+         *
+         * Most request bodies are sent completely before the response is received. In full duplex mode the request
+         * and response bodies may be interleaved. Only HTTP/2 calls support duplex streaming.
+         */
+        public open val isDuplex: Boolean = false
+
+        /**
          * Reset the stream such that the next call to [readFrom] provides a fresh channel.
          * @throws UnsupportedOperationException if the stream can only be consumed once. Consumers can check
          * [isReplayable] before calling

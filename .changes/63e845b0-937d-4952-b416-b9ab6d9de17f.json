@@ -1,0 +1,5 @@
+{
+    "id": "63e845b0-937d-4952-b416-b9ab6d9de17f",
+    "type": "feature",
+    "description": "Add support for full duplex HTTP exchanges"
+}
