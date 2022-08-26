@@ -21,7 +21,7 @@ internal class ByteChannelRequestBody(
     private val callContext: CoroutineContext,
 ) : RequestBody(), CoroutineScope {
 
-    private val producerJob = Job(callContext.job)
+    private val producerJob = Job(callContext[Job])
     override val coroutineContext: CoroutineContext = callContext + producerJob + callContext.derivedName("send-request-body") + Dispatchers.IO
     override fun contentType(): MediaType? = null
     override fun contentLength(): Long = body.contentLength ?: -1
