@@ -8,40 +8,8 @@ import aws.smithy.kotlin.runtime.util.net.Host
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
-import kotlin.test.assertNull
 
 class UrlTest {
-    private fun testParse(expected: String, url: String = expected) =
-        assertEquals(expected, Url.parse(url).toString())
-
-    @Test
-    fun testSplitHostPortFullyQualified() {
-        val (host, port) = "localhost:1024".splitHostPort()
-        assertEquals(Host.Domain("localhost"), host)
-        assertEquals(1024, port)
-    }
-
-    @Test
-    fun testSplitHostPortHostnameOnly() {
-        val (host, port) = "localhost".splitHostPort()
-        assertEquals(Host.Domain("localhost"), host)
-        assertNull(port)
-    }
-
-    @Test
-    fun testSplitHostPortFullyQualifiedIpv6() {
-        val (host, port) = "[fe80::]:1024".splitHostPort()
-        assertEquals(Host.IPv6("fe80::"), host)
-        assertEquals(1024, port)
-    }
-
-    @Test
-    fun testSplitHostPortHostnameOnlyIpv6() {
-        val (host, port) = "[fe80::]".splitHostPort()
-        assertEquals(Host.IPv6("fe80::"), host)
-        assertNull(port)
-    }
-
     @Test
     fun basicToString() {
         val expected = "https://test.aws.com/kotlin"
@@ -114,9 +82,9 @@ class UrlTest {
         }
 
         checkPort(1)
-        checkPort(65536)
+        checkPort(65535)
         assertFails {
-            checkPort(65537)
+            checkPort(65536)
         }
     }
 
@@ -182,79 +150,6 @@ class UrlTest {
         }
         val expected = "http://test.aws.com/kotlin?foo=baz"
         assertEquals(expected, url.toString())
-    }
-
-    @Test
-    fun itParses() {
-        val urls = listOf(
-            "http://test.aws.com/kotlin?foo=baz",
-            "http://test.aws.com:3000/kotlin",
-            "https://user:password@test.aws.com",
-            "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
-            "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
-            "https://test.com/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg"
-        )
-
-        for (expected in urls) {
-            val actual = Url.parse(expected)
-            assertEquals(expected, actual.toString())
-        }
-    }
-
-    @Test
-    fun itParsesMinimum() =
-        testParse("http://host")
-
-    @Test
-    fun itParsesFragment() =
-        testParse("http://host#fragment")
-
-    @Test
-    fun itParsesQuery() =
-        testParse("http://host?n=1")
-
-    @Test
-    fun itParsesQueryFragment() =
-        testParse("http://host?n=1#fragment")
-
-    @Test
-    fun itParsesPath() =
-        testParse("http://host/path")
-
-    @Test
-    fun itParsesPathFragment() =
-        testParse("http://host/path#fragment")
-
-    @Test
-    fun itParsesPathQuery() =
-        testParse("http://host/path?n=1")
-
-    @Test
-    fun itParsesExplicitEmptyPath() =
-        testParse("http://host", "http://host/")
-
-    @Test
-    fun itParsesExplicitEmptyQuery() =
-        testParse("http://host", "http://host?")
-
-    @Test
-    fun itParsesExplicitEmptyFragment() =
-        testParse("http://host", "http://host#")
-
-    @Test
-    fun itParsesPathQueryFragment() =
-        testParse("http://host/path?n=1#fragment")
-
-    @Test
-    fun itParsesIpv6Hosts() {
-        val actual = Url.parse("http://[2001:db8::1]:80")
-        assertEquals(Host.IPv6("2001:db8::1"), actual.host)
-    }
-
-    @Test
-    fun itParsesIpv6ScopedHosts() {
-        val actual = Url.parse("http://[2001:db8::1%25eth0]:80")
-        assertEquals(Host.IPv6("2001:db8::1", "eth0"), actual.host)
     }
 
     @Test

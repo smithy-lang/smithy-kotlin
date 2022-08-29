@@ -30,7 +30,7 @@ public fun stringEquals(i: String, j: String): Boolean = i == j
 
 @InternalApi
 public fun isValidHostLabel(value: String, allowSubdomains: Boolean): Boolean =
-    if (allowSubdomains) value.isValidHostname() else value.split('.').all(String::isValidHostname)
+    if (!allowSubdomains) value.isValidHostname() else value.split('.').all(String::isValidHostname)
 
 @InternalApi
 public fun uriEncode(value: String): String = value.urlEncodeComponent(formUrlEncode = false)

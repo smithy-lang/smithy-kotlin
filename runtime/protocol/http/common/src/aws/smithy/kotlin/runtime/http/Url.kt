@@ -9,16 +9,18 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.net.Host
 import aws.smithy.kotlin.runtime.util.net.toUrlString
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
+import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
+import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
 /**
- * Represents an immutable URL of the form: `[scheme:][//[userinfo@]host][/]path[?query][#fragment]`
+ * Represents an immutable URL of the form: `scheme://[userinfo@]host[:port][/path][?query][#fragment]`
  *
  * @property scheme The wire protocol (e.g. http, https, ws, wss, etc)
  * @property host hostname
  * @property port port to connect to the host on, defaults to [Protocol.defaultPort]
  * @property path (raw) path without the query
  * @property parameters (raw) query parameters
- * @property fragment URL fragment
+ * @property fragment (raw) URL fragment
  * @property userInfo username and password (optional)
  * @property forceQuery keep trailing question mark regardless of whether there are any query parameters
  * @property encodeParameters configures if parameter values are encoded (default) or left as-is.
@@ -35,22 +37,21 @@ public data class Url(
     public val encodeParameters: Boolean = true,
 ) {
     init {
-        require(port in 1..65536) { "port must be in between 1 and 65536" }
+        require(port in 1..65535) { "port must be in range [1, 65535]" }
     }
 
     public companion object {
-        public fun parse(url: String): Url = url.toUrl()
+        public fun parse(url: String): Url = urlParseImpl(url)
     }
 
     override fun toString(): String = buildString {
-        // FIXME - the userinfo and fragment are raw at this point and need escaped as well probably
         append(scheme.protocolName)
         append("://")
         userInfo?.let { userinfo ->
             if (userinfo.username.isNotBlank()) {
-                append(userinfo.username)
+                append(userinfo.username.urlEncodeComponent())
                 if (userinfo.password.isNotBlank()) {
-                    append(":${userinfo.password}")
+                    append(":${userinfo.password.urlEncodeComponent()}")
                 }
                 append("@")
             }
@@ -96,7 +97,7 @@ private fun encodePath(
 
     if (fragment != null && fragment.isNotBlank()) {
         append("#")
-        append(fragment)
+        append(fragment.urlEncodeComponent())
     }
 }
 
@@ -159,11 +160,14 @@ public fun UrlBuilder.parameters(block: QueryParametersBuilder.() -> Unit) {
 public val UrlBuilder.encodedPath: String
     get() = encodePath(path, parameters.entries(), fragment, forceQuery)
 
+/**
+ * Constructs a [UserInfo] from its %-encoded representation.
+ */
 @InternalApi
 public fun UserInfo(value: String): UserInfo {
     val info = value.split(":")
     return UserInfo(
-        info[0],
-        if (info.size > 1) info[1] else ""
+        info[0].urlDecodeComponent(),
+        if (info.size > 1) info[1].urlDecodeComponent() else ""
     )
 }

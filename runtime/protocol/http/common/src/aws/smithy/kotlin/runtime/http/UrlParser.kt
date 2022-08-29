@@ -9,9 +9,9 @@ import aws.smithy.kotlin.runtime.util.net.isIpv6
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 
-internal fun String.toUrl(): Url =
+internal fun urlParseImpl(url: String): Url =
     UrlBuilder {
-        var next = this@toUrl
+        var next = url
             .captureUntilAndSkip("://") {
                 scheme = Protocol.parse(it)
             }
@@ -27,20 +27,20 @@ internal fun String.toUrl(): Url =
 
         if (next.startsWith("/")) {
             next = next.capture(1 until next.firstIndexOrEnd("?", "#")) {
-                path = "/$it"
+                path = "/${it.urlDecodeComponent()}"
             }
         }
 
         if (next.startsWith("?")) {
             next = next.capture(1 until next.firstIndexOrEnd("#")) {
                 it.splitAsQueryString().entries.forEach { (k, v) ->
-                    parameters.appendAll(k, v)
+                    parameters.appendAll(k.urlDecodeComponent(), v.map(String::urlDecodeComponent))
                 }
             }
         }
 
-        if (next.startsWith('#')) {
-            fragment = next.substring(1)
+        if (next.startsWith('#') && next.length > 1) {
+            fragment = next.substring(1).urlDecodeComponent()
         }
     }
 
