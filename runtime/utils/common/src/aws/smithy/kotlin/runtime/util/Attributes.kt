@@ -123,4 +123,7 @@ private class AttributesImpl : Attributes {
 
     override val keys: Set<AttributeKey<*>>
         get() = map.keys
+
+    override fun equals(other: Any?): Boolean =
+        other is AttributesImpl && map == other.map
 }
