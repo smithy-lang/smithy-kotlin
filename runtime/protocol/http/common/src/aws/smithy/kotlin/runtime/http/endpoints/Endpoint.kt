@@ -5,7 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.endpoints
 
+import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -36,15 +38,15 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 public data class Endpoint @InternalApi constructor(
     public val uri: Url,
     public val isHostnameImmutable: Boolean = false,
-    public val headers: Map<String, List<String>> = mapOf(),
+    public val headers: Headers = Headers.Empty,
     @InternalApi
-    public val attributes: Map<String, Any> = mapOf(),
+    public val attributes: Attributes = Attributes(),
 ) {
     public constructor(uri: String) : this(Url.parse(uri))
 
     public constructor(
         uri: Url,
         isHostnameImmutable: Boolean = false,
-        headers: Map<String, List<String>> = mapOf(),
-    ) : this(uri, isHostnameImmutable, headers, mapOf())
+        headers: Headers = Headers.Empty,
+    ) : this(uri, isHostnameImmutable, headers, Attributes())
 }
