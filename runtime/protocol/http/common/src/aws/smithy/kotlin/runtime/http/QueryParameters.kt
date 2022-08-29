@@ -50,7 +50,7 @@ public fun Map<String, String>.toQueryParameters(): QueryParameters {
 private class QueryParametersImpl(values: Map<String, List<String>> = emptyMap()) : QueryParameters, StringValuesMapImpl(true, values) {
     override fun toString(): String = "QueryParameters ${entries()}"
 
-    override fun equals(other: Any?): Boolean = other is QueryParametersImpl && entries() == other.entries()
+    override fun equals(other: Any?): Boolean = other is QueryParameters && entries() == other.entries()
 }
 
 /**
