@@ -5,8 +5,8 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.util.net.Host
-import kotlin.test.Test
 import kotlin.test.*
+import kotlin.test.Test
 
 class UrlParserTest {
     @Test
