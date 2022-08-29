@@ -2,7 +2,10 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
-package aws.smithy.kotlin.runtime.http.endpoints.util
+/**
+ * This package implements common standard library functions used by endpoint resolvers.
+ */
+package aws.smithy.kotlin.runtime.http.endpoints.functions
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.net.Host
@@ -10,12 +13,6 @@ import aws.smithy.kotlin.runtime.util.net.isValidHostname
 import aws.smithy.kotlin.runtime.util.net.toUrlString
 import aws.smithy.kotlin.runtime.util.text.ensureSuffix
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
-
-@InternalApi
-public fun isSet(value: Any?): Boolean = value != null
-
-@InternalApi
-public fun not(value: Boolean): Boolean = !value
 
 @InternalApi
 public fun substring(value: String, start: Int, stop: Int, reverse: Boolean): String? =
@@ -26,17 +23,11 @@ public fun substring(value: String, start: Int, stop: Int, reverse: Boolean): St
     }
 
 @InternalApi
-public fun stringEquals(i: String, j: String): Boolean = i == j
-
-@InternalApi
 public fun isValidHostLabel(value: String, allowSubdomains: Boolean): Boolean =
     if (!allowSubdomains) value.isValidHostname() else value.split('.').all(String::isValidHostname)
 
 @InternalApi
 public fun uriEncode(value: String): String = value.urlEncodeComponent(formUrlEncode = false)
-
-@InternalApi
-public fun booleanEquals(i: Boolean, j: Boolean): Boolean = i == j
 
 @InternalApi
 public fun parseUrl(value: String): Url? {
