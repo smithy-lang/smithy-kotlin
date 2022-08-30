@@ -81,6 +81,22 @@ internal open class StringValuesMapImpl(
     override fun contains(name: String, value: String): Boolean = getAll(name)?.contains(value) ?: false
 
     override fun isEmpty(): Boolean = values.isEmpty()
+
+    override fun equals(other: Any?): Boolean =
+        other is StringValuesMap && names().size == other.names().size &&
+            names().all {
+                val otherValue = if (caseInsensitiveName || other.caseInsensitiveName) {
+                    other.getAllInsensitive(it)
+                } else {
+                    other.getAll(it)
+                }
+                getAll(it) == otherValue
+            }
+}
+
+private fun StringValuesMap.getAllInsensitive(key: String): List<String>? {
+    val matchingName = names().find { key.equals(it, ignoreCase = true) } ?: return null
+    return getAll(matchingName)
 }
 
 /**
