@@ -123,12 +123,4 @@ private class AttributesImpl : Attributes {
 
     override val keys: Set<AttributeKey<*>>
         get() = map.keys
-
-    override fun equals(other: Any?): Boolean =
-        other is Attributes &&
-        keys.size == other.keys.size &&
-        keys.all {
-            @Suppress("UNCHECKED_CAST")
-            other.contains(it) && getOrNull(it as AttributeKey<Any>) == other.getOrNull(it)
-        }
 }

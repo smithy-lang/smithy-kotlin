@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.endpoints
 
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.InternalApi
 
@@ -49,4 +50,18 @@ public data class Endpoint @InternalApi constructor(
         isHostnameImmutable: Boolean = false,
         headers: Headers = Headers.Empty,
     ) : this(uri, isHostnameImmutable, headers, Attributes())
+
+    override fun equals(other: Any?): Boolean =
+        other is Endpoint &&
+            uri == other.uri &&
+            isHostnameImmutable == other.isHostnameImmutable &&
+            headers == other.headers &&
+            attributesEqual(other)
+
+    private fun attributesEqual(other: Endpoint): Boolean =
+        attributes.keys.size == other.attributes.keys.size &&
+            attributes.keys.all {
+                @Suppress("UNCHECKED_CAST")
+                attributes.contains(it) && attributes.getOrNull(it as AttributeKey<Any>) == other.attributes.getOrNull(it)
+            }
 }
