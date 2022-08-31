@@ -66,6 +66,7 @@ internal class KtorRequestAdapter(
 
     @OptIn(ExperimentalStdlibApi::class)
     private fun proxyRequestStream(body: HttpBody.Streaming, contentType: ContentType?): OutgoingContent {
+        check(!body.isDuplex) { "KtorEngine does not support full duplex streams" }
         val source = body.readFrom()
         fillRequestJob.invokeOnCompletion { cause ->
             source.cancel(cause)

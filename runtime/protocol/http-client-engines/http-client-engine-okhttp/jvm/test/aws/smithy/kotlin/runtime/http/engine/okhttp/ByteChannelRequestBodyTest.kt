@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import okio.Buffer
+import okio.BufferedSink
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
@@ -42,6 +43,7 @@ class ByteChannelRequestBodyTest {
 
         val buffer = Buffer()
         actual.writeTo(buffer)
+        // writeTo should block until all the body content is consumed
         val actualSha256 = buffer.sha256().hex()
         assertEquals(expectedSha256, actualSha256)
     }
@@ -55,7 +57,9 @@ class ByteChannelRequestBodyTest {
             override fun readFrom(): SdkByteReadChannel = chan
         }
 
-        val actualReplayable = ByteChannelRequestBody(replayableBody, EmptyCoroutineContext)
+        val testContext = EmptyCoroutineContext + Job()
+
+        val actualReplayable = ByteChannelRequestBody(replayableBody, testContext)
         assertFalse(actualReplayable.isOneShot())
 
         val oneshotBody = object : HttpBody.Streaming() {
@@ -63,7 +67,7 @@ class ByteChannelRequestBodyTest {
             override val contentLength: Long = 4
             override fun readFrom(): SdkByteReadChannel = chan
         }
-        val actualOneshot = ByteChannelRequestBody(oneshotBody, EmptyCoroutineContext)
+        val actualOneshot = ByteChannelRequestBody(oneshotBody, testContext)
         assertTrue(actualOneshot.isOneShot())
     }
 
@@ -118,4 +122,49 @@ class ByteChannelRequestBodyTest {
             job.join()
         }
     }
+
+    @Test
+    fun testDuplexWriteTo() = runTest {
+        // basic sanity tests that we move this work into a background coroutine
+        val content = ByteArray(1024 * 12 + 13) { it.toByte() }
+        val expectedSha256 = content.sha256().encodeToHex()
+        val chan = SdkByteChannel()
+        val body = object : HttpBody.Streaming() {
+            override val contentLength: Long? = null
+            override val isDuplex: Boolean = true
+            override fun readFrom(): SdkByteReadChannel = chan
+        }
+
+        val sink = TestSink()
+
+        val callJob = Job()
+        val callContext = coroutineContext + callJob
+        val actual = ByteChannelRequestBody(body, callContext)
+
+        assertTrue(actual.isDuplex())
+
+        assertEquals(1, callJob.children.toList().size) // producerJob
+        assertEquals(0, callJob.children.toList()[0].children.toList().size)
+        actual.writeTo(sink)
+        assertEquals(1, callJob.children.toList()[0].children.toList().size)
+        assertEquals(sink.buffer.size, 0)
+        chan.writeFully(content)
+
+        assertFalse(sink.isClosed)
+
+        chan.close()
+        callJob.complete()
+        callJob.join()
+
+        // we must manually close the sink given to us when stream completes
+        assertTrue(sink.isClosed)
+
+        val actualSha256 = sink.buffer.sha256().hex()
+        assertEquals(expectedSha256, actualSha256)
+    }
+}
+
+private class TestSink(override val buffer: Buffer = Buffer()) : BufferedSink by buffer {
+    var isClosed = false
+    override fun close() { isClosed = true }
 }
