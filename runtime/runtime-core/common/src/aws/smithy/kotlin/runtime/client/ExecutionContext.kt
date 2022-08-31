@@ -5,17 +5,20 @@
 package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.util.Attributes
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Per operation metadata a service client uses to drive the execution of a single request/response
  */
-public class ExecutionContext private constructor(builder: ExecutionContextBuilder) : Attributes by builder.attributes {
-    // TODO - propagate Job() and/or coroutine context?
-
+public class ExecutionContext private constructor(builder: ExecutionContextBuilder) : Attributes by builder.attributes, CoroutineScope {
     /**
      * Default construct an [ExecutionContext]. Note: this is not usually useful without configuring the call attributes
      */
     public constructor() : this(ExecutionContextBuilder())
+
+    override val coroutineContext: CoroutineContext = SupervisorJob()
 
     /**
      * Attributes associated with this particular execution/call
