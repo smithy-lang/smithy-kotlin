@@ -220,3 +220,6 @@ public fun String.urlDecodeComponent(formUrlDecode: Boolean = false): String {
 @InternalApi
 public fun String.urlReencodeComponent(formUrlDecode: Boolean = false, formUrlEncode: Boolean = false): String =
     urlDecodeComponent(formUrlDecode).urlEncodeComponent(formUrlEncode)
+
+@InternalApi
+public fun String.ensureSuffix(suffix: String): String = if (endsWith(suffix)) this else plus(suffix)

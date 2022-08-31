@@ -10,9 +10,11 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.*
 import okhttp3.Authenticator
 import okhttp3.Credentials
@@ -130,7 +132,7 @@ internal class OkHttpProxyAuthenticator(
         }
 
         val url = response.request.url.let {
-            Url(scheme = Protocol(it.scheme, it.port), host = it.host, port = it.port)
+            Url(scheme = Protocol(it.scheme, it.port), host = Host.parse(it.host), port = it.port)
         }
 
         // NOTE: We will end up querying the proxy selector twice. We do this to allow
@@ -163,7 +165,7 @@ internal class OkHttpProxySelector(
 
         return when (val proxyConfig = sdkSelector.select(url)) {
             is ProxyConfig.Http -> {
-                val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host, proxyConfig.url.port))
+                val okProxy = Proxy(Proxy.Type.HTTP, InetSocketAddress(proxyConfig.url.host.toString(), proxyConfig.url.port))
                 return listOf(okProxy)
             }
             else -> emptyList()
@@ -173,5 +175,28 @@ internal class OkHttpProxySelector(
     override fun connectFailed(uri: URI?, sa: SocketAddress?, ioe: IOException?) {
         val logger = Logger.getLogger<OkHttpProxySelector>()
         logger.error { "failed to connect to proxy: uri=$uri; socketAddress: $sa; exception: $ioe" }
+    }
+}
+
+private fun URI.toUrl(): Url {
+    val uri = this
+    return UrlBuilder {
+        scheme = Protocol.parse(uri.scheme)
+
+        // OkHttp documentation calls out that v6 addresses will contain the []s
+        host = Host.parse(if (uri.host.startsWith("[")) uri.host.substring(1 until uri.host.length - 1) else uri.host)
+
+        port = uri.port.takeIf { it > 0 }
+        path = uri.path
+
+        if (uri.query != null && uri.query.isNotBlank()) {
+            val parsedParameters = uri.query.splitAsQueryParameters()
+            parameters.appendAll(parsedParameters)
+        }
+
+        userInfo = uri.userInfo?.takeIf { it.isNotBlank() }
+            ?.let(::UserInfo)
+
+        fragment = uri.fragment?.takeIf { it.isNotBlank() }
     }
 }

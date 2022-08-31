@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.util.net.Host
 
 /**
  *  Http middleware for resolving the service endpoint.
@@ -36,11 +37,11 @@ public fun setRequestEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
     val hostname = if (hostPrefix != null && !endpoint.isHostnameImmutable) {
         "$hostPrefix${endpoint.uri.host}"
     } else {
-        endpoint.uri.host
+        endpoint.uri.host.toString()
     }
 
     req.subject.url.scheme = endpoint.uri.scheme
-    req.subject.url.host = hostname
+    req.subject.url.host = Host.parse(hostname)
     req.subject.url.port = endpoint.uri.port
     req.subject.headers["Host"] = hostname
     if (endpoint.uri.path.isNotBlank()) {

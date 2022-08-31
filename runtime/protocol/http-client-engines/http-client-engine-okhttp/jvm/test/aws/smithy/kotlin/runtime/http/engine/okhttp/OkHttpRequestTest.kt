@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.util.net.Host
 import okio.Buffer
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
@@ -21,7 +22,7 @@ class OkHttpRequestTest {
     fun itConvertsUrls() {
         val url = UrlBuilder().apply {
             scheme = Protocol.HTTPS
-            host = "aws.amazon.com"
+            host = Host.Domain("aws.amazon.com")
             path = "/foo%2Fbar/qux"
             parameters {
                 append("q", "dogs")

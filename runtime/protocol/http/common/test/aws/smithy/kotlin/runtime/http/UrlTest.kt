@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
@@ -14,7 +15,7 @@ class UrlTest {
         val expected = "https://test.aws.com/kotlin"
         val url = Url(
             Protocol.HTTPS,
-            "test.aws.com",
+            Host.Domain("test.aws.com"),
             path = "/kotlin"
         )
         assertEquals(expected, url.toString())
@@ -24,7 +25,7 @@ class UrlTest {
     fun forceRetainQuery() {
         val expected = "https://test.aws.com/kotlin?"
         val url = UrlBuilder {
-            host = "test.aws.com"
+            host = Host.Domain("test.aws.com")
             path = "/kotlin"
             forceQuery = true
         }
@@ -41,7 +42,7 @@ class UrlTest {
 
         val url = Url(
             Protocol.HTTPS,
-            "test.aws.com",
+            Host.Domain("test.aws.com"),
             path = "/kotlin",
             parameters = params
         )
@@ -53,7 +54,7 @@ class UrlTest {
         val expected = "https://test.aws.com:8000"
         val url = Url(
             Protocol.HTTPS,
-            "test.aws.com",
+            Host.Domain("test.aws.com"),
             port = 8000
         )
         assertEquals(expected, url.toString())
@@ -61,7 +62,7 @@ class UrlTest {
         val expected2 = "http://test.aws.com"
         val url2 = Url(
             Protocol.HTTP,
-            "test.aws.com",
+            Host.Domain("test.aws.com"),
             port = 80
         )
         assertEquals(expected2, url2.toString())
@@ -74,16 +75,16 @@ class UrlTest {
                 n,
                 Url(
                     Protocol.HTTPS,
-                    "test.aws.com",
+                    Host.Domain("test.aws.com"),
                     port = n
                 ).port
             )
         }
 
         checkPort(1)
-        checkPort(65536)
+        checkPort(65535)
         assertFails {
-            checkPort(65537)
+            checkPort(65536)
         }
     }
 
@@ -92,7 +93,7 @@ class UrlTest {
         val expected = "https://user@test.aws.com"
         val url = UrlBuilder {
             scheme = Protocol.HTTPS
-            host = "test.aws.com"
+            host = Host.Domain("test.aws.com")
             userInfo = UserInfo("user", "")
         }
         assertEquals(expected, url.toString())
@@ -103,7 +104,7 @@ class UrlTest {
         val expected = "https://user:password@test.aws.com"
         val url = UrlBuilder {
             scheme = Protocol.HTTPS
-            host = "test.aws.com"
+            host = Host.Domain("test.aws.com")
             userInfo = UserInfo("user", "password")
         }
         assertEquals(expected, url.toString())
@@ -113,13 +114,13 @@ class UrlTest {
     fun itBuilds() {
         val builder = UrlBuilder()
         builder.scheme = Protocol.HTTP
-        builder.host = "test.aws.com"
+        builder.host = Host.Domain("test.aws.com")
         builder.path = "/kotlin"
         val url = builder.build()
         val expected = "http://test.aws.com/kotlin"
         assertEquals(expected, url.toString())
         assertEquals(Protocol.HTTP, builder.scheme)
-        assertEquals("test.aws.com", builder.host)
+        assertEquals(Host.Domain("test.aws.com"), builder.host)
         assertEquals(null, builder.port)
         assertEquals(null, builder.fragment)
         assertEquals(null, builder.userInfo)
@@ -129,7 +130,7 @@ class UrlTest {
     fun itBuildsWithNonDefaultPort() {
         val url = UrlBuilder {
             scheme = Protocol.HTTP
-            host = "test.aws.com"
+            host = Host.Domain("test.aws.com")
             path = "/kotlin"
             port = 3000
         }
@@ -141,7 +142,7 @@ class UrlTest {
     fun itBuildsWithParameters() {
         val url = UrlBuilder {
             scheme = Protocol.HTTP
-            host = "test.aws.com"
+            host = Host.Domain("test.aws.com")
             path = "/kotlin"
             parameters {
                 append("foo", "baz")
@@ -149,29 +150,6 @@ class UrlTest {
         }
         val expected = "http://test.aws.com/kotlin?foo=baz"
         assertEquals(expected, url.toString())
-    }
-
-    @Test
-    fun itParses() {
-        val urls = listOf(
-            "http://test.aws.com/kotlin?foo=baz",
-            "http://test.aws.com:3000/kotlin",
-            "https://user:password@test.aws.com",
-            "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
-            "https://test.aws.com/kotlin?baz=quux&baz=qux&foo=bar",
-            "https://test.com/wikipedia/en/6/61/Purdue_University_%E2%80%93seal.svg"
-        )
-
-        for (expected in urls) {
-            val actual = Url.parse(expected)
-            assertEquals(expected, actual.toString())
-        }
-    }
-
-    @Test
-    fun itParsesIpv6Hosts() {
-        val actual = Url.parse("http://[2001:db8::1]:80")
-        assertEquals("[2001:db8::1]", actual.host)
     }
 
     @Test
@@ -196,7 +174,7 @@ class UrlTest {
     @Test
     fun testDeepCopy() {
         val builder1 = UrlBuilder().apply {
-            host = "foo.com"
+            host = Host.Domain("foo.com")
             port = 1234
             parameters {
                 append("a", "alligator")
@@ -206,7 +184,7 @@ class UrlTest {
 
         val builder2 = builder1.deepCopy()
 
-        builder1.host = "bar.org"
+        builder1.host = Host.Domain("bar.org")
         builder1.port = 4321
         builder1.parameters.append("c", "chinchilla")
 

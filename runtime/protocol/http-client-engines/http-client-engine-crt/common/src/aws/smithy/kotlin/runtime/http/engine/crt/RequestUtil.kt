@@ -22,7 +22,7 @@ internal val HttpRequest.uri: Uri
         val sdkUrl = this.url
         return Uri.build {
             scheme = Protocol.createOrDefault(sdkUrl.scheme.protocolName)
-            host = sdkUrl.host
+            host = sdkUrl.host.toString()
             port = sdkUrl.port
             userInfo = sdkUrl.userInfo?.let { UserInfo(it.username, it.password) }
             // the rest is part of each individual request, manager only needs the host info

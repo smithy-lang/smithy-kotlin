@@ -81,6 +81,16 @@ internal open class StringValuesMapImpl(
     override fun contains(name: String, value: String): Boolean = getAll(name)?.contains(value) ?: false
 
     override fun isEmpty(): Boolean = values.isEmpty()
+
+    override fun equals(other: Any?): Boolean =
+        other is StringValuesMap &&
+            caseInsensitiveName == other.caseInsensitiveName &&
+            names().let { names ->
+                if (names.size != other.names().size) {
+                    return false
+                }
+                names.all { getAll(it) == other.getAll(it) }
+            }
 }
 
 /**

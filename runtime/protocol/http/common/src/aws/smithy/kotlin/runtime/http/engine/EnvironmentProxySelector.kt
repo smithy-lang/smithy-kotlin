@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.engine
 import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.util.*
+import aws.smithy.kotlin.runtime.util.net.Host
 
 /**
  * Select a proxy via environment. This selector will look for
@@ -57,7 +58,7 @@ private fun resolveProxyByProperty(provider: PropertyProvider, protocol: Protoco
         // we don't support connecting to the proxy over TLS, we expect engines would support
         // tunneling https traffic via HTTP Connect to the proxy
         val proxyProtocol = Protocol.HTTP
-        val url = Url(proxyProtocol, hostName, proxyPortProp?.toInt() ?: protocol.defaultPort)
+        val url = Url(proxyProtocol, Host.parse(hostName), proxyPortProp?.toInt() ?: protocol.defaultPort)
         ProxyConfig.Http(url)
     }
 }
@@ -77,12 +78,7 @@ internal data class NoProxyHost(val hostMatch: String, val port: Int? = null) {
         // specific port to proxy otherwise matches all ports
         if (port != null && url.port != port) return false
 
-        val name = if (url.host.startsWith('[')) {
-            // IPv6 numerical address
-            url.host.substring(1, url.host.indexOf(']'))
-        } else {
-            url.host
-        }
+        val name = url.host.toString()
 
         if (hostMatch.length > name.length) return false
 

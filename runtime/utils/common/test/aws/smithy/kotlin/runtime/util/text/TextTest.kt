@@ -6,9 +6,7 @@
 package aws.smithy.kotlin.runtime.util.text
 
 import io.kotest.matchers.maps.shouldContain
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.*
 
 data class EscapeTest(val input: String, val expected: String, val formUrlEncode: Boolean = false)
 
