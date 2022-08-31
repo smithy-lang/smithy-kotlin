@@ -84,38 +84,12 @@ class StringValuesMapTest {
     }
 
     @Test
-    fun testCrossLowercaseSensitiveEquality() {
-        val i = StringValuesMapBuilder(caseInsensitiveName = true).apply {
-            append("k", "v")
-        }.build()
-        val j = StringValuesMapBuilder(caseInsensitiveName = false).apply {
-            append("K", "v")
-        }.build()
-
-        assertEquals(i, j)
-        assertEquals(j, i)
-    }
-
-    @Test
-    fun testCrossUppercaseSensitiveEquality() {
-        val i = StringValuesMapBuilder(caseInsensitiveName = false).apply {
-            append("k", "v")
-        }.build()
-        val j = StringValuesMapBuilder(caseInsensitiveName = true).apply {
-            append("K", "v")
-        }.build()
-
-        assertEquals(i, j)
-        assertEquals(j, i)
-    }
-
-    @Test
     fun testCrossCaseSensitiveInequality() {
         val i = StringValuesMapBuilder(caseInsensitiveName = true).apply {
             append("k", "v")
         }.build()
         val j = StringValuesMapBuilder(caseInsensitiveName = false).apply {
-            append("K", "V")
+            append("k", "v")
         }.build()
 
         assertNotEquals(i, j)
