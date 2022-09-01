@@ -15,6 +15,8 @@ import software.amazon.smithy.model.shapes.ShapeType
 import software.amazon.smithy.model.shapes.StructureShape
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
+import software.amazon.smithy.model.traits.HttpQueryParamsTrait
+import software.amazon.smithy.model.traits.HttpQueryTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -85,7 +87,7 @@ class StructureGenerator(
                 writer.write("override val #1L: #2F = builder.#1L", memberName, memberSymbol)
             }
 
-            memberShape.hasTrait<HttpLabelTrait>() ->
+            memberShape.isRequiredInStruct ->
                 writer.write(
                     """public val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
                     memberName,
@@ -95,6 +97,11 @@ class StructureGenerator(
             else -> writer.write("public val #1L: #2F = builder.#1L", memberName, memberSymbol)
         }
     }
+
+    private val MemberShape.isRequiredInStruct
+        get() =
+            hasTrait<HttpLabelTrait>() ||
+                isRequired && (hasTrait<HttpQueryTrait>() || hasTrait<HttpQueryParamsTrait>())
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {

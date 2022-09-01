@@ -1,0 +1,5 @@
+{
+    "id": "10bfb10c-9874-4480-bc75-26157b725e22",
+    "type": "bugfix",
+    "description": "Require values for HTTP query- and queryParams-bound parameters"
+}

@@ -280,7 +280,7 @@ class StructureGeneratorTest {
     }
 
     @Test
-    fun `it handles HTTP labels in initializers`() {
+    fun `it handles required HTTP fields in initializers`() {
         val model = """
             @http(method: "POST", uri: "/foo/{bar}/{baz}")
             operation Foo {
@@ -292,12 +292,19 @@ class StructureGeneratorTest {
                 @httpLabel
                 bar: String,
                 
-                @required
                 @httpLabel
+                @required
                 baz: Integer,
                 
                 @httpPayload
-                qux: String
+                qux: String,
+                
+                @required
+                @httpQuery("quux")
+                quux: Boolean,
+                
+                @httpQuery("corge")
+                corge: String
             }
         """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
 
@@ -312,7 +319,47 @@ class StructureGeneratorTest {
             public class FooRequest private constructor(builder: Builder) {
                 public val bar: kotlin.String? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
                 public val baz: kotlin.Int? = requireNotNull(builder.baz) { "A non-null value must be provided for baz" }
+                public val corge: kotlin.String? = builder.corge
+                public val quux: kotlin.Boolean? = requireNotNull(builder.quux) { "A non-null value must be provided for quux" }
                 public val qux: kotlin.String? = builder.qux
+        """.formatForTest(indent = "")
+        generated.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun `it handles required query params in initializers`() {
+        val model = """
+            @http(method: "POST", uri: "/foo")
+            operation Foo {
+                input: FooRequest
+            }
+            
+            map MapOfStrings {
+                key: String,
+                value: String
+            }
+            
+            structure FooRequest {
+                @required
+                @httpQueryParams
+                bar: MapOfStrings
+                
+                @httpPayload
+                baz: String
+            }
+        """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val struct = model.expectShape<StructureShape>("com.test#FooRequest")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
+
+        val generated = writer.toString()
+        val expected = """
+            public class FooRequest private constructor(builder: Builder) {
+                public val bar: Map<String, String>? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
+                public val baz: kotlin.String? = builder.baz
         """.formatForTest(indent = "")
         generated.shouldContainOnlyOnceWithDiff(expected)
     }
