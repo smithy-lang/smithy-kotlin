@@ -52,10 +52,9 @@ public data class HttpCall(
  * This must be called when finished with the response!
  */
 @InternalApi
-public fun HttpCall.complete() {
+public suspend fun HttpCall.complete() {
     val job = callContext[Job] as? CompletableJob ?: return
 
-    // FIXME - make suspend and join() the call context job
     try {
         // ensure the response is cancelled
         (response.body as? HttpBody.Streaming)?.readFrom()?.cancel(null)
@@ -63,4 +62,5 @@ public fun HttpCall.complete() {
     }
 
     job.complete()
+    job.join()
 }
