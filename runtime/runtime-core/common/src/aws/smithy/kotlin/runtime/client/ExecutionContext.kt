@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.util.Attributes
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.Job
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -18,7 +18,7 @@ public class ExecutionContext private constructor(builder: ExecutionContextBuild
      */
     public constructor() : this(ExecutionContextBuilder())
 
-    override val coroutineContext: CoroutineContext = SupervisorJob()
+    override val coroutineContext: CoroutineContext = Job()
 
     /**
      * Attributes associated with this particular execution/call
