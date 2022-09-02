@@ -253,15 +253,12 @@ The provider parameters and interface will generate to a new top-level `endpoint
 
 ### Provider parameters
 
-Provider parameters will be generated as a data class, since backwards compatability of parameter values is guaranteed (
-field order MUST be preserved, and obsolete values are marked deprecated and not removed).
+Provider parameters will be generated as a data class, since backwards compatability of parameter values is guaranteed
+(field order MUST be preserved, and obsolete values are marked deprecated and not removed).
 
 The presence of required values is checked at construction, with an error thrown if any are missing.
 
-The generation includes DSL builder support for several reasons:
-1. caller convenience - SDK users are able to implement and call their own endpoint providers
-2. doing so provides greater flexibility for codegen for middleware - the binding of a value can be expressed as an
-   arbitrary set of statements, rather than being restricted to a single expression in a constructor argument list
+The generation includes DSL builder support to simplify construction.
 ```kotlin
 public data class ServiceEndpointParams(
     // ...args
@@ -287,7 +284,7 @@ authors as needed.
 ```kotlin
 public open class EndpointProviderGenerator(
     public val writer: KotlinWriter,
-    public val ruleSet: EndpointRuleset,
+    public val rules: EndpointRuleset,
     // ...
 ) {
     /**
@@ -296,9 +293,9 @@ public open class EndpointProviderGenerator(
     public fun render()
 
     /**
-     * Render a standard library function referenced in a rule set.
+     * Provide a symbol for a standard library function referenced in a rule set.
      */
-    public open fun renderFunction(func: String, args: List<FunctionArg>)
+    public open fun resolveFunction(func: String): Symbol
 }
 ```
 
@@ -317,7 +314,7 @@ have unique middlewares generated to bind those specific values.
 public open class EndpointResolverMiddlewareGenerator(
     public val writer: KotlinWriter,
     public val operation: OperationShape,
-    public val ruleSet: EndpointRuleset,
+    public val rules: EndpointRuleset,
     // will likely need some additional params such as service shape etc.
 ) {
     /**
@@ -327,16 +324,6 @@ public open class EndpointResolverMiddlewareGenerator(
      * Client/static/general context parameters are inspected here to determine how to bind values.
      */
     public fun render()
-
-    /**
-     * Implement this API to generate additional parameters to be passed to the middleware.
-     * By default, the middleware takes two parameters:
-     * 1. service client config
-     * 2. operation's request object
-     * 
-     * The implementer is responsible for code generation of the middleware installation.
-     */
-    public open fun getMiddlewareParams(): List<Symbol>
     
     /**
      * SDK authors extend this method to handle built-ins.
@@ -353,17 +340,22 @@ public open class EndpointResolverMiddlewareGenerator(
 }
 ```
 
-This will generate middleware with the following signature:
+This will generate the following two-phase middleware:
 ```kotlin
-public class OperationMiddleware(
-    private val config: SmithyService.Config, // has the endpoint provider
-    private val request: OperationRequest,
-) : ModifyRequestMiddleware {
-    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
-        /**
-         * Source provider parameters, resolve endpoint, set it on the request.
-         */
-    }
+internal class OperationResolveEndpointMiddleware(
+  private val config: SmithyService.Config,
+) : InlineMiddleware<OperationRequest, OperationResponse> {
+  private var endpoint: Endpoint
+
+  override fun install(op: SdkHttpOperation<GetResourceRequest, GetResourceResponse>) {
+      op.execution.initialize.intercept { req, next ->
+          // bind provider parameters and resolve endpoint, saving the value for the mutate phase
+      }
+
+      op.execution.mutate.intercept { req, next ->
+          // set the request endpoint
+      }
+  }
 }
 ```
 
@@ -475,19 +467,25 @@ internal class DefaultSmithyServiceEndpointProvider: SmithyServiceEndpointProvid
 
 internal class GetResourceResolveEndpointMiddleware(
     private val config: SmithyService.Config,
-    private val request: GetResourceRequest,
-) : ModifyRequestMiddleware {
-    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
-        val params = SmithyServiceEndpointParams {
-            resourceId = request.resource
+) : InlineMiddleware<GetResourceRequest, GetResourceResponse> {
+    private var endpoint: Endpoint
+
+    override fun install(op: SdkHttpOperation<GetResourceRequest, GetResourceResponse>) {
+        op.execution.initialize.intercept { req, next ->
+            val params = SmithyServiceEndpointParams {
+              resourceId = req.subject.resource
+            }
+            val endpoint = config.provider.resolveEndpoint(params)
+            next.call(req)
         }
-        val endpoint = config.provider.resolveEndpoint(params)
-            
-        setRequestEndpoint(req, endpoint)
         
-        // further action can be taken here as part of renderPostResolution...
-        
-        return req
+        op.execution.mutate.intercept { req, next -> ...
+            setRequestEndpoint(req, endpoint)
+
+            // further action can be taken here as part of renderPostResolution...
+
+            next.call(req)
+        }
     }
 }
 ```
