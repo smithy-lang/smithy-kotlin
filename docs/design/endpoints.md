@@ -11,16 +11,17 @@ taken in order to determine the endpoint that calls should be made to. This lang
 as the `smithy.rules#endpointRuleSet` service trait. The schema for this trait will be described as part of Smithy's
 extended documentation in the future.
 
-The smithy-kotlin repository implements the core code-generation for endpoint providers based on rule sets defined this
-way, as well as the middleware that sources the parameters for the resolver and calls it on each request.
+The smithy-kotlin project implements the core code generation for endpoint providers based on rule sets defined this
+way, as well as the middleware that binds the parameters for the resolver and calls it on each request.
 
-## Core Concepts
+## Core Concept
+
 ### Endpoint
 The `Endpoint` is the result of calling an endpoint provider implementation at runtime to determine what endpoint to use
 when making service calls. The type is public and shared across all service clients, and all provider implementations
-MUST return values of this type. All values of the endpoint are provided by the ruleset.
+MUST return values of this type. All values of the endpoint are provided by the rule set.
 
-The (annotated) type is provided here:
+The annotated type is provided here:
 
 ```kotlin
 public data class Endpoint @InternalApi constructor(
@@ -39,7 +40,7 @@ public data class Endpoint @InternalApi constructor(
      * 
      * The values within the set of attributes are unstable. Additionally, custom provider implementations cannot set
      * these values as part of endpoints they resolve to (hence the internal annotation). They can only be specified
-     * in the Smithy ruleset and returned as part of generated code therein.
+     * in the Smithy rule set and returned as part of generated code therein.
      * 
      * SDK authors are encouraged to define strongly-typed extensions for values relevant to their SDK's operation.
      */
@@ -49,7 +50,6 @@ public data class Endpoint @InternalApi constructor(
 ```
 
 ### Endpoint provider
-
 Providers house the core logic for determining the endpoint to use **on a per-request basis**. Providers are generated
 as both a service-specific interface (to be tied to that service's specific provider parameters type and allow for
 custom implementations) and a default provider that implements the logic defined in the model.
@@ -63,52 +63,231 @@ Client config will include a field for the resolver unique to that service, and 
 default unless specified otherwise by the caller.
 
 ### Provider library
-The endpoint rulesets as provided by Smithy require some "standard-library"-type functions that support or drive the
+The endpoint rule sets as provided by Smithy require some "standard-library"-type functions that support or drive the
 evaluation of the rules.
 
-Some of these are trivial (eg. "is a value non-null") and are generated inline as part of the
-ruleset evaluation. The more complex functions (eg. URL parsing) are hosted in the runtime at
+Some of these are trivial (e.g. "is a value non-null") and are generated inline as part of the
+rule set evaluation. The more complex functions (e.g. URL parsing) are hosted in the runtime at
 `package aws.smithy.kotlin.runtime.http.endpoints.functions`. Runtime-hosted standard library functions are annotated as
 internal and should only be called by code-generated endpoint providers.
 
 ### Provider parameters
-Each service client has a specific set of parameters passed to invocations of its endpoint provider. Endpoint resolution
-is a pre-serialization operation, and the rules language specifies several ways in which parameters are sourced.
 
-While provider parameters are defined per-service, the sources of the values may vary per-operation based on context
-parameters defined in the model.
+Each service client has a specific set of parameters passed to invocations of its endpoint provider. The rules language
+specifies what these parameters are, and annotations throughout the model define how they are bound.
+
+Parameters are either a string or a boolean, and can be specified as required. For example, a service might define the
+following parameters:
+```json
+{
+  "itemId": {
+    "type": "string",
+    "required": true
+  },
+  "usePreview": {
+    "type": "boolean"
+  },
+  "accountId": {
+    "type": "string",
+    "builtin": "CustomSDK::AccountId"
+  }
+}
+```
+
+For every operation, an SDK implementation for this service must construct a set of provider parameters, bind
+values to them as specified in the model, and call the provider to resolve to an endpoint using those values.
+
+The following annotations determine how parameter values are bound at call time:
 
 #### `clientContextParams`
+
 Service-level annotation. Defines an additional configuration field to be added to the service's client config. Bound to
 a field on the provider parameters at resolution time.
 
+For example, given the following parameters/model snippet:
+
+```json
+{
+  "optInBeta": {
+    "type": "boolean"
+  }
+}
+```
+
+```smithy
+@clientContextParams(
+    optInBeta: {type: "boolean", documentation: "opt in to the beta environment for this service"}
+)
+service BasicService {
+    // ...
+}
+```
+
+The client config for this service will be generated with an `optInBeta` field, the value of which will be bound for the
+corresponding endpoint parameter field at resolution.
+
 #### `staticContextParams`
+
 Operation-level annotation. Defines a static value to be bound to a provider parameter at resolution time.
 
+If a static context param targets a value previously declared as a client context param, the static value
+overrides the one configured by the client for that call.
+
+For example, given the following parameters/model snippet:
+
+```json
+{
+  "optInBeta": {
+    "type": "boolean"
+  },
+  "regionPrefix": {
+    "type": "string"
+  }
+}
+```
+
+```smithy
+@clientContextParams(
+    optInBeta: {type: "boolean", documentation: "opt in to the beta environment for this service"}
+    regionPrefix: {type: "string", documentation: "the country code for the client region"}
+)
+service BasicService {
+    operations: [
+        GetItem,
+        GetSecretItem
+    ]
+}
+
+@staticContextParams(
+    optInBeta: {value: false}
+)
+operation GetItem {
+    input: GetItemInput;
+}
+
+structure GetItemInput { }
+
+operation GetSecretItem {
+    input: GetSecretItemInput;
+}
+
+structure GetSecretItemInput { }
+```
+
+* the value of `optInBeta` would always be `false` for `GetItem`, regardless of client config, whereas `GetSecretItem`
+  would bind from the client config
+* the value of `regionPrefix` would bind from the client config for both calls
+
 #### `contextParams`
-Operation-level annotation. Marks a field on an operation to be bound to a provider parameter at resolution time.
 
-#### builtins
-The ruleset specification allows for the definition of builtins, or SDK-specific values that are bound to provider
-parameters at the time of resolution. As a generic codegen provider, smithy-kotlin doesn't implement any builtins on its
-own, but rather exposes an interface in the middleware generator for SDK authors to define and resolve their own
-builtins.
+Annotates a field in a structure which has been designated as an operation's input. Designates a field on that operation
+to be bound to a provider parameter at resolution time.
 
-For example, the AWS SDK has special builtins for the AWS region, as well as for concepts unique to the AWS ecosystem
-such as the usage of dual-stack endpoints. The AWS-specific generator implementation over top of the base smithy-kotlin
-one is responsible for providing the logic to code-generate the sourcing of these builtins in the resolver middleware
-(detailed below).
+If a context param targets a value previously declared as a client context param, the per-operation value overrides the
+one configured by the client for that call.
+
+For example, given the following parameters/model snippet:
+
+```json
+{
+  "regionPrefix": {
+    "type": "string"
+  }
+}
+```
+
+```smithy
+@clientContextParams(
+    regionPrefix: {type: "string", documentation: "the country code for the client region"}
+)
+service BasicService {
+    operations: [
+        GetItem,
+        GetSecretItem
+    ]
+}
+
+operation GetItem {
+    input: GetItemInput;
+}
+
+structure GetItemInput {
+    @contextParam(name: "regionPrefix")
+    regionPrefix: string;
+}
+
+operation GetSecretItem {
+    input: GetSecretItemInput;
+}
+
+structure GetSecretItemInput { }
+```
+
+The value of `regionPrefix` would use the request value for `GetItem`, whereas `GetSecretItem` would bind from the
+client config.
+
+#### Built-ins
+
+The rule set specification allows for the definition of built-ins, which are SDK-specific values that are bound to
+provider parameters at the time of resolution. As a generic codegen provider, smithy-kotlin doesn't implement any
+built-ins on its own but rather exposes an interface in the middleware generator for SDK authors to define and resolve
+their own built-ins.
+
+For example, the AWS SDK has a special built-in for the AWS region. Given the following parameter declaration:
+
+```json
+{
+  "region": {
+    "type": "string",
+    "builtin": "AWS::Region"
+  }
+}
+```
+
+The base middleware generator cannot render the binding of this value. The AWS SDK must implement custom logic to bind
+this value from the client config.
 
 ## Codegen
+### Package "endpoints"
+The provider parameters and interface will generate to a new top-level `endpoints` package.
+
+### Provider parameters
+
+Provider parameters will be generated as a data class, since backwards compatability of parameter values is guaranteed (
+field order MUST be preserved, and obsolete values are marked deprecated and not removed).
+
+The presence of required values is checked at construction, with an error thrown if any are missing.
+
+The generation includes DSL builder support for several reasons:
+1. caller convenience - SDK users are able to implement and call their own endpoint providers
+2. doing so provides greater flexibility for codegen for middleware - the binding of a value can be expressed as an
+   arbitrary set of statements, rather than being restricted to a single expression in a constructor argument list
+```kotlin
+public data class ServiceEndpointParams(
+    // ...args
+) {
+    init {
+        // check required args
+    }
+    
+    public companion object {
+        public operator fun invoke(block: Builder.() -> Unit): ServiceEndpointParams
+    }
+    
+    public class Builder internal constructor() {
+        // ...
+    }
+}
+```
 ### Resolver
-Codegen for resolvers works much like any other extendable generated construct in smithy-kotlin - a base generator is
-implemented to perform to walk the rules tree and generate the core logic. This base class can be extended on by SDK
+Codegen for resolvers works much like any other extendable generated construct in smithy-kotlin: a base generator is
+implemented to walk the rules tree and generate the core logic. This base class can be extended by SDK
 authors as needed.
 
 ```kotlin
 public open class EndpointProviderGenerator(
     public val writer: KotlinWriter,
-    public val ruleset: EndpointRuleset,
+    public val ruleSet: EndpointRuleset,
     // ...
 ) {
     /**
@@ -117,41 +296,53 @@ public open class EndpointProviderGenerator(
     public fun render()
 
     /**
-     * Resolve a standard library function referenced in a ruleset.
+     * Render a standard library function referenced in a rule set.
      */
-    public open fun resolveFunction(func: String)
+    public open fun renderFunction(func: String, args: List<FunctionArg>)
 }
 ```
 
 ### Middleware
-Endpoint resolution, whether generated or written by the caller, is performed per-request as a pre-operation middleware.
-At runtime, endpoint resolution is comprised of two principal tasks:
-1. construct a set of provider parameters, sourcing the values as specified by the model (context params)
-2. using the sourced parameters, call the provider to resolve to an endpoint, pointing the request to it
 
-Since endpoint resolution is performed on a per-operation basis, and the sourcing of provider parameters can vary
-per-operation, middleware must now be generated per-operation (this differs from the original implementation, where the
-endpoint resolver middleware was static across operations and its implementation was part of the runtime).
+Endpoint resolution, whether generated or written by the caller, is performed per-request as a pre-serialization
+middleware. At runtime, endpoint resolution is comprised of two principal tasks:
+1. construct a set of provider parameters, binding the values as specified by the model (context params)
+2. using the bound parameters, call the provider to resolve to an endpoint, pointing the request to it
+
+Operations that don't influence provider parameter values (i.e. operations with no associated `staticContextParams`
+or `clientContextParams`) can use a default middleware generated once for the service. Other operations will need to
+have unique middlewares generated to bind those specific values.
 
 ```kotlin
 public open class EndpointResolverMiddlewareGenerator(
     public val writer: KotlinWriter,
     public val operation: OperationShape,
-    public val ruleset: EndpointRuleset,
+    public val ruleSet: EndpointRuleset,
     // will likely need some additional params such as service shape etc.
 ) {
     /**
      * Generates code to construct a set of provider parameters based on the specific service, call the provider
      * with those parameters, and modify the request (and handle failure to resolve if that occurs).
      * 
-     * Client/static/general context parameters are inspected here to determine where to source values.
+     * Client/static/general context parameters are inspected here to determine how to bind values.
      */
     public fun render()
+
+    /**
+     * Implement this API to generate additional parameters to be passed to the middleware.
+     * By default, the middleware takes two parameters:
+     * 1. service client config
+     * 2. operation's request object
+     * 
+     * The implementer is responsible for code generation of the middleware installation.
+     */
+    public open fun getMiddlewareParams(): List<Symbol>
     
     /**
-     * SDK authors extend this method to handle builtins.
+     * SDK authors extend this method to handle built-ins.
+     * Called within the builder lambda for the parameters object.
      */
-    public open fun resolveBuiltin(value: String)
+    public open fun renderBuiltin(name: String)
 
     /**
      * Hook for implementers to generate additional custom code that acts on the resolved endpoint, most likely to
@@ -165,9 +356,8 @@ public open class EndpointResolverMiddlewareGenerator(
 This will generate middleware with the following signature:
 ```kotlin
 public class OperationMiddleware(
-    private val config: SmithyService.Config,
+    private val config: SmithyService.Config, // has the endpoint provider
     private val request: OperationRequest,
-    private val provider: EndpointProvider,
 ) : ModifyRequestMiddleware {
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         /**
@@ -179,14 +369,14 @@ public class OperationMiddleware(
 
 ## Example
 
-The following is an example ruleset attached to an arbitrary service definition with the ID "SmithyService" (the
+The following is an example rule set attached to an arbitrary service definition with the ID "SmithyService" (the
 definition itself is omitted).
 
-The ruleset describes a simple if-else case: if the sole required parameter `ResourceId` contains a specific prefix,
+The rule set describes a simple if-else case: if the sole required parameter `ResourceId` contains a specific prefix,
 route this request against a special-case endpoint. Otherwise, fall back to a constant default. The `substring` function
-used in the ruleset is an example of a standard-library function used by endpoint resolvers.
+used in the rule set is an example of a standard-library function used by endpoint resolvers.
 
-This particular ruleset is kept simple for the purpose of example, naturally, a ruleset can be of arbitrary complexity as
+This particular rule set is kept simple for the purpose of example. A rule set can be of arbitrary complexity as
 required by the service.
 
 ```json
@@ -207,7 +397,7 @@ required by the service.
           "argv": [
             {"ref": "ResourceId"},
             0,
-            5,
+            4,
             false
           ],
           "assign": "resourceIdPrefix"
@@ -226,6 +416,7 @@ required by the service.
     },
     {
       "documentation": "fallback to global endpoint",
+      "type": "endpoint",
       "conditions": [],
       "endpoint": {
         "url": "https://global.api"
@@ -235,28 +426,37 @@ required by the service.
 }
 ```
 *Note*: The signature of the substring method is `substring(s: String, start: Int, end: Int, reverseIndices: false): String`.
-The argv property in the corresponding function call describes how to source the arguments (or input constants directly
-in the case of the indices).
+The argv property in the corresponding function call provides the arguments, each of which will either be a variable
+reference or constant
+value.
 
-Given a sample operation `GetResource`, with a single operation input `resource` bound to the `ResourceId` provider
-parameter via context traits, this ruleset would roughly generate the following code:
+Given a sample operation `GetResource` with a single operation input `resource` bound to the `ResourceId` provider
+parameter via a `contextParam` trait, this rule set would generate roughly the following code:
 
 ```kotlin
+// package *.services.smithyservice.endpoints
+
 public data class SmithyServiceEndpointParams(
     public val resourceId: String?,
 ) {
     init {
         require(resourceId != null) { "param resourceId is required" }
     }
+
+    // builder implementation ...
 }
+
+// package *.services.smithyservice.endpoints
 
 public fun interface SmithyServiceEndpointProvider {
-    open suspend fun resolveEndpoint(params: SmithyServiceEndpointParams): Endpoint
+    suspend fun resolveEndpoint(params: SmithyServiceEndpointParams): Endpoint
 }
 
-public class DefaultSmithyServiceEndpointProvider: SmithyServiceEndpointProvider {
+// package *.services.smithyservice.internal
+
+internal class DefaultSmithyServiceEndpointProvider: SmithyServiceEndpointProvider {
     public suspend fun resolveEndpoint(params: SmithyServiceEndpointParams): Endpoint {
-        val resourceIdPrefix = substring(params.resourceId, 0, 5, false)
+        val resourceIdPrefix = substring(params.resourceId, 0, 4, false)
         if (resourceIdPrefix == "gov.") {
             // use a special endpoint for government resources
             return Endpoint(
@@ -271,16 +471,17 @@ public class DefaultSmithyServiceEndpointProvider: SmithyServiceEndpointProvider
     }
 }
 
-public class GetResourceResolveEndpointMiddleware(
+// package *.services.smithyservice.internal
+
+internal class GetResourceResolveEndpointMiddleware(
     private val config: SmithyService.Config,
     private val request: GetResourceRequest,
-    private val provider: EndpointProvider,
 ) : ModifyRequestMiddleware {
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val params = SmithyServiceEndpointParams {
             resourceId = request.resource
         }
-        val endpoint = provider.resolveEndpoint(params)
+        val endpoint = config.provider.resolveEndpoint(params)
             
         setRequestEndpoint(req, endpoint)
         
