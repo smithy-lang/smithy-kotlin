@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.xml
@@ -23,11 +23,13 @@ public interface XmlStreamReader {
          * The subtree's minimum depth is the same as the current node depth.
          */
         CURRENT,
+
         /**
          * The subtree's minimum depth is the same as the current node depth + 1.
          */
         CHILD,
     }
+
     /**
      * Return the last token that was consumed by the reader.
      */

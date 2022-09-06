@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -44,7 +44,7 @@ fun MutableList<SdkFieldDescriptorTrait>.add(symbol: Symbol, vararg params: Stri
  */
 abstract class AbstractSerdeDescriptorGenerator(
     protected val ctx: RenderingContext<Shape>,
-    memberShapes: List<MemberShape>? = null
+    memberShapes: List<MemberShape>? = null,
 ) : SerdeDescriptorGenerator {
 
     protected val objectShape = requireNotNull(ctx.shape) { "rendering context requires shape to not be null" }
@@ -66,7 +66,7 @@ abstract class AbstractSerdeDescriptorGenerator(
             RuntimeTypes.Serde.asSdkSerializable,
             RuntimeTypes.Serde.serializeStruct,
             RuntimeTypes.Serde.serializeList,
-            RuntimeTypes.Serde.serializeMap
+            RuntimeTypes.Serde.serializeMap,
         )
         writer.addImport(serdeDescriptorSymbols)
         val sortedMembers = memberShapes.sortedBy { it.memberName }
@@ -110,7 +110,7 @@ abstract class AbstractSerdeDescriptorGenerator(
     protected open fun getFieldDescriptorTraits(
         member: MemberShape,
         targetShape: Shape,
-        nameSuffix: String = ""
+        nameSuffix: String = "",
     ): List<SdkFieldDescriptorTrait> = emptyList()
 
     /**
@@ -134,7 +134,7 @@ abstract class AbstractSerdeDescriptorGenerator(
                 "val #L = SdkFieldDescriptor(#L, #L)",
                 descriptorName,
                 serialKind,
-                traits.joinToString(separator = ", ")
+                traits.joinToString(separator = ", "),
             )
         }
     }

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
@@ -22,7 +22,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 data class HttpBindingDescriptor(
     val member: MemberShape,
     val location: HttpBinding.Location,
-    val locationName: String? = null
+    val locationName: String? = null,
 ) {
     /**
      * @param Smithy [HttpBinding] to create from
@@ -83,7 +83,7 @@ interface HttpBindingResolver {
     fun determineTimestampFormat(
         member: ToShapeId,
         location: HttpBinding.Location,
-        defaultFormat: TimestampFormatTrait.Format
+        defaultFormat: TimestampFormatTrait.Format,
     ): TimestampFormatTrait.Format
 }
 
@@ -101,7 +101,7 @@ fun HttpBindingResolver.hasHttpBody(operationShape: OperationShape): Boolean =
 data class ProtocolContentTypes(
     val requestContentType: String? = null,
     val responseContentType: String? = null,
-    val eventStreamContentType: String? = null
+    val eventStreamContentType: String? = null,
 ) {
     companion object {
         /**
@@ -120,7 +120,7 @@ data class ProtocolContentTypes(
 class HttpTraitResolver(
     private val model: Model,
     private val serviceShape: ServiceShape,
-    private val contentTypes: ProtocolContentTypes
+    private val contentTypes: ProtocolContentTypes,
 ) : HttpBindingResolver {
     /**
      * @param ctx [ProtocolGenerator.GenerationContext]
@@ -148,7 +148,7 @@ class HttpTraitResolver(
 
     override fun responseBindings(shape: Shape): List<HttpBindingDescriptor> = when (shape) {
         is OperationShape,
-        is StructureShape -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
+        is StructureShape, -> bindingIndex.getResponseBindings(shape.toShapeId()).values.map { HttpBindingDescriptor(it) }
         else -> error { "Unimplemented resolving bindings for ${shape.javaClass.canonicalName}" }
     }
 
@@ -159,7 +159,7 @@ class HttpTraitResolver(
     override fun determineTimestampFormat(
         member: ToShapeId,
         location: HttpBinding.Location,
-        defaultFormat: TimestampFormatTrait.Format
+        defaultFormat: TimestampFormatTrait.Format,
     ): TimestampFormatTrait.Format =
         bindingIndex.determineTimestampFormat(member, location, defaultFormat)
 }

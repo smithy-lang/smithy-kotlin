@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.crt
@@ -28,7 +28,7 @@ internal expect fun transferRequestBody(outgoing: SdkByteBuffer, dest: MutableBu
 public class ReadChannelBodyStream(
     // the request body channel
     private val bodyChan: SdkByteReadChannel,
-    private val callContext: CoroutineContext
+    private val callContext: CoroutineContext,
 ) : HttpRequestBodyStream, CoroutineScope {
 
     private val producerJob = Job(callContext.job)

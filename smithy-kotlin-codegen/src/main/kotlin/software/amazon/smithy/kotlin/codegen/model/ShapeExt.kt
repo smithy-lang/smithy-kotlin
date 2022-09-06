@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.model
@@ -115,7 +115,7 @@ fun OperationIndex.operationSignature(
     model: Model,
     symbolProvider: SymbolProvider,
     op: OperationShape,
-    includeOptionalDefault: Boolean = false
+    includeOptionalDefault: Boolean = false,
 ): String {
     val inputShape = this.getInput(op)
     val outputShape = this.getOutput(op)
@@ -154,7 +154,10 @@ val Shape.isDeprecated: Boolean
  * https://awslabs.github.io/smithy/1.0/spec/core/constraint-traits.html#enum-trait
  */
 val Shape.isEnum: Boolean
-    get() = isStringShape && hasTrait<EnumTrait>()
+    get() =
+        isStringShape && hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() ||
+            isEnumShape ||
+            isIntEnumShape
 
 /**
  * Test if a shape is an error.

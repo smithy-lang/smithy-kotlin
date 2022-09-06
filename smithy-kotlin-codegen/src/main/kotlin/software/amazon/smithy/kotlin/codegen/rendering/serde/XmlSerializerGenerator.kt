@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -27,14 +27,14 @@ import software.amazon.smithy.model.traits.XmlAttributeTrait
  */
 open class XmlSerializerGenerator(
     private val protocolGenerator: ProtocolGenerator,
-    private val defaultTimestampFormat: TimestampFormatTrait.Format
+    private val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) : StructuredDataSerializerGenerator {
 
     open fun descriptorGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
         members: List<MemberShape>,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ): XmlSerdeDescriptorGenerator = XmlSerdeDescriptorGenerator(ctx.toRenderingContext(protocolGenerator, shape, writer), members)
 
     override fun operationSerializer(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, members: List<MemberShape>): Symbol {
@@ -71,7 +71,7 @@ open class XmlSerializerGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         documentMembers: List<MemberShape>,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeXml.XmlSerializer)
@@ -82,7 +82,7 @@ open class XmlSerializerGenerator(
     protected fun documentSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape> = shape.members()
+        members: Collection<MemberShape> = shape.members(),
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
         return shape.documentSerializer(ctx.settings, symbol, members) { writer ->
@@ -111,7 +111,7 @@ open class XmlSerializerGenerator(
     }
 
     private fun sortMembersForSerialization(
-        members: List<MemberShape>
+        members: List<MemberShape>,
     ): List<MemberShape> {
         val attributes = members.filter { it.hasTrait<XmlAttributeTrait>() }.sortedBy { it.memberName }
         val elements = members.filterNot { it.hasTrait<XmlAttributeTrait>() }.sortedBy { it.memberName }
@@ -124,7 +124,7 @@ open class XmlSerializerGenerator(
     override fun payloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape>?
+        members: Collection<MemberShape>?,
     ): Symbol {
         // re-use document serializer
         val target = shape.targetOrSelf(ctx.model)

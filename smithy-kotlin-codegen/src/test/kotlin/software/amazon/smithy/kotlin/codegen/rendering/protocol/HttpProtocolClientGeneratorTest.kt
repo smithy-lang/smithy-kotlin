@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
@@ -207,7 +207,7 @@ class HttpProtocolClientGeneratorTest {
         op.install(MockMiddleware(configurationField1 = "testing"))
         return op.roundTrip(client, input)
     }
-"""
+""",
         )
         expectedBodies.forEach {
             commonTestContents.shouldContainOnlyOnceWithDiff(it)
@@ -251,7 +251,7 @@ class HttpProtocolClientGeneratorTest {
             }
             
             structure GetStatusOutput {}
-        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.AwsJson1_1, operations = listOf("GetStatus"))
+        """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.AWS_JSON_1_1, operations = listOf("GetStatus"))
             .toSmithyModel()
 
         val ctx = model.newTestContext()
@@ -259,7 +259,7 @@ class HttpProtocolClientGeneratorTest {
         val generator = TestProtocolClientGenerator(
             ctx.generationCtx,
             listOf(),
-            HttpTraitResolver(ctx.generationCtx, "application/json")
+            HttpTraitResolver(ctx.generationCtx, "application/json"),
         )
         generator.render(writer)
         val contents = writer.toString()
@@ -286,7 +286,7 @@ class HttpProtocolClientGeneratorTest {
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 override suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse {
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -298,7 +298,7 @@ class HttpProtocolClientGeneratorTest {
         val generator = TestProtocolClientGenerator(
             ctx.generationCtx,
             features,
-            HttpTraitResolver(ctx.generationCtx, "application/json")
+            HttpTraitResolver(ctx.generationCtx, "application/json"),
         )
         generator.render(writer)
         return writer.toString()

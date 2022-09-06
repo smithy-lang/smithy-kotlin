@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -57,7 +57,7 @@ class ServiceGeneratorTest {
             "public suspend fun getFooStreamingInput(input: GetFooStreamingInputRequest): GetFooStreamingInputResponse",
             "public suspend fun <T> getFooStreamingOutput(input: GetFooStreamingOutputRequest, block: suspend (GetFooStreamingOutputResponse) -> T): T",
             "public suspend fun <T> getFooStreamingOutputNoInput(input: GetFooStreamingOutputNoInputRequest = GetFooStreamingOutputNoInputRequest {}, block: suspend (GetFooStreamingOutputNoInputResponse) -> T): T",
-            "public suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputRequest): GetFooStreamingInputNoOutputResponse"
+            "public suspend fun getFooStreamingInputNoOutput(input: GetFooStreamingInputNoOutputRequest): GetFooStreamingInputNoOutputResponse",
         )
         expectedSignatures.forEach {
             commonTestContents.shouldContainOnlyOnceWithDiff(it)
@@ -147,7 +147,7 @@ class ServiceGeneratorTest {
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 public interface TestClient : SdkClient {
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 
@@ -157,7 +157,7 @@ class ServiceGeneratorTest {
             """
                 @Deprecated("No longer recommended for use. See AWS API documentation for more details.")
                 public suspend fun yeOldeOperation(input: YeOldeOperationRequest): YeOldeOperationResponse
-            """.trimIndent()
+            """.trimIndent(),
         )
     }
 

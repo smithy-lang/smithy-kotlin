@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -16,7 +16,7 @@ class XmlDeserializerStructTest {
                <?xml version="1.0" encoding="UTF-8"?>
                <!--
                  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-                 ~ SPDX-License-Identifier: Apache-2.0.
+                 ~ SPDX-License-Identifier: Apache-2.0
                  -->
                 
                <payload x="1" y="2" />
@@ -35,7 +35,7 @@ class XmlDeserializerStructTest {
                <?xml version="1.0" encoding="UTF-8"?>
                <!--
                  ~ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-                 ~ SPDX-License-Identifier: Apache-2.0.
+                 ~ SPDX-License-Identifier: Apache-2.0
                  -->
                 
                <payload xval="1" yval="2">

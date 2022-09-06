@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -16,11 +16,11 @@ class DeserializeStructGeneratorTest {
             operation Foo {
                 output: FooResponse
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("Foo")).trimIndent()
 
+    // TODO ~ Support BigInteger and BigDecimal Types
     @ParameterizedTest
     @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
-    // TODO ~ Support BigInteger and BigDecimal Types
     fun `it deserializes a structure with a simple fields`(memberType: String) {
         val model = (
             modelPrefix + """            
@@ -1554,8 +1554,8 @@ deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
         actual.shouldContainOnlyOnceWithDiff(expected)
     }
 
-    @Test
     // TODO ~ this codegen path is not exercised by protocol tests
+    @Test
     fun `it deserializes a structure containing a structure`() {
         val model = (
             modelPrefix + """            

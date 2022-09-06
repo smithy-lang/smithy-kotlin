@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io
@@ -38,5 +38,5 @@ public fun SdkByteChannel(autoFlush: Boolean = true): SdkByteChannel =
 public fun SdkByteReadChannel(
     content: ByteArray,
     offset: Int = 0,
-    length: Int = content.size - offset
+    length: Int = content.size - offset,
 ): SdkByteReadChannel = KtorByteReadChannel(content, offset, length).toSdkChannel()

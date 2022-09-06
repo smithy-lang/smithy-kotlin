@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.xml
@@ -28,7 +28,7 @@ internal sealed class FieldLocation {
  */
 public class XmlDeserializer(
     private val reader: XmlStreamReader,
-    private val validateRootElement: Boolean = false
+    private val validateRootElement: Boolean = false,
 ) : Deserializer {
 
     public constructor(input: ByteArray, validateRootElement: Boolean = false) : this(xmlStreamReader(input), validateRootElement)
@@ -91,7 +91,7 @@ public class XmlDeserializer(
 internal class XmlMapDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
-    private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
+    private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor),
 ) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.EntryIterator {
     private val mapTrait = descriptor.findTrait<XmlMapName>() ?: XmlMapName.Default
 
@@ -135,7 +135,7 @@ internal class XmlMapDeserializer(
 internal class XmlListDeserializer(
     private val reader: XmlStreamReader,
     private val descriptor: SdkFieldDescriptor,
-    private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor)
+    private val primitiveDeserializer: PrimitiveDeserializer = XmlPrimitiveDeserializer(reader, descriptor),
 ) : PrimitiveDeserializer by primitiveDeserializer, Deserializer.ElementIterator {
     private var firstCall = true
     private val flattened = descriptor.hasTrait<Flattened>()
@@ -202,7 +202,7 @@ internal class XmlStructDeserializer(
     private val objDescriptor: SdkObjectDescriptor,
     private val reader: XmlStreamReader,
     private val parentToken: XmlToken.BeginElement,
-    private val parsedFieldLocations: MutableList<FieldLocation> = mutableListOf()
+    private val parsedFieldLocations: MutableList<FieldLocation> = mutableListOf(),
 ) : Deserializer.FieldIterator {
     // Used to track direct deserialization or further nesting between calls to findNextFieldIndex() and deserialize<Type>()
     private var reentryFlag: Boolean = false
@@ -255,7 +255,7 @@ internal class XmlStructDeserializer(
                     nextField
                         .names
                         .mapNotNull { parentToken.attributes[it] }
-                        .firstOrNull() ?: throw DeserializationException("Expected attrib value ${nextField.names.first()} not found in ${parentToken.name}")
+                        .firstOrNull() ?: throw DeserializationException("Expected attrib value ${nextField.names.first()} not found in ${parentToken.name}"),
                 )
             }
         }

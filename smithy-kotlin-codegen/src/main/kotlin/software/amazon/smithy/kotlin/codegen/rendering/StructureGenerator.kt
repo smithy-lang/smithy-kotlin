@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -23,7 +23,7 @@ import software.amazon.smithy.model.traits.StreamingTrait
  * Renders Smithy structure shapes
  */
 class StructureGenerator(
-    private val ctx: RenderingContext<StructureShape>
+    private val ctx: RenderingContext<StructureShape>,
 ) {
     private val shape = requireNotNull(ctx.shape)
     private val writer = ctx.writer

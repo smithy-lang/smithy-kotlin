@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.operation
@@ -12,6 +12,8 @@ import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.Uuid
 import aws.smithy.kotlin.runtime.util.get
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.job
 
 /**
  * A (Smithy) HTTP based operation.
@@ -75,7 +77,7 @@ public suspend fun <I, O> SdkHttpOperation<I, O>.roundTrip(
 public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     httpHandler: HttpHandler,
     input: I,
-    block: suspend (O) -> R
+    block: suspend (O) -> R,
 ): R {
     val handler = execution.decorate(httpHandler, serializer, deserializer)
     val request = OperationRequest(context, input)
@@ -83,8 +85,7 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
         val output = handler.call(request)
         return block(output)
     } finally {
-        // pull the raw response(s) out of the context and cleanup any resources
-        context.getOrNull(HttpOperationContext.HttpCallList)?.forEach { it.complete() }
+        context.cleanup()
     }
 }
 
@@ -101,9 +102,18 @@ public class SdkHttpOperationBuilder<I, O> {
         return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer)
     }
 }
+
 /**
  * Configure HTTP operation context elements
  */
 public inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) {
     context.apply(block)
+}
+
+private suspend fun ExecutionContext.cleanup() {
+    // pull the raw response(s) out of the context and cleanup any resources
+    getOrNull(HttpOperationContext.HttpCallList)?.forEach { it.complete() }
+
+    // at this point everything associated with this single operation should be cleaned up
+    coroutineContext.job.cancelAndJoin()
 }

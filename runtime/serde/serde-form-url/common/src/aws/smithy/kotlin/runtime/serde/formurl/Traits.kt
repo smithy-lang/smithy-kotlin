@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.serde.formurl
@@ -53,6 +53,7 @@ public data class FormUrlCollectionName(public val member: String) : FieldTrait 
         public val Default: FormUrlCollectionName = FormUrlCollectionName("member")
     }
 }
+
 /**
  * Specifies key and value node names used to encode a Map structure.
  * See https://awslabs.github.io/smithy/1.0/spec/aws/aws-query-protocol.html#maps

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http
 
@@ -86,13 +86,13 @@ class HttpRequestBuilderTest {
                 path = "/debug/test",
                 parameters = QueryParameters {
                     append("q1", "foo")
-                }
+                },
             ),
             headers = Headers {
                 append("x-baz", "bar")
                 append("x-quux", "qux")
             },
-            body = ByteArrayContent("foobar".encodeToByteArray())
+            body = ByteArrayContent("foobar".encodeToByteArray()),
         )
 
         val actual = dumpRequest(req.toBuilder(), true)

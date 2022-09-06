@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.hashing
 
@@ -27,18 +27,21 @@ class Sha1Test {
         val expected = "a9993e36 4706816a ba3e2571 7850c26c 9cd0d89d"
         assertShaHexEqual(input, expected)
     }
+
     @Test
     fun testVector2() {
         val input = ""
         val expected = "da39a3ee 5e6b4b0d 3255bfef 95601890 afd80709"
         assertShaHexEqual(input, expected)
     }
+
     @Test
     fun testVector3() {
         val input = "abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"
         val expected = "84983e44 1c3bd26e baae4aa1 f95129e5 e54670f1"
         assertShaHexEqual(input, expected)
     }
+
     @Test
     fun testVector4() {
         val input = "abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"

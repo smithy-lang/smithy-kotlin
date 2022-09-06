@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering
@@ -34,9 +34,10 @@ object ExceptionBaseClassGenerator {
         val name = clientName(ctx.settings.sdkId)
         writer.dokka("Base class for all service related exceptions thrown by the $name client")
         writer.withBlock(
-            "public open class #T : #T {", "}",
+            "public open class #T : #T {",
+            "}",
             serviceException,
-            baseException
+            baseException,
         ) {
             write("public constructor() : super()")
             write("public constructor(message: String?) : super(message)")

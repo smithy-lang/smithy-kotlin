@@ -1,18 +1,14 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.*
-import software.amazon.smithy.kotlin.codegen.model.SymbolProperty
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
-import software.amazon.smithy.kotlin.codegen.model.isSparse
-import software.amazon.smithy.kotlin.codegen.model.targetOrSelf
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 
@@ -37,7 +33,7 @@ open class DeserializeStructGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val members: List<MemberShape>,
     protected val writer: KotlinWriter,
-    protected val defaultTimestampFormat: TimestampFormatTrait.Format
+    protected val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) {
     /**
      * Enables overriding the codegen output of the final value resulting
@@ -86,10 +82,13 @@ open class DeserializeStructGenerator(
 
         when (targetShape.type) {
             ShapeType.LIST,
-            ShapeType.SET -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
+            ShapeType.SET,
+            -> renderListMemberDeserializer(memberShape, targetShape as CollectionShape)
+
             ShapeType.MAP -> renderMapMemberDeserializer(memberShape, targetShape as MapShape)
+
             ShapeType.STRUCTURE,
-            ShapeType.UNION -> renderShapeDeserializer(memberShape)
+            ShapeType.UNION,
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
             ShapeType.STRING,
@@ -102,7 +101,12 @@ open class DeserializeStructGenerator(
             ShapeType.DOUBLE,
             ShapeType.DOCUMENT,
             ShapeType.BIG_DECIMAL,
-            ShapeType.BIG_INTEGER -> renderShapeDeserializer(memberShape)
+            ShapeType.BIG_INTEGER,
+            ShapeType.ENUM,
+            -> renderShapeDeserializer(memberShape)
+
+            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
+
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }
@@ -157,7 +161,7 @@ open class DeserializeStructGenerator(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val elementShape = ctx.model.expectShape(mapShape.value.target)
         val isSparse = mapShape.isSparse
@@ -175,12 +179,21 @@ open class DeserializeStructGenerator(
             ShapeType.BIG_INTEGER,
             ShapeType.BLOB,
             ShapeType.DOCUMENT,
-            ShapeType.TIMESTAMP -> renderEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.TIMESTAMP,
+            ShapeType.ENUM,
+            -> renderEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+
             ShapeType.SET,
-            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.LIST,
+            -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.STRUCTURE,
+            -> renderNestedStructureEntry(elementShape, nestingLevel, isSparse, parentMemberName)
+
+            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
+
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -198,7 +211,7 @@ open class DeserializeStructGenerator(
         elementShape: Shape,
         nestingLevel: Int,
         isSparse: Boolean,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val deserializerFn = deserializerForShape(elementShape)
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
@@ -233,7 +246,7 @@ open class DeserializeStructGenerator(
         mapShape: MapShape,
         nestingLevel: Int,
         isSparse: Boolean,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
@@ -279,7 +292,7 @@ open class DeserializeStructGenerator(
         collectionShape: CollectionShape,
         nestingLevel: Int,
         isSparse: Boolean,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val keyName = nestingLevel.variableNameFor(NestedIdentifierType.KEY)
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
@@ -377,12 +390,21 @@ open class DeserializeStructGenerator(
             ShapeType.BIG_INTEGER,
             ShapeType.BLOB,
             ShapeType.DOCUMENT,
-            ShapeType.TIMESTAMP -> renderElement(elementShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.TIMESTAMP,
+            ShapeType.ENUM,
+            -> renderElement(elementShape, nestingLevel, isSparse, parentMemberName)
+
             ShapeType.LIST,
-            ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
+            ShapeType.SET,
+            -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
+
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.STRUCTURE,
+            -> renderNestedStructureElement(elementShape, nestingLevel, isSparse, parentMemberName)
+
+            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
+
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -426,7 +448,7 @@ open class DeserializeStructGenerator(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
-        parentMapMemberName: String
+        parentMapMemberName: String,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -502,20 +524,22 @@ open class DeserializeStructGenerator(
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
 
-        return when (target.type) {
-            ShapeType.BOOLEAN -> "deserializeBoolean()"
-            ShapeType.BYTE -> "deserializeByte()"
-            ShapeType.SHORT -> "deserializeShort()"
-            ShapeType.INTEGER -> "deserializeInt()"
-            ShapeType.LONG -> "deserializeLong()"
-            ShapeType.FLOAT -> "deserializeFloat()"
-            ShapeType.DOUBLE -> "deserializeDouble()"
-            ShapeType.DOCUMENT -> "deserializeDocument()"
-            ShapeType.BLOB -> {
+        return when {
+            target.type == ShapeType.BOOLEAN -> "deserializeBoolean()"
+            target.type == ShapeType.BYTE -> "deserializeByte()"
+            target.type == ShapeType.SHORT -> "deserializeShort()"
+            target.type == ShapeType.INTEGER -> "deserializeInt()"
+            target.type == ShapeType.LONG -> "deserializeLong()"
+            target.type == ShapeType.FLOAT -> "deserializeFloat()"
+            target.type == ShapeType.DOUBLE -> "deserializeDouble()"
+            target.type == ShapeType.DOCUMENT -> "deserializeDocument()"
+
+            target.type == ShapeType.BLOB -> {
                 writer.addImport("decodeBase64Bytes", KotlinDependency.UTILS)
                 "deserializeString().decodeBase64Bytes()"
             }
-            ShapeType.TIMESTAMP -> {
+
+            target.type == ShapeType.TIMESTAMP -> {
                 writer.addImport(RuntimeTypes.Core.Instant)
                 val tsFormat = shape
                     .getTrait(TimestampFormatTrait::class.java)
@@ -529,19 +553,21 @@ open class DeserializeStructGenerator(
                     else -> throw CodegenException("unknown timestamp format: $tsFormat")
                 }
             }
-            ShapeType.STRING -> when {
-                target.hasTrait<EnumTrait>() -> {
-                    val enumSymbol = ctx.symbolProvider.toSymbol(target)
-                    writer.addImport(enumSymbol)
-                    "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
-                }
-                else -> "deserializeString()"
+
+            target.isEnum -> {
+                val enumSymbol = ctx.symbolProvider.toSymbol(target)
+                writer.addImport(enumSymbol)
+                "deserializeString().let { ${enumSymbol.name}.fromValue(it) }"
             }
-            ShapeType.STRUCTURE, ShapeType.UNION -> {
+
+            target.type == ShapeType.STRING -> "deserializeString()"
+
+            target.type == ShapeType.STRUCTURE || target.type == ShapeType.UNION -> {
                 val symbol = ctx.symbolProvider.toSymbol(target)
                 val deserializerName = symbol.documentDeserializerName()
                 "$deserializerName(deserializer)"
             }
+
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
         }
     }

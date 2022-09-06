@@ -1,18 +1,24 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
+import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
+import software.amazon.smithy.kotlin.codegen.core.addImport
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.formatInstant
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.model.traits.IdempotencyTokenTrait
+import software.amazon.smithy.model.traits.MediaTypeTrait
+import software.amazon.smithy.model.traits.RequiredTrait
+import software.amazon.smithy.model.traits.TimestampFormatTrait
 
 /**
  * Shared implementation to generate serialization for members bound to HTTP query parameters or headers
@@ -42,7 +48,7 @@ class HttpStringValuesMapSerializer(
     ) : this(ctx.model, ctx.symbolProvider, bindings, resolver, defaultTimestampFormat)
 
     fun render(
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         bindings.sortedBy(HttpBindingDescriptor::memberName).forEach {
             val memberName = symbolProvider.toMemberName(it.member)
@@ -64,7 +70,7 @@ class HttpStringValuesMapSerializer(
                     writer.write(
                         "if (input.#1L?.isNotEmpty() == true) append(\"#2L\", input.#1L.encodeBase64String())",
                         memberName,
-                        paramName
+                        paramName,
                     )
                 }
                 is StringShape -> renderStringShape(it, memberTarget, writer)
@@ -127,7 +133,7 @@ class HttpStringValuesMapSerializer(
             "if (input.#1L?.isNotEmpty() == true) appendAll(\"#2L\", #3L)",
             memberName,
             paramName,
-            param2
+            param2,
         )
     }
 
@@ -144,14 +150,16 @@ class HttpStringValuesMapSerializer(
             writer.write("append(\"#L\", (input.$memberName ?: context.idempotencyTokenProvider.generateToken()))", paramName)
         } else {
             val cond =
-                if (location == HttpBinding.Location.QUERY || memberTarget.hasTrait<EnumTrait>()) {
+                if (location == HttpBinding.Location.QUERY ||
+                    memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()
+                ) {
                     "input.$memberName != null"
                 } else {
                     "input.$memberName?.isNotEmpty() == true"
                 }
 
             val suffix = when {
-                memberTarget.hasTrait<EnumTrait>() -> {
+                memberTarget.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>() -> {
                     ".value"
                 }
                 memberTarget.hasTrait<MediaTypeTrait>() -> {

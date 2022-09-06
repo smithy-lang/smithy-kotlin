@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.core
 
@@ -10,7 +10,6 @@ import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.BoxTrait
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 import java.util.logging.Logger
@@ -251,7 +250,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
             .putProperty(SymbolProperty.SHAPE_KEY, shape)
             .name(typeName)
 
-        val explicitlyBoxed = shape?.hasTrait<BoxTrait>() ?: false
+        val explicitlyBoxed = shape?.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.BoxTrait>() ?: false
         if (explicitlyBoxed || boxed) {
             builder.boxed()
         }
@@ -267,7 +266,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         shape: Shape?,
         typeName: String,
         namespace: String,
-        boxed: Boolean = false
+        boxed: Boolean = false,
     ): Symbol.Builder = createSymbolBuilder(shape, typeName, boxed).namespace(namespace, ".")
 }
 

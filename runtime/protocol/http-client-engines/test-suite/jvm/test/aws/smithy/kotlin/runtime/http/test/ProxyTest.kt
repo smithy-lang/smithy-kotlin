@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.test
@@ -30,7 +30,7 @@ import kotlin.test.assertEquals
 // defined by gradle script
 private val PROXY_SCRIPT_ROOT = System.getProperty("MITM_PROXY_SCRIPTS_ROOT")
 private fun mitmProxyContainer(
-    vararg options: String
+    vararg options: String,
 ) = GenericContainer(DockerImageName.parse("mitmproxy/mitmproxy:8.1.0"))
     .withExposedPorts(8080)
     .withFileSystemBind(PROXY_SCRIPT_ROOT, "/home/mitmproxy/scripts", BindMode.READ_ONLY)
@@ -55,7 +55,7 @@ class ProxyTest : AbstractEngineTest() {
     @Test
     fun testHttpProxy() = testEngines(
         // we would expect a customer to configure proxy support on the underlying engine
-        skipEngines = setOf("KtorEngine")
+        skipEngines = setOf("KtorEngine"),
     ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)
@@ -80,7 +80,7 @@ class ProxyAuthTest : AbstractEngineTest() {
     @Test
     fun testHttpProxyAuth() = testEngines(
         // we would expect a customer to configure proxy support on the underlying engine
-        skipEngines = setOf("KtorEngine")
+        skipEngines = setOf("KtorEngine"),
     ) {
         engineConfig {
             val proxyPort = mitmProxy.getMappedPort(8080)

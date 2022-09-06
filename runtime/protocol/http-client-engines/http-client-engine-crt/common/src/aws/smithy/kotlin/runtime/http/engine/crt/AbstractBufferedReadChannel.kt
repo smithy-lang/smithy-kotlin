@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.crt
@@ -26,7 +26,7 @@ internal data class ClosedSentinel(val cause: Throwable?)
 @OptIn(ExperimentalCoroutinesApi::class, InternalCoroutinesApi::class)
 internal abstract class AbstractBufferedReadChannel(
     // function invoked every time n bytes are read
-    private val onBytesRead: (n: Int) -> Unit
+    private val onBytesRead: (n: Int) -> Unit,
 ) : BufferedReadChannel {
 
     // NOTE: the channel is configured as unlimited but will always be constrained by the window size such

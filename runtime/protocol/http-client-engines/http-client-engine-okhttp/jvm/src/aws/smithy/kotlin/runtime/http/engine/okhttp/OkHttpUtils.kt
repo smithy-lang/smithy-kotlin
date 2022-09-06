@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.okhttp
@@ -42,7 +42,7 @@ internal const val DEFAULT_BUFFER_SIZE: Int = 8192
  */
 internal fun HttpRequest.toOkHttpRequest(
     execContext: ExecutionContext,
-    callContext: CoroutineContext
+    callContext: CoroutineContext,
 ): OkHttpRequest {
     val builder = OkHttpRequest.Builder()
     builder.tag(SdkRequestTag::class, SdkRequestTag(execContext))
@@ -157,7 +157,7 @@ internal class OkHttpProxyAuthenticator(
 }
 
 internal class OkHttpProxySelector(
-    private val sdkSelector: SdkProxySelector
+    private val sdkSelector: SdkProxySelector,
 ) : ProxySelector() {
     override fun select(uri: URI?): List<Proxy> {
         if (uri == null) return emptyList()

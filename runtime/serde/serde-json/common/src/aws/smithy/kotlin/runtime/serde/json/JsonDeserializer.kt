@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.json
 
@@ -93,11 +93,11 @@ public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.E
                 }
             JsonToken.EndArray, JsonToken.EndObject, JsonToken.EndDocument ->
                 throw DeserializationException(
-                    "encountered unexpected json token \"$token\" while deserializing document"
+                    "encountered unexpected json token \"$token\" while deserializing document",
                 )
             is JsonToken.Name ->
                 throw DeserializationException(
-                    "encountered unexpected json field declaration \"${token.value}\" while deserializing document"
+                    "encountered unexpected json field declaration \"${token.value}\" while deserializing document",
                 )
         }
 
@@ -141,7 +141,8 @@ public class JsonDeserializer(payload: ByteArray) : Deserializer, Deserializer.E
                 false
             }
             JsonToken.Null,
-            JsonToken.EndDocument -> false
+            JsonToken.EndDocument,
+            -> false
             else -> true
         }
 
@@ -169,7 +170,7 @@ private class JsonNullFieldIterator(deserializer: JsonDeserializer) : Deserializ
 private class JsonFieldIterator(
     private val reader: JsonStreamReader,
     private val descriptor: SdkObjectDescriptor,
-    deserializer: JsonDeserializer
+    deserializer: JsonDeserializer,
 ) : Deserializer.FieldIterator, Deserializer by deserializer, PrimitiveDeserializer by deserializer {
 
     override fun findNextFieldIndex(): Int? {

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen
@@ -22,7 +22,6 @@ import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
-import software.amazon.smithy.model.traits.EnumTrait
 import software.amazon.smithy.model.transform.ModelTransformer
 import java.util.*
 import java.util.logging.Logger
@@ -74,7 +73,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         service = settings.getService(model)
 
         symbolProvider = integrations.fold(
-            KotlinCodegenPlugin.createSymbolProvider(model, settings)
+            KotlinCodegenPlugin.createSymbolProvider(model, settings),
         ) { provider, integration ->
             integration.decorateSymbolProvider(settings, model, provider)
         }
@@ -91,7 +90,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         integrations: List<KotlinIntegration>,
         model: Model,
         service: ServiceShape,
-        settings: KotlinSettings
+        settings: KotlinSettings,
     ): ProtocolGenerator? {
         val generators = integrations.flatMap { it.protocolGenerators }.associateBy { it.protocol }
         val serviceIndex = ServiceIndex.of(model)
@@ -121,7 +120,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
                 symbolProvider,
                 integrations,
                 protocol,
-                writers
+                writers,
             )
 
             LOGGER.info("[${service.id}] Generating unit tests for protocol $protocol")
@@ -156,7 +155,7 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
     }
 
     override fun stringShape(shape: StringShape) {
-        if (shape.hasTrait<EnumTrait>()) {
+        if (shape.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.EnumTrait>()) {
             writers.useShapeWriter(shape) { EnumGenerator(shape, symbolProvider.toSymbol(shape), it).render() }
         }
     }

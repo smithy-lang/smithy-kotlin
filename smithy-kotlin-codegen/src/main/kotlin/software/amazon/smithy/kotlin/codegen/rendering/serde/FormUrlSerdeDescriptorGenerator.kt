@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -18,7 +18,7 @@ private typealias SerdeFormUrl = RuntimeTypes.Serde.SerdeFormUrl
 
 open class FormUrlSerdeDescriptorGenerator(
     ctx: RenderingContext<Shape>,
-    memberShapes: List<MemberShape>? = null
+    memberShapes: List<MemberShape>? = null,
 ) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
 
     protected val service: ServiceShape by lazy { ctx.model.expectShape<ServiceShape>(ctx.settings.service) }
@@ -38,7 +38,7 @@ open class FormUrlSerdeDescriptorGenerator(
     final override fun getFieldDescriptorTraits(
         member: MemberShape,
         targetShape: Shape,
-        nameSuffix: String
+        nameSuffix: String,
     ): List<SdkFieldDescriptorTrait> {
         val traits = mutableListOf<SdkFieldDescriptorTrait>()
         if (nameSuffix.isNotEmpty()) return traits

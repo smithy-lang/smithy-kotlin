@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.util
@@ -34,7 +34,7 @@ public interface Filesystem {
 
 internal class MapFilesystem(
     private val data: Map<String, ByteArray>,
-    override val filePathSeparator: String
+    override val filePathSeparator: String,
 ) : Filesystem {
     override suspend fun readFileOrNull(path: String): ByteArray? = data[path]
 }

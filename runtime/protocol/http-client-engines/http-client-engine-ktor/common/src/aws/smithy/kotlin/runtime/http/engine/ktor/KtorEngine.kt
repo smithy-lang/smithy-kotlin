@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.engine.ktor
 
@@ -40,7 +40,7 @@ import io.ktor.client.engine.HttpClientEngine as KtorHttpClientEngine
  */
 @InternalApi // FIXME - decide on whether to support in GA or not. Most use cases would be better off by wrapping the underlying ktor engine directly
 public class KtorEngine(
-    private val engine: KtorHttpClientEngine
+    private val engine: KtorHttpClientEngine,
 ) : HttpClientEngineBase("ktor") {
 
     @Suppress("UNUSED_PARAMETER")
@@ -49,7 +49,7 @@ public class KtorEngine(
             "Ktor compliant engine. The default engine has been changed from CRT to Ktor/OkHttp. To fix either " +
             "remove setting `httpClientEngine` explicitly or instantiate a Ktor compliant engine of your own and " +
             "use KtorEngine to wrap it. This constructor will be removed in a future release before GA.",
-        level = DeprecationLevel.ERROR
+        level = DeprecationLevel.ERROR,
     )
     public constructor(config: HttpClientEngineConfig = HttpClientEngineConfig.Default) : this(DeprecationEngine)
 
@@ -100,7 +100,7 @@ public class KtorEngine(
         callContext: CoroutineContext,
         sdkRequest: HttpRequest,
         channel: SendChannel<HttpCall>,
-        reqLogger: Logger
+        reqLogger: Logger,
     ) {
         val builder = KtorRequestAdapter(sdkRequest, callContext).toBuilder()
         val waiter = Waiter()

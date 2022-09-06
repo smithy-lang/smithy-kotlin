@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.model.knowledge
@@ -125,7 +125,7 @@ class SerdeIndexTest {
             "ResponseTurtle",
             "ErrorTurtle",
             "MyUnion",
-            "UnionTurtle"
+            "UnionTurtle",
         )
 
         assertEquals(expectedOpDeserializerShapes, opDeserializers)

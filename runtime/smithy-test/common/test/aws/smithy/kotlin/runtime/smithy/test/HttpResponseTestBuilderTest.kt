@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.smithy.test
 
@@ -38,7 +38,7 @@ class HttpResponseTestBuilderTest {
                 mockedBody.shouldContain(
                     """
                     "baz": "quux"
-                    """.trimIndent()
+                    """.trimIndent(),
                 )
             }
         }

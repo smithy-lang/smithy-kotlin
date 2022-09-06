@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
@@ -40,7 +40,7 @@ class ApplicationProtocol(
      *
      * @return Returns the protocol response type.
      */
-    val responseType: Symbol
+    val responseType: Symbol,
 ) {
 
     /**
@@ -74,7 +74,7 @@ class ApplicationProtocol(
         fun createDefaultHttpApplicationProtocol(): ApplicationProtocol = ApplicationProtocol(
             "http",
             createHttpSymbol("HttpRequestBuilder", "request"),
-            createHttpSymbol("HttpResponse", "response")
+            createHttpSymbol("HttpResponse", "response"),
         )
 
         private fun createHttpSymbol(symbolName: String, subnamespace: String): Symbol = Symbol

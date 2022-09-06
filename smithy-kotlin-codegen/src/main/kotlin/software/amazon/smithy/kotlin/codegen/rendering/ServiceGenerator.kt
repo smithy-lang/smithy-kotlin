@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -51,7 +51,6 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private val writer = ctx.writer
 
     fun render() {
-
         importExternalSymbols()
 
         val topDownIndex = TopDownIndex.of(ctx.model)
@@ -72,7 +71,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
                 writer.write("")
                 writer.declareSection(
                     SectionServiceCompanionObject,
-                    context = mapOf(SectionServiceCompanionObject.ServiceSymbol to serviceSymbol)
+                    context = mapOf(SectionServiceCompanionObject.ServiceSymbol to serviceSymbol),
                 ) {
                     renderCompanionObject()
                 }
@@ -91,7 +90,7 @@ class ServiceGenerator(private val ctx: RenderingContext<ServiceShape>) {
     private fun renderServiceConfig() {
         writer.declareSection(
             SectionServiceConfig,
-            context = mapOf(SectionServiceConfig.RenderingContext to ctx)
+            context = mapOf(SectionServiceConfig.RenderingContext to ctx),
         ) {
             ClientConfigGenerator(ctx).render()
         }

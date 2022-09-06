@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -121,7 +121,7 @@ listOf<String>(
                 "structMember",
                 Node.objectNodeBuilder()
                     .withMember("tsMember", 11223344)
-                    .build()
+                    .build(),
             )
             .withMember("enumMember", "fooey")
             .withMember("floatMember", 2)

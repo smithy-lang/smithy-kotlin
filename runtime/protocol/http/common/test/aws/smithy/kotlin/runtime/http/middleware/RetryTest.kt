@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.middleware
@@ -63,7 +63,7 @@ class RetryTest {
         val strategy = StandardRetryStrategy(
             StandardRetryStrategyOptions.Default,
             StandardRetryTokenBucket(StandardRetryTokenBucketOptions.Default),
-            delayProvider
+            delayProvider,
         )
 
         op.install(Retry(strategy, policy))

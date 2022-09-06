@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -64,7 +64,7 @@ class PaginatorGenerator : KotlinIntegration {
         service: ServiceShape,
         paginatedOperation: OperationShape,
         paginationInfo: PaginationInfo,
-        itemDesc: ItemDescriptor?
+        itemDesc: ItemDescriptor?,
     ) {
         val serviceSymbol = ctx.symbolProvider.toSymbol(service)
         val outputSymbol = ctx.symbolProvider.toSymbol(paginationInfo.output)
@@ -79,7 +79,7 @@ class PaginatorGenerator : KotlinIntegration {
             inputSymbol,
             outputSymbol,
             paginationInfo,
-            cursorSymbol
+            cursorSymbol,
         )
 
         // Optionally generate paginator when nested item is specified on the trait.
@@ -89,7 +89,7 @@ class PaginatorGenerator : KotlinIntegration {
                 service,
                 paginatedOperation,
                 itemDesc,
-                outputSymbol
+                outputSymbol,
             )
         }
     }
@@ -102,7 +102,7 @@ class PaginatorGenerator : KotlinIntegration {
         inputSymbol: Symbol,
         outputSymbol: Symbol,
         paginationInfo: PaginationInfo,
-        cursorSymbol: Symbol
+        cursorSymbol: Symbol,
     ) {
         val nextMarkerLiteral = paginationInfo.outputTokenMemberPath.joinToString(separator = "?.") {
             it.defaultName()
@@ -127,7 +127,7 @@ class PaginatorGenerator : KotlinIntegration {
                     |$docBody
                     |@param initialRequest A [${inputSymbol.name}] to start pagination
                     |$docReturn
-                """.trimMargin()
+                """.trimMargin(),
             )
             .addImportReferences(cursorSymbol, SymbolReference.ContextOption.DECLARE)
             .withBlock(
@@ -149,7 +149,7 @@ class PaginatorGenerator : KotlinIntegration {
                         }
                         write(
                             "val result = this@#1LPaginated.#1L(req)",
-                            operationShape.defaultName()
+                            operationShape.defaultName(),
                         )
                         write("isFirstPage = false")
                         write("cursor = result.$nextMarkerLiteral")
@@ -165,7 +165,7 @@ class PaginatorGenerator : KotlinIntegration {
                     |$docBody
                     |@param block A builder block used for DSL-style invocation of the operation
                     |$docReturn
-                """.trimMargin()
+                """.trimMargin(),
             )
             .withBlock(
                 "public fun #T.#LPaginated(block: #T.Builder.() -> #T): #T<#T> =",
@@ -195,7 +195,7 @@ class PaginatorGenerator : KotlinIntegration {
                 This paginator transforms the flow returned by [${operationShape.defaultName()}Paginated] 
                 to access the nested member [${itemDesc.targetMember.defaultName(serviceShape)}]
                 @return A [kotlinx.coroutines.flow.Flow] that can collect [${itemDesc.targetMember.defaultName(serviceShape)}]
-            """.trimIndent()
+            """.trimIndent(),
         )
         writer
             .addImport(ExternalTypes.KotlinxCoroutines.FlowTransform)
@@ -208,15 +208,16 @@ class PaginatorGenerator : KotlinIntegration {
                 """@#T("#L#L")""",
                 KotlinTypes.Jvm.JvmName,
                 outputSymbol.name.replaceFirstChar(Char::lowercaseChar),
-                itemDesc.targetMember.defaultName(serviceShape)
+                itemDesc.targetMember.defaultName(serviceShape),
             )
             .withBlock(
-                "public fun #T<#T>.#L(): #T<#L> =", "",
+                "public fun #T<#T>.#L(): #T<#L> =",
+                "",
                 ExternalTypes.KotlinxCoroutines.Flow,
                 outputSymbol,
                 itemDesc.itemLiteral,
                 ExternalTypes.KotlinxCoroutines.Flow,
-                itemDesc.collectionLiteral
+                itemDesc.collectionLiteral,
             ) {
                 withBlock("transform() { response -> ", "}") {
                     withBlock("response.#L?.forEach {", "}", itemDesc.itemPathLiteral) {
@@ -235,7 +236,7 @@ private data class ItemDescriptor(
     val targetMember: Shape,
     val itemLiteral: String,
     val itemPathLiteral: String,
-    val itemSymbol: Symbol
+    val itemSymbol: Symbol,
 )
 
 /**
@@ -253,7 +254,7 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
                 .expectProperty(SymbolProperty.ENTRY_EXPRESSION) as String to itemMember
         is CollectionShape ->
             ctx.symbolProvider.toSymbol(ctx.model.expectShape(itemMember.member.target)).name to ctx.model.expectShape(
-                itemMember.member.target
+                itemMember.member.target,
             )
         else -> error("Unexpected shape type ${itemMember.type}")
     }
@@ -263,6 +264,6 @@ private fun getItemDescriptorOrNull(paginationInfo: PaginationInfo, ctx: Codegen
         targetMember,
         itemLiteral,
         itemPathLiteral,
-        ctx.symbolProvider.toSymbol(itemMember)
+        ctx.symbolProvider.toSymbol(itemMember),
     )
 }

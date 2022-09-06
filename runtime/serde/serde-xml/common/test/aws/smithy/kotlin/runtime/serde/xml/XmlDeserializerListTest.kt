@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -24,7 +24,7 @@ class XmlDeserializerListTest {
             fun deserialize(
                 deserializer: Deserializer,
                 OBJ_DESCRIPTOR: SdkObjectDescriptor,
-                ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor
+                ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor,
             ): ListDeserializer {
                 val builder = dslBuilder()
 
@@ -124,7 +124,7 @@ class XmlDeserializerListTest {
             fun deserialize(
                 deserializer: Deserializer,
                 OBJ_DESCRIPTOR: SdkObjectDescriptor,
-                ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor
+                ELEMENT_LIST_FIELD_DESCRIPTOR: SdkFieldDescriptor,
             ): SparseListDeserializer {
                 val builder = dslBuilder()
 
@@ -446,7 +446,7 @@ internal class FooOperationDeserializer {
 
     fun deserialize(
         deserializer: Deserializer,
-        LIST_DESCRIPTOR: SdkFieldDescriptor
+        LIST_DESCRIPTOR: SdkFieldDescriptor,
     ): FooResponse {
         val OBJ_DESCRIPTOR = SdkObjectDescriptor.build {
             trait(XmlSerialName("FooResponse"))

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -20,7 +20,7 @@ import software.amazon.smithy.model.traits.TimestampFormatTrait
 open class JsonSerializerGenerator(
     // FIXME - we shouldn't need this, it's only required by JsonSerdeDescriptorGenerator because of toRenderingContext
     private val protocolGenerator: ProtocolGenerator,
-    private val supportsJsonNameTrait: Boolean = true
+    private val supportsJsonNameTrait: Boolean = true,
 ) : StructuredDataSerializerGenerator {
 
     open val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
@@ -59,7 +59,7 @@ open class JsonSerializerGenerator(
         ctx: ProtocolGenerator.GenerationContext,
         op: OperationShape,
         documentMembers: List<MemberShape>,
-        writer: KotlinWriter
+        writer: KotlinWriter,
     ) {
         val shape = ctx.model.expectShape(op.input.get())
         writer.write("val serializer = #T()", RuntimeTypes.Serde.SerdeJson.JsonSerializer)
@@ -70,7 +70,7 @@ open class JsonSerializerGenerator(
     private fun documentSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape> = shape.members()
+        members: Collection<MemberShape> = shape.members(),
     ): Symbol {
         val symbol = ctx.symbolProvider.toSymbol(shape)
 
@@ -101,7 +101,7 @@ open class JsonSerializerGenerator(
     override fun payloadSerializer(
         ctx: ProtocolGenerator.GenerationContext,
         shape: Shape,
-        members: Collection<MemberShape>?
+        members: Collection<MemberShape>?,
     ): Symbol {
         val target = shape.targetOrSelf(ctx.model)
         val symbol = ctx.symbolProvider.toSymbol(shape)

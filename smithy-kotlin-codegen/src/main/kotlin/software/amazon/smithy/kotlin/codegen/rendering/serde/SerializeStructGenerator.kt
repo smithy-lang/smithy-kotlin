@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
@@ -40,7 +40,7 @@ open class SerializeStructGenerator(
     protected val ctx: ProtocolGenerator.GenerationContext,
     protected val members: List<MemberShape>,
     protected val writer: KotlinWriter,
-    protected val defaultTimestampFormat: TimestampFormatTrait.Format
+    protected val defaultTimestampFormat: TimestampFormatTrait.Format,
 ) {
     /**
      * Container for serialization information for a particular shape being serialized to
@@ -87,10 +87,14 @@ open class SerializeStructGenerator(
 
         when (targetShape.type) {
             ShapeType.LIST,
-            ShapeType.SET -> renderListMemberSerializer(memberShape, targetShape as CollectionShape)
+            ShapeType.SET,
+            -> renderListMemberSerializer(memberShape, targetShape as CollectionShape)
+
             ShapeType.MAP -> renderMapMemberSerializer(memberShape, targetShape as MapShape)
             ShapeType.STRUCTURE,
-            ShapeType.UNION -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
+            ShapeType.UNION,
+            -> renderPrimitiveShapeSerializer(memberShape, ::serializerForStructureShape)
+
             ShapeType.TIMESTAMP -> renderTimestampMemberSerializer(memberShape)
             ShapeType.BLOB,
             ShapeType.BOOLEAN,
@@ -103,7 +107,12 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.DOCUMENT,
-            ShapeType.BIG_INTEGER -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
+            ShapeType.BIG_INTEGER,
+            ShapeType.ENUM,
+            -> renderPrimitiveShapeSerializer(memberShape, ::serializerForPrimitiveShape)
+
+            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
+
             else -> error("Unexpected shape type: ${targetShape.type}")
         }
     }
@@ -170,14 +179,23 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.DOCUMENT,
-            ShapeType.BIG_INTEGER -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
+            ShapeType.BIG_INTEGER,
+            ShapeType.ENUM,
+            -> renderPrimitiveEntry(elementShape, nestingLevel, parentMemberName)
+
             ShapeType.BLOB -> renderBlobEntry(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampEntry(mapShape.value, elementShape, nestingLevel, parentMemberName)
             ShapeType.SET,
-            ShapeType.LIST -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+            ShapeType.LIST,
+            -> renderListEntry(rootMemberShape, elementShape as CollectionShape, nestingLevel, isSparse, parentMemberName)
+
             ShapeType.MAP -> renderMapEntry(rootMemberShape, elementShape as MapShape, nestingLevel, isSparse, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
+            ShapeType.STRUCTURE,
+            -> renderNestedStructureEntry(elementShape, nestingLevel, parentMemberName, isSparse)
+
+            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
+
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -200,14 +218,23 @@ open class SerializeStructGenerator(
             ShapeType.DOUBLE,
             ShapeType.BIG_DECIMAL,
             ShapeType.DOCUMENT,
-            ShapeType.BIG_INTEGER -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
+            ShapeType.BIG_INTEGER,
+            ShapeType.ENUM,
+            -> renderPrimitiveElement(elementShape, nestingLevel, parentMemberName, isSparse)
+
             ShapeType.BLOB -> renderBlobElement(nestingLevel, parentMemberName)
             ShapeType.TIMESTAMP -> renderTimestampElement(listShape.member, elementShape, nestingLevel, parentMemberName)
             ShapeType.LIST,
-            ShapeType.SET -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
+            ShapeType.SET,
+            -> renderListElement(rootMemberShape, elementShape as CollectionShape, nestingLevel, parentMemberName)
+
             ShapeType.MAP -> renderMapElement(rootMemberShape, elementShape as MapShape, nestingLevel, parentMemberName)
             ShapeType.UNION,
-            ShapeType.STRUCTURE -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
+            ShapeType.STRUCTURE,
+            -> renderNestedStructureElement(elementShape, nestingLevel, parentMemberName)
+
+            ShapeType.INT_ENUM -> error("IntEnum is not supported until Smithy 2.0")
+
             else -> error("Unhandled type ${elementShape.type}")
         }
     }
@@ -244,7 +271,7 @@ open class SerializeStructGenerator(
         structureShape: Shape,
         nestingLevel: Int,
         parentMemberName: String,
-        isSparse: Boolean
+        isSparse: Boolean,
     ) {
         val serializerTypeName = ctx.symbolProvider.toSymbol(structureShape).documentSerializerName()
         val (keyName, valueName) = keyValueNames(nestingLevel)
@@ -274,7 +301,7 @@ open class SerializeStructGenerator(
         rootMemberShape: MemberShape,
         mapShape: MapShape,
         nestingLevel: Int,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
@@ -305,7 +332,7 @@ open class SerializeStructGenerator(
         mapShape: MapShape,
         nestingLevel: Int,
         isSparse: Boolean,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
@@ -335,7 +362,7 @@ open class SerializeStructGenerator(
         elementShape: CollectionShape,
         nestingLevel: Int,
         isSparse: Boolean,
-        parentMemberName: String
+        parentMemberName: String,
     ) {
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
         val containerName = if (nestingLevel == 0) "input." else ""
@@ -384,7 +411,7 @@ open class SerializeStructGenerator(
      */
     private fun renderPrimitiveEntry(elementShape: Shape, nestingLevel: Int, listMemberName: String) {
         val containerName = if (nestingLevel == 0) "input." else ""
-        val enumPostfix = if (elementShape.isEnum()) ".value" else ""
+        val enumPostfix = if (elementShape.isEnum) ".value" else ""
         val (keyName, valueName) = keyValueNames(nestingLevel)
 
         writer.write("$containerName$listMemberName.forEach { ($keyName, $valueName) -> entry($keyName, $valueName$enumPostfix) }")
@@ -449,11 +476,11 @@ open class SerializeStructGenerator(
         elementShape: Shape,
         nestingLevel: Int,
         listMemberName: String,
-        isSparse: Boolean
+        isSparse: Boolean,
     ) {
         val serializerFnName = elementShape.type.primitiveSerializerFunctionName()
         val iteratorName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
-        val elementName = when (elementShape.isEnum()) {
+        val elementName = when (elementShape.isEnum) {
             true -> "$iteratorName.value"
             false -> iteratorName
         }
@@ -608,36 +635,19 @@ open class SerializeStructGenerator(
     private fun serializerForPrimitiveShape(shape: Shape): SerializeInfo {
         // target shape type to deserialize is either the shape itself or member.target
         val target = shape.targetOrSelf(ctx.model)
-        val defaultIdentifier = valueToSerializeName("it")
-        var serializerFn = "field"
+        val valueSuffix = if (target.isEnum) ".value" else ""
+        val defaultIdentifier = valueToSerializeName("it") + valueSuffix
+        val serializerFn = "field"
 
-        val encoded = when (target.type) {
-            ShapeType.BOOLEAN,
-            ShapeType.BYTE,
-            ShapeType.SHORT,
-            ShapeType.INTEGER,
-            ShapeType.LONG,
-            ShapeType.FLOAT,
-            ShapeType.DOCUMENT,
-            ShapeType.DOUBLE -> defaultIdentifier
-            ShapeType.BLOB -> {
-                writer.addImport("encodeBase64String", KotlinDependency.UTILS)
-                "$defaultIdentifier.encodeBase64String()"
-            }
-            ShapeType.STRING -> when {
-                target.hasTrait<EnumTrait>() -> "$defaultIdentifier.value"
-                else -> defaultIdentifier
-            }
-            else -> throw CodegenException("unknown serializer for member: $shape; target: $target")
+        val encoded = if (target.type == ShapeType.BLOB) {
+            writer.addImport("encodeBase64String", KotlinDependency.UTILS)
+            "$defaultIdentifier.encodeBase64String()"
+        } else {
+            defaultIdentifier
         }
 
         return SerializeInfo(serializerFn, encoded)
     }
-
-    /**
-     * @return true if shape is a String with enum trait, false otherwise.
-     */
-    private fun Shape.isEnum() = isStringShape && hasTrait<EnumTrait>()
 
     /**
      * Generate key and value names for iteration based on nesting level
@@ -658,10 +668,10 @@ open class SerializeStructGenerator(
     private fun ShapeType.primitiveSerializerFunctionName(): String {
         val suffix = when (this) {
             ShapeType.BOOLEAN -> "Boolean"
-            ShapeType.STRING -> "String"
+            ShapeType.STRING, ShapeType.ENUM -> "String"
             ShapeType.BYTE -> "Byte"
             ShapeType.SHORT -> "Short"
-            ShapeType.INTEGER -> "Int"
+            ShapeType.INTEGER, ShapeType.INT_ENUM -> "Int"
             ShapeType.LONG -> "Long"
             ShapeType.FLOAT -> "Float"
             ShapeType.DOUBLE -> "Double"

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -21,13 +21,13 @@ import software.amazon.smithy.model.traits.JsonNameTrait
 open class JsonSerdeDescriptorGenerator(
     ctx: RenderingContext<Shape>,
     memberShapes: List<MemberShape>? = null,
-    private val supportsJsonNameTrait: Boolean = true
+    private val supportsJsonNameTrait: Boolean = true,
 ) : AbstractSerdeDescriptorGenerator(ctx, memberShapes) {
 
     override fun getFieldDescriptorTraits(
         member: MemberShape,
         targetShape: Shape,
-        nameSuffix: String
+        nameSuffix: String,
     ): List<SdkFieldDescriptorTrait> {
         if (nameSuffix.isNotBlank()) return emptyList()
 

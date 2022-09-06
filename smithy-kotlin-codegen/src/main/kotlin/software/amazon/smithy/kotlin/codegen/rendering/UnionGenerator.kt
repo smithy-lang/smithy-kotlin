@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -21,7 +21,7 @@ class UnionGenerator(
     val model: Model,
     private val symbolProvider: SymbolProvider,
     private val writer: KotlinWriter,
-    private val shape: UnionShape
+    private val shape: UnionShape,
 ) {
 
     /**

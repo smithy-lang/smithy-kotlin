@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 description = "Utilities for testing HTTP requests"
 extra["displayName"] = "Smithy :: Kotlin :: HTTP Test"

@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.xml
 
@@ -124,7 +124,7 @@ public class XmlSerializer(private val xmlWriter: XmlStreamWriter = xmlStreamWri
 
     override fun field(descriptor: SdkFieldDescriptor, value: Document?) {
         throw SerializationException(
-            "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding"
+            "cannot serialize field ${descriptor.serialName}; Document type is not supported by xml encoding",
         )
     }
 
@@ -306,7 +306,7 @@ private class XmlListSerializer(
     // the list/collection descriptor
     private val descriptor: SdkFieldDescriptor,
     private val xmlWriter: XmlStreamWriter,
-    private val xmlSerializer: XmlSerializer
+    private val xmlSerializer: XmlSerializer,
 ) : ListSerializer {
 
     override fun endList() {
@@ -371,7 +371,7 @@ private class XmlListSerializer(
 private fun XmlStreamWriter.writeTag(
     tagName: String,
     ns: AbstractXmlNamespaceTrait? = null,
-    block: XmlStreamWriter.() -> Unit = {}
+    block: XmlStreamWriter.() -> Unit = {},
 ) {
     startTag(tagName, ns)
     apply(block)

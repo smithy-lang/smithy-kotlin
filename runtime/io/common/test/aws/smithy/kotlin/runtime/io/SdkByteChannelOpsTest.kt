@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.io
@@ -161,7 +161,7 @@ class SdkByteChannelOpsTest {
             36, // $
             162, // ¢
             8364, // €
-            119074 // musical F clef
+            119074, // musical F clef
         )
 
         expected.forEachIndexed { i, exp ->
@@ -172,7 +172,7 @@ class SdkByteChannelOpsTest {
     }
 
     private class ProxyChan(
-        val ch: SdkByteReadChannel
+        val ch: SdkByteReadChannel,
     ) : SdkByteReadChannel by ch {
         var proxyCalled = false
         override suspend fun readRemaining(limit: Int): ByteArray {

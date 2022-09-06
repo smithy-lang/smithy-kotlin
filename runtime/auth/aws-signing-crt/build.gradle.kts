@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 description = "AWS Signer backed by CRT"
 extra["displayName"] = "Smithy :: Kotlin :: CRT AWS Signer"

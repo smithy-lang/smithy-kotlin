@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http
 
@@ -78,7 +78,7 @@ private fun encodePath(
     queryParameters: Set<Map.Entry<String, List<String>>>? = null,
     fragment: String? = null,
     forceQuery: Boolean = false,
-    encodeParameters: Boolean = true
+    encodeParameters: Boolean = true,
 ): String = buildString {
     if (path.isNotBlank()) {
         append("/")
@@ -131,7 +131,7 @@ public class UrlBuilder : CanDeepCopy<UrlBuilder> {
         if (parameters.isEmpty()) QueryParameters.Empty else parameters.build(),
         fragment,
         userInfo,
-        forceQuery
+        forceQuery,
     )
 
     override fun deepCopy(): UrlBuilder {
@@ -168,6 +168,6 @@ public fun UserInfo(value: String): UserInfo {
     val info = value.split(":")
     return UserInfo(
         info[0].urlDecodeComponent(),
-        if (info.size > 1) info[1].urlDecodeComponent() else ""
+        if (info.size > 1) info[1].urlDecodeComponent() else "",
     )
 }

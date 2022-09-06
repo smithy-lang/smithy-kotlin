@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.serde.json
 
@@ -18,7 +18,7 @@ class JsonSerializerTest {
     @Test
     fun canSerializeClassWithClassField() {
         val a = A(
-            B(2)
+            B(2),
         )
         val json = JsonSerializer()
         a.serialize(json)
@@ -60,7 +60,7 @@ class JsonSerializerTest {
         val obj = listOf(
             B(1),
             B(2),
-            B(3)
+            B(3),
         )
         val json = JsonSerializer()
         json.serializeList(testAnonObjDescriptor) {
@@ -75,18 +75,18 @@ class JsonSerializerTest {
     fun canSerializeMap() {
         val objs = mapOf(
             "A1" to A(
-                B(1)
+                B(1),
             ),
             "A2" to A(
                 B(
-                    2
-                )
+                    2,
+                ),
             ),
             "A3" to A(
                 B(
-                    3
-                )
-            )
+                    3,
+                ),
+            ),
         )
         val json = JsonSerializer()
         json.serializeMap(testAnonObjDescriptor) {
@@ -102,7 +102,7 @@ class JsonSerializerTest {
         val objs = mapOf(
             "A1" to listOf("a", "b", "c"),
             "A2" to listOf("d", "e", "f"),
-            "A3" to listOf("g", "h", "i")
+            "A3" to listOf("g", "h", "i"),
         )
         val json = JsonSerializer()
         json.serializeMap(testAnonObjDescriptor) {
@@ -122,7 +122,7 @@ class JsonSerializerTest {
         val objs = listOf(
             listOf("a", "b", "c"),
             listOf("d", "e", "f"),
-            listOf("g", "h", "i")
+            listOf("g", "h", "i"),
         )
         val json = JsonSerializer()
         json.serializeList(testAnonObjDescriptor) {
@@ -238,28 +238,28 @@ class JsonSerializerTest {
     fun canSerializeDocumentNumberField() =
         testSerializeDocument(
             Document(10.5),
-            "10.5"
+            "10.5",
         )
 
     @Test
     fun canSerializeDocumentStringField() =
         testSerializeDocument(
             Document("foo"),
-            "\"foo\""
+            "\"foo\"",
         )
 
     @Test
     fun canSerializeDocumentBooleanField() =
         testSerializeDocument(
             Document(false),
-            "false"
+            "false",
         )
 
     @Test
     fun canSerializeDocumentNullField() =
         testSerializeDocument(
             null,
-            "null"
+            "null",
         )
 
     @Test
@@ -270,10 +270,10 @@ class JsonSerializerTest {
                     Document(1),
                     Document("foo"),
                     Document(true),
-                    null
-                )
+                    null,
+                ),
             ),
-            "[1,\"foo\",true,null]"
+            "[1,\"foo\",true,null]",
         )
 
     @Test
@@ -285,7 +285,7 @@ class JsonSerializerTest {
                 "bool" to true
                 "null" to null
             },
-            """{"number":12,"string":"foo","bool":true,"null":null}"""
+            """{"number":12,"string":"foo","bool":true,"null":null}""",
         )
 
     @Test
@@ -306,7 +306,7 @@ class JsonSerializerTest {
                         add("foo")
                         add(true)
                         add(null)
-                    }
+                    },
                 )
                 add(
                     buildDocument {
@@ -314,7 +314,7 @@ class JsonSerializerTest {
                         "string" to "foo"
                         "bool" to true
                         "null" to null
-                    }
+                    },
                 )
             }
             "map" to buildDocument {
@@ -398,7 +398,7 @@ data class Primitives(
     val double: Double,
     val char: Char,
     val string: String,
-    val listInt: List<Int>
+    val listInt: List<Int>,
 ) : SdkSerializable {
     companion object {
         val descriptorBoolean = SdkFieldDescriptor(SerialKind.Boolean, JsonSerialName("boolean"))
@@ -436,5 +436,5 @@ data class Primitives(
 
 val data = Primitives(
     Unit, true, 10, 20, 30, 40, 50f, 60.0, 'A', "Str0",
-    listOf(1, 2, 3)
+    listOf(1, 2, 3),
 )

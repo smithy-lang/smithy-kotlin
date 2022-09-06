@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.crt
@@ -55,7 +55,7 @@ public suspend fun HttpRequest.toSignableCrtRequest(): HttpRequestCrt =
         method = method.name,
         encodedPath = url.encodedPath,
         headers = headers.toCrtHeaders(),
-        body = signableBodyStream(body)
+        body = signableBodyStream(body),
     )
 
 // proxy the smithy-client-rt version of Headers to CRT (which is based on our client-rt version in the first place)

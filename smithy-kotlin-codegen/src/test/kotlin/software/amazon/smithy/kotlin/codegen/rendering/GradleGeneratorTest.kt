@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -26,10 +26,10 @@ class GradleGeneratorTest {
                     "package",
                     Node.objectNode()
                         .withMember("name", Node.from("example"))
-                        .withMember("version", Node.from("1.0.0"))
+                        .withMember("version", Node.from("1.0.0")),
                 )
                 .withMember("build", Node.objectNodeBuilder().withMember("rootProject", Node.from(false)).build())
-                .build()
+                .build(),
         )
 
         val manifest = MockManifest()
@@ -54,16 +54,16 @@ class GradleGeneratorTest {
                     "package",
                     Node.objectNode()
                         .withMember("name", Node.from("example"))
-                        .withMember("version", Node.from("1.0.0"))
+                        .withMember("version", Node.from("1.0.0")),
                 )
                 .withMember(
                     "build",
                     Node.objectNodeBuilder().withMember(
                         BuildSettings.ROOT_PROJECT,
-                        Node.from(true)
-                    ).build()
+                        Node.from(true),
+                    ).build(),
                 )
-                .build()
+                .build(),
         )
 
         val manifest = MockManifest()
@@ -99,15 +99,15 @@ class GradleGeneratorTest {
                     "package",
                     Node.objectNode()
                         .withMember("name", Node.from("example"))
-                        .withMember("version", Node.from("1.0.0"))
+                        .withMember("version", Node.from("1.0.0")),
                 )
                 .withMember(
                     "build",
                     Node.objectNode()
                         .withMember(BuildSettings.ROOT_PROJECT, Node.from(true))
-                        .withMember(BuildSettings.GENERATE_MULTIPLATFORM_MODULE, Node.from(true))
+                        .withMember(BuildSettings.GENERATE_MULTIPLATFORM_MODULE, Node.from(true)),
                 )
-                .build()
+                .build(),
         )
 
         val manifest = MockManifest()

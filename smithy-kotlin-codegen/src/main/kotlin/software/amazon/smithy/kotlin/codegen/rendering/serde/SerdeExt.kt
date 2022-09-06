@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package software.amazon.smithy.kotlin.codegen.rendering.serde
@@ -39,7 +39,7 @@ fun OperationShape.bodySerializerName(): String = "serialize" + StringUtils.capi
  */
 fun OperationShape.bodySerializer(
     settings: KotlinSettings,
-    block: SymbolRenderer
+    block: SymbolRenderer,
 ): Symbol = buildSymbol {
     name = bodySerializerName()
     namespace = "${settings.pkg.name}.transform"
@@ -65,7 +65,7 @@ fun OperationShape.bodyDeserializerName(): String = "deserialize" + StringUtils.
  */
 fun OperationShape.bodyDeserializer(
     settings: KotlinSettings,
-    block: SymbolRenderer
+    block: SymbolRenderer,
 ): Symbol = buildSymbol {
     name = bodyDeserializerName()
     namespace = "${settings.pkg.name}.transform"
@@ -88,7 +88,7 @@ fun Shape.documentSerializer(
     settings: KotlinSettings,
     symbol: Symbol,
     members: Collection<MemberShape> = members(),
-    block: SymbolRenderer
+    block: SymbolRenderer,
 ): Symbol {
     val base = symbol.documentSerializerName()
     val suffix = mangledSuffix(members)
@@ -116,7 +116,7 @@ fun Shape.documentDeserializer(
     settings: KotlinSettings,
     symbol: Symbol,
     members: Collection<MemberShape> = members(),
-    block: SymbolRenderer
+    block: SymbolRenderer,
 ): Symbol {
     val base = "deserialize" + StringUtils.capitalize(symbol.name) + "Document"
     val suffix = mangledSuffix(members)
@@ -157,7 +157,7 @@ fun Shape.payloadDeserializer(
     settings: KotlinSettings,
     symbol: Symbol,
     members: Collection<MemberShape> = members(),
-    block: SymbolRenderer
+    block: SymbolRenderer,
 ): Symbol {
     val base = "deserialize" + StringUtils.capitalize(symbol.name) + "Payload"
     val suffix = mangledSuffix(members)
@@ -177,7 +177,7 @@ fun Shape.payloadSerializer(
     settings: KotlinSettings,
     symbol: Symbol,
     members: Collection<MemberShape> = members(),
-    block: SymbolRenderer
+    block: SymbolRenderer,
 ): Symbol {
     val base = "serialize" + StringUtils.capitalize(symbol.name) + "Payload"
     val suffix = mangledSuffix(members)
@@ -235,6 +235,8 @@ fun Shape.serialKind(): String = when (this.type) {
     ShapeType.FLOAT -> "SerialKind.Float"
     ShapeType.DOUBLE -> "SerialKind.Double"
     ShapeType.STRING -> "SerialKind.String"
+    ShapeType.ENUM -> "SerialKind.Enum"
+    ShapeType.INT_ENUM -> "SerialKind.IntEnum"
     ShapeType.BLOB -> "SerialKind.Blob"
     ShapeType.TIMESTAMP -> "SerialKind.Timestamp"
     ShapeType.DOCUMENT -> "SerialKind.Document"
@@ -274,7 +276,7 @@ internal fun Int.nestedDescriptorName(): String = "_C$this"
  */
 internal fun Shape.isContainerShape() = when (this) {
     is CollectionShape,
-    is MapShape -> true
+    is MapShape, -> true
     else -> false
 }
 

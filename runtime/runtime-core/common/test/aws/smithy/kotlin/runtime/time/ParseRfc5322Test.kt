@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.time
 
@@ -35,7 +35,7 @@ class ParseRfc5322Test {
         ParseTest("Sun, 06 Nov 1994 08:49:37 UT", 1994, 11, 6, 8, 49, 37, 0, 0),
         ParseTest("Sun, 06 Nov 1994 08:49:37 Z", 1994, 11, 6, 8, 49, 37, 0, 0),
         // fractional seconds (required by awsJson1.1 apparently). See: https://github.com/awslabs/smithy/blob/master/smithy-aws-protocol-tests/model/awsJson1_1/kitchen-sink.smithy#L682
-        ParseTest("Sun, 06 Nov 1994 08:49:37.001 GMT", 1994, 11, 6, 8, 49, 37, 1_000_000, 0)
+        ParseTest("Sun, 06 Nov 1994 08:49:37.001 GMT", 1994, 11, 6, 8, 49, 37, 1_000_000, 0),
     )
 
     @Test
@@ -88,7 +88,7 @@ class ParseRfc5322Test {
         ParseErrorTest("Mon, 07 Nov 1994 14:02:7 GMT", "error at 23: expected exactly 2 digits; found 1"),
         ParseErrorTest("Mon, 07 Nov 1994 14:02:72 GMT", "error at 23: 72 not in range 0..60"),
         ParseErrorTest("Mon, 07 Nov 1994 14:02:02 +000", "error at 26: invalid timezone offset"),
-        ParseErrorTest("Mon, 07 Nov 1994 14:02:02 EST", "error at 26: invalid timezone offset")
+        ParseErrorTest("Mon, 07 Nov 1994 14:02:02 EST", "error at 26: invalid timezone offset"),
     )
 
     @Test

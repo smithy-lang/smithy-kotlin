@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering.serde
 
@@ -16,11 +16,11 @@ class SerializeStructGeneratorTest {
             operation Foo {
                 input: FooRequest
             }        
-    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.RestJson, operations = listOf("Foo")).trimIndent()
+    """.prependNamespaceAndService(protocol = AwsProtocolModelDeclaration.REST_JSON, operations = listOf("Foo")).trimIndent()
 
+    // TODO ~ Support BigInteger and BigDecimal Types - https://github.com/awslabs/smithy-kotlin/issues/213
     @ParameterizedTest
     @ValueSource(strings = ["String", "Boolean", "Byte", "Short", "Integer", "Long", "Float", "Double"/*, "BigInteger", "BigDecimal"*/])
-    // TODO ~ Support BigInteger and BigDecimal Types - https://github.com/awslabs/smithy-kotlin/issues/213
     fun `it serializes a structure with a simple fields`(memberType: String) {
         val model = (
             modelPrefix + """            
@@ -49,7 +49,7 @@ class SerializeStructGeneratorTest {
         "PrimitiveByte, 0",
         "PrimitiveFloat, 0.0f",
         "PrimitiveDouble, 0.0",
-        "PrimitiveBoolean, false"
+        "PrimitiveBoolean, false",
     )
     fun `it serializes a structure with primitive fields`(memberType: String, defaultValue: String) {
         val model = (

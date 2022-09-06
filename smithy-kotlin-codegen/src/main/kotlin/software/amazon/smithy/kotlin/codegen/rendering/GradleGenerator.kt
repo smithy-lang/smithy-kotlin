@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
@@ -21,7 +21,7 @@ private val JVM_TARGET_VERSION: String = System.getProperty("smithy.kotlin.codeg
 fun writeGradleBuild(
     settings: KotlinSettings,
     manifest: FileManifest,
-    dependencies: List<KotlinDependency>
+    dependencies: List<KotlinDependency>,
 ) {
     val writer = GradleWriter()
 
@@ -35,7 +35,7 @@ fun writeGradleBuild(
                 separator = ",\n",
                 transform = {
                     "\"$it\""
-                }
+                },
             )
 
             write(formatted)
@@ -51,7 +51,7 @@ fun writeGradleBuild(
                 if (isRootModule) {
                     w.write("version #S", KOTLIN_COMPILER_VERSION)
                 }
-            }
+            },
         )
     }
 
@@ -62,7 +62,7 @@ fun writeGradleBuild(
             dependencies,
             pluginsBodyRenderer,
             repositoryRenderer,
-            annotationRenderer
+            annotationRenderer,
         )
         else -> renderJvmGradleBuild(
             writer,
@@ -70,7 +70,7 @@ fun writeGradleBuild(
             dependencies,
             pluginsBodyRenderer,
             repositoryRenderer,
-            annotationRenderer
+            annotationRenderer,
         )
     }
 
@@ -87,7 +87,7 @@ fun renderKmpGradleBuild(
     dependencies: List<KotlinDependency>,
     pluginsRenderer: InlineCodeWriter,
     repositoryRenderer: InlineCodeWriter,
-    annotationRenderer: InlineCodeWriter
+    annotationRenderer: InlineCodeWriter,
 ) {
     writer.write(
         """
@@ -125,7 +125,7 @@ fun renderKmpGradleBuild(
         { w: GradleWriter -> if (isRootModule) renderRootJvmPluginConfig(w) else w.write("jvm()") },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.SOURCE, isKmp = true, dependencies = dependencies) },
         { w: GradleWriter -> renderDependencies(w, scope = Scope.TEST, isKmp = true, dependencies = dependencies) },
-        annotationRenderer
+        annotationRenderer,
     )
 }
 
@@ -145,7 +145,7 @@ fun renderRootJvmPluginConfig(writer: GradleWriter) {
                 }
             }
         """.trimIndent(),
-        JVM_TARGET_VERSION
+        JVM_TARGET_VERSION,
     )
 }
 
@@ -155,7 +155,7 @@ fun renderJvmGradleBuild(
     dependencies: List<KotlinDependency>,
     pluginsRenderer: InlineCodeWriter,
     repositoryRenderer: InlineCodeWriter,
-    annotationRenderer: InlineCodeWriter
+    annotationRenderer: InlineCodeWriter,
 ) {
     writer.write(
         """
@@ -219,7 +219,7 @@ private fun renderDependencies(writer: GradleWriter, scope: Scope, isKmp: Boolea
                 "${dependency.config}(\"#L:#L:#L\")",
                 dependency.group,
                 dependency.artifact,
-                dependency.version
+                dependency.version,
             )
         }
 }
@@ -231,7 +231,7 @@ private val repositoryRenderer: InlineCodeWriter = {
                 mavenLocal()
                 mavenCentral()
             }
-        """.trimIndent()
+        """.trimIndent(),
     )
 }
 

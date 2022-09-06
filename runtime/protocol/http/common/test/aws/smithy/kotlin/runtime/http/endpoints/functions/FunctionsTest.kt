@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.endpoints.functions
 
@@ -35,9 +35,9 @@ class FunctionsTest {
                 "hostname.com",
                 "/path",
                 "/path/",
-                false
+                false,
             ),
-            parseUrl("http://hostname.com/path")
+            parseUrl("http://hostname.com/path"),
         )
 
     @Test
@@ -48,9 +48,9 @@ class FunctionsTest {
                 "hostname.com:4001",
                 "/path",
                 "/path/",
-                false
+                false,
             ),
-            parseUrl("http://hostname.com:4001/path")
+            parseUrl("http://hostname.com:4001/path"),
         )
 
     @Test
@@ -61,9 +61,9 @@ class FunctionsTest {
                 "172.19.0.1:4001",
                 "/path",
                 "/path/",
-                true
+                true,
             ),
-            parseUrl("http://172.19.0.1:4001/path")
+            parseUrl("http://172.19.0.1:4001/path"),
         )
 
     @Test
@@ -74,8 +74,8 @@ class FunctionsTest {
                 "[::5949]:4001",
                 "/path",
                 "/path/",
-                true
+                true,
             ),
-            parseUrl("http://[::5949]:4001/path")
+            parseUrl("http://[::5949]:4001/path"),
         )
 }

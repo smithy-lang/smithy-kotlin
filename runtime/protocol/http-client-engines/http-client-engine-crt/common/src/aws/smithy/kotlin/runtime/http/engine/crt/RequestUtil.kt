@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 
 package aws.smithy.kotlin.runtime.http.engine.crt
@@ -32,7 +32,10 @@ internal val HttpRequest.uri: Uri
 internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.kotlin.crt.http.HttpRequest {
     val body = this.body
     val bodyStream = when (body) {
-        is HttpBody.Streaming -> ReadChannelBodyStream(body.readFrom(), callContext)
+        is HttpBody.Streaming -> {
+            check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
+            ReadChannelBodyStream(body.readFrom(), callContext)
+        }
         is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
         else -> null
     }

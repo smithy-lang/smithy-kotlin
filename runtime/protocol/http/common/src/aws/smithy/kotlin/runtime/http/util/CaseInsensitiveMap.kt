@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.http.util
 
@@ -60,7 +60,7 @@ internal class CaseInsensitiveMap<Value>() : MutableMap<String, Value> {
 
 private class Entry<Key, Value>(
     override val key: Key,
-    override var value: Value
+    override var value: Value,
 ) : MutableMap.MutableEntry<Key, Value> {
 
     override fun setValue(newValue: Value): Value {

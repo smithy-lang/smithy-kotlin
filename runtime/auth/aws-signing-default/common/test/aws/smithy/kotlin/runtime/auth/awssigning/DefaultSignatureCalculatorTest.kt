@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
@@ -83,6 +83,7 @@ class DefaultSignatureCalculatorTest {
     }
 
     private data class ChunkStringToSignTest(val signatureType: AwsSignatureType, val expectedNonSignatureHeaderHash: String)
+
     @Test
     fun testChunkStringToSign() {
         // Test event stream signing
@@ -92,8 +93,8 @@ class DefaultSignatureCalculatorTest {
             ChunkStringToSignTest(AwsSignatureType.HTTP_REQUEST_CHUNK, HashSpecification.EmptyBody.hash),
             ChunkStringToSignTest(
                 AwsSignatureType.HTTP_REQUEST_EVENT,
-                "0c0e3b3bf66b59b976181bd7d401927bbd624107303c713fd1e5f3d3c8dd1b1e"
-            )
+                "0c0e3b3bf66b59b976181bd7d401927bbd624107303c713fd1e5f3d3c8dd1b1e",
+            ),
         )
 
         val epoch = Instant.fromEpochSeconds(123_456_789L, 1234)

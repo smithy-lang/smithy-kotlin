@@ -1,6 +1,6 @@
 /*
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0.
+ * SPDX-License-Identifier: Apache-2.0
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
@@ -131,7 +131,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         assertEquals("20150830T123600Z", actual.headers["X-Amz-Date"])
         assertEquals(
             "AWS4-HMAC-SHA256 Credential=AKIDEXAMPLE/20150830/us-east-1/service/aws4_request, SignedHeaders=host;x-amz-date, Signature=5da7c1a2acd57cee7505fc6676e4e544621c30862966e37dddb68e92efbe5d6b",
-            actual.headers["Authorization"]
+            actual.headers["Authorization"],
         )
     }
 
@@ -252,7 +252,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     @OptIn(InternalApi::class)
     private suspend fun getSignedRequest(
         config: AwsSigningConfig,
-        operation: SdkHttpOperation<Unit, HttpResponse>
+        operation: SdkHttpOperation<Unit, HttpResponse>,
     ): HttpRequest {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -274,7 +274,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
                 signedBodyHeader = config.signedBodyHeader
                 signatureType = config.signatureType
                 expiresAfter = config.expiresAfter
-            }
+            },
         )
 
         operation.roundTrip(client, Unit)
@@ -455,7 +455,7 @@ private fun Request.parsePath(): String {
 @OptIn(InternalApi::class)
 private fun buildOperation(
     config: AwsSigningConfig,
-    serialized: HttpRequestBuilder
+    serialized: HttpRequestBuilder,
 ): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
     serializer = object : HttpSerialize<Unit> {
         override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = serialized
