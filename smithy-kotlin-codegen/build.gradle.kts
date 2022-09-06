@@ -36,6 +36,9 @@ dependencies {
     implementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
     implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
     implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
+
+    // FIXME: intermediate local dependency while Endpoints2 SEP is in progress - remove when rules engine is part of smithy
+    implementation(files("../ReterminusCore-1.0.jar"))
 }
 
 val generateSdkRuntimeVersion by tasks.registering {
