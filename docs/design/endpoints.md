@@ -249,7 +249,8 @@ this value from the client config.
 
 ## Codegen
 ### Package "endpoints"
-The provider parameters and interface will generate to a new top-level `endpoints` package.
+The provider parameters and interface will generate to a new top-level `endpoints` package underneath each service
+package (e.g., `aws.sdk.kotlin.services.s3.endpoints`).
 
 ### Provider parameters
 
@@ -343,19 +344,19 @@ public open class EndpointResolverMiddlewareGenerator(
 This will generate the following two-phase middleware:
 ```kotlin
 internal class OperationResolveEndpointMiddleware(
-  private val config: SmithyService.Config,
+    private val config: SmithyService.Config,
 ) : InlineMiddleware<OperationRequest, OperationResponse> {
-  private var endpoint: Endpoint
+    private var endpoint: Endpoint
 
-  override fun install(op: SdkHttpOperation<GetResourceRequest, GetResourceResponse>) {
-      op.execution.initialize.intercept { req, next ->
-          // bind provider parameters and resolve endpoint, saving the value for the mutate phase
-      }
+    override fun install(op: SdkHttpOperation<GetResourceRequest, GetResourceResponse>) {
+        op.execution.initialize.intercept { req, next ->
+            // bind provider parameters and resolve endpoint, saving the value for the mutate phase
+        }
 
-      op.execution.mutate.intercept { req, next ->
-          // set the request endpoint
-      }
-  }
+        op.execution.mutate.intercept { req, next ->
+            // set the request endpoint
+        }
+    }
 }
 ```
 
