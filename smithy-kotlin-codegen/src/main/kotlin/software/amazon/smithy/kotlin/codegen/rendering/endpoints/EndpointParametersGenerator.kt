@@ -20,6 +20,8 @@ import software.amazon.smithy.rulesengine.language.lang.parameters.ParameterType
 private const val DEFAULT_DEPRECATED_MESSAGE =
     "This field is deprecated and no longer recommended for use."
 
+private const val CLASS_NAME = "EndpointParameters"
+
 /**
  * Renders the struct of parameters to be passed to the endpoint provider for resolution.
  */
@@ -40,37 +42,43 @@ class EndpointParametersGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.withBlock("public data class EndpointParameters(", ")") {
-            params.forEach(::renderConstructorParam)
-        }
-        writer.withBlock("{", "}") {
+        writer.withBlock("public class #L private constructor(builder: Builder) {", "}", CLASS_NAME) {
+            renderFields()
             renderCompanionObject()
             write("")
             if (params.any(KotlinEndpointParameter::isRequired)) {
                 renderInit()
                 write("")
             }
+            renderEquals()
+            write("")
+            renderHashCode()
+            write("")
+            renderToString()
+            write("")
+            renderCopy()
+            write("")
             renderBuilder()
+        }
+    }
+
+    private fun renderFields() {
+        params.forEach {
+            writer.ensureSuppressDeprecation(it)
+            it.renderDeclaration(writer, "builder.${it.name}")
+            writer.write("")
         }
     }
 
     private fun renderDocumentation() {
         writer.dokka {
             write("The set of values necessary for endpoint resolution.")
-            params.forEach {
-                write("@property #L #L", it.name, it.documentation)
-            }
         }
-    }
-
-    private fun renderConstructorParam(param: KotlinEndpointParameter) {
-        param.deprecated?.run { writeKotlinAnnotation(writer) }
-        writer.write("public val #L: #P = #L,", param.name, param.type, param.defaultLiteral)
     }
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
-            write("public operator fun invoke(block: Builder.() -> Unit): EndpointParameters = Builder().apply(block).build()")
+            write("public operator fun invoke(block: Builder.() -> Unit): #L = Builder().apply(block).build()", CLASS_NAME)
         }
     }
 
@@ -84,24 +92,68 @@ class EndpointParametersGenerator(
         }
     }
 
+    private fun renderEquals() {
+        writer.withBlock("public override fun equals(other: Any?): Boolean {", "}") {
+            write("if (this === other) return true")
+            write("if (other !is #L) return false", CLASS_NAME)
+            params.forEach {
+                ensureSuppressDeprecation(it)
+                write("if (this.#1L != other.#1L) return false", it.name)
+            }
+            write("return true")
+        }
+    }
+
+    private fun renderHashCode() {
+        writer.withBlock("public override fun hashCode(): Int {", "}") {
+            if (params.isEmpty()) {
+                write("return 0")
+                return@withBlock
+            }
+
+            ensureSuppressDeprecation(params[0])
+            write("var result = #L?.hashCode() ?: 0", params[0].name)
+            params.drop(1).forEach {
+                ensureSuppressDeprecation(it)
+                write("result = 31 * result + (#L?.hashCode() ?: 0)", it.name)
+            }
+            write("return result")
+        }
+    }
+
+    private fun renderToString() {
+        writer.withBlock("public override fun toString(): String = buildString {", "}") {
+            write("append(\"#L(\")", CLASS_NAME)
+            params.forEachIndexed { index, it ->
+                ensureSuppressDeprecation(it)
+                write(
+                    if (index < params.size - 1) "append(\"#1L=$#1L,\")" else "append(\"#1L=$#1L\")",
+                    it.name,
+                )
+            }
+            write("append(\")\")")
+        }
+    }
+
+    private fun renderCopy() {
+        writer.withBlock("public fun copy(block: Builder.() -> Unit = {}): #L {", "}", CLASS_NAME) {
+            withBlock("return Builder().apply {", "}") {
+                params.forEach {
+                    ensureSuppressDeprecation(it)
+                    write("#1L = this@#2L.#1L", it.name, CLASS_NAME)
+                }
+            }
+            write(".apply(block).build()")
+        }
+    }
+
     private fun renderBuilder() {
         writer.withBlock("public class Builder internal constructor() {", "}") {
             params.forEach {
-                it.documentation?.let {
-                    dokka { write("#L", it) }
-                }
-                it.deprecated?.run { writeKotlinAnnotation(writer) }
-                write("public var #L: #P = #L", it.name, it.type, it.defaultLiteral)
-                write("")
+                it.renderDeclaration(writer, it.defaultLiteral, isMutable = true)
             }
-            withBlock("public fun build(): EndpointParameters {", "}") {
-                withBlock("return EndpointParameters(", ")") {
-                    params.forEach {
-                        it.deprecated?.run { writeInline("@Suppress(\"DEPRECATION\")") }
-                        write("#L,", it.name)
-                    }
-                }
-            }
+            write("")
+            write("internal fun build(): #1L = #1L(this)", CLASS_NAME)
         }
     }
 }
@@ -117,6 +169,15 @@ private data class KotlinEndpointParameter(
     val documentation: String?,
     val deprecated: Parameter.Deprecated?,
 )
+
+private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, initialValueLiteral: String, isMutable: Boolean = false) {
+    documentation?.let {
+        writer.dokka { write("#L", it) }
+    }
+    deprecated?.run { writeKotlinAnnotation(writer) }
+    writer.write("public #L #L: #P = #L", if (isMutable) "var" else "val", name, type, initialValueLiteral)
+    writer.write("")
+}
 
 private fun Identifier.toKotlin(): String =
     asString().replaceFirstChar(Char::lowercase)
@@ -139,3 +200,6 @@ private fun Value.toKotlinLiteral(): String =
 
 private fun Parameter.Deprecated.writeKotlinAnnotation(writer: KotlinWriter) =
     writer.write("@Deprecated(#S)", message ?: DEFAULT_DEPRECATED_MESSAGE)
+
+private fun KotlinWriter.ensureSuppressDeprecation(param: KotlinEndpointParameter) =
+    param.deprecated?.let { write("@Suppress(\"DEPRECATION\")") }

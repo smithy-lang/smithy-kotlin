@@ -64,6 +64,14 @@ class EndpointParametersGeneratorTest {
                         "deprecated": {
                             "message": "arbitrary message about deprecation, has \"a quoted phrase\""
                         }
+                    },
+                    "DocumentedDeprecatedField": {
+                        "type": "String",
+                        "required": false,
+                        "documentation": "description about a field but it's deprecated",
+                        "deprecated": {
+                            "message": "it's deprecated"
+                        }
                     }
                 }
             """,
@@ -103,15 +111,6 @@ class EndpointParametersGeneratorTest {
         val expected = """
             /**
              * The set of values necessary for endpoint resolution.
-             * @property documentedField A documented field. Has "a quoted phrase".
-             * @property stringField
-             * @property booleanField
-             * @property requiredStringField
-             * @property requiredBooleanField
-             * @property defaultedStringField
-             * @property defaultedBooleanField
-             * @property deprecatedField
-             * @property deprecatedMessageField
              */
         """.formatForTest(indent = "")
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
@@ -120,20 +119,46 @@ class EndpointParametersGeneratorTest {
     @Test
     fun testConstructor() {
         val expected = """
-            public data class EndpointParameters(
-                public val documentedField: String? = null,
-                public val stringField: String? = null,
-                public val booleanField: Boolean? = null,
-                public val requiredStringField: String? = null,
-                public val requiredBooleanField: Boolean? = null,
-                public val defaultedStringField: String? = "default_string",
-                public val defaultedBooleanField: Boolean? = true,
-                @Deprecated("This field is deprecated and no longer recommended for use.")
-                public val deprecatedField: String? = null,
-                @Deprecated("arbitrary message about deprecation, has \"a quoted phrase\"")
-                public val deprecatedMessageField: String? = null,
-            )
+            public class EndpointParameters private constructor(builder: Builder)
         """.formatForTest(indent = "")
+        generatedClass.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testFields() {
+        val expected = """
+            /**
+             * A documented field. Has "a quoted phrase".
+             */
+            public val documentedField: String? = builder.documentedField
+
+            public val stringField: String? = builder.stringField
+
+            public val booleanField: Boolean? = builder.booleanField
+
+            public val requiredStringField: String? = builder.requiredStringField
+
+            public val requiredBooleanField: Boolean? = builder.requiredBooleanField
+
+            public val defaultedStringField: String? = builder.defaultedStringField
+
+            public val defaultedBooleanField: Boolean? = builder.defaultedBooleanField
+
+            @Suppress("DEPRECATION")
+            @Deprecated("This field is deprecated and no longer recommended for use.")
+            public val deprecatedField: String? = builder.deprecatedField
+
+            @Suppress("DEPRECATION")
+            @Deprecated("arbitrary message about deprecation, has \"a quoted phrase\"")
+            public val deprecatedMessageField: String? = builder.deprecatedMessageField
+
+            @Suppress("DEPRECATION")
+            /**
+             * description about a field but it's deprecated
+             */
+            @Deprecated("it's deprecated")
+            public val documentedDeprecatedField: String? = builder.documentedDeprecatedField
+        """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
     }
 
@@ -155,6 +180,103 @@ class EndpointParametersGeneratorTest {
                 requireNotNull(requiredBooleanField) { "endpoint provider parameter requiredBooleanField is required" }
                 requireNotNull(defaultedStringField) { "endpoint provider parameter defaultedStringField is required" }
                 requireNotNull(defaultedBooleanField) { "endpoint provider parameter defaultedBooleanField is required" }
+            }
+        """.formatForTest()
+        generatedClass.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testEquals() {
+        val expected = """
+            public override fun equals(other: Any?): Boolean {
+                if (this === other) return true
+                if (other !is EndpointParameters) return false
+                if (this.documentedField != other.documentedField) return false
+                if (this.stringField != other.stringField) return false
+                if (this.booleanField != other.booleanField) return false
+                if (this.requiredStringField != other.requiredStringField) return false
+                if (this.requiredBooleanField != other.requiredBooleanField) return false
+                if (this.defaultedStringField != other.defaultedStringField) return false
+                if (this.defaultedBooleanField != other.defaultedBooleanField) return false
+                @Suppress("DEPRECATION")
+                if (this.deprecatedField != other.deprecatedField) return false
+                @Suppress("DEPRECATION")
+                if (this.deprecatedMessageField != other.deprecatedMessageField) return false
+                @Suppress("DEPRECATION")
+                if (this.documentedDeprecatedField != other.documentedDeprecatedField) return false
+                return true
+            }
+        """.formatForTest()
+        generatedClass.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testHashCode() {
+        val expected = """
+            public override fun hashCode(): Int {
+                var result = documentedField?.hashCode() ?: 0
+                result = 31 * result + (stringField?.hashCode() ?: 0)
+                result = 31 * result + (booleanField?.hashCode() ?: 0)
+                result = 31 * result + (requiredStringField?.hashCode() ?: 0)
+                result = 31 * result + (requiredBooleanField?.hashCode() ?: 0)
+                result = 31 * result + (defaultedStringField?.hashCode() ?: 0)
+                result = 31 * result + (defaultedBooleanField?.hashCode() ?: 0)
+                @Suppress("DEPRECATION")
+                result = 31 * result + (deprecatedField?.hashCode() ?: 0)
+                @Suppress("DEPRECATION")
+                result = 31 * result + (deprecatedMessageField?.hashCode() ?: 0)
+                @Suppress("DEPRECATION")
+                result = 31 * result + (documentedDeprecatedField?.hashCode() ?: 0)
+                return result
+            }
+        """.formatForTest()
+        generatedClass.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testToString() {
+        val expected = """
+            public override fun toString(): String = buildString {
+                append("EndpointParameters(")
+                append("documentedField=${'$'}documentedField,")
+                append("stringField=${'$'}stringField,")
+                append("booleanField=${'$'}booleanField,")
+                append("requiredStringField=${'$'}requiredStringField,")
+                append("requiredBooleanField=${'$'}requiredBooleanField,")
+                append("defaultedStringField=${'$'}defaultedStringField,")
+                append("defaultedBooleanField=${'$'}defaultedBooleanField,")
+                @Suppress("DEPRECATION")
+                append("deprecatedField=${'$'}deprecatedField,")
+                @Suppress("DEPRECATION")
+                append("deprecatedMessageField=${'$'}deprecatedMessageField,")
+                @Suppress("DEPRECATION")
+                append("documentedDeprecatedField=${'$'}documentedDeprecatedField")
+                append(")")
+            }
+        """.formatForTest()
+        generatedClass.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testCopy() {
+        val expected = """
+            public fun copy(block: Builder.() -> Unit = {}): EndpointParameters {
+                return Builder().apply {
+                    documentedField = this@EndpointParameters.documentedField
+                    stringField = this@EndpointParameters.stringField
+                    booleanField = this@EndpointParameters.booleanField
+                    requiredStringField = this@EndpointParameters.requiredStringField
+                    requiredBooleanField = this@EndpointParameters.requiredBooleanField
+                    defaultedStringField = this@EndpointParameters.defaultedStringField
+                    defaultedBooleanField = this@EndpointParameters.defaultedBooleanField
+                    @Suppress("DEPRECATION")
+                    deprecatedField = this@EndpointParameters.deprecatedField
+                    @Suppress("DEPRECATION")
+                    deprecatedMessageField = this@EndpointParameters.deprecatedMessageField
+                    @Suppress("DEPRECATION")
+                    documentedDeprecatedField = this@EndpointParameters.documentedDeprecatedField
+                }
+                .apply(block).build()
             }
         """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
@@ -187,19 +309,13 @@ class EndpointParametersGeneratorTest {
                 @Deprecated("arbitrary message about deprecation, has \"a quoted phrase\"")
                 public var deprecatedMessageField: String? = null
 
-                public fun build(): EndpointParameters {
-                    return EndpointParameters(
-                        documentedField,
-                        stringField,
-                        booleanField,
-                        requiredStringField,
-                        requiredBooleanField,
-                        defaultedStringField,
-                        defaultedBooleanField,
-                        @Suppress("DEPRECATION")deprecatedField,
-                        @Suppress("DEPRECATION")deprecatedMessageField,
-                    )
-                }
+                /**
+                 * description about a field but it's deprecated
+                 */
+                @Deprecated("it's deprecated")
+                public var documentedDeprecatedField: String? = null
+
+                internal fun build(): EndpointParameters = EndpointParameters(this)
             }
         """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
