@@ -78,7 +78,7 @@ class EndpointParametersGenerator(
         writer.withBlock("init {", "}") {
             params.forEach {
                 if (it.isRequired) {
-                    writer.write("""require(#1L != null) { "endpoint provider parameter #1L is required" }""", it.name)
+                    write("""require(#1L != null) { "endpoint provider parameter #1L is required" }""", it.name)
                 }
             }
         }
