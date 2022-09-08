@@ -128,7 +128,7 @@ class EndpointParametersGeneratorTest {
                 public val requiredBooleanField: Boolean? = null,
                 public val defaultedStringField: String? = "default_string",
                 public val defaultedBooleanField: Boolean? = true,
-                @Deprecated("")
+                @Deprecated("This field is deprecated and no longer recommended for use.")
                 public val deprecatedField: String? = null,
                 @Deprecated("arbitrary message about deprecation, has \"a quoted phrase\"")
                 public val deprecatedMessageField: String? = null,
@@ -151,10 +151,10 @@ class EndpointParametersGeneratorTest {
     fun testInit() {
         val expected = """
             init {
-                require(requiredStringField != null) { "endpoint provider parameter requiredStringField is required" }
-                require(requiredBooleanField != null) { "endpoint provider parameter requiredBooleanField is required" }
-                require(defaultedStringField != null) { "endpoint provider parameter defaultedStringField is required" }
-                require(defaultedBooleanField != null) { "endpoint provider parameter defaultedBooleanField is required" }
+                requireNotNull(requiredStringField) { "endpoint provider parameter requiredStringField is required" }
+                requireNotNull(requiredBooleanField) { "endpoint provider parameter requiredBooleanField is required" }
+                requireNotNull(defaultedStringField) { "endpoint provider parameter defaultedStringField is required" }
+                requireNotNull(defaultedBooleanField) { "endpoint provider parameter defaultedBooleanField is required" }
             }
         """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
@@ -181,7 +181,7 @@ class EndpointParametersGeneratorTest {
 
                 public var defaultedBooleanField: Boolean? = true
 
-                @Deprecated("")
+                @Deprecated("This field is deprecated and no longer recommended for use.")
                 public var deprecatedField: String? = null
 
                 @Deprecated("arbitrary message about deprecation, has \"a quoted phrase\"")
