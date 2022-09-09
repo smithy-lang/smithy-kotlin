@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.shapes.BlobShape
 import software.amazon.smithy.model.shapes.MemberShape
 import software.amazon.smithy.model.shapes.ShapeType
@@ -17,6 +18,7 @@ import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.HttpQueryParamsTrait
 import software.amazon.smithy.model.traits.HttpQueryTrait
+import software.amazon.smithy.model.traits.LengthTrait
 import software.amazon.smithy.model.traits.RetryableTrait
 import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -87,12 +89,22 @@ class StructureGenerator(
                 writer.write("override val #1L: #2F = builder.#1L", memberName, memberSymbol)
             }
 
-            memberShape.isRequiredInStruct ->
+            memberShape.isRequiredInStruct -> {
                 writer.write(
                     """public val #1L: #2F = requireNotNull(builder.#1L) { "A non-null value must be provided for #1L" }""",
                     memberName,
                     memberSymbol,
                 )
+                if (memberShape.isNonBlankInStruct) {
+                    writer
+                        .indent()
+                        .write(
+                            """.apply { require(isNotBlank()) { "A non-blank value must be provided for #L" } }""",
+                            memberName,
+                        )
+                        .dedent()
+                }
+            }
 
             else -> writer.write("public val #1L: #2F = builder.#1L", memberName, memberSymbol)
         }
@@ -102,6 +114,9 @@ class StructureGenerator(
         get() =
             hasTrait<HttpLabelTrait>() ||
                 isRequired && (hasTrait<HttpQueryTrait>() || hasTrait<HttpQueryParamsTrait>())
+
+    private val MemberShape.isNonBlankInStruct
+        get() = getTrait<LengthTrait>()?.min?.getOrNull()?.takeIf { it > 0 } != null
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {

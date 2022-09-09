@@ -304,7 +304,17 @@ class StructureGeneratorTest {
                 quux: Boolean,
                 
                 @httpQuery("corge")
-                corge: String
+                corge: String,
+                
+                @required
+                @length(min: 0)
+                @httpQuery("grault")
+                grault: String,
+                
+                @required
+                @length(min: 3)
+                @httpQuery("garply")
+                garply: String
             }
         """.prependNamespaceAndService(operations = listOf("Foo")).toSmithyModel()
 
@@ -320,6 +330,9 @@ class StructureGeneratorTest {
                 public val bar: kotlin.String? = requireNotNull(builder.bar) { "A non-null value must be provided for bar" }
                 public val baz: kotlin.Int? = requireNotNull(builder.baz) { "A non-null value must be provided for baz" }
                 public val corge: kotlin.String? = builder.corge
+                public val garply: kotlin.String? = requireNotNull(builder.garply) { "A non-null value must be provided for garply" }
+                    .apply { require(isNotBlank()) { "A non-blank value must be provided for garply" } }
+                public val grault: kotlin.String? = requireNotNull(builder.grault) { "A non-null value must be provided for grault" }
                 public val quux: kotlin.Boolean? = requireNotNull(builder.quux) { "A non-null value must be provided for quux" }
                 public val qux: kotlin.String? = builder.qux
         """.formatForTest(indent = "")
