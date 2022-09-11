@@ -19,6 +19,7 @@ import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class SymbolProviderTest {
     @Test
@@ -95,6 +96,42 @@ class SymbolProviderTest {
     private fun translateTypeName(typeName: String): String = when (typeName) {
         "Integer" -> "Int"
         else -> typeName
+    }
+
+    @Test
+    fun `can read box trait from member`() {
+        val model = """
+        structure MyStruct {
+           @box
+           foo: MyFoo
+        }
+        long MyFoo
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertEquals("null", memberSymbol.defaultValue())
+        assertTrue(memberSymbol.isBoxed)
+    }
+
+    @Test
+    fun `can read box trait from target`() {
+        val model = """
+        structure MyStruct {
+           foo: MyFoo
+        }
+        @box
+        long MyFoo
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val member = model.expectShape<MemberShape>("com.test#MyStruct\$foo")
+        val memberSymbol = provider.toSymbol(member)
+        assertEquals("kotlin", memberSymbol.namespace)
+        assertEquals("null", memberSymbol.defaultValue())
+        assertTrue(memberSymbol.isBoxed)
     }
 
     @Test

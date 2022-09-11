@@ -1,0 +1,5 @@
+{
+    "id": "69672ec4-a822-465c-80ac-2656dd3ff334",
+    "type": "bugfix",
+    "description": "Properly check if a member can be nullable"
+}
