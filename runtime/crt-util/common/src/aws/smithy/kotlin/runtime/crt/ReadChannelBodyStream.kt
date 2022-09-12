@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.io.MutableBuffer
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.SdkByteBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.readAvailable
@@ -19,7 +20,7 @@ import kotlin.coroutines.CoroutineContext
 /**
  * write as much of [outgoing] to [dest] as possible
  */
-internal expect fun transferRequestBody(outgoing: SdkByteBuffer, dest: MutableBuffer)
+internal expect fun transferRequestBody(outgoing: SdkByteBuffer, dest: MutableBuffer): Int
 
 /**
  * Implement's [HttpRequestBodyStream] which proxies an SDK request body channel [SdkByteReadChannel]
@@ -27,21 +28,30 @@ internal expect fun transferRequestBody(outgoing: SdkByteBuffer, dest: MutableBu
 @InternalApi
 public class ReadChannelBodyStream(
     // the request body channel
-    private val bodyChan: SdkByteReadChannel,
+    body: HttpBody.Streaming,
     private val callContext: CoroutineContext,
 ) : HttpRequestBodyStream, CoroutineScope {
+    private val bodyChan = body.readFrom()
+    private val contentLength = requireNotNull(body.contentLength) {
+        "Content length must be provided when streaming via CRT engine"
+    }
+    private val contentPosition = atomic(0L)
 
-    private val producerJob = Job(callContext.job)
-    override val coroutineContext: CoroutineContext = callContext + producerJob
+    private val producerJob: CompletableJob
 
     private val currBuffer = atomic<SdkByteBuffer?>(null)
     private val bufferChan = Channel<SdkByteBuffer>(Channel.UNLIMITED)
 
     init {
+        check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
+
+        producerJob = Job(callContext.job) // Initialize *after* the duplex check, otherwise will hang indefinitely
         producerJob.invokeOnCompletion { cause ->
             bodyChan.cancel(cause)
         }
     }
+
+    override val coroutineContext: CoroutineContext = callContext + producerJob
 
     // lie - CRT tries to control this via normal seek operations (e.g. when they calculate a hash for signing
     // they consume the aws_input_stream and then seek to the beginning). Instead we either support creating
@@ -96,12 +106,13 @@ public class ReadChannelBodyStream(
             outgoing = bufferChan.tryReceive().getOrNull() ?: return false
         }
 
-        transferRequestBody(outgoing, buffer)
+        val transferred = transferRequestBody(outgoing, buffer).toLong()
 
         if (outgoing.readRemaining > 0u) {
             currBuffer.value = outgoing
         }
 
-        return bufferChan.isClosedForReceive && currBuffer.value == null
+        return contentPosition.addAndGet(transferred) >= contentLength ||
+            bufferChan.isClosedForReceive && currBuffer.value == null
     }
 }

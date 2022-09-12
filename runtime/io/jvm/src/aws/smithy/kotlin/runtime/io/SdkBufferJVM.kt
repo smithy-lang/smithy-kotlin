@@ -37,12 +37,14 @@ public fun SdkByteBuffer.readFully(dst: ByteBuffer) {
 /**
  * Read as much from this buffer as possible to [dst] buffer moving its position
  */
-public fun SdkByteBuffer.readAvailable(dst: ByteBuffer) {
+public fun SdkByteBuffer.readAvailable(dst: ByteBuffer): Int {
     val wc = minOf(readRemaining.toInt(), dst.remaining())
-    if (wc == 0) return
-    val dstCopy = dst.duplicate().apply {
-        limit(position() + wc)
+    if (wc > 0) {
+        val dstCopy = dst.duplicate().apply {
+            limit(position() + wc)
+        }
+        readFully(dstCopy)
+        dst.position(dst.position() + wc)
     }
-    readFully(dstCopy)
-    dst.position(dst.position() + wc)
+    return wc
 }

@@ -132,7 +132,7 @@ private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? =
     body is HttpBody.Streaming && body.isReplayable ->
         // FIXME: this is not particularly efficient since we have to launch a coroutine to fill it.
         // see https://github.com/awslabs/smithy-kotlin/issues/436
-        ReadChannelBodyStream(body.readFrom(), coroutineContext)
+        ReadChannelBodyStream(body, coroutineContext)
     body is HttpBody.Streaming && !body.isReplayable ->
         // can only consume the stream once
         null

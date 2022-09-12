@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.writeUtf8
@@ -28,12 +29,19 @@ class ReadChannelBodyStreamTest {
         return MutableBuffer.of(dest) to dest
     }
 
+    private fun body(chan: SdkByteReadChannel, contentLength: Number): HttpBody.Streaming =
+        object : HttpBody.Streaming() {
+            override val contentLength: Long = contentLength.toLong()
+            override fun readFrom(): SdkByteReadChannel = chan
+        }
+
     @Test
     fun testClose() = runTest {
         val chan = SdkByteChannel()
+        val body = body(chan, 0)
         val (sendBuffer, _) = mutableBuffer(16)
 
-        val stream = ReadChannelBodyStream(chan, coroutineContext)
+        val stream = ReadChannelBodyStream(body, coroutineContext)
         // let the proxy get started
         yield()
         chan.close()
@@ -47,8 +55,9 @@ class ReadChannelBodyStreamTest {
     @Test
     fun testCancellation() = runTest {
         val chan = SdkByteChannel()
+        val body = body(chan, 0)
         val job = Job()
-        val stream = ReadChannelBodyStream(chan, coroutineContext + job)
+        val stream = ReadChannelBodyStream(body, coroutineContext + job)
 
         job.cancel()
 
@@ -62,7 +71,8 @@ class ReadChannelBodyStreamTest {
     fun testReadFully() = runTest {
         val data = byteArrayOf(1, 2, 3, 4, 5)
         val chan = SdkByteReadChannel(data)
-        val stream = ReadChannelBodyStream(chan, coroutineContext)
+        val body = body(chan, data.size)
+        val stream = ReadChannelBodyStream(body, coroutineContext)
         yield()
 
         val (sendBuffer, sent) = mutableBuffer(16)
@@ -75,8 +85,10 @@ class ReadChannelBodyStreamTest {
 
     @Test
     fun testPartialRead() = runTest {
-        val chan = SdkByteReadChannel("123456".encodeToByteArray())
-        val stream = ReadChannelBodyStream(chan, coroutineContext)
+        val data = "123456".encodeToByteArray()
+        val chan = SdkByteReadChannel(data)
+        val body = body(chan, data.size)
+        val stream = ReadChannelBodyStream(body, coroutineContext)
         yield()
 
         val (sendBuffer1, sent1) = mutableBuffer(3)
@@ -107,7 +119,8 @@ class ReadChannelBodyStreamTest {
             chan.close(result.exceptionOrNull())
         }
 
-        val stream = ReadChannelBodyStream(chan, coroutineContext)
+        val body = body(chan, data.length * n)
+        val stream = ReadChannelBodyStream(body, coroutineContext)
         yield()
 
         var totalBytesRead = 0
@@ -121,5 +134,26 @@ class ReadChannelBodyStreamTest {
 
         val expected = data.length * n
         assertEquals(expected, totalBytesRead)
+    }
+
+    @Test
+    fun testRejectDuplexStream() = runTest {
+        val body = object : HttpBody.Streaming() {
+            override val isDuplex = true
+            override val contentLength = 0L
+            override fun readFrom() = SdkByteChannel()
+        }
+
+        assertFailsWith<IllegalStateException> { ReadChannelBodyStream(body, coroutineContext) }
+    }
+
+    @Test
+    fun testRejectStreamWithoutExplicitContentLength() = runTest {
+        val body = object : HttpBody.Streaming() {
+            override val contentLength = null
+            override fun readFrom() = SdkByteChannel()
+        }
+
+        assertFailsWith<IllegalArgumentException> { ReadChannelBodyStream(body, coroutineContext) }
     }
 }
