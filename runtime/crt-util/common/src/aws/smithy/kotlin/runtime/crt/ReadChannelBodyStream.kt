@@ -15,6 +15,9 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.milliseconds
+
+private val POLLING_DELAY = 100.milliseconds
 
 /**
  * write as much of [outgoing] to [dest] as possible
@@ -40,6 +43,16 @@ public class ReadChannelBodyStream(
     init {
         producerJob.invokeOnCompletion { cause ->
             bodyChan.cancel(cause)
+        }
+
+        launch(coroutineContext + CoroutineName("body-channel-watchdog")) {
+            while (producerJob.isActive) {
+                if (bodyChan.isClosedForRead) {
+                    producerJob.complete()
+                    return@launch;
+                }
+                delay(POLLING_DELAY)
+            }
         }
     }
 
