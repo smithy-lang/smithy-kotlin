@@ -6,8 +6,7 @@ package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 
-@InternalApi
-public class DefaultTraceSpan(
+private class DefaultTraceSpan(
     private val probe: TraceProbe,
     override val parent: TraceSpan?,
     override val id: String,

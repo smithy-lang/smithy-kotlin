@@ -105,7 +105,7 @@ Probes are free to handle these different types of events however they see fit (
 aggregate some metrics, ignore some events, etc.).
 
 Event data values (i.e., message text, count values, and timespan durations) are provided as lambdas rather than with
-direct values. This allows probe implementations to skip calculating them in the even they would otherwise be discarded
+direct values. This allows probe implementations to skip calculating them in the event they would otherwise be discarded
 (e.g., for event emitted at a level ignored by the probe).
 
 ## Trace Probe

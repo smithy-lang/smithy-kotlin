@@ -41,6 +41,8 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.context")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.sdkRequestId")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.IO.namespace}.use")
     }
 
     @Test
@@ -85,7 +87,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.roundTrip(client, input)
             }
@@ -104,7 +106,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.roundTrip(client, input)
             }
@@ -123,7 +125,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.roundTrip(client, input)
             }
@@ -142,7 +144,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.roundTrip(client, input)
             }
@@ -161,7 +163,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.execute(client, input, block)
             }
@@ -180,7 +182,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.execute(client, input, block)
             }
@@ -199,7 +201,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.roundTrip(client, input)
             }
@@ -218,7 +220,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.roundTrip(client, input)
             }
@@ -237,7 +239,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return rootTraceSpan.child(op.sdkRequestId).use { traceSpan ->
+        return rootTraceSpan.child(op.context.sdkRequestId).use { traceSpan ->
             with(traceSpan) {
                 op.roundTrip(client, input)
             }

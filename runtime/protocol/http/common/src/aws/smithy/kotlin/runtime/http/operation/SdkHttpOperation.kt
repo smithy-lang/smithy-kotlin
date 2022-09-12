@@ -27,12 +27,8 @@ public class SdkHttpOperation<I, O>(
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
 ) {
-    /**
-     * The SDK-side request ID for this operation.
-     */
-    public val sdkRequestId: String = Uuid.random().toString()
-
     init {
+        val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
         context[HttpOperationContext.LoggingContext] = mapOf(
             "sdkRequestId" to sdkRequestId,
@@ -59,6 +55,9 @@ public class SdkHttpOperation<I, O>(
             SdkHttpOperationBuilder<I, O>().apply(block).build()
     }
 }
+
+public val ExecutionContext.sdkRequestId: String
+    get() = get(HttpOperationContext.SdkRequestId)
 
 /**
  * Round trip an operation using the given [HttpHandler]
