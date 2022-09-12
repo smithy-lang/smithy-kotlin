@@ -49,7 +49,7 @@ public class ReadChannelBodyStream(
             while (producerJob.isActive) {
                 if (bodyChan.isClosedForRead) {
                     producerJob.complete()
-                    return@launch;
+                    return@launch
                 }
                 delay(POLLING_DELAY)
             }
