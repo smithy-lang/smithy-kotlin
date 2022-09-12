@@ -269,6 +269,7 @@ abstract class HttpProtocolClientGenerator(
         writer.write("")
             .openBlock("override fun close() {")
             .write("client.close()")
+            .write("rootTraceSpan.close()")
             .closeBlock("}")
             .write("")
     }

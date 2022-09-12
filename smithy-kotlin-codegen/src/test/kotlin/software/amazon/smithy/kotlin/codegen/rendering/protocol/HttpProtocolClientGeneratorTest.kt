@@ -67,6 +67,7 @@ class HttpProtocolClientGeneratorTest {
         val expected = """
     override fun close() {
         client.close()
+        rootTraceSpan.close()
     }
 """
         commonTestContents.shouldContainOnlyOnceWithDiff(expected)
