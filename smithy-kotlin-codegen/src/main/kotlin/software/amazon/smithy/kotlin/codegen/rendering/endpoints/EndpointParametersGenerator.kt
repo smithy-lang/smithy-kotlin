@@ -29,7 +29,9 @@ class EndpointParametersGenerator(
     private val writer: KotlinWriter,
     rules: EndpointRuleset,
 ) {
-    private val params: List<KotlinEndpointParameter> = rules.parameters.toList().map {
+    private val params: List<KotlinEndpointParameter> = rules.parameters.toList()
+        .sortedBy { it.name.toKotlin() }
+        .map {
         KotlinEndpointParameter(
             it.name.toKotlin(),
             it.type.toSymbol(),
@@ -46,10 +48,6 @@ class EndpointParametersGenerator(
             renderFields()
             renderCompanionObject()
             write("")
-            if (params.any(KotlinEndpointParameter::isRequired)) {
-                renderInit()
-                write("")
-            }
             renderEquals()
             write("")
             renderHashCode()
@@ -64,8 +62,14 @@ class EndpointParametersGenerator(
 
     private fun renderFields() {
         params.forEach {
+            val initialValueExpr = if (it.isRequired) {
+                """requireNotNull(builder.${it.name}) { "endpoint provider parameter #${it.name} is required" }"""
+            } else {
+                "builder.${it.name}"
+            }
+
             writer.ensureSuppressDeprecation(it)
-            it.renderDeclaration(writer, "builder.${it.name}")
+            it.renderDeclaration(writer, initialValueExpr)
             writer.write("")
         }
     }
@@ -107,7 +111,7 @@ class EndpointParametersGenerator(
     private fun renderHashCode() {
         writer.withBlock("public override fun hashCode(): Int {", "}") {
             if (params.isEmpty()) {
-                write("return 0")
+                write("return this::class.hashCode()")
                 return@withBlock
             }
 
@@ -126,12 +130,8 @@ class EndpointParametersGenerator(
             write("append(\"#L(\")", CLASS_NAME)
             params.forEachIndexed { index, it ->
                 ensureSuppressDeprecation(it)
-                write(
-                    if (index < params.size - 1) "append(\"#1L=$#1L,\")" else "append(\"#1L=$#1L\")",
-                    it.name,
-                )
+                write("""append("#1L=$#1L#2L")""", it.name, if (index < params.size - 1) "," else ")")
             }
-            write("append(\")\")")
         }
     }
 
@@ -142,8 +142,9 @@ class EndpointParametersGenerator(
                     ensureSuppressDeprecation(it)
                     write("#1L = this@#2L.#1L", it.name, CLASS_NAME)
                 }
+                write("block()")
             }
-            write(".apply(block).build()")
+            write(".build()")
         }
     }
 
