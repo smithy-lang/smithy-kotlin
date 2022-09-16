@@ -38,9 +38,7 @@ public class ReadChannelBodyStream(
     private val bufferChan = Channel<SdkByteBuffer>(Channel.UNLIMITED)
 
     init {
-        producerJob.invokeOnCompletion { cause ->
-            bodyChan.cancel(cause)
-        }
+        bodyChan.attachJob(producerJob) // bodyChan will complete producer job upon close or cancel
     }
 
     // lie - CRT tries to control this via normal seek operations (e.g. when they calculate a hash for signing
@@ -49,11 +47,8 @@ public class ReadChannelBodyStream(
     // and handle these concerns.
     override fun resetPosition(): Boolean = true
 
-    override fun sendRequestBody(buffer: MutableBuffer): Boolean =
-        doSendRequestBody(buffer).also { if (it) producerJob.complete() }
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    private fun doSendRequestBody(buffer: MutableBuffer): Boolean {
+    override fun sendRequestBody(buffer: MutableBuffer): Boolean {
         // ensure the request context hasn't been cancelled
         callContext.ensureActive()
         var outgoing = currBuffer.getAndSet(null) ?: bufferChan.tryReceive().getOrNull()
@@ -78,7 +73,6 @@ public class ReadChannelBodyStream(
                 bufferChan.send(sdkBuffer)
             }.invokeOnCompletion { cause ->
                 if (cause != null) {
-                    producerJob.completeExceptionally(cause)
                     bufferChan.close(cause)
                 }
             }

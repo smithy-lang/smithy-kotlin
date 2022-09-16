@@ -27,8 +27,7 @@ internal interface KtorWriteChannel {
  */
 internal abstract class KtorReadChannelAdapterBase(
     override val chan: KtorByteReadChannel,
-) : SdkByteReadChannel, KtorReadChannel {
-
+) : AttachableJobReadChannelBase(), KtorReadChannel {
     override val availableForRead: Int
         get() = chan.availableForRead
 
@@ -46,7 +45,8 @@ internal abstract class KtorReadChannelAdapterBase(
     override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int = chan
         .readAvailable(sink, offset, length)
 
-    override fun cancel(cause: Throwable?): Boolean = chan.cancel(cause)
+    override fun cancel(cause: Throwable?): Boolean =
+        chan.cancel(cause).also { completeJob(cause) }
 }
 
 /**
@@ -85,20 +85,32 @@ internal abstract class KtorWriteChannelAdapterBase(
 /**
  * Wrap ktor's ByteChannel as our own
  */
-internal class KtorByteChannelAdapter(
+internal class KtorByteChannelAdapter private constructor(
     override val chan: KtorByteChannel,
+    private val readChannelAdapter: KtorReadChannelAdapter,
 ) : SdkByteChannel,
-    SdkByteReadChannel by KtorReadChannelAdapter(chan),
+    SdkByteReadChannel by readChannelAdapter,
     SdkByteWriteChannel by KtorWriteChannelAdapter(chan),
     KtorWriteChannel,
     KtorReadChannel {
+
+    public constructor(chan: KtorByteChannel) : this(chan, KtorReadChannelAdapter(chan))
+
     override val isClosedForWrite: Boolean
         get() = chan.isClosedForWrite
 
-    override fun close() { chan.close(null) }
+    override fun close() {
+        readChannelAdapter.completeJob()
+        chan.close(null)
+    }
+
+    override fun close(cause: Throwable?): Boolean {
+        readChannelAdapter.completeJob(cause)
+        return chan.close(cause)
+    }
 }
 
-internal expect class KtorReadChannelAdapter(chan: KtorByteReadChannel) : SdkByteReadChannel
+internal expect class KtorReadChannelAdapter(chan: KtorByteReadChannel) : SdkByteReadChannel, KtorReadChannelAdapterBase
 internal expect class KtorWriteChannelAdapter(chan: KtorByteWriteChannel) : SdkByteWriteChannel
 
 @InternalApi

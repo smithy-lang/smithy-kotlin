@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+import kotlinx.coroutines.CompletableJob
 import java.nio.ByteBuffer
 import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
 
@@ -47,6 +49,9 @@ public actual interface SdkByteReadChannel : Closeable {
     public suspend fun readAvailable(sink: ByteBuffer): Int
 
     public actual suspend fun awaitContent()
+
+    @InternalApi
+    public actual fun attachJob(job: CompletableJob)
 
     /**
      * Close channel with optional cause cancellation

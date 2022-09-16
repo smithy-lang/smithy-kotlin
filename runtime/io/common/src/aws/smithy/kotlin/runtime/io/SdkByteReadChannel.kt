@@ -4,8 +4,11 @@
  */
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.text.byteCountUtf8
 import io.ktor.utils.io.*
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.CompletableJob
 
 internal const val DEFAULT_BUFFER_SIZE: Int = 4096
 
@@ -58,10 +61,53 @@ public expect interface SdkByteReadChannel : Closeable {
     public suspend fun awaitContent()
 
     /**
+     * Attach a [CompletableJob] to this read channel. The job will be completed when the channel is closed for write.
+     * The job will be completed exceptionally if the channel is canceled with a non-null exception.
+     *
+     * Implementations allow only a single job to be attached (or no jobs attached, the default). Implementations must
+     * complete a job immediately if this method is called after the channel is already closed for write.
+     */
+    @InternalApi
+    public fun attachJob(job: CompletableJob)
+
+    /**
      * Close channel with optional cause cancellation.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
      */
     public fun cancel(cause: Throwable?): Boolean
+}
+
+/**
+ * A base class which provides reusable job attachment and completion logic for [SdkByteReadChannel]. Subclasses must
+ * call [completeJob] when the channel is closed or canceled.
+ */
+@InternalApi
+public abstract class AttachableJobReadChannelBase : SdkByteReadChannel {
+    private val maybeJob = atomic<CompletableJob?>(null)
+
+    override fun attachJob(job: CompletableJob) {
+        if (isClosedForWrite) {
+            job.complete()
+        } else {
+            check(maybeJob.compareAndSet(null, job)) { "Only one job can be attached to this read channel" }
+        }
+    }
+
+    /**
+     * Completes the attached job (if any). The job is completed normally if no [cause] is set or exceptionally if
+     * [cause] is set.
+     * @param cause An optional [Throwable] indicating whether the job should complete exceptionally or not.
+     */
+    @InternalApi
+    public fun completeJob(cause: Throwable? = null) {
+        maybeJob.getAndSet(null)?.let { job ->
+            if (cause == null) {
+                job.complete()
+            } else {
+                job.completeExceptionally(cause)
+            }
+        }
+    }
 }
 
 /**

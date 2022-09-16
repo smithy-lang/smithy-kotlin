@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.io.Buffer
+import aws.smithy.kotlin.runtime.io.AttachableJobReadChannelBase
 import aws.smithy.kotlin.runtime.io.SdkByteBuffer
 import aws.smithy.kotlin.runtime.io.bytes
 import kotlinx.atomicfu.AtomicRef
@@ -27,7 +28,7 @@ internal data class ClosedSentinel(val cause: Throwable?)
 internal abstract class AbstractBufferedReadChannel(
     // function invoked every time n bytes are read
     private val onBytesRead: (n: Int) -> Unit,
-) : BufferedReadChannel {
+) : AttachableJobReadChannelBase(), BufferedReadChannel {
 
     // NOTE: the channel is configured as unlimited but will always be constrained by the window size such
     // that there are only ever WINDOW_SIZE _bytes_ in-flight at any given time
@@ -254,19 +255,20 @@ internal abstract class AbstractBufferedReadChannel(
 
     override fun cancel(cause: Throwable?): Boolean {
         val success = _closed.compareAndSet(null, ClosedSentinel(cause))
-        if (!success) return false
+        if (success) {
+            segments.close(cause)
 
-        segments.close(cause)
-
-        readOp.getAndSet(null)?.let { cont ->
-            if (cause != null) {
-                cont.resumeWithException(cause)
-            } else {
-                cont.resume(availableForRead > 0)
+            readOp.getAndSet(null)?.let { cont ->
+                if (cause != null) {
+                    cont.resumeWithException(cause)
+                } else {
+                    cont.resume(availableForRead > 0)
+                }
             }
-        }
 
-        return true
+            completeJob(cause)
+        }
+        return success
     }
 
     override fun close() {
