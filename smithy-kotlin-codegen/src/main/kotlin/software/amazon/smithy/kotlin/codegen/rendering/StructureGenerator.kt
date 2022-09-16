@@ -9,10 +9,8 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.model.shapes.BlobShape
-import software.amazon.smithy.model.shapes.MemberShape
-import software.amazon.smithy.model.shapes.ShapeType
-import software.amazon.smithy.model.shapes.StructureShape
+import software.amazon.smithy.model.knowledge.NullableIndex
+import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
 import software.amazon.smithy.model.traits.RetryableTrait
@@ -30,6 +28,7 @@ class StructureGenerator(
     private val symbolProvider = ctx.symbolProvider
     private val model = ctx.model
     private val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
+    private val nullableIndex = NullableIndex(ctx.model)
 
     fun render() {
         writer.renderDocumentation(shape)
@@ -149,17 +148,15 @@ class StructureGenerator(
     // Return the appropriate hashCode fragment based on ShapeID of member target.
     private fun selectHashFunctionForShape(member: MemberShape): String {
         val targetShape = model.expectShape(member.target)
-        // also available already in the byMember map
-        val targetSymbol = symbolProvider.toSymbol(targetShape)
-
+        val isNullable = nullableIndex.isMemberNullable(member, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
         return when (targetShape.type) {
             ShapeType.INTEGER ->
-                when (targetSymbol.isBoxed) {
+                when (isNullable) {
                     true -> " ?: 0"
                     else -> ""
                 }
             ShapeType.BYTE ->
-                when (targetSymbol.isBoxed) {
+                when (isNullable) {
                     true -> "?.toInt() ?: 0"
                     else -> ".toInt()"
                 }
@@ -172,7 +169,7 @@ class StructureGenerator(
                     "?.contentHashCode() ?: 0"
                 }
             else ->
-                when (targetSymbol.isBoxed) {
+                when (isNullable) {
                     true -> "?.hashCode() ?: 0"
                     else -> ".hashCode()"
                 }

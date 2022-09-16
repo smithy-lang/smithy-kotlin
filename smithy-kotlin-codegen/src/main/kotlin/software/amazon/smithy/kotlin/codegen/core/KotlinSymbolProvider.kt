@@ -9,6 +9,7 @@ import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.lang.kotlinReservedWords
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.model.Model
+import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.SparseTrait
 import software.amazon.smithy.model.traits.StreamingTrait
@@ -26,6 +27,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
     private val service = model.expectShape<ServiceShape>(settings.service)
     private val logger = Logger.getLogger(javaClass.name)
     private val escaper: ReservedWordSymbolProvider.Escaper
+    private val nullableIndex = NullableIndex(model)
 
     // model depth; some shapes use `toSymbol()` internally as they convert (e.g.) member shapes to symbols, this tracks
     // how deep in the model we have recursed
@@ -168,8 +170,11 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetShape =
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
 
-        val targetSymbol = toSymbol(targetShape)
-
+        val targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1)) {
+            toSymbol(targetShape).toBuilder().boxed().build()
+        } else {
+            toSymbol(targetShape)
+        }
         // figure out if we are referencing an event stream or not.
         // NOTE: unlike blob streams we actually re-use the target (union) shape which is why we can't do this
         // when visiting a unionShape() like we can for blobShape()
@@ -249,9 +254,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val builder = Symbol.builder()
             .putProperty(SymbolProperty.SHAPE_KEY, shape)
             .name(typeName)
-
-        val explicitlyBoxed = shape?.hasTrait<@Suppress("DEPRECATION") software.amazon.smithy.model.traits.BoxTrait>() ?: false
-        if (explicitlyBoxed || boxed) {
+        if (boxed) {
             builder.boxed()
         }
         return builder
