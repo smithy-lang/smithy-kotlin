@@ -86,16 +86,6 @@ class EndpointParametersGenerator(
         }
     }
 
-    private fun renderInit() {
-        writer.withBlock("init {", "}") {
-            params.forEach {
-                if (it.isRequired) {
-                    write("""requireNotNull(#1L) { "endpoint provider parameter #1L is required" }""", it.name)
-                }
-            }
-        }
-    }
-
     private fun renderEquals() {
         writer.withBlock("public override fun equals(other: Any?): Boolean {", "}") {
             write("if (this === other) return true")
