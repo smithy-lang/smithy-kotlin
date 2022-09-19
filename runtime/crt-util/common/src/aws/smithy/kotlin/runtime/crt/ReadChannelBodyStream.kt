@@ -45,6 +45,11 @@ public class ReadChannelBodyStream(
             bodyChan.cancel(cause)
         }
 
+        // Poll the channel's `isClosedForRead` and complete when it's true. This works around a timing issue when the
+        // write side of the channel finishes sending bytes but doesn't call `close` in time for the CRT's
+        // `sendRequestBody` loop to pick it up. If CRT reads all the bytes it expects, it ceases calling
+        // `sendRequestBody`, which risks leaving the producer job open indefinitely. This polling loop catches any
+        // missed channel closures and ends the producer job to avoid that issue.
         launch(coroutineContext + CoroutineName("body-channel-watchdog")) {
             while (producerJob.isActive) {
                 if (bodyChan.isClosedForRead) {
