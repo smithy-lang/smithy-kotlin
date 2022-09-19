@@ -1,8 +1,0 @@
-{
-    "id": "2310b190-0074-4d42-89c4-8229b0197609",
-    "type": "bugfix",
-    "description": "Fix the calculation of file lengths on `ByteStream`s from `Path`s",
-    "issues": [
-        "awslabs/smithy-kotlin#678"
-    ]
-}

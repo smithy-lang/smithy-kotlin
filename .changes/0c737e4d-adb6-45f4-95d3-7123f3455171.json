@@ -1,5 +1,0 @@
-{
-    "id": "0c737e4d-adb6-45f4-95d3-7123f3455171",
-    "type": "bugfix",
-    "description": "Fix occasional stream leak due to race condition in CRT engine"
-}

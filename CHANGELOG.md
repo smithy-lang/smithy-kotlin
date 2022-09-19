@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.12.6] - 09/19/2022
+
+### Features
+* Add support for full duplex HTTP exchanges
+
+### Fixes
+* Fix occasional stream leak due to race condition in CRT engine
+* [#678](https://github.com/awslabs/smithy-kotlin/issues/678) Fix the calculation of file lengths on `ByteStream`s from `Path`s
+* Properly check if a member can be nullable
+
+### Miscellaneous
+* Provide an explicit scope for request bound work
+
 ## [0.12.5] - 08/18/2022
 
 ### Fixes
