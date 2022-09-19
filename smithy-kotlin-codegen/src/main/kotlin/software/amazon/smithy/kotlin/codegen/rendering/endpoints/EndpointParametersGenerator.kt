@@ -32,15 +32,15 @@ class EndpointParametersGenerator(
     private val params: List<KotlinEndpointParameter> = rules.parameters.toList()
         .sortedBy { it.name.toKotlin() }
         .map {
-        KotlinEndpointParameter(
-            it.name.toKotlin(),
-            it.type.toSymbol(),
-            it.isRequired,
-            it.defaultValue.getOrNull()?.toKotlinLiteral() ?: "null",
-            it.documentation.getOrNull(),
-            it.deprecated.getOrNull(),
-        )
-    }
+            KotlinEndpointParameter(
+                it.name.toKotlin(),
+                it.type.toSymbol(),
+                it.isRequired,
+                it.defaultValue.getOrNull()?.toKotlinLiteral() ?: "null",
+                it.documentation.getOrNull(),
+                it.deprecated.getOrNull(),
+            )
+        }
 
     fun render() {
         renderDocumentation()
