@@ -61,6 +61,7 @@ private fun String.getIpv6AddressSegments(): List<String>? {
 
 private fun String.isIpv6Address(): Boolean {
     val segments = getIpv6AddressSegments() ?: return false
+    if (segments.size < ipv6DualSegmentCount) return false
 
     // the "common" segments MUST be valid IPv6
     for (i in 0 until ipv6DualSegmentCount - 1) {

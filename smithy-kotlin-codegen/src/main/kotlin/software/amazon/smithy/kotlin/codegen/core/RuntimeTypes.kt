@@ -33,6 +33,8 @@ object RuntimeTypes {
         val isSuccess = runtimeSymbol("isSuccess", KotlinDependency.HTTP)
         val StatusCode = runtimeSymbol("HttpStatusCode", KotlinDependency.HTTP)
         val toSdkByteReadChannel = runtimeSymbol("toSdkByteReadChannel", KotlinDependency.HTTP)
+        val Headers = runtimeSymbol("Headers", KotlinDependency.HTTP)
+        val Url = runtimeSymbol("Url", KotlinDependency.HTTP)
 
         object Util {
             val encodeLabel = runtimeSymbol("encodeLabel", KotlinDependency.HTTP, "util")
@@ -71,6 +73,22 @@ object RuntimeTypes {
 
         object Endpoints {
             val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "endpoints")
+            val Endpoint = runtimeSymbol("Endpoint", KotlinDependency.HTTP, "endpoints")
+            val EndpointProviderException = runtimeSymbol("EndpointProviderException", KotlinDependency.HTTP, "endpoints")
+
+            object Functions {
+                val substring = runtimeSymbol("substring", KotlinDependency.HTTP, "endpoints.functions")
+                val isValidHostLabel = runtimeSymbol("isValidHostLabel", KotlinDependency.HTTP, "endpoints.functions")
+                val uriEncode = runtimeSymbol("uriEncode", KotlinDependency.HTTP, "endpoints.functions")
+                val parseUrl = runtimeSymbol("parseUrl", KotlinDependency.HTTP, "endpoints.functions")
+                val Url = runtimeSymbol("Url", KotlinDependency.HTTP, "endpoints.functions")
+                val partitionFn = runtimeSymbol("partition", KotlinDependency.HTTP, "endpoints.functions")
+                val parseArn = runtimeSymbol("parseArn", KotlinDependency.HTTP, "endpoints.functions")
+                val isVirtualHostableS3Bucket = runtimeSymbol("isVirtualHostableS3Bucket", KotlinDependency.HTTP, "endpoints.functions")
+                val Partition = runtimeSymbol("Partition", KotlinDependency.HTTP, "endpoints.functions")
+                val PartitionConfig = runtimeSymbol("PartitionConfig", KotlinDependency.HTTP, "endpoints.functions")
+                val Arn = runtimeSymbol("Arn", KotlinDependency.HTTP, "endpoints.functions")
+            }
         }
 
         object Engine {
@@ -134,6 +152,7 @@ object RuntimeTypes {
     }
 
     object Utils {
+        val Attributes = runtimeSymbol("Attributes", KotlinDependency.UTILS)
         val AttributeKey = runtimeSymbol("AttributeKey", KotlinDependency.UTILS)
         val flattenIfPossible = runtimeSymbol("flattenIfPossible", KotlinDependency.UTILS)
         val length = runtimeSymbol("length", KotlinDependency.UTILS)

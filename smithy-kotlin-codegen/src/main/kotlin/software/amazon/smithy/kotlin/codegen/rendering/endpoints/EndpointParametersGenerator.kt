@@ -5,30 +5,40 @@
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.core.CodegenContext
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.boxed
+import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
-import software.amazon.smithy.rulesengine.language.EndpointRuleset
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.eval.Value
-import software.amazon.smithy.rulesengine.language.lang.Identifier
-import software.amazon.smithy.rulesengine.language.lang.parameters.Parameter
-import software.amazon.smithy.rulesengine.language.lang.parameters.ParameterType
+import software.amazon.smithy.rulesengine.language.syntax.Identifier
+import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
+import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 
 private const val DEFAULT_DEPRECATED_MESSAGE =
     "This field is deprecated and no longer recommended for use."
-
-private const val CLASS_NAME = "EndpointParameters"
 
 /**
  * Renders the struct of parameters to be passed to the endpoint provider for resolution.
  */
 class EndpointParametersGenerator(
     private val writer: KotlinWriter,
-    rules: EndpointRuleset,
+    rules: EndpointRuleSet,
 ) {
+    companion object {
+        const val CLASS_NAME = "EndpointParameters"
+
+        fun getSymbol(ctx: CodegenContext): Symbol =
+            buildSymbol {
+                name = CLASS_NAME
+                namespace = "${ctx.settings.pkg.name}.endpoints"
+            }
+    }
+
     private val params: List<KotlinEndpointParameter> = rules.parameters.toList()
         .sortedBy { it.name.toKotlin() }
         .map {
@@ -170,7 +180,7 @@ private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, init
     writer.write("")
 }
 
-private fun Identifier.toKotlin(): String =
+internal fun Identifier.toKotlin(): String =
     asString().replaceFirstChar(Char::lowercase)
 
 private fun ParameterType.toSymbol(): Symbol =
@@ -184,7 +194,7 @@ private fun ParameterType.toSymbol(): Symbol =
 
 private fun Value.toKotlinLiteral(): String =
     when (this) {
-        is Value.Str -> expectString().doubleQuote()
+        is Value.String -> expectString().doubleQuote()
         is Value.Bool -> if (expectBool()) "true" else "false"
         else -> throw IllegalArgumentException("unrecognized parameter value type")
     }
