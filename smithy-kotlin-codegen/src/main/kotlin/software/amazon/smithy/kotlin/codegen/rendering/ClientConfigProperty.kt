@@ -264,7 +264,7 @@ object KotlinClientRuntimeConfigProperty {
                 strategy.
             """.trimIndent()
 
-            propertyType = ClientConfigPropertyType.ConstantValue("StandardRetryStrategy()")
+            propertyType = ClientConfigPropertyType.RequiredWithDefault("StandardRetryStrategy()")
 
             additionalImports = listOf(RuntimeTypes.Core.Retries.StandardRetryStrategy)
         }
