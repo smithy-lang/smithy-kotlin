@@ -51,7 +51,7 @@ following fields:
 |---------------|------------|----------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `id`          | `string`   | yes      |                                              | A unique identifier for this entry. We recommend you generate a UUID for this field.                                                                                                                                                                                                                                                             |
 | `type`        | `string`   | yes      | `bugfix`, `feature`, `documentation`, `misc` | The type of change being made.                                                                                                                                                                                                                                                                                                                   |
-| `description` | `string`   | yes      |                                              | A description of the change being made.                                                                                                                                                                                                                                                                                                          |
+| `description` | `string`   | yes      |                                              | A description of the change being made.<ul><li>Prefix with `**Breaking**:` if the change is breaking</li><li>Use the imperative present tense (e.g., "change" not "changed" nor "changes")</li><li>Capitalize first letter</li><li>No dot (.) at the end unless there are multiple sentences</li></ul>                                           |
 | `issues`      | `string[]` | no       |                                              | A list of references to any related issues in the relevant repositories. A reference can be specified in several ways:<ul><li>The issue number, if local to this repository (eg. `#12345`)</li><li>A fully-qualified issue ID (eg.`awslabs/aws-sdk-kotlin#12345`)</li><li>A fully-qualified URL (eg. `https://issuetracker.com/12345`)</li></ul> |
 | `module`      | `string`   | no       |                                              | The area of the code affected by your changes. If unsure, leave this value unset.                                                                                                                                                                                                                                                                |
 
@@ -69,20 +69,19 @@ of your request may disagree and ask that you add one anyway.
 {
   "id": "263ea6ab-4b75-41a8-9c37-821c30d7b9e5",
   "type": "feature",
-  "description": "Add multiplatform support for URL parsing.",
+  "description": "Add multiplatform support for URL parsing",
   "issues": [
     "awslabs/smithy-kotlin#12345"
   ]
 }
 ```
 
-
 When submitting a pull request please have your commits follow these guidelines:
 
 ### Git Commit Guidelines
-This project uses [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for it's commit message format and expects all contributors to follow these guidelines.
+This project uses [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for its commit message format and expects all contributors to follow these guidelines.
 
-Each commit message consists of a **header**, a **body** and a **footer**. The header has a special format that includes a **type**, a **scope** and a **subject**:
+Each commit message consists of a **header**, a **body** (optional), and a **footer** (optional). The header has a special format that includes a **type**, a **scope** and a **subject**:
 
 ```
 <type>(<scope>): <subject>
@@ -90,10 +89,9 @@ Each commit message consists of a **header**, a **body** and a **footer**. The h
 <body>
 <BLANK LINE>
 <footer>
-
 ```
 
-Any line of the commit message should not be longer 100 characters. This allows the message to be easier to read on github as well as in various git tools.
+Any line of the commit message should not be longer 100 characters. This allows the message to be easier to read on GitHub as well as in various git tools.
 
 #### Type
 
@@ -120,66 +118,21 @@ The scope is optional but should be included when possible and refer to a module
 
 The subject contains succinct description of the change:
 
-- use the imperative, present tense: "change" not "changed" nor "changes"
-- don't capitalize first letter
-- no dot (.) at the end
+- Use the imperative present tense (e.g., "change" not "changed" nor "changes")
+- Don't capitalize first letter
+- No dot (.) at the end
 
-#### Body
+#### Body (optional)
 
-Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes" The body should include the motivation for the change and contrast this with previous behavior.
+Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes". The body should include the motivation for the change and contrast this with previous behavior.
 
-#### Footer
+#### Footer (optional)
 
 The footer should contain any information about **Breaking Changes** and is also the place to reference GitHub issues that this commit **Closes**.
 
 The last line of commits introducing breaking changes should be in the form `BREAKING CHANGE: <desc>`
 
 Breaking changes should also add an exclamation mark `!` after the type/scope (e.g. `refactor(rt)!: drop support for Android API < 20`)
-
-### Automated PR checks
-
-A number of automated workflows run when a PR is submitted. Generally speaking, each of these must pass before the PR is
-allowed to be merged. If your PR fails one of the checks, please attempt to address the problem and push a new commit to
-the PR. If you need help understanding or resolving a PR check failure, please reach out via a PR comment or a GitHub
-discussion. Please file a new issue if you believe there's a pre-existing bug in a PR check.
-
-#### Lint
-
-This repo uses [**ktlint**](https://github.com/pinterest/ktlint) (via the
-[ktlint Gradle plugin](https://github.com/JLLeitschuh/ktlint-gradle)). To run a lint check locally, run
-`./gradlew ktlint`.
-
-#### CI linux/macos/windows-compat
-
-To verify cross-OS compatibility, we build our code against Linux, MacOS, and Windows runners provided by GitHub.
-Running these checks independently requires access to hosts with those operating systems. On a host with the correct
-operating system, run `./gradlew build`.
-
-#### CI downstream
-
-This repo is a core dependency of [**aws-sdk-kotlin**](https://github.com/awslabs/aws-sdk-kotlin) and many changes made
-here could impact that repo as well. To ensure that **aws-sdk-kotlin** continues to function correctly, we run a
-downstream CI check that builds both code bases in a shared workspace. To run this check locally, check out both
-repositories into subdirectories of the same parent, build/publish **smithy-kotlin** followed by
-**aws-sdk-kotlin**, and then run the protocol tests. For example:
-
-```shell
-mkdir path/to/workspace # create a new directory to hold both repositories
-cd path/to/workspace
-git clone -b branch-name https://github.com/awslabs/smithy-kotlin.git  # replace branch-name as appropriate
-git clone -b branch-name https://github.com/awslabs/aws-sdk-kotlin.git # replace branch-name as appropriate
-cd smithy-kotlin
-./gradlew build publishToMavenLocal
-cd ../aws-sdk-kotlin
-./gradlew build publishToMavenLocal testAllProtocols
-```
-
-**Note**: Replace `branch-name` in the above commands with the actual names of your branches. When making linked changes
-across both repos, it's best to create/use the same branch name in both locations.
-
-#### Changelog verification
-
-This check enforces the changelog requirements [described above](#Changelog).
 
 ## Finding contributions to work on
 Looking at the existing issues is a great way to find something to contribute on. As our projects, by default, use the default GitHub issue labels (enhancement/bug/duplicate/help wanted/invalid/question/wontfix), looking at any 'help wanted' issues is a great place to start.
@@ -192,7 +145,7 @@ opensource-codeofconduct@amazon.com with any additional questions or comments.
 
 
 ## Security issue notifications
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
+If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
 
 
 ## Licensing
