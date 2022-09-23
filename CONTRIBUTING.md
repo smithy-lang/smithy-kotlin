@@ -51,7 +51,7 @@ following fields:
 |---------------|------------|----------|----------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `id`          | `string`   | yes      |                                              | A unique identifier for this entry. We recommend you generate a UUID for this field.                                                                                                                                                                                                                                                             |
 | `type`        | `string`   | yes      | `bugfix`, `feature`, `documentation`, `misc` | The type of change being made.                                                                                                                                                                                                                                                                                                                   |
-| `description` | `string`   | yes      |                                              | A description of the change being made.                                                                                                                                                                                                                                                                                                          |
+| `description` | `string`   | yes      |                                              | A description of the change being made.<ul><li>Prefix with `**Breaking**:` if the change is breaking</li><li>Use the imperative present tense (e.g., "change" not "changed" nor "changes")</li><li>Capitalize first letter</li><li>No dot (.) at the end unless there are multiple sentences</li></ul>                                           |
 | `issues`      | `string[]` | no       |                                              | A list of references to any related issues in the relevant repositories. A reference can be specified in several ways:<ul><li>The issue number, if local to this repository (eg. `#12345`)</li><li>A fully-qualified issue ID (eg.`awslabs/aws-sdk-kotlin#12345`)</li><li>A fully-qualified URL (eg. `https://issuetracker.com/12345`)</li></ul> |
 | `module`      | `string`   | no       |                                              | The area of the code affected by your changes. If unsure, leave this value unset.                                                                                                                                                                                                                                                                |
 
@@ -69,20 +69,19 @@ of your request may disagree and ask that you add one anyway.
 {
   "id": "263ea6ab-4b75-41a8-9c37-821c30d7b9e5",
   "type": "feature",
-  "description": "Add multiplatform support for URL parsing.",
+  "description": "Add multiplatform support for URL parsing",
   "issues": [
     "awslabs/smithy-kotlin#12345"
   ]
 }
 ```
 
-
 When submitting a pull request please have your commits follow these guidelines:
 
 ### Git Commit Guidelines
-This project uses [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for it's commit message format and expects all contributors to follow these guidelines.
+This project uses [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) for its commit message format and expects all contributors to follow these guidelines.
 
-Each commit message consists of a **header**, a **body** and a **footer**. The header has a special format that includes a **type**, a **scope** and a **subject**:
+Each commit message consists of a **header**, a **body** (optional), and a **footer** (optional). The header has a special format that includes a **type**, a **scope** and a **subject**:
 
 ```
 <type>(<scope>): <subject>
@@ -90,10 +89,9 @@ Each commit message consists of a **header**, a **body** and a **footer**. The h
 <body>
 <BLANK LINE>
 <footer>
-
 ```
 
-Any line of the commit message should not be longer 100 characters. This allows the message to be easier to read on github as well as in various git tools.
+Any line of the commit message should not be longer 100 characters. This allows the message to be easier to read on GitHub as well as in various git tools.
 
 #### Type
 
@@ -120,15 +118,15 @@ The scope is optional but should be included when possible and refer to a module
 
 The subject contains succinct description of the change:
 
-- use the imperative, present tense: "change" not "changed" nor "changes"
-- don't capitalize first letter
-- no dot (.) at the end
+- Use the imperative present tense (e.g., "change" not "changed" nor "changes")
+- Don't capitalize first letter
+- No dot (.) at the end
 
-#### Body
+#### Body (optional)
 
-Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes" The body should include the motivation for the change and contrast this with previous behavior.
+Just as in the **subject**, use the imperative, present tense: "change" not "changed" nor "changes". The body should include the motivation for the change and contrast this with previous behavior.
 
-#### Footer
+#### Footer (optional)
 
 The footer should contain any information about **Breaking Changes** and is also the place to reference GitHub issues that this commit **Closes**.
 
@@ -192,7 +190,7 @@ opensource-codeofconduct@amazon.com with any additional questions or comments.
 
 
 ## Security issue notifications
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
+If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public GitHub issue.
 
 
 ## Licensing
