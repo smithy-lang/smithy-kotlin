@@ -52,9 +52,7 @@ internal class ByteChannelRequestBody(
     private suspend fun transferBody(sink: BufferedSink) = withJob(producerJob) {
         val chan = body.readFrom()
         val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
-        while (!chan.isClosedForRead) {
-            // ensure request context hasn't been cancelled
-            callContext.ensureActive()
+        while (!chan.isClosedForRead && callContext.isActive) {
 
             // fill the buffer by reading chunks from the underlying source
             while (chan.readAvailable(buffer) != -1 && buffer.remaining() > 0) {}
