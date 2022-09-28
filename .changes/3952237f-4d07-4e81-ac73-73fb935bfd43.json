@@ -1,0 +1,5 @@
+{
+    "id": "3952237f-4d07-4e81-ac73-73fb935bfd43",
+    "type": "bugfix",
+    "description": "Switch to a safer check to determine if all bytes have been read from an HTTP body"
+}

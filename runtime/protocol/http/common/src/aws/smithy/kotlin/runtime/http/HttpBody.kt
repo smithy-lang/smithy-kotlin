@@ -137,10 +137,13 @@ public suspend fun HttpBody.readAll(): ByteArray? = when (this) {
         // the stream is closed and no more bytes remain.
         // This is usually sufficient to consume the stream but technically that's not what it's doing.
         // Save us a painful debug session later in the very rare chance this were to occur.
+        //
+        // TODO this check isn't right since it relies on multiple atomics which may be out of sync. We should replace
+        // this logic with something else or remove the ability to [readAll] to a [ByteArray] altogether.
         val isClosedForRead = readChan.isClosedForRead
         val isClosedForWrite = readChan.isClosedForWrite
         val availableForRead = readChan.availableForRead
-        check(readChan.isClosedForRead) {
+        check(readChan.isClosedForRead || isClosedForWrite && availableForRead == 0) {
             "failed to read all HttpBody bytes from stream: isClosedForRead: $isClosedForRead/${readChan.isClosedForRead}; isClosedForWrite: $isClosedForWrite/${readChan.isClosedForWrite}; availableForRead: $availableForRead/${readChan.availableForRead}: ${bytes.decodeToString()}"
         }
 
