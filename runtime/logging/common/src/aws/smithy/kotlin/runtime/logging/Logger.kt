@@ -74,16 +74,6 @@ public interface Logger {
      * Lazy add a log message with throwable payload if error logging is enabled
      */
     public fun error(t: Throwable?, msg: () -> Any?)
-
-    /**
-     * Add a log message indicating an exception will be thrown along with the stack trace.
-     */
-    public fun <T : Throwable> throwing(throwable: T): T
-
-    /**
-     * Add a log message indicating an exception is caught along with the stack trace.
-     */
-    public fun <T : Throwable> catching(throwable: T)
 }
 
 /**

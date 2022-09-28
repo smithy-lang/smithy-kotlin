@@ -15,7 +15,8 @@ import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
-import aws.smithy.kotlin.runtime.tracing.childTraceSpan
+import aws.smithy.kotlin.runtime.tracing.debug
+import aws.smithy.kotlin.runtime.tracing.withChildSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -34,9 +35,9 @@ public open class Retry<O>(
             var attempt = 1
             val wrappedPolicy = PolicyLogger(policy, request.context)
             val outcome = strategy.retry(wrappedPolicy) {
-                request.context.childTraceSpan("Attempt-$attempt") {
+                request.context.withChildSpan("Attempt-$attempt") {
                     if (attempt > 1) {
-                        request.context.getLogger<Retry<*>>().debug { "retrying request, attempt $attempt" }
+                        request.context.debug<Retry<*>> { "retrying request, attempt $attempt" }
                     }
 
                     // Deep copy the request because later middlewares (e.g., signing) mutate it
@@ -55,7 +56,7 @@ public open class Retry<O>(
             }
             outcome.getOrThrow()
         } else {
-            request.context.childTraceSpan("Attempt-1") { // Include an attempt trace span even though we won't retry
+            request.context.withChildSpan("NonRetryableAttempt") { // Create a child span even though we won't retry
                 next.call(request)
             }
         }
@@ -77,7 +78,7 @@ private class PolicyLogger(
 ) : RetryPolicy<Any?> {
     override fun evaluate(result: Result<Any?>): RetryDirective = policy.evaluate(result).also {
         if (it is RetryDirective.TerminateAndFail) {
-            ctx.getLogger<Retry<*>>().debug { "request failed with non-retryable error" }
+            ctx.debug<Retry<*>> { "request failed with non-retryable error" }
         }
     }
 }

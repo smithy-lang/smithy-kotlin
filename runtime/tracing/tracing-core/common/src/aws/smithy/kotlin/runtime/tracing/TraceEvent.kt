@@ -28,7 +28,7 @@ public sealed interface TraceEventData {
     /**
      * A message that contains freeform text and optionally an exception.
      * @param exception An optional exception which explains the message.
-     * @param content: A lambda which provides the content of the message. This content does not need to include any
+     * @param content A lambda which provides the content of the message. This content does not need to include any
      * data from the exception (if any), which may be concatenated later based on probe behavior.
      */
     public data class Message(public val exception: Throwable? = null, public val content: () -> Any?) : TraceEventData

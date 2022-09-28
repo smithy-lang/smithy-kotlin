@@ -42,7 +42,7 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.sdkRequestId")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.childTraceSpan")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.withChildSpan")
     }
 
     @Test
@@ -89,7 +89,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFoo-${'$'}{op.context.sdkRequestId}") {
             op.roundTrip(client, input)
         }
     }
@@ -107,7 +107,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooNoInput-${'$'}{op.context.sdkRequestId}") {
             op.roundTrip(client, input)
         }
     }
@@ -125,7 +125,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooNoOutput-${'$'}{op.context.sdkRequestId}") {
             op.roundTrip(client, input)
         }
     }
@@ -143,7 +143,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooStreamingInput-${'$'}{op.context.sdkRequestId}") {
             op.roundTrip(client, input)
         }
     }
@@ -161,7 +161,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooStreamingOutput-${'$'}{op.context.sdkRequestId}") {
             op.execute(client, input, block)
         }
     }
@@ -179,7 +179,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooStreamingOutputNoInput-${'$'}{op.context.sdkRequestId}") {
             op.execute(client, input, block)
         }
     }
@@ -197,7 +197,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooStreamingInputNoOutput-${'$'}{op.context.sdkRequestId}") {
             op.roundTrip(client, input)
         }
     }
@@ -215,7 +215,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooNoRequired-${'$'}{op.context.sdkRequestId}") {
             op.roundTrip(client, input)
         }
     }
@@ -233,7 +233,7 @@ class HttpProtocolClientGeneratorTest {
             }
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
-        return op.context.childTraceSpan(op.context.sdkRequestId) {
+        return op.context.withChildSpan("GetFooSomeRequired-${'$'}{op.context.sdkRequestId}") {
             op.roundTrip(client, input)
         }
     }

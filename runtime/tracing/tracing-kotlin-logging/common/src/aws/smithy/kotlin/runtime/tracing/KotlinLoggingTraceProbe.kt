@@ -22,17 +22,17 @@ public class KotlinLoggingTraceProbe : TraceProbe {
     }
 
     private fun log(spanId: String, event: TraceEvent) {
-        val logger = KotlinLogging.logger(event.sourceComponent)
+        val loggerName = "$spanId @ ${event.sourceComponent}"
+        val logger = KotlinLogging.logger(loggerName)
         val method = event.level.loggerMethod()
-        method(logger) {
-            val msg = (event.data as TraceEventData.Message).content()
-            "$spanId: $msg"
-        }
+        method(logger, (event.data as TraceEventData.Message).content)
     }
 
     override fun postEvents(span: TraceSpan, events: Iterable<TraceEvent>) {
         val spanId = span.hierarchicalId
-        events.filter { it.data is TraceEventData.Message }.forEach { log(spanId, it) }
+        events.forEach {
+            if (it.data is TraceEventData.Message) log(spanId, it)
+        }
     }
 
     override fun spanClosed(span: TraceSpan) { } // No action necessary

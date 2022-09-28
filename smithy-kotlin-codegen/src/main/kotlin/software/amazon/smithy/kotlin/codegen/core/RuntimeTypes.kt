@@ -229,7 +229,7 @@ object RuntimeTypes {
             val DefaultTracer = runtimeSymbol("DefaultTracer", KotlinDependency.CORE, "tracing")
             val NoOpTraceProbe = runtimeSymbol("NoOpTraceProbe", KotlinDependency.CORE, "tracing")
             val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.CORE, "tracing")
-            val childTraceSpan = runtimeSymbol("childTraceSpan", KotlinDependency.CORE, "tracing")
+            val withChildSpan = runtimeSymbol("withChildSpan", KotlinDependency.CORE, "tracing")
         }
     }
 

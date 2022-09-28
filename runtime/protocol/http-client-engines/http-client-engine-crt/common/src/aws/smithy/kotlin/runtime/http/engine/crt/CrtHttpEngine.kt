@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.warn
 import kotlinx.coroutines.job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -76,8 +77,6 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
-        val reqLogger = context.getLogger<CrtHttpEngine>()
-
         val proxyConfig = config.proxySelector.select(request.url)
         val manager = getManagerForUri(request.uri, proxyConfig)
 
@@ -90,7 +89,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
         val respHandler = SdkStreamResponseHandler(conn)
         callContext.job.invokeOnCompletion {
-            reqLogger.trace { "completing handler; cause=$it" }
+            context.warn<CrtHttpEngine> { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
             respHandler.complete()
         }
