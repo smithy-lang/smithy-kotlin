@@ -1,0 +1,6 @@
+{
+  "id": "a73c323b-980c-408e-9f67-6ed2d9c0ade7",
+  "type": "bugfix",
+  "description": "Disable throwing CancellationException in OkHttp engine's transferBody method",
+  "issues": ["awslabs/aws-sdk-kotlin#704"]
+}
