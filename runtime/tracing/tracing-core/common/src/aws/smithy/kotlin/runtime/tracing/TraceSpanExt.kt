@@ -172,6 +172,11 @@ public inline fun <reified T> TraceSpan.trace(ex: Throwable? = null, noinline co
  */
 public fun TraceSpan.logger(forSourceComponent: String): Logger = TraceSpanLogger(this, forSourceComponent)
 
+public inline fun <reified T> TraceSpan.logger(): Logger {
+    val sourceComponent = requireNotNull(T::class.qualifiedName) { "logger<T> cannot be used on an anonymous object" }
+    return logger(sourceComponent)
+}
+
 private class TraceSpanLogger(private val span: TraceSpan, private val sourceComponent: String) : Logger {
     fun log(level: EventLevel, ex: Throwable? = null, msg: () -> Any?) {
         val event = TraceEvent(

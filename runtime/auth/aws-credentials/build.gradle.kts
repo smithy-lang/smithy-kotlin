@@ -13,6 +13,8 @@ kotlin {
             dependencies {
                 // For Instant
                 api(project(":runtime:runtime-core"))
+                // For TraceSpan
+                api(project(":runtime:tracing:tracing-core"))
             }
         }
 

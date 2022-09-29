@@ -21,6 +21,7 @@ import aws.smithy.kotlin.runtime.http.util.StringValuesMap
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
+import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
@@ -433,7 +434,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
 }
 
 private class JsonCredentialsProvider(private val jsonObject: JsonObject) : CredentialsProvider {
-    override suspend fun getCredentials(): Credentials = Credentials(
+    override suspend fun getCredentials(traceSpan: TraceSpan): Credentials = Credentials(
         jsonObject["access_key_id"]!!.jsonPrimitive.content,
         jsonObject["secret_access_key"]!!.jsonPrimitive.content,
         jsonObject["token"]?.jsonPrimitive?.content,
