@@ -11,7 +11,7 @@ import mu.KotlinLogging
  * A [TraceProbe] that logs events to the [kotlin-logging](https://github.com/MicroUtils/kotlin-logging) library.
  * kotlin-logging requires configuration (e.g., of Slf4j on JVM) before events sent to the probe will appear in logs.
  */
-public class KotlinLoggingTraceProbe : TraceProbe {
+public object KotlinLoggingTraceProbe : TraceProbe {
     private fun EventLevel.loggerMethod(): (KLogger, () -> Any?) -> Unit = when (this) {
         EventLevel.Fatal,
         EventLevel.Error, -> KLogger::error

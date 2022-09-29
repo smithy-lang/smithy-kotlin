@@ -24,6 +24,8 @@ kotlin {
 
                 // Necessary for Logger
                 api(project(":runtime:logging"))
+
+                implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
             }
         }
 

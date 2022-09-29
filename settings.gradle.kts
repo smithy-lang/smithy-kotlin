@@ -56,7 +56,6 @@ include(":runtime:serde:serde-xml")
 include(":runtime:smithy-test")
 include(":runtime:testing")
 include(":runtime:tracing:tracing-core")
-include(":runtime:tracing:tracing-kotlin-logging")
 include(":runtime:utils")
 
 include(":smithy-kotlin-codegen")

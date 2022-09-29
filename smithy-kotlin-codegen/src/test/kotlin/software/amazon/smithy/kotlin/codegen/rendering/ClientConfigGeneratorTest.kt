@@ -49,7 +49,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
-    override val traceProbe: TraceProbe = builder.traceProbe ?: NoOpTraceProbe
+    override val traceProbe: TraceProbe = builder.traceProbe ?: KotlinLoggingTraceProbe
 """
         contents.shouldContainWithDiff(expectedProps)
 
@@ -95,7 +95,8 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         public var sdkLogMode: SdkLogMode = SdkLogMode.Default
         /**
          * The probe that receives tracing events such as logging messages and metrics. This probe can be used
-         * to send tracing events to other frameworks outside the SDK. By default, a no-op probe is selected.
+         * to send tracing events to other frameworks outside the SDK. By default, a probe which utilizes
+         * kotlin-logging is selected.
          */
         public var traceProbe: TraceProbe? = null
 

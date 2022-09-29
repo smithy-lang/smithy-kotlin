@@ -339,11 +339,12 @@ object KotlinClientRuntimeConfigProperty {
             baseClass = tracingClientConfigSymbol
             documentation = """
                 The probe that receives tracing events such as logging messages and metrics. This probe can be used
-                to send tracing events to other frameworks outside the SDK. By default, a no-op probe is selected.
+                to send tracing events to other frameworks outside the SDK. By default, a probe which utilizes
+                kotlin-logging is selected.
             """.trimIndent()
-            propertyType = ClientConfigPropertyType.RequiredWithDefault("NoOpTraceProbe")
+            propertyType = ClientConfigPropertyType.RequiredWithDefault("KotlinLoggingTraceProbe")
             additionalImports = listOf(
-                RuntimeTypes.Tracing.Core.NoOpTraceProbe,
+                RuntimeTypes.Tracing.Core.KotlinLoggingTraceProbe,
             )
         }
     }

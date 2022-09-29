@@ -20,5 +20,5 @@ public interface TracingClientConfig {
      * tracing events to other frameworks outside the SDK. By default, a no-op probe is selected.
      */
     public val traceProbe: TraceProbe
-        get() = NoOpTraceProbe
+        get() = KotlinLoggingTraceProbe
 }
