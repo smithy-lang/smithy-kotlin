@@ -5,8 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
-import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.tracing.trace
 import okhttp3.*
 import java.io.IOException
 import java.net.InetAddress
@@ -16,18 +15,18 @@ import java.net.Proxy
 internal class HttpEngineEventListener(
     private val pool: ConnectionPool,
 ) : EventListener() {
-    private val logger = Logger.getLogger<HttpEngineEventListener>()
-
     private inline fun traceCall(call: Call, crossinline msg: () -> Any) {
-        val sdkRequestTag = call.request().tag<SdkRequestTag>()
-        val sdkRequestId = sdkRequestTag?.execContext?.getOrNull(HttpOperationContext.SdkRequestId)
-        logger.trace { "[sdkRequestId=$sdkRequestId] ${msg()}" }
+        call.request().tag<SdkRequestTag>()?.execContext?.let { ctx ->
+            val sdkRequestId = ctx.getOrNull(HttpOperationContext.SdkRequestId)
+            ctx.trace<HttpEngineEventListener> { "[sdkRequestId=$sdkRequestId] ${msg()}" }
+        }
     }
 
     private inline fun traceCall(call: Call, throwable: Throwable, crossinline msg: () -> Any) {
-        val sdkRequestTag = call.request().tag<SdkRequestTag>()
-        val sdkRequestId = sdkRequestTag?.execContext?.getOrNull(HttpOperationContext.SdkRequestId)
-        logger.trace(throwable) { "[sdkRequestId=$sdkRequestId] ${msg()}" }
+        call.request().tag<SdkRequestTag>()?.execContext?.let { ctx ->
+            val sdkRequestId = ctx.getOrNull(HttpOperationContext.SdkRequestId)
+            ctx.trace<HttpEngineEventListener>(throwable) { "[sdkRequestId=$sdkRequestId] ${msg()}" }
+        }
     }
 
     override fun callStart(call: Call) {
