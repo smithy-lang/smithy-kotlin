@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.7] - 09/29/2022
+
+### Features
+* [#486](https://github.com/awslabs/aws-sdk-kotlin/issues/486) Enable configurability of the retry strategy through environment variables, system properties, and AWS profiles.
+
+### Fixes
+* Switch to a safer check to determine if all bytes have been read from an HTTP body
+* [#704](https://github.com/awslabs/aws-sdk-kotlin/issues/704) Disable throwing CancellationException in OkHttp engine's transferBody method
+
+### Miscellaneous
+* Update/clarify changelog and commit instructions in the Contributing Guidelines
+
 ## [0.12.6] - 09/19/2022
 
 ### Features
