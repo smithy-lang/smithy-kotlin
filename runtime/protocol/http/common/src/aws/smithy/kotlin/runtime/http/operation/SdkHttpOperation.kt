@@ -51,6 +51,9 @@ public class SdkHttpOperation<I, O>(
     }
 }
 
+/**
+ * Gets the unique ID that identifies the active SDK request in this [ExecutionContext].
+ */
 public val ExecutionContext.sdkRequestId: String
     get() = get(HttpOperationContext.SdkRequestId)
 

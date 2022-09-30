@@ -85,7 +85,7 @@ data class TraceEvent(
 enum class EventLevel { Fatal, Error, Warning, Info, Debug, Trace }
 
 sealed interface TraceEventData {
-  data class Message(val exception: Throwable? = null, val text: () -> String) : TraceEventData
+  data class Message(val exception: Throwable? = null, val content: () -> Any?) : TraceEventData
 
   sealed interface Metric : TraceEventData { val metric: String }
   data class Count<T : Number>(override val metric: String, val count: () -> T) : Metric
@@ -106,7 +106,7 @@ aggregate some metrics, ignore some events, etc.).
 
 Event data values (i.e., message text, count values, and timespan durations) are provided as lambdas rather than with
 direct values. This allows probe implementations to skip calculating them in the event they would otherwise be discarded
-(e.g., for event emitted at a level ignored by the probe).
+(e.g., for events emitted at a level ignored by the probe).
 
 ## Trace Probe
 

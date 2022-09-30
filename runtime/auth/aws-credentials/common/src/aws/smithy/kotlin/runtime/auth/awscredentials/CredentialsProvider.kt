@@ -13,6 +13,9 @@ import aws.smithy.kotlin.runtime.tracing.TraceSpan
 public interface CredentialsProvider {
     /**
      * Request credentials from the provider
+     * @param traceSpan An optional span to which trace events should be emitted. Defaults to [NoOpTraceSpan] if none is
+     * specified.
+     * @return A set of [Credentials].
      */
     public suspend fun getCredentials(traceSpan: TraceSpan = NoOpTraceSpan): Credentials
 }

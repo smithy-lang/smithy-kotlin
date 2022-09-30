@@ -172,6 +172,10 @@ public inline fun <reified T> TraceSpan.trace(ex: Throwable? = null, noinline co
  */
 public fun TraceSpan.logger(forSourceComponent: String): Logger = TraceSpanLogger(this, forSourceComponent)
 
+/**
+ * Gets a [Logger] for this [TraceSpan]. The [T] type is used as the component name for messages emitted to this logger.
+ * @param T The class to use for the name of the component for all messages
+ */
 public inline fun <reified T> TraceSpan.logger(): Logger {
     val sourceComponent = requireNotNull(T::class.qualifiedName) { "logger<T> cannot be used on an anonymous object" }
     return logger(sourceComponent)
