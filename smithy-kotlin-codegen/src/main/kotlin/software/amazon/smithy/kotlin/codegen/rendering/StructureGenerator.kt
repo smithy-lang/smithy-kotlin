@@ -28,7 +28,6 @@ class StructureGenerator(
     private val symbolProvider = ctx.symbolProvider
     private val model = ctx.model
     private val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
-    private val nullableIndex = NullableIndex(ctx.model)
 
     fun render() {
         writer.renderDocumentation(shape)
