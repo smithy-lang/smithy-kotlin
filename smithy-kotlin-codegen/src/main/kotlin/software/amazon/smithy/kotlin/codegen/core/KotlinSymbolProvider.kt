@@ -170,7 +170,7 @@ class KotlinSymbolProvider(private val model: Model, private val settings: Kotli
         val targetShape =
             model.getShape(shape.target).orElseThrow { CodegenException("Shape not found: ${shape.target}") }
 
-        val targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1)) {
+        val targetSymbol = if (nullableIndex.isMemberNullable(shape, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)) {
             toSymbol(targetShape).toBuilder().boxed().build()
         } else {
             toSymbol(targetShape)

@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
-import software.amazon.smithy.model.knowledge.NullableIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.ErrorTrait
 import software.amazon.smithy.model.traits.HttpLabelTrait
@@ -28,7 +27,6 @@ class StructureGenerator(
     private val symbolProvider = ctx.symbolProvider
     private val model = ctx.model
     private val symbol = ctx.symbolProvider.toSymbol(ctx.shape)
-    private val nullableIndex = NullableIndex(ctx.model)
 
     fun render() {
         writer.renderDocumentation(shape)
@@ -148,7 +146,7 @@ class StructureGenerator(
     // Return the appropriate hashCode fragment based on ShapeID of member target.
     private fun selectHashFunctionForShape(member: MemberShape): String {
         val targetShape = model.expectShape(member.target)
-        val isNullable = nullableIndex.isMemberNullable(member, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
+        val isNullable = memberNameSymbolIndex[member]!!.second.isBoxed
         return when (targetShape.type) {
             ShapeType.INTEGER ->
                 when (isNullable) {
