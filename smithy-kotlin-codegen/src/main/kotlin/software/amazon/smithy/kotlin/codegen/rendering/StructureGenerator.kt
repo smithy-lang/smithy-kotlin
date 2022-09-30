@@ -148,7 +148,7 @@ class StructureGenerator(
     // Return the appropriate hashCode fragment based on ShapeID of member target.
     private fun selectHashFunctionForShape(member: MemberShape): String {
         val targetShape = model.expectShape(member.target)
-        val isNullable = nullableIndex.isMemberNullable(member, NullableIndex.CheckMode.CLIENT_ZERO_VALUE_V1_NO_INPUT)
+        val isNullable = memberNameSymbolIndex[member]!!.second.isBoxed
         return when (targetShape.type) {
             ShapeType.INTEGER ->
                 when (isNullable) {
