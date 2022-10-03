@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.8] - 10/03/2022
+
+### Fixes
+* Fix inconsistent nullability semantics when generating struct members.
+
 ## [0.12.7] - 09/29/2022
 
 ### Features

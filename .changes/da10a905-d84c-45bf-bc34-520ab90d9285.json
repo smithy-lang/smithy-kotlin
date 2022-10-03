@@ -1,5 +1,0 @@
-{
-    "id": "da10a905-d84c-45bf-bc34-520ab90d9285",
-    "type": "bugfix",
-    "description": "Fix inconsistent nullability semantics when generating struct members."
-}
