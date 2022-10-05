@@ -1,0 +1,6 @@
+{
+  "id": "329b6bc4-1242-4cc2-89af-600e0013eaf7",
+  "type": "feature",
+  "description": "Add nextRefresh field to credentials to be used for static stability",
+  "issues": ["awslabs/aws-sdk-kotlin#707"]
+}
