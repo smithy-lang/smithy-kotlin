@@ -17,5 +17,4 @@ public data class Credentials(
     val sessionToken: String? = null,
     val expiration: Instant? = null,
     val providerName: String? = null,
-    val nextRefresh: Instant? = null,
 )
