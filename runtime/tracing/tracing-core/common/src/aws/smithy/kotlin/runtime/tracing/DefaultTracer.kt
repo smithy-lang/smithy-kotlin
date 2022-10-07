@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.tracing
 
-import aws.smithy.kotlin.runtime.util.InternalApi
-
 private class DefaultTraceSpan(
     private val probe: TraceProbe,
     override val parent: TraceSpan?,
@@ -20,7 +18,11 @@ private class DefaultTraceSpan(
     }
 }
 
-@InternalApi
+/**
+ * The default [Tracer] implementation. This tracer allows configuring the [TraceProbe] to which events will be omitted.
+ * @param probe The [TraceProbe] to which events will be omitted.
+ * @param rootId The ID for the root [TraceSpan] of this tracer.
+ */
 public class DefaultTracer(private val probe: TraceProbe, private val rootId: String) : Tracer {
-    override fun createRootSpan(): TraceSpan = DefaultTraceSpan(probe, null, rootId)
+    override val rootSpan: TraceSpan by lazy { DefaultTraceSpan(probe, null, rootId) }
 }

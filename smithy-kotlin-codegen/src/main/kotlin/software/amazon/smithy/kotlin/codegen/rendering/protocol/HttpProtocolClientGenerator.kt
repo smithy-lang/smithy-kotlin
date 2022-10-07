@@ -73,10 +73,7 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
-        writer.write(
-            "private val rootTraceSpan = #T(config.traceProbe, config.clientName).createRootSpan()",
-            RuntimeTypes.Tracing.Core.DefaultTracer,
-        )
+        writer.write("private val rootTraceSpan = config.tracer.rootSpan")
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {

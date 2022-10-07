@@ -22,10 +22,12 @@ public object KotlinLoggingTraceProbe : TraceProbe {
     }
 
     private fun log(spanId: String, event: TraceEvent) {
-        val loggerName = "$spanId @ ${event.sourceComponent}"
-        val logger = KotlinLogging.logger(loggerName)
+        val logger = KotlinLogging.logger(event.sourceComponent)
         val method = event.level.loggerMethod()
-        method(logger, (event.data as TraceEventData.Message).content)
+        method(logger) {
+            val msg = (event.data as TraceEventData.Message).content()
+            "$spanId: $msg"
+        }
     }
 
     override fun postEvents(span: TraceSpan, events: Iterable<TraceEvent>) {

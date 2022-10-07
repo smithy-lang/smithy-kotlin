@@ -4,8 +4,17 @@
  */
 package aws.smithy.kotlin.runtime.tracing
 
+import aws.smithy.kotlin.runtime.io.use
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
+
+/**
+ * Creates a child span of this [TraceSpan] and passes it to the given [block]. The span is closed when the block
+ * completes (regardless of whether the block terminates normally or exceptionally).
+ * @param id The id for the new span. IDs should be unique among sibling spans within the same parent.
+ * @param block The block to execute with the new child span passed as an argument.
+ */
+public inline fun <T> TraceSpan.withChildSpan(id: String, block: (TraceSpan) -> T): T = child(id).use { block(it) }
 
 /**
  * Records a single new event that has occurred within the logical context of this span.

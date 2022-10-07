@@ -218,13 +218,12 @@ private fun builtInProperty(
  * Common client runtime related config properties
  */
 object KotlinClientRuntimeConfigProperty {
-    val ClientName: ClientConfigProperty
     val HttpClientEngine: ClientConfigProperty
     val IdempotencyTokenProvider: ClientConfigProperty
     val RetryStrategy: ClientConfigProperty
     val SdkLogMode: ClientConfigProperty
     val EndpointResolver: ClientConfigProperty
-    val TraceProbe: ClientConfigProperty
+    val Tracer: ClientConfigProperty
 
     init {
         val httpClientConfigSymbol = buildSymbol {
@@ -311,41 +310,28 @@ object KotlinClientRuntimeConfigProperty {
             namespace(KotlinDependency.TRACING_CORE)
         }
 
-        ClientName = ClientConfigProperty {
-            name = "clientName"
-            symbol = buildSymbol {
-                name = "String"
-                defaultValue = "null"
-            }
+        // TODO support a nice DSL for this so that callers don't have to be aware of `DefaultTracer` if they don't want
+        // to, they can just call `SomeClient { tracer { clientName = "Foo" } }` in the simple case.
+        Tracer = ClientConfigProperty {
+            symbol = RuntimeTypes.Tracing.Core.Tracer
             baseClass = tracingClientConfigSymbol
             documentation = """
-                The name of this client, which will be used in tracing data. If using multiple clients for the same
-                service simultaneously, giving them unique names can help disambiguate them in logging messages or
-                metrics. By default, the client name will be the same as the service name.
+                The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
+                a trace probe). By default, this will create a standard tracer that uses the service name for the root
+                trace span and delegates to a kotlin-logging trace probe (i.e.,
+                `DefaultTracer(KotlinLoggingTraceProbe, "<service-name>")`).
             """.trimIndent()
             propertyType = ClientConfigPropertyType.Custom { prop, writer ->
                 val serviceName = writer.getContext("service.name")?.toString()
                     ?: throw CodegenException("The service.name context must be set for client config generation")
                 writer.write(
-                    "override val #1L: String = builder.#1L ?: #2S",
+                    "override val #1L: Tracer = builder.#1L ?: #2T(#3T, #4S)",
                     prop.propertyName,
+                    RuntimeTypes.Tracing.Core.DefaultTracer,
+                    RuntimeTypes.Tracing.Core.KotlinLoggingTraceProbe,
                     serviceName,
                 )
             }
-        }
-
-        TraceProbe = ClientConfigProperty {
-            symbol = RuntimeTypes.Tracing.Core.TraceProbe
-            baseClass = tracingClientConfigSymbol
-            documentation = """
-                The probe that receives tracing events such as logging messages and metrics. This probe can be used
-                to send tracing events to other frameworks outside the SDK. By default, a probe which utilizes
-                kotlin-logging is selected.
-            """.trimIndent()
-            propertyType = ClientConfigPropertyType.RequiredWithDefault("KotlinLoggingTraceProbe")
-            additionalImports = listOf(
-                RuntimeTypes.Tracing.Core.KotlinLoggingTraceProbe,
-            )
         }
     }
 }

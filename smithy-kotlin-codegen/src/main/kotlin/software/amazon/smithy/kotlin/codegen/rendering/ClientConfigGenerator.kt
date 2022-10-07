@@ -41,8 +41,7 @@ class ClientConfigGenerator(
                 add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
             }
             add(KotlinClientRuntimeConfigProperty.RetryStrategy)
-            add(KotlinClientRuntimeConfigProperty.ClientName)
-            add(KotlinClientRuntimeConfigProperty.TraceProbe)
+            add(KotlinClientRuntimeConfigProperty.Tracer)
         }
     }
 

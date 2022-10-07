@@ -9,16 +9,9 @@ package aws.smithy.kotlin.runtime.tracing
  */
 public interface TracingClientConfig {
     /**
-     * The name of this client, which will be used in tracing data. If using multiple clients for the same service
-     * simultaneously, giving them unique names can help disambiguate them in logging messages or metrics. By default,
-     * the client name will be the same as the service name.
+     * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g., a trace
+     * probe). By default, this will create a standard tracer that uses the service name for the root trace span and
+     * delegates to a kotlin-logging trace probe (i.e., `DefaultTracer(KotlinLoggingTraceProbe, "<service-name>")`).
      */
-    public val clientName: String
-
-    /**
-     * The probe that receives tracing events such as logging messages and metrics. This probe can be used to send
-     * tracing events to other frameworks outside the SDK. By default, a no-op probe is selected.
-     */
-    public val traceProbe: TraceProbe
-        get() = KotlinLoggingTraceProbe
+    public val tracer: Tracer
 }

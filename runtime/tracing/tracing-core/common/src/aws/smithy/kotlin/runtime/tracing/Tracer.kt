@@ -9,7 +9,19 @@ package aws.smithy.kotlin.runtime.tracing
  */
 public interface Tracer {
     /**
-     * Create a "root" trace span, from which all child spans will be created for a given context.
+     * Get the "root" trace span, from which all child spans will be created for a given context.
      */
-    public fun createRootSpan(): TraceSpan
+    public val rootSpan: TraceSpan
 }
+
+private class NestedTracer(private val originSpan: TraceSpan, private val rootId: String) : Tracer {
+    override val rootSpan: TraceSpan by lazy { originSpan.child(rootId) }
+}
+
+/**
+ * Creates a new [Tracer] using this [TraceSpan] as a parent. This new tracer uses the same trace probe configuration as
+ * the origin trace span. Child spans (including the root) created from this new tracer will be descendents of this
+ * trace span.
+ * @param rootId The ID for the root [TraceSpan] of the new tracer.
+ */
+public fun TraceSpan.asNestedTracer(rootId: String): Tracer = NestedTracer(this, rootId)
