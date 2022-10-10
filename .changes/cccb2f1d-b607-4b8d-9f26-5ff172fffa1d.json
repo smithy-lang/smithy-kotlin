@@ -1,0 +1,8 @@
+{
+    "id": "cccb2f1d-b607-4b8d-9f26-5ff172fffa1d",
+    "type": "bugfix",
+    "description": "Properly parse timestamps when format override is applied to target shapes",
+    "issues": [
+        "awslabs/smithy-kotlin#714"
+    ]
+}
