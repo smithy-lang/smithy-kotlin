@@ -541,10 +541,8 @@ open class DeserializeStructGenerator(
 
             target.type == ShapeType.TIMESTAMP -> {
                 writer.addImport(RuntimeTypes.Core.Instant)
-                val tsFormat = shape
-                    .getTrait(TimestampFormatTrait::class.java)
-                    .map { it.format }
-                    .orElse(defaultTimestampFormat)
+                val trait = shape.getTrait<TimestampFormatTrait>() ?: target.getTrait()
+                val tsFormat = trait?.format ?: defaultTimestampFormat
 
                 when (tsFormat) {
                     TimestampFormatTrait.Format.EPOCH_SECONDS -> "deserializeString().let { Instant.fromEpochSeconds(it) }"
