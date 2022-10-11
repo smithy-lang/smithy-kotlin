@@ -73,7 +73,6 @@ abstract class HttpProtocolClientGenerator(
      */
     protected open fun renderProperties(writer: KotlinWriter) {
         writer.write("private val client: SdkHttpClient")
-        writer.write("private val rootTraceSpan = config.tracer.rootSpan")
     }
 
     protected open fun importSymbols(writer: KotlinWriter) {
@@ -180,7 +179,6 @@ abstract class HttpProtocolClientGenerator(
                 // property from implementing SdkClient
                 writer.write("service = serviceName")
                 writer.write("operationName = #S", op.id.name)
-                writer.write("traceSpan = rootTraceSpan")
 
                 // optional endpoint trait
                 op.getTrait<EndpointTrait>()?.let { endpointTrait ->
@@ -210,19 +208,19 @@ abstract class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
-        writer.withBlock(
-            """return op.context.#T("#L-${'$'}{op.context.#T}") {""",
-            "}",
-            RuntimeTypes.Tracing.Core.withChildSpan,
-            op.id.name,
-            RuntimeTypes.Http.Operation.sdkRequestId,
-        ) {
-            if (hasOutputStream) {
-                write("op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
-            } else {
-                write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+        writer
+            .write(
+                """val rootSpan = config.tracer.createRootSpan("#L-${'$'}{op.context.#T}")""",
+                op.id.name,
+                RuntimeTypes.Http.Operation.sdkRequestId,
+            )
+            .withBlock("return op.context.#T(rootSpan) {", "}", RuntimeTypes.Tracing.Core.withRootSpan) {
+                if (hasOutputStream) {
+                    write("op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
+                } else {
+                    write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+                }
             }
-        }
     }
 
     private fun ioSymbolNames(op: OperationShape): Pair<String, String> {
@@ -263,7 +261,6 @@ abstract class HttpProtocolClientGenerator(
         writer.write("")
             .openBlock("override fun close() {")
             .write("client.close()")
-            .write("rootTraceSpan.close()")
             .closeBlock("}")
             .write("")
     }

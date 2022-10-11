@@ -48,7 +48,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
-    override val tracer: Tracer = builder.tracer ?: DefaultTracer(KotlinLoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
+    override val tracer: Tracer = builder.tracer ?: DefaultTracer(KotlinLoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}-")
 """
         contents.shouldContainWithDiff(expectedProps)
 

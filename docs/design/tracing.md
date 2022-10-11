@@ -35,11 +35,11 @@ The `Tracer` interface is specified as:
 
 ```kotlin
 interface Tracer {
-    fun createRootSpan(): TraceSpan
+    fun createRootSpan(id: String): TraceSpan
 }
 ```
 
-A `Tracer` provides the root span for a service client, into which all events over the lifetime of that client will be
+A `Tracer` provides root spans for a service client, into which all events over the lifetime of an operation will be
 emitted. Child spans can be created as mentioned below in the [Trace Span](#trace-span) section.
 
 **Note**: The interface does not specify how trace probes will be configured or utilized. These are implementation

@@ -230,7 +230,7 @@ object RuntimeTypes {
             val KotlinLoggingTraceProbe = runtimeSymbol("KotlinLoggingTraceProbe", KotlinDependency.CORE, "tracing")
             val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.CORE, "tracing")
             val Tracer = runtimeSymbol("Tracer", KotlinDependency.CORE, "tracing")
-            val withChildSpan = runtimeSymbol("withChildSpan", KotlinDependency.CORE, "tracing")
+            val withRootSpan = runtimeSymbol("withRootSpan", KotlinDependency.CORE, "tracing")
         }
     }
 

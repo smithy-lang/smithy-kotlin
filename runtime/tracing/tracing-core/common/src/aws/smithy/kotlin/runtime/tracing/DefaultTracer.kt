@@ -21,8 +21,9 @@ private class DefaultTraceSpan(
 /**
  * The default [Tracer] implementation. This tracer allows configuring the [TraceProbe] to which events will be omitted.
  * @param probe The [TraceProbe] to which events will be omitted.
- * @param rootId The ID for the root [TraceSpan] of this tracer.
+ * @param rootPrefix A string to prepend to all root IDs for this tracer. This allows easily marking a tracer's spans as
+ * being specific to a given service or use case.
  */
-public class DefaultTracer(private val probe: TraceProbe, private val rootId: String) : Tracer {
-    override val rootSpan: TraceSpan by lazy { DefaultTraceSpan(probe, null, rootId) }
+public class DefaultTracer(private val probe: TraceProbe, private val rootPrefix: String) : Tracer {
+    override fun createRootSpan(id: String): TraceSpan = DefaultTraceSpan(probe, null, "$rootPrefix$id")
 }

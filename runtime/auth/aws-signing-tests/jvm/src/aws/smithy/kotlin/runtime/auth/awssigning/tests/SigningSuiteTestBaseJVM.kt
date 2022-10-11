@@ -22,7 +22,7 @@ import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
-import aws.smithy.kotlin.runtime.tracing.traceSpan
+import aws.smithy.kotlin.runtime.tracing.TracingContext
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import io.ktor.http.cio.*
@@ -459,7 +459,7 @@ private fun Request.parsePath(): String {
 private fun buildOperation(
     config: AwsSigningConfig,
     serialized: HttpRequestBuilder,
-): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
+): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build<Unit, HttpResponse> {
     serializer = object : HttpSerialize<Unit> {
         override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = serialized
     }
@@ -473,9 +473,8 @@ private fun buildOperation(
             set(AwsSigningAttributes.SigningDate, it)
         }
         set(AwsSigningAttributes.SigningService, config.service)
-        traceSpan = NoOpTraceSpan
     }
-}
+}.apply { context[TracingContext.TraceSpan] = NoOpTraceSpan }
 
 private val irregularLineEndings = """\r\n?""".toRegex()
 private fun String.normalizeLineEndings() = replace(irregularLineEndings, "\n")

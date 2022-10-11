@@ -6,6 +6,7 @@ package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.util.AttributeKey
+import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 
 /**
@@ -35,11 +36,13 @@ public fun ExecutionContext.pushChildTraceSpan(id: String) {
 }
 
 /**
- * Pops the current child [TraceSpan] from this [ExecutionContext], restoring the parent span as the active span. This
- * call should be paired with a prior call to [pushChildTraceSpan].
+ * Closes and pops the current child [TraceSpan] from this [ExecutionContext], restoring the parent span as the active
+ * span. This call should be paired with a prior call to [pushChildTraceSpan].
  */
 public fun ExecutionContext.popChildTraceSpan() {
     val existingSpan = checkNotNull(getOrNull(TracingContext.TraceSpan)) { "Missing an active trace span" }
+    existingSpan.close()
+
     val parentSpan = checkNotNull(existingSpan.parent) { "The active trace span has no parent and cannot be popped" }
     set(TracingContext.TraceSpan, parentSpan)
 }
@@ -48,6 +51,8 @@ public fun ExecutionContext.popChildTraceSpan() {
  * Runs a block of code within the context of a child [TraceSpan]. This call pushes the new child trace span into the
  * context before executing [block] and restores the parent span after the block completes (whether successfully or
  * exceptionally).
+ * @param id The id of the new child span.
+ * @param block The block of code to execute. Once the block is complete, the previous span will be restored.
  */
 public inline fun <R> ExecutionContext.withChildSpan(id: String, block: () -> R): R {
     pushChildTraceSpan(id)
@@ -57,6 +62,20 @@ public inline fun <R> ExecutionContext.withChildSpan(id: String, block: () -> R)
         popChildTraceSpan()
     }
 }
+
+@InternalApi
+public inline fun <R> ExecutionContext.withRootSpan(rootSpan: TraceSpan, block: () -> R): R =
+    try {
+        check(getOrNull(TracingContext.TraceSpan) == null) { "Cannot push new root span when existing span is active" }
+        set(TracingContext.TraceSpan, rootSpan)
+        try {
+            block()
+        } finally {
+            remove(TracingContext.TraceSpan)
+        }
+    } finally {
+        rootSpan.close()
+    }
 
 /**
  * Logs a message in the [TraceSpan] of this [ExecutionContext].

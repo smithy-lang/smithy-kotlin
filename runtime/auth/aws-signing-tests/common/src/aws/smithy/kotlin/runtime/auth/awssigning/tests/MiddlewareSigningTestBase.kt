@@ -18,6 +18,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
+import aws.smithy.kotlin.runtime.tracing.TracingContext
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
@@ -28,39 +29,40 @@ import kotlin.test.assertEquals
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
 public abstract class MiddlewareSigningTestBase : HasSigner {
-    private fun buildOperation(streaming: Boolean = false, replayable: Boolean = true): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
-        serializer = object : HttpSerialize<Unit> {
-            override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
-                HttpRequestBuilder().apply {
-                    method = HttpMethod.POST
-                    url.host = "http://demo.us-east-1.amazonaws.com"
-                    url.path = "/"
-                    headers.append("Host", "demo.us-east-1.amazonaws.com")
-                    headers.appendAll("x-amz-archive-description", listOf("test", "test"))
-                    val requestBody = "{\"TableName\": \"foo\"}"
-                    body = when (streaming) {
-                        true -> object : HttpBody.Streaming() {
-                            override val contentLength: Long = requestBody.length.toLong()
-                            override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(requestBody.encodeToByteArray())
-                            override val isReplayable: Boolean = replayable
-                            override fun reset() { }
+    private fun buildOperation(streaming: Boolean = false, replayable: Boolean = true): SdkHttpOperation<Unit, HttpResponse> =
+        SdkHttpOperation.build<Unit, HttpResponse> {
+            serializer = object : HttpSerialize<Unit> {
+                override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
+                    HttpRequestBuilder().apply {
+                        method = HttpMethod.POST
+                        url.host = "http://demo.us-east-1.amazonaws.com"
+                        url.path = "/"
+                        headers.append("Host", "demo.us-east-1.amazonaws.com")
+                        headers.appendAll("x-amz-archive-description", listOf("test", "test"))
+                        val requestBody = "{\"TableName\": \"foo\"}"
+                        body = when (streaming) {
+                            true -> object : HttpBody.Streaming() {
+                                override val contentLength: Long = requestBody.length.toLong()
+                                override fun readFrom(): SdkByteReadChannel =
+                                    SdkByteReadChannel(requestBody.encodeToByteArray())
+                                override val isReplayable: Boolean = replayable
+                                override fun reset() { }
+                            }
+                            false -> ByteArrayContent(requestBody.encodeToByteArray())
                         }
-                        false -> ByteArrayContent(requestBody.encodeToByteArray())
+                        headers.append("Content-Length", body.contentLength?.toString() ?: "0")
                     }
-                    headers.append("Content-Length", body.contentLength?.toString() ?: "0")
-                }
-        }
-        deserializer = IdentityDeserializer
+            }
+            deserializer = IdentityDeserializer
 
-        context {
-            operationName = "testSigningOperation"
-            service = "TestService"
-            traceSpan = NoOpTraceSpan
-            set(AwsSigningAttributes.SigningRegion, "us-east-1")
-            set(AwsSigningAttributes.SigningDate, Instant.fromIso8601("2020-10-16T19:56:00Z"))
-            set(AwsSigningAttributes.SigningService, "demo")
-        }
-    }
+            context {
+                operationName = "testSigningOperation"
+                service = "TestService"
+                set(AwsSigningAttributes.SigningRegion, "us-east-1")
+                set(AwsSigningAttributes.SigningDate, Instant.fromIso8601("2020-10-16T19:56:00Z"))
+                set(AwsSigningAttributes.SigningService, "demo")
+            }
+        }.apply { context[TracingContext.TraceSpan] = NoOpTraceSpan }
 
     private suspend fun getSignedRequest(
         operation: SdkHttpOperation<Unit, HttpResponse>,

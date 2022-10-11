@@ -325,11 +325,10 @@ object KotlinClientRuntimeConfigProperty {
                 val serviceName = writer.getContext("service.name")?.toString()
                     ?: throw CodegenException("The service.name context must be set for client config generation")
                 writer.write(
-                    "override val #1L: Tracer = builder.#1L ?: #2T(#3T, #4S)",
+                    """override val #1L: Tracer = builder.#1L ?: #2T(#3T, "$serviceName-")""",
                     prop.propertyName,
                     RuntimeTypes.Tracing.Core.DefaultTracer,
                     RuntimeTypes.Tracing.Core.KotlinLoggingTraceProbe,
-                    serviceName,
                 )
             }
         }

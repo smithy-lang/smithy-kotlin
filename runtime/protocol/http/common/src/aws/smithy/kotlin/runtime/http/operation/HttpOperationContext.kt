@@ -10,8 +10,6 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.tracing.TraceSpan
-import aws.smithy.kotlin.runtime.tracing.TracingContext
 import aws.smithy.kotlin.runtime.tracing.logger
 import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.AttributeKey
@@ -77,12 +75,6 @@ public open class HttpOperationContext {
          * (Optional) prefix to prepend to a (resolved) hostname
          */
         public var hostPrefix: String? by option(HostPrefix)
-
-        /**
-         * The top-level trace span for this request. This span will be used to generate child spans for inner parts of
-         * the request.
-         */
-        public var traceSpan: TraceSpan? by requiredOption(TracingContext.TraceSpan)
     }
 }
 
