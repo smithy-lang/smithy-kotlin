@@ -125,6 +125,16 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
          * Create an [Instant] from the current system time
          */
         public actual fun now(): Instant = Instant(jtInstant.now())
+
+        /**
+         * Create an [Instant] with the minimum possible value
+         */
+        public val MIN: Instant = Instant(jtInstant.MIN)
+
+        /**
+         * Create an [Instant] with the maximum possible value
+         */
+        public val MAX: Instant = Instant(jtInstant.MAX)
     }
 }
 
