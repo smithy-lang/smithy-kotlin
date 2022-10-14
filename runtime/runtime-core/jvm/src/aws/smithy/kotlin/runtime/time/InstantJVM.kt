@@ -129,12 +129,12 @@ public actual class Instant(internal val value: jtInstant) : Comparable<Instant>
         /**
          * Create an [Instant] with the minimum possible value
          */
-        public val MIN: Instant = Instant(jtInstant.MIN)
+        public actual val MIN_VALUE: Instant = Instant(jtInstant.MIN)
 
         /**
          * Create an [Instant] with the maximum possible value
          */
-        public val MAX: Instant = Instant(jtInstant.MAX)
+        public actual val MAX_VALUE: Instant = Instant(jtInstant.MAX)
     }
 }
 

@@ -68,6 +68,17 @@ public expect class Instant : Comparable<Instant> {
          * Create an [Instant] from the current system time
          */
         public fun now(): Instant
+
+        /**
+         * Create an [Instant] with the minimum possible value
+         */
+        public val MIN_VALUE: Instant
+
+        /**
+         * Create an [Instant] with the maximum possible value
+         */
+        public val MAX_VALUE: Instant
+
     }
 }
 
