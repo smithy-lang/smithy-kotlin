@@ -78,7 +78,6 @@ public expect class Instant : Comparable<Instant> {
          * Create an [Instant] with the maximum possible value
          */
         public val MAX_VALUE: Instant
-
     }
 }
 
