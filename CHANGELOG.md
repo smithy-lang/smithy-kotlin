@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.12.9] - 10/13/2022
+
+### Fixes
+* [#715](https://github.com/awslabs/aws-sdk-kotlin/issues/715) Enable intra-repo links in API ref docs
+* [#714](https://github.com/awslabs/smithy-kotlin/issues/714) Properly parse timestamps when format override is applied to target shapes
+
 ## [0.12.8] - 10/03/2022
 
 ### Fixes
