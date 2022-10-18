@@ -68,7 +68,7 @@ class ClientConfigGenerator(
 
         addPropertyImports()
 
-        props.sortBy { it.propertyName }
+        props.sortWith(compareBy({ it.order }, { it.propertyName }))
         val baseClasses = props
             .mapNotNull { it.baseClass?.name }
             .toSet()
