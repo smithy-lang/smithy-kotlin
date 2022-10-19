@@ -8,15 +8,13 @@ package aws.smithy.kotlin.runtime.http.operation
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.TracingContext
 
 /**
  * Create a new test operation using [serialized] as the already serialized version of the input type [I]
  * and [deserialized] as the result of "deserialization" from an HTTP response.
  */
 fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): SdkHttpOperation<I, O> =
-    SdkHttpOperation.build<I, O> {
+    SdkHttpOperation.build {
         serializer = object : HttpSerialize<I> {
             override suspend fun serialize(context: ExecutionContext, input: I): HttpRequestBuilder = serialized
         }
@@ -30,4 +28,4 @@ fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): Sd
             operationName = "TestOperation"
             service = "TestService"
         }
-    }.apply { context[TracingContext.TraceSpan] = NoOpTraceSpan }
+    }

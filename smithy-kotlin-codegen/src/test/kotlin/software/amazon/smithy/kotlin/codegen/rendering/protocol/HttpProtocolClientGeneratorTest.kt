@@ -42,7 +42,7 @@ class HttpProtocolClientGeneratorTest {
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.execute")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.roundTrip")
         commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.HTTP.namespace}.operation.sdkRequestId")
-        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.withRootSpan")
+        commonTestContents.shouldContainOnlyOnceWithDiff("import ${KotlinDependency.TRACING_CORE.namespace}.withRootTraceSpan")
     }
 
     @Test
@@ -88,7 +88,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFoo-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
         }
     }
@@ -106,7 +106,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooNoInput-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
         }
     }
@@ -124,7 +124,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooNoOutput-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
         }
     }
@@ -142,7 +142,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInput-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
         }
     }
@@ -160,7 +160,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutput-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.execute(client, input, block)
         }
     }
@@ -178,7 +178,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutputNoInput-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.execute(client, input, block)
         }
     }
@@ -196,7 +196,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInputNoOutput-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
         }
     }
@@ -214,7 +214,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooNoRequired-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
         }
     }
@@ -232,7 +232,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooSomeRequired-${'$'}{op.context.sdkRequestId}")
-        return op.context.withRootSpan(rootSpan) {
+        return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
         }
     }

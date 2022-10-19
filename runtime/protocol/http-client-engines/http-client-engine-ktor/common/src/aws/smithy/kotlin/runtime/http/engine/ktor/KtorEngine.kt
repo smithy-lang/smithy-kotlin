@@ -63,7 +63,7 @@ public class KtorEngine(
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
-        val reqLogger = context.getLogger<KtorEngine>()
+        val reqLogger = callContext.getLogger<KtorEngine>()
 
         val respChannel = Channel<HttpCall>(Channel.RENDEZVOUS)
 

@@ -21,8 +21,7 @@ import aws.smithy.kotlin.runtime.http.util.StringValuesMap
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.TraceSpan
-import aws.smithy.kotlin.runtime.tracing.TracingContext
+import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import io.ktor.http.cio.*
@@ -39,6 +38,7 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.coroutines.coroutineContext
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
@@ -280,7 +280,9 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
             },
         )
 
-        operation.roundTrip(client, Unit)
+        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
+            operation.roundTrip(client, Unit)
+        }
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 
@@ -434,7 +436,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
 }
 
 private class JsonCredentialsProvider(private val jsonObject: JsonObject) : CredentialsProvider {
-    override suspend fun getCredentials(traceSpan: TraceSpan): Credentials = Credentials(
+    override suspend fun getCredentials(): Credentials = Credentials(
         jsonObject["access_key_id"]!!.jsonPrimitive.content,
         jsonObject["secret_access_key"]!!.jsonPrimitive.content,
         jsonObject["token"]?.jsonPrimitive?.content,
@@ -474,7 +476,7 @@ private fun buildOperation(
         }
         set(AwsSigningAttributes.SigningService, config.service)
     }
-}.apply { context[TracingContext.TraceSpan] = NoOpTraceSpan }
+}
 
 private val irregularLineEndings = """\r\n?""".toRegex()
 private fun String.normalizeLineEndings() = replace(irregularLineEndings, "\n")

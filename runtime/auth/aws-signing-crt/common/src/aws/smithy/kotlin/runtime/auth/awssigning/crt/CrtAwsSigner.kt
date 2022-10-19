@@ -15,7 +15,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
-import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.debug
 import kotlin.coroutines.coroutineContext
 import aws.sdk.kotlin.crt.auth.credentials.Credentials as CrtCredentials
@@ -28,16 +27,12 @@ import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
 import aws.sdk.kotlin.crt.http.HttpRequest as CrtHttpRequest
 
 public object CrtAwsSigner : AwsSigner {
-    override suspend fun sign(
-        request: HttpRequest,
-        config: AwsSigningConfig,
-        traceSpan: TraceSpan,
-    ): AwsSigningResult<HttpRequest> {
+    override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
         val crtRequest = request.toSignableCrtRequest()
         val crtConfig = config.toCrtSigningConfig()
 
         val crtResult = CrtSigner.sign(crtRequest, crtConfig)
-        traceSpan.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
+        coroutineContext.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
 
         val crtSignedResult = checkNotNull(crtResult.signedRequest) { "Signed request unexpectedly null" }
 
@@ -50,11 +45,10 @@ public object CrtAwsSigner : AwsSigner {
         chunkBody: ByteArray,
         prevSignature: ByteArray,
         config: AwsSigningConfig,
-        traceSpan: TraceSpan,
     ): AwsSigningResult<Unit> {
         val crtConfig = config.toCrtSigningConfig()
         val crtResult = CrtSigner.signChunk(chunkBody, prevSignature, crtConfig)
-        traceSpan.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
+        coroutineContext.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
 
         return AwsSigningResult(Unit, crtResult.signature)
     }

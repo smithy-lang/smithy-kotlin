@@ -9,12 +9,15 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
+import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
 import okio.Buffer
 import org.junit.jupiter.api.Test
-import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+
+private val callContext = TraceSpanContextElement(NoOpTraceSpan)
 
 class OkHttpRequestTest {
     @Test
@@ -37,7 +40,7 @@ class OkHttpRequestTest {
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.Empty)
 
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, callContext)
         assertEquals("https", actual.url.scheme)
         assertEquals("aws.amazon.com", actual.url.host)
         assertEquals(443, actual.url.port)
@@ -57,7 +60,7 @@ class OkHttpRequestTest {
         val request = HttpRequest(HttpMethod.POST, url, headers, HttpBody.Empty)
 
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, callContext)
 
         assertEquals(3, actual.headers.size)
         assertEquals(listOf("bar", "baz"), actual.headers("FoO"))
@@ -68,8 +71,9 @@ class OkHttpRequestTest {
         val url = Url.parse("https://aws.amazon.com")
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, callContext)
         assertEquals(execContext, actual.tag<SdkRequestTag>()?.execContext)
+        assertEquals(NoOpTraceSpan, actual.tag<SdkRequestTag>()?.traceSpan)
     }
 
     @Test
@@ -77,7 +81,7 @@ class OkHttpRequestTest {
         val url = Url.parse("https://aws.amazon.com")
         val request = HttpRequest(HttpMethod.GET, url, Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, callContext)
 
         assertNull(actual.body)
     }
@@ -88,7 +92,7 @@ class OkHttpRequestTest {
         val content = "Hello OkHttp from HttpBody.Bytes"
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.fromBytes(content.encodeToByteArray()))
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, callContext)
 
         val actualBody = assertNotNull(actual.body)
         assertEquals(request.body.contentLength, actualBody.contentLength())
@@ -111,7 +115,7 @@ class OkHttpRequestTest {
 
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, body)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+        val actual = request.toOkHttpRequest(execContext, callContext)
 
         val actualBody = assertNotNull(actual.body)
         assertEquals(request.body.contentLength, actualBody.contentLength())

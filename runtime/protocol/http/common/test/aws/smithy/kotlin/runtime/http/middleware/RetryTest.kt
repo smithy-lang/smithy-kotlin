@@ -27,6 +27,8 @@ import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryErrorType
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
+import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -68,7 +70,9 @@ class RetryTest {
 
         op.install(Retry(strategy, policy))
 
-        op.roundTrip(client, Unit)
+        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
+            op.roundTrip(client, Unit)
+        }
         val attempts = op.context.attributes[HttpOperationContext.HttpCallList].size
         assertEquals(2, attempts)
     }

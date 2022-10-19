@@ -6,8 +6,10 @@ package aws.smithy.kotlin.runtime.tracing
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 
-private data class NoOpTraceSpanImpl(override val id: String, override val parent: TraceSpan?) : TraceSpan {
-    override fun child(id: String): TraceSpan = NoOpTraceSpanImpl(id, this)
+private data class NoOpTraceSpanImpl(override val id: String) : TraceSpan {
+    override val parent: TraceSpan? = this
+
+    override fun child(id: String): TraceSpan = this
     override fun close() { }
     override fun postEvents(events: Iterable<TraceEvent>) { }
 }
@@ -17,4 +19,4 @@ private data class NoOpTraceSpanImpl(override val id: String, override val paren
  * require a [TraceSpan] but for which no verification of tracing need occur.
  */
 @InternalApi
-public val NoOpTraceSpan: TraceSpan = NoOpTraceSpanImpl("", null)
+public val NoOpTraceSpan: TraceSpan = NoOpTraceSpanImpl("no-op")

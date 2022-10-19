@@ -230,8 +230,12 @@ object RuntimeTypes {
             val KotlinLoggingTraceProbe = runtimeSymbol("KotlinLoggingTraceProbe", KotlinDependency.CORE, "tracing")
             val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.CORE, "tracing")
             val Tracer = runtimeSymbol("Tracer", KotlinDependency.CORE, "tracing")
-            val withRootSpan = runtimeSymbol("withRootSpan", KotlinDependency.CORE, "tracing")
+            val withRootTraceSpan = runtimeSymbol("withRootTraceSpan", KotlinDependency.CORE, "tracing")
         }
+    }
+
+    object KotlinCoroutines {
+        val coroutineContext = "kotlin.coroutines.coroutineContext".toSymbol()
     }
 
     object KotlinxCoroutines {

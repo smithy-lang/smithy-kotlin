@@ -17,14 +17,11 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
+import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -65,8 +62,8 @@ class HttpClientEngineTest {
         get() = callContext.job
 
     @Test
-    fun testCallComplete() = runTest {
-        val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
+    fun testCallComplete() = runTestWithTraceSpan {
+        val call = client.call(HttpRequestBuilder())
         assertTrue(call.job.isActive)
         call.complete()
         assertFalse(call.job.isActive)
@@ -74,20 +71,25 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testUserContextCancelsRequestJob() = runTest {
-        val job = launch {
-            client.call(SdkHttpRequest(HttpRequestBuilder()))
-            delay(1000)
+    fun testUserContextCancelsRequestJob() = runTestWithTraceSpan {
+        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
+            val job = launch {
+                client.call(SdkHttpRequest(HttpRequestBuilder()))
+                delay(1000)
+            }
+            yield()
+            val inflightJobs = engine.inFlightJobs
+            assertEquals(1, inflightJobs.size)
+            val callJob = inflightJobs.first()
+
+            assertFalse(callJob.isCancelled)
+            job.cancel()
+            assertTrue(callJob.isCancelled)
         }
-        yield()
-        val callJob = engine.inFlightJobs.first()
-        assertFalse(callJob.isCancelled)
-        job.cancel()
-        assertTrue(callJob.isCancelled)
     }
 
     @Test
-    fun testInFlightRequestJobsAreIndependent() = runTest {
+    fun testInFlightRequestJobsAreIndependent() = runTestWithTraceSpan {
         val job1 = launch {
             client.call(SdkHttpRequest(HttpRequestBuilder()))
             delay(1000)
@@ -111,7 +113,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testEngineJobNotCancelledByRequestJobs() = runTest {
+    fun testEngineJobNotCancelledByRequestJobs() = runTestWithTraceSpan {
         launch {
             client.call(SdkHttpRequest(HttpRequestBuilder()))
             delay(1000)
@@ -128,7 +130,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testShutdownOnlyAfterInFlightDone() = runTest {
+    fun testShutdownOnlyAfterInFlightDone() = runTestWithTraceSpan {
         val waiter = Channel<Unit>(1)
         launch {
             val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
@@ -161,7 +163,7 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testRequestAfterClose() = runTest {
+    fun testRequestAfterClose() = runTestWithTraceSpan {
         client.close()
         assertFailsWith(HttpClientEngineClosedException::class) {
             client.call(SdkHttpRequest(HttpRequestBuilder()))
@@ -170,9 +172,16 @@ class HttpClientEngineTest {
     }
 
     @Test
-    fun testCloseUnmanagedEngine() = runTest {
+    fun testCloseUnmanagedEngine() = runTestWithTraceSpan {
         val client = sdkHttpClient(engine, manageEngine = false)
         client.close()
         assertFalse(engine.coroutineContext.job.isCompleted)
+    }
+}
+
+@OptIn(ExperimentalCoroutinesApi::class)
+private fun runTestWithTraceSpan(block: suspend CoroutineScope.() -> Unit) = runTest {
+    coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
+        block()
     }
 }

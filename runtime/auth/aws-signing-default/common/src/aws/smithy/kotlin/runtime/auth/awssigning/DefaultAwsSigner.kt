@@ -5,10 +5,10 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.time.TimestampFormat
-import aws.smithy.kotlin.runtime.tracing.TraceSpan
-import aws.smithy.kotlin.runtime.tracing.logger
+import kotlin.coroutines.coroutineContext
 
 /** The default implementation of [AwsSigner] */
 public val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
@@ -18,17 +18,13 @@ internal class DefaultAwsSignerImpl(
     private val signatureCalculator: SignatureCalculator = SignatureCalculator.Default,
     private val requestMutator: RequestMutator = RequestMutator.Default,
 ) : AwsSigner {
-    override suspend fun sign(
-        request: HttpRequest,
-        config: AwsSigningConfig,
-        traceSpan: TraceSpan,
-    ): AwsSigningResult<HttpRequest> {
-        val logger = traceSpan.logger<DefaultAwsSignerImpl>()
+    override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
+        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
 
         // TODO implement SigV4a
         require(config.algorithm == AwsSigningAlgorithm.SIGV4) { "${config.algorithm} support is not yet implemented" }
 
-        val credentials = config.credentialsProvider.getCredentials(traceSpan)
+        val credentials = config.credentialsProvider.getCredentials()
 
         val canonical = canonicalizer.canonicalRequest(request, config, credentials)
         logger.trace { "Canonical request:\n${canonical.requestString}" }
@@ -50,14 +46,13 @@ internal class DefaultAwsSignerImpl(
         chunkBody: ByteArray,
         prevSignature: ByteArray,
         config: AwsSigningConfig,
-        traceSpan: TraceSpan,
     ): AwsSigningResult<Unit> {
-        val logger = traceSpan.logger<DefaultAwsSignerImpl>()
+        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
 
         val stringToSign = signatureCalculator.chunkStringToSign(chunkBody, prevSignature, config)
         logger.trace { "Chunk string to sign:\n$stringToSign" }
 
-        val credentials = config.credentialsProvider.getCredentials(traceSpan)
+        val credentials = config.credentialsProvider.getCredentials()
         val signingKey = signatureCalculator.signingKey(config, credentials)
 
         val signature = signatureCalculator.calculate(signingKey, stringToSign)

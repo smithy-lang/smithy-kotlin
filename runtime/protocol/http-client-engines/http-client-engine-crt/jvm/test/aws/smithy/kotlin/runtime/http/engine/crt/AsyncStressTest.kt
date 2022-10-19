@@ -7,18 +7,20 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.smithy.kotlin.runtime.http.HttpMethod
 import aws.smithy.kotlin.runtime.http.Protocol
+import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.testing.IgnoreWindows
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
+import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -26,7 +28,6 @@ import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.time.Duration.Companion.seconds
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class AsyncStressTest : TestWithLocalServer() {
 
     override val server = embeddedServer(CIO, serverPort) {
@@ -58,19 +59,21 @@ class AsyncStressTest : TestWithLocalServer() {
             }
         }
 
-        withTimeout(10.seconds) {
-            repeat(1_000) {
-                async {
-                    try {
-                        val call = client.call(request)
-                        yield()
-                        call.complete()
-                    } catch (ex: Exception) {
-                        println("exception on $it: $ex")
-                        throw ex
+        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
+            withTimeout(10.seconds) {
+                repeat(1_000) {
+                    async {
+                        try {
+                            val call = client.call(SdkHttpRequest(request))
+                            yield()
+                            call.complete()
+                        } catch (ex: Exception) {
+                            println("exception on $it: $ex")
+                            throw ex
+                        }
                     }
+                    yield()
                 }
-                yield()
             }
         }
     }

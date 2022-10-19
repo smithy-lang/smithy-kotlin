@@ -20,6 +20,7 @@ import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
 import aws.smithy.kotlin.runtime.tracing.trace
 import aws.smithy.kotlin.runtime.util.InternalApi
+import kotlin.coroutines.coroutineContext
 import kotlin.time.ExperimentalTime
 import kotlin.time.measureTimedValue
 import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
@@ -110,7 +111,7 @@ private class SerializeHandler<Input, Output> (
             mapRequest(request.context, request.subject)
         }
 
-        request.context.trace<SerializeHandler<*, *>> { "request serialized in ${tv.duration}" }
+        coroutineContext.trace<SerializeHandler<*, *>> { "request serialized in ${tv.duration}" }
         return inner.call(SdkHttpRequest(request.context, tv.value))
     }
 }
@@ -138,7 +139,7 @@ private class DeserializeHandler<Output>(
         val tv = measureTimedValue {
             mapResponse(request.context, call.response)
         }
-        request.context.trace<DeserializeHandler<*>> { "response deserialized in: ${tv.duration}" }
+        coroutineContext.trace<DeserializeHandler<*>> { "response deserialized in: ${tv.duration}" }
         return tv.value
     }
 }
@@ -168,7 +169,7 @@ private class HttpCallMiddleware : Middleware<SdkHttpRequest, HttpCall> {
  */
 private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<SdkHttpRequest, HttpCall>): HttpCall {
     val logMode = request.context.sdkLogMode
-    val logger = request.context.getLogger("httpTraceMiddleware")
+    val logger = coroutineContext.getLogger("httpTraceMiddleware")
 
     if (logMode.isEnabled(SdkLogMode.LogRequest) || logMode.isEnabled(SdkLogMode.LogRequestWithBody)) {
         val formattedReq = dumpRequest(request.subject, logMode.isEnabled(SdkLogMode.LogRequestWithBody))

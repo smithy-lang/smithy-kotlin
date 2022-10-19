@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.tracing.logger
 import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.InternalApi
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
@@ -79,8 +80,8 @@ public open class HttpOperationContext {
 }
 
 @InternalApi
-public fun ExecutionContext.getLogger(forComponentName: String): Logger = traceSpan.logger(forComponentName)
+public fun CoroutineContext.getLogger(forComponentName: String): Logger = traceSpan.logger(forComponentName)
 
 @InternalApi
-public inline fun <reified T> ExecutionContext.getLogger(): Logger =
+public inline fun <reified T> CoroutineContext.getLogger(): Logger =
     getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })

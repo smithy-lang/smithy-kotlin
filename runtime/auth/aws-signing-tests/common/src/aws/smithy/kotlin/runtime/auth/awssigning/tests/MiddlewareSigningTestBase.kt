@@ -18,11 +18,12 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.TracingContext
+import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
+import kotlin.coroutines.coroutineContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -62,7 +63,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
                 set(AwsSigningAttributes.SigningDate, Instant.fromIso8601("2020-10-16T19:56:00Z"))
                 set(AwsSigningAttributes.SigningService, "demo")
             }
-        }.apply { context[TracingContext.TraceSpan] = NoOpTraceSpan }
+        }
 
     private suspend fun getSignedRequest(
         operation: SdkHttpOperation<Unit, HttpResponse>,
@@ -86,7 +87,9 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             },
         )
 
-        operation.roundTrip(client, Unit)
+        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
+            operation.roundTrip(client, Unit)
+        }
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 

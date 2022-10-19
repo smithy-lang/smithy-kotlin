@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
@@ -15,9 +14,12 @@ import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
 import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
+import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.debug
-import aws.smithy.kotlin.runtime.tracing.withChildSpan
+import aws.smithy.kotlin.runtime.tracing.traceSpan
+import aws.smithy.kotlin.runtime.tracing.withChildTraceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
+import kotlin.coroutines.coroutineContext
 
 /**
  * Retry requests with the given strategy and policy
@@ -33,11 +35,15 @@ public open class Retry<O>(
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
         if (request.subject.isRetryable) {
             var attempt = 1
-            val wrappedPolicy = PolicyLogger(policy, request.context)
+
+            // FIXME this is the wrong span because we want the fresh one from inside each attempt but there's no way to
+            // wire that through without changing the `RetryPolicy` interface
+            val wrappedPolicy = PolicyLogger(policy, coroutineContext.traceSpan)
+
             val outcome = strategy.retry(wrappedPolicy) {
-                request.context.withChildSpan("Attempt-$attempt") {
+                coroutineContext.withChildTraceSpan("Attempt-$attempt") {
                     if (attempt > 1) {
-                        request.context.debug<Retry<*>> { "retrying request, attempt $attempt" }
+                        coroutineContext.debug<Retry<*>> { "retrying request, attempt $attempt" }
                     }
 
                     // Deep copy the request because later middlewares (e.g., signing) mutate it
@@ -56,7 +62,7 @@ public open class Retry<O>(
             }
             outcome.getOrThrow()
         } else {
-            request.context.withChildSpan("NonRetryableAttempt") { // Create a child span even though we won't retry
+            coroutineContext.withChildTraceSpan("NonRetryableAttempt") { // Create a child span even though we won't retry
                 next.call(request)
             }
         }
@@ -74,11 +80,11 @@ public open class Retry<O>(
  */
 private class PolicyLogger(
     private val policy: RetryPolicy<Any?>,
-    private val ctx: ExecutionContext,
+    private val traceSpan: TraceSpan,
 ) : RetryPolicy<Any?> {
     override fun evaluate(result: Result<Any?>): RetryDirective = policy.evaluate(result).also {
         if (it is RetryDirective.TerminateAndFail) {
-            ctx.debug<Retry<*>> { "request failed with non-retryable error" }
+            traceSpan.debug<Retry<*>> { "request failed with non-retryable error" }
         }
     }
 }

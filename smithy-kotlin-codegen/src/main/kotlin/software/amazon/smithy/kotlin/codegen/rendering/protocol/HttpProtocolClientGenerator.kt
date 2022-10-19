@@ -214,7 +214,12 @@ abstract class HttpProtocolClientGenerator(
                 op.id.name,
                 RuntimeTypes.Http.Operation.sdkRequestId,
             )
-            .withBlock("return op.context.#T(rootSpan) {", "}", RuntimeTypes.Tracing.Core.withRootSpan) {
+            .withBlock(
+                "return #T.#T(rootSpan) {",
+                "}",
+                RuntimeTypes.KotlinCoroutines.coroutineContext,
+                RuntimeTypes.Tracing.Core.withRootTraceSpan,
+            ) {
                 if (hasOutputStream) {
                     write("op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
                 } else {

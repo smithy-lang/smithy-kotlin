@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.tracing.logger
-import aws.smithy.kotlin.runtime.tracing.traceSpan
 import okhttp3.*
 import java.io.IOException
 import java.net.InetAddress
@@ -13,27 +12,27 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 
 internal class HttpEngineEventListener(private val pool: ConnectionPool, call: Call) : EventListener() {
-    private val traceSpan = call.request().tag<SdkRequestTag>()?.execContext?.traceSpan?.child("HTTP")
-    private val logger = traceSpan?.logger<HttpEngineEventListener>()
+    private val traceSpan = call.request().tag<SdkRequestTag>()!!.traceSpan.child("HTTP")
+    private val logger = traceSpan.logger<HttpEngineEventListener>()
 
     private inline fun trace(crossinline msg: () -> Any) {
-        logger?.trace { msg() }
+        logger.trace { msg() }
     }
 
     private inline fun trace(throwable: Throwable, crossinline msg: () -> Any) {
-        logger?.trace(throwable) { msg() }
+        logger.trace(throwable) { msg() }
     }
 
     override fun callStart(call: Call) = trace { "call started" }
 
     override fun callEnd(call: Call) {
         trace { "call complete" }
-        traceSpan?.close()
+        traceSpan.close()
     }
 
     override fun callFailed(call: Call, ioe: IOException) {
         trace(ioe) { "call failed" }
-        traceSpan?.close()
+        traceSpan.close()
     }
 
     override fun canceled(call: Call) = trace { "call cancelled" }

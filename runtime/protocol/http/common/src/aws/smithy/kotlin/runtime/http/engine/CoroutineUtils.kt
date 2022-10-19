@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.http.engine
 
+import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
+import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineName
@@ -20,7 +22,10 @@ import kotlin.coroutines.coroutineContext
 internal fun HttpClientEngine.createCallContext(outerContext: CoroutineContext): CoroutineContext {
     // attach request to engine (will ensure that shutdown only is invoked after all in-flight requests complete)
     val requestJob = Job(coroutineContext[Job])
-    val reqContext = coroutineContext + requestJob + CoroutineName("request-context")
+    val reqContext = coroutineContext +
+        requestJob +
+        CoroutineName("request-context") +
+        TraceSpanContextElement(outerContext.traceSpan)
 
     // attach req to outer context, if the user cancels it will be propagated to the request
     attachToOuterJob(outerContext, requestJob)

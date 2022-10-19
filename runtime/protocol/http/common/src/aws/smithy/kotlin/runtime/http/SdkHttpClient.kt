@@ -16,7 +16,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.Closeable
 import aws.smithy.kotlin.runtime.io.Handler
 import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.TracingContext
+import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
@@ -43,9 +43,8 @@ public class SdkHttpClient(
 ) : HttpHandler, Closeable {
     private val closed = atomic(false)
 
-    public suspend fun call(request: HttpRequest): HttpCall {
-        val ctx = ExecutionContext.build { attributes[TracingContext.TraceSpan] = NoOpTraceSpan }
-        return executeWithCallContext(ctx, request)
+    public suspend fun call(request: HttpRequest): HttpCall = coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
+        executeWithCallContext(ExecutionContext(), request)
     }
     public suspend fun call(request: HttpRequestBuilder): HttpCall = call(request.build())
     override suspend fun call(request: SdkHttpRequest): HttpCall = executeWithCallContext(request.context, request.subject.build())
