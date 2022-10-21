@@ -244,7 +244,7 @@ object KotlinClientRuntimeConfigProperty {
             NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
             client will not close it when the client is closed.
             """.trimIndent()
-            order = -1
+            order = -100
         }
 
         IdempotencyTokenProvider = ClientConfigProperty {
