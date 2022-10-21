@@ -40,8 +40,8 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
-    public val endpointResolver: EndpointResolver = requireNotNull(builder.endpointResolver) { "endpointResolver is a required configuration property" }
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
+    public val endpointResolver: EndpointResolver = requireNotNull(builder.endpointResolver) { "endpointResolver is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
@@ -51,16 +51,16 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val expectedBuilder = """
     public class Builder {
         /**
-         * Set the [aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver] used to resolve service endpoints. Operation requests will be
-         * made against the endpoint returned by the resolver.
-         */
-        public var endpointResolver: EndpointResolver? = null
-        /**
          * Override the default HTTP client engine used to make SDK requests (e.g. configure proxy behavior, timeouts, concurrency, etc).
          * NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
          * client will not close it when the client is closed.
          */
         public var httpClientEngine: HttpClientEngine? = null
+        /**
+         * Set the [aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver] used to resolve service endpoints. Operation requests will be
+         * made against the endpoint returned by the resolver.
+         */
+        public var endpointResolver: EndpointResolver? = null
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
          * that represent idempotent tokens when not explicitly set by the caller using this generator.

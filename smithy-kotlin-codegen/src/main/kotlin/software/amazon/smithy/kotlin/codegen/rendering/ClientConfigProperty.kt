@@ -70,6 +70,11 @@ class ClientConfigProperty private constructor(builder: Builder) {
     val additionalImports: List<Symbol> = builder.additionalImports
 
     /**
+     * The priority order of rendering the property. Used to manage dependencies between configuration properties.
+     */
+    val order: Int = builder.order
+
+    /**
      * Flag indicating if this property stems from some base class and needs an override modifier when rendered
      */
     internal val requiresOverride: Boolean
@@ -143,6 +148,8 @@ class ClientConfigProperty private constructor(builder: Builder) {
         var propertyType: ClientConfigPropertyType = ClientConfigPropertyType.SymbolDefault
 
         var additionalImports: List<Symbol> = emptyList()
+
+        var order: Int = 0
 
         fun build(): ClientConfigProperty = ClientConfigProperty(this)
     }
@@ -237,6 +244,7 @@ object KotlinClientRuntimeConfigProperty {
             NOTE: The caller is responsible for managing the lifetime of the engine when set. The SDK
             client will not close it when the client is closed.
             """.trimIndent()
+            order = -100
         }
 
         IdempotencyTokenProvider = ClientConfigProperty {
