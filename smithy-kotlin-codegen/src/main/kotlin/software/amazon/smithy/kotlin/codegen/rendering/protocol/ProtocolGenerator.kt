@@ -11,12 +11,16 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderTestGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.ServiceShape
 import software.amazon.smithy.model.shapes.Shape
 import software.amazon.smithy.model.shapes.ShapeId
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import software.amazon.smithy.utils.CaseUtils
 
 /**
@@ -87,6 +91,18 @@ interface ProtocolGenerator {
     fun generateProtocolClient(ctx: GenerationContext)
 
     /**
+     * Generate an implementation and supporting code for the modeled endpoint provider.
+     * Will only be invoked when a model's service shape has the necessary endpoint rule set trait.
+     */
+    fun generateEndpointProvider(ctx: GenerationContext, rules: EndpointRuleSet)
+
+    /**
+     * Generate an implementation and supporting code for the modeled endpoint provider.
+     * Will only be invoked when a model's service shape has both the rule set and test case traits for endpoints.
+     */
+    fun generateEndpointProviderTests(ctx: GenerationContext, tests: List<EndpointTestCase>, rules: EndpointRuleSet)
+
+    /**
      * Get the generator responsible for rendering deserialization of the protocol specific data format
      */
     fun structuredDataParser(ctx: GenerationContext): StructuredDataParserGenerator
@@ -95,6 +111,27 @@ interface ProtocolGenerator {
      * Get the generator responsible for rendering serialization of the protocol specific data format
      */
     fun structuredDataSerializer(ctx: GenerationContext): StructuredDataSerializerGenerator
+
+    /**
+     * Plugin point for returning a generator for the default endpoint provider.
+     */
+    fun defaultEndpointProviderGenerator(
+        writer: KotlinWriter,
+        rules: EndpointRuleSet,
+        interfaceSymbol: Symbol,
+        paramsSymbol: Symbol,
+    ): DefaultEndpointProviderGenerator
+
+    /**
+     * Plugin point for returning a generator for tests for the default endpoint provider.
+     */
+    fun defaultEndpointProviderTestGenerator(
+        writer: KotlinWriter,
+        rules: EndpointRuleSet,
+        tests: List<EndpointTestCase>,
+        defaultProviderSymbol: Symbol,
+        paramsSymbol: Symbol,
+    ): DefaultEndpointProviderTestGenerator
 
     /**
      * Context object used for service serialization and deserialization

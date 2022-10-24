@@ -99,7 +99,13 @@ class DefaultEndpointProviderGeneratorTest {
                                 "properties": {
                                     "foo": "bar",
                                     "fooInt": 7,
-                                    "fooBoolean": true
+                                    "fooBoolean": true,
+                                    "fooObject": {
+                                        "fooObjectFoo": "bar"
+                                    },
+                                    "fooArray": [
+                                        "\"fooArrayBar\""
+                                    ]
                                 },
                                 "headers": {
                                     "fooheader": ["barheader"]
@@ -185,9 +191,30 @@ class DefaultEndpointProviderGeneratorTest {
                     append("fooheader", "barheader")
                 },
                 attributes = Attributes().apply {
-                    set(AttributeKey("foo"), "bar")
-                    set(AttributeKey("fooInt"), 7)
-                    set(AttributeKey("fooBoolean"), true)
+                    set(
+                        AttributeKey("foo"),
+                        "bar",
+                    )
+                    set(
+                        AttributeKey("fooInt"),
+                        7,
+                    )
+                    set(
+                        AttributeKey("fooBoolean"),
+                        true,
+                    )
+                    set(
+                        AttributeKey("fooObject"),
+                        buildDocument {
+                            "fooObjectFoo" to "bar"
+                        },
+                    )
+                    set(
+                        AttributeKey("fooArray"),
+                        listOf(
+                            "\"fooArrayBar\"",
+                        ),
+                    )
                 },
             )
         """.formatForTest(indent = "        ")

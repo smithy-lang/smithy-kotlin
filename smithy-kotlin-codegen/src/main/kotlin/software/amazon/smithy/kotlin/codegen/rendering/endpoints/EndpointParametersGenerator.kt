@@ -5,7 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -13,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.model.boxed
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.eval.Value
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
@@ -32,10 +33,10 @@ class EndpointParametersGenerator(
     companion object {
         const val CLASS_NAME = "EndpointParameters"
 
-        fun getSymbol(ctx: CodegenContext): Symbol =
+        fun getSymbol(settings: KotlinSettings): Symbol =
             buildSymbol {
                 name = CLASS_NAME
-                namespace = "${ctx.settings.pkg.name}.endpoints"
+                namespace = "${settings.pkg.name}.endpoints"
             }
     }
 
@@ -180,8 +181,7 @@ private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, init
     writer.write("")
 }
 
-internal fun Identifier.toKotlin(): String =
-    asString().replaceFirstChar(Char::lowercase)
+internal fun Identifier.toKotlin(): String = asString().toCamelCase()
 
 private fun ParameterType.toSymbol(): Symbol =
     when (this) {

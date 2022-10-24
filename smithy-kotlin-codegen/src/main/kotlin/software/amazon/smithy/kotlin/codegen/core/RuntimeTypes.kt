@@ -82,12 +82,6 @@ object RuntimeTypes {
                 val uriEncode = runtimeSymbol("uriEncode", KotlinDependency.HTTP, "endpoints.functions")
                 val parseUrl = runtimeSymbol("parseUrl", KotlinDependency.HTTP, "endpoints.functions")
                 val Url = runtimeSymbol("Url", KotlinDependency.HTTP, "endpoints.functions")
-                val partitionFn = runtimeSymbol("partition", KotlinDependency.HTTP, "endpoints.functions")
-                val parseArn = runtimeSymbol("parseArn", KotlinDependency.HTTP, "endpoints.functions")
-                val isVirtualHostableS3Bucket = runtimeSymbol("isVirtualHostableS3Bucket", KotlinDependency.HTTP, "endpoints.functions")
-                val Partition = runtimeSymbol("Partition", KotlinDependency.HTTP, "endpoints.functions")
-                val PartitionConfig = runtimeSymbol("PartitionConfig", KotlinDependency.HTTP, "endpoints.functions")
-                val Arn = runtimeSymbol("Arn", KotlinDependency.HTTP, "endpoints.functions")
             }
         }
 

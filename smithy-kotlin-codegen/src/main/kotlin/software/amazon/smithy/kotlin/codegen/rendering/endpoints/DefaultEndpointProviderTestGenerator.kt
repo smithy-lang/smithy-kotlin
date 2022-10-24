@@ -4,20 +4,23 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.node.BooleanNode
 import software.amazon.smithy.model.node.Node
 import software.amazon.smithy.model.node.StringNode
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.language.syntax.expr.Expression
 import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 
 /**
  * Renders test cases for the default endpoint provider.
  */
-class DefaultEndpointProviderTestGenerator(
+open class DefaultEndpointProviderTestGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
     private val cases: List<EndpointTestCase>,
@@ -27,12 +30,19 @@ class DefaultEndpointProviderTestGenerator(
     companion object {
         const val CLASS_NAME = "DefaultEndpointProviderTest"
 
-        fun getSymbol(ctx: CodegenContext): Symbol =
+        fun getSymbol(settings: KotlinSettings): Symbol =
             buildSymbol {
                 name = CLASS_NAME
-                namespace = "${ctx.settings.pkg.name}.endpoints"
+                namespace = "${settings.pkg.name}.endpoints"
             }
     }
+
+    /**
+     * Rendering hooks to generate expected top-level fields in the endpoints property bag.
+     */
+    open val expectedPropertyRenderers: Map<String, (KotlinWriter, Expression, (Expression) -> Unit) -> Unit> = emptyMap()
+
+    private lateinit var expressionGenerator: ExpressionGenerator
 
     val paramNames = rules.parameters.toList().map { it.name.asString() }
 
@@ -42,6 +52,8 @@ class DefaultEndpointProviderTestGenerator(
     }
 
     fun render() {
+        expressionGenerator = ExpressionGenerator(writer, rules, emptyMap()) // functions can't be referenced in property declarations
+
         writer.addImport("*", namespace = "kotlin.test")
         writer.withBlock("public class #L {", "}", CLASS_NAME) {
             cases.forEachIndexed { index, it ->
@@ -51,8 +63,12 @@ class DefaultEndpointProviderTestGenerator(
         }
     }
 
+    private fun renderExpression(expr: Expression) {
+        expr.accept(expressionGenerator)
+    }
+
     private fun renderTestCase(index: Int, case: EndpointTestCase) {
-        case.documentation.getOrNull()?.let {
+        case.documentation.ifPresent {
             writer.write("// #L", it)
         }
         writer.write("@Test")
@@ -60,12 +76,12 @@ class DefaultEndpointProviderTestGenerator(
             withBlock("val params = #T {", "}", paramsSymbol) {
                 case.params.members.entries.forEach { (k, v) ->
                     // FIXME: externally-supplied rules currently have some extraneous params
-                    // this check can be removed once we formally consume rules in the model
+                    // this check can be removed once those are removed / validated
                     if (k.value !in paramNames) {
                         return@forEach
                     }
 
-                    writeInline("#L = ", k.value.replaceFirstChar(Char::lowercase))
+                    writeInline("#L = ", k.value.toCamelCase())
                     writeParamValue(v)
                     write("")
                 }
@@ -83,23 +99,48 @@ class DefaultEndpointProviderTestGenerator(
     }
 
     private fun renderTestCaseExpectation(case: EndpointTestCase) {
-        if (case.expect.error.getOrNull() != null) {
-            writer.withBlock("assertFailsWith<#T>(#S) {", "}", RuntimeTypes.Http.Endpoints.EndpointProviderException, case.expect.error.get()) {
-                writer.write("#T().resolveEndpoint(params)", providerSymbol)
+        if (case.expect.error.isPresent) {
+            writer.withBlock("val ex = assertFailsWith<#T> {", "}", RuntimeTypes.Http.Endpoints.EndpointProviderException) {
+                write("#T().resolveEndpoint(params)", providerSymbol)
             }
+            writer.write("assertEquals(#S, ex.message)", case.expect.error.get())
             return
         }
 
-        if (case.expect.endpoint.getOrNull() == null) {
-            throw IllegalArgumentException("endpoint test case has neither an expected error nor endpoint")
+        val endpoint = case.expect.endpoint.orElseThrow {
+            CodegenException("endpoint test case has neither an expected error nor endpoint")
         }
-
-        val endpoint = case.expect.endpoint.get()
 
         writer.withBlock("val expected = #T(", ")", RuntimeTypes.Http.Endpoints.Endpoint) {
-            write("#T.parse(#S)", RuntimeTypes.Http.Url, endpoint.url)
+            write("uri = #T.parse(#S),", RuntimeTypes.Http.Url, endpoint.url)
+
+            if (endpoint.headers.isNotEmpty()) {
+                withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
+                    endpoint.headers.entries.forEach { (k, v) ->
+                        write("append(#S, #S)", k, v)
+                    }
+                }
+            }
+
+            if (endpoint.properties.isNotEmpty()) {
+                withBlock("attributes = #T().apply {", "},", RuntimeTypes.Utils.Attributes) {
+                    endpoint.properties.entries.forEach { (k, v) ->
+                        if (k in expectedPropertyRenderers) {
+                            expectedPropertyRenderers[k]!!(writer, Expression.fromNode(v), ::renderExpression)
+                            return@forEach
+                        }
+
+                        withBlock("set(", ")") {
+                            write("#T(#S),", RuntimeTypes.Utils.AttributeKey, k)
+                            renderExpression(Expression.fromNode(v))
+                            write(",")
+                        }
+                    }
+                }
+            }
         }
+
         writer.write("val actual = #T().resolveEndpoint(params)", providerSymbol)
-        writer.write("assertEquals(expected.uri, actual.uri)")
+        writer.write("assertEquals(expected, actual)")
     }
 }

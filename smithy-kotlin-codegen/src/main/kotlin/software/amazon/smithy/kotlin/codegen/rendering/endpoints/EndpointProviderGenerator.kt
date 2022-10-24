@@ -5,7 +5,7 @@
 package software.amazon.smithy.kotlin.codegen.rendering.endpoints
 
 import software.amazon.smithy.codegen.core.Symbol
-import software.amazon.smithy.kotlin.codegen.core.CodegenContext
+import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
@@ -23,16 +23,23 @@ class EndpointProviderGenerator(
     companion object {
         const val CLASS_NAME = "EndpointProvider"
 
-        fun getSymbol(ctx: CodegenContext): Symbol =
+        fun getSymbol(settings: KotlinSettings): Symbol =
             buildSymbol {
                 name = CLASS_NAME
-                namespace = "${ctx.settings.pkg.name}.endpoints"
+                namespace = "${settings.pkg.name}.endpoints"
             }
     }
 
     fun render() {
+        renderDocumentation()
         writer.withBlock("public fun interface #L {", "}", CLASS_NAME) {
             write("public suspend fun resolveEndpoint(params: #T): #T", paramsSymbol, RuntimeTypes.Http.Endpoints.Endpoint)
+        }
+    }
+
+    fun renderDocumentation() {
+        writer.dokka {
+            write("Resolves to an endpoint for a given service operation.")
         }
     }
 }

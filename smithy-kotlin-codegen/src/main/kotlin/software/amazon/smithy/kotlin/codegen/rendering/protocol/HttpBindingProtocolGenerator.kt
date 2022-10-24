@@ -12,12 +12,15 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.kotlin.codegen.retries.StandardRetryMiddleware
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.knowledge.HttpBinding
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import java.util.logging.Logger
 
 /**
@@ -952,6 +955,53 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             bindings.any { it.location == HttpBinding.Location.PAYLOAD || it.location == HttpBinding.Location.DOCUMENT }
         }
     }
+
+    override fun generateEndpointProvider(ctx: ProtocolGenerator.GenerationContext, rules: EndpointRuleSet) {
+        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
+        val providerSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
+        val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
+
+        ctx.delegator.useFileWriter(paramsSymbol) {
+            EndpointParametersGenerator(it, rules).render()
+        }
+        ctx.delegator.useFileWriter(providerSymbol) {
+            EndpointProviderGenerator(it, paramsSymbol).render()
+        }
+        ctx.delegator.useFileWriter(defaultProviderSymbol) {
+            defaultEndpointProviderGenerator(it, rules, providerSymbol, paramsSymbol).render()
+        }
+    }
+
+    override fun generateEndpointProviderTests(
+        ctx: ProtocolGenerator.GenerationContext,
+        tests: List<EndpointTestCase>,
+        rules: EndpointRuleSet,
+    ) {
+        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
+        val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
+        val testSymbol = DefaultEndpointProviderTestGenerator.getSymbol(ctx.settings)
+
+        ctx.delegator.useTestFileWriter("${testSymbol.name}.kt", testSymbol.namespace) {
+            defaultEndpointProviderTestGenerator(it, rules, tests, defaultProviderSymbol, paramsSymbol).render()
+        }
+    }
+
+    override fun defaultEndpointProviderGenerator(
+        writer: KotlinWriter,
+        rules: EndpointRuleSet,
+        interfaceSymbol: Symbol,
+        paramsSymbol: Symbol,
+    ): DefaultEndpointProviderGenerator =
+        DefaultEndpointProviderGenerator(writer, rules, interfaceSymbol, paramsSymbol)
+
+    override fun defaultEndpointProviderTestGenerator(
+        writer: KotlinWriter,
+        rules: EndpointRuleSet,
+        tests: List<EndpointTestCase>,
+        defaultProviderSymbol: Symbol,
+        paramsSymbol: Symbol,
+    ): DefaultEndpointProviderTestGenerator =
+        DefaultEndpointProviderTestGenerator(writer, rules, tests, defaultProviderSymbol, paramsSymbol)
 }
 
 // return the conversion function to use to convert a Kotlin string to a given number shape
