@@ -165,4 +165,48 @@ class UploadTest : AbstractEngineTest() {
             assertEquals("application/xml", reqContentType, "No Content-Type set on ${client.engine}")
         }
     }
+
+    /**
+     * Test cancelling the request in the middle of processing the request body
+     * This recreates [aws-sdk-kotlin#733](https://github.com/awslabs/aws-sdk-kotlin/issues/733)
+     * but does not result in a test failure (instead you will see
+     * 'Exception in thread "OkHttp Dispatcher" ... ' in the test output if not handled).
+     *
+     * If we exposed configuring the `Dispatcher` on OkHttpEngine builder then we could
+     * plug in a custom executor/thread factory to make the actual assertions (in a JVM test sourceSet).
+     * Although that would only work so long as okhttp continues to use `execute` rather than `submit` internally.
+     */
+    @Test
+    fun testUploadCancellation() = testEngines {
+        test { env, client ->
+            val chan = SdkByteChannel(autoFlush = true)
+
+            val writeJob = GlobalScope.launch {
+                val seedData = ByteArray(6017) { it.toByte() }
+                chan.writeFully(seedData)
+            }
+
+            val req = HttpRequest {
+                method = HttpMethod.POST
+                testSetup(env)
+                url.path = "/upload/content"
+                body = chan.toHttpBody(16 * 1024 * 1024)
+            }
+
+            val job = GlobalScope.launch {
+                val call = client.call(req)
+                try {
+                    // wait for seed data to have been written
+                    writeJob.join()
+                    delay(5000)
+                } finally {
+                    call.complete()
+                    chan.cancel(null)
+                }
+            }
+
+            writeJob.join()
+            job.cancelAndJoin()
+        }
+    }
 }

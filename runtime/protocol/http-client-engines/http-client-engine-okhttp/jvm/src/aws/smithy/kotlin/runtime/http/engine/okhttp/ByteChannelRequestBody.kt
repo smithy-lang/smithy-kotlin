@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
+import java.io.IOException
 import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 
@@ -76,7 +77,9 @@ private inline fun <T> withJob(job: CompletableJob, block: () -> T): T {
         return block()
     } catch (ex: Exception) {
         job.completeExceptionally(ex)
-        throw ex
+        // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
+        // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
+        throw IOException(ex)
     } finally {
         job.complete()
     }
