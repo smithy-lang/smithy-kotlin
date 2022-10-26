@@ -176,6 +176,7 @@ class UploadTest : AbstractEngineTest() {
      * plug in a custom executor/thread factory to make the actual assertions (in a JVM test sourceSet).
      * Although that would only work so long as okhttp continues to use `execute` rather than `submit` internally.
      */
+    @OptIn(DelicateCoroutinesApi::class)
     @Test
     fun testUploadCancellation() = testEngines {
         test { env, client ->
