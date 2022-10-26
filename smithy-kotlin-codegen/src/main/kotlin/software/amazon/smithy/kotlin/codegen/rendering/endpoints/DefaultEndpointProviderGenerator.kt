@@ -284,7 +284,7 @@ class ExpressionGenerator(
 
     override fun visitString(value: Template) {
         writer.writeInline("\"")
-        value.accept(this).toList() // must "consume" the stream to actually generate everything
+        value.accept(this).forEach {} // must "consume" the stream to actually generate everything
         writer.writeInline("\"")
     }
 
