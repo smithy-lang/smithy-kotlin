@@ -968,7 +968,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
             EndpointProviderGenerator(it, paramsSymbol).render()
         }
         ctx.delegator.useFileWriter(defaultProviderSymbol) {
-            defaultEndpointProviderGenerator(it, rules, providerSymbol, paramsSymbol).render()
+            DefaultEndpointProviderGenerator(it, rules, providerSymbol, paramsSymbol).render()
         }
     }
 
@@ -982,26 +982,9 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val testSymbol = DefaultEndpointProviderTestGenerator.getSymbol(ctx.settings)
 
         ctx.delegator.useTestFileWriter("${testSymbol.name}.kt", testSymbol.namespace) {
-            defaultEndpointProviderTestGenerator(it, rules, tests, defaultProviderSymbol, paramsSymbol).render()
+            DefaultEndpointProviderTestGenerator(it, rules, tests, defaultProviderSymbol, paramsSymbol).render()
         }
     }
-
-    override fun defaultEndpointProviderGenerator(
-        writer: KotlinWriter,
-        rules: EndpointRuleSet,
-        interfaceSymbol: Symbol,
-        paramsSymbol: Symbol,
-    ): DefaultEndpointProviderGenerator =
-        DefaultEndpointProviderGenerator(writer, rules, interfaceSymbol, paramsSymbol)
-
-    override fun defaultEndpointProviderTestGenerator(
-        writer: KotlinWriter,
-        rules: EndpointRuleSet,
-        tests: List<EndpointTestCase>,
-        defaultProviderSymbol: Symbol,
-        paramsSymbol: Symbol,
-    ): DefaultEndpointProviderTestGenerator =
-        DefaultEndpointProviderTestGenerator(writer, rules, tests, defaultProviderSymbol, paramsSymbol)
 }
 
 // return the conversion function to use to convert a Kotlin string to a given number shape

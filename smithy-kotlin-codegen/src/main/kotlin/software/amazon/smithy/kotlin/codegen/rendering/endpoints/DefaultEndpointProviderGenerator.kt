@@ -36,14 +36,33 @@ internal val coreFunctions: Map<String, Symbol> = mapOf(
 )
 
 /**
+ * Defines a callback that renders an SDK-specific endpoint property.
+ * The callback is passed the following:
+ * - a writer to which code should be rendered
+ * - the root expression construct for the property
+ * - a generic expression renderer to defer back to the base implementation (for example, for handling generic sub-expressions
+ *   or string templates for which the caller doesn't need to provide extended behavior)
+ */
+typealias EndpointPropertyRenderer = (KotlinWriter, Expression, ExpressionRenderer) -> Unit
+
+/**
+ * An expression renderer generates code for an endpoint expression construct.
+ */
+fun interface ExpressionRenderer {
+    fun renderExpression(expr: Expression)
+}
+
+/**
  * Renders the default endpoint provider based on the provided rule set.
  */
-open class DefaultEndpointProviderGenerator(
+class DefaultEndpointProviderGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
     private val interfaceSymbol: Symbol,
     private val paramsSymbol: Symbol,
-) {
+    private val externalFunctions: Map<String, Symbol> = emptyMap(),
+    private val propertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
+) : ExpressionRenderer {
     companion object {
         const val CLASS_NAME = "DefaultEndpointProvider"
 
@@ -54,30 +73,16 @@ open class DefaultEndpointProviderGenerator(
             }
     }
 
-    /**
-     * Additional standard library functions used in SDK-specific provider implementations.
-     */
-    open val externalFunctions: Map<String, Symbol> = emptyMap()
-
-    /**
-     * Rendering hooks to generate the assignment of top-level fields in the property bag in an SDK-specific manner.
-     * Hook is passed the writer, the expression, and an expression-rendering callback (used if the caller needs to
-     * delegate back to the default implementation to handle things like template strings).
-     */
-    open val propertyRenderers: Map<String, (KotlinWriter, Expression, (Expression) -> Unit) -> Unit> = emptyMap()
-
-    private lateinit var expressionGenerator: ExpressionGenerator
+    private val expressionGenerator = ExpressionGenerator(writer, rules, coreFunctions + externalFunctions)
 
     fun render() {
-        expressionGenerator = ExpressionGenerator(writer, rules, coreFunctions + externalFunctions)
-
         renderDocumentation()
         writer.withBlock("public class #L: #T {", "}", CLASS_NAME, interfaceSymbol) {
             renderResolve()
         }
     }
 
-    private fun renderExpression(expr: Expression) {
+    override fun renderExpression(expr: Expression) {
         expr.accept(expressionGenerator)
     }
 
@@ -163,7 +168,7 @@ open class DefaultEndpointProviderGenerator(
 
                             // caller has a chance to generate their own value for a recognized property
                             if (kStr in propertyRenderers) {
-                                propertyRenderers[kStr]!!(writer, v, ::renderExpression)
+                                propertyRenderers[kStr]!!(writer, v, this@DefaultEndpointProviderGenerator)
                                 return@forEach
                             }
 
@@ -201,24 +206,18 @@ class ExpressionGenerator(
     private val rules: EndpointRuleSet,
     private val functions: Map<String, Symbol>,
 ) : ExpressionVisitor<Unit>, Literal.Vistor<Unit>, TemplateVisitor<Unit> {
-    override fun visitLiteral(literal: Literal?) {
-        requireNotNull(literal) { "unexpected null Literal expression" }
-
+    override fun visitLiteral(literal: Literal) {
         literal.accept(this as Literal.Vistor<Unit>)
     }
 
-    override fun visitRef(reference: Reference?) {
-        requireNotNull(reference) { "unexpected null Reference expression" }
-
+    override fun visitRef(reference: Reference) {
         if (isParamRef(reference)) {
             writer.writeInline("params.")
         }
         writer.writeInline(reference.name.toKotlin())
     }
 
-    override fun visitGetAttr(getAttr: GetAttr?) {
-        requireNotNull(getAttr) { "unexpected null GetAttr expression" }
-
+    override fun visitGetAttr(getAttr: GetAttr) {
         getAttr.target.accept(this)
         getAttr.path.forEach {
             when (it) {
@@ -229,32 +228,22 @@ class ExpressionGenerator(
         }
     }
 
-    override fun visitIsSet(target: Expression?) {
-        requireNotNull(target) { "unexpected null IsSet target" }
-
+    override fun visitIsSet(target: Expression) {
         target.accept(this)
         writer.writeInline(" != null")
     }
 
-    override fun visitNot(target: Expression?) {
-        requireNotNull(target) { "unexpected null Not target" }
-
+    override fun visitNot(target: Expression) {
         writer.writeInline("!(")
         target.accept(this)
         writer.writeInline(")")
     }
 
-    override fun visitBoolEquals(left: Expression?, right: Expression?) {
-        requireNotNull(left) { "unexpected null BoolEquals lhs" }
-        requireNotNull(right) { "unexpected null BoolEquals rhs" }
-
+    override fun visitBoolEquals(left: Expression, right: Expression) {
         visitEquals(left, right)
     }
 
-    override fun visitStringEquals(left: Expression?, right: Expression?) {
-        requireNotNull(left) { "unexpected null StringEquals lhs" }
-        requireNotNull(right) { "unexpected null StringEquals rhs" }
-
+    override fun visitStringEquals(left: Expression, right: Expression) {
         visitEquals(left, right)
     }
 
@@ -264,10 +253,7 @@ class ExpressionGenerator(
         right.accept(this)
     }
 
-    override fun visitLibraryFunction(fn: FunctionDefinition?, args: MutableList<Expression>?) {
-        requireNotNull(fn) { "unexpected null LibraryFunction fn" }
-        requireNotNull(args) { "unexpected null LibraryFunction args" }
-
+    override fun visitLibraryFunction(fn: FunctionDefinition, args: MutableList<Expression>) {
         writer.writeInline("#T(", functions.getValue(fn.id))
         args.forEachIndexed { index, it ->
             it.accept(this)

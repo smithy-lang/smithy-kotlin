@@ -20,13 +20,14 @@ import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 /**
  * Renders test cases for the default endpoint provider.
  */
-open class DefaultEndpointProviderTestGenerator(
+class DefaultEndpointProviderTestGenerator(
     private val writer: KotlinWriter,
     private val rules: EndpointRuleSet,
     private val cases: List<EndpointTestCase>,
     private val providerSymbol: Symbol,
     private val paramsSymbol: Symbol,
-) {
+    private val expectedPropertyRenderers: Map<String, EndpointPropertyRenderer> = emptyMap(),
+) : ExpressionRenderer {
     companion object {
         const val CLASS_NAME = "DefaultEndpointProviderTest"
 
@@ -37,23 +38,16 @@ open class DefaultEndpointProviderTestGenerator(
             }
     }
 
-    /**
-     * Rendering hooks to generate expected top-level fields in the endpoints property bag.
-     */
-    open val expectedPropertyRenderers: Map<String, (KotlinWriter, Expression, (Expression) -> Unit) -> Unit> = emptyMap()
+    private val expressionGenerator = ExpressionGenerator(writer, rules, emptyMap()) // functions can't be referenced in property declarations
 
-    private lateinit var expressionGenerator: ExpressionGenerator
+    private val paramNames = rules.parameters.toList().map { it.name.asString() }
 
-    val paramNames = rules.parameters.toList().map { it.name.asString() }
-
-    val runTestSymbol = buildSymbol {
+    private val runTestSymbol = buildSymbol {
         name = "runTest"
         namespace = "kotlinx.coroutines.test"
     }
 
     fun render() {
-        expressionGenerator = ExpressionGenerator(writer, rules, emptyMap()) // functions can't be referenced in property declarations
-
         writer.addImport("*", namespace = "kotlin.test")
         writer.withBlock("public class #L {", "}", CLASS_NAME) {
             cases.forEachIndexed { index, it ->
@@ -63,7 +57,7 @@ open class DefaultEndpointProviderTestGenerator(
         }
     }
 
-    private fun renderExpression(expr: Expression) {
+    override fun renderExpression(expr: Expression) {
         expr.accept(expressionGenerator)
     }
 
@@ -126,7 +120,7 @@ open class DefaultEndpointProviderTestGenerator(
                 withBlock("attributes = #T().apply {", "},", RuntimeTypes.Utils.Attributes) {
                     endpoint.properties.entries.forEach { (k, v) ->
                         if (k in expectedPropertyRenderers) {
-                            expectedPropertyRenderers[k]!!(writer, Expression.fromNode(v), ::renderExpression)
+                            expectedPropertyRenderers[k]!!(writer, Expression.fromNode(v), this@DefaultEndpointProviderTestGenerator)
                             return@forEach
                         }
 

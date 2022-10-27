@@ -11,8 +11,6 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderTestGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
@@ -111,27 +109,6 @@ interface ProtocolGenerator {
      * Get the generator responsible for rendering serialization of the protocol specific data format
      */
     fun structuredDataSerializer(ctx: GenerationContext): StructuredDataSerializerGenerator
-
-    /**
-     * Plugin point for returning a generator for the default endpoint provider.
-     */
-    fun defaultEndpointProviderGenerator(
-        writer: KotlinWriter,
-        rules: EndpointRuleSet,
-        interfaceSymbol: Symbol,
-        paramsSymbol: Symbol,
-    ): DefaultEndpointProviderGenerator
-
-    /**
-     * Plugin point for returning a generator for tests for the default endpoint provider.
-     */
-    fun defaultEndpointProviderTestGenerator(
-        writer: KotlinWriter,
-        rules: EndpointRuleSet,
-        tests: List<EndpointTestCase>,
-        defaultProviderSymbol: Symbol,
-        paramsSymbol: Symbol,
-    ): DefaultEndpointProviderTestGenerator
 
     /**
      * Context object used for service serialization and deserialization
