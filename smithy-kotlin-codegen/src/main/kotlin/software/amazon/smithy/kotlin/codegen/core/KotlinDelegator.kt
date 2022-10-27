@@ -213,3 +213,6 @@ internal data class GeneratedDependency(
         return listOf(symbolDep)
     }
 }
+
+fun KotlinDelegator.useFileWriter(symbol: Symbol, block: (KotlinWriter) -> Unit) =
+    useFileWriter("${symbol.name}.kt", symbol.namespace, block)

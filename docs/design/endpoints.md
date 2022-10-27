@@ -374,48 +374,48 @@ required by the service.
 
 ```json
 {
-  "parameters": {
-    "ResourceId": {
-      "type": "string",
-      "required": "true"
-    }
-  },
-  "rules": [
-    {
-      "documentation": "use a special endpoint for government resources",
-      "type": "endpoint",
-      "conditions": [
+    "parameters": {
+        "ResourceId": {
+            "type": "string",
+            "required": "true"
+        }
+    },
+    "rules": [
         {
-          "fn": "substring",
-          "argv": [
-            {"ref": "ResourceId"},
-            0,
-            4,
-            false
-          ],
-          "assign": "resourceIdPrefix"
+            "documentation": "use a special endpoint for government resources",
+            "type": "endpoint",
+            "conditions": [
+                {
+                    "fn": "substring",
+                    "argv": [
+                        {"ref": "ResourceId"},
+                        0,
+                        4,
+                        false
+                    ],
+                    "assign": "resourceIdPrefix"
+                },
+                {
+                    "fn": "stringEquals",
+                    "argv": [
+                        {"ref": "resourceIdPrefix"},
+                        "gov."
+                    ]
+                }
+            ],
+            "endpoint": {
+                "url": "https://gov.api"
+            }
         },
         {
-          "fn": "stringEquals",
-          "argv": [
-            {"ref": "resourceIdPrefix"},
-            "gov."
-          ]
+            "documentation": "fallback to global endpoint",
+            "type": "endpoint",
+            "conditions": [],
+            "endpoint": {
+                "url": "https://global.api"
+            }
         }
-      ],
-      "endpoint": {
-        "url": "https://gov.api"
-      }
-    },
-    {
-      "documentation": "fallback to global endpoint",
-      "type": "endpoint",
-      "conditions": [],
-      "endpoint": {
-        "url": "https://global.api"
-      }
-    }
-  ]
+    ]
 }
 ```
 *Note*: The signature of the substring method is `substring(s: String, start: Int, end: Int, reverseIndices: false): String`.

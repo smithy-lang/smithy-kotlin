@@ -13,12 +13,16 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderTestGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
@@ -214,11 +218,46 @@ class ExceptionGeneratorTest {
 
                 override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
                 override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {}
+
+                override fun generateEndpointProvider(
+                    ctx: ProtocolGenerator.GenerationContext,
+                    rules: EndpointRuleSet,
+                ) {
+                    error("not needed for test")
+                }
+
+                override fun generateEndpointProviderTests(
+                    ctx: ProtocolGenerator.GenerationContext,
+                    tests: List<EndpointTestCase>,
+                    rules: EndpointRuleSet,
+                ) {
+                    error("not needed for test")
+                }
+
                 override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator {
                     error("not needed for test")
                 }
 
                 override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator {
+                    error("not needed for test")
+                }
+
+                override fun defaultEndpointProviderGenerator(
+                    writer: KotlinWriter,
+                    rules: EndpointRuleSet,
+                    interfaceSymbol: Symbol,
+                    paramsSymbol: Symbol,
+                ): DefaultEndpointProviderGenerator {
+                    error("not needed for test")
+                }
+
+                override fun defaultEndpointProviderTestGenerator(
+                    writer: KotlinWriter,
+                    rules: EndpointRuleSet,
+                    tests: List<EndpointTestCase>,
+                    defaultProviderSymbol: Symbol,
+                    paramsSymbol: Symbol,
+                ): DefaultEndpointProviderTestGenerator {
                     error("not needed for test")
                 }
 

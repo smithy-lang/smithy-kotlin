@@ -8,12 +8,10 @@ package software.amazon.smithy.kotlin.codegen
 import software.amazon.smithy.build.FileManifest
 import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
-import software.amazon.smithy.kotlin.codegen.core.GenerationContext
-import software.amazon.smithy.kotlin.codegen.core.KotlinDelegator
-import software.amazon.smithy.kotlin.codegen.core.KotlinDependency
-import software.amazon.smithy.kotlin.codegen.core.toRenderingContext
+import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
+import software.amazon.smithy.kotlin.codegen.model.getTrait
 import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.rendering.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
@@ -23,6 +21,9 @@ import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.transform.ModelTransformer
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
+import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
 import java.util.*
 import java.util.logging.Logger
 
@@ -128,6 +129,17 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
 
             LOGGER.info("[${service.id}] Generating service client for protocol $protocol")
             generateProtocolClient(ctx)
+
+            service.getTrait<EndpointRuleSetTrait>()?.let { rulesTrait ->
+                LOGGER.info("[${service.id}] Generating endpoint provider for protocol $protocol")
+                val rules = EndpointRuleSet.fromNode(rulesTrait.ruleSet)
+                generateEndpointProvider(ctx, rules)
+
+                service.getTrait<EndpointTestsTrait>()?.let { testsTrait ->
+                    LOGGER.info("[${service.id}] Generating endpoint provider tests for protocol $protocol")
+                    generateEndpointProviderTests(ctx, testsTrait.testCases, rules)
+                }
+            }
         }
 
         writers.finalize()

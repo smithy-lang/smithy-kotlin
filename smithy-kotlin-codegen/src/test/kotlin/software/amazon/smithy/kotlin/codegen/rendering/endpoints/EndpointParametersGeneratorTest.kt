@@ -10,7 +10,7 @@ import software.amazon.smithy.kotlin.codegen.test.assertBalancedBracesAndParens
 import software.amazon.smithy.kotlin.codegen.test.formatForTest
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
 import software.amazon.smithy.model.node.Node
-import software.amazon.smithy.rulesengine.language.EndpointRuleset
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import kotlin.test.*
 
 class EndpointParametersGeneratorTest {
@@ -83,8 +83,8 @@ class EndpointParametersGeneratorTest {
         generatedClass = writer.toString()
     }
 
-    private fun createTestRulesetParams(paramsJson: String = "{}"): EndpointRuleset =
-        EndpointRuleset.fromNode(
+    private fun createTestRulesetParams(paramsJson: String = "{}"): EndpointRuleSet =
+        EndpointRuleSet.fromNode(
             Node.parse(
                 """
                 {

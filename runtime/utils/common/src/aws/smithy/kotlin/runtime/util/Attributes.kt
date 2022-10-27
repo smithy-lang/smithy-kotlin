@@ -11,7 +11,7 @@ package aws.smithy.kotlin.runtime.util
  * @param T is the type of the vale stored in the attribute
  * @param name the name of the attribute (for diagnostics)
  */
-public class AttributeKey<T>(public val name: String) {
+public data class AttributeKey<T>(public val name: String) {
     override fun toString(): String = if (name.isBlank()) super.toString() else "ExecutionAttributeKey: $name"
 }
 
