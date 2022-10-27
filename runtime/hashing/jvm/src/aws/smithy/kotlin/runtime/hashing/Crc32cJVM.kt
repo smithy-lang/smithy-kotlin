@@ -9,7 +9,7 @@ import kotlin.experimental.and
 import kotlin.experimental.xor
 
 public actual class Crc32c : Crc32cBase() {
-    private val md = CRC32C()
+    private val md = CRC32CImpl()
 
     override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
 
@@ -63,7 +63,7 @@ public actual class Crc32c : Crc32cBase() {
  * This class is Not ThreadSafe
  *
  */
-private class CRC32C : Checksum {
+private class CRC32CImpl : Checksum {
     /** the current CRC value, bit-flipped */
     var crc = 0xffffffff
 
