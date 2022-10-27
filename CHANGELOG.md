@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.10] - 10/27/2022
+
+### Features
+* add `MIN` and `MAX` accessors for the Instant type
+*  Add order parameter to ClientConfigProperty to be used for ordering configuration dependencies
+
+### Fixes
+* [#733](https://github.com/awslabs/aws-sdk-kotlin/issues/733) Fix OkHttp engine crashing on Android when coroutine is cancelled while uploading request body
+
 ## [0.12.9] - 10/13/2022
 
 ### Fixes

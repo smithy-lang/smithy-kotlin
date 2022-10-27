@@ -1,5 +1,0 @@
-{
-  "id": "3c662a11-98c2-48cc-8cf5-ca0b293db1f9",
-  "type": "feature",
-  "description": "add `MIN` and `MAX` accessors for the Instant type"
-}
