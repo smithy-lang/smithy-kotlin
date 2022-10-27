@@ -15,10 +15,9 @@ import kotlinx.coroutines.test.runTest
 import okio.Buffer
 import okio.BufferedSink
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import kotlin.coroutines.EmptyCoroutineContext
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
+import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
@@ -106,11 +105,17 @@ class ByteChannelRequestBodyTest {
             override val contentLength: Long = content.size.toLong()
             override fun readFrom(): SdkByteReadChannel = chan
         }
+
         val job = launch(Dispatchers.IO) {
             val callContext = coroutineContext + Job(coroutineContext.job)
             val actual = ByteChannelRequestBody(body, callContext)
             val buffer = Buffer()
-            actual.writeTo(buffer)
+            // see https://github.com/awslabs/aws-sdk-kotlin/issues/733 for why we expect
+            // this to be an IOException
+            val ex = assertFailsWith<IOException> {
+                actual.writeTo(buffer)
+            }
+            assertIs<CancellationException>(ex.cause)
         }
         delay(100.milliseconds)
 
