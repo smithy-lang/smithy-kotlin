@@ -1,6 +1,0 @@
-{
-  "id": "490f40f2-97e1-47f9-b53c-d0740e394814",
-  "type": "feature",
-  "description": "Add order parameter to ClientConfigProperty to be used for ordering configuration dependencies",
-  "issues": ["awslabs/aws-sdk-kotlin/#711"]
-}
