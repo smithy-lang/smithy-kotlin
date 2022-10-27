@@ -11,6 +11,10 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.namespace
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderTestGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.model.Model
@@ -92,13 +96,35 @@ interface ProtocolGenerator {
      * Generate an implementation and supporting code for the modeled endpoint provider.
      * Will only be invoked when a model's service shape has the necessary endpoint rule set trait.
      */
-    fun generateEndpointProvider(ctx: GenerationContext, rules: EndpointRuleSet)
+    fun generateEndpointProvider(ctx: GenerationContext, rules: EndpointRuleSet) {
+        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
+        val providerSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
+        val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
+
+        ctx.delegator.useFileWriter(paramsSymbol) {
+            EndpointParametersGenerator(it, rules).render()
+        }
+        ctx.delegator.useFileWriter(providerSymbol) {
+            EndpointProviderGenerator(it, paramsSymbol).render()
+        }
+        ctx.delegator.useFileWriter(defaultProviderSymbol) {
+            DefaultEndpointProviderGenerator(it, rules, providerSymbol, paramsSymbol).render()
+        }
+    }
 
     /**
      * Generate an implementation and supporting code for the modeled endpoint provider.
      * Will only be invoked when a model's service shape has both the rule set and test case traits for endpoints.
      */
-    fun generateEndpointProviderTests(ctx: GenerationContext, tests: List<EndpointTestCase>, rules: EndpointRuleSet)
+    fun generateEndpointProviderTests(ctx: GenerationContext, tests: List<EndpointTestCase>, rules: EndpointRuleSet) {
+        val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
+        val defaultProviderSymbol = DefaultEndpointProviderGenerator.getSymbol(ctx.settings)
+        val testSymbol = DefaultEndpointProviderTestGenerator.getSymbol(ctx.settings)
+
+        ctx.delegator.useTestFileWriter("${testSymbol.name}.kt", testSymbol.namespace) {
+            DefaultEndpointProviderTestGenerator(it, rules, tests, defaultProviderSymbol, paramsSymbol).render()
+        }
+    }
 
     /**
      * Get the generator responsible for rendering deserialization of the protocol specific data format
