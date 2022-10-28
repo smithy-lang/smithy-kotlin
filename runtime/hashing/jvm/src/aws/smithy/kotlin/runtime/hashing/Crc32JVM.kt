@@ -15,9 +15,9 @@ public actual class Crc32 : Crc32Base() {
         val x = digestValue()
         reset()
         return byteArrayOf(
-            ((x shl 24) and 0xffu).toByte(),
-            ((x shl 16) and 0xffu).toByte(),
-            ((x shl 8) and 0xffu).toByte(),
+            ((x shr 24) and 0xffu).toByte(),
+            ((x shr 16) and 0xffu).toByte(),
+            ((x shr 8) and 0xffu).toByte(),
             (x and 0xffu).toByte(),
         )
     }
