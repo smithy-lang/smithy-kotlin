@@ -23,7 +23,7 @@ class Crc32cTest {
         assertEquals(224353407U, crc.digestValue())
 
         crc.reset()
-        assertEquals(0U, crc.digestValue())  // contents of crc should be zeroed out
+        assertEquals(0U, crc.digestValue()) // contents of crc should be zeroed out
     }
 
     @Test
@@ -33,7 +33,7 @@ class Crc32cTest {
         val input = "foobar"
 
         crc.update(input.encodeToByteArray(), 0, input.length / 2)
-        assertEquals(3485773341U, crc.digestValue())  // checksum of "foo"
+        assertEquals(3485773341U, crc.digestValue()) // checksum of "foo"
 
         crc.update(input.encodeToByteArray(), (input.length - input.length / 2), input.length / 2)
         assertEquals(224353407U, crc.digestValue()) // checksum of "foobar"
