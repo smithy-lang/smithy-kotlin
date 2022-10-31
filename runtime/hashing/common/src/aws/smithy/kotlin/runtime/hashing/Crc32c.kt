@@ -14,27 +14,8 @@ public abstract class Crc32cBase : HashFunction {
     override val digestSizeBytes: Int = 4
 
     public abstract fun digestValue(): UInt
-}
 
-/**
- * CRC32C checksum. Note: [digest] will return the bytes (big endian) of the CRC32C integer value. Access [digestValue]
- * directly to avoid doing the integer conversion yourself.
- */
-@InternalApi
-public expect class Crc32c() : Crc32cBase
-
-/**
- * Compute the CRC32C hash of the current [ByteArray]
- */
-@InternalApi
-public fun ByteArray.crc32c(): UInt = Crc32c().apply { update(this@crc32c) }.digestValue()
-
-public actual class Crc32c : Crc32cBase() {
-    private val md = CRC32CImpl()
-
-    override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
-
-    override fun digest(): ByteArray {
+    public override fun digest(): ByteArray {
         val x = digestValue()
         reset()
         return byteArrayOf(
@@ -44,6 +25,22 @@ public actual class Crc32c : Crc32cBase() {
             (x and 0xffu).toByte(),
         )
     }
+}
+
+/**
+ * Compute the CRC32C hash of the current [ByteArray]
+ */
+@InternalApi
+public fun ByteArray.crc32c(): UInt = Crc32c().apply { update(this@crc32c) }.digestValue()
+
+/**
+ * CRC32C checksum. Note: [digest] will return the bytes (big endian) of the CRC32C integer value. Access [digestValue]
+ * directly to avoid doing the integer conversion yourself.
+ */
+public class Crc32c : Crc32cBase() {
+    private val md = CRC32CImpl()
+
+    override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
 
     override fun digestValue(): UInt = md.getValue().toUInt()
 
