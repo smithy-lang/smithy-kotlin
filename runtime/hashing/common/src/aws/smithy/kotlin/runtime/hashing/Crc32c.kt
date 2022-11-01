@@ -8,25 +8,6 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.experimental.and
 import kotlin.experimental.xor
 
-@InternalApi
-public abstract class Crc32cBase : HashFunction {
-    override val blockSizeBytes: Int = 4
-    override val digestSizeBytes: Int = 4
-
-    public abstract fun digestValue(): UInt
-
-    public override fun digest(): ByteArray {
-        val x = digestValue()
-        reset()
-        return byteArrayOf(
-            ((x shr 24) and 0xffu).toByte(),
-            ((x shr 16) and 0xffu).toByte(),
-            ((x shr 8) and 0xffu).toByte(),
-            (x and 0xffu).toByte(),
-        )
-    }
-}
-
 /**
  * Compute the CRC32C hash of the current [ByteArray]
  */
@@ -37,7 +18,7 @@ public fun ByteArray.crc32c(): UInt = Crc32c().apply { update(this@crc32c) }.dig
  * CRC32C checksum. Note: [digest] will return the bytes (big endian) of the CRC32C integer value. Access [digestValue]
  * directly to avoid doing the integer conversion yourself.
  */
-public class Crc32c : Crc32cBase() {
+public class Crc32c : Crc32Base() {
     private val md = CRC32CImpl()
 
     override fun update(input: ByteArray, offset: Int, length: Int): Unit = md.update(input, offset, length)
