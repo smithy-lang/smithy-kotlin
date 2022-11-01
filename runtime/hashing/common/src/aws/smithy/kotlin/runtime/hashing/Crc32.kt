@@ -12,6 +12,17 @@ public abstract class Crc32Base : HashFunction {
     override val digestSizeBytes: Int = 4
 
     public abstract fun digestValue(): UInt
+
+    override fun digest(): ByteArray {
+        val x = digestValue()
+        reset()
+        return byteArrayOf(
+            ((x shr 24) and 0xffu).toByte(),
+            ((x shr 16) and 0xffu).toByte(),
+            ((x shr 8) and 0xffu).toByte(),
+            (x and 0xffu).toByte(),
+        )
+    }
 }
 
 /**
