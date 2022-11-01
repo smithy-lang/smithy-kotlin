@@ -239,4 +239,22 @@ class InstantTest {
         assertEquals(Instant.fromEpochSeconds(1010, 2000), start + offset)
         assertEquals(Instant.fromEpochSeconds(990, 0), start - offset)
     }
+
+    @Test
+    fun testRoundTripUtcOffset() {
+        // sanity check we only ever emit UTC timestamps (e.g. round trip a response with UTC offset)
+        val tests = listOf(
+            "2020-11-05T19:22:37+00:20" to "2020-11-05T19:02:37Z",
+            "2020-11-05T19:22:37-00:20" to "2020-11-05T19:42:37Z",
+            "2020-11-05T19:22:37+12:45" to "2020-11-05T06:37:37Z",
+            "2020-11-05T19:22:37-12:45" to "2020-11-06T08:07:37Z",
+            "2020-11-05T19:22:37.345-12:45" to "2020-11-06T08:07:37.345Z",
+        )
+
+        tests.forEachIndexed { idx, test ->
+            val parsed = Instant.fromIso8601(test.first)
+            val actual = parsed.format(TimestampFormat.ISO_8601)
+            assertEquals(test.second, actual, "test[$idx]: failed to format offset timestamp in UTC")
+        }
+    }
 }
