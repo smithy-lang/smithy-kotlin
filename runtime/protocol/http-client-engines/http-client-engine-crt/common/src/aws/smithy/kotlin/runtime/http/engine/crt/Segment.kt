@@ -5,26 +5,25 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.smithy.kotlin.runtime.io.SdkByteBuffer
-import aws.smithy.kotlin.runtime.io.readFully
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 
-internal typealias Segment = SdkByteBuffer
+internal typealias Segment = SdkBuffer
 
 /**
  * Create a segment from the given src [ByteArray] and mark the entire contents readable
  */
-internal fun newReadableSegment(src: ByteArray): Segment = Segment.of(src).apply { advance(src.size.toULong()) }
+internal fun newReadableSegment(src: ByteArray): Segment = SdkBuffer().apply { write(src) }
 
-internal fun Segment.copyTo(dest: SdkByteBuffer, limit: Int = Int.MAX_VALUE): Int {
-    check(readRemaining > 0u) { "nothing left to read from segment" }
-    val wc = minOf(readRemaining, limit.toULong())
-    readFully(dest, wc)
+internal fun Segment.copyTo(dest: SdkBuffer, limit: Int = Int.MAX_VALUE): Int {
+    check(size > 0L) { "nothing left to read from segment" }
+    val wc = minOf(size, limit.toLong())
+    read(dest, wc)
     return wc.toInt()
 }
 
 internal fun Segment.copyTo(dest: ByteArray, offset: Int = 0, length: Int = dest.size - offset): Int {
-    check(readRemaining > 0u) { "nothing left to read from segment" }
-    val wc = minOf(length.toULong(), readRemaining).toInt()
-    readFully(dest, offset, wc)
+    check(size > 0L) { "nothing left to read from segment" }
+    val wc = minOf(length.toLong(), size).toInt()
+    read(dest, offset, wc)
     return wc
 }
