@@ -1,0 +1,5 @@
+{
+    "id": "8b692602-06c4-4c97-b554-a08cac97e1ea",
+    "type": "bugfix",
+    "description": "Correct formurl serialization of empty lists"
+}
