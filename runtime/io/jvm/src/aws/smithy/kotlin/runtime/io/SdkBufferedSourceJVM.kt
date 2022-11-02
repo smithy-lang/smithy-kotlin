@@ -84,6 +84,12 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual fun readByteArray(): ByteArray
 
     /**
+     * Removes [byteCount] bytes from this source and returns them as a byte array
+     */
+    @Throws(IOException::class)
+    public actual fun readByteArray(byteCount: Long): ByteArray
+
+    /**
      * Removes all bytes from this, decodes them as UTF-8, and returns the string.
      */
     @Throws(IOException::class)
@@ -106,4 +112,18 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
      * read or closed.
      */
     public actual fun peek(): SdkBufferedSource
+
+    /**
+     * Returns true when the buffer contains at least [byteCount] bytes. False if the source
+     * is exhausted before the requested number of bytes could be read
+     */
+    @Throws(IOException::class)
+    public actual fun request(byteCount: Long): Boolean
+
+    /**
+     * Returns when the buffer contains at least [byteCount] bytes or throws [EOFException]
+     * if the source is exhausted before the requested number of bytes could be read
+     */
+    @Throws(IOException::class)
+    public actual fun require(byteCount: Long): Unit
 }

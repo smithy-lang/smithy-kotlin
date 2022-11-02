@@ -36,11 +36,16 @@ internal inline fun SdkBuffer.commonRead(sink: SdkBuffer, limit: Long): Long =
 
 internal inline fun SdkBuffer.commonReadByteArray(): ByteArray = inner.readByteArray()
 
+internal inline fun SdkBuffer.commonReadByteArray(byteCount: Long): ByteArray = inner.readByteArray(byteCount)
+
 internal inline fun SdkBuffer.commonReadUtf8(): String = inner.readUtf8()
 
 internal inline fun SdkBuffer.commonReadUtf8(byteCount: Long): String = inner.readUtf8(byteCount)
 
 internal inline fun SdkBuffer.commonPeek(): SdkBufferedSource = inner.peek().toSdk().buffer()
+internal inline fun SdkBuffer.commonRequest(byteCount: Long): Boolean = inner.request(byteCount)
+
+internal inline fun SdkBuffer.commonRequire(byteCount: Long): Unit = inner.require(byteCount)
 
 internal inline fun SdkBuffer.commonWrite(source: ByteArray, offset: Int, limit: Int) {
     inner.write(source, offset, limit)

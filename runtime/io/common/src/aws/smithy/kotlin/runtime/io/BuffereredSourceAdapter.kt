@@ -45,12 +45,18 @@ internal abstract class AbstractBufferedSourceAdapter(
 
     override fun readByteArray(): ByteArray = delegate.readByteArray()
 
+    override fun readByteArray(byteCount: Long): ByteArray = delegate.readByteArray(byteCount)
+
     override fun readUtf8(): String = delegate.readUtf8()
 
     override fun readUtf8(byteCount: Long): String = delegate.readUtf8(byteCount)
 
     override fun peek(): SdkBufferedSource =
         delegate.peek().toSdk().buffer()
+
+    override fun request(byteCount: Long): Boolean = delegate.request(byteCount)
+
+    override fun require(byteCount: Long): Unit = delegate.require(byteCount)
 
     override fun close() = delegate.close()
 }

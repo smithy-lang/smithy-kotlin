@@ -6,11 +6,9 @@
 package aws.smithy.kotlin.runtime.io
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalStateException
-import kotlin.test.Ignore
-import kotlin.test.assertContentEquals
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.*
 
 /**
  * A (source, sink) connected pair. Writes to [sink] are read from [source]
@@ -297,6 +295,27 @@ abstract class BufferedSourceTest(
 
         assertFailsWith<IllegalStateException> {
             peek.readUtf8(3)
+        }
+    }
+
+    @Test
+    fun testRequest() {
+        sink.writeUtf8("123456789".repeat(1024))
+        sink.flush()
+
+        assertTrue(source.request(8192))
+        assertTrue(source.request(1024 * 9))
+        assertFalse(source.request(1024 * 9 + 1))
+    }
+
+    @Test
+    fun testRequire() {
+        sink.writeUtf8("123456789".repeat(1024))
+        sink.flush()
+
+        source.require(1024 * 9)
+        assertThrows<EOFException> {
+            source.require(1024 * 9 + 1)
         }
     }
 }

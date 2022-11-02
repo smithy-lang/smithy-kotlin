@@ -77,6 +77,11 @@ public expect sealed interface SdkBufferedSource : SdkSource {
     public fun readByteArray(): ByteArray
 
     /**
+     * Removes [byteCount] bytes from this source and returns them as a byte array
+     */
+    public actual fun readByteArray(byteCount: Long): ByteArray
+
+    /**
      * Removes all bytes from this, decodes them as UTF-8, and returns the string.
      */
     public fun readUtf8(): String
@@ -92,4 +97,16 @@ public expect sealed interface SdkBufferedSource : SdkSource {
      * read or closed.
      */
     public fun peek(): SdkBufferedSource
+
+    /**
+     * Returns true when the buffer contains at least [byteCount] bytes. False if the source
+     * is exhausted before the requested number of bytes could be read
+     */
+    public fun request(byteCount: Long): Boolean
+
+    /**
+     * Returns when the buffer contains at least [byteCount] bytes or throws [EOFException]
+     * if the source is exhausted before the requested number of bytes could be read
+     */
+    public fun require(byteCount: Long)
 }

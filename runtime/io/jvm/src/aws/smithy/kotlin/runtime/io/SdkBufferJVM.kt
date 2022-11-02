@@ -63,11 +63,17 @@ public actual class SdkBuffer : SdkBufferedSource, SdkBufferedSink {
 
     override fun readByteArray(): ByteArray = commonReadByteArray()
 
+    override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
+
     override fun readUtf8(): String = commonReadUtf8()
 
     override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
 
     override fun peek(): SdkBufferedSource = commonPeek()
+
+    override fun request(byteCount: Long): Boolean = commonRequest(byteCount)
+
+    override fun require(byteCount: Long): Unit = commonRequire(byteCount)
 
     override fun write(source: ByteArray, offset: Int, limit: Int): Unit =
         commonWrite(source, offset, limit)
