@@ -69,7 +69,7 @@ public expect sealed interface SdkBufferedSource : SdkSource {
     /**
      * Read up to [limit] bytes and write them to [sink] starting at [offset]
      */
-    public fun read(sink: ByteArray, offset: Int = 0, limit: Int = sink.size): Int
+    public fun read(sink: ByteArray, offset: Int = 0, limit: Int = sink.size - offset): Int
 
     /**
      * Removes all bytes from this source and returns them as a byte array

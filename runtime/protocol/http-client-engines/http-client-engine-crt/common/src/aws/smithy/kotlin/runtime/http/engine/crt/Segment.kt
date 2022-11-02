@@ -16,14 +16,14 @@ internal fun newReadableSegment(src: ByteArray): Segment = SdkBuffer().apply { w
 
 internal fun Segment.copyTo(dest: SdkBuffer, limit: Int = Int.MAX_VALUE): Int {
     check(size > 0L) { "nothing left to read from segment" }
-    val wc = minOf(size, limit.toLong())
-    read(dest, wc)
+    val wlimit = minOf(size, limit.toLong())
+    val wc = read(dest, wlimit)
     return wc.toInt()
 }
 
 internal fun Segment.copyTo(dest: ByteArray, offset: Int = 0, length: Int = dest.size - offset): Int {
     check(size > 0L) { "nothing left to read from segment" }
-    val wc = minOf(length.toLong(), size).toInt()
-    read(dest, offset, wc)
+    val wlimit = minOf(length.toLong(), size).toInt()
+    val wc = read(dest, offset, wlimit)
     return wc
 }

@@ -17,7 +17,7 @@ import kotlin.test.assertFailsWith
  */
 data class Pipe(val source: SdkBufferedSource, val sink: SdkBufferedSink)
 
-private fun bytes(vararg bytes: Int): ByteArray = bytes.map { it.toByte() }.toByteArray()
+internal fun bytes(vararg bytes: Int): ByteArray = bytes.map { it.toByte() }.toByteArray()
 
 fun interface BufferSourceFactory {
     fun pipe(): Pipe
@@ -167,18 +167,24 @@ abstract class BufferedSourceTest(
 
     @Test
     fun testReadByteArrayOffset() {
-        val expected = bytes(0xde, 0xad, 0xbe, 0xef)
-        sink.write(expected, 2)
-        val actual = source.readByteArray()
-        assertContentEquals(expected.sliceArray(2..3), actual)
+        val content = bytes(0xde, 0xad, 0xbe, 0xef)
+        val actual = ByteArray(8)
+        sink.write(content)
+        val rc = source.read(actual, 6)
+        assertEquals(2, rc)
+        val expected = bytes(0, 0, 0, 0, 0, 0, 0xde, 0xad)
+        assertContentEquals(expected, actual)
     }
 
     @Test
     fun testReadByteArrayOffsetAndLimit() {
-        val expected = bytes(0xde, 0xad, 0xbe, 0xef)
-        sink.write(expected, 1, 2)
-        val actual = source.readByteArray()
-        assertContentEquals(expected.sliceArray(1..2), actual)
+        val content = bytes(0xde, 0xad, 0xbe, 0xef)
+        val actual = ByteArray(8)
+        sink.write(content)
+        val rc = source.read(actual, 2, 4)
+        assertEquals(4, rc)
+        val expected = bytes(0, 0, 0xde, 0xad, 0xbe, 0xef, 0, 0)
+        assertContentEquals(expected, actual)
     }
 
     @Test

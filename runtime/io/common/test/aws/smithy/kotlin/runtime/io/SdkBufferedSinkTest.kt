@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.io
 
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -145,5 +146,32 @@ abstract class AbstractBufferedSinkTest(
         sink.writeUtf8("a flix is a comb")
         sink.close()
         assertEquals("a flix is a comb", data.readUtf8())
+    }
+
+    @Test
+    fun testWriteByteArray() {
+        val expected = bytes(0xde, 0xad, 0xbe, 0xef)
+        sink.write(expected)
+        sink.flush()
+        val actual = data.readByteArray()
+        assertContentEquals(expected, actual)
+    }
+
+    @Test
+    fun testWriteByteArrayOffset() {
+        val expected = bytes(0xde, 0xad, 0xbe, 0xef)
+        sink.write(expected, 2)
+        sink.flush()
+        val actual = data.readByteArray()
+        assertContentEquals(expected.sliceArray(2..3), actual)
+    }
+
+    @Test
+    fun testWriteByteArrayOffsetAndLimit() {
+        val expected = bytes(0xde, 0xad, 0xbe, 0xef)
+        sink.write(expected, 1, 2)
+        sink.flush()
+        val actual = data.readByteArray()
+        assertContentEquals(expected.sliceArray(1..2), actual)
     }
 }
