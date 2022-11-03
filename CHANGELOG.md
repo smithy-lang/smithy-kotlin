@@ -1,5 +1,59 @@
 # Changelog
 
+## [0.12.11] - 11/03/2022
+
+### Features
+*  Add CRC32C hashing algorithm
+
+### Fixes
+* [#733](https://github.com/awslabs/aws-sdk-kotlin/issues/733) Fix OkHttp engine crashing on Android when coroutine is cancelled while uploading request body
+* Correct formurl serialization of empty lists
+
+## [0.12.10] - 10/27/2022
+
+### Features
+* add `MIN` and `MAX` accessors for the Instant type
+*  Add order parameter to ClientConfigProperty to be used for ordering configuration dependencies
+
+### Fixes
+* [#733](https://github.com/awslabs/aws-sdk-kotlin/issues/733) Fix OkHttp engine crashing on Android when coroutine is cancelled while uploading request body
+
+## [0.12.9] - 10/13/2022
+
+### Fixes
+* [#715](https://github.com/awslabs/aws-sdk-kotlin/issues/715) Enable intra-repo links in API ref docs
+* [#714](https://github.com/awslabs/smithy-kotlin/issues/714) Properly parse timestamps when format override is applied to target shapes
+
+## [0.12.8] - 10/03/2022
+
+### Fixes
+* Fix inconsistent nullability semantics when generating struct members.
+
+## [0.12.7] - 09/29/2022
+
+### Features
+* [#486](https://github.com/awslabs/aws-sdk-kotlin/issues/486) Enable configurability of the retry strategy through environment variables, system properties, and AWS profiles.
+
+### Fixes
+* Switch to a safer check to determine if all bytes have been read from an HTTP body
+* [#704](https://github.com/awslabs/aws-sdk-kotlin/issues/704) Disable throwing CancellationException in OkHttp engine's transferBody method
+
+### Miscellaneous
+* Update/clarify changelog and commit instructions in the Contributing Guidelines
+
+## [0.12.6] - 09/19/2022
+
+### Features
+* Add support for full duplex HTTP exchanges
+
+### Fixes
+* Fix occasional stream leak due to race condition in CRT engine
+* [#678](https://github.com/awslabs/smithy-kotlin/issues/678) Fix the calculation of file lengths on `ByteStream`s from `Path`s
+* Properly check if a member can be nullable
+
+### Miscellaneous
+* Provide an explicit scope for request bound work
+
 ## [0.12.5] - 08/18/2022
 
 ### Fixes

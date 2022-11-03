@@ -122,4 +122,12 @@ class ByteStreamJVMTest {
 
         assertContentEquals(expected, part0 + part1 + part2)
     }
+
+    @Test
+    fun `path as byte stream has contentLength`() = runTest {
+        val path = RandomTempFile(1024).toPath()
+        val stream = path.asByteStream()
+
+        assertEquals(1024, stream.contentLength)
+    }
 }

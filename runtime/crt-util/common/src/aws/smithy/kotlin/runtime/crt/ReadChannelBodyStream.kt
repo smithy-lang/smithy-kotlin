@@ -15,6 +15,9 @@ import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.milliseconds
+
+private val POLLING_DELAY = 100.milliseconds
 
 /**
  * write as much of [outgoing] to [dest] as possible
@@ -40,6 +43,21 @@ public class ReadChannelBodyStream(
     init {
         producerJob.invokeOnCompletion { cause ->
             bodyChan.cancel(cause)
+        }
+
+        // Poll the channel's `isClosedForRead` and complete when it's true. This works around a timing issue when the
+        // write side of the channel finishes sending bytes but doesn't call `close` in time for the CRT's
+        // `sendRequestBody` loop to pick it up. If CRT reads all the bytes it expects, it ceases calling
+        // `sendRequestBody`, which risks leaving the producer job open indefinitely. This polling loop catches any
+        // missed channel closures and ends the producer job to avoid that issue.
+        launch(coroutineContext + CoroutineName("body-channel-watchdog")) {
+            while (producerJob.isActive) {
+                if (bodyChan.isClosedForRead) {
+                    producerJob.complete()
+                    return@launch
+                }
+                delay(POLLING_DELAY)
+            }
         }
     }
 
