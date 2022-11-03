@@ -2,5 +2,5 @@
   "id": "f01f5a37-e7ca-4786-a0a9-fd1ed6adf127",
   "type": "feature",
   "description": "Add CRC32C hashing algorithm",
-  "issues": "awslabs/aws-sdk-kotlin/#727"
+  "issues": ["awslabs/aws-sdk-kotlin/#727"]
 }
