@@ -29,8 +29,19 @@ internal class ByteChannelRequestBody(
     override fun isOneShot(): Boolean = !body.isReplayable
     override fun isDuplex(): Boolean = body.isDuplex
 
+    override fun writeTo(sink: BufferedSink) = try {
+        doWriteTo(sink)
+    } catch (ex: Exception) {
+        throw when (ex) {
+            is IOException -> ex
+            // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
+            // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
+            else -> IOException(ex)
+        }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
-    override fun writeTo(sink: BufferedSink) {
+    private fun doWriteTo(sink: BufferedSink) {
         if (isDuplex()) {
             // launch coroutine that writes to sink in the background
             launch {
@@ -77,9 +88,7 @@ private inline fun <T> withJob(job: CompletableJob, block: () -> T): T {
         return block()
     } catch (ex: Exception) {
         job.completeExceptionally(ex)
-        // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
-        // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
-        throw IOException(ex)
+        throw ex
     } finally {
         job.complete()
     }
