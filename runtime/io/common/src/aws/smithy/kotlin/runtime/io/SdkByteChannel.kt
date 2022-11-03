@@ -6,11 +6,12 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.util.InternalApi
-import io.ktor.utils.io.ByteChannel as KtorByteChannel
-import io.ktor.utils.io.ByteReadChannel as KtorByteReadChannel
+
+public const val DEFAULT_BYTE_CHANNEL_BUFFER_SIZE: Long = 8192
 
 /**
- * Channel for asynchronous reading and writing sequences of bytes.
+ * Channel for asynchronous reading and writing sequences of bytes. Conceptually a pipe
+ * with a reader on one end, decoupled from a writer on the other.
  *
  * This is a buffered **single-reader single writer channel**.
  *
@@ -26,10 +27,13 @@ public interface SdkByteChannel : SdkByteReadChannel, SdkByteWriteChannel {
 
 /**
  * Create a buffered channel for asynchronous reading and writing of bytes
+ * @param autoFlush Flag indicating if the channel should auto flush after every read, see [SdkByteWriteChannel.autoFlush]
  */
 @InternalApi
-public fun SdkByteChannel(autoFlush: Boolean = true): SdkByteChannel =
-    KtorByteChannel(autoFlush).toSdkChannel()
+public fun SdkByteChannel(
+    autoFlush: Boolean = true,
+    maxBufferSize: Long = DEFAULT_BYTE_CHANNEL_BUFFER_SIZE,
+): SdkByteChannel = TODO()
 
 /**
  * Creates a channel for reading from the given byte array.
@@ -39,4 +43,4 @@ public fun SdkByteReadChannel(
     content: ByteArray,
     offset: Int = 0,
     length: Int = content.size - offset,
-): SdkByteReadChannel = KtorByteReadChannel(content, offset, length).toSdkChannel()
+): SdkByteReadChannel = TODO()

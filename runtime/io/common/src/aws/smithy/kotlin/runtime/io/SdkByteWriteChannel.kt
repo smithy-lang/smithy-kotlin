@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.io
 /**
  * A channel for writing a sequence of bytes asynchronously. This is a **single writer channel**.
  */
-public expect interface SdkByteWriteChannel : Closeable {
+public interface SdkByteWriteChannel : Closeable {
 
     /**
      * Returns the number of bytes that can be written without suspension. Write operations do not
@@ -36,15 +36,10 @@ public expect interface SdkByteWriteChannel : Closeable {
     public val autoFlush: Boolean
 
     /**
-     * Writes all [src] bytes and suspends until all bytes written.
+     * Removes exactly [byteCount] bytes from [source] and appends them to this. Suspends until all bytes
+     * have been written. **It is not safe to modify [source] until this function returns**
      */
-    public suspend fun writeFully(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): Unit
-
-    /**
-     * Writes as much as possible and only suspends if buffer is full
-     * Returns the byte count written.
-     */
-    public suspend fun writeAvailable(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): Int
+    public suspend fun write(source: SdkBuffer, byteCount: Long = source.size)
 
     /**
      * Closes this channel with an optional exceptional [cause]. All pending bytes are flushed.
@@ -60,19 +55,11 @@ public expect interface SdkByteWriteChannel : Closeable {
 }
 
 /**
- * Write the UTF-8 bytes of [str] fully to the channel
+ * Convenience function to write as many bytes from [source] as possible without suspending. Returns
+ * the number of bytes that could be written.
  */
-public suspend fun SdkByteWriteChannel.writeUtf8(str: String) {
-    writeFully(str.encodeToByteArray())
-}
-
-/**
- * Writes byte and suspends until written
- */
-public suspend fun SdkByteWriteChannel.writeByte(value: Byte) {
-    if (this is KtorWriteChannel) {
-        chan.writeByte(value)
-        return
-    }
-    writeFully(byteArrayOf(value))
+public suspend fun SdkByteWriteChannel.writeAvailable(source: SdkBuffer): Long {
+    val wc = minOf(availableForWrite.toLong(), source.size)
+    write(source, wc)
+    return wc
 }
