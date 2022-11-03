@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.12.11] - 11/03/2022
+
+### Features
+*  Add CRC32C hashing algorithm
+
+### Fixes
+* [#733](https://github.com/awslabs/aws-sdk-kotlin/issues/733) Fix OkHttp engine crashing on Android when coroutine is cancelled while uploading request body
+* Correct formurl serialization of empty lists
+
 ## [0.12.10] - 10/27/2022
 
 ### Features
