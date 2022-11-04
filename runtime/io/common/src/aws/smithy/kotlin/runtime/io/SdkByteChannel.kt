@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 
-public const val DEFAULT_BYTE_CHANNEL_BUFFER_SIZE: Long = 8192
+public const val DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE: Int = 8192 * 2
 
 /**
  * Channel for asynchronous reading and writing sequences of bytes. Conceptually a pipe
@@ -21,26 +21,26 @@ public const val DEFAULT_BYTE_CHANNEL_BUFFER_SIZE: Long = 8192
  */
 public interface SdkByteChannel : SdkByteReadChannel, SdkByteWriteChannel {
     override fun close() {
-        (this as SdkByteWriteChannel).close()
+        close(null)
     }
 }
 
 /**
  * Create a buffered channel for asynchronous reading and writing of bytes
- * @param autoFlush Flag indicating if the channel should auto flush after every read, see [SdkByteWriteChannel.autoFlush]
+ * @param autoFlush Flag indicating if the channel should auto flush after every write, see [SdkByteWriteChannel.autoFlush]
  */
 @InternalApi
 public fun SdkByteChannel(
     autoFlush: Boolean = true,
-    maxBufferSize: Long = DEFAULT_BYTE_CHANNEL_BUFFER_SIZE,
-): SdkByteChannel = TODO()
+    maxBufferSize: Int = DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE,
+): SdkByteChannel = RealSdkByteChannel(autoFlush, maxBufferSize)
 
 /**
- * Creates a channel for reading from the given byte array.
+ * Creates a channel for reading with the contents of the given byte array.
  */
 @InternalApi
 public fun SdkByteReadChannel(
     content: ByteArray,
     offset: Int = 0,
     length: Int = content.size - offset,
-): SdkByteReadChannel = TODO()
+): SdkByteReadChannel = RealSdkByteChannel(content, offset, length).apply { close() }

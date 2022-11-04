@@ -4,14 +4,12 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-import java.io.EOFException
-
 // FIXME - document read() and readFully() w.r.t a failed channel (does it throw, return -1, etc)
 
 /**
  * Supplies an asynchronous stream of bytes. This is a **single-reader channel**.
  */
-public interface SdkByteReadChannel : Closeable {
+public interface SdkByteReadChannel {
     /**
      * Returns number of bytes that can be read without suspension. Read operations do no suspend and
      * return immediately when this number is at least the number of bytes requested for read.
@@ -33,6 +31,8 @@ public interface SdkByteReadChannel : Closeable {
      * Remove at least 1 byte, and up-to [limit] bytes from this and appends them to [sink].
      * Suspends if no bytes are available. Returns the number of bytes read, or -1 if this
      * channel is exhausted. **It is not safe to modify [sink] until this function returns**
+     *
+     * A failed channel will throw whatever exception the channel was closed with.
      */
     public suspend fun read(sink: SdkBuffer, limit: Long): Long
 
@@ -51,7 +51,7 @@ public suspend fun SdkByteReadChannel.readFully(sink: SdkBuffer, byteCount: Long
     var remaining = byteCount
     while (remaining > 0L) {
         val rc = read(sink, remaining)
-        if (rc == -1L) throw EOFException("Unexpected EOF: expected $remaining bytes; consumed: ${byteCount - remaining}")
+        if (rc == -1L) throw EOFException("Unexpected EOF: expected $remaining more bytes; consumed: ${byteCount - remaining}")
         remaining -= rc
     }
 }

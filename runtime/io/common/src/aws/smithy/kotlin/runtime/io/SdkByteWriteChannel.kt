@@ -38,6 +38,7 @@ public interface SdkByteWriteChannel : Closeable {
     /**
      * Removes exactly [byteCount] bytes from [source] and appends them to this. Suspends until all bytes
      * have been written. **It is not safe to modify [source] until this function returns**
+     * Throws [ClosedWriteChannelException] if this channel was already closed.
      */
     public suspend fun write(source: SdkBuffer, byteCount: Long = source.size)
 
@@ -60,6 +61,7 @@ public interface SdkByteWriteChannel : Closeable {
  */
 public suspend fun SdkByteWriteChannel.writeAvailable(source: SdkBuffer): Long {
     val wc = minOf(availableForWrite.toLong(), source.size)
+    // FIXME - this is wrong
     write(source, wc)
     return wc
 }

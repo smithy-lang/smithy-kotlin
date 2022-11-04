@@ -61,6 +61,7 @@ class SdkByteChannelTest {
 
         val sink = SdkBuffer()
         assertEquals(1, chan.read(sink, 1))
+        assertEquals(1, sink.readByte())
         chan.close()
         assertTrue(chan.isClosedForWrite)
 
@@ -70,8 +71,8 @@ class SdkByteChannelTest {
         assertEquals(3, chan.totalBytesWritten)
         assertEquals(2, chan.read(sink, 8))
 
-        assertEquals(2, source.readByte())
-        assertEquals(3, source.readByte())
+        assertEquals(2, sink.readByte())
+        assertEquals(3, sink.readByte())
         assertEquals(0, chan.availableForRead)
         assertTrue(chan.isClosedForRead)
 
@@ -81,7 +82,7 @@ class SdkByteChannelTest {
         source.writeByte(4)
 
         // write to closed channel
-        assertFailsWith<IllegalStateException> {
+        assertFailsWith<ClosedWriteChannelException> {
             chan.write(source)
         }
     }
