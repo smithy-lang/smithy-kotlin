@@ -93,7 +93,6 @@ open class ChannelBenchmarks {
     @Param(SDK_CHANNEL_NAME, KTOR_CHANNEL_NAME)
     var channelName: String = ""
 
-    // private val ch = SdkByteChannel(true)
     private lateinit var ch: TestChannel
 
     @OptIn(DelicateCoroutinesApi::class)
