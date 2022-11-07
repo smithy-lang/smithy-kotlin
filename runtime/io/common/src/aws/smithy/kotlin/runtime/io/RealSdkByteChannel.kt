@@ -6,13 +6,11 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.io.internal.AwaitingSlot
-import kotlinx.atomicfu.AtomicInt
-import kotlinx.atomicfu.AtomicRef
-import kotlinx.atomicfu.atomic
+import aws.smithy.kotlin.runtime.io.internal.ChannelCapacity
+import kotlinx.atomicfu.*
 import kotlinx.atomicfu.locks.SynchronizedObject
 import kotlinx.atomicfu.locks.synchronized
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.jvm.JvmField
 
 internal data class ClosedSentinel(val cause: Throwable?)
 private val CLOSED_SUCCESS = ClosedSentinel(null)
@@ -35,10 +33,10 @@ internal class RealSdkByteChannel(
     private val lock = SynchronizedObject()
     private val buffer = SdkBuffer()
 
-    private val _state: AtomicRef<ChannelState> = atomic(ChannelState.IdleEmpty(maxBufferSize))
+    private val capacity = ChannelCapacity(maxBufferSize)
 
-    private val state: ChannelState
-        get() = _state.value
+    private val _readInProgress = atomic(false)
+    private val _writeInProgress = atomic(false)
 
     private val _closed: AtomicRef<ClosedSentinel?> = atomic(null)
 
@@ -46,10 +44,10 @@ internal class RealSdkByteChannel(
         get() = _closed.value?.cause
 
     override val availableForWrite: Int
-        get() = state.capacity.availableForWrite
+        get() = capacity.availableForWrite
 
     override val availableForRead: Int
-        get() = state.capacity.availableForRead
+        get() = capacity.availableForRead
 
     override val isClosedForRead: Boolean
         get() = isClosedForWrite && availableForRead == 0
@@ -93,45 +91,64 @@ internal class RealSdkByteChannel(
         if (isClosedForRead) return -1L
         if (limit == 0L) return 0L
 
-        if (availableForRead == 0) {
-            awaitBytesToRead(1)
-            ensureNotFailed()
-            // closed while suspended
-            if (isClosedForRead) return -1L
+        return reading {
+            if (availableForRead == 0) {
+                awaitBytesToRead(1)
+                ensureNotFailed()
+                // closed while suspended
+                if (isClosedForRead) return -1L
+            }
+
+            val rc = minOf(availableForRead.toLong(), limit)
+
+            synchronized(lock) {
+                sink.write(buffer, rc)
+            }
+
+            afterRead(rc.toInt())
+
+            rc
         }
+    }
 
-        val rc = minOf(availableForRead.toLong(), limit)
-
-        synchronized(lock) {
-            sink.write(buffer, rc)
-        }
-
-        afterRead(rc.toInt())
-
-        return rc
+    private inline fun reading(block: () -> Long): Long = try {
+        check(_readInProgress.compareAndSet(false, true)) { "Read operation already in progress" }
+        block()
+    } finally {
+        _readInProgress.compareAndSet(true, false)
     }
 
     override suspend fun write(source: SdkBuffer, byteCount: Long) {
         ensureNotClosed()
         if (byteCount == 0L) return
 
-        var remaining = byteCount
+        writing {
+            var remaining = byteCount
 
-        while (remaining > 0) {
-            if (availableForWrite == 0) {
-                awaitFreeSpace()
+            while (remaining > 0) {
+                if (availableForWrite == 0) {
+                    awaitFreeSpace()
+                }
+
+                val wc = minOf(availableForWrite.toLong(), remaining)
+
+                synchronized(lock) {
+                    buffer.write(source, wc)
+                }
+
+                afterWrite(wc.toInt())
+                remaining -= wc
             }
-
-            val wc = minOf(availableForWrite.toLong(), remaining)
-
-            synchronized(lock) {
-                buffer.write(source, wc)
-            }
-
-            afterWrite(wc.toInt())
-            remaining -= wc
         }
     }
+
+    private inline fun writing(block: () -> Unit) =
+        try {
+            check(_writeInProgress.compareAndSet(false, true)) { "Write operation already in progress" }
+            block()
+        } finally {
+            _writeInProgress.compareAndSet(true, false)
+        }
 
     // read side only
     private fun ensureNotFailed() {
@@ -146,7 +163,7 @@ internal class RealSdkByteChannel(
     }
 
     private fun afterWrite(size: Int) {
-        state.capacity.completeWrite(size)
+        capacity.completeWrite(size)
         _totalBytesWritten.plusAssign(size.toLong())
 
         if (autoFlush || availableForWrite == 0) {
@@ -155,7 +172,7 @@ internal class RealSdkByteChannel(
     }
 
     private fun afterRead(size: Int) {
-        state.capacity.completeRead(size)
+        capacity.completeRead(size)
         slot.resume()
     }
 
@@ -171,12 +188,12 @@ internal class RealSdkByteChannel(
     // try to flush pending bytes and advertise them to reader
     // returns true if pending bytes were flushed
     private fun tryFlush(): Boolean {
-        if (state.capacity.pendingToFlush == 0) {
+        if (capacity.pendingToFlush == 0) {
             slot.resume()
             return false
         }
 
-        state.capacity.flush()
+        capacity.flush()
         slot.resume()
         return true
     }
@@ -195,66 +212,4 @@ internal class RealSdkByteChannel(
 
         return true
     }
-}
-
-internal class BufferCapacity(private val totalCapacity: Int) {
-    private val _availableForRead: AtomicInt = atomic(0)
-    private val _availableForWrite: AtomicInt = atomic(totalCapacity)
-    private val _pendingToFlush: AtomicInt = atomic(0)
-
-    inline var availableForRead: Int
-        get() = _availableForRead.value
-        private set(value) {
-            _availableForRead.value = value
-        }
-
-    inline var availableForWrite: Int
-        get() = _availableForWrite.value
-        private set(value) {
-            _availableForWrite.value = value
-        }
-
-    inline var pendingToFlush: Int
-        get() = _pendingToFlush.value
-        set(value) {
-            _pendingToFlush.value = value
-        }
-
-    inline val isEmpty: Boolean
-        get() = _availableForWrite.value == totalCapacity
-
-    inline val isFull: Boolean
-        get() = _availableForWrite.value == 0
-
-    override fun toString(): String =
-        "BufferCapacity(availableForRead: $availableForRead, availableForWrite: $availableForWrite, " +
-            "pendingFlush: $pendingToFlush, capacity: $totalCapacity)"
-
-    /**
-     * @return true if there are bytes available for read after flush
-     */
-    fun flush(): Boolean {
-        val pending = _pendingToFlush.getAndSet(0)
-        return if (pending == 0) {
-            _availableForRead.value > 0
-        } else {
-            return _availableForRead.addAndGet(pending) > 0
-        }
-    }
-
-    fun completeWrite(size: Int) {
-        _availableForWrite.minusAssign(size)
-        _pendingToFlush.plusAssign(size)
-    }
-
-    fun completeRead(size: Int) {
-        _availableForRead.minusAssign(size)
-        _availableForWrite.plusAssign(size)
-    }
-}
-
-internal sealed class ChannelState(
-    @JvmField val capacity: BufferCapacity,
-) {
-    class IdleEmpty(maxBufferSize: Int) : ChannelState(BufferCapacity(maxBufferSize))
 }

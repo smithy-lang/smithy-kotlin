@@ -10,7 +10,6 @@ import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -278,8 +277,6 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         finish(6)
     }
 
-    // FIXME - not working
-    @Ignore
     @Test
     fun testReadInProgress() = runTest {
         expect(1)
@@ -298,6 +295,32 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         }.message.shouldContain("Read operation already in progress")
 
         ch.close()
+        finish(5)
+    }
+
+    @Test
+    fun testWriteInProgress() = runTest {
+        val chan = SdkByteChannel(true, 8)
+        expect(1)
+        launch {
+            expect(3)
+            val source = SdkBuffer()
+            source.writeUtf8("123456789")
+            runCatching {
+                // should suspend until all bytes can be written
+                chan.write(source)
+            }
+        }
+        expect(2)
+        yield()
+        expect(4)
+        assertFailsWith<IllegalStateException> {
+            val source2 = SdkBuffer()
+            source2.writeUtf8("abcde")
+            chan.write(source2)
+        }.message.shouldContain("Write operation already in progress")
+
+        chan.close()
         finish(5)
     }
 
@@ -366,5 +389,43 @@ class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
         assertEquals(data.length.toLong(), buf.size)
         assertEquals(data, buf.readUtf8())
         assertEquals(data.length.toLong(), ch.totalBytesWritten)
+    }
+
+    @Test
+    fun testWriteNoSuspend() = runTest {
+        val chan = SdkByteChannel(false, 8)
+        val source = SdkBuffer().apply { writeUtf8("1234567") }
+        expect(1)
+        chan.write(source)
+        chan.close()
+        finish(2)
+    }
+
+    @Test
+    fun testWriteSuspend() = runTest {
+        val chan = SdkByteChannel(false, 8)
+        val source = SdkBuffer().apply { writeUtf8("12345678") }
+        expect(1)
+        chan.write(source)
+
+        expect(2)
+        launch {
+            expect(3)
+            source.writeUtf8("9")
+            chan.write(source)
+            expect(6)
+        }
+
+        yield()
+        expect(4)
+
+        val sink = SdkBuffer()
+        val rc = chan.read(sink, Long.MAX_VALUE)
+        assertEquals(8L, rc)
+        expect(5)
+        yield()
+
+        chan.close()
+        finish(7)
     }
 }
