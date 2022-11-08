@@ -139,7 +139,7 @@ internal abstract class AbstractAwsChunked(
             append(";")
             append("chunk-signature=")
             appendLine(chunkSignature)
-        }.toByteArray()
+        }.encodeToByteArray()
 
         chunkOffset = 0
         return chunkHeader + chunkBody
