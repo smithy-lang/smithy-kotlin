@@ -7,9 +7,12 @@ package aws.smithy.kotlin.runtime.http.endpoints
 
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
+import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.Attributes
 import aws.smithy.kotlin.runtime.util.InternalApi
+import aws.smithy.kotlin.runtime.util.net.Host
 
 /**
  * Represents the endpoint a service client should make API operation calls to.
@@ -18,8 +21,6 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  *
  * @property uri The base URL endpoint clients will use to make API calls to e.g. "api.myservice.com".
  * NOTE: Only `scheme`, `port`, `host` `path`, and `parameters` are valid. Other URL elements are ignored.
- *
- * @property isHostnameImmutable Flag indicating that the hostname can be modified by the SDK client.
  *
  * @property headers A map of additional HTTP headers to be set when making calls against this endpoint.
  *
@@ -38,7 +39,6 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  */
 public data class Endpoint @InternalApi constructor(
     public val uri: Url,
-    public val isHostnameImmutable: Boolean = false,
     public val headers: Headers = Headers.Empty,
     @InternalApi
     public val attributes: Attributes = Attributes(),
@@ -47,14 +47,12 @@ public data class Endpoint @InternalApi constructor(
 
     public constructor(
         uri: Url,
-        isHostnameImmutable: Boolean = false,
         headers: Headers = Headers.Empty,
-    ) : this(uri, isHostnameImmutable, headers, Attributes())
+    ) : this(uri, headers, Attributes())
 
     override fun equals(other: Any?): Boolean =
         other is Endpoint &&
             uri == other.uri &&
-            isHostnameImmutable == other.isHostnameImmutable &&
             headers == other.headers &&
             attributesEqual(other)
 
@@ -64,4 +62,34 @@ public data class Endpoint @InternalApi constructor(
                 @Suppress("UNCHECKED_CAST")
                 attributes.contains(it) && attributes.getOrNull(it as AttributeKey<Any>) == other.attributes.getOrNull(it)
             }
+}
+
+/**
+ * Update an existing request with a resolved endpoint.
+ *
+ * Any values serialized to the HTTP path or query string are preserved (in the case of path, the existing serialized one
+ * is appended to what was resolved).
+ */
+@InternalApi
+public fun setResolvedEndpoint(req: SdkHttpRequest, endpoint: Endpoint) {
+    val hostPrefix = req.context.getOrNull(HttpOperationContext.HostPrefix) ?: ""
+    val hostname = "$hostPrefix${endpoint.uri.host}"
+    val joinedPath = buildString {
+        append(endpoint.uri.path.removeSuffix("/"))
+        if (req.subject.url.path.isNotBlank()) {
+            append("/")
+            append(req.subject.url.path.removePrefix("/"))
+        }
+    }
+
+    req.subject.url.scheme = endpoint.uri.scheme
+    req.subject.url.userInfo = endpoint.uri.userInfo
+    req.subject.url.host = Host.parse(hostname)
+    req.subject.url.port = endpoint.uri.port
+    req.subject.url.path = joinedPath
+    req.subject.url.parameters.appendAll(endpoint.uri.parameters)
+    req.subject.url.fragment = endpoint.uri.fragment
+
+    req.subject.headers["Host"] = hostname
+    req.subject.headers.appendAll(endpoint.headers)
 }

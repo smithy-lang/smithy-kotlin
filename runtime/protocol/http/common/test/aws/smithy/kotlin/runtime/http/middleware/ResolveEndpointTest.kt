@@ -103,22 +103,6 @@ class ResolveEndpointTest {
     }
 
     @Test
-    fun testSkipHostPrefixForImmutableHostnames() = runTest {
-        val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
-        val endpoint = Endpoint(uri = Url.parse("http://api.test.com"), isHostnameImmutable = true)
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
-        op.context[HttpOperationContext.HostPrefix] = "prefix."
-
-        op.roundTrip(client, Unit)
-        val actual = op.context[HttpOperationContext.HttpCallList].first().request
-
-        assertEquals(Host.Domain("api.test.com"), actual.url.host)
-        assertEquals(Protocol.HTTP, actual.url.scheme)
-        assertEquals("/operation", actual.url.path)
-    }
-
-    @Test
     fun testEndpointPathPrefixWithNonEmptyPath() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix/"))

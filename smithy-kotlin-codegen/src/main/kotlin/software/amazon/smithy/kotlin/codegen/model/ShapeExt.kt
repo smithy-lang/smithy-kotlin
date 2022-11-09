@@ -5,8 +5,10 @@
 
 package software.amazon.smithy.kotlin.codegen.model
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.defaultName
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationInput
 import software.amazon.smithy.kotlin.codegen.model.traits.OperationOutput
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
@@ -238,3 +240,12 @@ fun UnionShape.filterEventStreamErrors(model: Model): Collection<MemberShape> {
  * Test if a shape is optional.
  */
 fun Shape.isOptional(): Boolean = members().none { it.isRequired }
+
+/**
+ * Derive the input and output symbols for an operation.
+ */
+fun OperationIndex.getOperationInputOutputSymbols(op: OperationShape, symbolProvider: SymbolProvider): Pair<Symbol, Symbol> =
+    Pair(
+        getInput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
+        getOutput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
+    )

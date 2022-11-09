@@ -5,9 +5,15 @@
 
 package aws.smithy.kotlin.runtime.http.endpoints
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+
 /**
- * Resolves endpoints for a given service client
+ * Resolves endpoints for a given service client.
+ *
+ * This is a static version of the otherwise-generated endpoint resolver interface and is intended for use by internal
+ * clients within the runtime.
  */
+@InternalApi
 public fun interface EndpointResolver {
     /**
      * Resolve the endpoint to make requests to

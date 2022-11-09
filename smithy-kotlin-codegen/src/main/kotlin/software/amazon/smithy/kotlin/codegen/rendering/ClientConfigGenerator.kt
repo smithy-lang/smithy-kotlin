@@ -5,12 +5,23 @@
 
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
+import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
+import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
+import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
+import software.amazon.smithy.kotlin.codegen.utils.getOrNull
+import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.model.shapes.ServiceShape
+import software.amazon.smithy.model.shapes.ShapeType
+import software.amazon.smithy.rulesengine.traits.ClientContextParamsTrait
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
 
 /**
  * Default generator for rendering a service config. By default integrations can register additional properties
@@ -36,13 +47,57 @@ class ClientConfigGenerator(
             defaultProps.add(KotlinClientRuntimeConfigProperty.SdkLogMode)
             if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
                 defaultProps.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
-                defaultProps.add(KotlinClientRuntimeConfigProperty.EndpointResolver)
             }
             if (context.shape != null && context.shape.hasIdempotentTokenMember(context.model)) {
                 defaultProps.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
             }
             defaultProps.add(KotlinClientRuntimeConfigProperty.RetryStrategy)
+
+            if (context.shape != null && context.shape.hasTrait<ClientContextParamsTrait>()) {
+                defaultProps.addAll(clientContextConfigProps(context.shape.expectTrait()))
+            }
+
+            if (context.shape != null && context.shape.hasTrait<EndpointRuleSetTrait>()) {
+                defaultProps.add(
+                    ClientConfigProperty {
+                        symbol = EndpointProviderGenerator.getSymbol(context.settings)
+                        propertyType = ClientConfigPropertyType.RequiredWithDefault("DefaultEndpointProvider()")
+                        additionalImports = listOf(DefaultEndpointProviderGenerator.getSymbol(context.settings))
+                    },
+                )
+            } else {
+                defaultProps.add(
+                    ClientConfigProperty {
+                        symbol = RuntimeTypes.Http.Endpoints.EndpointResolver
+                        propertyType = ClientConfigPropertyType.Required("you must specify an endpoint to make requests to")
+                    }
+                )
+            }
+
             return defaultProps
+        }
+
+        /**
+         * Derives client config properties from the service context params trait.
+         */
+        fun clientContextConfigProps(trait: ClientContextParamsTrait): List<ClientConfigProperty> = buildList {
+            trait.parameters.forEach { (k, v) ->
+                add(
+                    when (v.type) {
+                        ShapeType.BOOLEAN -> ClientConfigProperty.Boolean(
+                            name = k.toCamelCase(),
+                            defaultValue = false,
+                            documentation = v.documentation.getOrNull(),
+                        )
+                        ShapeType.STRING -> ClientConfigProperty.String(
+                            name = k.toCamelCase(),
+                            defaultValue = null,
+                            documentation = v.documentation.getOrNull(),
+                        )
+                        else -> throw CodegenException("unsupported client context param type ${v.type}")
+                    },
+                )
+            }
         }
     }
 

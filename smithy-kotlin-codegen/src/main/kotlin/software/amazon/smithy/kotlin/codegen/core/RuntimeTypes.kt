@@ -69,12 +69,14 @@ object RuntimeTypes {
             val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
             val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
+            val InlineMiddleware = runtimeSymbol("InlineMiddleware", KotlinDependency.HTTP, "operation")
         }
 
         object Endpoints {
             val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "endpoints")
             val Endpoint = runtimeSymbol("Endpoint", KotlinDependency.HTTP, "endpoints")
             val EndpointProviderException = runtimeSymbol("EndpointProviderException", KotlinDependency.HTTP, "endpoints")
+            val setResolvedEndpoint = runtimeSymbol("setResolvedEndpoint", KotlinDependency.HTTP, "endpoints")
 
             object Functions {
                 val substring = runtimeSymbol("substring", KotlinDependency.HTTP, "endpoints.functions")
@@ -224,6 +226,7 @@ object RuntimeTypes {
                 val PresigningLocation = runtimeSymbol("PresigningLocation", KotlinDependency.AWS_SIGNING_COMMON)
                 val ServicePresignConfig = runtimeSymbol("ServicePresignConfig", KotlinDependency.AWS_SIGNING_COMMON)
                 val SigningEndpointProvider = runtimeSymbol("SigningEndpointProvider", KotlinDependency.AWS_SIGNING_COMMON)
+                val SigningContextualizedEndpoint = runtimeSymbol("SigningContextualizedEndpoint", KotlinDependency.AWS_SIGNING_COMMON)
             }
 
             object AwsSigningStandard {

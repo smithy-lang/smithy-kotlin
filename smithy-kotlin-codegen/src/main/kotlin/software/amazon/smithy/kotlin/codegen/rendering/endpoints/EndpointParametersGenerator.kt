@@ -38,6 +38,8 @@ class EndpointParametersGenerator(
                 name = CLASS_NAME
                 namespace = "${settings.pkg.name}.endpoints"
             }
+
+        fun getParamKotlinName(param: Parameter): String = param.name.toKotlin()
     }
 
     private val params: List<KotlinEndpointParameter> = rules.parameters.toList()
@@ -181,7 +183,7 @@ private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, init
     writer.write("")
 }
 
-internal fun Identifier.toKotlin(): String = asString().toCamelCase()
+fun Identifier.toKotlin(): String = asString().toCamelCase()
 
 private fun ParameterType.toSymbol(): Symbol =
     when (this) {
