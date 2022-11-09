@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readChannel
 import java.io.File
 
 /**
@@ -21,5 +20,6 @@ public class FileContent(
     override val contentLength: Long
         get() = endInclusive - start + 1
 
-    override fun newReader(): SdkByteReadChannel = file.readChannel(start, endInclusive)
+    // FIXME - is this what we want? Or can we directly consume e.g. `SdkSource` as a bytestream variant?
+    override fun newReader(): SdkByteReadChannel = TODO("needs reimplemented")
 }

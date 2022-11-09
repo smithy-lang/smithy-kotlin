@@ -25,3 +25,24 @@ public fun SdkSource.buffer(): SdkBufferedSource = when (this) {
     is SdkBufferedSource -> this
     else -> BufferedSourceAdapter(toOkio().buffer())
 }
+
+/**
+ * Returns a new source that reads from the underlying [ByteArray]
+ */
+public fun ByteArray.source(): SdkSource = ByteArraySource(this)
+
+private class ByteArraySource(
+    private val data: ByteArray,
+) : SdkSource {
+    private var offset = 0
+    override fun read(sink: SdkBuffer, limit: Long): Long {
+        if (offset >= data.size) return -1L
+
+        val rc = minOf(limit, data.size.toLong() - offset.toLong())
+        sink.write(data, offset, rc.toInt())
+        offset += rc.toInt()
+
+        return rc
+    }
+    override fun close() {}
+}

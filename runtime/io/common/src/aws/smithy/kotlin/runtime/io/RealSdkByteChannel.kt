@@ -24,7 +24,7 @@ internal class RealSdkByteChannel(
         content: ByteArray,
         offset: Int = 0,
         length: Int = content.size - offset,
-    ) : this(true, DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE) {
+    ) : this(true, length) {
         require(length <= availableForWrite) { "Initial contents overflow maximum channel capacity" }
         buffer.write(content, offset, length)
         afterWrite(length)
@@ -51,7 +51,7 @@ internal class RealSdkByteChannel(
         get() = capacity.availableForRead
 
     override val isClosedForRead: Boolean
-        get() = isClosedForWrite && availableForRead == 0
+        get() = closedCause != null || (isClosedForWrite && availableForRead == 0)
 
     override val isClosedForWrite: Boolean
         get() = _closed.value != null

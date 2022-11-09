@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.readToBuffer
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -85,6 +86,11 @@ public sealed class HttpBody {
 public fun ByteArray.toHttpBody(): HttpBody = HttpBody.fromBytes(this)
 
 /**
+ * Convert a [String] into an [HttpBody]
+ */
+public fun String.toHttpBody(): HttpBody = encodeToByteArray().toHttpBody()
+
+/**
  * Convert a [ByteStream] to the equivalent [HttpBody] variant
  */
 public fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
@@ -102,7 +108,7 @@ public fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
         override fun readFrom(): SdkByteReadChannel = channel ?: byteStream.newReader().also { channel = it }
         override val isReplayable: Boolean = true
         override fun reset() {
-            channel?.close()
+            channel?.cancel(null)
             channel = null
         }
     }
@@ -122,6 +128,7 @@ public fun SdkByteReadChannel.toHttpBody(contentLength: Long? = null): HttpBody 
     }
 }
 
+// FIXME - replace/move to reading to SdkBuffer instead
 /**
  * Consume the [HttpBody] and pull the entire contents into memory as a [ByteArray].
  * Only do this if you are sure the contents fit in-memory as this will read the entire contents
@@ -132,21 +139,7 @@ public suspend fun HttpBody.readAll(): ByteArray? = when (this) {
     is HttpBody.Bytes -> this.bytes()
     is HttpBody.Streaming -> {
         val readChan = readFrom()
-        val bytes = readChan.readRemaining()
-        // readRemaining will read up to `limit` bytes (which is defaulted to Int.MAX_VALUE) or until
-        // the stream is closed and no more bytes remain.
-        // This is usually sufficient to consume the stream but technically that's not what it's doing.
-        // Save us a painful debug session later in the very rare chance this were to occur.
-        //
-        // TODO this check isn't right since it relies on multiple atomics which may be out of sync. We should replace
-        // this logic with something else or remove the ability to [readAll] to a [ByteArray] altogether.
-        val isClosedForRead = readChan.isClosedForRead
-        val isClosedForWrite = readChan.isClosedForWrite
-        val availableForRead = readChan.availableForRead
-        check(readChan.isClosedForRead || isClosedForWrite && availableForRead == 0) {
-            "failed to read all HttpBody bytes from stream: isClosedForRead: $isClosedForRead/${readChan.isClosedForRead}; isClosedForWrite: $isClosedForWrite/${readChan.isClosedForWrite}; availableForRead: $availableForRead/${readChan.availableForRead}: ${bytes.decodeToString()}"
-        }
-
+        val bytes = readChan.readToBuffer().readByteArray()
         bytes
     }
 }

@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.readToBuffer
 
 /**
  * Represents an abstract read-only stream of bytes
@@ -64,7 +65,7 @@ public sealed class ByteStream {
 }
 
 private suspend fun consumeStream(chan: SdkByteReadChannel): ByteArray {
-    val bytes = chan.readRemaining()
+    val bytes = chan.readToBuffer().readByteArray()
     // readRemaining will read up to `limit` bytes (which is defaulted to Int.MAX_VALUE) or until
     // the stream is closed and no more bytes remain.
     // This is usually sufficient to consume the stream but technically that's not what it's doing.

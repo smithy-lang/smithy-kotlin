@@ -6,8 +6,8 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.copyTo
-import aws.smithy.kotlin.runtime.io.writeChannel
+import aws.smithy.kotlin.runtime.io.readAll
+import aws.smithy.kotlin.runtime.io.sink
 import java.io.File
 import java.nio.file.Path
 
@@ -61,18 +61,14 @@ public fun Path.asByteStream(range: LongRange): ByteStream = asByteStream(range.
  * @return the number of bytes written
  */
 public suspend fun ByteStream.writeToFile(file: File): Long {
-    val writer = file.writeChannel()
     val src = when (this) {
         is ByteStream.Buffer -> SdkByteReadChannel(bytes())
         is ByteStream.OneShotStream -> readFrom()
         is ByteStream.ReplayableStream -> newReader()
     }
 
-    try {
-        return src.copyTo(writer)
-    } finally {
-        writer.close()
-        src.close()
+    return file.sink().use {
+        src.readAll(it)
     }
 }
 

@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.io.readToBuffer
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
@@ -163,15 +164,14 @@ class OkHttpResponseTest {
         val body = sdkResponse.body
         assertIs<HttpBody.Streaming>(body)
         val ch = body.readFrom()
-        assertFalse(ch.isClosedForWrite)
+        assertTrue(ch.isClosedForWrite)
 
-        assertEquals(1, callContext.job.children.toList().size)
+        assertEquals(0, callContext.job.children.toList().size)
 
         assertFailsWith<RuntimeException> {
-            ch.readRemaining()
+            ch.readToBuffer()
         }.message.shouldContain("test read error")
         callJob.complete()
         callJob.join()
-        assertEquals(0, callContext.job.children.toList().size)
     }
 }
