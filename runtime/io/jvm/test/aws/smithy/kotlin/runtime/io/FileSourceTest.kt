@@ -5,11 +5,81 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import org.junit.jupiter.api.Test
+import aws.smithy.kotlin.runtime.testing.RandomTempFile
+import io.kotest.matchers.string.shouldContain
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class FileSourceTest {
-    // TODO - add tests for consuming file source (exercising RandomAccessFileSource)
     @Test
-    fun test() {
+    fun testStartPositionValidation() {
+        val file = RandomTempFile(1024)
+        assertFailsWith<IllegalArgumentException> {
+            file.source(-1)
+        }.message.shouldContain("start position should be >= 0, found -1")
+    }
+
+    @Test
+    fun testEndPositionValidation() {
+        val file = RandomTempFile(1024)
+        assertFailsWith<IllegalArgumentException> {
+            file.source(endInclusive = 1024)
+        }.message.shouldContain("endInclusive should be less than or equal to the length of the file, was 1024")
+
+        file.source(1023).close()
+    }
+
+    @Test
+    fun testStartPosition() {
+        val file = RandomTempFile(1024)
+        val rc = file.source(4).use {
+            it.buffer().readAll(SdkSink.blackhole())
+        }
+
+        assertEquals(1020, rc)
+    }
+
+    @Test
+    fun testEndPosition() {
+        val file = RandomTempFile(1024)
+        val rc = file.source(endInclusive = 15).use {
+            it.buffer().readAll(SdkSink.blackhole())
+        }
+
+        assertEquals(16, rc)
+    }
+
+    @Test
+    fun testStartAndEndPosition() {
+        val file = RandomTempFile(1024)
+        val bytes = file.readBytes()
+        val expected = bytes.sliceArray(700..712).decodeToString()
+
+        val sink = SdkBuffer()
+        file.source(700L..712L).use {
+            it.buffer().readAll(sink)
+        }
+
+        val actual1 = sink.readUtf8()
+        assertEquals(expected, actual1)
+
+        file.source(700L, 712L).use {
+            it.buffer().readAll(sink)
+        }
+
+        val actual2 = sink.readUtf8()
+
+        assertEquals(expected, actual2)
+    }
+
+    @Test
+    fun testPathSource() {
+        val path = RandomTempFile(1024).toPath()
+        val rc = path.source().use {
+            it.buffer().readAll(SdkSink.blackhole())
+        }
+
+        assertEquals(1024L, rc)
     }
 }
