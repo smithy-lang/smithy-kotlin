@@ -10,6 +10,7 @@ import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
+import java.io.IOException
 import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 
@@ -18,7 +19,7 @@ import kotlin.coroutines.CoroutineContext
  */
 internal class ByteChannelRequestBody(
     private val body: HttpBody.Streaming,
-    private val callContext: CoroutineContext,
+    callContext: CoroutineContext,
 ) : RequestBody(), CoroutineScope {
 
     private val producerJob = Job(callContext[Job])
@@ -28,8 +29,19 @@ internal class ByteChannelRequestBody(
     override fun isOneShot(): Boolean = !body.isReplayable
     override fun isDuplex(): Boolean = body.isDuplex
 
+    override fun writeTo(sink: BufferedSink) = try {
+        doWriteTo(sink)
+    } catch (ex: Exception) {
+        throw when (ex) {
+            is IOException -> ex
+            // wrap all exceptions thrown from inside `okhttp3.RequestBody#writeTo(..)` as an IOException
+            // see https://github.com/awslabs/aws-sdk-kotlin/issues/733
+            else -> IOException(ex)
+        }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
-    override fun writeTo(sink: BufferedSink) {
+    private fun doWriteTo(sink: BufferedSink) {
         if (isDuplex()) {
             // launch coroutine that writes to sink in the background
             launch {
@@ -52,10 +64,7 @@ internal class ByteChannelRequestBody(
     private suspend fun transferBody(sink: BufferedSink) = withJob(producerJob) {
         val chan = body.readFrom()
         val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
-        while (!chan.isClosedForRead) {
-            // ensure request context hasn't been cancelled
-            callContext.ensureActive()
-
+        while (!chan.isClosedForRead && producerJob.isActive) {
             // fill the buffer by reading chunks from the underlying source
             while (chan.readAvailable(buffer) != -1 && buffer.remaining() > 0) {}
 

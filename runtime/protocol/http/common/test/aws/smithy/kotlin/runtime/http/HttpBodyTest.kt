@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
+import aws.smithy.kotlin.runtime.http.testutils.MockByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -63,5 +64,41 @@ class HttpBodyTest {
         assertEquals("foobar", body.readAll()!!.decodeToString())
         body.reset()
         assertEquals("foobar", body.readAll()!!.decodeToString())
+    }
+
+    @Test
+    fun testStreamingReadAllClosedForRead() = runTest {
+        val expected = "foobar"
+        val stream = object : ByteStream.OneShotStream() {
+            override val contentLength = expected.length.toLong()
+            override fun readFrom() = MockByteReadChannel(expected)
+        }
+        val body = stream.toHttpBody()
+
+        assertEquals(expected, body.readAll()!!.decodeToString())
+    }
+
+    @Test
+    fun testStreamingReadAllClosedForWrite() = runTest {
+        val expected = "foobar"
+        val stream = object : ByteStream.OneShotStream() {
+            override val contentLength = expected.length.toLong()
+            override fun readFrom() = MockByteReadChannel(expected, isClosedForRead = false)
+        }
+        val body = stream.toHttpBody()
+
+        assertEquals(expected, body.readAll()!!.decodeToString())
+    }
+
+    @Test
+    fun testStreamingReadAllNotClosed() = runTest {
+        val expected = "foobar"
+        val stream = object : ByteStream.OneShotStream() {
+            override val contentLength = expected.length.toLong()
+            override fun readFrom() = MockByteReadChannel(expected, isClosedForRead = false, isClosedForWrite = false)
+        }
+        val body = stream.toHttpBody()
+
+        assertFailsWith<IllegalStateException> { body.readAll() }
     }
 }

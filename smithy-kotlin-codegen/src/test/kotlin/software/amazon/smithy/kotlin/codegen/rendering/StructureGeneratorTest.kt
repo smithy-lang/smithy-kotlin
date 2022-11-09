@@ -704,6 +704,36 @@ class StructureGeneratorTest {
         contents.shouldContainOnlyOnceWithDiff(expectedEqualsContent)
         contents.shouldContainOnlyOnceWithDiff(expectedHashCodeContent)
     }
+
+    @Test
+    fun testNullableReferences() {
+        val model = """
+            structure Struct {
+                aInt: Integer
+                @default(0)
+                bInt: Integer
+            }
+        """
+            .trimIndent()
+            .prependNamespaceAndService(version = "2.0")
+            .toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val struct = model.expectShape<StructureShape>("com.test#Struct")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
+
+        val generated = writer.toString()
+        val expected = """
+            override fun hashCode(): kotlin.Int {
+                var result = aInt ?: 0
+                result = 31 * result + (bInt)
+                return result
+            }
+        """.formatForTest()
+        generated.shouldContainOnlyOnceWithDiff(expected)
+    }
 }
 
 private fun String?.indent(indentation: String = "    "): String? = if (this == null) null else "$indentation$this"

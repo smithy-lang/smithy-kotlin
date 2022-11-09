@@ -600,4 +600,40 @@ class FormUrlSerializerTest {
         val actual = serializer.toByteArray().decodeToString()
         assertEquals(expected, actual)
     }
+
+    @Test
+    fun itSerializesEmptyList() {
+        val input = ListInput(
+            listOf(),
+            null,
+        )
+
+        val expected = """
+            PrimitiveList=
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun itSerializesEmptyListInMap() {
+        val input = MapInput(
+            mapOfLists = mapOf(
+                "foo" to listOf(),
+            ),
+        )
+
+        val expected = """
+            MapOfLists.entry.1.key=foo
+            &MapOfLists.entry.1.value=
+        """.trimIndent().replace("\n", "")
+
+        val serializer = FormUrlSerializer()
+        input.serialize(serializer)
+        val actual = serializer.toByteArray().decodeToString()
+        assertEquals(expected, actual)
+    }
 }
