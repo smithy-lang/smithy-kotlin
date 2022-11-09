@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
@@ -8,7 +13,7 @@ internal actual class AwsChunked actual constructor(
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
-): AbstractAwsChunked(chan, signer, signingConfig, previousSignature) {
+) : AbstractAwsChunked(chan, signer, signingConfig, previousSignature) {
 
     override suspend fun readAvailable(sink: ByteBuffer): Int {
         if (chunk == null || chunkOffset >= chunk!!.size) { chunk = getNextChunk() }
@@ -17,7 +22,7 @@ internal actual class AwsChunked actual constructor(
         while (chunkOffset < chunk!!.size) {
             val numBytesToWrite = chunk!!.size - chunkOffset
 
-            val bytes = chunk!!.slice(chunkOffset .. chunkOffset + numBytesToWrite).toByteArray()
+            val bytes = chunk!!.slice(chunkOffset until chunkOffset + numBytesToWrite).toByteArray()
 
             sink.put(bytes)
 
