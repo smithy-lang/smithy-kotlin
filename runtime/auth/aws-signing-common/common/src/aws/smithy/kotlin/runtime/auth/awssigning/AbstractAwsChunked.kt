@@ -192,7 +192,7 @@ internal abstract class AbstractAwsChunked(
         }.encodeToByteArray()
 
         chunkOffset = 0
-        return chunkHeader + chunkBody + "\r\n".encodeToByteArray()
+        return chunkHeader + chunkBody
     }
 
     /**
@@ -206,15 +206,19 @@ internal abstract class AbstractAwsChunked(
      * @return a [ByteArray] containing the trailing headers in aws-chunked encoding, ready to send on the wire
      */
     suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): ByteArray {
-
-        var trailerBody = trailingHeaders.entries().joinToString { entry ->
-            "${entry.key}:${entry.value.joinToString(",")}\r\n"
-        }.encodeToByteArray()
+        var trailerBody = trailingHeaders.entries().map {
+            entry -> buildString {
+                append(entry.key)
+                append(":")
+                append(entry.value.joinToString(","))
+                append("\r\n")
+            }.encodeToByteArray()
+        }.reduce { acc, bytes -> acc + bytes }
 
         val trailerSignature = signer.signChunkTrailer(trailerBody, previousSignature, signingConfig).signature
         previousSignature = trailerSignature
 
-        trailerBody += "x-amz-trailer-signature:$trailerSignature\r\n".encodeToByteArray()
+        trailerBody += "x-amz-trailer-signature:${trailerSignature.decodeToString()}\r\n".encodeToByteArray()
 
         chunkOffset = 0
         return trailerBody
