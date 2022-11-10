@@ -164,7 +164,7 @@ class AwsChunkedTest {
         var previousSignature: ByteArray = byteArrayOf()
         val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
 
-        val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + 1 + 1 + "chunk-signature=".length + 64 + 6
+        val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + 1 + 1 + "chunk-signature=".length + 64 + 4
 
         val bytes = awsChunked.readRemaining(numBytesToRead) // read all the underlying data plus any chunk signature overhead
         val bytesAsString = bytes.decodeToString()
@@ -204,7 +204,7 @@ class AwsChunkedTest {
         val numBytesToRead = dataLengthBytes +
             (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * (numChunks - 1) +
             (4 + 1 + "chunk-signature=".length + 64 + 4) + // last chunk
-            (1 + 1 + "chunk-signature=".length + 64 + 6) // terminating chunk (zero length)
+            (1 + 1 + "chunk-signature=".length + 64 + 4) // terminating chunk (zero length)
 
         val bytes = awsChunked.readRemaining(numBytesToRead) // read all the underlying data plus any chunk signature overhead
         val bytesAsString = bytes.decodeToString()
@@ -337,7 +337,7 @@ class AwsChunkedTest {
         val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
-        val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + 1 + 1 + "chunk-signature=".length + 64 + 6
+        val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + 1 + 1 + "chunk-signature=".length + 64 + 4
 
         val sink = ByteArray(numBytesToRead)
         awsChunked.readFully(sink, 0, numBytesToRead)
@@ -411,7 +411,7 @@ class AwsChunkedTest {
         val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
-        val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + 1 + 1 + "chunk-signature=".length + 64 + 6
+        val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + 1 + 1 + "chunk-signature=".length + 64 + 4
 
         val offset = 128
         val sink = ByteArray(numBytesToRead + offset) { 0 }
@@ -448,7 +448,7 @@ class AwsChunkedTest {
         assertTrue(chan.isClosedForRead) // no chunk data available
 
         // read the chunk of zero length
-        val numBytesToRead = 1 + 1 + "chunk-signature=".length + 64 + 6
+        val numBytesToRead = 1 + 1 + "chunk-signature=".length + 64 + 4
         val sink = ByteArray(numBytesToRead)
         awsChunked.readFully(sink, 0, numBytesToRead)
 
@@ -487,7 +487,7 @@ class AwsChunkedTest {
         var previousSignature: ByteArray = byteArrayOf()
         val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
 
-        val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + 1 + 1 + "chunk-signature=".length + 64 + 6
+        val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + 1 + 1 + "chunk-signature=".length + 64 + 4
         val sink = ByteArray(numBytesToRead)
         awsChunked.readFully(sink, 0, numBytesToRead) // read all the underlying data plus any chunk signature overhead
         val bytesAsString = sink.decodeToString()
@@ -529,7 +529,7 @@ class AwsChunkedTest {
         val numBytesToRead = dataLengthBytes +
             (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * (numChunks - 1) +
             ((CHUNK_SIZE_BYTES / 2).toString(16).length + 1 + "chunk-signature=".length + 64 + 4) + // last chunk
-            (1 + 1 + "chunk-signature=".length + 64 + 6) // terminating chunk
+            (1 + 1 + "chunk-signature=".length + 64 + 4) // terminating chunk
 
         val sink = ByteArray(numBytesToRead)
         awsChunked.readFully(sink, 0, numBytesToRead) // read all the underlying data plus any chunk signature overhead
@@ -658,7 +658,7 @@ class AwsChunkedTest {
         val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
-        val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + (1 + 1 + "chunk-signature=".length + 64 + 6)
+        val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + (1 + 1 + "chunk-signature=".length + 64 + 4)
 
         val sink = ByteArray(numBytesToRead)
         // need to make 2 successive calls because there are two chunks -- readAvailable will only fetch the first one to avoid potential suspensions
@@ -750,14 +750,14 @@ class AwsChunkedTest {
         var previousSignature: ByteArray = byteArrayOf()
         val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
 
-        val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + (1 + 1 + "chunk-signature=".length + 64 + 6)
+        val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + (1 + 1 + "chunk-signature=".length + 64 + 4)
         val sink = ByteArray(numBytesToRead)
 
         var bytesRead = 0
         for (chunk in 0 until numChunks) { // read the chunks in a loop
             bytesRead += awsChunked.readAvailable(sink, bytesRead, CHUNK_SIZE_BYTES + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4))
         }
-        bytesRead += awsChunked.readAvailable(sink, bytesRead, (1 + 1 + "chunk-signature=".length + 64 + 6))
+        bytesRead += awsChunked.readAvailable(sink, bytesRead, (1 + 1 + "chunk-signature=".length + 64 + 4))
         assertEquals(numBytesToRead, bytesRead)
 
         val bytesAsString = sink.decodeToString()
@@ -801,7 +801,7 @@ class AwsChunkedTest {
         val numBytesToRead = dataLengthBytes +
             (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * (numChunks - 1) +
             ((CHUNK_SIZE_BYTES / 2).toString(16).length + 1 + "chunk-signature=".length + 64 + 4) + // last chunk
-            (1 + 1 + "chunk-signature=".length + 64 + 6) // terminal chunk
+            (1 + 1 + "chunk-signature=".length + 64 + 4) // terminal chunk
 
         val sink = ByteArray(numBytesToRead)
 
@@ -813,7 +813,7 @@ class AwsChunkedTest {
         bytesRead += awsChunked.readAvailable(sink, bytesRead, CHUNK_SIZE_BYTES / 2 + (CHUNK_SIZE_BYTES / 2).toString(16).length + 1 + "chunk-signature=".length + 64 + 4)
 
         // read the terminal chunk
-        bytesRead += awsChunked.readAvailable(sink, bytesRead, 1 + 1 + "chunk-signature=".length + 64 + 6)
+        bytesRead += awsChunked.readAvailable(sink, bytesRead, 1 + 1 + "chunk-signature=".length + 64 + 4)
 
         val bytesAsString = sink.decodeToString()
 
