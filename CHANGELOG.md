@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.12] - 11/10/2022
+
+### Fixes
+* Require values for HTTP query- and queryParams-bound parameters
+
 ## [0.12.11] - 11/03/2022
 
 ### Features
