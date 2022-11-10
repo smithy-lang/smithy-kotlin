@@ -6,13 +6,16 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.*
-import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import java.nio.ByteBuffer
 import kotlin.test.*
+import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.http.Headers
+
+
+import java.nio.ByteBuffer
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class AwsChunkedJVMTest {
@@ -36,8 +39,7 @@ class AwsChunkedJVMTest {
      * chunk-signature=<64 alphanumeric characters>
      */
     private fun getChunkSignatures(bytes: String): List<String> = CHUNK_SIGNATURE_REGEX.findAll(bytes).map {
-            result ->
-        result.value.split("=")[1]
+            result -> result.value.split("=")[1]
     }.toList()
 
     /**
@@ -46,8 +48,7 @@ class AwsChunkedJVMTest {
      * String(Hex(ChunkSize));chunk-signature=<chunk_signature>
      */
     private fun getChunkSizes(bytes: String): List<Int> = CHUNK_SIZE_REGEX.findAll(bytes).map {
-            result ->
-        result.value.split(";")[0].toInt(16)
+            result -> result.value.split(";")[0].toInt(16)
     }.toList()
 
     /**
@@ -65,15 +66,15 @@ class AwsChunkedJVMTest {
      * Used to calculate how many bytes should be read for all the trailing headers to be consumed
      */
     private fun getTrailingHeadersLength(trailingHeaders: Headers) = trailingHeaders.entries().map {
-            entry ->
-        buildString {
-            append(entry.key)
-            append(":")
-            append(entry.value.joinToString(","))
-            append("\r\n")
-        }.length
-    }.reduce { acc, len -> acc + len } +
-        "x-amz-trailer-signature:".length + 64 + "\r\n".length
+            entry -> buildString {
+        append(entry.key)
+        append(":")
+        append(entry.value.joinToString(","))
+        append("\r\n")
+    }.length
+    } .reduce { acc, len -> acc + len } +
+            "x-amz-trailer-signature:".length + 64 + "\r\n".length
+
 
     @Test
     fun testReadAvailableExactBytes() = runTest {
@@ -134,11 +135,12 @@ class AwsChunkedJVMTest {
 
         // read excess of chunk data
         val numBytesToRead = dataLengthBytes * 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
-            (1 + 1 + "chunk-signature=".length + 64 + 4)
+                (1 + 1 + "chunk-signature=".length + 64 + 4)
 
         var sink = ByteArray(numBytesToRead)
         val BUFFER_SIZE = 1024
         val buffer = ByteBuffer.allocate(BUFFER_SIZE)
+
 
         while (awsChunked.readAvailable(buffer) != -1) {
             while (buffer.remaining() > 0) {
@@ -176,7 +178,7 @@ class AwsChunkedJVMTest {
 
         // read excess of chunk data
         val numBytesToRead = dataLengthBytes / 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
-            (1 + 1 + "chunk-signature=".length + 64 + 4)
+                (1 + 1 + "chunk-signature=".length + 64 + 4)
 
         var sink = byteArrayOf()
         val BUFFER_SIZE = 1024
