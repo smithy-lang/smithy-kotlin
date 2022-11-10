@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -101,7 +102,7 @@ open class HttpEngineBenchmarks {
         }
     }
 
-    private val uploadRequest = HttpRequest {
+    private val uploadRequestInMemoryBody = HttpRequest {
         url {
             scheme = Protocol.HTTP
             method = HttpMethod.POST
@@ -110,6 +111,22 @@ open class HttpEngineBenchmarks {
             path = "/upload"
         }
         body = HttpBody.fromBytes(largeData)
+    }
+
+    // creates a new streaming body
+    private fun uploadRequestStreamingBody() = HttpRequest {
+        url {
+            scheme = Protocol.HTTP
+            method = HttpMethod.POST
+            host = "localhost"
+            port = serverPort
+            path = "/upload"
+        }
+        body = object : HttpBody.Streaming() {
+            override val contentLength: Long = largeData.size.toLong()
+            private val ch = SdkByteReadChannel(largeData)
+            override fun readFrom(): SdkByteReadChannel = ch
+        }
     }
 
     @Setup(Level.Trial)
@@ -187,12 +204,12 @@ open class HttpEngineBenchmarks {
     }
 
     /**
-     * Raw upload throughput (output MB/s will be roughly op/sec * MB/op)
+     * Raw upload throughput in-memory body (output MB/s will be roughly op/sec * MB/op)
      */
     @Benchmark
     @OperationsPerInvocation(MB_PER_THROUGHPUT_OP)
     fun uploadThroughputNoTls(blackhole: Blackhole) = runBlocking {
-        val call = httpClient.call(uploadRequest)
+        val call = httpClient.call(uploadRequestInMemoryBody)
         try {
             val body = call.response.body.readAll()
             blackhole.consume(body)
@@ -203,5 +220,20 @@ open class HttpEngineBenchmarks {
         }
     }
 
-    // TODO - upload test using streaming interfaces
+    /**
+     * Raw upload throughput for a streaming body (output MB/s will be roughly op/sec * MB/op)
+     */
+    @Benchmark
+    @OperationsPerInvocation(MB_PER_THROUGHPUT_OP)
+    fun uploadThroughputStreamingNoTls(blackhole: Blackhole) = runBlocking {
+        val call = httpClient.call(uploadRequestStreamingBody())
+        try {
+            val body = call.response.body.readAll()
+            blackhole.consume(body)
+        } catch (ex: Exception) {
+            println("failed to consume body: ${ex.message}")
+        } finally {
+            call.complete()
+        }
+    }
 }

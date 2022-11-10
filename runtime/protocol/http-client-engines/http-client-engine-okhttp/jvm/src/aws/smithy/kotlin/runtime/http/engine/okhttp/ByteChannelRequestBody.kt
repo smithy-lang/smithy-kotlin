@@ -66,7 +66,8 @@ internal class ByteChannelRequestBody(
     private suspend fun transferBody(sink: BufferedSink) = withJob(producerJob) {
         val chan = body.readFrom()
         val sdkSink = sink.toSdk()
-        chan.readAll(sdkSink)
+        val rc = chan.readAll(sdkSink)
+        check(rc == contentLength()) { "expected to transfer contentLength=${contentLength()} but only $rc bytes consumed!" }
     }
 }
 
