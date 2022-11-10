@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 
 internal abstract class AbstractAwsChunked(
@@ -12,6 +13,7 @@ internal abstract class AbstractAwsChunked(
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
     private var previousSignature: ByteArray,
+    private var trailingHeaders: Headers = Headers.Empty
 ) : SdkByteReadChannel by chan {
     companion object {
         const val CHUNK_SIZE_BYTES: Int = 65536
@@ -22,6 +24,7 @@ internal abstract class AbstractAwsChunked(
 
     var chunk: ByteArray? = null
     var chunkOffset: Int = 0
+    var hasLastChunkBeenSent: Boolean = false
 
     /**
      * Returns all the bytes remaining in the underlying data source, up to [limit].
@@ -136,10 +139,23 @@ internal abstract class AbstractAwsChunked(
      * previous chunk will be overwritten with new data.
      * The chunk structure is: `string(IntHexBase(chunk-size)) + ";chunk-signature=" + signature + \r\n + chunk-data + \r\n`
      * @return an aws-chunked encoded ByteArray with the hex-formatted chunk size, chunk signature, and chunk data
-     * (in that order), ready to send on the wire
+     * (in that order), ready to send on the wire. the return value will be null when the chunk data has been exhausted.
      */
     suspend fun getNextChunk(): ByteArray? {
-        if (chan.isClosedForRead) { return null }
+        if (chan.isClosedForRead && hasLastChunkBeenSent) {
+            return null
+        } else if (chan.isClosedForRead && !hasLastChunkBeenSent) {
+            hasLastChunkBeenSent = true
+
+            val chunk = when (trailingHeaders) {
+                Headers.Empty -> getZeroLengthChunk()
+                else -> {
+                    getZeroLengthChunk() + getTrailingHeadersChunk(trailingHeaders)
+                }
+            }
+
+            return chunk + "\r\n".encodeToByteArray()  // final CRLF to signal end of chunked transaction
+        }
 
         val chunkBody = chan.readRemaining(CHUNK_SIZE_BYTES)
 
@@ -156,5 +172,51 @@ internal abstract class AbstractAwsChunked(
 
         chunkOffset = 0
         return chunkHeader + chunkBody + "\r\n".encodeToByteArray()
+    }
+
+    /**
+     * Get a chunk representing zero bytes. This is used to signal the end of an aws-chunked request.
+     * @return a [ByteArray] containing the aws-chunked encoding of a zero-length body
+     */
+    suspend fun getZeroLengthChunk(): ByteArray {
+        val chunkBody = byteArrayOf()
+        val chunkSignature = signer.signChunk(chunkBody, previousSignature, signingConfig).signature
+        previousSignature = chunkSignature
+
+        val chunkHeader = buildString {
+            append(chunkBody.size.toString(16))
+            append(";")
+            append("chunk-signature=")
+            append(chunkSignature.decodeToString())
+            append("\r\n")
+        }.encodeToByteArray()
+
+        chunkOffset = 0
+        return chunkHeader + chunkBody + "\r\n".encodeToByteArray()
+    }
+
+    /**
+     * Get the trailing headers chunk. The grammar for trailing headers is:
+     * trailing-header-A:value CRLF
+     * trailing-header-B:value CRLF
+     * ...
+     * x-amz-trailer-signature:signature_value CRLF
+     *
+     * @param trailingHeaders a list of [Headers] which will be sent
+     * @return a [ByteArray] containing the trailing headers in aws-chunked encoding, ready to send on the wire
+     */
+    suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): ByteArray {
+
+        var trailerBody = trailingHeaders.entries().joinToString { entry ->
+            "${entry.key}:${entry.value.joinToString(",")}\r\n"
+        }.encodeToByteArray()
+
+        val trailerSignature = signer.signChunkTrailer(trailerBody, previousSignature, signingConfig).signature
+        previousSignature = trailerSignature
+
+        trailerBody += "x-amz-trailer-signature:$trailerSignature\r\n".encodeToByteArray()
+
+        chunkOffset = 0
+        return trailerBody
     }
 }
