@@ -83,9 +83,6 @@ public class ReadChannelBodyStream(
             // the dispatcher and not allow other coroutines to make progress.
             // see: https://github.com/awslabs/aws-sdk-kotlin/issues/282
             //
-            // TODO - we could get rid of this extra copy + coroutine if readAvailable() had a non-suspend version
-            // see: https://youtrack.jetbrains.com/issue/KTOR-2772
-            //
             // To get around this, if there is data to read we launch a coroutine UNDISPATCHED so that it runs
             // immediately in the current thread. The coroutine will fill the buffer but won't suspend because
             // we know data is available.
