@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awssigning.tests.*
+import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -29,13 +30,49 @@ class AwsChunkedTest {
         credentialsProvider = testCredentialsProvider
     }
 
+    /**
+     * Given a string representation of aws-chunked encoded bytes, return a list of the chunk signatures as strings.
+     * Chunk signatures are defined by the following grammar:
+     * chunk-signature=<64 alphanumeric characters>
+     */
     private fun getChunkSignatures(bytes: String): List<String> = CHUNK_SIGNATURE_REGEX.findAll(bytes).map {
         result -> result.value.split("=")[1]
     }.toList()
 
+    /**
+     * Given a string representation of aws-chunked encoded bytes, returns a list of the chunk sizes as integers.
+     * Chunk sizes are defined by the following grammar:
+     * String(Hex(ChunkSize));chunk-signature=<chunk_signature>
+     */
     private fun getChunkSizes(bytes: String): List<Int> = CHUNK_SIZE_REGEX.findAll(bytes).map {
         result -> result.value.split(";")[0].toInt(16)
     }.toList()
+
+    /**
+     * Given a string representation of aws-chunked encoded bytes, return the value of the x-amz-chunk-trailer trailing header.
+     */
+    private fun getChunkTrailerSignature(bytes: String): String? {
+        val re = Regex("x-amz-trailer-signature:[a-zA-Z0-9]{64}")
+        return re.findAll(bytes).map { result ->
+            result.value.split(":")[1]
+        }.toList().firstOrNull()
+    }
+
+
+
+    /**
+     * Calculates the `aws-chunked` encoded trailing header length
+     * Used to calculate how many bytes should be read for all the trailing headers to be consumed
+     */
+    private fun getTrailingHeadersLength(trailingHeaders: Headers) = trailingHeaders.entries().map {
+        entry -> buildString {
+            append(entry.key)
+            append(":")
+            append(entry.value.joinToString(","))
+            append("\r\n")
+            }.length
+        } .reduce { acc, len -> acc + len } +
+        "x-amz-trailer-signature:".length + 64 + "\r\n".length
 
     @Test
     fun testReadRemainingExactBytes() = runTest {
@@ -212,6 +249,54 @@ class AwsChunkedTest {
         ).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures.last())
         assertEquals(0, chunkSizes.last())
+    }
+
+    @Test
+    fun testReadRemainingWithTrailingHeaders() = runTest {
+        val dataLengthBytes = CHUNK_SIZE_BYTES
+        val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
+        val chan = SdkByteReadChannel(data)
+        var previousSignature: ByteArray = byteArrayOf()
+
+        val trailingHeaders = Headers {
+            append("x-amz-checksum-crc32", "AAAAAA==")
+            append("x-amz-arbitrary-header-with-value", "BOOYAH")
+        }
+
+        val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
+
+        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
+
+        val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
+            ("chunk-signature=".length + 64 + 4) +
+            (1 + 1 + "chunk-signature=".length + 64 + 2) + trailingHeadersLength + 2
+        val bytes = awsChunked.readRemaining(numBytesToRead)
+        val bytesAsString = bytes.decodeToString()
+
+        assertEquals(numBytesToRead, bytes.size)
+
+        val chunkSignatures = getChunkSignatures(bytesAsString)
+        assertEquals(chunkSignatures.size, 2) // chunk of data plus an empty chunk
+        var expectedChunkSignature = testSigner.signChunk(data, previousSignature, testSigningConfig).signature
+        previousSignature = expectedChunkSignature
+        assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
+
+        // the second chunk signature should come from the chunk of zero length
+        expectedChunkSignature = testSigner.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
+        previousSignature = expectedChunkSignature
+        assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[1])
+
+        val chunkSizes = getChunkSizes(bytesAsString)
+        assertEquals(chunkSizes.size, 2)
+        assertEquals(chunkSizes[0], CHUNK_SIZE_BYTES)
+        assertEquals(chunkSizes[1], 0)
+
+        val trailingHeaderBytes = bytes.slice(bytes.size - trailingHeadersLength - 2 until bytes.size - "x-amz-trailer-signature:".length - 64 - 4).toByteArray()
+        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaderBytes, previousSignature, testSigningConfig).signature
+        val trailerSignature = getChunkTrailerSignature(bytesAsString)
+        assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
+
+        assertTrue { awsChunked.isClosedForRead } // we've consumed all of the bytes
     }
 
     @Test
@@ -487,6 +572,55 @@ class AwsChunkedTest {
     }
 
     @Test
+    fun testReadFullyWithTrailingHeaders() = runTest {
+        val dataLengthBytes = CHUNK_SIZE_BYTES
+        val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
+        val chan = SdkByteReadChannel(data)
+        var previousSignature: ByteArray = byteArrayOf()
+
+        val trailingHeaders = Headers {
+            append("x-amz-checksum-crc32", "AAAAAA==")
+            append("x-amz-arbitrary-header-with-value", "UMM")
+        }
+
+        val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
+
+        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
+
+        val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
+            ("chunk-signature=".length + 64 + 4) +
+            (1 + 1 + "chunk-signature=".length + 64 + 2) + trailingHeadersLength + 2
+
+        val sink = ByteArray(numBytesToRead)
+        awsChunked.readFully(sink, 0, numBytesToRead)
+        val bytesAsString = sink.decodeToString()
+
+
+        val chunkSignatures = getChunkSignatures(bytesAsString)
+        assertEquals(chunkSignatures.size, 2) // chunk of data plus an empty chunk
+        var expectedChunkSignature = testSigner.signChunk(data, previousSignature, testSigningConfig).signature
+        previousSignature = expectedChunkSignature
+        assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
+
+        // the second chunk signature should come from the chunk of zero length
+        expectedChunkSignature = testSigner.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
+        previousSignature = expectedChunkSignature
+        assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[1])
+
+        val chunkSizes = getChunkSizes(bytesAsString)
+        assertEquals(chunkSizes.size, 2)
+        assertEquals(chunkSizes[0], CHUNK_SIZE_BYTES)
+        assertEquals(chunkSizes[1], 0)
+
+        val trailingHeaderBytes = sink.slice(sink.size - trailingHeadersLength - 2 until sink.size - "x-amz-trailer-signature:".length - 64 - 4).toByteArray()
+        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaderBytes, previousSignature, testSigningConfig).signature
+        val trailerSignature = getChunkTrailerSignature(bytesAsString)
+        assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
+
+        assertTrue { awsChunked.isClosedForRead } // we've consumed all of the bytes
+    }
+
+    @Test
     fun testReadAvailableNegativeOffset() = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
@@ -718,5 +852,58 @@ class AwsChunkedTest {
         expectedChunkSignature = testSigner.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures.last())
         assertEquals(0, chunkSizes.last())
+    }
+
+    @Test
+    fun testReadAvailableWithTrailingHeaders() = runTest {
+        val dataLengthBytes = CHUNK_SIZE_BYTES
+        val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
+        val chan = SdkByteReadChannel(data)
+        var previousSignature: ByteArray = byteArrayOf()
+
+        val trailingHeaders = Headers {
+            append("x-amz-checksum-crc32", "AAAAAA==")
+            append("x-amz-arbitrary-header-with-value", "UMM")
+        }
+
+        val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
+
+        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
+
+        val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
+                ("chunk-signature=".length + 64 + 4) +
+                (1 + 1 + "chunk-signature=".length + 64 + 2) + trailingHeadersLength + 2
+
+        val sink = ByteArray(numBytesToRead)
+
+        var bytesRead = 0
+
+        while (bytesRead != numBytesToRead) {
+            bytesRead += awsChunked.readAvailable(sink, bytesRead, numBytesToRead - bytesRead)
+        }
+        val bytesAsString = sink.decodeToString()
+
+        val chunkSignatures = getChunkSignatures(bytesAsString)
+        assertEquals(chunkSignatures.size, 2) // chunk of data plus an empty chunk
+        var expectedChunkSignature = testSigner.signChunk(data, previousSignature, testSigningConfig).signature
+        previousSignature = expectedChunkSignature
+        assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
+
+        // the second chunk signature should come from the chunk of zero length
+        expectedChunkSignature = testSigner.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
+        previousSignature = expectedChunkSignature
+        assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[1])
+
+        val chunkSizes = getChunkSizes(bytesAsString)
+        assertEquals(chunkSizes.size, 2)
+        assertEquals(chunkSizes[0], CHUNK_SIZE_BYTES)
+        assertEquals(chunkSizes[1], 0)
+
+        val trailingHeaderBytes = sink.slice(sink.size - trailingHeadersLength - 2 until sink.size - "x-amz-trailer-signature:".length - 64 - 4).toByteArray()
+        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaderBytes, previousSignature, testSigningConfig).signature
+        val trailerSignature = getChunkTrailerSignature(bytesAsString)
+        assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
+
+        assertTrue { awsChunked.isClosedForRead } // we've consumed all of the bytes
     }
 }
