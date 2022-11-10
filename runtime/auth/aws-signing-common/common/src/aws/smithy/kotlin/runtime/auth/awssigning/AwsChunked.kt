@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 
 /**
  * AwsChunked Encoding
- * not thread-safe! do not use multiple executors to read from the same AwsChunked object
+ * Operations on this class can not be invoked concurrently.
  * @param chan the underlying [SdkByteReadChannel] which will have its data encoded in aws-chunked format
  * @param signer the signer to use to sign chunks and (optionally) chunk trailer
  * @param signingConfig the config to use for signing
