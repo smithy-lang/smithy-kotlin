@@ -15,23 +15,24 @@ internal actual class AwsChunked actual constructor(
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
     trailingHeaders: Headers
-) : AbstractAwsChunked(chan, signer, signingConfig, previousSignature) {
+) : AbstractAwsChunked(chan, signer, signingConfig, previousSignature, trailingHeaders) {
 
     override suspend fun readAvailable(sink: ByteBuffer): Int {
-        if (chunk == null || chunkOffset >= chunk!!.size) { chunk = getNextChunk() }
+        if (chunk == null || chunkOffset >= chunk!!.size) {
+            chunk = getNextChunk()
+            if (chunk == null) {
+                return -1
+            }
+        }
 
         var bytesWritten = 0
-        while (chunkOffset < chunk!!.size) {
-            val numBytesToWrite = chunk!!.size - chunkOffset
-
+        while (chunkOffset < chunk!!.size && sink.position() != sink.limit()) {
+            val numBytesToWrite = minOf(sink.limit(), chunk!!.size - chunkOffset)
             val bytes = chunk!!.slice(chunkOffset until chunkOffset + numBytesToWrite).toByteArray()
-
             sink.put(bytes)
 
             bytesWritten += numBytesToWrite
             chunkOffset += numBytesToWrite
-
-            sink.position(bytesWritten)
 
             // if we've exhausted the current chunk, exit without suspending for a new one
             if (chunk == null || chunkOffset >= chunk!!.size) { break }
