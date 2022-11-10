@@ -18,6 +18,13 @@ kotlin {
                 implementation(project(":runtime:logging"))
             }
         }
+        commonTest {
+            dependencies {
+                implementation(project(":runtime:auth:aws-signing-default"))
+                implementation(project(":runtime:auth:aws-signing-tests"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+            }
+        }
 
         commonTest {
             dependencies {
