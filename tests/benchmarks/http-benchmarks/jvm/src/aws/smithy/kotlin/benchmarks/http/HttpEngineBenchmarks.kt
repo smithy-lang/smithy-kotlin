@@ -32,7 +32,6 @@ private const val MB_PER_THROUGHPUT_OP = 12
 // TODO - add TLS tests to benchmarks (or just move existing tests to use TLS since we expect that to be the norm)
 private const val OKHTTP_ENGINE = "OkHttp"
 private const val CRT_ENGINE = "CRT"
-private const val KTOR_OKHTTP = "Ktor_OkHttp"
 
 fun interface BenchmarkEngineFactory {
     fun create(): HttpClientEngine
@@ -41,7 +40,6 @@ fun interface BenchmarkEngineFactory {
 private val engines = mapOf(
     OKHTTP_ENGINE to BenchmarkEngineFactory { OkHttpEngine() },
     CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() },
-    KTOR_OKHTTP to BenchmarkEngineFactory { KtorOkHttpEngine() },
 )
 
 // 12MB
@@ -51,7 +49,7 @@ private val largeData = ByteArray(MB_PER_THROUGHPUT_OP * 1024 * 1024)
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.SECONDS)
 open class HttpEngineBenchmarks {
-    @Param(OKHTTP_ENGINE, CRT_ENGINE, KTOR_OKHTTP)
+    @Param(OKHTTP_ENGINE, CRT_ENGINE)
     var httpClientName: String = ""
 
     lateinit var httpClient: SdkHttpClient
@@ -204,4 +202,6 @@ open class HttpEngineBenchmarks {
             call.complete()
         }
     }
+
+    // TODO - upload test using streaming interfaces
 }
