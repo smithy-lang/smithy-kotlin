@@ -7,6 +7,8 @@ description = "Common types for AWS signing"
 extra["displayName"] = "Smithy :: Kotlin :: AWS Signing Common"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.auth.signing.awssigning"
 
+val coroutinesVersion: String by project
+
 kotlin {
     sourceSets {
         commonMain {
@@ -14,6 +16,14 @@ kotlin {
                 api(project(":runtime:auth:aws-credentials"))
                 api(project(":runtime:protocol:http"))
                 implementation(project(":runtime:logging"))
+            }
+        }
+
+        commonTest {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(project(":runtime:auth:aws-signing-tests"))
+                implementation(project(":runtime:auth:aws-signing-default"))
             }
         }
 
