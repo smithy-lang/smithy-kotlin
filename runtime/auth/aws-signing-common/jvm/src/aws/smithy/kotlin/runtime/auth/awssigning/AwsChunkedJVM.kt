@@ -5,6 +5,7 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import java.nio.ByteBuffer
 
@@ -13,6 +14,7 @@ internal actual class AwsChunked actual constructor(
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
+    trailingHeaders: Headers
 ) : AbstractAwsChunked(chan, signer, signingConfig, previousSignature) {
 
     override suspend fun readAvailable(sink: ByteBuffer): Int {
