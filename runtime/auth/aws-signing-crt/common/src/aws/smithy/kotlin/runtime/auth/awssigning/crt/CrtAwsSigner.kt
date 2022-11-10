@@ -47,6 +47,14 @@ public object CrtAwsSigner : AwsSigner {
         val crtResult = CrtSigner.signChunk(chunkBody, prevSignature, crtConfig)
         return AwsSigningResult(Unit, crtResult.signature)
     }
+
+    override suspend fun signChunkTrailer(
+        trailingHeaders: ByteArray,
+        finalChunkSignature: ByteArray,
+        config: AwsSigningConfig,
+    ): AwsSigningResult<Unit> {
+        TODO("Not yet implemented")
+    }
 }
 
 private fun AwsSignatureType.toCrtSignatureType() = when (this) {

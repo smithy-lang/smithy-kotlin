@@ -57,6 +57,23 @@ internal class DefaultAwsSignerImpl(
 
         return AwsSigningResult(Unit, signature.encodeToByteArray())
     }
+
+    override suspend fun signChunkTrailer(
+        trailingHeaders: ByteArray,
+        finalChunkSignature: ByteArray,
+        config: AwsSigningConfig,
+    ): AwsSigningResult<Unit> {
+        val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeaders, finalChunkSignature, config)
+        logger.trace { "Chunk trailer string to sign:\n$stringToSign" }
+
+        val credentials = config.credentialsProvider.getCredentials()
+        val signingKey = signatureCalculator.signingKey(config, credentials)
+
+        val signature = signatureCalculator.calculate(signingKey, stringToSign)
+        logger.debug { "Calculated chunk signature: $signature" }
+
+        return AwsSigningResult(Unit, signature.encodeToByteArray())
+    }
 }
 
 /** The name of the SigV4 algorithm. */

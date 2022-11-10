@@ -25,7 +25,7 @@ internal interface SignatureCalculator {
     /**
      * Calculates a signature based on a signing key and a string to sign.
      * @param signingKey The signing key as a byte array (returned from [signingKey])
-     * @param stringToSign The string to sign (returned from [stringToSign] or [chunkStringToSign])
+     * @param stringToSign The string to sign (returned from [stringToSign], [chunkStringToSign], or [chunkTrailerStringToSign])
      * @return The signature for this request as a hex string
      */
     fun calculate(signingKey: ByteArray, stringToSign: String): String
@@ -54,6 +54,15 @@ internal interface SignatureCalculator {
      * @return A multiline string to sign
      */
     fun stringToSign(canonicalRequest: String, config: AwsSigningConfig): String
+
+    /**
+     * Constructs a string to sign for a chunk trailer
+     * @param trailingHeaders The canonicalized trailing headers
+     * @param finalChunkSignature The signature of the final payload chunk
+     * @param config The signing configuration to use
+     * @return A multiline string to sign
+     */
+    fun chunkTrailerStringToSign(trailingHeaders: ByteArray, finalChunkSignature: ByteArray, config: AwsSigningConfig): String
 }
 
 internal class DefaultSignatureCalculator(private val sha256Provider: HashSupplier = ::Sha256) : SignatureCalculator {
@@ -74,6 +83,15 @@ internal class DefaultSignatureCalculator(private val sha256Provider: HashSuppli
 
             appendLine(nonSignatureHeadersHash)
             append(chunkBody.hash(sha256Provider).encodeToHex())
+        }
+
+    override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, finalChunkSignature: ByteArray, config: AwsSigningConfig): String =
+        buildString {
+            appendLine("AWS4-HMAC-SHA256-TRAILER")
+            appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
+            appendLine(config.credentialScope)
+            appendLine(finalChunkSignature.decodeToString())
+            appendLine(trailingHeaders.hash(sha256Provider).encodeToHex())
         }
 
     override fun signingKey(config: AwsSigningConfig, credentials: Credentials): ByteArray {
