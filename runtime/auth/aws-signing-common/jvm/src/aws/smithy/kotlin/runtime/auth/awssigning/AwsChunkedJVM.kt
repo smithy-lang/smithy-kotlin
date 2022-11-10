@@ -14,7 +14,7 @@ internal actual class AwsChunked actual constructor(
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
-    trailingHeaders: Headers,
+    trailingHeaders: Headers
 ) : AbstractAwsChunked(chan, signer, signingConfig, previousSignature, trailingHeaders) {
 
     override suspend fun readAvailable(sink: ByteBuffer): Int {
