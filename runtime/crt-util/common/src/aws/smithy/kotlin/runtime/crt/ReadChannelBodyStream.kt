@@ -9,7 +9,6 @@ import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.io.MutableBuffer
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readAvailable
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
@@ -92,7 +91,7 @@ public class ReadChannelBodyStream(
             // we know data is available.
             launch(start = CoroutineStart.UNDISPATCHED) {
                 val sdkBuffer = SdkBuffer()
-                bodyChan.readAvailable(sdkBuffer, bodyChan.availableForRead.toLong())
+                bodyChan.read(sdkBuffer, bodyChan.availableForRead.toLong())
                 bufferChan.send(sdkBuffer)
             }.invokeOnCompletion { cause ->
                 if (cause != null) {

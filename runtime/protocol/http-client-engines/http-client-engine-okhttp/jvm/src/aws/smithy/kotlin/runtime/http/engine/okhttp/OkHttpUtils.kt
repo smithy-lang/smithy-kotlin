@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.internal.derivedName
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.internal.toSdk
@@ -100,16 +101,6 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
     }
 
     return HttpResponse(HttpStatusCode.fromValue(code), sdkHeaders, httpBody)
-}
-
-/**
- * Append to the existing coroutine name if it exists in the context otherwise
- * use [name] as is.
- * @return the [CoroutineName] context element
- */
-internal fun CoroutineContext.derivedName(name: String): CoroutineName {
-    val existing = get(CoroutineName)?.name ?: return CoroutineName(name)
-    return CoroutineName("$existing:$name")
 }
 
 internal class OkHttpProxyAuthenticator(
