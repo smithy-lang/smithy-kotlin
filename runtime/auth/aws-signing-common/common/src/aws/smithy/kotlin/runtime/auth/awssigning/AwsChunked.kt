@@ -24,5 +24,5 @@ internal expect class AwsChunked internal constructor(
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
-    trailingHeaders: Headers = Headers.Empty
+    trailingHeaders: Headers = Headers.Empty,
 ) : AbstractAwsChunked

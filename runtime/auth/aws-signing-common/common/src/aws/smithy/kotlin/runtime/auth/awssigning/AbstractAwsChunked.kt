@@ -13,7 +13,7 @@ internal abstract class AbstractAwsChunked(
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
     private var previousSignature: ByteArray,
-    private var trailingHeaders: Headers = Headers.Empty
+    private var trailingHeaders: Headers = Headers.Empty,
 ) : SdkByteReadChannel by chan {
     companion object {
         const val CHUNK_SIZE_BYTES: Int = 65536
@@ -154,7 +154,7 @@ internal abstract class AbstractAwsChunked(
                 }
             }
 
-            return chunk + "\r\n".encodeToByteArray()  // final CRLF to signal end of chunked transaction
+            return chunk + "\r\n".encodeToByteArray() // final CRLF to signal end of chunked transaction
         }
 
         val chunkBody = chan.readRemaining(CHUNK_SIZE_BYTES)
@@ -207,7 +207,8 @@ internal abstract class AbstractAwsChunked(
      */
     suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): ByteArray {
         var trailerBody = trailingHeaders.entries().map {
-            entry -> buildString {
+                entry ->
+            buildString {
                 append(entry.key)
                 append(":")
                 append(entry.value.joinToString(","))
