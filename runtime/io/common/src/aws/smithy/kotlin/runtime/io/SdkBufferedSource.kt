@@ -9,7 +9,7 @@ package aws.smithy.kotlin.runtime.io
 
 /**
  * A source that keeps a buffer internally such that small reads are
- * performant. It also allows peaking ahead, buffering data as necessary,
+ * performant. It also allows peeking ahead, buffering data as necessary,
  * before consuming it.
  */
 public expect sealed interface SdkBufferedSource : SdkSource {
@@ -86,12 +86,12 @@ public expect sealed interface SdkBufferedSource : SdkSource {
     public actual fun readByteArray(byteCount: Long): ByteArray
 
     /**
-     * Reads all bytes from this, decodes them as UTF-8, and returns the string.
+     * Reads all bytes from this source, decodes them as UTF-8, and returns the string.
      */
     public fun readUtf8(): String
 
     /**
-     * Reads [byteCount] bytes from this, decodes them as UTF-8, and returns the string.
+     * Reads [byteCount] bytes from this source, decodes them as UTF-8, and returns the string.
      *
      * **Caution** This may pull a large amount of data into memory, only do this if you are sure
      * the contents fit into memory. Throws [IllegalArgumentException] if the buffer size exceeds [Int.MAX_VALUE].

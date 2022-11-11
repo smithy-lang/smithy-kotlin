@@ -94,7 +94,7 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual fun readByteArray(byteCount: Long): ByteArray
 
     /**
-     * Reads all bytes from this, decodes them as UTF-8, and returns the string.
+     * Reads all bytes from this source, decodes them as UTF-8, and returns the string.
      *
      * **Caution** This may pull a large amount of data into memory, only do this if you are sure
      * the contents fit into memory. Throws [IllegalArgumentException] if the buffer size exceeds [Int.MAX_VALUE].
@@ -103,7 +103,7 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual fun readUtf8(): String
 
     /**
-     * Reads [byteCount] bytes from this, decodes them as UTF-8, and returns the string.
+     * Reads [byteCount] bytes from this source, decodes them as UTF-8, and returns the string.
      */
     @Throws(IOException::class)
     public actual fun readUtf8(byteCount: Long): String
