@@ -19,22 +19,34 @@ public fun SdkBuffer.toOkio(): okio.Buffer = inner
 public fun okio.Buffer.toSdk(): SdkBuffer = SdkBuffer(this)
 
 @InternalApi
-public fun SdkSource.toOkio(): okio.Source = OkioSource(this)
+public fun SdkSource.toOkio(): okio.Source = when (this) {
+    is OkioSdkSource -> delegate
+    else -> OkioSource(this)
+}
 
 @InternalApi
-public fun SdkSink.toOkio(): okio.Sink = OkioSink(this)
+public fun SdkSink.toOkio(): okio.Sink = when (this) {
+    is OkioSdkSink -> delegate
+    else -> OkioSink(this)
+}
 
 @InternalApi
-public fun okio.Sink.toSdk(): SdkSink = OkioSdkSink(this)
+public fun okio.Sink.toSdk(): SdkSink = when (this) {
+    is OkioSink -> delegate
+    else -> OkioSdkSink(this)
+}
 
 @InternalApi
-public fun okio.Source.toSdk(): SdkSource = OkioSdkSource(this)
+public fun okio.Source.toSdk(): SdkSource = when (this) {
+    is OkioSource -> delegate
+    else -> OkioSdkSource(this)
+}
 
 /**
  * Wrap SDK type [delegate] as an [okio.Sink]
  */
 private class OkioSink(
-    private val delegate: SdkSink,
+    internal val delegate: SdkSink,
 ) : okio.Sink {
     override fun close() = delegate.close()
 
@@ -52,7 +64,7 @@ private class OkioSink(
  * Wrap SDK type [delegate] as an [okio.Source]
  */
 private class OkioSource(
-    private val delegate: SdkSource,
+    internal val delegate: SdkSource,
 ) : okio.Source {
     override fun close() = delegate.close()
 
@@ -67,7 +79,7 @@ private class OkioSource(
  * Wrap an okio [okio.Source] as an [SdkSource]
  */
 private class OkioSdkSource(
-    private val delegate: okio.Source,
+    internal val delegate: okio.Source,
 ) : SdkSource {
 
     override fun close() = delegate.close()
@@ -80,7 +92,7 @@ private class OkioSdkSource(
  * Wrap an okio [okio.Sink] as an [SdkSink]
  */
 private class OkioSdkSink(
-    private val delegate: okio.Sink,
+    internal val delegate: okio.Sink,
 ) : SdkSink {
     override fun close() = delegate.close()
     override fun flush() = delegate.flush()
