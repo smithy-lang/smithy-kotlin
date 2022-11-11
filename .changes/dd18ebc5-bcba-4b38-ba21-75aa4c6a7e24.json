@@ -1,0 +1,8 @@
+{
+    "id": "dd18ebc5-bcba-4b38-ba21-75aa4c6a7e24",
+    "type": "feature",
+    "description": "Add aws-chunked content encoding",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#747"
+    ]
+}
