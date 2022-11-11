@@ -195,11 +195,13 @@ abstract class BufferedSourceTest(
         assertContentEquals(expected.sliceArray(0..2), testSink)
     }
 
-    @Ignore
     @Test
     fun testReadByteArrayEOF() {
         // read into a byte array that is smaller than the available data which should result in a "short" read
-        TODO("missing readByteArray(byteCount)")
+        sink.writeUtf8("12345")
+        assertFailsWith<EOFException> {
+            source.readByteArray(10)
+        }
     }
 
     @Ignore

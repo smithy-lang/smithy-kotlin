@@ -16,7 +16,8 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual val buffer: SdkBuffer
 
     /**
-     * Discards [byteCount] bytes from this source. Throws
+     * Discards [byteCount] bytes from this source. Throws [IOException] if source is exhausted before [byteCount]
+     * bytes can be discarded.
      */
     @Throws(IOException::class)
     public actual fun skip(byteCount: Long)
@@ -28,43 +29,43 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual fun readByte(): Byte
 
     /**
-     * Read two bytes from this source and returns a big-endian short.
+     * Read two bytes in big-endian order from this source and returns them as a short.
      */
     @Throws(IOException::class)
     public actual fun readShort(): Short
 
     /**
-     * Read two bytes from this source and returns it as a little-endian short.
+     * Read two bytes in little-endian order from this source and returns them as a short.
      */
     @Throws(IOException::class)
     public actual fun readShortLe(): Short
 
     /**
-     * Read four bytes from this source and returns a big-endian long.
+     * Read eight bytes in big-endian order from this source and returns them as a long.
      */
     @Throws(IOException::class)
     public actual fun readLong(): Long
 
     /**
-     * Read four bytes from this source and returns a little-endian long.
+     * Read eight bytes in little-endian order from this source and returns them as a long.
      */
     @Throws(IOException::class)
     public actual fun readLongLe(): Long
 
     /**
-     * Read four bytes from this source and returns a big-endian int.
+     * Read four bytes in big-endian order from this source and returns them as an int.
      */
     @Throws(IOException::class)
     public actual fun readInt(): Int
 
     /**
-     * Read four bytes from this source and returns a little-endian int.
+     * Read four bytes in little-endian order from this source and returns them as an int.
      */
     @Throws(IOException::class)
     public actual fun readIntLe(): Int
 
     /**
-     * Removes all bytes from this and appends them to [sink]. Returns
+     * Reads all bytes from this and appends them to [sink]. Returns
      * the total number of bytes written which will be 0 if this source
      * is exhausted.
      */
@@ -78,25 +79,31 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual fun read(sink: ByteArray, offset: Int, limit: Int): Int
 
     /**
-     * Removes all bytes from this source and returns them as a byte array
+     * Reads all bytes from this source and returns them as a byte array
+     *
+     * **Caution** This may pull a large amount of data into memory, only do this if you are sure
+     * the contents fit into memory. Throws [IllegalArgumentException] if the buffer size exceeds [Int.MAX_VALUE].
      */
     @Throws(IOException::class)
     public actual fun readByteArray(): ByteArray
 
     /**
-     * Removes [byteCount] bytes from this source and returns them as a byte array
+     * Reads [byteCount] bytes from this source and returns them as a byte array
      */
     @Throws(IOException::class)
     public actual fun readByteArray(byteCount: Long): ByteArray
 
     /**
-     * Removes all bytes from this, decodes them as UTF-8, and returns the string.
+     * Reads all bytes from this, decodes them as UTF-8, and returns the string.
+     *
+     * **Caution** This may pull a large amount of data into memory, only do this if you are sure
+     * the contents fit into memory. Throws [IllegalArgumentException] if the buffer size exceeds [Int.MAX_VALUE].
      */
     @Throws(IOException::class)
     public actual fun readUtf8(): String
 
     /**
-     * Removes [byteCount] bytes from this, decodes them as UTF-8, and returns the string.
+     * Reads [byteCount] bytes from this, decodes them as UTF-8, and returns the string.
      */
     @Throws(IOException::class)
     public actual fun readUtf8(byteCount: Long): String
@@ -108,7 +115,7 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
 
     /**
      * Returns a new [SdkBufferedSource] that can read data from this source
-     * without consume it. The returned source becomes invalid once this source is next
+     * without consuming it. The returned source becomes invalid once this source is next
      * read or closed.
      */
     public actual fun peek(): SdkBufferedSource

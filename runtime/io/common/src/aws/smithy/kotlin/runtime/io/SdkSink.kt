@@ -7,6 +7,18 @@ package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 
+/**
+ * A destination for writing a stream of bytes (e.g. file, network, in-memory buffer). Sinks may be layered
+ * to transform received data, such as to compress, encrypt, throttle, or add protocol framing.
+ *
+ * Most application code should not operate on a sink directly, but rather a [SdkBufferedSink] which is
+ * more convenient. Use [SdkSink.buffer] to wrap any sink with a buffer.
+ *
+ * ### Thread/Coroutine Safety
+ *
+ * Sinks are not thread safe by default. Do not share a sink between threads or coroutines without external
+ * synchronization.
+ */
 public interface SdkSink : Closeable {
 
     public companion object {

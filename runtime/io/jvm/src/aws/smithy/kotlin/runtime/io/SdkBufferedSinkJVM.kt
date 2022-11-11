@@ -51,37 +51,37 @@ public actual sealed interface SdkBufferedSink : SdkSink, WritableByteChannel {
     public actual fun writeByte(x: Byte): Unit
 
     /**
-     * Writes short [x] as a big-endian short to this sink
+     * Writes short [x] as a big-endian bytes to this sink
      */
     @Throws(IOException::class)
     public actual fun writeShort(x: Short): Unit
 
     /**
-     * Writes short [x] as a little-endian short to this sink
+     * Writes short [x] as a little-endian bytes to this sink
      */
     @Throws(IOException::class)
     public actual fun writeShortLe(x: Short): Unit
 
     /**
-     * Writes int [x] as a big-endian int to this sink
+     * Writes int [x] as a big-endian bytes to this sink
      */
     @Throws(IOException::class)
     public actual fun writeInt(x: Int): Unit
 
     /**
-     * Writes int [x] as a little-endian int to this sink
+     * Writes int [x] as a little-endian bytes to this sink
      */
     @Throws(IOException::class)
     public actual fun writeIntLe(x: Int): Unit
 
     /**
-     * Writes long [x] as a big-endian long to this sink
+     * Writes long [x] as a big-endian bytes to this sink
      */
     @Throws(IOException::class)
     public actual fun writeLong(x: Long): Unit
 
     /**
-     * Writes long [x] as a little-endian long to this sink
+     * Writes long [x] as a little-endian bytes to this sink
      */
     @Throws(IOException::class)
     public actual fun writeLongLe(x: Long): Unit
@@ -98,7 +98,8 @@ public actual sealed interface SdkBufferedSink : SdkSink, WritableByteChannel {
     actual override fun flush(): Unit
 
     /**
-     * Writes all buffered data to the underlying sink. Like flush, but weaker. Call before this sink
+     * Writes all buffered data to the underlying sink. Like flush, but weaker (ensures data is pushed to the
+     * underlying sink but not necessarily all the way down the chain like [flush] does). Call before this sink
      * goes out of scope to ensure any buffered data eventually gets to its final destination
      */
     @Throws(IOException::class)

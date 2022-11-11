@@ -32,7 +32,7 @@ public actual class SdkBuffer : SdkBufferedSource, SdkBufferedSink {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is SdkBuffer) return false
-        return inner.equals(other.inner)
+        return inner == other.inner
     }
 
     override fun skip(byteCount: Long): Unit = commonSkip(byteCount)

@@ -22,11 +22,9 @@ public fun Path.source(range: LongRange): SdkSource = source(range.first, range.
  * Create a [SdkSource] from the given path and range
  */
 public fun Path.source(start: Long = 0L, endInclusive: Long = -1): SdkSource {
-    val f = toFile()
-    require(f.exists()) { "cannot create SdkSource, file does not exist: $this" }
-    require(f.isFile) { "cannot create a SdkSource from a directory: $this" }
     require(endInclusive >= -1L) { "endInclusive must be -1 or greater" }
 
+    val f = toFile()
     val calculatedEndInclusive = if (endInclusive == -1L) f.length() - 1L else endInclusive
     return f.source(start, calculatedEndInclusive)
 }

@@ -32,7 +32,7 @@ public expect sealed interface SdkBufferedSink : SdkSink {
     public fun write(source: SdkSource, byteCount: Long): Unit
 
     /**
-     * Write UTF8-bytes of [string] to this sink starting at [start] index up to [endExclusive] index.
+     * Write [string] as UTF-8 encoded bytes to this sink starting at [start] index up to [endExclusive] index.
      */
     public fun writeUtf8(string: String, start: Int = 0, endExclusive: Int = string.length): Unit
 
@@ -42,32 +42,32 @@ public expect sealed interface SdkBufferedSink : SdkSink {
     public fun writeByte(x: Byte): Unit
 
     /**
-     * Writes short [x] as a big-endian short to this sink
+     * Writes short [x] as a big-endian bytes to this sink
      */
     public fun writeShort(x: Short): Unit
 
     /**
-     * Writes short [x] as a little-endian short to this sink
+     * Writes short [x] as a little-endian bytes to this sink
      */
     public fun writeShortLe(x: Short): Unit
 
     /**
-     * Writes int [x] as a big-endian int to this sink
+     * Writes int [x] as a big-endian bytes to this sink
      */
     public fun writeInt(x: Int): Unit
 
     /**
-     * Writes int [x] as a little-endian int to this sink
+     * Writes int [x] as a little-endian bytes to this sink
      */
     public fun writeIntLe(x: Int): Unit
 
     /**
-     * Writes long [x] as a big-endian long to this sink
+     * Writes long [x] as a big-endian bytes to this sink
      */
     public fun writeLong(x: Long): Unit
 
     /**
-     * Writes long [x] as a little-endian long to this sink
+     * Writes long [x] as a little-endian bytes to this sink
      */
     public fun writeLongLe(x: Long): Unit
 
@@ -78,7 +78,8 @@ public expect sealed interface SdkBufferedSink : SdkSink {
     override fun flush(): Unit
 
     /**
-     * Writes all buffered data to the underlying sink. Like flush, but weaker. Call before this sink
+     * Writes all buffered data to the underlying sink. Like flush, but weaker (ensures data is pushed to the
+     * underlying sink but not necessarily all the way down the chain like [flush] does). Call before this sink
      * goes out of scope to ensure any buffered data eventually gets to its final destination
      */
     public fun emit(): Unit
