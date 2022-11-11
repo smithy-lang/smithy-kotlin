@@ -17,6 +17,12 @@ internal actual class AwsChunked actual constructor(
     trailingHeaders: Headers,
 ) : AbstractAwsChunked(chan, signer, signingConfig, previousSignature, trailingHeaders) {
 
+    /**
+     * Read all the available bytes into [sink], up to the [sink]'s limit.
+     * After reading is complete, flips the buffer to ready the content for consumption.
+     * @param sink the [ByteBuffer] to read the bytes into
+     * @return an integer representing the number of bytes written to [sink]
+     */
     override suspend fun readAvailable(sink: ByteBuffer): Int {
         if (chunk == null || chunkOffset >= chunk!!.size) {
             chunk = getNextChunk()
