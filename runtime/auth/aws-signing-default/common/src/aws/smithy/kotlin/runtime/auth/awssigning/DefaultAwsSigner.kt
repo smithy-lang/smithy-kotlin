@@ -69,7 +69,7 @@ internal class DefaultAwsSignerImpl(
             .map { e -> buildString {
                 append(e.key.lowercase())
                 append(":")
-                append(e.value.joinToString(",").lowercase())
+                append(e.value.joinToString(","))
                 append("\r\n")
             }.encodeToByteArray() } .reduce { acc, bytes -> acc + bytes }
 
