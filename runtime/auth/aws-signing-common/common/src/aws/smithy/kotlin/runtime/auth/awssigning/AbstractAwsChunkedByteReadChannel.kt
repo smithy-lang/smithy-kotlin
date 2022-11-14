@@ -30,9 +30,8 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
      * remaining in the data source.
      */
     override suspend fun readRemaining(limit: Int): ByteArray {
-        if (chunk == null || chunkOffset >= chunk!!.size) {
-            chunk = getNextChunk()
-            if (chunk == null) { return byteArrayOf() }
+        if (!ensureValidChunk()) {
+            return byteArrayOf()
         }
 
         var bytesWritten = 0
@@ -47,10 +46,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
             chunkOffset += numBytesToWrite
 
             // read a new chunk. this handles the case where we consumed the whole chunk but still have not sent `limit` bytes
-            if (chunkOffset >= chunk!!.size) {
-                chunk = getNextChunk()
-                if (chunk == null) { break } // we've exhausted all remaining bytes
-            }
+            if (!ensureValidChunk()) { break }
         }
 
         return bytes.sliceArray(0 until bytesWritten)
@@ -69,12 +65,14 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
     override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) {
         require(offset >= 0) { "Invalid read: offset must be positive:  $offset" }
         require(offset + length <= sink.size) { "Invalid read: offset + length should be less than the destination size: $offset + $length < ${sink.size}" }
-
-        if (chunk == null || chunkOffset >= chunk!!.size) { chunk = getNextChunk() }
+        if (length == 0) return
 
         var bytesWritten = 0
+
         while (bytesWritten != length) {
-            if (chunk == null) { throw RuntimeException("Invalid read: unable to fully read $length bytes. missing ${length - bytesWritten} bytes.") }
+            if (!ensureValidChunk()) {
+                throw RuntimeException("Invalid read: unable to fully read $length bytes. missing ${length - bytesWritten} bytes.")
+            }
 
             val numBytesToWrite: Int = minOf(length, chunk!!.size - chunkOffset)
 
@@ -82,10 +80,6 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
 
             bytesWritten += numBytesToWrite
             chunkOffset += numBytesToWrite
-
-            if (chunkOffset >= chunk!!.size) {
-                chunk = getNextChunk()
-            }
         }
     }
 
@@ -108,13 +102,11 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
         require(offset >= 0) { "Invalid read: offset must be positive:  $offset" }
         require(offset + length <= sink.size) { "Invalid read: offset + length should be less than the destination size: $offset + $length < ${sink.size}" }
 
-        var bytesWritten = 0
-
-        // make sure the current chunk is valid -- suspend and read a new chunk if not valid
-        if (chunk == null || chunkOffset >= chunk!!.size) {
-            chunk = getNextChunk()
-            if (chunk == null) { return bytesWritten }
+        if (!ensureValidChunk()) {
+            return 0
         }
+
+        var bytesWritten = 0
 
         while (bytesWritten != length) {
             val numBytesToWrite = minOf(length, chunk!!.size - chunkOffset)
@@ -132,15 +124,15 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
     }
 
     /**
-     * Read the next chunk of data and add hex-formatted chunk size and chunk signature to the front
-     * This function assumes that the previous chunk has been fully consumed and there is no remaining data, because the
-     * previous chunk will be overwritten with new data.
-     * The chunk structure is: `string(IntHexBase(chunk-size)) + ";chunk-signature=" + signature + \r\n + chunk-data + \r\n`
-     * @return an aws-chunked encoded ByteArray with the hex-formatted chunk size, chunk signature, and chunk data
-     * (in that order), ready to send on the wire. the return value will be null when the chunk data has been exhausted.
+     * Ensures that the internal [chunk] is valid for reading. If it's not valid, try to load the next chunk.
+     * @return true if the [chunk] is valid for reading, false if it's invalid (chunk data is exhausted)
      */
-    suspend fun getNextChunk(): ByteArray? {
-        val chunk = if (chan.isClosedForRead && hasLastChunkBeenSent) {
+    suspend fun ensureValidChunk(): Boolean {
+        // check if the current chunk is still valid
+        if (chunk != null && chunkOffset < chunk!!.size) { return true }
+
+        // if not, try to fetch a new chunk
+        val nextChunk = if (chan.isClosedForRead && hasLastChunkBeenSent) {
             null
         } else if (chan.isClosedForRead && !hasLastChunkBeenSent) {
             hasLastChunkBeenSent = true
@@ -150,11 +142,15 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
         }
 
         chunkOffset = 0
-        return chunk?.plus("\r\n".encodeToByteArray()) // terminating CRLF to signal end of chunk
+        chunk = nextChunk?.plus("\r\n".encodeToByteArray()) // terminating CRLF to signal end of chunk
+        return (chunk != null)
     }
 
     /**
-     * Get an aws-chunked encoding of [data]
+     * Get an aws-chunked encoding of [data].
+     * If [data] is not set, read the next chunk from [chan] and add hex-formatted chunk size and chunk signature to the front.
+     * The chunk structure is: `string(IntHexBase(chunk-size)) + ";chunk-signature=" + signature + \r\n + chunk-data + \r\n`
+     *
      * @param data the ByteArray of data which will be encoded to aws-chunked. if not provided, will default to
      * reading up to [CHUNK_SIZE_BYTES] from [chan].
      * @return a ByteArray containing the chunked data
@@ -173,7 +169,6 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
             append("\r\n")
         }.encodeToByteArray()
 
-        chunkOffset = 0
         return chunkHeader + chunkBody
     }
 
