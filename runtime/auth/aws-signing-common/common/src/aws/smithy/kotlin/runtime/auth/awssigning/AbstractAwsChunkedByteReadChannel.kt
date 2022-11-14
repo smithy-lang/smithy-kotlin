@@ -185,8 +185,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
      * @return a [ByteArray] containing the trailing headers in aws-chunked encoding, ready to send on the wire
      */
     private suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): ByteArray {
-        var trailerBody = trailingHeaders.entries().map {
-                entry ->
+        var trailerBody = trailingHeaders.entries().sortedBy { entry -> entry.key.lowercase() } .map { entry ->
             buildString {
                 append(entry.key)
                 append(":")
