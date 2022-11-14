@@ -30,10 +30,14 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
      * remaining in the data source.
      */
     override suspend fun readRemaining(limit: Int): ByteArray {
-        if (chunk == null || chunkOffset >= chunk!!.size) { chunk = getNextChunk() }
+        if (chunk == null || chunkOffset >= chunk!!.size) {
+            chunk = getNextChunk()
+            if (chunk == null) { return byteArrayOf() }
+        }
 
         var bytesWritten = 0
         val bytes = ByteArray(limit)
+
         while (bytesWritten != limit) {
             val numBytesToWrite: Int = minOf(limit - bytesWritten, chunk!!.size - chunkOffset)
 
