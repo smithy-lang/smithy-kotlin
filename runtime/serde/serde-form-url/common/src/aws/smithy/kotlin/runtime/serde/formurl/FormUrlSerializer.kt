@@ -157,7 +157,10 @@ private class FormUrlStructSerializer(
 
     override fun listField(descriptor: SdkFieldDescriptor, block: ListSerializer.() -> Unit) {
         val childDescriptor = descriptor.copyWithNewSerialName("${prefix}${descriptor.serialName}")
-        FormUrlListSerializer(parent, childDescriptor).apply(block)
+        FormUrlListSerializer(parent, childDescriptor).apply {
+            block()
+            endList()
+        }
     }
 
     override fun mapField(descriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
@@ -179,6 +182,7 @@ private class FormUrlListSerializer(
     private val descriptor: SdkFieldDescriptor,
 ) : ListSerializer {
     private val buffer = parent.buffer
+    private val initialBufferPos = buffer.writePosition
     private var idx = 0
 
     private fun prefix(): String = when {
@@ -197,7 +201,15 @@ private class FormUrlListSerializer(
         buffer.apply(block)
     }
 
-    override fun endList() {}
+    override fun endList() {
+        if (buffer.writePosition == initialBufferPos) {
+            // explicit serialization of an empty list
+            if (buffer.writePosition > 0u) buffer.write("&")
+            buffer.write(descriptor.serialName)
+            buffer.write("=")
+        }
+    }
+
     override fun serializeBoolean(value: Boolean) = writePrefixed { write("$value") }
     override fun serializeChar(value: Char) = writePrefixed { write(value.toString()) }
     override fun serializeByte(value: Byte) = writePrefixed { commonWriteNumber(value) }
@@ -312,7 +324,10 @@ private class FormUrlMapSerializer(
         writeKey(key)
 
         val childDescriptor = SdkFieldDescriptor(SerialKind.List, FormUrlSerialName("$commonPrefix.${mapName.value}"))
-        FormUrlListSerializer(parent, childDescriptor).apply(block)
+        FormUrlListSerializer(parent, childDescriptor).apply {
+            block()
+            endList()
+        }
     }
 
     override fun mapEntry(key: String, mapDescriptor: SdkFieldDescriptor, block: MapSerializer.() -> Unit) {
