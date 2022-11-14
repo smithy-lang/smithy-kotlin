@@ -72,8 +72,8 @@ internal class DefaultAwsSignerImpl(
                     append(":")
                     append(e.value.joinToString(",") { v -> v.trim() })
                     append("\n")
-                } .encodeToByteArray()
-            } .reduce { acc, bytes -> acc + bytes }
+                }.encodeToByteArray()
+            }.reduce { acc, bytes -> acc + bytes }
 
         val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeadersBytes, finalChunkSignature, config)
         logger.trace { "Chunk trailer string to sign:\n$stringToSign" }
