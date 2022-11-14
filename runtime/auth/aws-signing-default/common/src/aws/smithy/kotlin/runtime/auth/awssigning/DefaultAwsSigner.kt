@@ -66,12 +66,14 @@ internal class DefaultAwsSignerImpl(
     ): AwsSigningResult<Unit> {
         // canonicalize the headers
         val trailingHeadersBytes = trailingHeaders.entries().sortedBy { e -> e.key.lowercase() }
-            .map { e -> buildString {
-                append(e.key.lowercase())
-                append(":")
-                append(e.value.joinToString(","))
-                append("\r\n")
-            }.encodeToByteArray() } .reduce { acc, bytes -> acc + bytes }
+            .map { e ->
+                buildString {
+                    append(e.key.lowercase())
+                    append(":")
+                    append(e.value.joinToString(",") { v -> v.trim() })
+                    append("\n")
+                } .encodeToByteArray()
+            } .reduce { acc, bytes -> acc + bytes }
 
         val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeadersBytes, finalChunkSignature, config)
         logger.trace { "Chunk trailer string to sign:\n$stringToSign" }
