@@ -8,6 +8,8 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 
+internal const val CHUNK_SIZE_BYTES: Int = 65536
+
 internal abstract class AbstractAwsChunked(
     private val chan: SdkByteReadChannel,
     private val signer: AwsSigner,
@@ -15,10 +17,6 @@ internal abstract class AbstractAwsChunked(
     private var previousSignature: ByteArray,
     private var trailingHeaders: Headers = Headers.Empty,
 ) : SdkByteReadChannel by chan {
-    companion object {
-        const val CHUNK_SIZE_BYTES: Int = 65536
-    }
-
     override val isClosedForRead: Boolean
         get() = chan.isClosedForRead && (chunk == null || chunkOffset >= chunk!!.size)
 
@@ -90,14 +88,14 @@ internal abstract class AbstractAwsChunked(
     }
 
     /**
-     * Writes [length] bytes to [sink], starting [offset] bytes from the beginning.
+     * Writes up to [length] bytes to [sink], starting [offset] bytes from the beginning.
      * Returns when [length] bytes or the number of available bytes have been written, whichever is lower.
      *
      * This function will read *at most* one chunk of data into the [sink]. Successive calls will be required to read additional chunks.
      * This is done because the function promises to not suspend unless there are zero bytes currently available,
      * and we are unable to poll the underlying data source to see if there is a whole chunk available.
      *
-     * @param sink the bytearray to write the data to
+     * @param sink the [ByteArray] to write the data to
      * @param offset the number of bytes to skip from the beginning of the chunk
      * @param length the maximum number of bytes to write to [sink]. the actual number of bytes written may be fewer if
      * there are less immediately available.

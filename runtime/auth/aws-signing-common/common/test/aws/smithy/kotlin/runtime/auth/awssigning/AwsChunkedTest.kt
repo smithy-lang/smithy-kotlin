@@ -20,8 +20,6 @@ class AwsChunkedTest {
     private val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
     private val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
 
-    private val CHUNK_SIZE_BYTES = AbstractAwsChunked.CHUNK_SIZE_BYTES
-
     private val testSigner = DefaultAwsSigner
     private val testSigningConfig = AwsSigningConfig {
         region = "foo"
