@@ -185,19 +185,18 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
      * @return a [ByteArray] containing the trailing headers in aws-chunked encoding, ready to send on the wire
      */
     private suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): ByteArray {
-        var trailerBody = trailingHeaders.entries().sortedBy { entry -> entry.key.lowercase() } .map { entry ->
-            buildString {
-                append(entry.key)
-                append(":")
-                append(entry.value.joinToString(","))
-                append("\r\n")
-            }.encodeToByteArray()
-        }.reduce { acc, bytes -> acc + bytes }
-
         val trailerSignature = signer.signChunkTrailer(trailingHeaders, previousSignature, signingConfig).signature
         previousSignature = trailerSignature
 
-        trailerBody += "x-amz-trailer-signature:${trailerSignature.decodeToString()}\r\n".encodeToByteArray()
+        val trailerBody = trailingHeaders.entries().sortedBy { entry -> entry.key.lowercase() }.map { entry ->
+            buildString {
+                append(entry.key)
+                append(":")
+                append(entry.value.joinToString(",") { v -> v.trim() })
+                append("\r\n")
+            }.encodeToByteArray()
+        }.reduce { acc, bytes -> acc + bytes } +
+            "x-amz-trailer-signature:${trailerSignature.decodeToString()}\r\n".encodeToByteArray()
 
         chunkOffset = 0
         return trailerBody
