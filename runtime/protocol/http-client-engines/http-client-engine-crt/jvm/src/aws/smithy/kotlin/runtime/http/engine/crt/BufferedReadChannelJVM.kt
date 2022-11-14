@@ -5,8 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.smithy.kotlin.runtime.io.SdkByteBuffer
-import aws.smithy.kotlin.runtime.io.of
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import java.nio.ByteBuffer
 
 internal actual fun bufferedReadChannel(onBytesRead: (n: Int) -> Unit): BufferedReadChannel =
@@ -18,14 +17,12 @@ internal class BufferedReadChannelImpl(
 
     override suspend fun readAvailable(sink: ByteBuffer): Int {
         if (sink.remaining() == 0) return 0
-        val sdkSink = SdkByteBuffer.of(sink)
+        val sdkSink = SdkBuffer()
         val consumed = readAsMuchAsPossible(sdkSink, sink.remaining())
+        sdkSink.read(sink)
         return when {
             consumed == 0 && closed != null -> -1
-            consumed > 0 -> {
-                sink.position(sink.position() + consumed)
-                consumed
-            }
+            consumed > 0 -> consumed
             else -> readAvailableSuspend(sink)
         }
     }
