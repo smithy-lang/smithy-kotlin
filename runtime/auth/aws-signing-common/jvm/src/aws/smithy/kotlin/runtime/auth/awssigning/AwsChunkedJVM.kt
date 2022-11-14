@@ -24,11 +24,8 @@ internal actual class AwsChunkedByteReadChannel actual constructor(
      * @return an integer representing the number of bytes written to [sink]
      */
     override suspend fun readAvailable(sink: ByteBuffer): Int {
-        if (chunk == null || chunkOffset >= chunk!!.size) {
-            chunk = getNextChunk()
-            if (chunk == null) {
-                return -1
-            }
+        if (!ensureValidChunk()) {
+            return -1
         }
 
         var bytesWritten = 0
@@ -41,7 +38,7 @@ internal actual class AwsChunkedByteReadChannel actual constructor(
             chunkOffset += numBytesToWrite
 
             // if we've exhausted the current chunk, exit without suspending for a new one
-            if (chunk == null || chunkOffset >= chunk!!.size) { break }
+            if (chunkOffset >= chunk!!.size) { break }
         }
 
         sink.flip()
