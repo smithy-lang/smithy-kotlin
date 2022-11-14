@@ -136,44 +136,32 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
      * (in that order), ready to send on the wire. the return value will be null when the chunk data has been exhausted.
      */
     suspend fun getNextChunk(): ByteArray? {
-        if (chan.isClosedForRead && hasLastChunkBeenSent) {
-            return null
+        val chunk = if (chan.isClosedForRead && hasLastChunkBeenSent) {
+            null
         } else if (chan.isClosedForRead && !hasLastChunkBeenSent) {
             hasLastChunkBeenSent = true
 
-            val chunk = when (trailingHeaders) {
-                Headers.Empty -> getZeroLengthChunk()
-                else -> {
-                    getZeroLengthChunk() + getTrailingHeadersChunk(trailingHeaders)
-                }
+            when (trailingHeaders) {
+                Headers.Empty -> getChunk(byteArrayOf())
+                else -> getChunk(byteArrayOf()) + getTrailingHeadersChunk(trailingHeaders)
             }
-
-            return chunk + "\r\n".encodeToByteArray() // final CRLF to signal end of chunked transaction
+        } else {
+            getChunk()
         }
 
-        val chunkBody = chan.readRemaining(CHUNK_SIZE_BYTES)
-
-        val chunkSignature = signer.signChunk(chunkBody, previousSignature, signingConfig).signature
-        previousSignature = chunkSignature
-
-        val chunkHeader = buildString {
-            append(chunkBody.size.toString(16))
-            append(";")
-            append("chunk-signature=")
-            append(chunkSignature.decodeToString())
-            append("\r\n")
-        }.encodeToByteArray()
-
         chunkOffset = 0
-        return chunkHeader + chunkBody + "\r\n".encodeToByteArray()
+        return chunk?.plus("\r\n".encodeToByteArray()) // terminating CRLF to signal end of chunk
     }
 
     /**
-     * Get a chunk representing zero bytes. This is used to signal the end of an aws-chunked request.
-     * @return a [ByteArray] containing the aws-chunked encoding of a zero-length body
+     * Get an aws-chunked encoding of [data]
+     * @param data the ByteArray of data which will be encoded to aws-chunked. if not provided, will default to
+     * reading up to [CHUNK_SIZE_BYTES] from [chan].
+     * @return a ByteArray containing the chunked data
      */
-    suspend fun getZeroLengthChunk(): ByteArray {
-        val chunkBody = byteArrayOf()
+    private suspend fun getChunk(data: ByteArray? = null): ByteArray {
+        val chunkBody = data ?: chan.readRemaining(CHUNK_SIZE_BYTES)
+
         val chunkSignature = signer.signChunk(chunkBody, previousSignature, signingConfig).signature
         previousSignature = chunkSignature
 
@@ -199,7 +187,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
      * @param trailingHeaders a list of [Headers] which will be sent
      * @return a [ByteArray] containing the trailing headers in aws-chunked encoding, ready to send on the wire
      */
-    suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): ByteArray {
+    private suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): ByteArray {
         var trailerBody = trailingHeaders.entries().map {
                 entry ->
             buildString {
