@@ -91,27 +91,27 @@ class SdkByteChannelOpsTest {
     @Test
     fun testReadAvailableNoSuspend() = runTest {
         val chan = SdkByteReadChannel("world!".encodeToByteArray())
-        val buffer = SdkByteBuffer(16u)
-        buffer.write("hello, ")
+        val buffer = SdkBuffer()
+        buffer.writeUtf8("hello, ")
 
-        val rc = chan.readAvailable(buffer)
+        val rc = chan.readAvailable(buffer, Long.MAX_VALUE)
         assertEquals(6, rc)
 
-        assertEquals("hello, world!", buffer.decodeToString())
+        assertEquals("hello, world!", buffer.readUtf8())
     }
 
     @Test
     fun testReadAvailableSuspend() = runTest {
         val chan = SdkByteChannel()
         val job = launch {
-            val buffer = SdkByteBuffer(16u)
-            buffer.write("hello, ")
+            val buffer = SdkBuffer()
+            buffer.writeUtf8("hello, ")
 
             // should suspend
-            val rc = chan.readAvailable(buffer)
+            val rc = chan.readAvailable(buffer, Long.MAX_VALUE)
             assertEquals(6, rc)
 
-            assertEquals("hello, world!", buffer.decodeToString())
+            assertEquals("hello, world!", buffer.readUtf8())
         }
         yield()
 
@@ -169,37 +169,5 @@ class SdkByteChannelOpsTest {
             assertEquals(exp, code, "[i=$i] expected $exp, found $code ")
         }
         assertNull(chan.readUtf8CodePoint())
-    }
-
-    private class ProxyChan(
-        val ch: SdkByteReadChannel,
-    ) : SdkByteReadChannel by ch {
-        var proxyCalled = false
-        override suspend fun readRemaining(limit: Int): ByteArray {
-            proxyCalled = true
-            return ch.readRemaining(limit)
-        }
-        override suspend fun readFully(sink: ByteArray, offset: Int, length: Int) {
-            proxyCalled = true
-            return ch.readFully(sink, offset, length)
-        }
-        override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int {
-            proxyCalled = true
-            return ch.readAvailable(sink, offset, length)
-        }
-    }
-
-    @Test
-    fun testReadAvailableSdkByteBufferFallback() = runTest {
-        val content = "a".repeat(64).encodeToByteArray()
-        val inner = SdkByteReadChannel(content)
-        val chan = ProxyChan(inner)
-
-        val dest = SdkByteBuffer(32U)
-        val rc = chan.readAvailable(dest)
-        assertEquals(dest.readRemaining.toLong(), rc)
-        val expected = "a".repeat(32)
-        assertEquals(expected, dest.decodeToString())
-        assertTrue(chan.proxyCalled)
     }
 }
