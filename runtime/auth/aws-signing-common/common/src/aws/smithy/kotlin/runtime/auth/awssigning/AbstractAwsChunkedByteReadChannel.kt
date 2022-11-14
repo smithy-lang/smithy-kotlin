@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 
 internal const val CHUNK_SIZE_BYTES: Int = 65536
 
-internal abstract class AbstractAwsChunked(
+internal abstract class AbstractAwsChunkedByteReadChannel(
     private val chan: SdkByteReadChannel,
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,

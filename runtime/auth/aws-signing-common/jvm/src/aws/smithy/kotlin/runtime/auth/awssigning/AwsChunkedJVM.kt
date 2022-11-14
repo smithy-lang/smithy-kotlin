@@ -9,13 +9,13 @@ import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import java.nio.ByteBuffer
 
-internal actual class AwsChunked actual constructor(
+internal actual class AwsChunkedByteReadChannel actual constructor(
     chan: SdkByteReadChannel,
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
     trailingHeaders: Headers,
-) : AbstractAwsChunked(chan, signer, signingConfig, previousSignature, trailingHeaders) {
+) : AbstractAwsChunkedByteReadChannel(chan, signer, signingConfig, previousSignature, trailingHeaders) {
 
     /**
      * Read all the available bytes into [sink], up to the [sink]'s limit.

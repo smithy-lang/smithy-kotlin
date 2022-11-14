@@ -15,7 +15,7 @@ import kotlin.random.Random
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AwsChunkedTest {
+class AwsChunkedByteReadChannelTest {
 
     private val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
     private val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
@@ -79,7 +79,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read the exact chunk length
         val bytes = awsChunked.readRemaining(
@@ -111,7 +111,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = CHUNK_SIZE_BYTES / 2 // read ~half of the chunk data
         val bytes = awsChunked.readRemaining(numBytesToRead)
@@ -136,7 +136,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = 131072 // read double of the available chunk data
         val bytes = awsChunked.readRemaining(numBytesToRead)
@@ -163,7 +163,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         val chan = SdkByteReadChannel(data)
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + 1 + 1 + "chunk-signature=".length + 64 + 4
 
@@ -200,7 +200,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         val chan = SdkByteReadChannel(data)
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes +
             (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * (numChunks - 1) +
@@ -266,7 +266,7 @@ class AwsChunkedTest {
 
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
 
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
 
         val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
             ("chunk-signature=".length + 64 + 4) +
@@ -306,7 +306,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val sink = ByteArray(dataLengthBytes)
 
@@ -321,7 +321,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
         val sink = ByteArray(dataLengthBytes)
 
         assertFailsWith<IllegalArgumentException> {
@@ -335,7 +335,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
         val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + 1 + 1 + "chunk-signature=".length + 64 + 4
@@ -367,7 +367,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes / 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4
 
@@ -394,7 +394,7 @@ class AwsChunkedTest {
         val chan = SdkByteReadChannel(data)
 
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
         val numBytesToRead = dataLengthBytes * 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4
         val sink = ByteArray(numBytesToRead)
 
@@ -409,7 +409,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
         val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + 1 + 1 + "chunk-signature=".length + 64 + 4
@@ -444,7 +444,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         assertTrue(chan.isClosedForRead) // no chunk data available
 
@@ -472,7 +472,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
         val sink = ByteArray(0)
 
         assertTrue(chan.isClosedForRead)
@@ -486,7 +486,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         val chan = SdkByteReadChannel(data)
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + 1 + 1 + "chunk-signature=".length + 64 + 4
         val sink = ByteArray(numBytesToRead)
@@ -525,7 +525,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         val chan = SdkByteReadChannel(data)
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes +
             (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * (numChunks - 1) +
@@ -586,7 +586,7 @@ class AwsChunkedTest {
 
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
 
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
 
         val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
             ("chunk-signature=".length + 64 + 4) +
@@ -626,7 +626,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val sink = ByteArray(dataLengthBytes)
 
@@ -641,7 +641,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
         val sink = ByteArray(dataLengthBytes)
 
         assertFailsWith<IllegalArgumentException> {
@@ -655,7 +655,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
         val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 + (1 + 1 + "chunk-signature=".length + 64 + 4)
@@ -689,7 +689,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes * 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4
         val sink = ByteArray(numBytesToRead * 2)
@@ -720,7 +720,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val chan = SdkByteReadChannel(data)
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes / 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4
 
@@ -748,7 +748,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         val chan = SdkByteReadChannel(data)
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * numChunks + (1 + 1 + "chunk-signature=".length + 64 + 4)
         val sink = ByteArray(numBytesToRead)
@@ -796,7 +796,7 @@ class AwsChunkedTest {
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         val chan = SdkByteReadChannel(data)
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         val numBytesToRead = dataLengthBytes +
             (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4) * (numChunks - 1) +
@@ -868,7 +868,7 @@ class AwsChunkedTest {
 
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
 
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
 
         val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
             ("chunk-signature=".length + 64 + 4) +

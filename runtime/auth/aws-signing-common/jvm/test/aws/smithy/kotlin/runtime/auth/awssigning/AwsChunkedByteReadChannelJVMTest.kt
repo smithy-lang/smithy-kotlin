@@ -15,7 +15,7 @@ import java.nio.ByteBuffer
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class AwsChunkedJVMTest {
+class AwsChunkedByteReadChannelJVMTest {
 
     private val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
     private val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
@@ -80,7 +80,7 @@ class AwsChunkedJVMTest {
         val chan = SdkByteReadChannel(data)
 
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
         val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
@@ -128,7 +128,7 @@ class AwsChunkedJVMTest {
         val chan = SdkByteReadChannel(data)
 
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read excess of chunk data
         val numBytesToRead = dataLengthBytes * 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
@@ -170,7 +170,7 @@ class AwsChunkedJVMTest {
         val chan = SdkByteReadChannel(data)
 
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read excess of chunk data
         val numBytesToRead = dataLengthBytes / 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
@@ -218,7 +218,7 @@ class AwsChunkedJVMTest {
         }
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
 
-        val awsChunked = AwsChunked(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
+        val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
 
         // read all the chunk data plus all bytes from header
         val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
