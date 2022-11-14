@@ -22,7 +22,6 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation(project(":runtime:auth:aws-signing-tests"))
                 implementation(project(":runtime:auth:aws-signing-default"))
             }
         }

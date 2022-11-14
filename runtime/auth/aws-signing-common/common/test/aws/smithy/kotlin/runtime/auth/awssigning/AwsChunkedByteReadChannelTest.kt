@@ -5,7 +5,8 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.*
+import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
@@ -19,6 +20,12 @@ class AwsChunkedByteReadChannelTest {
 
     private val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
     private val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
+
+    private val testCredentialsProvider: CredentialsProvider = Credentials("AKID", "SECRET", "SESSION").asStaticProvider()
+
+    private fun Credentials.asStaticProvider(): CredentialsProvider = object : CredentialsProvider {
+        override suspend fun getCredentials(): Credentials = this@asStaticProvider
+    }
 
     private val testSigner = DefaultAwsSigner
     private val testSigningConfig = AwsSigningConfig {
