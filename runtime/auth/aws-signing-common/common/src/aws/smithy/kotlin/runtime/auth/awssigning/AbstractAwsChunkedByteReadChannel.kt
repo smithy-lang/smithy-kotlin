@@ -33,11 +33,11 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
         if (chunk == null || chunkOffset >= chunk!!.size) { chunk = getNextChunk() }
 
         var bytesWritten = 0
-        var bytes = byteArrayOf()
+        val bytes = ByteArray(limit)
         while (bytesWritten != limit) {
             val numBytesToWrite: Int = minOf(limit - bytesWritten, chunk!!.size - chunkOffset)
 
-            bytes += chunk!!.slice(chunkOffset until chunkOffset + numBytesToWrite)
+            chunk!!.copyInto(bytes, bytesWritten, chunkOffset, chunkOffset + numBytesToWrite)
 
             bytesWritten += numBytesToWrite
             chunkOffset += numBytesToWrite
@@ -49,7 +49,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
             }
         }
 
-        return bytes
+        return bytes.sliceArray(0 until bytesWritten)
     }
 
     /**
@@ -74,9 +74,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
 
             val numBytesToWrite: Int = minOf(length, chunk!!.size - chunkOffset)
 
-            val bytes = chunk!!.slice(chunkOffset until chunkOffset + numBytesToWrite).toByteArray()
-
-            bytes.copyInto(sink, offset + bytesWritten)
+            chunk!!.copyInto(sink, offset + bytesWritten, chunkOffset, chunkOffset + numBytesToWrite)
 
             bytesWritten += numBytesToWrite
             chunkOffset += numBytesToWrite
@@ -117,9 +115,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
         while (bytesWritten != length) {
             val numBytesToWrite = minOf(length, chunk!!.size - chunkOffset)
 
-            val bytes = chunk!!.slice(chunkOffset until chunkOffset + numBytesToWrite).toByteArray()
-
-            bytes.copyInto(sink, offset + bytesWritten)
+            chunk!!.copyInto(sink, offset + bytesWritten, chunkOffset, chunkOffset + numBytesToWrite)
 
             bytesWritten += numBytesToWrite
             chunkOffset += numBytesToWrite
