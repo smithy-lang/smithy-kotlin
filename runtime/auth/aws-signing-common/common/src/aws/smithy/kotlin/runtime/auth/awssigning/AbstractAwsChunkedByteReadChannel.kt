@@ -140,11 +140,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
             null
         } else if (chan.isClosedForRead && !hasLastChunkBeenSent) {
             hasLastChunkBeenSent = true
-
-            when (trailingHeaders) {
-                Headers.Empty -> getChunk(byteArrayOf())
-                else -> getChunk(byteArrayOf()) + getTrailingHeadersChunk(trailingHeaders)
-            }
+            getChunk(byteArrayOf()) + if (!trailingHeaders.isEmpty()) { getTrailingHeadersChunk(trailingHeaders) } else byteArrayOf()
         } else {
             getChunk()
         }
