@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.TimestampFormat
@@ -59,11 +60,20 @@ internal class DefaultAwsSignerImpl(
     }
 
     override suspend fun signChunkTrailer(
-        trailingHeaders: ByteArray,
+        trailingHeaders: Headers,
         finalChunkSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
-        val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeaders, finalChunkSignature, config)
+        // canonicalize the headers
+        val trailingHeadersBytes = trailingHeaders.entries().sortedBy { e -> e.key.lowercase() }
+            .map { e -> buildString {
+                append(e.key.lowercase())
+                append(":")
+                append(e.value.joinToString(",").lowercase())
+                append("\r\n")
+            }.encodeToByteArray() } .reduce { acc, bytes -> acc + bytes }
+
+        val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeadersBytes, finalChunkSignature, config)
         logger.trace { "Chunk trailer string to sign:\n$stringToSign" }
 
         val credentials = config.credentialsProvider.getCredentials()

@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning
 
+import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 
 /**
@@ -34,13 +35,13 @@ public interface AwsSigner {
 
     /**
      * Signs a chunked payload's trailer according to the supplied signing configuration
-     * @param trailingHeaders The canonicalized trailing headers
+     * @param trailingHeaders  the trailing [Headers] to send
      * @param finalChunkSignature The signature of the final payload chunk
      * @param config The signing configuration
      * @return The signing result, which should be appended as a trailing header itself, named `x-amz-trailer-signature`
      */
     public suspend fun signChunkTrailer(
-        trailingHeaders: ByteArray,
+        trailingHeaders: Headers,
         finalChunkSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit>

@@ -292,8 +292,7 @@ class AwsChunkedByteReadChannelTest {
         assertEquals(chunkSizes[0], CHUNK_SIZE_BYTES)
         assertEquals(chunkSizes[1], 0)
 
-        val trailingHeaderBytes = bytes.slice(bytes.size - trailingHeadersLength - 2 until bytes.size - "x-amz-trailer-signature:".length - 64 - 4).toByteArray()
-        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaderBytes, previousSignature, testSigningConfig).signature
+        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaders, previousSignature, testSigningConfig).signature
         val trailerSignature = getChunkTrailerSignature(bytesAsString)
         assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
 
@@ -612,8 +611,7 @@ class AwsChunkedByteReadChannelTest {
         assertEquals(chunkSizes[0], CHUNK_SIZE_BYTES)
         assertEquals(chunkSizes[1], 0)
 
-        val trailingHeaderBytes = sink.slice(sink.size - trailingHeadersLength - 2 until sink.size - "x-amz-trailer-signature:".length - 64 - 4).toByteArray()
-        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaderBytes, previousSignature, testSigningConfig).signature
+        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaders, previousSignature, testSigningConfig).signature
         val trailerSignature = getChunkTrailerSignature(bytesAsString)
         assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
 
@@ -899,8 +897,7 @@ class AwsChunkedByteReadChannelTest {
         assertEquals(chunkSizes[0], CHUNK_SIZE_BYTES)
         assertEquals(chunkSizes[1], 0)
 
-        val trailingHeaderBytes = sink.slice(sink.size - trailingHeadersLength - 2 until sink.size - "x-amz-trailer-signature:".length - 64 - 4).toByteArray()
-        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaderBytes, previousSignature, testSigningConfig).signature
+        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaders, previousSignature, testSigningConfig).signature
         val trailerSignature = getChunkTrailerSignature(bytesAsString)
         assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
 

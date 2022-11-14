@@ -195,7 +195,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
             }.encodeToByteArray()
         }.reduce { acc, bytes -> acc + bytes }
 
-        val trailerSignature = signer.signChunkTrailer(trailerBody, previousSignature, signingConfig).signature
+        val trailerSignature = signer.signChunkTrailer(trailingHeaders, previousSignature, signingConfig).signature
         previousSignature = trailerSignature
 
         trailerBody += "x-amz-trailer-signature:${trailerSignature.decodeToString()}\r\n".encodeToByteArray()

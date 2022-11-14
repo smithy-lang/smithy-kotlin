@@ -257,8 +257,7 @@ class AwsChunkedByteReadChannelJVMTest {
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[1])
         assertEquals(0, chunkSizes[1])
 
-        val trailingHeaderBytes = sink.slice(sink.size - trailingHeadersLength - 2 until sink.size - "x-amz-trailer-signature:".length - 64 - 4).toByteArray()
-        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaderBytes, expectedChunkSignature, testSigningConfig).signature
+        val expectedTrailerSignature = testSigner.signChunkTrailer(trailingHeaders, expectedChunkSignature, testSigningConfig).signature
         val trailerSignature = getChunkTrailerSignature(sinkAsString)
         assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
 
