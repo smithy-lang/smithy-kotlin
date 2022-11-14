@@ -11,12 +11,17 @@ extra["moduleName"] = "aws.smithy.kotlin.runtime.io"
 
 val ktorVersion: String by project
 val coroutinesVersion: String by project
+val okioVersion: String by project
 
 kotlin {
     sourceSets {
         commonMain {
             dependencies {
                 implementation(project(":runtime:utils"))
+
+                implementation("com.squareup.okio:okio:$okioVersion")
+
+                // FIXME - drop when done with refactor
                 implementation("io.ktor:ktor-io:$ktorVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
             }
@@ -25,6 +30,7 @@ kotlin {
         commonTest {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(project(":runtime:testing"))
             }
         }
 

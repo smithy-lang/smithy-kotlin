@@ -24,7 +24,7 @@ public interface HashFunction {
     /**
      * Update the running hash with [input] bytes. This can be called multiple times.
      */
-    public fun update(input: ByteArray, offset: Int = 0, length: Int = input.size)
+    public fun update(input: ByteArray, offset: Int = 0, length: Int = input.size - offset)
 
     /**
      * Finalize the hash computation and return the digest bytes. The hash function will be [reset] after the call is

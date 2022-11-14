@@ -5,9 +5,7 @@
 
 package aws.smithy.kotlin.runtime.serde.formurl
 
-import aws.smithy.kotlin.runtime.io.SdkByteBuffer
-import aws.smithy.kotlin.runtime.io.bytes
-import aws.smithy.kotlin.runtime.io.write
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.serde.*
 import aws.smithy.kotlin.runtime.smithy.Document
 import aws.smithy.kotlin.runtime.time.Instant
@@ -16,10 +14,10 @@ import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkByteBuffer(256u))
+public fun FormUrlSerializer(): Serializer = FormUrlSerializer(SdkBuffer())
 
 private class FormUrlSerializer(
-    val buffer: SdkByteBuffer,
+    val buffer: SdkBuffer,
     val prefix: String = "",
 ) : Serializer {
 
@@ -32,13 +30,13 @@ private class FormUrlSerializer(
     override fun beginMap(descriptor: SdkFieldDescriptor): MapSerializer =
         FormUrlMapSerializer(this, descriptor)
 
-    override fun toByteArray(): ByteArray = buffer.bytes()
+    override fun toByteArray(): ByteArray = buffer.readByteArray()
 
-    private fun write(block: SdkByteBuffer.() -> Unit) {
+    private fun write(block: SdkBuffer.() -> Unit) {
         buffer.apply(block)
     }
 
-    private fun write(value: String) = write { write(value.urlEncodeComponent()) }
+    private fun write(value: String) = write { writeUtf8(value.urlEncodeComponent()) }
 
     override fun serializeBoolean(value: Boolean) = write("$value")
     override fun serializeByte(value: Byte) = write { commonWriteNumber(value) }
@@ -86,12 +84,12 @@ private class FormUrlStructSerializer(
     }
 
     private fun writeField(descriptor: SdkFieldDescriptor, block: () -> Unit) {
-        if (buffer.writePosition > 0u) {
-            buffer.write("&")
+        if (buffer.size > 0L) {
+            buffer.writeUtf8("&")
         }
-        if (prefix.isNotBlank()) buffer.write(prefix)
-        buffer.write(descriptor.serialName)
-        buffer.write("=")
+        if (prefix.isNotBlank()) buffer.writeUtf8(prefix)
+        buffer.writeUtf8(descriptor.serialName)
+        buffer.writeUtf8("=")
         block()
     }
 
@@ -182,7 +180,7 @@ private class FormUrlListSerializer(
     private val descriptor: SdkFieldDescriptor,
 ) : ListSerializer {
     private val buffer = parent.buffer
-    private val initialBufferPos = buffer.writePosition
+    private val initialBufferPos = buffer.size
     private var idx = 0
 
     private fun prefix(): String = when {
@@ -193,33 +191,33 @@ private class FormUrlListSerializer(
         }
     }
 
-    private fun writePrefixed(block: SdkByteBuffer.() -> Unit) {
+    private fun writePrefixed(block: SdkBuffer.() -> Unit) {
         idx++
-        if (buffer.writePosition > 0u) buffer.write("&")
-        buffer.write(prefix())
-        buffer.write("=")
+        if (buffer.size > 0L) buffer.writeUtf8("&")
+        buffer.writeUtf8(prefix())
+        buffer.writeUtf8("=")
         buffer.apply(block)
     }
 
     override fun endList() {
-        if (buffer.writePosition == initialBufferPos) {
+        if (buffer.size == initialBufferPos) {
             // explicit serialization of an empty list
-            if (buffer.writePosition > 0u) buffer.write("&")
-            buffer.write(descriptor.serialName)
-            buffer.write("=")
+            if (buffer.size > 0L) buffer.writeUtf8("&")
+            buffer.writeUtf8(descriptor.serialName)
+            buffer.writeUtf8("=")
         }
     }
 
-    override fun serializeBoolean(value: Boolean) = writePrefixed { write("$value") }
-    override fun serializeChar(value: Char) = writePrefixed { write(value.toString()) }
+    override fun serializeBoolean(value: Boolean) = writePrefixed { writeUtf8("$value") }
+    override fun serializeChar(value: Char) = writePrefixed { writeUtf8(value.toString()) }
     override fun serializeByte(value: Byte) = writePrefixed { commonWriteNumber(value) }
     override fun serializeShort(value: Short) = writePrefixed { commonWriteNumber(value) }
     override fun serializeInt(value: Int) = writePrefixed { commonWriteNumber(value) }
     override fun serializeLong(value: Long) = writePrefixed { commonWriteNumber(value) }
     override fun serializeFloat(value: Float) = writePrefixed { commonWriteNumber(value) }
     override fun serializeDouble(value: Double) = writePrefixed { commonWriteNumber(value) }
-    override fun serializeString(value: String) = writePrefixed { write(value.urlEncodeComponent()) }
-    override fun serializeInstant(value: Instant, format: TimestampFormat) = writePrefixed { write(value.format(format)) }
+    override fun serializeString(value: String) = writePrefixed { writeUtf8(value.urlEncodeComponent()) }
+    override fun serializeInstant(value: Instant, format: TimestampFormat) = writePrefixed { writeUtf8(value.format(format)) }
 
     override fun serializeSdkSerializable(value: SdkSerializable) {
         idx++
@@ -249,16 +247,16 @@ private class FormUrlMapSerializer(
 
     private fun writeKey(key: String) {
         idx++
-        if (buffer.writePosition > 0u) buffer.write("&")
+        if (buffer.size > 0L) buffer.writeUtf8("&")
 
         val encodedKey = key.urlEncodeComponent()
-        buffer.write("$commonPrefix.${mapName.key}=$encodedKey")
+        buffer.writeUtf8("$commonPrefix.${mapName.key}=$encodedKey")
     }
 
     private fun writeEntry(key: String, block: () -> Unit) {
         writeKey(key)
-        buffer.write("&")
-        buffer.write("$commonPrefix.${mapName.value}=")
+        buffer.writeUtf8("&")
+        buffer.writeUtf8("$commonPrefix.${mapName.value}=")
         block()
     }
 
@@ -340,7 +338,7 @@ private class FormUrlMapSerializer(
     override fun endMap() {}
 }
 
-private fun SdkByteBuffer.commonWriteNumber(value: Number): Unit = write(value.toString())
+private fun SdkBuffer.commonWriteNumber(value: Number): Unit = writeUtf8(value.toString())
 
 // like checkNotNull() but throws the correct serialization exception
 @OptIn(ExperimentalContracts::class)

@@ -5,8 +5,7 @@
 
 package aws.smithy.kotlin.runtime.http.engine.crt
 
-import aws.smithy.kotlin.runtime.io.SdkByteBuffer
-import aws.smithy.kotlin.runtime.io.decodeToString
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -23,11 +22,10 @@ class SegmentTest {
     @Test
     fun testCopyToSdkBuffer() {
         val segment = newReadableSegment("1234".encodeToByteArray())
-        val dest = SdkByteBuffer(16u)
+        val dest = SdkBuffer()
         val rc = segment.copyTo(dest)
         assertEquals(4, rc)
-        assertEquals(4u, dest.writePosition)
-        assertEquals(4u, dest.readRemaining)
-        assertEquals("1234", dest.decodeToString())
+        assertEquals(4L, dest.size)
+        assertEquals("1234", dest.readUtf8())
     }
 }
