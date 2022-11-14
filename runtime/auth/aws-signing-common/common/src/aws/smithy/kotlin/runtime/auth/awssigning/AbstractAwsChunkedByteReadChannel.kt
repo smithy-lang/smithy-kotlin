@@ -101,8 +101,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
     override suspend fun readAvailable(sink: ByteArray, offset: Int, length: Int): Int {
         require(offset >= 0) { "Invalid read: offset must be positive:  $offset" }
         require(offset + length <= sink.size) { "Invalid read: offset + length should be less than the destination size: $offset + $length < ${sink.size}" }
-
-        if (!ensureValidChunk()) {
+        if (length == 0 || !ensureValidChunk()) {
             return 0
         }
 
