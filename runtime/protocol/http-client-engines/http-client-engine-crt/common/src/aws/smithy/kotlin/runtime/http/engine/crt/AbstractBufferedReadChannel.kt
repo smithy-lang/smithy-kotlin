@@ -6,8 +6,7 @@
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.io.Buffer
-import aws.smithy.kotlin.runtime.io.SdkByteBuffer
-import aws.smithy.kotlin.runtime.io.bytes
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import kotlinx.atomicfu.AtomicRef
 import kotlinx.atomicfu.atomic
 import kotlinx.atomicfu.update
@@ -95,18 +94,18 @@ internal abstract class AbstractBufferedReadChannel(
     }
 
     override suspend fun readRemaining(limit: Int): ByteArray {
-        val buffer = SdkByteBuffer(minOf(availableForRead, limit).toULong())
+        val buffer = SdkBuffer()
 
         val consumed = readAsMuchAsPossible(buffer, limit)
 
         return if (consumed >= limit) {
-            buffer.bytes()
+            buffer.readByteArray()
         } else {
             readRemainingSuspend(buffer, limit - consumed)
         }
     }
 
-    protected fun readAsMuchAsPossible(dest: SdkByteBuffer, limit: Int): Int {
+    protected fun readAsMuchAsPossible(dest: SdkBuffer, limit: Int): Int {
         var consumed = 0
         var remaining = limit
 
@@ -119,7 +118,7 @@ internal abstract class AbstractBufferedReadChannel(
 
             markBytesConsumed(rc)
 
-            if (segment.readRemaining > 0u) {
+            if (segment.size > 0L) {
                 currSegment.update { segment }
             }
         }
@@ -127,7 +126,7 @@ internal abstract class AbstractBufferedReadChannel(
         return consumed
     }
 
-    private suspend fun readRemainingSuspend(buffer: SdkByteBuffer, limit: Int): ByteArray {
+    private suspend fun readRemainingSuspend(buffer: SdkBuffer, limit: Int): ByteArray {
         check(currSegment.value == null) { "current segment should be drained already" }
 
         var consumed = 0
@@ -140,14 +139,14 @@ internal abstract class AbstractBufferedReadChannel(
             markBytesConsumed(rc)
 
             if (remaining <= 0) {
-                if (segment.readRemaining > 0u) {
+                if (segment.size > 0L) {
                     currSegment.update { segment }
                 }
                 break
             }
         }
 
-        return buffer.bytes()
+        return buffer.readByteArray()
     }
 
     private fun readAsMuchAsPossible(dest: ByteArray, offset: Int, length: Int): Int {
@@ -165,7 +164,7 @@ internal abstract class AbstractBufferedReadChannel(
 
             markBytesConsumed(rc)
 
-            if (segment.readRemaining > 0u) {
+            if (segment.size > 0L) {
                 currSegment.update { segment }
             }
         }
