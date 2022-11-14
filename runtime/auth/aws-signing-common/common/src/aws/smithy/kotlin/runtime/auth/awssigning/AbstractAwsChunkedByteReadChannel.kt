@@ -15,7 +15,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
     private var previousSignature: ByteArray,
-    private var trailingHeaders: Headers = Headers.Empty,
+    private val trailingHeaders: Headers = Headers.Empty,
 ) : SdkByteReadChannel by chan {
     override val isClosedForRead: Boolean
         get() = chan.isClosedForRead && (chunk == null || chunkOffset >= chunk!!.size)
@@ -123,7 +123,9 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
     }
 
     /**
-     * Ensures that the internal [chunk] is valid for reading. If it's not valid, try to load the next chunk.
+     * Ensures that the internal [chunk] is valid for reading. If it's not valid, try to load the next chunk. Note that
+     * this function will suspend until the whole chunk has been loaded.
+     *
      * @return true if the [chunk] is valid for reading, false if it's invalid (chunk data is exhausted)
      */
     suspend fun ensureValidChunk(): Boolean {
@@ -148,6 +150,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
     /**
      * Get an aws-chunked encoding of [data].
      * If [data] is not set, read the next chunk from [chan] and add hex-formatted chunk size and chunk signature to the front.
+     * Note that this function will suspend until the whole chunk has been read.
      * The chunk structure is: `string(IntHexBase(chunk-size)) + ";chunk-signature=" + signature + \r\n + chunk-data + \r\n`
      *
      * @param data the ByteArray of data which will be encoded to aws-chunked. if not provided, will default to
