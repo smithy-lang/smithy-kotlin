@@ -58,11 +58,11 @@ internal interface SignatureCalculator {
     /**
      * Constructs a string to sign for a chunk trailer
      * @param trailingHeaders The canonicalized trailing headers
-     * @param finalChunkSignature The signature of the final payload chunk
+     * @param prevSignature The signature of the previous chunk. In most cases, this is the signature of the final data chunk.
      * @param config The signing configuration to use
      * @return A multiline string to sign
      */
-    fun chunkTrailerStringToSign(trailingHeaders: ByteArray, finalChunkSignature: ByteArray, config: AwsSigningConfig): String
+    fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String
 }
 
 internal class DefaultSignatureCalculator(private val sha256Provider: HashSupplier = ::Sha256) : SignatureCalculator {
@@ -85,12 +85,12 @@ internal class DefaultSignatureCalculator(private val sha256Provider: HashSuppli
             append(chunkBody.hash(sha256Provider).encodeToHex())
         }
 
-    override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, finalChunkSignature: ByteArray, config: AwsSigningConfig): String =
+    override fun chunkTrailerStringToSign(trailingHeaders: ByteArray, prevSignature: ByteArray, config: AwsSigningConfig): String =
         buildString {
             appendLine("AWS4-HMAC-SHA256-TRAILER")
             appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
             appendLine(config.credentialScope)
-            appendLine(finalChunkSignature.decodeToString())
+            appendLine(prevSignature.decodeToString())
             append(trailingHeaders.hash(sha256Provider).encodeToHex())
         }
 

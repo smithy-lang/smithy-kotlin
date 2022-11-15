@@ -36,13 +36,13 @@ public interface AwsSigner {
     /**
      * Signs a chunked payload's trailer according to the supplied signing configuration
      * @param trailingHeaders  the trailing [Headers] to send
-     * @param finalChunkSignature The signature of the final payload chunk
+     * @param prevSignature The signature of the previous componenet of the request (in most cases, this is the signature of the final chunk)
      * @param config The signing configuration
      * @return The signing result, which should be appended as a trailing header itself, named `x-amz-trailer-signature`
      */
     public suspend fun signChunkTrailer(
         trailingHeaders: Headers,
-        finalChunkSignature: ByteArray,
+        prevSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit>
 }

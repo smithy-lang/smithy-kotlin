@@ -61,7 +61,7 @@ internal class DefaultAwsSignerImpl(
 
     override suspend fun signChunkTrailer(
         trailingHeaders: Headers,
-        finalChunkSignature: ByteArray,
+        prevSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
         // canonicalize the headers
@@ -75,7 +75,7 @@ internal class DefaultAwsSignerImpl(
                 }.encodeToByteArray()
             }.reduce { acc, bytes -> acc + bytes }
 
-        val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeadersBytes, finalChunkSignature, config)
+        val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeadersBytes, prevSignature, config)
         logger.trace { "Chunk trailer string to sign:\n$stringToSign" }
 
         val credentials = config.credentialsProvider.getCredentials()
