@@ -23,6 +23,12 @@ public interface SdkByteWriteChannel : Closeable {
     public val isClosedForWrite: Boolean
 
     /**
+     * Returns the underlying cause the channel was closed with or `null` if closed successfully or not yet closed.
+     * A failed channel will have a closed cause.
+     */
+    public val closedCause: Throwable?
+
+    /**
      * Total number of bytes written to the channel.
      *
      * NOTE: not guaranteed to be atomic and may be updated in middle of a write operation
@@ -61,7 +67,6 @@ public interface SdkByteWriteChannel : Closeable {
  */
 public suspend fun SdkByteWriteChannel.writeAvailable(source: SdkBuffer): Long {
     val wc = minOf(availableForWrite.toLong(), source.size)
-    // FIXME - this is wrong
     write(source, wc)
     return wc
 }

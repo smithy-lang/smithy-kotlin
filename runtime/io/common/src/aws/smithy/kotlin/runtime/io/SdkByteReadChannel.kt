@@ -4,8 +4,6 @@
  */
 package aws.smithy.kotlin.runtime.io
 
-// FIXME - document read() and readFully() w.r.t a failed channel (does it throw, return -1, etc)
-
 /**
  * Supplies an asynchronous stream of bytes. This is a **single-reader channel**.
  */
@@ -28,6 +26,12 @@ public interface SdkByteReadChannel {
     public val isClosedForWrite: Boolean
 
     /**
+     * Returns the underlying cause the channel was closed with or `null` if closed successfully or not yet closed.
+     * A failed channel will have a closed cause.
+     */
+    public val closedCause: Throwable?
+
+    /**
      * Remove at least 1 byte, and up-to [limit] bytes from this and appends them to [sink].
      * Suspends if no bytes are available. Returns the number of bytes read, or -1 if this
      * channel is exhausted. **It is not safe to modify [sink] until this function returns**
@@ -46,6 +50,8 @@ public interface SdkByteReadChannel {
 /**
  * Read exactly [byteCount] bytes from this into [sink] or throws [EOFException] if the channel is exhausted before
  * all bytes could be read.
+ *
+ * A failed channel will throw whatever exception the channel was closed with.
  */
 public suspend fun SdkByteReadChannel.readFully(sink: SdkBuffer, byteCount: Long) {
     var remaining = byteCount

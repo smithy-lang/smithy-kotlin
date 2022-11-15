@@ -40,7 +40,7 @@ internal class RealSdkByteChannel(
 
     private val _closed: AtomicRef<ClosedSentinel?> = atomic(null)
 
-    private val closedCause: Throwable?
+    override val closedCause: Throwable?
         get() = _closed.value?.cause
 
     override val availableForWrite: Int
@@ -64,16 +64,13 @@ internal class RealSdkByteChannel(
 
     private suspend fun awaitBytesToRead(requested: Int) {
         while (availableForRead < requested && !isClosedForRead) {
-            // println("reader attempting to sleep: avr: $availableForRead; avw:$availableForWrite")
             slot.sleep { availableForRead < requested && !isClosedForRead }
         }
     }
 
     private suspend fun awaitBytesToWrite(requested: Int) {
         while (availableForWrite < requested && !isClosedForWrite) {
-            // println("writer attempting flush before sleep: avr: $availableForRead; avw: $availableForWrite")
             if (!tryFlush()) {
-                // println("writer attempting to sleep: avr: $availableForRead; avw: $availableForWrite")
                 slot.sleep { availableForWrite < requested && !isClosedForWrite }
             }
         }
