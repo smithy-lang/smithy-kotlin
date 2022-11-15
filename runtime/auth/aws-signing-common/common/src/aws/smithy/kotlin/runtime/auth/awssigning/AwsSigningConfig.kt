@@ -46,6 +46,11 @@ public enum class AwsSignatureType {
     HTTP_REQUEST_CHUNK,
 
     /**
+     * Compute a signature for trailing headers
+     */
+    HTTP_REQUEST_TRAILING_HEADERS,
+
+    /**
      * Compute a signature for an event stream
      */
     HTTP_REQUEST_EVENT,
