@@ -54,7 +54,9 @@ public object CrtAwsSigner : AwsSigner {
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
         val crtConfig = config.toCrtSigningConfig()
-        val crtResult = CrtSigner.signChunkTrailer(trailingHeaders, prevSignature, crtConfig)
+        val crtTrailingHeaders = trailingHeaders.toCrtHeaders()
+
+        val crtResult = CrtSigner.signChunkTrailer(crtTrailingHeaders, prevSignature, crtConfig)
         return AwsSigningResult(Unit, crtResult.signature)
     }
 }
