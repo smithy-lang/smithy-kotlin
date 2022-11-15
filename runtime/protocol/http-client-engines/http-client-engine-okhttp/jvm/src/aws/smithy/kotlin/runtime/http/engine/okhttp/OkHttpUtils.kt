@@ -80,17 +80,18 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
         val ch = SdkByteChannel(true)
         val writerContext = callContext + Dispatchers.IO + callContext.derivedName("response-body-writer")
         val job = GlobalScope.launch(writerContext) {
-            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-            val source = body.source()
-
-            while (!source.exhausted()) {
-                val rc = source.read(buffer)
-                if (rc == -1) break
-                ch.writeFully(buffer, 0, rc)
+            val result = runCatching {
+                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                val source = body.source()
+                while (!source.exhausted()) {
+                    val rc = source.read(buffer)
+                    if (rc == -1) break
+                    ch.writeFully(buffer, 0, rc)
+                }
             }
 
             // immediately close when done to signal end of body stream
-            ch.close()
+            ch.close(result.exceptionOrNull())
         }
 
         job.invokeOnCompletion { cause ->

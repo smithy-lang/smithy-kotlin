@@ -1,0 +1,8 @@
+{
+    "id": "156447f6-0f80-4fde-a38d-6b92260432b8",
+    "type": "bugfix",
+    "description": "Fix Android crash when OkHttp response body coroutine throws an exception",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#753"
+    ]
+}
