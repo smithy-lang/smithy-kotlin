@@ -91,7 +91,7 @@ internal class DefaultSignatureCalculator(private val sha256Provider: HashSuppli
             appendLine(config.signingDate.format(TimestampFormat.ISO_8601_CONDENSED))
             appendLine(config.credentialScope)
             appendLine(finalChunkSignature.decodeToString())
-            appendLine(trailingHeaders.hash(sha256Provider).encodeToHex())
+            append(trailingHeaders.hash(sha256Provider).encodeToHex())
         }
 
     override fun signingKey(config: AwsSigningConfig, credentials: Credentials): ByteArray {
