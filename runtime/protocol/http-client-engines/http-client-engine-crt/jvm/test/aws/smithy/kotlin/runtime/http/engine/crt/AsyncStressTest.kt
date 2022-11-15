@@ -14,8 +14,6 @@ import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.httptest.TestWithLocalServer
 import aws.smithy.kotlin.runtime.testing.IgnoreWindows
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
@@ -59,21 +57,19 @@ class AsyncStressTest : TestWithLocalServer() {
             }
         }
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            withTimeout(10.seconds) {
-                repeat(1_000) {
-                    async {
-                        try {
-                            val call = client.call(SdkHttpRequest(request))
-                            yield()
-                            call.complete()
-                        } catch (ex: Exception) {
-                            println("exception on $it: $ex")
-                            throw ex
-                        }
+        withTimeout(10.seconds) {
+            repeat(1_000) {
+                async {
+                    try {
+                        val call = client.call(SdkHttpRequest(request))
+                        yield()
+                        call.complete()
+                    } catch (ex: Exception) {
+                        println("exception on $it: $ex")
+                        throw ex
                     }
-                    yield()
                 }
+                yield()
             }
         }
     }

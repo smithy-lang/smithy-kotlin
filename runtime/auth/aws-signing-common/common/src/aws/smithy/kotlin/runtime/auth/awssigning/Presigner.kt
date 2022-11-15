@@ -8,11 +8,7 @@ import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
-import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
-import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 
 // Note: the following types are essentially smithy-kotlin local versions of the following AWS types:
@@ -115,7 +111,7 @@ public data class PresignedRequestConfig(
 public suspend fun createPresignedRequest(
     serviceConfig: ServicePresignConfig,
     requestConfig: PresignedRequestConfig,
-): HttpRequest = ensureTraceSpan {
+): HttpRequest {
     val givenSigningContext = SigningContext(serviceConfig.serviceId, serviceConfig.region)
     val endpoint = serviceConfig.endpointProvider(givenSigningContext)
     val signatureType = when (requestConfig.presigningLocation) {
@@ -157,7 +153,7 @@ public suspend fun createPresignedRequest(
     val result = serviceConfig.signer.sign(request, signingConfig)
     val signedRequest = result.output
 
-    HttpRequest(
+    return HttpRequest(
         method = signedRequest.method,
         url = Url(
             scheme = Protocol.HTTPS,
@@ -170,16 +166,4 @@ public suspend fun createPresignedRequest(
         headers = signedRequest.headers,
         body = HttpBody.Empty,
     )
-}
-
-// FIXME Is this right or do we want to *require* an existing trace span?
-private suspend inline fun <T> ensureTraceSpan(crossinline block: suspend () -> T): T {
-    val existingSpan = coroutineContext[TraceSpanContextElement]?.traceSpan
-    return if (existingSpan == null) {
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            block()
-        }
-    } else {
-        block()
-    }
 }

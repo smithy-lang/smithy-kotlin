@@ -14,8 +14,6 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -69,9 +67,7 @@ public abstract class BasicSigningTestBase : HasSigner {
             credentialsProvider = testCredentialsProvider
         }
 
-        val result = coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            signer.sign(request, config)
-        }
+        val result = signer.sign(request, config)
 
         val expectedDate = "20201016T195600Z"
         val expectedSig = "e60a4adad4ae15e05c96a0d8ac2482fbcbd66c88647c4457db74e4dad1648608"
@@ -107,9 +103,7 @@ public abstract class BasicSigningTestBase : HasSigner {
             credentialsProvider = testCredentialsProvider
         }
 
-        val result = coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            signer.sign(request, config)
-        }
+        val result = signer.sign(request, config)
 
         val expectedPrefix = "AWS4-ECDSA-P256-SHA256 Credential=AKID/20150830/service/aws4_request, SignedHeaders=content-length;host;x-amz-archive-description;x-amz-date;x-amz-region-set;x-amz-security-token, Signature="
         val authHeader = result.output.headers["Authorization"]!!
@@ -174,25 +168,23 @@ public abstract class BasicSigningTestBase : HasSigner {
         val request = createChunkedTestRequest()
         val chunkedRequestConfig = createChunkedRequestSigningConfig()
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            val requestResult = signer.sign(request, chunkedRequestConfig)
-            assertEquals(EXPECTED_CHUNK_REQUEST_AUTHORIZATION_HEADER, requestResult.output.headers["Authorization"])
-            assertEquals(EXPECTED_REQUEST_SIGNATURE, requestResult.signature.decodeToString())
+        val requestResult = signer.sign(request, chunkedRequestConfig)
+        assertEquals(EXPECTED_CHUNK_REQUEST_AUTHORIZATION_HEADER, requestResult.output.headers["Authorization"])
+        assertEquals(EXPECTED_REQUEST_SIGNATURE, requestResult.signature.decodeToString())
 
-            var prevSignature = requestResult.signature
+        var prevSignature = requestResult.signature
 
-            val chunkedSigningConfig = createChunkedSigningConfig()
-            val chunk1Result = signer.signChunk(chunk1(), prevSignature, chunkedSigningConfig)
-            assertEquals(EXPECTED_FIRST_CHUNK_SIGNATURE, chunk1Result.signature.decodeToString())
-            prevSignature = chunk1Result.signature
+        val chunkedSigningConfig = createChunkedSigningConfig()
+        val chunk1Result = signer.signChunk(chunk1(), prevSignature, chunkedSigningConfig)
+        assertEquals(EXPECTED_FIRST_CHUNK_SIGNATURE, chunk1Result.signature.decodeToString())
+        prevSignature = chunk1Result.signature
 
-            val chunk2Result = signer.signChunk(chunk2(), prevSignature, chunkedSigningConfig)
-            assertEquals(EXPECTED_SECOND_CHUNK_SIGNATURE, chunk2Result.signature.decodeToString())
-            prevSignature = chunk2Result.signature
+        val chunk2Result = signer.signChunk(chunk2(), prevSignature, chunkedSigningConfig)
+        assertEquals(EXPECTED_SECOND_CHUNK_SIGNATURE, chunk2Result.signature.decodeToString())
+        prevSignature = chunk2Result.signature
 
-            // TODO - do we want 0 byte data like this or just allow null?
-            val finalChunkResult = signer.signChunk(ByteArray(0), prevSignature, chunkedSigningConfig)
-            assertEquals(EXPECTED_FINAL_CHUNK_SIGNATURE, finalChunkResult.signature.decodeToString())
-        }
+        // TODO - do we want 0 byte data like this or just allow null?
+        val finalChunkResult = signer.signChunk(ByteArray(0), prevSignature, chunkedSigningConfig)
+        assertEquals(EXPECTED_FINAL_CHUNK_SIGNATURE, finalChunkResult.signature.decodeToString())
     }
 }

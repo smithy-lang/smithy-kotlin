@@ -23,8 +23,6 @@ import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.withRootTraceSpan
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -47,10 +45,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -64,10 +60,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -81,10 +75,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080/foo/bar"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -100,10 +92,8 @@ class ResolveEndpointTest {
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
         op.context[HttpOperationContext.HostPrefix] = "prefix."
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("prefix.api.test.com", actual.url.host)
@@ -118,10 +108,8 @@ class ResolveEndpointTest {
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
         op.context[HttpOperationContext.HostPrefix] = "prefix."
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -135,10 +123,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix/"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -152,10 +138,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -169,10 +153,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com?foo=bar&baz=qux"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
+        op.roundTrip(client, Unit)
 
-        coroutineContext.withRootTraceSpan(NoOpTraceSpan) {
-            op.roundTrip(client, Unit)
-        }
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)

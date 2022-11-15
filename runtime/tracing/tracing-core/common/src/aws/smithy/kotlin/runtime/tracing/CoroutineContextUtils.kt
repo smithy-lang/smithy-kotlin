@@ -24,7 +24,7 @@ public class TraceSpanContextElement(public val traceSpan: TraceSpan) : Coroutin
  * Gets the active [TraceSpan] from this [CoroutineContext].
  */
 public val CoroutineContext.traceSpan: TraceSpan
-    get() = get(TraceSpanContextElement)!!.traceSpan
+    get() = get(TraceSpanContextElement)?.traceSpan ?: NoOpTraceSpan
 
 /**
  * Runs a block of code within the context of a child [TraceSpan]. This call pushes the new child trace span onto the
@@ -35,8 +35,7 @@ public suspend inline fun <R> CoroutineContext.withChildTraceSpan(
     id: String,
     crossinline block: suspend CoroutineScope.() -> R,
 ): R {
-    val existingSpan = checkNotNull(get(TraceSpanContextElement)?.traceSpan) { "Missing an active trace span" }
-    val childSpan = existingSpan.child(id)
+    val childSpan = traceSpan.child(id)
     return try {
         withContext(TraceSpanContextElement(childSpan)) {
             block()
