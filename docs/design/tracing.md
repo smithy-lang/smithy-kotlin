@@ -137,14 +137,12 @@ be posted for the given span.
 
 The following additional parameters will be added to client config:
 
-* `clientName`: An optional client name may be used by `Tracer` implementations to name the root trace span. If not
-  provided explicitly, it defaults to the service name (e.g., "S3", "DynamoDB", etc.—the name of the client interface
-  without the suffix "Client"). Callers that instantiate multiple clients for a single service (e.g., using different
-  configuration or for different application purposes) may choose to provide differing client names which would yield
-  trace events with different spans.
-* `traceProbe`: An optional probe to receive trace events. If not provided explicitly, a no-op probe is used which
-  discards all events.
+* `tracer`: An optional `Tracer` implementation to use. If not provided explicitly, this will default to a tracer which
+  sends logging events to **kotlin-logging** and ignores metric events. The `DefaultTracer` class is available to
+  provide a simple `Tracer` implementation with a configurable probe and root prefix. Using a root prefix can help
+  differentiate events from multiple clients of a single service used for different use cases.
 
 # Revision history
 
 * 8/19/2022 - Initial draft
+* 11/15/2022 - Revised draft with latest proposed interfaces
