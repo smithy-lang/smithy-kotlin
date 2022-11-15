@@ -46,10 +46,10 @@ class Md5ChecksumTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.install(Md5Checksum())
-        op.roundTrip(client, Unit)
 
-        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         val expected = "RG22oBSZFmabBbkzVGRi4w=="
+        op.roundTrip(client, Unit)
+        val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertEquals(expected, call.request.headers["Content-MD5"])
     }
 
@@ -63,8 +63,8 @@ class Md5ChecksumTest {
         val op = newTestOperation<Unit, Unit>(req, Unit)
 
         op.install(Md5Checksum())
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpOperationContext.HttpCallList].first()
         assertNull(call.request.headers["Content-MD5"])
     }

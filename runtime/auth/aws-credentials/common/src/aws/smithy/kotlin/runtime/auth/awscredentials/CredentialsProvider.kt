@@ -10,7 +10,6 @@ package aws.smithy.kotlin.runtime.auth.awscredentials
 public interface CredentialsProvider {
     /**
      * Request credentials from the provider
-     * @return A set of [Credentials].
      */
     public suspend fun getCredentials(): Credentials
 }

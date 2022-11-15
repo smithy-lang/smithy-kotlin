@@ -167,7 +167,6 @@ public abstract class BasicSigningTestBase : HasSigner {
     public fun testSignChunks(): TestResult = runTest {
         val request = createChunkedTestRequest()
         val chunkedRequestConfig = createChunkedRequestSigningConfig()
-
         val requestResult = signer.sign(request, chunkedRequestConfig)
         assertEquals(EXPECTED_CHUNK_REQUEST_AUTHORIZATION_HEADER, requestResult.output.headers["Authorization"])
         assertEquals(EXPECTED_REQUEST_SIGNATURE, requestResult.signature.decodeToString())

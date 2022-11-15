@@ -36,7 +36,6 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.FileSystems
 import java.nio.file.Files
 import java.nio.file.Path
-import kotlin.coroutines.coroutineContext
 import kotlin.io.path.exists
 import kotlin.io.path.isDirectory
 import kotlin.io.path.name
@@ -279,7 +278,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
         )
 
         operation.roundTrip(client, Unit)
-
         return operation.context[HttpOperationContext.HttpCallList].last().request
     }
 
@@ -458,7 +456,7 @@ private fun Request.parsePath(): String {
 private fun buildOperation(
     config: AwsSigningConfig,
     serialized: HttpRequestBuilder,
-): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build<Unit, HttpResponse> {
+): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
     serializer = object : HttpSerialize<Unit> {
         override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = serialized
     }

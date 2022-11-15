@@ -11,7 +11,6 @@ import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.tracing.warn
-import aws.smithy.kotlin.runtime.tracing.withChildTraceSpan
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.coroutines.coroutineContext
@@ -103,74 +102,73 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
         op.execution.finalize.register(this)
     }
 
-    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest =
-        coroutineContext.withChildTraceSpan("Signing") {
-            val body = req.subject.body
+    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
+        val body = req.subject.body
 
-            // favor attributes from the current request context
-            val contextHashSpecification = req.context.getOrNull(AwsSigningAttributes.HashSpecification)
-            val contextSignedBodyHeader = req.context.getOrNull(AwsSigningAttributes.SignedBodyHeader)
+        // favor attributes from the current request context
+        val contextHashSpecification = req.context.getOrNull(AwsSigningAttributes.HashSpecification)
+        val contextSignedBodyHeader = req.context.getOrNull(AwsSigningAttributes.SignedBodyHeader)
 
-            // operation signing config is baseConfig + operation specific config/overrides
-            val signingConfig = AwsSigningConfig {
-                region = req.context[AwsSigningAttributes.SigningRegion]
-                service = req.context.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
-                credentialsProvider = checkNotNull(config.credentialsProvider)
-                algorithm = config.algorithm
-                signingDate = req.context.getOrNull(AwsSigningAttributes.SigningDate)
+        // operation signing config is baseConfig + operation specific config/overrides
+        val signingConfig = AwsSigningConfig {
+            region = req.context[AwsSigningAttributes.SigningRegion]
+            service = req.context.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
+            credentialsProvider = checkNotNull(config.credentialsProvider)
+            algorithm = config.algorithm
+            signingDate = req.context.getOrNull(AwsSigningAttributes.SigningDate)
 
-                signatureType = config.signatureType
-                omitSessionToken = config.omitSessionToken
-                normalizeUriPath = config.normalizeUriPath
-                useDoubleUriEncode = config.useDoubleUriEncode
-                expiresAfter = config.expiresAfter
+            signatureType = config.signatureType
+            omitSessionToken = config.omitSessionToken
+            normalizeUriPath = config.normalizeUriPath
+            useDoubleUriEncode = config.useDoubleUriEncode
+            expiresAfter = config.expiresAfter
 
-                signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
+            signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
 
-                // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload`
-                // trait isn't present).
-                //
-                // There are a few escape hatches/special cases:
-                //     1. Customer explicitly disables signed payload (via Config.isUnsignedPayload)
-                //     2. Customer provides a (potentially) unbounded stream (via HttpBody.Streaming)
-                //
-                // When an unbounded stream (2) is given we proceed as follows:
-                //     2.1. is it replayable?
-                //          (2.1.1) yes -> sign the payload (stream can be consumed more than once)
-                //          (2.1.2) no -> unsigned payload
-                //
-                // NOTE: Chunked signing is NOT enabled through this middleware.
-                // NOTE: 2.1.2 is handled below
+            // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
+            // isn't present).
+            //
+            // There are a few escape hatches/special cases:
+            //     1. Customer explicitly disables signed payload (via Config.isUnsignedPayload)
+            //     2. Customer provides a (potentially) unbounded stream (via HttpBody.Streaming)
+            //
+            // When an unbounded stream (2) is given we proceed as follows:
+            //     2.1. is it replayable?
+            //          (2.1.1) yes -> sign the payload (stream can be consumed more than once)
+            //          (2.1.2) no -> unsigned payload
+            //
+            // NOTE: Chunked signing is NOT enabled through this middleware.
+            // NOTE: 2.1.2 is handled below
 
-                // FIXME - see: https://github.com/awslabs/smithy-kotlin/issues/296
-                // if we know we have a (streaming) body and toSignableRequest() fails to convert it to a CRT equivalent
-                // then we must decide how to compute the payload hash ourselves (defaults to unsigned payload)
-                hashSpecification = when {
-                    contextHashSpecification != null -> contextHashSpecification
-                    config.isUnsignedPayload -> HashSpecification.UnsignedPayload
-                    body is HttpBody.Empty -> HashSpecification.EmptyBody
-                    body is HttpBody.Streaming && !body.isReplayable -> {
-                        coroutineContext.warn<AwsSigningMiddleware> {
-                            "unable to compute hash for unbounded stream; defaulting to unsigned payload"
-                        }
-                        HashSpecification.UnsignedPayload
+            // FIXME - see: https://github.com/awslabs/smithy-kotlin/issues/296
+            // if we know we have a (streaming) body and toSignableRequest() fails to convert it to a CRT equivalent
+            // then we must decide how to compute the payload hash ourselves (defaults to unsigned payload)
+            hashSpecification = when {
+                contextHashSpecification != null -> contextHashSpecification
+                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
+                body is HttpBody.Empty -> HashSpecification.EmptyBody
+                body is HttpBody.Streaming && !body.isReplayable -> {
+                    coroutineContext.warn<AwsSigningMiddleware> {
+                        "unable to compute hash for unbounded stream; defaulting to unsigned payload"
                     }
-                    // use the payload to compute the hash
-                    else -> HashSpecification.CalculateFromPayload
+                    HashSpecification.UnsignedPayload
                 }
+                // use the payload to compute the hash
+                else -> HashSpecification.CalculateFromPayload
             }
-
-            val signingResult = checkNotNull(config.signer).sign(req.subject.build(), signingConfig)
-            val signedRequest = signingResult.output
-
-            // Add the signature to the request context
-            req.context[AwsSigningAttributes.RequestSignature] = signingResult.signature
-
-            req.subject.update(signedRequest)
-            req.subject.body.resetStream()
-
-            req
         }
+
+        val signingResult = checkNotNull(config.signer).sign(req.subject.build(), signingConfig)
+        val signedRequest = signingResult.output
+
+        // Add the signature to the request context
+        req.context[AwsSigningAttributes.RequestSignature] = signingResult.signature
+
+        req.subject.update(signedRequest)
+        req.subject.body.resetStream()
+
+        return req
+    }
 }
 
 private fun HttpBody.resetStream() {

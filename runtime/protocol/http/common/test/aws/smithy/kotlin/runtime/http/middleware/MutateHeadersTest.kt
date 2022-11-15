@@ -28,6 +28,7 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MutateHeadersTest {
+
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
@@ -53,8 +54,8 @@ class MutateHeadersTest {
             ),
         )
         op.install(m)
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpCallList].first()
         // overrides
         assertEquals("override", call.request.headers["foo"])
@@ -83,8 +84,8 @@ class MutateHeadersTest {
             ),
         )
         op.install(m)
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpCallList].first()
         // appends existing
         assertEquals(listOf("bar", "appended"), call.request.headers.getAll("foo"))
@@ -113,8 +114,8 @@ class MutateHeadersTest {
             ),
         )
         op.install(m)
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val call = op.context.attributes[HttpCallList].first()
         assertEquals("bar", call.request.headers["foo"])
         assertEquals("zebra", call.request.headers["z"])

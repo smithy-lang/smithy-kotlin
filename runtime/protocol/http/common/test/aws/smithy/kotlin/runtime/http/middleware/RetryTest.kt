@@ -67,6 +67,7 @@ class RetryTest {
         )
 
         op.install(Retry(strategy, policy))
+
         op.roundTrip(client, Unit)
         val attempts = op.context.attributes[HttpOperationContext.HttpCallList].size
         assertEquals(2, attempts)

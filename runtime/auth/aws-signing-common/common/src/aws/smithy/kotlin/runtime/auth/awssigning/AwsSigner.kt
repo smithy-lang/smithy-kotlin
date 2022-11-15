@@ -16,10 +16,7 @@ public interface AwsSigner {
      * @param config The signing configuration
      * @return The signed request
      */
-    public suspend fun sign(
-        request: HttpRequest,
-        config: AwsSigningConfig,
-    ): AwsSigningResult<HttpRequest>
+    public suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest>
 
     /**
      * Signs a body chunk according to the supplied signing configuration

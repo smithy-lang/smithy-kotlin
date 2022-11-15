@@ -45,8 +45,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -60,8 +60,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -75,8 +75,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080/foo/bar"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -92,8 +92,8 @@ class ResolveEndpointTest {
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
         op.context[HttpOperationContext.HostPrefix] = "prefix."
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("prefix.api.test.com", actual.url.host)
@@ -108,8 +108,8 @@ class ResolveEndpointTest {
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
         op.context[HttpOperationContext.HostPrefix] = "prefix."
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -123,8 +123,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix/"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -138,8 +138,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)
@@ -153,8 +153,8 @@ class ResolveEndpointTest {
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com?foo=bar&baz=qux"))
         val resolver = EndpointResolver { endpoint }
         op.install(ResolveEndpoint(resolver))
-        op.roundTrip(client, Unit)
 
+        op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
         assertEquals("api.test.com", actual.url.host)

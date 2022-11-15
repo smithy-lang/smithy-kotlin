@@ -4,6 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.tracing.logger
 import okhttp3.*
 import java.io.IOException
@@ -12,7 +13,7 @@ import java.net.InetSocketAddress
 import java.net.Proxy
 
 internal class HttpEngineEventListener(private val pool: ConnectionPool, call: Call) : EventListener() {
-    private val traceSpan = call.request().tag<SdkRequestTag>()!!.traceSpan.child("HTTP")
+    private val traceSpan = call.request().tag<SdkRequestTag>()?.traceSpan?.child("HTTP") ?: NoOpTraceSpan
     private val logger = traceSpan.logger<HttpEngineEventListener>()
 
     private inline fun trace(crossinline msg: () -> Any) {

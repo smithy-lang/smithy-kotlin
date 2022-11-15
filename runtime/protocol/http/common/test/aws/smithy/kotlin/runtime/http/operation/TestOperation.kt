@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
  * and [deserialized] as the result of "deserialization" from an HTTP response.
  */
 fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): SdkHttpOperation<I, O> =
-    SdkHttpOperation.build {
+    SdkHttpOperation.build<I, O> {
         serializer = object : HttpSerialize<I> {
             override suspend fun serialize(context: ExecutionContext, input: I): HttpRequestBuilder = serialized
         }

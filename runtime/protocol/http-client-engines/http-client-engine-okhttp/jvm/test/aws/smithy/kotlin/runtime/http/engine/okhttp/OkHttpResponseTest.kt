@@ -8,8 +8,6 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
-import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
@@ -20,9 +18,8 @@ import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.*
 import org.junit.jupiter.api.Test
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.*
-
-private val callContext = TraceSpanContextElement(NoOpTraceSpan)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class OkHttpResponseTest {
@@ -30,7 +27,7 @@ class OkHttpResponseTest {
     fun testToSdkResponseEmptyBody() = runTest {
         val request = HttpRequest(HttpMethod.GET, Url.parse("https://aws.amazon.com"), Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
-        val okRequest = request.toOkHttpRequest(execContext, callContext)
+        val okRequest = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
 
         val okResponse = Response.Builder().apply {
             protocol(Protocol.HTTP_1_1)
@@ -40,7 +37,7 @@ class OkHttpResponseTest {
             request(okRequest)
         }.build()
 
-        val sdkResponse = okResponse.toSdkResponse(callContext)
+        val sdkResponse = okResponse.toSdkResponse(EmptyCoroutineContext)
         assertIs<HttpBody.Empty>(sdkResponse.body)
     }
 
@@ -49,7 +46,7 @@ class OkHttpResponseTest {
         val request = HttpRequest(HttpMethod.GET, Url.parse("https://aws.amazon.com"), Headers.Empty, HttpBody.Empty)
 
         val execContext = ExecutionContext()
-        val okRequest = request.toOkHttpRequest(execContext, callContext)
+        val okRequest = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
 
         val content = "Hello from OkHttp".encodeToByteArray()
 
@@ -62,7 +59,7 @@ class OkHttpResponseTest {
             request(okRequest)
         }.build()
 
-        val sdkResponse = okResponse.toSdkResponse(callContext)
+        val sdkResponse = okResponse.toSdkResponse(EmptyCoroutineContext)
         assertEquals(HttpStatusCode.OK, sdkResponse.status)
         assertEquals("bar", sdkResponse.headers["foo"])
         assertEquals(content.size.toLong(), sdkResponse.body.contentLength)
@@ -81,7 +78,7 @@ class OkHttpResponseTest {
 
         val execContext = ExecutionContext()
         val callJob = Job(coroutineContext.job)
-        val callContext = coroutineContext + callJob + TraceSpanContextElement(NoOpTraceSpan)
+        val callContext = coroutineContext + callJob
         val okRequest = request.toOkHttpRequest(execContext, callContext)
 
         // something sufficiently large enough that a single write doesn't cause the coroutine to immediately complete
@@ -124,7 +121,7 @@ class OkHttpResponseTest {
 
         // don't tie this to the current job or else it will tear down the test as well
         val callJob = Job()
-        val callContext = coroutineContext + callJob + exHandler + TraceSpanContextElement(NoOpTraceSpan)
+        val callContext = coroutineContext + callJob + exHandler
         val okRequest = request.toOkHttpRequest(execContext, callContext)
 
         val content = ByteArray(16 * 1024 * 1024)
