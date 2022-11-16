@@ -31,6 +31,7 @@ import software.amazon.smithy.rulesengine.traits.StaticContextParamsTrait
 class ResolveEndpointMiddlewareGenerator(
     private val ctx: ProtocolGenerator.GenerationContext,
     private val writer: KotlinWriter,
+    private val renderPostResolution: () -> Unit = {},
 ) {
     companion object {
         const val CLASS_NAME = "ResolveEndpointMiddleware"
@@ -43,7 +44,7 @@ class ResolveEndpointMiddlewareGenerator(
     }
 
     fun render() {
-        writer.openBlock("public class #L<I, O>(", CLASS_NAME)
+        writer.openBlock("internal class #L<I, O>(", CLASS_NAME)
         renderConstructorParams()
         writer.closeAndOpenBlock(") : #T<I, O> {", RuntimeTypes.Http.Operation.InlineMiddleware)
         renderClassMembers()
@@ -62,7 +63,7 @@ class ResolveEndpointMiddlewareGenerator(
     }
 
     private fun renderInstall() {
-        writer.withBlock("public override fun install(op: #T<I, O>) {", "}", RuntimeTypes.Http.Operation.SdkHttpOperation) {
+        writer.withBlock("override fun install(op: #T<I, O>) {", "}", RuntimeTypes.Http.Operation.SdkHttpOperation) {
             renderInitialize()
             write("")
             renderMutate()
@@ -80,6 +81,7 @@ class ResolveEndpointMiddlewareGenerator(
     private fun renderMutate() {
         writer.withBlock("op.execution.mutate.intercept { req, next ->", "}") {
             write("#T(req, endpoint)", RuntimeTypes.Http.Endpoints.setResolvedEndpoint)
+            renderPostResolution()
             write("next.call(req)")
         }
     }
@@ -127,10 +129,10 @@ class EndpointParameterBindingGenerator(
      */
     private fun renderBinding(param: Parameter) {
         val paramName = param.name.asString()
-        val paramKotlinName = param.name.toKotlin()
+        val paramDefaultName = param.defaultName()
 
         staticContextParams?.parameters?.get(paramName)?.let {
-            writer.writeInline("#L = ", paramKotlinName)
+            writer.writeInline("#L = ", paramDefaultName)
             when (param.type) {
                 ParameterType.STRING -> writer.write("#S", it.value.expectStringNode().value)
                 ParameterType.BOOLEAN -> writer.write("#L", it.value.expectBooleanNode().value)
@@ -140,12 +142,12 @@ class EndpointParameterBindingGenerator(
         }
 
         inputContextParams[paramName]?.let {
-            writer.write("#L = #L#L", paramKotlinName, inputPrefix, it.defaultName())
+            writer.write("#L = #L#L", paramDefaultName, inputPrefix, it.defaultName())
             return
         }
 
         clientContextParams?.parameters?.get(paramName)?.let {
-            writer.write("#1L = config.#1L", paramKotlinName)
+            writer.write("#1L = config.#1L", paramDefaultName)
         }
     }
 }

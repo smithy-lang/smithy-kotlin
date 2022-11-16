@@ -166,7 +166,7 @@ class EndpointParametersGeneratorTest {
     fun testCompanionObject() {
         val expected = """
             public companion object {
-                public operator fun invoke(block: Builder.() -> Unit): EndpointParameters = Builder().apply(block).build()
+                public inline operator fun invoke(block: Builder.() -> Unit): EndpointParameters = Builder().apply(block).build()
             }
         """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)
@@ -272,7 +272,7 @@ class EndpointParametersGeneratorTest {
     @Test
     fun testBuilder() {
         val expected = """
-            public class Builder internal constructor() {
+            public class Builder {
                 public var booleanField: Boolean? = null
          
                 public var defaultedBooleanField: Boolean? = true
@@ -302,7 +302,7 @@ class EndpointParametersGeneratorTest {
          
                 public var stringField: String? = null
          
-                internal fun build(): EndpointParameters = EndpointParameters(this)
+                public fun build(): EndpointParameters = EndpointParameters(this)
             }
         """.formatForTest()
         generatedClass.shouldContainOnlyOnceWithDiff(expected)

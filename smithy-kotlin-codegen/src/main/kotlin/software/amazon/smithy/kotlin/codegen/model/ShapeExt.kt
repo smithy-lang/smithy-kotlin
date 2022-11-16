@@ -17,7 +17,10 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.*
-import kotlin.streams.toList
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
+import software.amazon.smithy.rulesengine.traits.EndpointTestCase
+import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
 
 /**
  * Get all shapes of a particular type from the model.
@@ -249,3 +252,17 @@ fun OperationIndex.getOperationInputOutputSymbols(op: OperationShape, symbolProv
         getInput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
         getOutput(op).map { symbolProvider.toSymbol(it) }.getOrNull() ?: KotlinTypes.Unit,
     )
+
+/**
+ * Extract a service's endpoint rules if present.
+ */
+fun ServiceShape.getEndpointRules(): EndpointRuleSet? =
+    getTrait<EndpointRuleSetTrait>()?.let {
+        EndpointRuleSet.fromNode(it.ruleSet)
+    }
+
+/**
+ * Extract endpoint test cases from a service if present.
+ */
+fun ServiceShape.getEndpointTests(): List<EndpointTestCase> =
+    getTrait<EndpointTestsTrait>()?.testCases ?: emptyList()

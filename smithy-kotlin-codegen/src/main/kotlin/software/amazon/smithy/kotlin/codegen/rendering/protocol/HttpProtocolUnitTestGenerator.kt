@@ -22,6 +22,7 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
 protected constructor(builder: Builder<T>) {
 
+    protected val ctx: ProtocolGenerator.GenerationContext = builder.ctx!!
     protected val symbolProvider: SymbolProvider = builder.symbolProvider!!
     protected val model: Model = builder.model!!
     protected val testCases: List<T> = builder.testCases!!
@@ -74,6 +75,7 @@ protected constructor(builder: Builder<T>) {
     protected abstract fun renderTestBody(test: T)
 
     abstract class Builder<T : HttpMessageTestCase> {
+        var ctx: ProtocolGenerator.GenerationContext? = null
         var symbolProvider: SymbolProvider? = null
         var model: Model? = null
         var testCases: List<T>? = null
@@ -81,6 +83,7 @@ protected constructor(builder: Builder<T>) {
         var writer: KotlinWriter? = null
         var service: ServiceShape? = null
 
+        fun ctx(ctx: ProtocolGenerator.GenerationContext): Builder<T> = apply { this.ctx = ctx }
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
         fun model(model: Model): Builder<T> = apply { this.model = model }
         fun testCases(testCases: List<T>): Builder<T> = apply { this.testCases = testCases }

@@ -10,10 +10,10 @@ import software.amazon.smithy.build.PluginContext
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.KotlinIntegration
-import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.hasTrait
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.*
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointParametersGenerator
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.EndpointProviderGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.Model
@@ -21,9 +21,6 @@ import software.amazon.smithy.model.knowledge.ServiceIndex
 import software.amazon.smithy.model.neighbor.Walker
 import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.transform.ModelTransformer
-import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.traits.EndpointRuleSetTrait
-import software.amazon.smithy.rulesengine.traits.EndpointTestsTrait
 import java.util.*
 import java.util.logging.Logger
 
@@ -130,16 +127,8 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
             LOGGER.info("[${service.id}] Generating service client for protocol $protocol")
             generateProtocolClient(ctx)
 
-            service.getTrait<EndpointRuleSetTrait>()?.let { rulesTrait ->
-                LOGGER.info("[${service.id}] Generating endpoint provider for protocol $protocol")
-                val rules = EndpointRuleSet.fromNode(rulesTrait.ruleSet)
-                generateEndpointProvider(ctx, rules)
-
-                service.getTrait<EndpointTestsTrait>()?.let { testsTrait ->
-                    LOGGER.info("[${service.id}] Generating endpoint provider tests for protocol $protocol")
-                    generateEndpointProviderTests(ctx, testsTrait.testCases, rules)
-                }
-            }
+            LOGGER.info("[${service.id}] Generating endpoint provider for protocol $protocol")
+            generateEndpointsSources(ctx)
         }
 
         writers.finalize()
@@ -192,5 +181,31 @@ class CodegenVisitor(context: PluginContext) : ShapeVisitor.Default<Unit>() {
         writers.useFileWriter("${baseExceptionSymbol.name}.kt", baseExceptionSymbol.namespace) { writer ->
             ExceptionBaseClassGenerator.render(baseGenerationContext, writer)
         }
+    }
+}
+
+// delegate generation of endpoints-related modules
+// the following are generated regardless of whether the model has endpoint rules:
+// - typed EndpointProvider interface
+// - EndpointParameters struct (will just be empty if no rules/params)
+// - ResolveEndpointMiddleware
+// the actual default implementation and test cases will only be generated if there's an actual rule set from which to
+// derive them
+private fun ProtocolGenerator.generateEndpointsSources(ctx: ProtocolGenerator.GenerationContext) {
+    val rules = ctx.service.getEndpointRules()
+    val paramsSymbol = EndpointParametersGenerator.getSymbol(ctx.settings)
+    val providerSymbol = EndpointProviderGenerator.getSymbol(ctx.settings)
+
+    ctx.delegator.useFileWriter(paramsSymbol) {
+        EndpointParametersGenerator(it, rules).render()
+    }
+    ctx.delegator.useFileWriter(providerSymbol) {
+        EndpointProviderGenerator(it, paramsSymbol).render()
+    }
+
+    generateEndpointProviderMiddleware(ctx)
+    if (rules != null) {
+        generateEndpointProvider(ctx, rules)
+        generateEndpointProviderTests(ctx, ctx.service.getEndpointTests(), rules)
     }
 }

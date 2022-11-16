@@ -9,7 +9,6 @@ import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.core.RenderingContext
-import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
 import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.expectTrait
 import software.amazon.smithy.kotlin.codegen.model.hasIdempotentTokenMember
@@ -57,22 +56,21 @@ class ClientConfigGenerator(
                 defaultProps.addAll(clientContextConfigProps(context.shape.expectTrait()))
             }
 
-            if (context.shape != null && context.shape.hasTrait<EndpointRuleSetTrait>()) {
-                defaultProps.add(
-                    ClientConfigProperty {
-                        symbol = EndpointProviderGenerator.getSymbol(context.settings)
-                        propertyType = ClientConfigPropertyType.RequiredWithDefault("DefaultEndpointProvider()")
+            defaultProps.add(
+                ClientConfigProperty {
+                    val hasRules = context.shape?.hasTrait<EndpointRuleSetTrait>() == true
+                    symbol = EndpointProviderGenerator.getSymbol(context.settings)
+                    propertyType = if (hasRules) { // if there's a ruleset, we have a usable default, otherwise caller has to provide their own
                         additionalImports = listOf(DefaultEndpointProviderGenerator.getSymbol(context.settings))
-                    },
-                )
-            } else {
-                defaultProps.add(
-                    ClientConfigProperty {
-                        symbol = RuntimeTypes.Http.Endpoints.EndpointResolver
-                        propertyType = ClientConfigPropertyType.Required("you must specify an endpoint to make requests to")
+                        ClientConfigPropertyType.RequiredWithDefault("DefaultEndpointProvider()")
+                    } else {
+                        ClientConfigPropertyType.Required()
                     }
-                )
-            }
+                    documentation = """
+                        The endpoint provider used to determine where to make service requests.
+                    """.trimIndent()
+                },
+            )
 
             return defaultProps
         }

@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver
+import aws.smithy.kotlin.runtime.http.endpoints.EndpointProvider
 import aws.smithy.kotlin.runtime.http.endpoints.setResolvedEndpoint
 import aws.smithy.kotlin.runtime.http.operation.ModifyRequestMiddleware
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
@@ -18,12 +18,13 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * within the runtime.
  */
 @InternalApi
-public class ResolveEndpoint(
-    private val resolver: EndpointResolver,
+public class ResolveEndpoint<T>(
+    private val provider: EndpointProvider<T>,
+    private val params: T,
 ) : ModifyRequestMiddleware {
 
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
-        val endpoint = resolver.resolve()
+        val endpoint = provider.resolveEndpoint(params)
         setResolvedEndpoint(req, endpoint)
         val logger = req.context.getLogger("ResolveEndpoint")
         logger.debug { "resolved endpoint: $endpoint" }

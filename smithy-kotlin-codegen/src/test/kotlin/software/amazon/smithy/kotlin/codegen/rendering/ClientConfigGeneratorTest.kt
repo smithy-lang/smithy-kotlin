@@ -41,6 +41,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
 
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
+    public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
@@ -55,6 +56,10 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * client will not close it when the client is closed.
          */
         public var httpClientEngine: HttpClientEngine? = null
+        /**
+         * The endpoint provider used to determine where to make service requests.
+         */
+        public var endpointProvider: EndpointProvider? = null
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
          * that represent idempotent tokens when not explicitly set by the caller using this generator.

@@ -73,7 +73,7 @@ object RuntimeTypes {
         }
 
         object Endpoints {
-            val EndpointResolver = runtimeSymbol("EndpointResolver", KotlinDependency.HTTP, "endpoints")
+            val EndpointProvider = runtimeSymbol("EndpointProvider", KotlinDependency.HTTP, "endpoints")
             val Endpoint = runtimeSymbol("Endpoint", KotlinDependency.HTTP, "endpoints")
             val EndpointProviderException = runtimeSymbol("EndpointProviderException", KotlinDependency.HTTP, "endpoints")
             val setResolvedEndpoint = runtimeSymbol("setResolvedEndpoint", KotlinDependency.HTTP, "endpoints")

@@ -8,17 +8,10 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.withBlock
-import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
-import software.amazon.smithy.kotlin.codegen.model.boxed
-import software.amazon.smithy.kotlin.codegen.model.buildSymbol
-import software.amazon.smithy.kotlin.codegen.utils.doubleQuote
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
-import software.amazon.smithy.kotlin.codegen.utils.toCamelCase
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
-import software.amazon.smithy.rulesengine.language.eval.Value
-import software.amazon.smithy.rulesengine.language.syntax.Identifier
 import software.amazon.smithy.rulesengine.language.syntax.parameters.Parameter
-import software.amazon.smithy.rulesengine.language.syntax.parameters.ParameterType
 
 private const val DEFAULT_DEPRECATED_MESSAGE =
     "This field is deprecated and no longer recommended for use."
@@ -28,7 +21,7 @@ private const val DEFAULT_DEPRECATED_MESSAGE =
  */
 class EndpointParametersGenerator(
     private val writer: KotlinWriter,
-    rules: EndpointRuleSet,
+    rules: EndpointRuleSet?,
 ) {
     companion object {
         const val CLASS_NAME = "EndpointParameters"
@@ -38,18 +31,16 @@ class EndpointParametersGenerator(
                 name = CLASS_NAME
                 namespace = "${settings.pkg.name}.endpoints"
             }
-
-        fun getParamKotlinName(param: Parameter): String = param.name.toKotlin()
     }
 
-    private val params: List<KotlinEndpointParameter> = rules.parameters.toList()
-        .sortedBy { it.name.toKotlin() }
+    private val params: List<KotlinEndpointParameter> = (rules?.parameters?.toList() ?: emptyList())
+        .sortedBy { it.defaultName() }
         .map {
             KotlinEndpointParameter(
-                it.name.toKotlin(),
+                it.defaultName(),
                 it.type.toSymbol(),
                 it.isRequired,
-                it.defaultValue.getOrNull()?.toKotlinLiteral() ?: "null",
+                it.defaultValue.getOrNull()?.toLiteral() ?: "null",
                 it.documentation.getOrNull(),
                 it.deprecated.getOrNull(),
             )
@@ -95,7 +86,7 @@ class EndpointParametersGenerator(
 
     private fun renderCompanionObject() {
         writer.withBlock("public companion object {", "}") {
-            write("public operator fun invoke(block: Builder.() -> Unit): #L = Builder().apply(block).build()", CLASS_NAME)
+            write("public inline operator fun invoke(block: Builder.() -> Unit): #L = Builder().apply(block).build()", CLASS_NAME)
         }
     }
 
@@ -152,12 +143,12 @@ class EndpointParametersGenerator(
     }
 
     private fun renderBuilder() {
-        writer.withBlock("public class Builder internal constructor() {", "}") {
+        writer.withBlock("public class Builder {", "}") {
             params.forEach {
                 it.renderDeclaration(writer, it.defaultLiteral, isMutable = true)
             }
             write("")
-            write("internal fun build(): #1L = #1L(this)", CLASS_NAME)
+            write("public fun build(): #1L = #1L(this)", CLASS_NAME)
         }
     }
 }
@@ -182,24 +173,6 @@ private fun KotlinEndpointParameter.renderDeclaration(writer: KotlinWriter, init
     writer.write("public #L #L: #P = #L", if (isMutable) "var" else "val", name, type, initialValueLiteral)
     writer.write("")
 }
-
-fun Identifier.toKotlin(): String = asString().toCamelCase()
-
-private fun ParameterType.toSymbol(): Symbol =
-    when (this) {
-        ParameterType.STRING -> KotlinTypes.String
-        ParameterType.BOOLEAN -> KotlinTypes.Boolean
-    }
-        .toBuilder()
-        .boxed()
-        .build()
-
-private fun Value.toKotlinLiteral(): String =
-    when (this) {
-        is Value.String -> expectString().doubleQuote()
-        is Value.Bool -> if (expectBool()) "true" else "false"
-        else -> throw IllegalArgumentException("unrecognized parameter value type")
-    }
 
 private fun Parameter.Deprecated.writeKotlinAnnotation(writer: KotlinWriter) =
     writer.write("@Deprecated(#S)", message ?: DEFAULT_DEPRECATED_MESSAGE)
