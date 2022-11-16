@@ -66,10 +66,6 @@ public sealed class ByteStream {
 
 private suspend fun consumeStream(chan: SdkByteReadChannel): ByteArray {
     val bytes = chan.readToBuffer().readByteArray()
-    // readRemaining will read up to `limit` bytes (which is defaulted to Int.MAX_VALUE) or until
-    // the stream is closed and no more bytes remain.
-    // This is usually sufficient to consume the stream but technically that's not what it's doing.
-    // Save us a painful debug session later in the very rare chance this were to occur...
     check(chan.isClosedForRead) { "failed to read all bytes from ByteStream, more data still expected" }
     return bytes
 }
