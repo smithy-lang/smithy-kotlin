@@ -71,7 +71,7 @@ public abstract class AwsChunkedByteReadChannelTestBase : HasSigner {
             append("\r\n")
         }.length
     }.reduce { acc, len -> acc + len } +
-            "x-amz-trailer-signature:".length + 64 + "\r\n".length
+        "x-amz-trailer-signature:".length + 64 + "\r\n".length
 
     /**
      * Given the length of the chunk body, returns the length of the entire encoded chunk.
@@ -86,9 +86,9 @@ public abstract class AwsChunkedByteReadChannelTestBase : HasSigner {
      */
     private fun encodedChunkLength(chunkSize: Int): Int {
         var length = chunkSize.toString(16).length +
-                ";chunk-signature=".length +
-                64 + // the chunk signature is always 64 bytes
-                "\r\n".length
+            ";chunk-signature=".length +
+            64 + // the chunk signature is always 64 bytes
+            "\r\n".length
 
         if (chunkSize > 0) {
             length += chunkSize + "\r\n".length
@@ -224,7 +224,7 @@ public abstract class AwsChunkedByteReadChannelTestBase : HasSigner {
 
         // (numChunks - 1) full chunks, one half-full chunk, one zero-length chunk, one terminal CRLF
         val numBytesToRead = (encodedChunkLength(CHUNK_SIZE_BYTES) * (numChunks - 1)) +
-                encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
+            encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
 
         val bytes = awsChunked.readRemaining(numBytesToRead) // read all the underlying data plus any chunk signature overhead
         val bytesAsString = bytes.decodeToString()
@@ -545,7 +545,7 @@ public abstract class AwsChunkedByteReadChannelTestBase : HasSigner {
         val awsChunked = AwsChunkedByteReadChannel(chan, signer, testSigningConfig, previousSignature)
 
         val numBytesToRead = encodedChunkLength(CHUNK_SIZE_BYTES) * (numChunks - 1) +
-                encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
+            encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
         val sink = ByteArray(numBytesToRead)
         awsChunked.readFully(sink, 0, numBytesToRead) // read all the underlying data plus any chunk signature overhead
         val bytesAsString = sink.decodeToString()
@@ -810,7 +810,7 @@ public abstract class AwsChunkedByteReadChannelTestBase : HasSigner {
         val awsChunked = AwsChunkedByteReadChannel(chan, signer, testSigningConfig, previousSignature)
 
         val numBytesToRead = encodedChunkLength(CHUNK_SIZE_BYTES) * (numChunks - 1) +
-                encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
+            encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
         val sink = ByteArray(numBytesToRead)
 
         var bytesRead = 0

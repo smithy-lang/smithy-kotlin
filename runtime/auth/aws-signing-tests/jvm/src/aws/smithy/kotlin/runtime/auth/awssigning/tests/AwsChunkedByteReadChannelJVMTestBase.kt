@@ -19,7 +19,7 @@ import java.nio.ByteBuffer
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
-public abstract class AwsChunkedByteReadChannelJVMTestBase: HasSigner {
+public abstract class AwsChunkedByteReadChannelJVMTestBase : HasSigner {
 
     private val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
     private val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
@@ -75,7 +75,7 @@ public abstract class AwsChunkedByteReadChannelJVMTestBase: HasSigner {
             append("\r\n")
         }.length
     }.reduce { acc, len -> acc + len } +
-            "x-amz-trailer-signature:".length + 64 + "\r\n".length
+        "x-amz-trailer-signature:".length + 64 + "\r\n".length
 
     /**
      * Given the length of the chunk body, returns the length of the entire encoded chunk.
@@ -90,9 +90,9 @@ public abstract class AwsChunkedByteReadChannelJVMTestBase: HasSigner {
      */
     private fun encodedChunkLength(chunkSize: Int): Int {
         var length = chunkSize.toString(16).length +
-                ";chunk-signature=".length +
-                64 + // the chunk signature is always 64 bytes
-                "\r\n".length
+            ";chunk-signature=".length +
+            64 + // the chunk signature is always 64 bytes
+            "\r\n".length
 
         if (chunkSize > 0) {
             length += chunkSize + "\r\n".length
@@ -167,7 +167,6 @@ public abstract class AwsChunkedByteReadChannelJVMTestBase: HasSigner {
         val buffer = ByteBuffer.allocate(BUFFER_SIZE)
 
         while (awsChunked.readAvailable(buffer) != -1) {
-
             buffer.flip()
 
             while (buffer.remaining() > 0) {
