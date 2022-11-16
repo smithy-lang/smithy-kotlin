@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
  * aws-chunked content encoding. Operations on this class can not be invoked concurrently.
@@ -19,7 +20,8 @@ import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
  * @param previousSignature the previous signature to use for signing. in most cases, this should be the seed signature
  * @param trailingHeaders the optional trailing headers to include in the final chunk
  */
-internal expect class AwsChunkedByteReadChannel internal constructor(
+@InternalApi
+public expect class AwsChunkedByteReadChannel public constructor(
     chan: SdkByteReadChannel,
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,

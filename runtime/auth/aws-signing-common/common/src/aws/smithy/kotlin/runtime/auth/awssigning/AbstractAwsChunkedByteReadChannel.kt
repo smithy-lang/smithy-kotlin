@@ -7,10 +7,12 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.util.InternalApi
 
-internal const val CHUNK_SIZE_BYTES: Int = 65536
+public const val CHUNK_SIZE_BYTES: Int = 65536
 
-internal abstract class AbstractAwsChunkedByteReadChannel(
+@InternalApi
+public abstract class AbstractAwsChunkedByteReadChannel(
     private val chan: SdkByteReadChannel,
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
@@ -20,9 +22,9 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
     override val isClosedForRead: Boolean
         get() = chan.isClosedForRead && (chunk == null || chunkOffset >= chunk!!.size)
 
-    var chunk: ByteArray? = null
-    var chunkOffset: Int = 0
-    var hasLastChunkBeenSent: Boolean = false
+    internal var chunk: ByteArray? = null
+    internal var chunkOffset: Int = 0
+    private var hasLastChunkBeenSent: Boolean = false
 
     /**
      * Returns all the bytes remaining in the underlying data source, up to [limit].
@@ -128,7 +130,7 @@ internal abstract class AbstractAwsChunkedByteReadChannel(
      *
      * @return true if the [chunk] is valid for reading, false if it's invalid (chunk data is exhausted)
      */
-    suspend fun ensureValidChunk(): Boolean {
+    internal suspend fun ensureValidChunk(): Boolean {
         // check if the current chunk is still valid
         if (chunk != null && chunkOffset < chunk!!.size) { return true }
 
