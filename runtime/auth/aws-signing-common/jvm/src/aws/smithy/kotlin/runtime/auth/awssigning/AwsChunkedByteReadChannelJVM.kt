@@ -7,9 +7,11 @@ package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.util.InternalApi
 import java.nio.ByteBuffer
 
-internal actual class AwsChunkedByteReadChannel actual constructor(
+@InternalApi
+public actual class AwsChunkedByteReadChannel actual constructor(
     chan: SdkByteReadChannel,
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
@@ -41,7 +43,6 @@ internal actual class AwsChunkedByteReadChannel actual constructor(
             if (chunkOffset >= chunk!!.size) { break }
         }
 
-        sink.flip()
         return bytesWritten
     }
 }
