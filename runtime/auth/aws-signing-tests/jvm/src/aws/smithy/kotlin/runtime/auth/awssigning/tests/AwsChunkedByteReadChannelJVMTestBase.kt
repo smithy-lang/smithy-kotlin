@@ -6,6 +6,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsChunkedByteReadChannel
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignatureType
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.CHUNK_SIZE_BYTES
 import aws.smithy.kotlin.runtime.http.Headers
@@ -28,6 +29,7 @@ public abstract class AwsChunkedByteReadChannelJVMTestBase: HasSigner {
         service = "bar"
         signingDate = Instant.fromIso8601("20220427T012345Z")
         credentialsProvider = testCredentialsProvider
+        signatureType = AwsSignatureType.HTTP_REQUEST_CHUNK
     }
 
     /**

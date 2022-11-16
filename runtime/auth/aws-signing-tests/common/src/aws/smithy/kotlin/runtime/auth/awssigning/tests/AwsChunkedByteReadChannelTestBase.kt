@@ -25,6 +25,7 @@ public abstract class AwsChunkedByteReadChannelTestBase : HasSigner {
         service = "bar"
         signingDate = Instant.fromIso8601("20220427T012345Z")
         credentialsProvider = testCredentialsProvider
+        signatureType = AwsSignatureType.HTTP_REQUEST_CHUNK
     }
 
     /**
