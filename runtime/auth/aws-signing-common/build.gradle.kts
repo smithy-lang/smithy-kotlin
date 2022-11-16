@@ -19,13 +19,6 @@ kotlin {
             }
         }
 
-        commonTest {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-                implementation(project(":runtime:auth:aws-signing-default"))
-            }
-        }
-
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
         }
