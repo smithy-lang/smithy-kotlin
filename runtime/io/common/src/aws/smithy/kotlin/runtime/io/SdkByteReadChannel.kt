@@ -37,12 +37,20 @@ public interface SdkByteReadChannel {
      * channel is exhausted. **It is not safe to modify [sink] until this function returns**
      *
      * A failed channel will throw whatever exception the channel was closed with.
+     *
+     * @param sink the buffer that data read from the channel will be appended to
+     * @param limit the maximum number of bytes to read from the channel
+     * @return the number of bytes read or -1 if the channel is closed
      */
     public suspend fun read(sink: SdkBuffer, limit: Long): Long
 
     /**
      * Close channel with optional cause cancellation.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
+     *
+     * @param cause the cause of cancellation, when `null` a [kotlin.coroutines.cancellation.CancellationException]
+     * will be used
+     * @return true if the channel was cancelled/closed by this invocation, false if the channel was already closed
      */
     public fun cancel(cause: Throwable?): Boolean
 }
@@ -52,6 +60,9 @@ public interface SdkByteReadChannel {
  * all bytes could be read.
  *
  * A failed channel will throw whatever exception the channel was closed with.
+ *
+ * @param sink the buffer that data read from the channel will be appended to
+ * @param byteCount the number of bytes to read from the channel
  */
 public suspend fun SdkByteReadChannel.readFully(sink: SdkBuffer, byteCount: Long) {
     var remaining = byteCount
@@ -65,6 +76,8 @@ public suspend fun SdkByteReadChannel.readFully(sink: SdkBuffer, byteCount: Long
 /**
  * **Caution** Read the entire contents of the channel into [sink].
  * This function will suspend until the channel is exhausted and no bytes remain OR the channel cancelled
+ *
+ * @param sink the buffer that data read from the channel will be appended to
  */
 public suspend fun SdkByteReadChannel.readRemaining(sink: SdkBuffer) {
     while (!isClosedForRead) {
@@ -74,6 +87,9 @@ public suspend fun SdkByteReadChannel.readRemaining(sink: SdkBuffer) {
 
 /**
  * **Caution** Read the entire contents of the channel into a new buffer and return it.
+ * This function will suspend until the channel is exhausted and no bytes remain OR the channel cancelled
+ *
+ * @return an [SdkBuffer] containing all the data read from the channel
  */
 public suspend fun SdkByteReadChannel.readToBuffer(): SdkBuffer {
     val buffer = SdkBuffer()

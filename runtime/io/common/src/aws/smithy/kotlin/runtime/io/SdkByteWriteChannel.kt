@@ -45,12 +45,19 @@ public interface SdkByteWriteChannel : Closeable {
      * Removes exactly [byteCount] bytes from [source] and appends them to this. Suspends until all bytes
      * have been written. **It is not safe to modify [source] until this function returns**
      * Throws [ClosedWriteChannelException] if this channel was already closed.
+     *
+     * @param source the buffer data will be read from and written to this channel
+     * @param byteCount the number of bytes to read from source
      */
     public suspend fun write(source: SdkBuffer, byteCount: Long = source.size)
 
     /**
      * Closes this channel with an optional exceptional [cause]. All pending bytes are flushed.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
+     *
+     * @param cause the reason the channel is closed, a non-null cause will result in a "failed" channel whereas a
+     * `null` cause will result in a closed channel (no more data will be written).
+     * @return true if the channel was cancelled/closed by this invocation, false if the channel was already closed
      */
     public fun close(cause: Throwable?): Boolean
 
@@ -64,6 +71,9 @@ public interface SdkByteWriteChannel : Closeable {
 /**
  * Convenience function to write as many bytes from [source] as possible without suspending. Returns
  * the number of bytes that could be written.
+ *
+ * @param source the buffer to read data from and write to this channel
+ * @return the number of bytes that could be written
  */
 public suspend fun SdkByteWriteChannel.writeAvailable(source: SdkBuffer): Long {
     val wc = minOf(availableForWrite.toLong(), source.size)

@@ -28,6 +28,7 @@ internal class RealSdkByteChannel(
         require(length <= availableForWrite) { "Initial contents overflow maximum channel capacity" }
         buffer.write(content, offset, length)
         afterWrite(length)
+        close()
     }
 
     private val lock = SynchronizedObject()
@@ -102,15 +103,15 @@ internal class RealSdkByteChannel(
                 sink.write(buffer, rc)
             }
 
-            afterRead(rc.toInt())
-
             rc
         }
     }
 
     private inline fun reading(block: () -> Long): Long = try {
         check(_readInProgress.compareAndSet(false, true)) { "Read operation already in progress" }
-        block()
+        val rc = block()
+        if (rc >= 0L) afterRead(rc.toInt())
+        rc
     } finally {
         _readInProgress.compareAndSet(true, false)
     }
@@ -119,10 +120,10 @@ internal class RealSdkByteChannel(
         ensureNotClosed()
         if (byteCount == 0L) return
 
-        writing {
-            var remaining = byteCount
+        var remaining = byteCount
 
-            while (remaining > 0) {
+        while (remaining > 0) {
+            writing {
                 if (availableForWrite == 0) {
                     awaitFreeSpace()
                 }
@@ -133,16 +134,18 @@ internal class RealSdkByteChannel(
                     buffer.write(source, wc)
                 }
 
-                afterWrite(wc.toInt())
                 remaining -= wc
+
+                wc
             }
         }
     }
 
-    private inline fun writing(block: () -> Unit) =
+    private inline fun writing(block: () -> Long) =
         try {
             check(_writeInProgress.compareAndSet(false, true)) { "Write operation already in progress" }
-            block()
+            val wc = block()
+            afterWrite(wc.toInt())
         } finally {
             _writeInProgress.compareAndSet(true, false)
         }
