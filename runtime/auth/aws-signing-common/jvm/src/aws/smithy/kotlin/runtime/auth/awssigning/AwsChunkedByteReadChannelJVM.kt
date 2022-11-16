@@ -26,13 +26,13 @@ public actual class AwsChunkedByteReadChannel actual constructor(
      * @return an integer representing the number of bytes written to [sink]
      */
     override suspend fun readAvailable(sink: ByteBuffer): Int {
-        if (!ensureValidChunk()) {
+        if (!ensureValidChunk() || sink.remaining() == 0) {
             return -1
         }
 
         var bytesWritten = 0
-        while (chunkOffset < chunk!!.size && sink.position() != sink.limit()) {
-            val numBytesToWrite = minOf(sink.limit(), chunk!!.size - chunkOffset)
+        while (chunkOffset < chunk!!.size && sink.remaining() > 0) {
+            val numBytesToWrite = minOf(sink.remaining(), chunk!!.size - chunkOffset)
             val bytes = chunk!!.slice(chunkOffset until chunkOffset + numBytesToWrite).toByteArray()
             sink.put(bytes)
 
