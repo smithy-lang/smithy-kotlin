@@ -80,6 +80,30 @@ class AwsChunkedByteReadChannelJVMTest {
     }.reduce { acc, len -> acc + len } +
         "x-amz-trailer-signature:".length + 64 + "\r\n".length
 
+    /**
+     * Given the length of the chunk body, returns the length of the entire encoded chunk.
+     * The chunk encoding structure is as follows:
+     * String(Hex(CHUNK_SIZE));chunk-signature=<64 bytes>\r\n
+     * <chunk payload>
+     * \r\n
+     *
+     * @param chunkSize the size of the chunk
+     * @return an integer representing the length of the encoded chunk data.
+     * This is useful when calculating how many bytes to read in the test cases.
+     */
+    private fun encodedChunkLength(chunkSize: Int): Int {
+        var length = chunkSize.toString(16).length +
+                ";chunk-signature=".length +
+                64 + // the chunk signature is always 64 bytes
+                "\r\n".length
+
+        if (chunkSize > 0) {
+            length += chunkSize + "\r\n".length
+        }
+
+        return length
+    }
+
     @Test
     fun testReadAvailableExactBytes() = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
@@ -90,8 +114,7 @@ class AwsChunkedByteReadChannelJVMTest {
         val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read all the chunk data plus all bytes from header
-        val numBytesToRead = dataLengthBytes + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
-            (1 + 1 + "chunk-signature=".length + 64 + 4)
+        val numBytesToRead = encodedChunkLength(dataLengthBytes) + encodedChunkLength(0) + "\r\n".length
 
         var sink = ByteArray(numBytesToRead)
         val BUFFER_SIZE = 1024
@@ -100,6 +123,8 @@ class AwsChunkedByteReadChannelJVMTest {
         var bytesRead = 0
         while (bytesRead != numBytesToRead) {
             bytesRead += awsChunked.readAvailable(buffer)
+
+            buffer.flip()
 
             while (buffer.remaining() > 0) {
                 sink += buffer.get()
@@ -138,14 +163,16 @@ class AwsChunkedByteReadChannelJVMTest {
         val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read excess of chunk data
-        val numBytesToRead = dataLengthBytes * 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
-            (1 + 1 + "chunk-signature=".length + 64 + 4)
+        val numBytesToRead = encodedChunkLength(dataLengthBytes * 2) + encodedChunkLength(0) + "\r\n".length
 
         var sink = ByteArray(numBytesToRead)
         val BUFFER_SIZE = 1024
         val buffer = ByteBuffer.allocate(BUFFER_SIZE)
 
         while (awsChunked.readAvailable(buffer) != -1) {
+
+            buffer.flip()
+
             while (buffer.remaining() > 0) {
                 sink += buffer.get()
             }
@@ -180,8 +207,7 @@ class AwsChunkedByteReadChannelJVMTest {
         val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature)
 
         // read excess of chunk data
-        val numBytesToRead = dataLengthBytes / 2 + dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4 +
-            (1 + 1 + "chunk-signature=".length + 64 + 4)
+        val numBytesToRead = encodedChunkLength(dataLengthBytes / 2) + encodedChunkLength(0) + "\r\n".length
 
         var sink = byteArrayOf()
         val BUFFER_SIZE = 1024
@@ -192,6 +218,8 @@ class AwsChunkedByteReadChannelJVMTest {
             val currBytesRead = awsChunked.readAvailable(buffer)
             if (currBytesRead == -1) { break }
             bytesRead += currBytesRead
+
+            buffer.flip()
 
             while (buffer.remaining() > 0) {
                 sink += buffer.get()
@@ -228,9 +256,7 @@ class AwsChunkedByteReadChannelJVMTest {
         val awsChunked = AwsChunkedByteReadChannel(chan, testSigner, testSigningConfig, previousSignature, trailingHeaders)
 
         // read all the chunk data plus all bytes from header
-        val numBytesToRead = CHUNK_SIZE_BYTES + CHUNK_SIZE_BYTES.toString(16).length + 1 +
-            ("chunk-signature=".length + 64 + 4) +
-            (1 + 1 + "chunk-signature=".length + 64 + 2) + trailingHeadersLength + 2
+        val numBytesToRead = encodedChunkLength(CHUNK_SIZE_BYTES) + encodedChunkLength(0) + trailingHeadersLength + "\r\n".length
 
         var sink = ByteArray(numBytesToRead)
         val BUFFER_SIZE = 1024
@@ -239,6 +265,8 @@ class AwsChunkedByteReadChannelJVMTest {
         var bytesRead = 0
         while (bytesRead != numBytesToRead) {
             bytesRead += awsChunked.readAvailable(buffer)
+
+            buffer.flip()
 
             while (buffer.remaining() > 0) {
                 sink += buffer.get()
