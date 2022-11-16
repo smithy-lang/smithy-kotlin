@@ -31,18 +31,17 @@ class ClientConfigGenerator(
         /**
          * Attempt to detect configuration properties automatically based on the model
          */
-        fun detectDefaultProps(context: RenderingContext<ServiceShape>): List<ClientConfigProperty> {
-            val defaultProps = mutableListOf<ClientConfigProperty>()
-            defaultProps.add(KotlinClientRuntimeConfigProperty.SdkLogMode)
+        fun detectDefaultProps(context: RenderingContext<ServiceShape>): List<ClientConfigProperty> = buildList {
+            add(KotlinClientRuntimeConfigProperty.SdkLogMode)
             if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
-                defaultProps.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
-                defaultProps.add(KotlinClientRuntimeConfigProperty.EndpointResolver)
+                add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
+                add(KotlinClientRuntimeConfigProperty.EndpointResolver)
             }
             if (context.shape != null && context.shape.hasIdempotentTokenMember(context.model)) {
-                defaultProps.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
+                add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
             }
-            defaultProps.add(KotlinClientRuntimeConfigProperty.RetryStrategy)
-            return defaultProps
+            add(KotlinClientRuntimeConfigProperty.RetryStrategy)
+            add(KotlinClientRuntimeConfigProperty.Tracer)
         }
     }
 
@@ -71,6 +70,7 @@ class ClientConfigGenerator(
         props.sortWith(compareBy({ it.order }, { it.propertyName }))
         val baseClasses = props
             .mapNotNull { it.baseClass?.name }
+            .sorted()
             .toSet()
             .joinToString(", ")
 

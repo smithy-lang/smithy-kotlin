@@ -52,10 +52,4 @@ internal class KotlinLoggingAdapter(name: String) : Logger {
     override fun error(t: Throwable?, msg: () -> Any?) {
         log.error(t, msg)
     }
-
-    override fun <T : Throwable> throwing(throwable: T): T = log.throwing(throwable)
-
-    override fun <T : Throwable> catching(throwable: T) {
-        log.catching(throwable)
-    }
 }

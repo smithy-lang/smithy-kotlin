@@ -9,12 +9,21 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.tracing.TraceEvent
+import aws.smithy.kotlin.runtime.tracing.TraceSpan
+import aws.smithy.kotlin.runtime.tracing.TraceSpanContextElement
 import okio.Buffer
 import org.junit.jupiter.api.Test
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+
+private class TestTraceSpan(override val parent: TraceSpan?, override val id: String) : TraceSpan {
+    override fun child(id: String): TraceSpan = TestTraceSpan(this, id)
+    override fun close() = Unit
+    override fun postEvents(events: Iterable<TraceEvent>) = Unit
+}
 
 class OkHttpRequestTest {
     @Test
@@ -68,8 +77,13 @@ class OkHttpRequestTest {
         val url = Url.parse("https://aws.amazon.com")
         val request = HttpRequest(HttpMethod.POST, url, Headers.Empty, HttpBody.Empty)
         val execContext = ExecutionContext()
-        val actual = request.toOkHttpRequest(execContext, EmptyCoroutineContext)
+
+        val expectedSpan = TestTraceSpan(null, "a span")
+        val callContext = TraceSpanContextElement(expectedSpan)
+
+        val actual = request.toOkHttpRequest(execContext, callContext)
         assertEquals(execContext, actual.tag<SdkRequestTag>()?.execContext)
+        assertEquals(expectedSpan, actual.tag<SdkRequestTag>()?.traceSpan)
     }
 
     @Test

@@ -17,6 +17,7 @@ kotlin {
                 api(project(":runtime:protocol:http"))
                 implementation(project(":runtime:logging"))
                 implementation(project(":runtime:io"))
+                implementation(project(":runtime:tracing:tracing-core"))
 
                 // exposes HttpClientEngine interface wrapped by KtorEngine
                 api("io.ktor:ktor-client-core:$ktorVersion")

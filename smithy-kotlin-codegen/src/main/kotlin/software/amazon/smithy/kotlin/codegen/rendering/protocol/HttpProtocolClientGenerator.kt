@@ -208,18 +208,24 @@ abstract class HttpProtocolClientGenerator(
         val hasOutputStream = outputShape.map { it.hasStreamingMember(ctx.model) }.orElse(false)
         val inputVariableName = if (inputShape.isPresent) "input" else KotlinTypes.Unit.fullName
 
-        if (hasOutputStream) {
-            writer
-                .addImport(RuntimeTypes.Http.Operation.execute)
-                .write("return op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
-        } else {
-            writer.addImport(RuntimeTypes.Http.Operation.roundTrip)
-            if (outputShape.isPresent) {
-                writer.write("return op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
-            } else {
-                writer.write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+        writer
+            .write(
+                """val rootSpan = config.tracer.createRootSpan("#L-${'$'}{op.context.#T}")""",
+                op.id.name,
+                RuntimeTypes.Http.Operation.sdkRequestId,
+            )
+            .withBlock(
+                "return #T.#T(rootSpan) {",
+                "}",
+                RuntimeTypes.KotlinCoroutines.coroutineContext,
+                RuntimeTypes.Tracing.Core.withRootTraceSpan,
+            ) {
+                if (hasOutputStream) {
+                    write("op.#T(client, #L, block)", RuntimeTypes.Http.Operation.execute, inputVariableName)
+                } else {
+                    write("op.#T(client, #L)", RuntimeTypes.Http.Operation.roundTrip, inputVariableName)
+                }
             }
-        }
     }
 
     private fun ioSymbolNames(op: OperationShape): Pair<String, String> {

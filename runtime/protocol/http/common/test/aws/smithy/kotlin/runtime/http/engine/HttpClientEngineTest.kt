@@ -17,14 +17,9 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.job
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.yield
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -66,7 +61,7 @@ class HttpClientEngineTest {
 
     @Test
     fun testCallComplete() = runTest {
-        val call = client.call(SdkHttpRequest(HttpRequestBuilder()))
+        val call = client.call(HttpRequestBuilder())
         assertTrue(call.job.isActive)
         call.complete()
         assertFalse(call.job.isActive)
@@ -80,7 +75,10 @@ class HttpClientEngineTest {
             delay(1000)
         }
         yield()
-        val callJob = engine.inFlightJobs.first()
+        val inflightJobs = engine.inFlightJobs
+        assertEquals(1, inflightJobs.size)
+        val callJob = inflightJobs.first()
+
         assertFalse(callJob.isCancelled)
         job.cancel()
         assertTrue(callJob.isCancelled)
