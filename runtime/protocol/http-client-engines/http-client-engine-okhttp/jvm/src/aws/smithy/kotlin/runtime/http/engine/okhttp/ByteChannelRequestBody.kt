@@ -6,12 +6,14 @@
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.HttpBody
+import aws.smithy.kotlin.runtime.internal.derivedName
+import aws.smithy.kotlin.runtime.io.internal.toSdk
+import aws.smithy.kotlin.runtime.io.readAll
 import kotlinx.coroutines.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import okio.BufferedSink
 import java.io.IOException
-import java.nio.ByteBuffer
 import kotlin.coroutines.CoroutineContext
 
 /**
@@ -63,18 +65,8 @@ internal class ByteChannelRequestBody(
     }
     private suspend fun transferBody(sink: BufferedSink) = withJob(producerJob) {
         val chan = body.readFrom()
-        val buffer = ByteBuffer.allocate(DEFAULT_BUFFER_SIZE)
-        while (!chan.isClosedForRead && producerJob.isActive) {
-            // fill the buffer by reading chunks from the underlying source
-            while (chan.readAvailable(buffer) != -1 && buffer.remaining() > 0) {}
-
-            buffer.flip()
-            while (buffer.remaining() > 0) {
-                sink.write(buffer)
-            }
-
-            buffer.clear()
-        }
+        val sdkSink = sink.toSdk()
+        chan.readAll(sdkSink)
     }
 }
 

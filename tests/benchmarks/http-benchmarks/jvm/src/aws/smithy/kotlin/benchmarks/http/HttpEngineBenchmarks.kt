@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
+import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.net.Host
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -33,7 +34,6 @@ private const val MB_PER_THROUGHPUT_OP = 12
 // TODO - add TLS tests to benchmarks (or just move existing tests to use TLS since we expect that to be the norm)
 private const val OKHTTP_ENGINE = "OkHttp"
 private const val CRT_ENGINE = "CRT"
-private const val KTOR_OKHTTP = "Ktor_OkHttp"
 
 fun interface BenchmarkEngineFactory {
     fun create(): HttpClientEngine
@@ -42,7 +42,6 @@ fun interface BenchmarkEngineFactory {
 private val engines = mapOf(
     OKHTTP_ENGINE to BenchmarkEngineFactory { OkHttpEngine() },
     CRT_ENGINE to BenchmarkEngineFactory { CrtHttpEngine() },
-    KTOR_OKHTTP to BenchmarkEngineFactory { KtorOkHttpEngine() },
 )
 
 // 12MB
@@ -52,7 +51,7 @@ private val largeData = ByteArray(MB_PER_THROUGHPUT_OP * 1024 * 1024)
 @State(Scope.Benchmark)
 @OutputTimeUnit(TimeUnit.SECONDS)
 open class HttpEngineBenchmarks {
-    @Param(OKHTTP_ENGINE, CRT_ENGINE, KTOR_OKHTTP)
+    @Param(OKHTTP_ENGINE, CRT_ENGINE)
     var httpClientName: String = ""
 
     lateinit var httpClient: SdkHttpClient
@@ -104,7 +103,7 @@ open class HttpEngineBenchmarks {
         }
     }
 
-    private val uploadRequest = HttpRequest {
+    private val uploadRequestInMemoryBody = HttpRequest {
         url {
             scheme = Protocol.HTTP
             method = HttpMethod.POST
@@ -113,6 +112,22 @@ open class HttpEngineBenchmarks {
             path = "/upload"
         }
         body = HttpBody.fromBytes(largeData)
+    }
+
+    // creates a new streaming body
+    private fun uploadRequestStreamingBody() = HttpRequest {
+        url {
+            scheme = Protocol.HTTP
+            method = HttpMethod.POST
+            host = Host.Domain("localhost")
+            port = serverPort
+            path = "/upload"
+        }
+        body = object : HttpBody.Streaming() {
+            override val contentLength: Long = largeData.size.toLong()
+            private val ch = SdkByteReadChannel(largeData)
+            override fun readFrom(): SdkByteReadChannel = ch
+        }
     }
 
     @Setup(Level.Trial)
@@ -190,12 +205,29 @@ open class HttpEngineBenchmarks {
     }
 
     /**
-     * Raw upload throughput (output MB/s will be roughly op/sec * MB/op)
+     * Raw upload throughput in-memory body (output MB/s will be roughly op/sec * MB/op)
      */
     @Benchmark
     @OperationsPerInvocation(MB_PER_THROUGHPUT_OP)
     fun uploadThroughputNoTls(blackhole: Blackhole) = runBlocking {
-        val call = httpClient.call(uploadRequest)
+        val call = httpClient.call(uploadRequestInMemoryBody)
+        try {
+            val body = call.response.body.readAll()
+            blackhole.consume(body)
+        } catch (ex: Exception) {
+            println("failed to consume body: ${ex.message}")
+        } finally {
+            call.complete()
+        }
+    }
+
+    /**
+     * Raw upload throughput for a streaming body (output MB/s will be roughly op/sec * MB/op)
+     */
+    @Benchmark
+    @OperationsPerInvocation(MB_PER_THROUGHPUT_OP)
+    fun uploadThroughputStreamingNoTls(blackhole: Blackhole) = runBlocking {
+        val call = httpClient.call(uploadRequestStreamingBody())
         try {
             val body = call.response.body.readAll()
             blackhole.consume(body)

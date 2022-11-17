@@ -7,8 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.io.SdkByteChannel
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
@@ -153,7 +152,7 @@ class ByteChannelRequestBodyTest {
         actual.writeTo(sink)
         assertEquals(1, callJob.children.toList()[0].children.toList().size)
         assertEquals(sink.buffer.size, 0)
-        chan.writeFully(content)
+        chan.writeAll(content.source())
 
         assertFalse(sink.isClosed)
 
