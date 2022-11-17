@@ -20,8 +20,6 @@ import kotlin.test.assertTrue
 class SdkByteChannelSuspendTest : ManualDispatchTestBase() {
     private val ch = SdkByteChannel()
 
-    class TestException : RuntimeException("test exception")
-
     private suspend fun SdkByteChannel.write(str: String) {
         val source = SdkBuffer().apply { writeUtf8(str) }
         write(source)

@@ -10,12 +10,11 @@ import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlin.test.*
 
@@ -24,14 +23,14 @@ class DownloadTest : AbstractEngineTest() {
     // These download integrity tests assert behavior on various SdkByteReadChannel.read* functions (specifically
     // that reading doesn't lose any bytes due to erroneous handling of buffers). The server
     // side will insert random delays and ensures that the reader will suspend while reading
+    // see https://github.com/awslabs/aws-sdk-kotlin/issues/526
 
     @Test
     fun testReadFullyIntegrity() =
-        // see https://github.com/awslabs/aws-sdk-kotlin/issues/526
         runReadSuspendIntegrityTest { channel, totalSize ->
-            val dest = ByteArray(totalSize)
-            channel.readFully(dest)
-            dest.sha256().encodeToHex()
+            val dest = SdkBuffer()
+            channel.readFully(dest, totalSize.toLong())
+            dest.readByteArray().sha256().encodeToHex()
         }
 
     @Test
@@ -40,13 +39,13 @@ class DownloadTest : AbstractEngineTest() {
             val checksum = Sha256()
             var totalRead = 0
             while (!channel.isClosedForRead) {
-                val chunk = ByteArray(8 * 1024)
-                val rc = channel.readAvailable(chunk)
+                val sink = SdkBuffer()
+                val rc = channel.read(sink, 8192).toInt()
                 if (rc < 0) break
 
                 totalRead += rc
-                val slice = if (rc != chunk.size) chunk.sliceArray(0 until rc) else chunk
-                checksum.update(slice)
+                val chunk = sink.readByteArray()
+                checksum.update(chunk)
             }
 
             assertEquals(totalSize, totalRead)
@@ -56,9 +55,10 @@ class DownloadTest : AbstractEngineTest() {
     @Test
     fun testReadRemainingIntegrity() =
         runReadSuspendIntegrityTest { channel, totalSize ->
-            val data = channel.readRemaining()
-            assertEquals(totalSize, data.size)
-            data.sha256().encodeToHex()
+            val data = SdkBuffer()
+            channel.readRemaining(data)
+            assertEquals(totalSize.toLong(), data.size)
+            data.readByteArray().sha256().encodeToHex()
         }
 
     private fun runReadSuspendIntegrityTest(reader: suspend (SdkByteReadChannel, Int) -> String) = testEngines {
@@ -109,7 +109,7 @@ class DownloadTest : AbstractEngineTest() {
                 val body = call.response.body
                 assertIs<HttpBody.Streaming>(body)
                 val chan = body.readFrom()
-                val bytes = chan.readRemaining()
+                val bytes = chan.readToBuffer().readByteArray()
                 val actualSha256 = bytes.sha256().encodeToHex()
                 assertEquals(expectedSha256, actualSha256)
             } finally {

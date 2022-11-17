@@ -80,3 +80,11 @@ public suspend fun SdkByteWriteChannel.writeAvailable(source: SdkBuffer): Long {
     write(source, wc)
     return wc
 }
+
+/**
+ * Write [limit] bytes from [source] starting at [offset]. Suspends until all bytes can be written.
+ */
+public suspend fun SdkByteWriteChannel.write(source: ByteArray, offset: Int = 0, limit: Int = source.size - offset) {
+    val buffer = SdkBuffer().apply { write(source, offset, limit) }
+    write(buffer)
+}

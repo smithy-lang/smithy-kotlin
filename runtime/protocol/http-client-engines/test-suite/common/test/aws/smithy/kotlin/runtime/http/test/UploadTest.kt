@@ -17,6 +17,7 @@ import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.write
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlinx.coroutines.*
 import kotlin.test.Test
@@ -66,9 +67,9 @@ class UploadTest : AbstractEngineTest() {
                 launch {
                     val end = data.size / 3
                     val slice = data.sliceArray(0 until end)
-                    ch.writeFully(slice, 0, end)
+                    ch.write(slice, 0, end)
                     delay(1000)
-                    ch.writeFully(data, offset = end)
+                    ch.write(data, offset = end)
                     ch.close()
                 }
                 val call = client.call(req)
@@ -99,7 +100,7 @@ class UploadTest : AbstractEngineTest() {
 
             coroutineScope {
                 launch {
-                    ch.writeFully(data)
+                    ch.write(data)
                     delay(1000)
                     // CRT will have stopped polling by now
                     ch.close()
@@ -184,7 +185,7 @@ class UploadTest : AbstractEngineTest() {
 
             val writeJob = GlobalScope.launch {
                 val seedData = ByteArray(6017) { it.toByte() }
-                chan.writeFully(seedData)
+                chan.write(seedData)
             }
 
             val req = HttpRequest {

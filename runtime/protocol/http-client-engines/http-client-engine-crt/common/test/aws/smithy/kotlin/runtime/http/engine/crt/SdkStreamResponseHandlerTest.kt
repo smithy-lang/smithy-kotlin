@@ -7,13 +7,17 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.byteArrayBuffer
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.HttpStatusCode
+import aws.smithy.kotlin.runtime.io.SdkSink
+import aws.smithy.kotlin.runtime.io.readAll
+import aws.smithy.kotlin.runtime.io.readToBuffer
 import io.kotest.matchers.string.shouldContain
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.yield
 import kotlin.test.*
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -37,7 +41,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitSuccessResponse() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         launch {
             val headers = listOf(
@@ -62,7 +66,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitNoHeaders() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         launch {
             handler.onResponseComplete(stream, 0)
@@ -74,7 +78,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testWaitFailedResponse() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         launch {
             handler.onResponseComplete(stream, -1)
@@ -88,7 +92,7 @@ class SdkStreamResponseHandlerTest {
 
     @Test
     fun testRespBodyCreated() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         launch {
             val headers = listOf(
@@ -109,12 +113,13 @@ class SdkStreamResponseHandlerTest {
 
         assertFalse(mockConn.isClosed)
         handler.onResponseComplete(stream, 0)
+        yield()
         assertTrue(respChan.isClosedForWrite)
     }
 
     @Test
     fun testRespBody() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         val data = "Fool of a Took! Throw yourself in next time and rid us of your stupidity!"
         launch {
@@ -137,12 +142,12 @@ class SdkStreamResponseHandlerTest {
 
         assertTrue(respChan.isClosedForWrite)
 
-        assertEquals(data, respChan.readRemaining().decodeToString())
+        assertEquals(data, respChan.readToBuffer().readUtf8())
     }
 
     @Test
     fun testStreamError() = runTest {
-        val handler = SdkStreamResponseHandler(mockConn)
+        val handler = SdkStreamResponseHandler(mockConn, coroutineContext)
         val stream = MockHttpStream(200)
         val data = "foo bar"
         val socketClosedEc = 1051
@@ -164,8 +169,8 @@ class SdkStreamResponseHandlerTest {
         val respChan = (resp.body as HttpBody.Streaming).readFrom()
 
         assertTrue(respChan.isClosedForWrite)
-        assertFailsWith<ClientException> {
-            respChan.readRemaining()
+        assertFailsWith<CancellationException> {
+            respChan.readAll(SdkSink.blackhole())
         }.message.shouldContain("CrtHttpEngine::response failed: ec=$socketClosedEc")
     }
 }
