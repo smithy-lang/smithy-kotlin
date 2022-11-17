@@ -20,7 +20,7 @@ public abstract class AbstractAwsChunkedByteReadChannel(
     private val trailingHeaders: Headers = Headers.Empty,
 ) : SdkByteReadChannel by chan {
     override val isClosedForRead: Boolean
-        get() = chan.isClosedForRead && (chunk == null || chunkOffset >= chunk!!.size)
+        get() = chan.isClosedForRead && (chunk == null || chunkOffset >= chunk!!.size) && hasLastChunkBeenSent
 
     internal var chunk: ByteArray? = null
     internal var chunkOffset: Int = 0
