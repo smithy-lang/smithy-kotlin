@@ -11,8 +11,11 @@ import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
+import aws.smithy.kotlin.runtime.internal.derivedName
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.internal.toSdk
+import aws.smithy.kotlin.runtime.io.writeAll
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.traceSpan
@@ -34,10 +37,6 @@ import okhttp3.Response as OkHttpResponse
  * SDK specific "tag" attached to an [okhttp3.Request] instance
  */
 internal data class SdkRequestTag(val execContext: ExecutionContext, val traceSpan: TraceSpan)
-
-// matches segment size used by okio
-// see https://github.com/square/okio/blob/parent-3.1.0/okio/src/commonMain/kotlin/okio/Segment.kt#L179
-internal const val DEFAULT_BUFFER_SIZE: Int = 8192
 
 /**
  * Convert SDK [HttpRequest] to an [okhttp3.Request] instance
@@ -85,13 +84,8 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
         val writerContext = callContext + Dispatchers.IO + callContext.derivedName("response-body-writer")
         val job = GlobalScope.launch(writerContext) {
             val result = runCatching {
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                val source = body.source()
-                while (!source.exhausted()) {
-                    val rc = source.read(buffer)
-                    if (rc == -1) break
-                    ch.writeFully(buffer, 0, rc)
-                }
+                val source = body.source().toSdk()
+                ch.writeAll(source)
             }
 
             // immediately close when done to signal end of body stream
@@ -113,16 +107,6 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
     }
 
     return HttpResponse(HttpStatusCode.fromValue(code), sdkHeaders, httpBody)
-}
-
-/**
- * Append to the existing coroutine name if it exists in the context otherwise
- * use [name] as is.
- * @return the [CoroutineName] context element
- */
-internal fun CoroutineContext.derivedName(name: String): CoroutineName {
-    val existing = get(CoroutineName)?.name ?: return CoroutineName(name)
-    return CoroutineName("$existing:$name")
 }
 
 internal class OkHttpProxyAuthenticator(

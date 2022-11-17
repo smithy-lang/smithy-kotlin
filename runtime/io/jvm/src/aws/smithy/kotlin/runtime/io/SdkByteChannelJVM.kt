@@ -14,7 +14,7 @@ import kotlinx.coroutines.withContext
 public suspend fun SdkByteReadChannel.readAll(sink: SdkSink): Long = withContext(Dispatchers.IO) {
     val bufferedSink = if (sink is SdkBuffer) sink else sink.buffer()
     var totalWritten = 0L
-    while (!isClosedForRead) {
+    while (true) {
         val rc = read(bufferedSink.buffer, DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE.toLong())
         if (rc == -1L) break
         totalWritten += rc

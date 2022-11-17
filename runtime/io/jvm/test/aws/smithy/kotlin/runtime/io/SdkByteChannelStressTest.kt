@@ -9,6 +9,7 @@ import kotlinx.coroutines.*
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.time.Duration.Companion.seconds
 
 class SdkByteChannelStressTest {
@@ -89,5 +90,14 @@ class SdkByteChannelStressTest {
         assertEquals(rc, sink.size)
 
         assertContentEquals(testBytes, sink.readByteArray())
+    }
+
+    @Test
+    fun testReadAllFromFailedChannel() = runBlocking {
+        val ch = SdkByteChannel(true)
+        ch.cancel(TestException())
+        assertFailsWith<TestException> {
+            ch.readAll(SdkSink.blackhole())
+        }
     }
 }

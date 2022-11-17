@@ -154,4 +154,29 @@ class SdkByteChannelTest {
         // should only flip after all bytes read
         assertTrue(chan.isClosedForRead)
     }
+
+    @Test
+    fun testReadFullyFromFailedChannel() = runTest {
+        // ensure that we attempt reading such that failures are propagate to caller
+        val chan = SdkByteChannel(true)
+
+        chan.cancel(TestException())
+        val sink = SdkBuffer()
+        assertFailsWith<TestException> {
+            chan.readFully(sink, 1)
+        }
+    }
+
+    @Test
+    fun testReadRemainingFromFailedChannel() = runTest {
+        // ensure that we attempt reading such that failures are propagate to caller
+        val chan = SdkByteChannel(true)
+
+        chan.cancel(TestException())
+
+        val sink = SdkBuffer()
+        assertFailsWith<TestException> {
+            chan.readRemaining(sink)
+        }
+    }
 }

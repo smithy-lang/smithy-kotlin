@@ -17,7 +17,6 @@ internal actual fun engineFactories(): List<TestEngineFactory> =
     listOf(
         TestEngineFactory("DefaultHttpEngine", ::DefaultHttpEngine),
         TestEngineFactory("CrtHttpEngine") { CrtHttpEngine(it) },
-        TestEngineFactory("KtorEngine") { KtorOkHttpEngine(it) },
     )
 
 internal actual fun runBlockingTest(

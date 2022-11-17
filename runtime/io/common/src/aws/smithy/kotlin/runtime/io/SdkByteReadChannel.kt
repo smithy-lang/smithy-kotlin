@@ -80,9 +80,10 @@ public suspend fun SdkByteReadChannel.readFully(sink: SdkBuffer, byteCount: Long
  * @param sink the buffer that data read from the channel will be appended to
  */
 public suspend fun SdkByteReadChannel.readRemaining(sink: SdkBuffer) {
-    while (!isClosedForRead) {
+    do {
+        // ensure any errors are propagated by attempting to read at least once
         read(sink, Long.MAX_VALUE)
-    }
+    } while (!isClosedForRead)
 }
 
 /**

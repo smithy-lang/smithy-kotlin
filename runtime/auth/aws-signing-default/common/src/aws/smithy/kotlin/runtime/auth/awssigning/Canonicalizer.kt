@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.hashing.hash
@@ -15,6 +16,9 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.util.encodeLabel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.SdkSink
+import aws.smithy.kotlin.runtime.io.internal.SdkSinkObserver
+import aws.smithy.kotlin.runtime.io.readAll
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.*
 import aws.smithy.kotlin.runtime.util.text.*
@@ -149,15 +153,18 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
      */
     private suspend fun SdkByteReadChannel.sha256(): ByteArray {
         val hash = sha256Supplier()
-
-        val sink = ByteArray(STREAM_CHUNK_BYTES)
-        while (!isClosedForRead || availableForRead > 0) {
-            val bytesRead = readAvailable(sink)
-            if (bytesRead <= 0) break
-            hash.update(sink, offset = 0, length = bytesRead)
-        }
-
+        val sink = HashingSink(hash)
+        readAll(sink)
         return hash.digest()
+    }
+}
+
+private class HashingSink(
+    val hash: HashFunction,
+    sink: SdkSink = SdkSink.blackhole(),
+) : SdkSinkObserver(sink) {
+    override fun observe(data: ByteArray, offset: Int, length: Int) {
+        hash.update(data, offset, length)
     }
 }
 
