@@ -22,13 +22,13 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
 protected constructor(builder: Builder<T>) {
 
-    protected val ctx: ProtocolGenerator.GenerationContext = builder.ctx!!
-    protected val symbolProvider: SymbolProvider = builder.symbolProvider!!
-    protected val model: Model = builder.model!!
-    protected val testCases: List<T> = builder.testCases!!
-    protected val operation: OperationShape = builder.operation!!
-    protected val writer: KotlinWriter = builder.writer!!
-    protected val serviceShape: ServiceShape = builder.service!!
+    protected val ctx: ProtocolGenerator.GenerationContext = requireNotNull(builder.ctx) { "protocol generator ctx is required" }
+    protected val symbolProvider: SymbolProvider = requireNotNull(builder.symbolProvider) { "symbol provider is required" }
+    protected val model: Model = requireNotNull(builder.model) { "model is required" }
+    protected val testCases: List<T> = requireNotNull(builder.testCases) { "list of test cases is required" }
+    protected val operation: OperationShape = requireNotNull(builder.operation) { "operation shape is required" }
+    protected val writer: KotlinWriter = requireNotNull(builder.writer) { "writer is required" }
+    protected val serviceShape: ServiceShape = requireNotNull(builder.service) { "service shape is required" }
 
     protected val idempotentFieldsInModel: Boolean by lazy {
         operation.input.isPresent &&
