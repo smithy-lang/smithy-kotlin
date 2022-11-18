@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
+import aws.smithy.kotlin.runtime.tracing.debug
 import kotlin.coroutines.coroutineContext
 import aws.sdk.kotlin.crt.auth.credentials.Credentials as CrtCredentials
 import aws.sdk.kotlin.crt.auth.signing.AwsSignatureType as CrtSignatureType
@@ -31,6 +32,8 @@ public object CrtAwsSigner : AwsSigner {
         val crtConfig = config.toCrtSigningConfig()
 
         val crtResult = CrtSigner.sign(crtRequest, crtConfig)
+        coroutineContext.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
+
         val crtSignedResult = checkNotNull(crtResult.signedRequest) { "Signed request unexpectedly null" }
 
         val requestBuilder = request.toBuilder()
@@ -45,6 +48,8 @@ public object CrtAwsSigner : AwsSigner {
     ): AwsSigningResult<Unit> {
         val crtConfig = config.toCrtSigningConfig()
         val crtResult = CrtSigner.signChunk(chunkBody, prevSignature, crtConfig)
+        coroutineContext.debug<CrtAwsSigner> { "Calculated signature: ${crtResult.signature.decodeToString()}" }
+
         return AwsSigningResult(Unit, crtResult.signature)
     }
 }

@@ -84,8 +84,8 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         )
         connectionPool(pool)
 
-        // log events coming from okhttp
-        eventListener(HttpEngineEventListener(pool))
+        // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
+        eventListenerFactory { call -> HttpEngineEventListener(pool, call) }
 
         // map protocols
         if (config.alpn.isNotEmpty()) {
