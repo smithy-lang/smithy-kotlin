@@ -1,0 +1,5 @@
+{
+    "id": "a59196ef-583c-45b2-9f7f-3d8329902be0",
+    "type": "misc",
+    "description": "Allow using maven local for to test Smithy changes"
+}
