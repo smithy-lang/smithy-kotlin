@@ -31,9 +31,7 @@ fun ParameterType.toSymbol(): Symbol =
         ParameterType.STRING -> KotlinTypes.String
         ParameterType.BOOLEAN -> KotlinTypes.Boolean
     }
-        .toBuilder()
-        .boxed()
-        .build()
+        .asNullable()
 
 /**
  * Get the writable literal for a rules engine value.
@@ -41,6 +39,6 @@ fun ParameterType.toSymbol(): Symbol =
 fun Value.toLiteral(): String =
     when (this) {
         is Value.String -> expectString().doubleQuote()
-        is Value.Bool -> if (expectBool()) "true" else "false"
+        is Value.Bool -> expectBool().toString()
         else -> throw IllegalArgumentException("unrecognized parameter value type")
     }
