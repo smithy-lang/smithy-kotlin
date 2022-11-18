@@ -293,7 +293,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
 
         if (pathBindings.isNotEmpty()) {
-            writer.openBlock("val pathSegments = listOf(", ")") {
+            writer.openBlock("val pathSegments = listOf<String>(", ")") {
                 httpTrait.uri.segments.forEach { segment ->
                     if (segment.isLabel || segment.isGreedyLabel) {
                         // spec dictates member name and label name MUST be the same

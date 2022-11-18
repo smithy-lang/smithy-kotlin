@@ -8,7 +8,6 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.KotlinWriter
 import software.amazon.smithy.kotlin.codegen.core.RuntimeTypes
-import software.amazon.smithy.kotlin.codegen.core.withBlock
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 
 /**
@@ -32,12 +31,10 @@ class EndpointProviderGenerator(
 
     fun render() {
         renderDocumentation()
-        writer.withBlock("public fun interface #L {", "}", CLASS_NAME) {
-            write("public suspend fun resolveEndpoint(params: #T): #T", paramsSymbol, RuntimeTypes.Http.Endpoints.Endpoint)
-        }
+        writer.write("public typealias EndpointProvider = #T<#T>", RuntimeTypes.Http.Endpoints.EndpointProvider, paramsSymbol)
     }
 
-    fun renderDocumentation() {
+    private fun renderDocumentation() {
         writer.dokka {
             write("Resolves to an endpoint for a given service operation.")
         }

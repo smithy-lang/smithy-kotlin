@@ -6,12 +6,13 @@
 package aws.smithy.kotlin.runtime.http.endpoints
 
 /**
- * Resolves endpoints for a given service client
+ * Resolves endpoints for a given service client.
  */
-public fun interface EndpointResolver {
+public fun interface EndpointProvider<T> {
     /**
      * Resolve the endpoint to make requests to
+     * @param params The input context for the resolver function
      * @return an [Endpoint] that can be used to connect to the service
      */
-    public suspend fun resolve(): Endpoint
+    public suspend fun resolveEndpoint(params: T): Endpoint
 }

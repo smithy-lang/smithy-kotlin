@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
+import software.amazon.smithy.kotlin.codegen.model.defaultName
 import software.amazon.smithy.model.SourceLocation
 import software.amazon.smithy.rulesengine.language.EndpointRuleSet
 import software.amazon.smithy.rulesengine.language.syntax.Identifier
@@ -120,7 +121,7 @@ class DefaultEndpointProviderGenerator(
         // explicitly wrap blocks with assignments to restrict scope therein
         writer.wrapBlockIf(assignments.isNotEmpty(), "run {", "}") {
             assignments.forEach {
-                writer.writeInline("val #L = ", it.result.get().toKotlin())
+                writer.writeInline("val #L = ", it.result.get().defaultName())
                 renderExpression(it.fn)
                 writer.write("")
             }
@@ -214,7 +215,7 @@ class ExpressionGenerator(
         if (isParamRef(reference)) {
             writer.writeInline("params.")
         }
-        writer.writeInline(reference.name.toKotlin())
+        writer.writeInline(reference.name.defaultName())
     }
 
     override fun visitGetAttr(getAttr: GetAttr) {

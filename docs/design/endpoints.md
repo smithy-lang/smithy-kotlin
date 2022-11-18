@@ -481,10 +481,7 @@ internal class GetResourceResolveEndpointMiddleware(
         }
         
         op.execution.mutate.intercept { req, next -> ...
-            setRequestEndpoint(req, endpoint)
-
-            // further action can be taken here as part of renderPostResolution...
-
+            setResolvedEndpoint(req, endpoint)
             next.call(req)
         }
     }

@@ -22,12 +22,13 @@ import software.amazon.smithy.protocoltests.traits.HttpMessageTestCase
 abstract class HttpProtocolUnitTestGenerator<T : HttpMessageTestCase>
 protected constructor(builder: Builder<T>) {
 
-    protected val symbolProvider: SymbolProvider = builder.symbolProvider!!
-    protected val model: Model = builder.model!!
-    protected val testCases: List<T> = builder.testCases!!
-    protected val operation: OperationShape = builder.operation!!
-    protected val writer: KotlinWriter = builder.writer!!
-    protected val serviceShape: ServiceShape = builder.service!!
+    protected val ctx: ProtocolGenerator.GenerationContext = requireNotNull(builder.ctx) { "protocol generator ctx is required" }
+    protected val symbolProvider: SymbolProvider = requireNotNull(builder.symbolProvider) { "symbol provider is required" }
+    protected val model: Model = requireNotNull(builder.model) { "model is required" }
+    protected val testCases: List<T> = requireNotNull(builder.testCases) { "list of test cases is required" }
+    protected val operation: OperationShape = requireNotNull(builder.operation) { "operation shape is required" }
+    protected val writer: KotlinWriter = requireNotNull(builder.writer) { "writer is required" }
+    protected val serviceShape: ServiceShape = requireNotNull(builder.service) { "service shape is required" }
 
     protected val idempotentFieldsInModel: Boolean by lazy {
         operation.input.isPresent &&
@@ -74,6 +75,7 @@ protected constructor(builder: Builder<T>) {
     protected abstract fun renderTestBody(test: T)
 
     abstract class Builder<T : HttpMessageTestCase> {
+        var ctx: ProtocolGenerator.GenerationContext? = null
         var symbolProvider: SymbolProvider? = null
         var model: Model? = null
         var testCases: List<T>? = null
@@ -81,6 +83,7 @@ protected constructor(builder: Builder<T>) {
         var writer: KotlinWriter? = null
         var service: ServiceShape? = null
 
+        fun ctx(ctx: ProtocolGenerator.GenerationContext): Builder<T> = apply { this.ctx = ctx }
         fun symbolProvider(provider: SymbolProvider): Builder<T> = apply { this.symbolProvider = provider }
         fun model(model: Model): Builder<T> = apply { this.model = model }
         fun testCases(testCases: List<T>): Builder<T> = apply { this.testCases = testCases }

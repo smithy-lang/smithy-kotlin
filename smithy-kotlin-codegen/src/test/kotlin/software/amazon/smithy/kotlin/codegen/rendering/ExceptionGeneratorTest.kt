@@ -13,8 +13,6 @@ import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.model.expectShape
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderGenerator
-import software.amazon.smithy.kotlin.codegen.rendering.endpoints.DefaultEndpointProviderTestGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ApplicationProtocol
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParserGenerator
@@ -239,25 +237,6 @@ class ExceptionGeneratorTest {
                 }
 
                 override fun structuredDataSerializer(ctx: ProtocolGenerator.GenerationContext): StructuredDataSerializerGenerator {
-                    error("not needed for test")
-                }
-
-                override fun defaultEndpointProviderGenerator(
-                    writer: KotlinWriter,
-                    rules: EndpointRuleSet,
-                    interfaceSymbol: Symbol,
-                    paramsSymbol: Symbol,
-                ): DefaultEndpointProviderGenerator {
-                    error("not needed for test")
-                }
-
-                override fun defaultEndpointProviderTestGenerator(
-                    writer: KotlinWriter,
-                    rules: EndpointRuleSet,
-                    tests: List<EndpointTestCase>,
-                    defaultProviderSymbol: Symbol,
-                    paramsSymbol: Symbol,
-                ): DefaultEndpointProviderTestGenerator {
                     error("not needed for test")
                 }
 

@@ -54,7 +54,7 @@ internal class SmokeTestOperationSerializer: HttpSerialize<SmokeTestRequest> {
         builder.method = HttpMethod.POST
 
         builder.url {
-            val pathSegments = listOf(
+            val pathSegments = listOf<String>(
                 "smoketest",
                 "$label1".encodeLabel(),
                 "foo",
@@ -263,7 +263,7 @@ internal class TimestampInputOperationSerializer: HttpSerialize<TimestampInputRe
         builder.method = HttpMethod.POST
 
         builder.url {
-            val pathSegments = listOf(
+            val pathSegments = listOf<String>(
                 "input",
                 "timestamp",
                 "$tsLabel".encodeLabel(),
@@ -340,7 +340,7 @@ internal class ConstantQueryStringOperationSerializer: HttpSerialize<ConstantQue
         builder.method = HttpMethod.GET
 
         builder.url {
-            val pathSegments = listOf(
+            val pathSegments = listOf<String>(
                 "ConstantQueryString",
                 "$label1".encodeLabel(),
             )

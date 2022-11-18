@@ -228,7 +228,6 @@ object KotlinClientRuntimeConfigProperty {
     val IdempotencyTokenProvider: ClientConfigProperty
     val RetryStrategy: ClientConfigProperty
     val SdkLogMode: ClientConfigProperty
-    val EndpointResolver: ClientConfigProperty
 
     init {
         val httpClientConfigSymbol = buildSymbol {
@@ -300,15 +299,6 @@ object KotlinClientRuntimeConfigProperty {
             performance considerations when dumping the request/response body. This is primarily a tool for
             debug purposes.
             """.trimIndent()
-        }
-
-        EndpointResolver = ClientConfigProperty {
-            symbol = RuntimeTypes.Http.Endpoints.EndpointResolver
-            documentation = """
-            Set the [${symbol!!.fullName}] used to resolve service endpoints. Operation requests will be 
-            made against the endpoint returned by the resolver.
-            """.trimIndent()
-            propertyType = ClientConfigPropertyType.Required()
         }
     }
 }
