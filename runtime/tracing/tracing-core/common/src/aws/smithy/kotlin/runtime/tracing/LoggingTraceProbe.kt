@@ -8,10 +8,10 @@ import mu.KLogger
 import mu.KotlinLogging
 
 /**
- * A [TraceProbe] that logs events to the [kotlin-logging](https://github.com/MicroUtils/kotlin-logging) library.
- * kotlin-logging requires configuration (e.g., of Slf4j on JVM) before events sent to the probe will appear in logs.
+ * A [TraceProbe] that sends logs events to downstream logging libraries (e.g., Slf4j on JVM). Those downstream
+ * libraries may require configuration before messages will actually appear in logs.
  */
-public object KotlinLoggingTraceProbe : TraceProbe {
+public object LoggingTraceProbe : TraceProbe {
     private fun EventLevel.loggerMethod(): (KLogger, () -> Any?) -> Unit = when (this) {
         EventLevel.Fatal,
         EventLevel.Error, -> KLogger::error
@@ -30,11 +30,8 @@ public object KotlinLoggingTraceProbe : TraceProbe {
         }
     }
 
-    override fun postEvents(span: TraceSpan, events: Iterable<TraceEvent>) {
-        val spanId = span.hierarchicalId
-        events.forEach {
-            if (it.data is TraceEventData.Message) log(spanId, it)
-        }
+    override fun postEvent(span: TraceSpan, event: TraceEvent) {
+        if (event.data is TraceEventData.Message) log(span.hierarchicalId, event)
     }
 
     override fun spanClosed(span: TraceSpan) { } // No action necessary

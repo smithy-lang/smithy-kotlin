@@ -59,7 +59,7 @@ interface TraceSpan : Closeable {
     val parent: TraceSpan?
 
     fun child(id: String): TraceSpan
-    fun postEvents(events: Iterable<TraceEvent>)
+    fun postEvent(event: TraceEvent)
 }
 ```
 
@@ -122,16 +122,16 @@ The `TraceProbe` interface is defined as:
 
 ```kotlin
 interface TraceProbe {
-    fun postEvents(span: TraceSpan, events: Iterable<TraceEvent>)
+    fun postEvent(span: TraceSpan, event: TraceEvent)
     fun spanClosed(span: TraceSpan)
 }
 ```
 
 The methods of `TraceProbe` are invoked by the top-level `Tracer` (or `TraceSpan` instances created by it).
 
-The `postEvents` method indicates that events have been emitted to a span. Probe implementations may choose to
-immediately handle/discard those events or to batch them until later. Once `spanClosed` is called, no more events will
-be posted for the given span.
+The `postEvent` method indicates that an event has been emitted to a span. Probe implementations may choose to
+immediately handle/discard events or to batch them until later. Once `spanClosed` is called, no more events will be
+posted for the given span.
 
 ## Client config
 
@@ -141,6 +141,56 @@ The following additional parameters will be added to client config:
   sends logging events to **kotlin-logging** and ignores metric events. The `DefaultTracer` class is available to
   provide a simple `Tracer` implementation with a configurable probe and root prefix. Using a root prefix can help
   differentiate events from multiple clients of a single service used for different use cases.
+
+# Implementation guidance
+
+The following guidelines are intended to inform implementation and usage of tracing features by SDK contributors and
+those who customize their usage of the SDK:
+
+## Trace span hierarchy
+
+Trace spans form a taxonomy that categorize tracing events into a hierarchy. Discrete spans help group related events in
+a way that's useful to downstream tools which facilitate analysis. Consequently, choosing meaningful trace spans is key
+to maximizing the usefulness of tracing events. Trace spans which are too specific and too deeply nested may create
+noise and obscure events in an opaque hierarchy. Trace spans which are too shallow may bundle together too many events
+and hinder meaningful analyses by downstream systems.
+
+The following trace span levels are recommended for implementors:
+
+* A top-level span for each operation invocation, in the form of `<clientName>-<operation>-<uuid>` (e.g.,
+  `S3-ListBuckets-8e6bf409-c119-4661-bd99-523c70701aac`)
+* A span for retry attempts, in the form of `Attempt-<n>` (e.g., `"Attempt-1"`) or `Non-retryable attempt` in the case
+  of operations which cannot be retried
+* A span for credentials chains, named `Credentials chain`. Note that individual credentials providers (e.g., static,
+  profile, environment, etc.) don't get their own child spans—only the chain.
+* A span for HTTP engine events within a request, named `HTTP`
+* Spans for subclients (or _inner clients_) which are embedded in the logic for superclients (or _outer clients_). An
+  example of a subclient is using a nested STS client as part of credential resolution while invoking an operation for a
+  different service. Spans for subclients effectively reproduce the span hierarchy listed above nested within the outer
+  span hierarchy.
+
+The following are examples of suggested trace span hierarchies:
+
+* `S3-ListBuckets-8e6bf409-c119-4661-bd99-523c70701aac`: events which occur during invocation of an S3 `ListBuckets`
+  operation _before_ or _after_ retry middleware (e.g., serialization/deserialization, endpoint resolution, etc.)
+* `S3-ListBuckets-8e6bf409-c119-4661-bd99-523c70701aac/Attempt-1`: events which occur during the first attempt at
+  calling `ListBuckets` _outside of_ the HTTP engine (e.g., signing)
+* `S3-ListBuckets-8e6bf409-c119-4661-bd99-523c70701aac/Attempt-1/Credentials chain`: events which occur during
+  credential resolution in a credentials chain during the first attempt at calling `ListBuckets`
+* `S3-ListBuckets-8e6bf409-c119-4661-bd99-523c70701aac/Attempt-1/HTTP`: events which occur inside the HTTP engine during
+  the first attempt at calling `ListBuckets` (e.g., sending/receiving bytes from service)
+
+The following is an example of a nested span hierarchy for a subclient:
+
+* `S3-ListBuckets-8e6bf409-c119-4661-bd99-523c70701aac/Attempt-1/Credentials chain/SSO-AssumeRole-c080b2e2-ff6d-4504-bce4-3433f9f4ac1b/Attempt-2`:
+  events which occur during the second attempt to call SSO's `AssumeRole` as part of credential chain resolution during
+  the first attempt to call S3's `ListBuckets`.
+
+### Adding new spans
+
+New spans may be necessary for certain features in the future and thus the above list and examples are not exhaustive.
+For the reasons described above, care should be taken to ensure that new spans add enough value and distinctiveness
+without nesting so deeply as to obscure event relationships.
 
 # Revision history
 

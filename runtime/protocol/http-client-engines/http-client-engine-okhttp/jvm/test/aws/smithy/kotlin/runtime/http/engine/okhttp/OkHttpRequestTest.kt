@@ -22,7 +22,7 @@ import kotlin.test.assertNull
 private class TestTraceSpan(override val parent: TraceSpan?, override val id: String) : TraceSpan {
     override fun child(id: String): TraceSpan = TestTraceSpan(this, id)
     override fun close() = Unit
-    override fun postEvents(events: Iterable<TraceEvent>) = Unit
+    override fun postEvent(event: TraceEvent) = Unit
 }
 
 class OkHttpRequestTest {

@@ -13,17 +13,19 @@ private class DefaultTraceSpan(
 
     override fun close(): Unit = probe.spanClosed(this)
 
-    override fun postEvents(events: Iterable<TraceEvent>) {
-        probe.postEvents(this, events)
-    }
+    override fun postEvent(event: TraceEvent) = probe.postEvent(this, event)
 }
 
 /**
  * The default [Tracer] implementation. This tracer allows configuring the [TraceProbe] to which events will be omitted.
  * @param probe The [TraceProbe] to which events will be omitted.
  * @param rootPrefix A string to prepend to all root IDs for this tracer. This allows easily marking a tracer's spans as
- * being specific to a given service or use case.
+ * being specific to a given service or use case. If this argument is blank, root IDs will be unprefixed. If this
+ * argument is non-blank, the given prefix will be prepended to root IDs separated by a hyphen (`-`).
  */
 public class DefaultTracer(private val probe: TraceProbe, private val rootPrefix: String) : Tracer {
-    override fun createRootSpan(id: String): TraceSpan = DefaultTraceSpan(probe, null, "$rootPrefix$id")
+    override fun createRootSpan(id: String): TraceSpan {
+        val fullId = if (rootPrefix.isBlank()) id else "$rootPrefix-$id"
+        return DefaultTraceSpan(probe, null, fullId)
+    }
 }

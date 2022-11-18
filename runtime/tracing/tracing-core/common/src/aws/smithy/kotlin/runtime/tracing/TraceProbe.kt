@@ -9,11 +9,11 @@ package aws.smithy.kotlin.runtime.tracing
  */
 public interface TraceProbe {
     /**
-     * Called when events have been posted to a [TraceSpan].
-     * @param span The span in which the events occurred.
-     * @param events The events which occurred.
+     * Called when an event has been posted to a [TraceSpan].
+     * @param span The span in which the event occurred.
+     * @param event The event which occurred.
      */
-    public fun postEvents(span: TraceSpan, events: Iterable<TraceEvent>)
+    public fun postEvent(span: TraceSpan, event: TraceEvent)
 
     /**
      * Called when a [TraceSpan] has been closed and no further events will be posted to it.

@@ -31,8 +31,8 @@ public interface TraceSpan : Closeable {
     public fun child(id: String): TraceSpan
 
     /**
-     * Records new events that have occurred within the logical context of this span.
-     * @param events The events to record.
+     * Records a new event that has occurred within the logical context of this span.
+     * @param event The event to record.
      */
-    public fun postEvents(events: Iterable<TraceEvent>)
+    public fun postEvent(event: TraceEvent)
 }

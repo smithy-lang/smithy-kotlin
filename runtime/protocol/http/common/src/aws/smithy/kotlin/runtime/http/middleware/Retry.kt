@@ -62,7 +62,8 @@ public open class Retry<O>(
             }
             outcome.getOrThrow()
         } else {
-            coroutineContext.withChildTraceSpan("NonRetryableAttempt") { // Create a child span even though we won't retry
+            // Create a child span even though we won't retry
+            coroutineContext.withChildTraceSpan("Non-retryable attempt") {
                 next.call(request)
             }
         }

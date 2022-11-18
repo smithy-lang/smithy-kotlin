@@ -48,7 +48,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
-    override val tracer: Tracer = builder.tracer ?: DefaultTracer(KotlinLoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}-")
+    override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
 """
         contents.shouldContainWithDiff(expectedProps)
 
@@ -89,8 +89,8 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
          * a trace probe). By default, this will create a standard tracer that uses the service name for the root
-         * trace span and delegates to a kotlin-logging trace probe (i.e.,
-         * `DefaultTracer(KotlinLoggingTraceProbe, "<service-name>")`).
+         * trace span and delegates to a logging trace probe (i.e.,
+         * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
          */
         public var tracer: Tracer? = null
 

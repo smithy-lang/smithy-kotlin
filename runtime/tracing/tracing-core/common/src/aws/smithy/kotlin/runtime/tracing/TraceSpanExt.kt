@@ -17,12 +17,6 @@ import aws.smithy.kotlin.runtime.time.Instant
 public inline fun <T> TraceSpan.withChildSpan(id: String, block: (TraceSpan) -> T): T = child(id).use { block(it) }
 
 /**
- * Records a single new event that has occurred within the logical context of this span.
- * @param event The event to record.
- */
-public fun TraceSpan.postEvent(event: TraceEvent): Unit = postEvents(listOf(event))
-
-/**
  * Logs a message in this [TraceSpan].
  * @param level The level (or severity) of this event
  * @param sourceComponent The name of the component that generated the event

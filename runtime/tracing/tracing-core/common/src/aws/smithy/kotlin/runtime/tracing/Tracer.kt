@@ -16,7 +16,10 @@ public interface Tracer {
 }
 
 private class NestedTracer(private val originSpan: TraceSpan, private val rootPrefix: String) : Tracer {
-    override fun createRootSpan(id: String): TraceSpan = originSpan.child("$rootPrefix$id")
+    override fun createRootSpan(id: String): TraceSpan {
+        val fullId = if (rootPrefix.isBlank()) id else "$rootPrefix-$id"
+        return originSpan.child(fullId)
+    }
 }
 
 /**
@@ -24,6 +27,7 @@ private class NestedTracer(private val originSpan: TraceSpan, private val rootPr
  * the origin trace span. Child spans (including roots) created from the new tracer will be descendents of this trace
  * span.
  * @param rootPrefix A string to prepend to all root IDs for this tracer. This allows easily marking a tracer's spans as
- * being specific to a given service or use case.
+ * being specific to a given service or use case. If this argument is blank, root IDs will be unprefixed. If this
+ * argument is non-blank, the given prefix will be prepended to root IDs separated by a hyphen (`-`).
  */
-public fun TraceSpan.asNestedTracer(rootPrefix: String = ""): Tracer = NestedTracer(this, rootPrefix)
+public fun TraceSpan.asNestedTracer(rootPrefix: String): Tracer = NestedTracer(this, rootPrefix)
