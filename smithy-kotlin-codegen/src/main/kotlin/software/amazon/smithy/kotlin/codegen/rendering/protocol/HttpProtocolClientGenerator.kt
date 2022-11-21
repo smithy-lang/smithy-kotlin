@@ -17,7 +17,6 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
-import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -256,7 +255,7 @@ abstract class HttpProtocolClientGenerator(
             .forEach { middleware ->
                 middleware.render(ctx, op, writer)
             }
-        if (op.checksumRequired()) {
+        if (op.isMD5ChecksumRequired()) {
             writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
             writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
         }
@@ -277,5 +276,8 @@ abstract class HttpProtocolClientGenerator(
 }
 
 // TODO https://github.com/awslabs/aws-sdk-kotlin/issues/557
-private fun OperationShape.checksumRequired(): Boolean =
-    hasTrait<HttpChecksumRequiredTrait>() || getTrait<HttpChecksumTrait>()?.isRequestChecksumRequired == true
+// Only send MD5 checksums when a request checksum is required and the user has not opted-in to flexible checksums
+private fun OperationShape.isMD5ChecksumRequired(): Boolean {
+    val httpChecksumTrait = getTrait<HttpChecksumTrait>()
+    return httpChecksumTrait?.isRequestChecksumRequired == true && httpChecksumTrait.requestAlgorithmMember == null
+}
