@@ -14,16 +14,17 @@ The download/upload throughput benchmarks are an approximation of how much data 
 
 ```
 jvm summary:
-Benchmark                                            (httpClientName)   Mode  Cnt      Score     Error  Units
-HttpEngineBenchmarks.downloadThroughputNoTls                   OkHttp  thrpt    5    467.323 ±  13.279  ops/s
-HttpEngineBenchmarks.downloadThroughputNoTls                      CRT  thrpt    5    415.115 ±   7.405  ops/s
-HttpEngineBenchmarks.roundTripConcurrentNoTls                  OkHttp  thrpt    5  36166.495 ± 312.450  ops/s
-HttpEngineBenchmarks.roundTripConcurrentNoTls                     CRT  thrpt    5  20070.294 ± 455.729  ops/s
-HttpEngineBenchmarks.roundTripSequentialNoTls                  OkHttp  thrpt    5   8308.011 ± 305.540  ops/s
-HttpEngineBenchmarks.roundTripSequentialNoTls                     CRT  thrpt    5   7710.832 ± 579.525  ops/s
-HttpEngineBenchmarks.uploadThroughputNoTls                     OkHttp  thrpt    5    206.267 ±   6.569  ops/s
-HttpEngineBenchmarks.uploadThroughputNoTls                        CRT  thrpt    5    216.031 ±   3.804  ops/s
-HttpEngineBenchmarks.uploadThroughputStreamingNoTls            OkHttp  thrpt    5    208.176 ±   6.893  ops/s
-HttpEngineBenchmarks.uploadThroughputStreamingNoTls               CRT  thrpt    5    115.984 ±   0.265  ops/s
+Benchmark                                                 (httpClientName)   Mode  Cnt      Score     Error  Units
+HttpEngineBenchmarks.downloadThroughputNoTls                        OkHttp  thrpt    5    613.108 ±  23.914  ops/s
+HttpEngineBenchmarks.downloadThroughputNoTls                           CRT  thrpt    5    406.408 ±  13.481  ops/s
+HttpEngineBenchmarks.roundTripConcurrentNoTls                       OkHttp  thrpt    5  36524.268 ± 186.314  ops/s
+HttpEngineBenchmarks.roundTripConcurrentNoTls                          CRT  thrpt    5  19593.107 ± 561.276  ops/s
+HttpEngineBenchmarks.roundTripSequentialNoTls                       OkHttp  thrpt    5   8377.427 ± 533.683  ops/s
+HttpEngineBenchmarks.roundTripSequentialNoTls                          CRT  thrpt    5   7352.441 ± 661.062  ops/s
+HttpEngineBenchmarks.uploadThroughputChannelContentNoTls            OkHttp  thrpt    5    202.921 ±   4.127  ops/s
+HttpEngineBenchmarks.uploadThroughputChannelContentNoTls               CRT  thrpt    5    115.932 ±   0.241  ops/s
+HttpEngineBenchmarks.uploadThroughputNoTls                          OkHttp  thrpt    5    196.034 ±   5.392  ops/s
+HttpEngineBenchmarks.uploadThroughputNoTls                             CRT  thrpt    5    206.827 ±   3.650  ops/s
+HttpEngineBenchmarks.uploadThroughputSourceContentNoTls             OkHttp  thrpt    5    216.396 ±   7.071  ops/s
+HttpEngineBenchmarks.uploadThroughputSourceContentNoTls                CRT  thrpt    5    211.232 ±  17.247  ops/s
 ```
-
