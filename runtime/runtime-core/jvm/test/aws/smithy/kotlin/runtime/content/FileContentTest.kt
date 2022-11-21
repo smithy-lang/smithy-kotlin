@@ -5,7 +5,8 @@
 
 package aws.smithy.kotlin.runtime.content
 
-import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.SdkSource
+import aws.smithy.kotlin.runtime.io.source
 import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import kotlinx.coroutines.runBlocking
 import kotlin.test.*
@@ -33,16 +34,18 @@ class FileContentTest {
     }
 
     @Test
-    fun testChannelCancellation(): Unit = runBlocking {
-        val file = RandomTempFile(TEST_FILE_SIZE)
-        val fc = FileContent(file)
-        val ch = fc.newReader()
+    fun testByteStreamWriteToFile(): Unit = runBlocking {
+        val content = "a lep is a ball\na tay is a hammer\na flix is a comb\na corf is a tiger".repeat(500)
+        val source = object : ByteStream.SourceStream() {
+            override fun readFrom(): SdkSource = content.encodeToByteArray().source()
+        }
 
-        val sink = SdkBuffer()
-        assertEquals(1L, ch.read(sink, 1L))
+        val file = RandomTempFile(0)
+        source.writeToFile(file)
 
-        ch.cancel(null)
-        assertTrue(ch.isClosedForRead)
-        assertTrue(ch.isClosedForWrite)
+        val actual = file.asByteStream().toByteArray()
+        assertEquals(content.length.toLong(), file.length())
+        assertEquals(content.length, actual.size)
+        assertEquals(content, actual.decodeToString())
     }
 }

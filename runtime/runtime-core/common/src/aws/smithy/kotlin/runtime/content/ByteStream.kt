@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.content
 
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.readToBuffer
 
 /**
@@ -18,9 +19,19 @@ public sealed class ByteStream {
     public open val contentLength: Long? = null
 
     /**
+     * Flag indicating if the body can only be consumed once. If false the underlying stream
+     * must be capable of being replayed.
+     */
+    public open val isOneShot: Boolean = true
+
+    /**
      * Variant of a [ByteStream] with payload represented as an in-memory byte buffer.
      */
     public abstract class Buffer : ByteStream() {
+        // implementations MUST be idempotent and replayable or else they should be modeled differently
+        // this is meant for simple in-memory representations only
+        final override val isOneShot: Boolean = false
+
         /**
          * Provides [ByteArray] to be consumed. This *MUST* be idempotent as the data may be
          * read multiple times.
@@ -29,26 +40,32 @@ public sealed class ByteStream {
     }
 
     /**
-     * Variant of a [ByteStream] with a streaming payload that can only be consumed once.
+     * Variant of a [ByteStream] with a streaming payload read from an [SdkByteReadChannel]
      */
-    public abstract class OneShotStream : ByteStream() {
+    public abstract class ChannelStream : ByteStream() {
         /**
-         * Provides [SdkByteReadChannel] to read from/consume. This function MUST be idempotent, implementations must
-         * return the same channel every time (or a channel in the equivalent state).
+         * Provides [SdkByteReadChannel] to read from/consume.
+         *
+         * Implementations that are replayable ([isOneShot] = `true`) MUST provide a fresh read channel
+         * reset to the original state on each invocation of [readFrom]. Consumers are allowed
+         * to close the stream and ask for a new one.
          */
         public abstract fun readFrom(): SdkByteReadChannel
     }
 
     /**
-     * Variant of an [ByteStream] with a streaming payload that can be consumed multiple times.
+     * Variant of a [ByteStream] with a streaming payload read from an [SdkSource]
      */
-    public abstract class ReplayableStream : ByteStream() {
+    public abstract class SourceStream : ByteStream() {
+
         /**
-         * Provides [SdkByteReadChannel] to read from/consume. Implementations MUST provide a fresh read channel
-         * reset to the original state on each invocation of [newReader]. Consumers are allowed
+         * Provides [SdkSource] to read from/consume.
+         *
+         * Implementations that are replayable ([isOneShot] = `true`) MUST provide a fresh source
+         * reset to the original state on each invocation of [readFrom]. Consumers are allowed
          * to close the stream and ask for a new one.
          */
-        public abstract fun newReader(): SdkByteReadChannel
+        public abstract fun readFrom(): SdkSource
     }
 
     public companion object {
@@ -64,12 +81,6 @@ public sealed class ByteStream {
     }
 }
 
-private suspend fun consumeStream(chan: SdkByteReadChannel): ByteArray {
-    val bytes = chan.readToBuffer().readByteArray()
-    check(chan.isClosedForRead) { "failed to read all bytes from ByteStream, more data still expected" }
-    return bytes
-}
-
 /**
  * Consume the [ByteStream] and pull the entire contents into memory as a [ByteArray].
  * Only do this if you are sure the contents fit in-memory as this will read the entire contents
@@ -77,8 +88,13 @@ private suspend fun consumeStream(chan: SdkByteReadChannel): ByteArray {
  */
 public suspend fun ByteStream.toByteArray(): ByteArray = when (val stream = this) {
     is ByteStream.Buffer -> stream.bytes()
-    is ByteStream.OneShotStream -> consumeStream(stream.readFrom())
-    is ByteStream.ReplayableStream -> consumeStream(stream.newReader())
+    is ByteStream.ChannelStream -> {
+        val chan = stream.readFrom()
+        val bytes = chan.readToBuffer().readByteArray()
+        check(chan.isClosedForRead) { "failed to read all bytes from ByteStream, more data still expected" }
+        bytes
+    }
+    is ByteStream.SourceStream -> consumeSourceAsByteArray(stream.readFrom())
 }
 
 public suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
@@ -86,7 +102,9 @@ public suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToS
 public fun ByteStream.cancel() {
     when (val stream = this) {
         is ByteStream.Buffer -> stream.bytes()
-        is ByteStream.OneShotStream -> stream.readFrom().cancel(null)
-        is ByteStream.ReplayableStream -> stream.newReader().cancel(null)
+        is ByteStream.ChannelStream -> stream.readFrom().cancel(null)
+        is ByteStream.SourceStream -> stream.readFrom().close()
     }
 }
+
+internal expect suspend fun consumeSourceAsByteArray(source: SdkSource): ByteArray
