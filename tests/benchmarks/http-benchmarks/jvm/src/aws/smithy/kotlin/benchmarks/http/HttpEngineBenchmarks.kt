@@ -122,7 +122,7 @@ open class HttpEngineBenchmarks {
             port = serverPort
             path = "/upload"
         }
-        body = object : HttpBody.Streaming() {
+        body = object : HttpBody.ChannelContent() {
             override val contentLength: Long = largeData.size.toLong()
             private val ch = SdkByteReadChannel(largeData)
             override fun readFrom(): SdkByteReadChannel = ch

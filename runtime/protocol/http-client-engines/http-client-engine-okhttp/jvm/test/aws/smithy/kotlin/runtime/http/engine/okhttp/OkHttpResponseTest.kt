@@ -98,7 +98,7 @@ class OkHttpResponseTest {
         yield()
 
         val body = sdkResponse.body
-        assertIs<HttpBody.Streaming>(body)
+        assertIs<HttpBody.ChannelContent>(body)
         val ch = body.readFrom()
         assertFalse(ch.isClosedForWrite)
 
@@ -163,7 +163,7 @@ class OkHttpResponseTest {
         yield()
 
         val body = sdkResponse.body
-        assertIs<HttpBody.Streaming>(body)
+        assertIs<HttpBody.ChannelContent>(body)
         val ch = body.readFrom()
         assertTrue(ch.isClosedForWrite)
 

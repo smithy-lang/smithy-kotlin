@@ -23,26 +23,3 @@ public class FileContent(
         get() = endInclusive - start + 1
     override fun readFrom(): SdkSource = file.source(start, endInclusive)
 }
-
-// FIXME - move to IO as utility class
-private class FileChannel(
-    private val delegate: SdkByteChannel = SdkByteChannel(true),
-) : SdkByteChannel by delegate {
-    var job: Job? = null
-
-    override fun cancel(cause: Throwable?): Boolean {
-        job?.cancel(CancellationException("channel was cancelled", cause))
-        return delegate.cancel(cause)
-    }
-
-    override fun close(cause: Throwable?): Boolean {
-        if (cause != null) {
-            job?.cancel(CancellationException("channel was closed with cause", cause))
-        }
-        return delegate.close(cause)
-    }
-
-    override fun close() {
-        delegate.close()
-    }
-}

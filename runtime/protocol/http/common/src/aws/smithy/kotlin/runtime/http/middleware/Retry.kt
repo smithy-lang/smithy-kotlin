@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.middleware
 
-import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -42,11 +41,6 @@ public open class Retry<O>(
                 val requestCopy = request.deepCopy()
 
                 onAttempt(requestCopy, attempt)
-                when (val body = requestCopy.subject.body) {
-                    // Reset streaming bodies back to beginning
-                    is HttpBody.Streaming -> body.reset()
-                    else -> {}
-                }
 
                 attempt++
                 next.call(requestCopy)
@@ -83,7 +77,4 @@ private class PolicyLogger(
  * retries.
  */
 private val HttpRequestBuilder.isRetryable: Boolean
-    get() = when (val body = this.body) {
-        is HttpBody.Empty, is HttpBody.Bytes -> true
-        is HttpBody.Streaming -> body.isReplayable
-    }
+    get() = !body.isOneShot

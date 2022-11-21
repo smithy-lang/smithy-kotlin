@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.content
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.readToBuffer
+import aws.smithy.kotlin.runtime.io.readToByteArray
 
 /**
  * Represents an abstract read-only stream of bytes
@@ -46,7 +47,7 @@ public sealed class ByteStream {
         /**
          * Provides [SdkByteReadChannel] to read from/consume.
          *
-         * Implementations that are replayable ([isOneShot] = `true`) MUST provide a fresh read channel
+         * Implementations that are replayable ([isOneShot] = `false`) MUST provide a fresh read channel
          * reset to the original state on each invocation of [readFrom]. Consumers are allowed
          * to close the stream and ask for a new one.
          */
@@ -57,11 +58,10 @@ public sealed class ByteStream {
      * Variant of a [ByteStream] with a streaming payload read from an [SdkSource]
      */
     public abstract class SourceStream : ByteStream() {
-
         /**
          * Provides [SdkSource] to read from/consume.
          *
-         * Implementations that are replayable ([isOneShot] = `true`) MUST provide a fresh source
+         * Implementations that are replayable ([isOneShot] = `false`) MUST provide a fresh source
          * reset to the original state on each invocation of [readFrom]. Consumers are allowed
          * to close the stream and ask for a new one.
          */
@@ -94,7 +94,7 @@ public suspend fun ByteStream.toByteArray(): ByteArray = when (val stream = this
         check(chan.isClosedForRead) { "failed to read all bytes from ByteStream, more data still expected" }
         bytes
     }
-    is ByteStream.SourceStream -> consumeSourceAsByteArray(stream.readFrom())
+    is ByteStream.SourceStream -> stream.readFrom().readToByteArray()
 }
 
 public suspend fun ByteStream.decodeToString(): String = toByteArray().decodeToString()
@@ -106,5 +106,3 @@ public fun ByteStream.cancel() {
         is ByteStream.SourceStream -> stream.readFrom().close()
     }
 }
-
-internal expect suspend fun consumeSourceAsByteArray(source: SdkSource): ByteArray

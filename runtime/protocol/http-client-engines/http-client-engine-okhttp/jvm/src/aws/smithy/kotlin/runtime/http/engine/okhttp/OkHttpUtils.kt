@@ -56,7 +56,7 @@ internal fun HttpRequest.toOkHttpRequest(
         when (val body = body) {
             is HttpBody.Empty -> ByteArray(0).toRequestBody(null, 0, 0)
             is HttpBody.Bytes -> body.bytes().let { it.toRequestBody(null, 0, it.size) }
-            is HttpBody.Streaming -> ByteChannelRequestBody(body, callContext)
+            is HttpBody.SourceContent, is HttpBody.ChannelContent -> StreamingRequestBody(body, callContext)
         }
     } else {
         // assert we don't silently ignore a body even though one is unexpected here
@@ -93,7 +93,7 @@ internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpRe
             ch.close(cause)
         }
 
-        object : HttpBody.Streaming() {
+        object : HttpBody.ChannelContent() {
             // -1 is used by okhttp as transfer-encoding chunked
             override val contentLength: Long? = if (body.contentLength() >= 0L) body.contentLength() else null
             override fun readFrom(): SdkByteReadChannel = ch

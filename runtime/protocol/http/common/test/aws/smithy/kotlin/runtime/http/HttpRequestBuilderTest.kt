@@ -58,16 +58,16 @@ class HttpRequestBuilderTest {
 
             // test streaming bodies get replaced
             val chan = SdkByteReadChannel(content.encodeToByteArray())
-            val stream = object : ByteStream.OneShotStream() {
+            val stream = object : ByteStream.ChannelStream() {
                 override val contentLength: Long = content.length.toLong()
                 override fun readFrom(): SdkByteReadChannel = chan
             }
             body = stream.toHttpBody()
         }
 
-        assertTrue(builder.body is HttpBody.Streaming)
+        assertTrue(builder.body is HttpBody.ChannelContent)
         dumpRequest(builder, false)
-        assertTrue(builder.body is HttpBody.Streaming)
+        assertTrue(builder.body is HttpBody.ChannelContent)
 
         val actual = dumpRequest(builder, true)
         assertTrue(builder.body is HttpBody.Bytes)

@@ -104,7 +104,7 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
     if (dumpBody) {
         when (val body = request.body) {
             is HttpBody.Bytes -> buffer.write(body.bytes())
-            is HttpBody.Streaming -> {
+            is HttpBody.ChannelContent, is HttpBody.SourceContent -> {
                 // consume the stream and replace the body
                 val content = body.readAll()
                 if (content != null) {

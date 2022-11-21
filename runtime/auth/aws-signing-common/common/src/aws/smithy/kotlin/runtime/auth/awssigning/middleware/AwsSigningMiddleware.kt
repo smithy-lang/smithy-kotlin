@@ -146,7 +146,7 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
                 contextHashSpecification != null -> contextHashSpecification
                 config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
-                body is HttpBody.Streaming && !body.isReplayable -> {
+                body.isOneShot -> {
                     logger.warn { "unable to compute hash for unbounded stream; defaulting to unsigned payload" }
                     HashSpecification.UnsignedPayload
                 }
@@ -162,15 +162,8 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
         req.context[AwsSigningAttributes.RequestSignature] = signingResult.signature
 
         req.subject.update(signedRequest)
-        req.subject.body.resetStream()
 
         return req
-    }
-}
-
-private fun HttpBody.resetStream() {
-    if (this is HttpBody.Streaming && this.isReplayable) {
-        this.reset()
     }
 }
 

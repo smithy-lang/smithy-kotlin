@@ -77,7 +77,7 @@ class DownloadTest : AbstractEngineTest() {
                 check(contentLength < Int.MAX_VALUE)
 
                 val body = call.response.body
-                assertIs<HttpBody.Streaming>(body)
+                assertIs<HttpBody.ChannelContent>(body)
                 val chan = body.readFrom()
 
                 val readSha256 = reader(chan, contentLength.toInt())
@@ -107,7 +107,7 @@ class DownloadTest : AbstractEngineTest() {
                 assertNull(call.response.body.contentLength, "${client.engine}")
 
                 val body = call.response.body
-                assertIs<HttpBody.Streaming>(body)
+                assertIs<HttpBody.ChannelContent>(body)
                 val chan = body.readFrom()
                 val bytes = chan.readToBuffer().readByteArray()
                 val actualSha256 = bytes.sha256().encodeToHex()

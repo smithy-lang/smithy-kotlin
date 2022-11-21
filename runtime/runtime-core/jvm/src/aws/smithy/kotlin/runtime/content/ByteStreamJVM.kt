@@ -85,7 +85,3 @@ private suspend fun File.writeAll(chan: SdkByteReadChannel): Long =
  * @return the number of bytes written
  */
 public suspend fun ByteStream.writeToFile(path: Path): Long = writeToFile(path.toFile())
-
-internal actual suspend fun consumeSourceAsByteArray(source: SdkSource): ByteArray = withContext(Dispatchers.IO) {
-    source.use { it.buffer().readByteArray() }
-}

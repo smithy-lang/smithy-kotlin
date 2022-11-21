@@ -57,7 +57,7 @@ public suspend fun HttpCall.complete() {
 
     try {
         // ensure the response is cancelled
-        (response.body as? HttpBody.Streaming)?.readFrom()?.cancel(null)
+        (response.body as? HttpBody.ChannelContent)?.readFrom()?.cancel(null)
     } catch (_: Throwable) {
     }
 

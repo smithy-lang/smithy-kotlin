@@ -8,6 +8,7 @@ import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
+import aws.smithy.kotlin.runtime.crt.SdkSourceBodyStream
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -127,14 +128,14 @@ private fun HttpRequestBuilder.update(crtRequest: CrtHttpRequest) {
     }
 }
 
-private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? = when {
-    body is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-    body is HttpBody.Streaming && body.isReplayable ->
-        // FIXME: this is not particularly efficient since we have to launch a coroutine to fill it.
-        // see https://github.com/awslabs/smithy-kotlin/issues/436
-        ReadChannelBodyStream(body.readFrom(), coroutineContext)
-    body is HttpBody.Streaming && !body.isReplayable ->
-        // can only consume the stream once
-        null
-    else -> null
+private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? {
+    // can only consume the stream once
+    if (body.isOneShot) return null
+
+    return when (body) {
+        is HttpBody.Empty -> null
+        is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
+        is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), coroutineContext)
+        is HttpBody.SourceContent -> SdkSourceBodyStream(body.readFrom())
+    }
 }
