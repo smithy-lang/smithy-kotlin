@@ -20,13 +20,16 @@ import kotlin.test.Test
 class ClientConfigGeneratorTest {
     private fun getModel(): Model = loadModelFromResource("idempotent-token-test-model.smithy")
 
+    private fun createWriter() =
+        KotlinWriter(TestModelDefault.NAMESPACE).apply { putContext("service.name", TestModelDefault.SERVICE_NAME) }
+
     @Test
     fun `it detects default properties`() {
         val model = getModel()
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         ClientConfigGenerator(renderingCtx).render()
@@ -35,7 +38,7 @@ class ClientConfigGeneratorTest {
         contents.assertBalancedBracesAndParens()
 
         val expectedCtor = """
-public class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig {
+public class Config private constructor(builder: Builder): HttpClientConfig, IdempotencyTokenConfig, SdkClientConfig, TracingClientConfig {
 """
         contents.shouldContainWithDiff(expectedCtor)
 
@@ -45,6 +48,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
+    override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
 """
         contents.shouldContainWithDiff(expectedProps)
 
@@ -81,6 +85,13 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * debug purposes.
          */
         public var sdkLogMode: SdkLogMode = SdkLogMode.Default
+        /**
+         * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
+         * a trace probe). By default, this will create a standard tracer that uses the service name for the root
+         * trace span and delegates to a logging trace probe (i.e.,
+         * `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+         */
+        public var tracer: Tracer? = null
 
         @PublishedApi
         internal fun build(): Config = Config(this)
@@ -108,7 +119,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(
@@ -156,7 +167,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val customIntegration = object : KotlinIntegration {
 
             override fun additionalServiceConfigProps(ctx: CodegenContext): List<ClientConfigProperty> =
@@ -206,7 +217,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(
@@ -245,7 +256,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         ClientConfigGenerator(renderingCtx).render()
@@ -268,7 +279,7 @@ public class Config private constructor(builder: Builder) {
         val serviceShape = model.expectShape<ServiceShape>(TestModelDefault.SERVICE_SHAPE_ID)
 
         val testCtx = model.newTestContext()
-        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val writer = createWriter()
         val renderingCtx = testCtx.toRenderingContext(writer, serviceShape)
 
         val customProps = arrayOf(

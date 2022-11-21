@@ -113,6 +113,7 @@ data class KotlinDependency(
         val AWS_CREDENTIALS = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awscredentials", RUNTIME_GROUP, "aws-credentials", RUNTIME_VERSION)
         val AWS_SIGNING_COMMON = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awssigning", RUNTIME_GROUP, "aws-signing-common", RUNTIME_VERSION)
         val AWS_SIGNING_DEFAULT = KotlinDependency(GradleConfiguration.Implementation, "$RUNTIME_ROOT_NS.auth.awssigning", RUNTIME_GROUP, "aws-signing-default", RUNTIME_VERSION)
+        val TRACING_CORE = KotlinDependency(GradleConfiguration.Api, "$RUNTIME_ROOT_NS.tracing", RUNTIME_GROUP, "tracing-core", RUNTIME_VERSION)
 
         // External third-party dependencies
         val KOTLIN_TEST = KotlinDependency(GradleConfiguration.TestImplementation, "kotlin.test", "org.jetbrains.kotlin", "kotlin-test", KOTLIN_COMPILER_VERSION)

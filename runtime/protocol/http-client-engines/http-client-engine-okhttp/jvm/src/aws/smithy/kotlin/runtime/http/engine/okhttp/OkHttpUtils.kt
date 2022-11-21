@@ -15,6 +15,8 @@ import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.util.net.Host
+import aws.smithy.kotlin.runtime.tracing.TraceSpan
+import aws.smithy.kotlin.runtime.tracing.traceSpan
 import kotlinx.coroutines.*
 import okhttp3.Authenticator
 import okhttp3.Credentials
@@ -31,7 +33,7 @@ import okhttp3.Response as OkHttpResponse
 /**
  * SDK specific "tag" attached to an [okhttp3.Request] instance
  */
-internal data class SdkRequestTag(val execContext: ExecutionContext)
+internal data class SdkRequestTag(val execContext: ExecutionContext, val traceSpan: TraceSpan)
 
 // matches segment size used by okio
 // see https://github.com/square/okio/blob/parent-3.1.0/okio/src/commonMain/kotlin/okio/Segment.kt#L179
@@ -45,7 +47,7 @@ internal fun HttpRequest.toOkHttpRequest(
     callContext: CoroutineContext,
 ): OkHttpRequest {
     val builder = OkHttpRequest.Builder()
-    builder.tag(SdkRequestTag::class, SdkRequestTag(execContext))
+    builder.tag(SdkRequestTag::class, SdkRequestTag(execContext, callContext.traceSpan))
 
     builder.url(url.toString())
 

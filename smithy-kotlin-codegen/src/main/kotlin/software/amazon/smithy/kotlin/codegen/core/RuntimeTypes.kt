@@ -68,6 +68,7 @@ object RuntimeTypes {
             val OperationRequest = runtimeSymbol("OperationRequest", KotlinDependency.HTTP, "operation")
             val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
+            val sdkRequestId = runtimeSymbol("sdkRequestId", KotlinDependency.HTTP, "operation")
             val execute = runtimeSymbol("execute", KotlinDependency.HTTP, "operation")
             val InlineMiddleware = runtimeSymbol("InlineMiddleware", KotlinDependency.HTTP, "operation")
         }
@@ -237,6 +238,20 @@ object RuntimeTypes {
 
     object IO {
         val Closeable = runtimeSymbol("Closeable", KotlinDependency.IO)
+    }
+
+    object Tracing {
+        object Core {
+            val DefaultTracer = runtimeSymbol("DefaultTracer", KotlinDependency.CORE, "tracing")
+            val LoggingTraceProbe = runtimeSymbol("LoggingTraceProbe", KotlinDependency.CORE, "tracing")
+            val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.CORE, "tracing")
+            val Tracer = runtimeSymbol("Tracer", KotlinDependency.CORE, "tracing")
+            val withRootTraceSpan = runtimeSymbol("withRootTraceSpan", KotlinDependency.CORE, "tracing")
+        }
+    }
+
+    object KotlinCoroutines {
+        val coroutineContext = "kotlin.coroutines.coroutineContext".toSymbol()
     }
 
     object KotlinxCoroutines {

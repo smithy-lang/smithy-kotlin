@@ -41,22 +41,21 @@ class ClientConfigGenerator(
         /**
          * Attempt to detect configuration properties automatically based on the model
          */
-        fun detectDefaultProps(context: RenderingContext<ServiceShape>): List<ClientConfigProperty> {
-            val defaultProps = mutableListOf<ClientConfigProperty>()
-            defaultProps.add(KotlinClientRuntimeConfigProperty.SdkLogMode)
+        fun detectDefaultProps(context: RenderingContext<ServiceShape>): List<ClientConfigProperty> = buildList {
+            add(KotlinClientRuntimeConfigProperty.SdkLogMode)
             if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
-                defaultProps.add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
+                add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
             }
             if (context.shape != null && context.shape.hasIdempotentTokenMember(context.model)) {
-                defaultProps.add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
+                add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
             }
-            defaultProps.add(KotlinClientRuntimeConfigProperty.RetryStrategy)
+            add(KotlinClientRuntimeConfigProperty.RetryStrategy)
+            add(KotlinClientRuntimeConfigProperty.Tracer)
 
             if (context.shape != null && context.shape.hasTrait<ClientContextParamsTrait>()) {
-                defaultProps.addAll(clientContextConfigProps(context.shape.expectTrait()))
+                addAll(clientContextConfigProps(context.shape.expectTrait()))
             }
-
-            defaultProps.add(
+            add(
                 ClientConfigProperty {
                     val hasRules = context.shape?.hasTrait<EndpointRuleSetTrait>() == true
                     symbol = EndpointProviderGenerator.getSymbol(context.settings)
@@ -71,8 +70,6 @@ class ClientConfigGenerator(
                     """.trimIndent()
                 },
             )
-
-            return defaultProps
         }
 
         /**
@@ -124,6 +121,7 @@ class ClientConfigGenerator(
         props.sortWith(compareBy({ it.order }, { it.propertyName }))
         val baseClasses = props
             .mapNotNull { it.baseClass?.name }
+            .sorted()
             .toSet()
             .joinToString(", ")
 

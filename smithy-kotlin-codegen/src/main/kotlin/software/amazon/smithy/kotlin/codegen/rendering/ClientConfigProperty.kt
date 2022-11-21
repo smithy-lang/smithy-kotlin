@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.model.boxed
@@ -228,6 +229,7 @@ object KotlinClientRuntimeConfigProperty {
     val IdempotencyTokenProvider: ClientConfigProperty
     val RetryStrategy: ClientConfigProperty
     val SdkLogMode: ClientConfigProperty
+    val Tracer: ClientConfigProperty
 
     init {
         val httpClientConfigSymbol = buildSymbol {
@@ -299,6 +301,30 @@ object KotlinClientRuntimeConfigProperty {
             performance considerations when dumping the request/response body. This is primarily a tool for
             debug purposes.
             """.trimIndent()
+        }
+
+        // TODO support a nice DSL for this so that callers don't have to be aware of `DefaultTracer` if they don't want
+        // to, they can just call `SomeClient { tracer { clientName = "Foo" } }` in the simple case.
+        Tracer = ClientConfigProperty {
+            symbol = RuntimeTypes.Tracing.Core.Tracer
+            baseClass = tracingClientConfigSymbol
+            documentation = """
+                The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
+                a trace probe). By default, this will create a standard tracer that uses the service name for the root
+                trace span and delegates to a logging trace probe (i.e.,
+                `DefaultTracer(LoggingTraceProbe, "<service-name>")`).
+            """.trimIndent()
+            propertyType = ClientConfigPropertyType.Custom { prop, writer ->
+                val serviceName = writer.getContext("service.name")?.toString()
+                    ?: throw CodegenException("The service.name context must be set for client config generation")
+                writer.write(
+                    """override val #1L: Tracer = builder.#1L ?: #2T(#3T, #4S)""",
+                    prop.propertyName,
+                    RuntimeTypes.Tracing.Core.DefaultTracer,
+                    RuntimeTypes.Tracing.Core.LoggingTraceProbe,
+                    serviceName,
+                )
+            }
         }
     }
 }

@@ -44,9 +44,8 @@ val generateSdk = tasks.register<SmithyBuild>("generateSdk") {
     inputs.files(configurations.getByName("codegen"))
 }
 
-tasks.compileKotlin {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>{
     dependsOn(generateSdk)
-
     kotlinOptions {
         allWarningsAsErrors = false // FIXME Generated waiters code contains lots of warnings
     }
@@ -69,6 +68,7 @@ dependencies {
     compileOnly(project(":smithy-kotlin-codegen"))
     implementation(project(":runtime:runtime-core"))
     implementation(project(":runtime:protocol:http"))
+    api(project(":runtime:tracing:tracing-core"))
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }

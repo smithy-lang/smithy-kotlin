@@ -10,10 +10,11 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkClientOption
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.Logger
-import aws.smithy.kotlin.runtime.logging.withContext
+import aws.smithy.kotlin.runtime.tracing.logger
+import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.util.AttributeKey
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.get
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Common configuration for an SDK (HTTP) operation/call
@@ -37,11 +38,6 @@ public open class HttpOperationContext {
          * The HTTP calls made for this operation (this may be > 1 if for example retries are involved)
          */
         public val HttpCallList: AttributeKey<List<HttpCall>> = AttributeKey("HttpCallList")
-
-        /**
-         * The per/request logging context.
-         */
-        public val LoggingContext: AttributeKey<Map<String, Any>> = AttributeKey("LoggingContext")
 
         /**
          * The unique request ID generated for tracking the request in-flight client side.
@@ -84,12 +80,8 @@ public open class HttpOperationContext {
 }
 
 @InternalApi
-public fun ExecutionContext.getLogger(name: String): Logger {
-    val instance = Logger.getLogger(name)
-    val logCtx = this[HttpOperationContext.LoggingContext]
-    return instance.withContext(logCtx)
-}
+public fun CoroutineContext.getLogger(forComponentName: String): Logger = traceSpan.logger(forComponentName)
 
 @InternalApi
-public fun Logger.withContext(context: ExecutionContext): Logger =
-    withContext(context.getOrNull(HttpOperationContext.LoggingContext) ?: emptyMap())
+public inline fun <reified T> CoroutineContext.getLogger(): Logger =
+    getLogger(requireNotNull(T::class.qualifiedName) { "getLogger<T> cannot be used on an anonymous object" })

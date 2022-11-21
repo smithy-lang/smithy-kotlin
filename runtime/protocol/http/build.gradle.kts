@@ -21,6 +21,8 @@ kotlin {
                 // exposes: service+middleware
                 api(project(":runtime:io"))
                 implementation(project(":runtime:logging"))
+                // exposes: TracingContext.TraceSpan
+                api(project(":runtime:tracing:tracing-core"))
 
                 // HttpClientEngine implements CoroutineScope
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")

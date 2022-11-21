@@ -10,8 +10,10 @@ import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
+import aws.smithy.kotlin.runtime.tracing.warn
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
+import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 
 /**
@@ -101,7 +103,6 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
     }
 
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
-        val logger = req.context.getLogger(this::class.simpleName!!)
         val body = req.subject.body
 
         // favor attributes from the current request context
@@ -147,7 +148,9 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
                 config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body is HttpBody.Streaming && !body.isReplayable -> {
-                    logger.warn { "unable to compute hash for unbounded stream; defaulting to unsigned payload" }
+                    coroutineContext.warn<AwsSigningMiddleware> {
+                        "unable to compute hash for unbounded stream; defaulting to unsigned payload"
+                    }
                     HashSpecification.UnsignedPayload
                 }
                 // use the payload to compute the hash

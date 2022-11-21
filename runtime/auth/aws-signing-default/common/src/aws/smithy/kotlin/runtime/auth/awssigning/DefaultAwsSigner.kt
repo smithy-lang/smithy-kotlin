@@ -5,9 +5,11 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.TimestampFormat
+import kotlin.coroutines.coroutineContext
 
 /** The default implementation of [AwsSigner] */
 public val DefaultAwsSigner: AwsSigner = DefaultAwsSignerImpl()
@@ -17,9 +19,9 @@ internal class DefaultAwsSignerImpl(
     private val signatureCalculator: SignatureCalculator = SignatureCalculator.Default,
     private val requestMutator: RequestMutator = RequestMutator.Default,
 ) : AwsSigner {
-    private val logger = Logger.getLogger<DefaultAwsSignerImpl>()
-
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
+        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
+
         // TODO implement SigV4a
         require(config.algorithm == AwsSigningAlgorithm.SIGV4) { "${config.algorithm} support is not yet implemented" }
 
@@ -46,8 +48,40 @@ internal class DefaultAwsSignerImpl(
         prevSignature: ByteArray,
         config: AwsSigningConfig,
     ): AwsSigningResult<Unit> {
+        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
+
         val stringToSign = signatureCalculator.chunkStringToSign(chunkBody, prevSignature, config)
         logger.trace { "Chunk string to sign:\n$stringToSign" }
+
+        val credentials = config.credentialsProvider.getCredentials()
+        val signingKey = signatureCalculator.signingKey(config, credentials)
+
+        val signature = signatureCalculator.calculate(signingKey, stringToSign)
+        logger.debug { "Calculated chunk signature: $signature" }
+
+        return AwsSigningResult(Unit, signature.encodeToByteArray())
+    }
+
+    override suspend fun signChunkTrailer(
+        trailingHeaders: Headers,
+        prevSignature: ByteArray,
+        config: AwsSigningConfig,
+    ): AwsSigningResult<Unit> {
+        val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
+
+        // canonicalize the headers
+        val trailingHeadersBytes = trailingHeaders.entries().sortedBy { e -> e.key.lowercase() }
+            .map { e ->
+                buildString {
+                    append(e.key.lowercase())
+                    append(":")
+                    append(e.value.joinToString(",") { v -> v.trim() })
+                    append("\n")
+                }.encodeToByteArray()
+            }.reduce { acc, bytes -> acc + bytes }
+
+        val stringToSign = signatureCalculator.chunkTrailerStringToSign(trailingHeadersBytes, prevSignature, config)
+        logger.trace { "Chunk trailer string to sign:\n$stringToSign" }
 
         val credentials = config.credentialsProvider.getCredentials()
         val signingKey = signatureCalculator.signingKey(config, credentials)

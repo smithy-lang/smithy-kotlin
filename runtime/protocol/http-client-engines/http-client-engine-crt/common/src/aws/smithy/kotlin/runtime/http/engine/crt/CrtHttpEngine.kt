@@ -14,7 +14,7 @@ import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.engine.callContext
-import aws.smithy.kotlin.runtime.http.operation.withContext
+import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.logging.Logger
@@ -76,8 +76,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         val callContext = callContext()
-        val reqLogger = logger.withContext(context)
-
+        val logger = callContext.getLogger<CrtHttpEngine>()
         val proxyConfig = config.proxySelector.select(request.url)
         val manager = getManagerForUri(request.uri, proxyConfig)
 
@@ -90,7 +89,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
         val respHandler = SdkStreamResponseHandler(conn)
         callContext.job.invokeOnCompletion {
-            reqLogger.trace { "completing handler; cause=$it" }
+            logger.warn { "completing handler; cause=$it" }
             // ensures the stream is driven to completion regardless of what the downstream consumer does
             respHandler.complete()
         }
