@@ -303,6 +303,11 @@ object KotlinClientRuntimeConfigProperty {
             """.trimIndent()
         }
 
+        val tracingClientConfigSymbol = buildSymbol {
+            name = "TracingClientConfig"
+            namespace(KotlinDependency.TRACING_CORE)
+        }
+
         // TODO support a nice DSL for this so that callers don't have to be aware of `DefaultTracer` if they don't want
         // to, they can just call `SomeClient { tracer { clientName = "Foo" } }` in the simple case.
         Tracer = ClientConfigProperty {

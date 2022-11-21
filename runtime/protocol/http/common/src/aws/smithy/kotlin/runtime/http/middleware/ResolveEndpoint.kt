@@ -27,7 +27,7 @@ public class ResolveEndpoint<T>(
     override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val endpoint = provider.resolveEndpoint(params)
         setResolvedEndpoint(req, endpoint)
-        coroutineContext.debug<ResolveEndpoint> { "resolved endpoint: $endpoint" }
+        coroutineContext.debug<ResolveEndpoint<T>> { "resolved endpoint: $endpoint" }
         return req
     }
 }
