@@ -111,7 +111,9 @@ class DefaultEndpointProviderTestGenerator(
             if (endpoint.headers.isNotEmpty()) {
                 withBlock("headers = #T {", "},", RuntimeTypes.Http.Headers) {
                     endpoint.headers.entries.forEach { (k, v) ->
-                        write("append(#S, #S)", k, v)
+                        v.forEach {
+                            write("append(#S, #S)", k, it)
+                        }
                     }
                 }
             }
