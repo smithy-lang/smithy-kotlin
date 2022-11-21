@@ -42,7 +42,7 @@ public expect interface SdkByteReadChannel : Closeable {
     public suspend fun readRemaining(limit: Int = Int.MAX_VALUE): ByteArray
 
     /**
-     * Reads all length bytes to [sink] buffer or fails if source has been closed. Suspends if not enough
+     * Reads all [length] bytes to [sink] buffer or fails if source has been closed. Suspends if not enough
      * bytes available.
      */
     public suspend fun readFully(sink: ByteArray, offset: Int = 0, length: Int = sink.size - offset)

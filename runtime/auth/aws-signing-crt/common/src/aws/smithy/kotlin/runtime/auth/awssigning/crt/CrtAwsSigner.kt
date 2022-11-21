@@ -52,6 +52,18 @@ public object CrtAwsSigner : AwsSigner {
 
         return AwsSigningResult(Unit, crtResult.signature)
     }
+
+    override suspend fun signChunkTrailer(
+        trailingHeaders: Headers,
+        prevSignature: ByteArray,
+        config: AwsSigningConfig,
+    ): AwsSigningResult<Unit> {
+        val crtConfig = config.toCrtSigningConfig()
+        val crtTrailingHeaders = trailingHeaders.toCrtHeaders()
+
+        val crtResult = CrtSigner.signChunkTrailer(crtTrailingHeaders, prevSignature, crtConfig)
+        return AwsSigningResult(Unit, crtResult.signature)
+    }
 }
 
 private fun AwsSignatureType.toCrtSignatureType() = when (this) {
@@ -59,6 +71,7 @@ private fun AwsSignatureType.toCrtSignatureType() = when (this) {
     AwsSignatureType.HTTP_REQUEST_EVENT -> CrtSignatureType.HTTP_REQUEST_EVENT
     AwsSignatureType.HTTP_REQUEST_VIA_HEADERS -> CrtSignatureType.HTTP_REQUEST_VIA_HEADERS
     AwsSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS -> CrtSignatureType.HTTP_REQUEST_VIA_QUERY_PARAMS
+    AwsSignatureType.HTTP_REQUEST_TRAILING_HEADERS -> CrtSignatureType.HTTP_REQUEST_TRAILING_HEADERS
 }
 
 private fun AwsSignedBodyHeader.toCrtSignedBodyHeaderType() = when (this) {
