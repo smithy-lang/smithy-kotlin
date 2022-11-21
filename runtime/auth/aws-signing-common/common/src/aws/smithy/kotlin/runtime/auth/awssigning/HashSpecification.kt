@@ -35,6 +35,11 @@ public sealed class HashSpecification {
     public object StreamingAws4HmacSha256Payload : HashLiteral("STREAMING-AWS4-HMAC-SHA256-PAYLOAD")
 
     /**
+     * The hash value indicates that the streaming request will have trailers
+     */
+    public object StreamingAws4HmacSha256PayloadWithTrailers : HashLiteral("STREAMING-AWS4-HMAC-SHA256-PAYLOAD-TRAILER")
+
+    /**
      * The hash value should indicate ???
      */
     public object StreamingAws4HmacSha256Events : HashLiteral("STREAMING-AWS4-HMAC-SHA256-EVENTS")

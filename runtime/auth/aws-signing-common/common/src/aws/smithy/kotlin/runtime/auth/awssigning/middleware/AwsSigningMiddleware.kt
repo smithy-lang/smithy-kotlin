@@ -11,6 +11,8 @@ import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.tracing.warn
+import aws.smithy.kotlin.runtime.http.toHttpBody
+import aws.smithy.kotlin.runtime.http.toSdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.coroutines.coroutineContext
@@ -29,6 +31,10 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
             requireNotNull(config.signer) { "A signer must be specified for the middleware" }
             return AwsSigningMiddleware(config)
         }
+
+        @InternalApi
+        // The minimum size of a streaming body before the SDK will begin using aws-chunked content encoding.
+        public const val AWS_CHUNKED_THRESHOLD: Int = CHUNK_SIZE_BYTES * 16
     }
 
     public class Config {
@@ -126,36 +132,26 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
             signedBodyHeader = contextSignedBodyHeader ?: config.signedBodyHeader
 
             // SDKs are supposed to default to signed payload _always_ when possible (and when `unsignedPayload` trait
-            // isn't present).
-            //
-            // There are a few escape hatches/special cases:
-            //     1. Customer explicitly disables signed payload (via Config.isUnsignedPayload)
-            //     2. Customer provides a (potentially) unbounded stream (via HttpBody.Streaming)
-            //
-            // When an unbounded stream (2) is given we proceed as follows:
-            //     2.1. is it replayable?
-            //          (2.1.1) yes -> sign the payload (stream can be consumed more than once)
-            //          (2.1.2) no -> unsigned payload
-            //
-            // NOTE: Chunked signing is NOT enabled through this middleware.
-            // NOTE: 2.1.2 is handled below
+            // isn't present). The only exception is when the customer explicitly disables signed payloads (via Config.isUnsignedPayload).
 
-            // FIXME - see: https://github.com/awslabs/smithy-kotlin/issues/296
-            // if we know we have a (streaming) body and toSignableRequest() fails to convert it to a CRT equivalent
-            // then we must decide how to compute the payload hash ourselves (defaults to unsigned payload)
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
                 config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
-                body.isOneShot -> {
-                    coroutineContext.warn<AwsSigningMiddleware> {
-                        "unable to compute hash for unbounded stream; defaulting to unsigned payload"
+                body.isEligibleForAwsChunkedStreaming -> {
+                    if (req.subject.headers.contains("x-amz-trailer")) {
+                        HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
+                    } else {
+                        HashSpecification.StreamingAws4HmacSha256Payload
                     }
-                    HashSpecification.UnsignedPayload
                 }
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
             }
+        }
+
+        if (signingConfig.useAwsChunkedEncoding) {
+            req.subject.setAwsChunkedHeaders()
         }
 
         val signingResult = checkNotNull(config.signer).sign(req.subject.build(), signingConfig)
@@ -166,6 +162,9 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
 
         req.subject.update(signedRequest)
 
+        if (signingConfig.useAwsChunkedEncoding) {
+            req.subject.setAwsChunkedBody(checkNotNull(config.signer), signingConfig, signingResult.signature)
+        }
         return req
     }
 }
@@ -182,4 +181,37 @@ private fun HttpRequestBuilder.update(signedRequest: HttpRequest) {
             url.parameters.appendAll(key, values)
         }
     }
+}
+
+/**
+ * @return a boolean representing if this HttpBody is eligible to send via aws-chunked content encoding
+ */
+private val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
+    get() = this is HttpBody.Streaming && (!isReplayable || (contentLength != null && contentLength!! > AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD))
+
+/**
+ * @return a boolean representing if the signing configuration is configured (via [HashSpecification]) for aws-chunked content encoding
+ */
+private val AwsSigningConfig.useAwsChunkedEncoding: Boolean
+    get() = when (hashSpecification) {
+        is HashSpecification.StreamingAws4HmacSha256Payload, is HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers -> true
+        else -> false
+    }
+
+/**
+ * Set the HTTP headers required for the aws-chunked content encoding
+ * // FIXME move to AwsChunkedUtil when sdkio-redux is shipped
+ */
+private fun HttpRequestBuilder.setAwsChunkedHeaders() {
+    headers.setMissing("Content-Encoding", "aws-chunked")
+    headers.setMissing("Transfer-Encoding", "chunked")
+    headers.setMissing("X-Amz-Decoded-Content-Length", (body.contentLength ?: 0).toString())
+}
+
+/**
+ * Update the HTTP body to use aws-chunked content encoding
+ * // FIXME move to AwsChunkedUtil when sdkio-redux is shipped
+ */
+private fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
+    body = AwsChunkedByteReadChannel(checkNotNull(body.toSdkByteReadChannel()), signer, signingConfig, signature).toHttpBody(-1)
 }
