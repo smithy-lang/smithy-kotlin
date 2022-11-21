@@ -38,14 +38,10 @@ private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? {
     if (body.isOneShot) return null
 
     return when (body) {
+        is HttpBody.Empty -> null
         is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-        is HttpBody.ChannelContent -> {
-            // FIXME: this is not particularly efficient since we have to launch a coroutine to fill it.
-            // see https://github.com/awslabs/smithy-kotlin/issues/436
-            ReadChannelBodyStream(body.readFrom(), coroutineContext)
-        }
-        is HttpBody.SourceContent -> TODO()
-        else -> null
+        is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), coroutineContext)
+        is HttpBody.SourceContent -> SdkSourceBodyStream(body.readFrom())
     }
 }
 

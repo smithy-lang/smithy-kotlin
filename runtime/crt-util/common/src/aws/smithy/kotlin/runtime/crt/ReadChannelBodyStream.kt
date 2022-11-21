@@ -39,8 +39,6 @@ public class ReadChannelBodyStream(
     private val currBuffer = atomic<SdkBuffer?>(null)
     private val bufferChan = Channel<SdkBuffer>(Channel.UNLIMITED)
 
-    private val totalBytesSent = atomic(0L)
-
     init {
         producerJob.invokeOnCompletion { cause ->
             bodyChan.cancel(cause)
@@ -112,10 +110,7 @@ public class ReadChannelBodyStream(
             outgoing = bufferChan.tryReceive().getOrNull() ?: return false
         }
 
-        val sizeBefore = outgoing.size
         transferRequestBody(outgoing, buffer)
-
-        totalBytesSent += sizeBefore - outgoing.size
 
         if (outgoing.size > 0L) {
             currBuffer.value = outgoing
