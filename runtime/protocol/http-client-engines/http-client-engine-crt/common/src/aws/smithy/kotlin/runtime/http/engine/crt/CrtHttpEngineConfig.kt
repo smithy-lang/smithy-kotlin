@@ -8,9 +8,11 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.io.ClientBootstrap
 import aws.sdk.kotlin.crt.io.TlsContext
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineConfig
-import aws.smithy.kotlin.runtime.util.InternalApi
 
-@InternalApi
+/**
+ * Describes configuration options for the CRT HTTP engine. Use [Default] for the standard configuration or use
+ * [Builder] to build a custom configuration.
+ */
 public class CrtHttpEngineConfig private constructor(builder: Builder) : HttpClientEngineConfig(builder) {
     public companion object {
         /**

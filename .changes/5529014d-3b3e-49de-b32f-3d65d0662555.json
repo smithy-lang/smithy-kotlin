@@ -1,0 +1,5 @@
+{
+    "id": "5529014d-3b3e-49de-b32f-3d65d0662555",
+    "type": "bugfix",
+    "description": "Remove erroneous `@InternalApi` marker on CRT HTTP engine configuration class"
+}
