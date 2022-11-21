@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.parameters
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -27,7 +28,7 @@ class HttpTest {
             method = HttpMethod.POST
             url {
                 scheme = Protocol.HTTPS
-                host = "test.com"
+                host = Host.Domain("test.com")
                 port = 3000
                 path = "/foo/bar/baz"
                 parameters {
@@ -55,7 +56,7 @@ class HttpTest {
         // crt request doesn't have all the same elements (e.g. host/scheme) since some of them live off
         // HttpConnectionManager for instance
         // ensure we don't overwrite the originals
-        assertEquals("test.com", builder.url.host)
+        assertEquals(Host.Domain("test.com"), builder.url.host)
         assertEquals(Protocol.HTTPS, builder.url.scheme)
 
         // see that the crt headers are populated in the builder
@@ -77,7 +78,7 @@ class HttpTest {
             method = HttpMethod.POST
             url {
                 scheme = Protocol.HTTPS
-                host = "test.com"
+                host = Host.Domain("test.com")
                 path = "/foo"
             }
         }
@@ -91,7 +92,7 @@ class HttpTest {
         // crt request doesn't have all the same elements (e.g. host/scheme) since some of them live off
         // HttpConnectionManager for instance
         // ensure we don't overwrite the originals
-        assertEquals("test.com", builder.url.host)
+        assertEquals(Host.Domain("test.com"), builder.url.host)
         assertEquals(Protocol.HTTPS, builder.url.scheme)
 
         assertEquals("/foo", builder.url.path)
@@ -105,7 +106,7 @@ class HttpTest {
             method = HttpMethod.POST
             url {
                 scheme = Protocol.HTTPS
-                host = "test.com"
+                host = Host.Domain("test.com")
                 port = 3000
                 path = "/foo/bar/baz"
                 parameters {

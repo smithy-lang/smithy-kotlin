@@ -12,6 +12,7 @@ import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.lang.toEscapedLiteral
 import software.amazon.smithy.kotlin.codegen.model.*
+import software.amazon.smithy.kotlin.codegen.rendering.endpoints.*
 import software.amazon.smithy.kotlin.codegen.rendering.serde.*
 import software.amazon.smithy.kotlin.codegen.retries.StandardRetryMiddleware
 import software.amazon.smithy.model.Model
@@ -292,7 +293,7 @@ abstract class HttpBindingProtocolGenerator : ProtocolGenerator {
         val pathBindings = requestBindings.filter { it.location == HttpBinding.Location.LABEL }
 
         if (pathBindings.isNotEmpty()) {
-            writer.openBlock("val pathSegments = listOf(", ")") {
+            writer.openBlock("val pathSegments = listOf<String>(", ")") {
                 httpTrait.uri.segments.forEach { segment ->
                     if (segment.isLabel || segment.isGreedyLabel) {
                         // spec dictates member name and label name MUST be the same

@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.http.HttpStatusCode
 import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.endpoints.Endpoint
-import aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver
+import aws.smithy.kotlin.runtime.http.endpoints.EndpointProvider
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
@@ -24,6 +24,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -43,13 +44,13 @@ class ResolveEndpointTest {
     fun testHostIsSet() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com"))
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
+        val resolver = EndpointProvider<Unit> { endpoint }
+        op.install(ResolveEndpoint(resolver, Unit))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
-        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Protocol.HTTPS, actual.url.scheme)
         assertEquals("api.test.com", actual.headers["Host"])
     }
@@ -58,13 +59,13 @@ class ResolveEndpointTest {
     fun testHostWithPort() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder(), Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080"))
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
+        val resolver = EndpointProvider<Unit> { endpoint }
+        op.install(ResolveEndpoint(resolver, Unit))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
-        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Protocol.HTTPS, actual.url.scheme)
         assertEquals(8080, actual.url.port)
     }
@@ -73,13 +74,13 @@ class ResolveEndpointTest {
     fun testHostWithBasePath() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("https://api.test.com:8080/foo/bar"))
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
+        val resolver = EndpointProvider<Unit> { endpoint }
+        op.install(ResolveEndpoint(resolver, Unit))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
-        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Protocol.HTTPS, actual.url.scheme)
         assertEquals(8080, actual.url.port)
         assertEquals("/foo/bar/operation", actual.url.path)
@@ -89,30 +90,14 @@ class ResolveEndpointTest {
     fun testHostPrefix() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com"))
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
+        val resolver = EndpointProvider<Unit> { endpoint }
+        op.install(ResolveEndpoint(resolver, Unit))
         op.context[HttpOperationContext.HostPrefix] = "prefix."
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
-        assertEquals("prefix.api.test.com", actual.url.host)
-        assertEquals(Protocol.HTTP, actual.url.scheme)
-        assertEquals("/operation", actual.url.path)
-    }
-
-    @Test
-    fun testSkipHostPrefixForImmutableHostnames() = runTest {
-        val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
-        val endpoint = Endpoint(uri = Url.parse("http://api.test.com"), isHostnameImmutable = true)
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
-        op.context[HttpOperationContext.HostPrefix] = "prefix."
-
-        op.roundTrip(client, Unit)
-        val actual = op.context[HttpOperationContext.HttpCallList].first().request
-
-        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Host.Domain("prefix.api.test.com"), actual.url.host)
         assertEquals(Protocol.HTTP, actual.url.scheme)
         assertEquals("/operation", actual.url.path)
     }
@@ -121,13 +106,13 @@ class ResolveEndpointTest {
     fun testEndpointPathPrefixWithNonEmptyPath() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix/"))
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
+        val resolver = EndpointProvider<Unit> { endpoint }
+        op.install(ResolveEndpoint(resolver, Unit))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
-        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Protocol.HTTP, actual.url.scheme)
         assertEquals("/path/prefix/operation", actual.url.path)
     }
@@ -136,13 +121,13 @@ class ResolveEndpointTest {
     fun testEndpointPathPrefixWithEmptyPath() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com/path/prefix"))
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
+        val resolver = EndpointProvider<Unit> { endpoint }
+        op.install(ResolveEndpoint(resolver, Unit))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
-        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Protocol.HTTP, actual.url.scheme)
         assertEquals("/path/prefix", actual.url.path)
     }
@@ -151,13 +136,13 @@ class ResolveEndpointTest {
     fun testQueryParameters() = runTest {
         val op = newTestOperation<Unit, Unit>(HttpRequestBuilder().apply { url.path = "/operation" }, Unit)
         val endpoint = Endpoint(uri = Url.parse("http://api.test.com?foo=bar&baz=qux"))
-        val resolver = EndpointResolver { endpoint }
-        op.install(ResolveEndpoint(resolver))
+        val resolver = EndpointProvider<Unit> { endpoint }
+        op.install(ResolveEndpoint(resolver, Unit))
 
         op.roundTrip(client, Unit)
         val actual = op.context[HttpOperationContext.HttpCallList].first().request
 
-        assertEquals("api.test.com", actual.url.host)
+        assertEquals(Host.Domain("api.test.com"), actual.url.host)
         assertEquals(Protocol.HTTP, actual.url.scheme)
         assertEquals("/operation", actual.url.path)
         assertEquals("bar", actual.url.parameters["foo"])

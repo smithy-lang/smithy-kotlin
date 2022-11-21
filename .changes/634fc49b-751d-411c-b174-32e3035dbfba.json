@@ -1,0 +1,5 @@
+{
+    "id": "634fc49b-751d-411c-b174-32e3035dbfba",
+    "type": "feature",
+    "description": "**BREAKING** Implement codegen and update runtime for smithy-modeled endpoint resolution."
+}

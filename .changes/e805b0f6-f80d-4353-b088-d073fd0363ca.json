@@ -1,0 +1,5 @@
+{
+    "id": "e805b0f6-f80d-4353-b088-d073fd0363ca",
+    "type": "feature",
+    "description": "Implement common-Kotlin URL parsing and IPv4/v6 address validation."
+}

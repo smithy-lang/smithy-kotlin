@@ -15,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.benchmark.*
 import kotlinx.coroutines.runBlocking
 
@@ -32,7 +33,7 @@ private val requestToSign = HttpRequest {
     method = HttpMethod.GET
     url {
         scheme = Protocol.HTTPS
-        host = "foo.com"
+        host = Host.Domain("foo.com")
         path = "bar/baz/../qux/"
         port = 8080
     }

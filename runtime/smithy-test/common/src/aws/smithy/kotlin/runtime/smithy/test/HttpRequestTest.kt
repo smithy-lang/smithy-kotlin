@@ -117,7 +117,7 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
 
         // the value given in `httpRequestTest` trait may be a list of values as a string e.g. `"foo", "bar"`
         // join the in-memory representation (which is a list of strings associated to the header name) to a string
-        // for comparision
+        // for comparison
         val values = actual.headers.getAll(name)?.joinToString(separator = ", ")
         requireNotNull(values) { "actual values expected to not be null" }
 
@@ -132,7 +132,7 @@ private suspend fun assertRequest(expected: ExpectedHttpRequest, actual: HttpReq
     }
 
     expected.resolvedHost?.let {
-        assertEquals(it, actual.url.host, "expected host: `${expected.resolvedHost}`; got: `${actual.url.host}`")
+        assertEquals(it, actual.url.host.toString(), "expected host: `${expected.resolvedHost}`; got: `${actual.url.host}`")
     }
 
     val expectedBody = expected.body?.let {

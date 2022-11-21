@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.auth.awssigning.tests.testCredentialsProvider
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.*
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -22,7 +23,7 @@ class DefaultCanonicalizerTest {
         val request = HttpRequest {
             method = HttpMethod.GET
             url {
-                host = "iam.amazonaws.com"
+                host = Host.Domain("iam.amazonaws.com")
                 path = ""
                 parameters {
                     set("Action", "ListUsers")
@@ -72,7 +73,7 @@ class DefaultCanonicalizerTest {
 
         val expectedHeaders = Headers {
             appendAll(request.headers)
-            append("Host", request.url.host)
+            append("Host", request.url.host.toString())
             append("X-Amz-Date", signingDateString)
         }.entries()
         assertEquals(expectedHeaders, actual.request.headers.entries())

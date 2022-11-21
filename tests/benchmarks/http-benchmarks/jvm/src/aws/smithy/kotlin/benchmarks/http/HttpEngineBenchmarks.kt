@@ -13,6 +13,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.http.response.complete
+import aws.smithy.kotlin.runtime.util.net.Host
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -80,26 +81,26 @@ open class HttpEngineBenchmarks {
     private val helloRequest = HttpRequest {
         url {
             scheme = Protocol.HTTP
-            host = "localhost"
+            host = Host.Domain("localhost")
             port = serverPort
             path = "/hello"
         }
 
         headers {
-            append("Host", url.host)
+            append("Host", url.host.toString())
         }
     }
 
     private val downloadRequest = HttpRequest {
         url {
             scheme = Protocol.HTTP
-            host = "localhost"
+            host = Host.Domain("localhost")
             port = serverPort
             path = "/download"
         }
 
         headers {
-            append("Host", url.host)
+            append("Host", url.host.toString())
         }
     }
 
@@ -107,7 +108,7 @@ open class HttpEngineBenchmarks {
         url {
             scheme = Protocol.HTTP
             method = HttpMethod.POST
-            host = "localhost"
+            host = Host.Domain("localhost")
             port = serverPort
             path = "/upload"
         }

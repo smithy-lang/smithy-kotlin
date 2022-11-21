@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.http.HttpMethod
+import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.Url
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
@@ -14,6 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
 import aws.smithy.kotlin.runtime.time.Instant
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -50,7 +52,8 @@ public abstract class BasicSigningTestBase : HasSigner {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST
-            url.host = "http://demo.us-east-1.amazonaws.com"
+            url.scheme = Protocol.HTTP
+            url.host = Host.Domain("demo.us-east-1.amazonaws.com")
             url.path = "/"
             headers.append("Host", "demo.us-east-1.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
@@ -85,7 +88,8 @@ public abstract class BasicSigningTestBase : HasSigner {
         // sanity test
         val request = HttpRequestBuilder().apply {
             method = HttpMethod.POST
-            url.host = "http://demo.us-east-1.amazonaws.com"
+            url.scheme = Protocol.HTTP
+            url.host = Host.Domain("demo.us-east-1.amazonaws.com")
             url.path = "/"
             headers.append("Host", "demo.us-east-1.amazonaws.com")
             headers.appendAll("x-amz-archive-description", listOf("test", "test"))
@@ -139,7 +143,7 @@ public abstract class BasicSigningTestBase : HasSigner {
         method = HttpMethod.PUT
         url(Url.parse("https://s3.amazonaws.com/examplebucket/chunkObject.txt"))
         headers {
-            set("Host", url.host)
+            set("Host", url.host.toString())
             set("x-amz-storage-class", "REDUCED_REDUNDANCY")
             set("Content-Encoding", "aws-chunked")
             set("x-amz-decoded-content-length", "66560")

@@ -7,6 +7,7 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
+import aws.smithy.kotlin.runtime.util.net.Host
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldContainAll
 import io.ktor.client.call.HttpClientCall
@@ -45,7 +46,7 @@ class KtorUtilsTest {
         builder.method = aws.smithy.kotlin.runtime.http.HttpMethod.POST
         builder.url {
             scheme = Protocol.HTTP
-            host = "test.aws.com"
+            host = Host.Domain("test.aws.com")
             path = "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT"
             parameters {
                 append("foo", "bar")
@@ -114,7 +115,7 @@ class KtorUtilsTest {
 
         val sdkUrl = UrlBuilder {
             scheme = Protocol.HTTP
-            host = "test.aws.com"
+            host = Host.Domain("test.aws.com")
             path = "/kotlin/Tue, 29 Apr 2014 18:30:38 GMT"
             parameters {
                 // space is encoded as form-url-data using `+` by ktor whereas SDK always uses percent encoding

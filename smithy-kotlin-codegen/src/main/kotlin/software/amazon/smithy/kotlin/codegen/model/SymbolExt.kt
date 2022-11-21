@@ -132,3 +132,8 @@ fun Symbol.Builder.addReference(symbol: Symbol, option: SymbolReference.ContextO
  */
 val Symbol.shape: Shape?
     get() = getProperty(SymbolProperty.SHAPE_KEY, Shape::class.java).getOrNull()
+
+/**
+ * Get the nullable version of a symbol
+ */
+fun Symbol.asNullable(): Symbol = toBuilder().boxed().build()

@@ -19,6 +19,8 @@ import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataParse
 import software.amazon.smithy.kotlin.codegen.rendering.serde.StructuredDataSerializerGenerator
 import software.amazon.smithy.kotlin.codegen.test.*
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.rulesengine.language.EndpointRuleSet
+import software.amazon.smithy.rulesengine.traits.EndpointTestCase
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
@@ -214,6 +216,22 @@ class ExceptionGeneratorTest {
 
                 override fun generateProtocolUnitTests(ctx: ProtocolGenerator.GenerationContext) {}
                 override fun generateProtocolClient(ctx: ProtocolGenerator.GenerationContext) {}
+
+                override fun generateEndpointProvider(
+                    ctx: ProtocolGenerator.GenerationContext,
+                    rules: EndpointRuleSet,
+                ) {
+                    error("not needed for test")
+                }
+
+                override fun generateEndpointProviderTests(
+                    ctx: ProtocolGenerator.GenerationContext,
+                    tests: List<EndpointTestCase>,
+                    rules: EndpointRuleSet,
+                ) {
+                    error("not needed for test")
+                }
+
                 override fun structuredDataParser(ctx: ProtocolGenerator.GenerationContext): StructuredDataParserGenerator {
                     error("not needed for test")
                 }

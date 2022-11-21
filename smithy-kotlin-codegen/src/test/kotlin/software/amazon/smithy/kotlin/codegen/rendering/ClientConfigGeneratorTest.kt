@@ -44,7 +44,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
 
         val expectedProps = """
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
-    public val endpointResolver: EndpointResolver = requireNotNull(builder.endpointResolver) { "endpointResolver is a required configuration property" }
+    public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
@@ -61,10 +61,9 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          */
         public var httpClientEngine: HttpClientEngine? = null
         /**
-         * Set the [aws.smithy.kotlin.runtime.http.endpoints.EndpointResolver] used to resolve service endpoints. Operation requests will be
-         * made against the endpoint returned by the resolver.
+         * The endpoint provider used to determine where to make service requests.
          */
-        public var endpointResolver: EndpointResolver? = null
+        public var endpointProvider: EndpointProvider? = null
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
          * that represent idempotent tokens when not explicitly set by the caller using this generator.
@@ -101,7 +100,6 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
         contents.shouldContainWithDiff(expectedBuilder)
 
         val expectedImports = listOf(
-            "import ${RuntimeTypes.Http.Endpoints.EndpointResolver.fullName}",
             "import ${RuntimeTypes.Http.Engine.HttpClientEngine.fullName}",
             "import ${KotlinDependency.HTTP.namespace}.config.HttpClientConfig",
             "import ${KotlinDependency.CORE.namespace}.config.IdempotencyTokenConfig",

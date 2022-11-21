@@ -62,6 +62,7 @@ class HttpProtocolTestGenerator(
                     writer.addImport("${ctx.settings.pkg.name}.model", "*")
 
                     requestTestBuilder
+                        .ctx(ctx)
                         .writer(writer)
                         .model(ctx.model)
                         .symbolProvider(ctx.symbolProvider)
@@ -87,6 +88,7 @@ class HttpProtocolTestGenerator(
 
                     writer.addImport("${ctx.settings.pkg.name}.model", "*")
                     responseTestBuilder
+                        .ctx(ctx)
                         .writer(writer)
                         .model(ctx.model)
                         .symbolProvider(ctx.symbolProvider)
@@ -117,6 +119,7 @@ class HttpProtocolTestGenerator(
                         writer.addImport("${ctx.settings.pkg.name}.model", "*")
                         errorTestBuilder
                             .error(error)
+                            .ctx(ctx)
                             .writer(writer)
                             .model(ctx.model)
                             .symbolProvider(ctx.symbolProvider)

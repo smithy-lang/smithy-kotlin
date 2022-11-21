@@ -18,6 +18,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -32,7 +33,8 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
                 HttpRequestBuilder().apply {
                     method = HttpMethod.POST
-                    url.host = "http://demo.us-east-1.amazonaws.com"
+                    url.scheme = Protocol.HTTP
+                    url.host = Host.Domain("demo.us-east-1.amazonaws.com")
                     url.path = "/"
                     headers.append("Host", "demo.us-east-1.amazonaws.com")
                     headers.appendAll("x-amz-archive-description", listOf("test", "test"))

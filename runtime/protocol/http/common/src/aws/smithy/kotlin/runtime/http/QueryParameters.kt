@@ -49,6 +49,8 @@ public fun Map<String, String>.toQueryParameters(): QueryParameters {
 
 private class QueryParametersImpl(values: Map<String, List<String>> = emptyMap()) : QueryParameters, StringValuesMapImpl(true, values) {
     override fun toString(): String = "QueryParameters ${entries()}"
+
+    override fun equals(other: Any?): Boolean = other is QueryParameters && entries() == other.entries()
 }
 
 /**
@@ -69,6 +71,7 @@ internal fun urlEncodeQueryParametersTo(entries: Set<Map.Entry<String, List<Stri
             if (i > 0 || j > 0) {
                 out.append("&")
             }
+            // FIXME keys should be %-encoded
             out.append(entry.key)
             out.append("=")
             out.append(encodeFn(value))

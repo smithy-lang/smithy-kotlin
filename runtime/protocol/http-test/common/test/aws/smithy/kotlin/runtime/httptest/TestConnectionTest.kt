@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.readAll
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.sdkHttpClient
+import aws.smithy.kotlin.runtime.util.net.Host
 import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -25,7 +26,7 @@ class TestConnectionTest {
         val engine = buildTestConnection {
             expect {
                 request {
-                    url.host = "test.com"
+                    url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = ByteArrayContent("tests for your tests".encodeToByteArray())
@@ -36,7 +37,7 @@ class TestConnectionTest {
         val client = sdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
-            url.host = "test.com"
+            url.host = Host.Domain("test.com")
             url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
@@ -52,7 +53,7 @@ class TestConnectionTest {
         val engine = buildTestConnection {
             expect {
                 request {
-                    url.host = "test.com"
+                    url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = ByteArrayContent("tests for your tests".encodeToByteArray())
@@ -63,7 +64,7 @@ class TestConnectionTest {
         val client = sdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
-            url.host = "test.com"
+            url.host = Host.Domain("test.com")
             url.path = "/tests-for-your-tests"
             headers.append("x-foo", "bar")
         }
@@ -79,7 +80,7 @@ class TestConnectionTest {
         val engine = buildTestConnection {
             expect {
                 request {
-                    url.host = "test.com"
+                    url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     headers.append("x-baz", "qux")
@@ -90,7 +91,7 @@ class TestConnectionTest {
         val client = sdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
-            url.host = "test.com"
+            url.host = Host.Domain("test.com")
             url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
         }
@@ -106,7 +107,7 @@ class TestConnectionTest {
         val engine = buildTestConnection {
             expect {
                 request {
-                    url.host = "test.com"
+                    url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = ByteArrayContent("tests for your tests".encodeToByteArray())
@@ -117,7 +118,7 @@ class TestConnectionTest {
         val client = sdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
-            url.host = "test.com"
+            url.host = Host.Domain("test.com")
             url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             body = ByteArrayContent("tests are good".encodeToByteArray())
@@ -134,7 +135,7 @@ class TestConnectionTest {
         val engine = buildTestConnection {
             expect {
                 request {
-                    url.host = "test.com"
+                    url.host = Host.Domain("test.com")
                     url.path = "/turtles-all-the-way-down"
                     headers.append("x-foo", "bar")
                     body = ByteArrayContent("tests for your tests".encodeToByteArray())
@@ -147,7 +148,7 @@ class TestConnectionTest {
         val client = sdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
-            url.host = "test.com"
+            url.host = Host.Domain("test.com")
             url.path = "/turtles-all-the-way-down"
             headers.append("x-foo", "bar")
             headers.append("x-qux", "quux")
@@ -156,7 +157,7 @@ class TestConnectionTest {
         client.call(req).complete()
         client.call(
             HttpRequestBuilder().apply {
-                url.host = "test-anything.com"
+                url.host = Host.Domain("test-anything.com")
             },
         )
 
@@ -203,7 +204,7 @@ class TestConnectionTest {
         val client = sdkHttpClient(engine)
 
         val req = HttpRequestBuilder().apply {
-            url.host = "test.aws.com"
+            url.host = Host.Domain("test.aws.com")
             url.path = "/turtles-all-the-way-down"
             url.parameters.append("q1", "v1")
             headers.append("foo", "bar")
@@ -216,7 +217,7 @@ class TestConnectionTest {
 
         val call2 = client.call(
             HttpRequestBuilder().apply {
-                url.host = "test-anything.com"
+                url.host = Host.Domain("test-anything.com")
             },
         )
         call2.complete()
