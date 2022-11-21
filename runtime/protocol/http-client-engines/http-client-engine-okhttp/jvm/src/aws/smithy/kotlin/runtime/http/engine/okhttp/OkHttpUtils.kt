@@ -10,11 +10,8 @@ import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.internal.derivedName
-import aws.smithy.kotlin.runtime.io.SdkByteChannel
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
-import aws.smithy.kotlin.runtime.io.writeAll
 import aws.smithy.kotlin.runtime.logging.Logger
 import kotlinx.coroutines.*
 import okhttp3.Authenticator
@@ -72,31 +69,15 @@ internal fun HttpRequest.toOkHttpRequest(
 /**
  * Convert an [okhttp3.Response] to an SDK [HttpResponse]
  */
-@OptIn(DelicateCoroutinesApi::class)
-internal fun OkHttpResponse.toSdkResponse(callContext: CoroutineContext): HttpResponse {
+internal fun OkHttpResponse.toSdkResponse(): HttpResponse {
     val sdkHeaders = OkHttpHeadersAdapter(headers)
     val httpBody = if (body.contentLength() != 0L) {
-        val ch = SdkByteChannel(true)
-        val writerContext = callContext + Dispatchers.IO + callContext.derivedName("response-body-writer")
-        val job = GlobalScope.launch(writerContext) {
-            val result = runCatching {
-                val source = body.source().toSdk()
-                ch.writeAll(source)
-            }
+        object : HttpBody.SourceContent() {
+            override val isOneShot: Boolean = true
 
-            // immediately close when done to signal end of body stream
-            ch.close(result.exceptionOrNull())
-        }
-
-        job.invokeOnCompletion { cause ->
-            // close is idempotent, if not previously closed then close with cause
-            ch.close(cause)
-        }
-
-        object : HttpBody.ChannelContent() {
             // -1 is used by okhttp as transfer-encoding chunked
             override val contentLength: Long? = if (body.contentLength() >= 0L) body.contentLength() else null
-            override fun readFrom(): SdkByteReadChannel = ch
+            override fun readFrom(): SdkSource = body.source().toSdk()
         }
     } else {
         HttpBody.Empty

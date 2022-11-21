@@ -10,7 +10,7 @@ import kotlinx.coroutines.CoroutineScope
 
 /**
  * A source for reading a stream of bytes (e.g. from file, network, or in-memory buffer). Sources may
- * be layered to transform data as it is read (e.g. to decompress, decrypt, or remove protocol framign).
+ * be layered to transform data as it is read (e.g. to decompress, decrypt, or remove protocol framing).
  *
  * Most application code should not operate on a source directly, but rather a [SdkBufferedSource] which is
  * more convenient. Use [SdkSource.buffer] to wrap any source with a buffer.
@@ -19,6 +19,9 @@ import kotlinx.coroutines.CoroutineScope
  *
  * Sources are not thread safe by default. Do not share a source between threads or coroutines without external
  * synchronization.
+ *
+ * This is a blocking interface! Use from coroutines should be done from an appropriate dispatcher
+ * (e.g. `Dispatchers.IO`).
  */
 public interface SdkSource : Closeable {
     /**

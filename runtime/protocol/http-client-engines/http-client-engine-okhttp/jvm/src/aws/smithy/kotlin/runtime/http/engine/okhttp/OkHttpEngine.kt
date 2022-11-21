@@ -45,7 +45,7 @@ public class OkHttpEngine(
             engineResponse.body.close()
         }
 
-        val response = engineResponse.toSdkResponse(callContext)
+        val response = engineResponse.toSdkResponse()
         val requestTime = Instant.fromEpochMilliseconds(engineResponse.sentRequestAtMillis)
         val responseTime = Instant.fromEpochMilliseconds(engineResponse.receivedResponseAtMillis)
 

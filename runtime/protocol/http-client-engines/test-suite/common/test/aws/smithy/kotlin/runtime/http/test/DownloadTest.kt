@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
+import aws.smithy.kotlin.runtime.http.toSdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlin.test.*
@@ -77,8 +78,7 @@ class DownloadTest : AbstractEngineTest() {
                 check(contentLength < Int.MAX_VALUE)
 
                 val body = call.response.body
-                assertIs<HttpBody.ChannelContent>(body)
-                val chan = body.readFrom()
+                val chan = requireNotNull(body.toSdkByteReadChannel())
 
                 val readSha256 = reader(chan, contentLength.toInt())
                 assertEquals(expectedSha256, readSha256)
@@ -107,8 +107,7 @@ class DownloadTest : AbstractEngineTest() {
                 assertNull(call.response.body.contentLength, "${client.engine}")
 
                 val body = call.response.body
-                assertIs<HttpBody.ChannelContent>(body)
-                val chan = body.readFrom()
+                val chan = requireNotNull(body.toSdkByteReadChannel())
                 val bytes = chan.readToBuffer().readByteArray()
                 val actualSha256 = bytes.sha256().encodeToHex()
                 assertEquals(expectedSha256, actualSha256)
