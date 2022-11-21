@@ -5,6 +5,7 @@
 
 pluginManagement {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven("https://plugins.gradle.org/m2/")
         google()
@@ -55,6 +56,7 @@ include(":runtime:serde:serde-json")
 include(":runtime:serde:serde-xml")
 include(":runtime:smithy-test")
 include(":runtime:testing")
+include(":runtime:tracing:tracing-core")
 include(":runtime:utils")
 
 include(":smithy-kotlin-codegen")

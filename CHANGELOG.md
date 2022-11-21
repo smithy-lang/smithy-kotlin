@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.12.13] - 11/15/2022
+
+### Fixes
+* [#753](https://github.com/awslabs/aws-sdk-kotlin/issues/753) Fix Android crash when OkHttp response body coroutine throws an exception
+
 ## [0.12.12] - 11/10/2022
 
 ### Fixes

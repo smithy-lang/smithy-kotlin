@@ -111,13 +111,14 @@ class OkHttpResponseTest {
 
     @Test
     fun testSourceReadError(): Unit = runBlocking {
+        var exceptionBubbledUp: Throwable? = null
         val request = HttpRequest(HttpMethod.GET, Url.parse("https://aws.amazon.com"), Headers.Empty, HttpBody.Empty)
 
         val execContext = ExecutionContext()
 
         // replace default exception handler which will print out the stack trace by default.
         // We are expecting an exception so this message is misleading/confusing
-        val exHandler = CoroutineExceptionHandler { _, _ -> }
+        val exHandler = CoroutineExceptionHandler { _, t -> exceptionBubbledUp = t }
 
         // don't tie this to the current job or else it will tear down the test as well
         val callJob = Job()
@@ -173,5 +174,10 @@ class OkHttpResponseTest {
         callJob.complete()
         callJob.join()
         assertEquals(0, callContext.job.children.toList().size)
+
+        assertNull(
+            exceptionBubbledUp,
+            "Unexpected exception bubbled up. It should've be pushed to channel's close() method instead.",
+        )
     }
 }
