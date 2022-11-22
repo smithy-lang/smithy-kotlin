@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.13.0] - 11/22/2022
+
+### Features
+* **BREAKING** Implement codegen and update runtime for smithy-modeled endpoint resolution.
+* [#677](https://github.com/awslabs/smithy-kotlin/issues/677) Add a new tracing framework for centralized handling of log messages and metric events and providing easy integration points for connecting to downstream tracing systems (e.g., kotlin-logging)
+* [#747](https://github.com/awslabs/aws-sdk-kotlin/issues/747) Add aws-chunked content encoding
+* Implement common-Kotlin URL parsing and IPv4/v6 address validation.
+
+### Fixes
+* Remove erroneous `@InternalApi` marker on CRT HTTP engine configuration class
+
+### Miscellaneous
+* Allow using maven local for to test Smithy changes
+
 ## [0.12.13] - 11/15/2022
 
 ### Fixes
