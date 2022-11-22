@@ -34,8 +34,7 @@ public suspend fun HttpRequestBuilder.toSignableCrtRequest(unsignedPayload: Bool
 }
 
 private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? {
-    // can only consume the stream once
-    if (body.isOneShot) return null
+    if (body.isOneShot) return null // can only consume the stream once
 
     return when (body) {
         is HttpBody.Empty -> null

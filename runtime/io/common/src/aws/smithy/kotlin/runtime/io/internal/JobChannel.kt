@@ -42,8 +42,4 @@ public class JobChannel(
         }
         return delegate.close(cause)
     }
-
-    override fun close() {
-        delegate.close()
-    }
 }
