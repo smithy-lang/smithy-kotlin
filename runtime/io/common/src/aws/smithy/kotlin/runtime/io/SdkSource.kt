@@ -5,9 +5,12 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+import kotlinx.coroutines.CoroutineScope
+
 /**
  * A source for reading a stream of bytes (e.g. from file, network, or in-memory buffer). Sources may
- * be layered to transform data as it is read (e.g. to decompress, decrypt, or remove protocol framign).
+ * be layered to transform data as it is read (e.g. to decompress, decrypt, or remove protocol framing).
  *
  * Most application code should not operate on a source directly, but rather a [SdkBufferedSource] which is
  * more convenient. Use [SdkSource.buffer] to wrap any source with a buffer.
@@ -16,6 +19,9 @@ package aws.smithy.kotlin.runtime.io
  *
  * Sources are not thread safe by default. Do not share a source between threads or coroutines without external
  * synchronization.
+ *
+ * This is a blocking interface! Use from coroutines should be done from an appropriate dispatcher
+ * (e.g. `Dispatchers.IO`).
  */
 public interface SdkSource : Closeable {
     /**
@@ -32,3 +38,18 @@ public interface SdkSource : Closeable {
     @Throws(IOException::class)
     override fun close()
 }
+
+/**
+ * Consume the [SdkSource] and pull the entire contents into memory as a [ByteArray].
+ */
+@InternalApi
+public expect suspend fun SdkSource.readToByteArray(): ByteArray
+
+/**
+ * Convert the [SdkSource] to an [SdkByteReadChannel]. Content is read from the source and forwarded
+ * to the channel.
+ * @param coroutineScope the coroutine scope to use to launch a background reader channel responsible for propagating data
+ * between source and the returned channel
+ */
+@InternalApi
+public expect fun SdkSource.toSdkByteReadChannel(coroutineScope: CoroutineScope? = null): SdkByteReadChannel

@@ -14,7 +14,6 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
@@ -29,49 +28,33 @@ class HttpBodyTest {
 
     @Test
     fun testFromByteStreamReplayable() {
-        val stream = object : ByteStream.ReplayableStream() {
+        val stream = object : ByteStream.ChannelStream() {
             override val contentLength: Long = 6
-            override fun newReader(): SdkByteReadChannel = SdkByteReadChannel("foobar".encodeToByteArray())
+            override val isOneShot: Boolean = false
+            override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel("foobar".encodeToByteArray())
         }
 
         val body = stream.toHttpBody()
-        assertIs<HttpBody.Streaming>(body)
-        assertTrue(body.isReplayable)
+        assertIs<HttpBody.ChannelContent>(body)
+        assertFalse(body.isOneShot)
     }
 
     @Test
     fun testFromByteStreamOneShot() {
-        val stream = object : ByteStream.OneShotStream() {
+        val stream = object : ByteStream.ChannelStream() {
             override val contentLength: Long = 6
             override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel("foobar".encodeToByteArray())
         }
 
         val body = stream.toHttpBody()
-        assertIs<HttpBody.Streaming>(body)
-        assertFalse(body.isReplayable)
-        assertFailsWith<UnsupportedOperationException> {
-            body.reset()
-        }
-    }
-
-    @Test
-    fun testReset() = runTest {
-        val stream = object : ByteStream.ReplayableStream() {
-            override val contentLength: Long = 6
-            override fun newReader(): SdkByteReadChannel = SdkByteReadChannel("foobar".encodeToByteArray())
-        }
-
-        val body = stream.toHttpBody()
-        assertIs<HttpBody.Streaming>(body)
-        assertEquals("foobar", body.readAll()!!.decodeToString())
-        body.reset()
-        assertEquals("foobar", body.readAll()!!.decodeToString())
+        assertIs<HttpBody.ChannelContent>(body)
+        assertTrue(body.isOneShot)
     }
 
     @Test
     fun testStreamingReadAllClosedForRead() = runTest {
         val expected = "foobar"
-        val stream = object : ByteStream.OneShotStream() {
+        val stream = object : ByteStream.ChannelStream() {
             override val contentLength = expected.length.toLong()
             override fun readFrom() = SdkByteReadChannel(expected.encodeToByteArray())
         }
@@ -90,7 +73,7 @@ class HttpBodyTest {
         assertTrue(chan.isClosedForWrite)
         assertFalse(chan.isClosedForRead)
 
-        val stream = object : ByteStream.OneShotStream() {
+        val stream = object : ByteStream.ChannelStream() {
             override val contentLength = expected.length.toLong()
             override fun readFrom() = chan
         }

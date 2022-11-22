@@ -4,16 +4,13 @@
  */
 package aws.smithy.kotlin.runtime.auth.awssigning.crt
 
-import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awssigning.*
-import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
+import aws.smithy.kotlin.runtime.crt.toSignableCrtRequest
+import aws.smithy.kotlin.runtime.crt.update
 import aws.smithy.kotlin.runtime.http.Headers
-import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
-import aws.smithy.kotlin.runtime.http.util.fullUriToQueryParameters
 import aws.smithy.kotlin.runtime.time.epochMilliseconds
 import aws.smithy.kotlin.runtime.tracing.debug
 import kotlin.coroutines.coroutineContext
@@ -24,7 +21,6 @@ import aws.sdk.kotlin.crt.auth.signing.AwsSigner as CrtSigner
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningAlgorithm as CrtSigningAlgorithm
 import aws.sdk.kotlin.crt.auth.signing.AwsSigningConfig as CrtSigningConfig
 import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
-import aws.sdk.kotlin.crt.http.HttpRequest as CrtHttpRequest
 
 public object CrtAwsSigner : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
@@ -115,44 +111,4 @@ private fun Headers.toCrtHeaders(): CrtHeaders {
     val headersBuilder = aws.sdk.kotlin.crt.http.HeadersBuilder()
     forEach(headersBuilder::appendAll)
     return headersBuilder.build()
-}
-
-/**
- * Convert an [HttpRequest] into a CRT HttpRequest for the purposes of signing
- */
-private suspend fun HttpRequest.toSignableCrtRequest() = CrtHttpRequest(
-    method = method.name,
-    encodedPath = url.encodedPath,
-    headers = headers.toCrtHeaders(),
-    body = signableBodyStream(body),
-)
-
-private fun HttpRequestBuilder.update(crtRequest: CrtHttpRequest) {
-    crtRequest.headers.entries().forEach { entry ->
-        headers.appendMissing(entry.key, entry.value)
-    }
-
-    if (crtRequest.encodedPath.isNotBlank()) {
-        crtRequest.encodedPath.fullUriToQueryParameters()?.let {
-            it.forEach { key, values ->
-                // The CRT request has a URL-encoded path which means simply appending missing could result in both the
-                // raw and percent-encoded value being present. Instead, just append new keys added by signing.
-                if (!url.parameters.contains(key)) {
-                    url.parameters.appendAll(key, values)
-                }
-            }
-        }
-    }
-}
-
-private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? = when {
-    body is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-    body is HttpBody.Streaming && body.isReplayable ->
-        // FIXME: this is not particularly efficient since we have to launch a coroutine to fill it.
-        // see https://github.com/awslabs/smithy-kotlin/issues/436
-        ReadChannelBodyStream(body.readFrom(), coroutineContext)
-    body is HttpBody.Streaming && !body.isReplayable ->
-        // can only consume the stream once
-        null
-    else -> null
 }

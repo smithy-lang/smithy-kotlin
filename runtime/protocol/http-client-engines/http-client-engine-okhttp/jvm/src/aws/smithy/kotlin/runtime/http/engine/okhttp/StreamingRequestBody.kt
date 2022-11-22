@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.internal.derivedName
+import aws.smithy.kotlin.runtime.io.internal.toOkio
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.io.readAll
 import kotlinx.coroutines.*
@@ -17,18 +18,22 @@ import java.io.IOException
 import kotlin.coroutines.CoroutineContext
 
 /**
- * OkHttp [RequestBody] that reads from [body] channel
+ * OkHttp [RequestBody] that reads from [body] channel or source
  */
-internal class ByteChannelRequestBody(
-    private val body: HttpBody.Streaming,
+internal class StreamingRequestBody(
+    private val body: HttpBody,
     callContext: CoroutineContext,
 ) : RequestBody(), CoroutineScope {
+
+    init {
+        require(body is HttpBody.ChannelContent || body is HttpBody.SourceContent) { "Invalid streaming body $body" }
+    }
 
     private val producerJob = Job(callContext[Job])
     override val coroutineContext: CoroutineContext = callContext + producerJob + callContext.derivedName("send-request-body") + Dispatchers.IO
     override fun contentType(): MediaType? = null
     override fun contentLength(): Long = body.contentLength ?: -1
-    override fun isOneShot(): Boolean = !body.isReplayable
+    override fun isOneShot(): Boolean = body.isOneShot
     override fun isDuplex(): Boolean = body.isDuplex
 
     override fun writeTo(sink: BufferedSink) = try {
@@ -64,9 +69,21 @@ internal class ByteChannelRequestBody(
         }
     }
     private suspend fun transferBody(sink: BufferedSink) = withJob(producerJob) {
-        val chan = body.readFrom()
-        val sdkSink = sink.toSdk()
-        chan.readAll(sdkSink)
+        when (body) {
+            is HttpBody.ChannelContent -> {
+                val chan = body.readFrom()
+                val sdkSink = sink.toSdk()
+                chan.readAll(sdkSink)
+            }
+            is HttpBody.SourceContent -> {
+                val source = body.readFrom()
+                source.toOkio().use {
+                    sink.writeAll(it)
+                }
+            }
+            // should never hit - all other body types are handled elsewhere
+            else -> error("unexpected HttpBody type $body")
+        }
     }
 }
 

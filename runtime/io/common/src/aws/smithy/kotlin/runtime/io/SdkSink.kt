@@ -18,6 +18,9 @@ import aws.smithy.kotlin.runtime.io.internal.toSdk
  *
  * Sinks are not thread safe by default. Do not share a sink between threads or coroutines without external
  * synchronization.
+ *
+ * This is a blocking interface! Use from coroutines should be done from an appropriate dispatcher
+ * (e.g. `Dispatchers.IO`).
  */
 public interface SdkSink : Closeable {
 
