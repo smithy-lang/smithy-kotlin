@@ -119,6 +119,46 @@ class DeserializeStructGeneratorTest {
     }
 
     @Test
+    fun `it deserializes a structure with a list of document values`() {
+        val model = (
+            modelPrefix + """            
+            structure FooResponse { 
+                payload: DocumentList
+            }
+            
+            list DocumentList {
+                member: Document
+            }
+        """
+            ).toSmithyModel()
+
+        val expected = """
+            deserializer.deserializeStruct(OBJ_DESCRIPTOR) {
+                loop@while (true) {
+                    when (findNextFieldIndex()) {
+                        PAYLOAD_DESCRIPTOR.index -> builder.payload =
+                            deserializer.deserializeList(PAYLOAD_DESCRIPTOR) {
+                                val col0 = mutableListOf<Document>()
+                                while (hasNextElement()) {
+                                    val el0 = if (nextHasValue()) { deserializeDocument() } else { deserializeNull(); continue }
+                                    col0.add(el0)
+                                }
+                                col0
+                            }
+                        null -> break@loop
+                        else -> skipValue()
+                    }
+                }
+            }
+        """.trimIndent()
+
+        val actual = codegenDeserializerForShape(model, "com.test#Foo")
+
+        actual.shouldContainOnlyOnceWithDiff(expected)
+        actual.shouldContainOnlyOnceWithDiff("import aws.smithy.kotlin.runtime.smithy.Document")
+    }
+
+    @Test
     fun `it deserializes a structure with a nested structure`() {
         val model = (
             modelPrefix + """            

@@ -6,6 +6,7 @@ package software.amazon.smithy.kotlin.codegen.rendering.serde
 
 import software.amazon.smithy.codegen.core.CodegenException
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
 import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
 import software.amazon.smithy.model.shapes.*
@@ -137,7 +138,6 @@ open class DeserializeStructGenerator(
         val nestingLevel = 0
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
-        val mutableCollectionType = targetShape.mutableCollectionType()
         val valueCollector = deserializationResultName("builder.$memberName")
         val mutableCollectionName = nestingLevel.variableNameFor(NestedIdentifierType.MAP)
         val collectionReturnExpression = collectionReturnExpression(memberShape, mutableCollectionName)
@@ -145,7 +145,13 @@ open class DeserializeStructGenerator(
         writer.write("$descriptorName.index -> $valueCollector = ")
             .indent()
             .withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
-                write("val $mutableCollectionName = $mutableCollectionType()")
+                write(
+                    "val #L = #T<String, #T#L>()",
+                    mutableCollectionName,
+                    KotlinTypes.Collections.mutableMapOf,
+                    ctx.symbolProvider.toSymbol(targetShape.value),
+                    nullabilitySuffix(targetShape.isSparse),
+                )
                 withBlock("while (hasNextEntry()) {", "}") {
                     delegateMapDeserialization(memberShape, targetShape, nestingLevel, mutableCollectionName)
                 }
@@ -252,7 +258,6 @@ open class DeserializeStructGenerator(
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
         val populateNullValuePostfix = if (isSparse) "" else "; continue"
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
-        val mutableCollectionType = mapShape.mutableCollectionType()
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.MAP)
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
@@ -261,7 +266,13 @@ open class DeserializeStructGenerator(
         writer.withBlock("val $valueName =", "") {
             withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
                 withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
-                    write("val $memberName = $mutableCollectionType()")
+                    write(
+                        "val #L = #T<String, #T#L>()",
+                        memberName,
+                        KotlinTypes.Collections.mutableMapOf,
+                        ctx.symbolProvider.toSymbol(mapShape.value),
+                        nullabilitySuffix(mapShape.isSparse),
+                    )
                     withBlock("while (hasNextEntry()) {", "}") {
                         delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, memberName)
                     }
@@ -298,7 +309,6 @@ open class DeserializeStructGenerator(
         val valueName = nestingLevel.variableNameFor(NestedIdentifierType.VALUE)
         val populateNullValuePostfix = if (isSparse) "" else "; continue"
         val descriptorName = rootMemberShape.descriptorName(nestingLevel.nestedDescriptorName())
-        val mutableCollectionType = collectionShape.mutableCollectionType()
         val nextNestingLevel = nestingLevel + 1
         val memberName = nextNestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, memberName)
@@ -307,7 +317,13 @@ open class DeserializeStructGenerator(
         writer.withBlock("val $valueName =", "") {
             withBlock("if (nextHasValue()) {", "} else { deserializeNull()$populateNullValuePostfix }") {
                 withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
-                    write("val $memberName = $mutableCollectionType()")
+                    write(
+                        "val #L = #T<#T#L>()",
+                        memberName,
+                        KotlinTypes.Collections.mutableListOf,
+                        ctx.symbolProvider.toSymbol(collectionShape.member),
+                        nullabilitySuffix(collectionShape.isSparse),
+                    )
                     withBlock("while (hasNextElement()) {", "}") {
                         delegateListDeserialization(rootMemberShape, collectionShape, nextNestingLevel, memberName)
                     }
@@ -353,7 +369,6 @@ open class DeserializeStructGenerator(
         val nestingLevel = 0
         val memberName = ctx.symbolProvider.toMemberName(memberShape)
         val descriptorName = memberShape.descriptorName()
-        val mutableCollectionType = targetShape.mutableCollectionType()
         val valueCollector = deserializationResultName("builder.$memberName")
         val mutableCollectionName = nestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
         val collectionReturnExpression = collectionReturnExpression(memberShape, mutableCollectionName)
@@ -361,7 +376,13 @@ open class DeserializeStructGenerator(
         writer.write("$descriptorName.index -> $valueCollector = ")
             .indent()
             .withBlock("deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
-                write("val $mutableCollectionName = $mutableCollectionType()")
+                write(
+                    "val #L = #T<#T#L>()",
+                    mutableCollectionName,
+                    KotlinTypes.Collections.mutableListOf,
+                    ctx.symbolProvider.toSymbol(targetShape.member),
+                    nullabilitySuffix(targetShape.isSparse),
+                )
                 withBlock("while (hasNextElement()) {", "}") {
                     delegateListDeserialization(memberShape, targetShape, nestingLevel, mutableCollectionName)
                 }
@@ -454,11 +475,16 @@ open class DeserializeStructGenerator(
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val nextNestingLevel = nestingLevel + 1
         val mapName = nextNestingLevel.variableNameFor(NestedIdentifierType.MAP)
-        val mutableCollectionType = mapShape.mutableCollectionType()
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, mapName)
 
         writer.withBlock("val $elementName = deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeMap) {
-            write("val $mapName = $mutableCollectionType()")
+            write(
+                "val #L = #T<String, #T#L>()",
+                mapName,
+                KotlinTypes.Collections.mutableMapOf,
+                ctx.symbolProvider.toSymbol(mapShape.value),
+                nullabilitySuffix(mapShape.isSparse),
+            )
             withBlock("while (hasNextEntry()) {", "}") {
                 delegateMapDeserialization(rootMemberShape, mapShape, nextNestingLevel, mapName)
             }
@@ -487,11 +513,16 @@ open class DeserializeStructGenerator(
         val elementName = nestingLevel.variableNameFor(NestedIdentifierType.ELEMENT)
         val nextNestingLevel = nestingLevel + 1
         val listName = nextNestingLevel.variableNameFor(NestedIdentifierType.COLLECTION)
-        val mutableCollectionType = elementShape.mutableCollectionType()
         val collectionReturnExpression = collectionReturnExpression(rootMemberShape, listName)
 
         writer.withBlock("val $elementName = deserializer.#T($descriptorName) {", "}", RuntimeTypes.Serde.deserializeList) {
-            write("val $listName = $mutableCollectionType()")
+            write(
+                "val #L = #T<#T#L>()",
+                listName,
+                KotlinTypes.Collections.mutableListOf,
+                ctx.symbolProvider.toSymbol(elementShape.member),
+                nullabilitySuffix(elementShape.isSparse),
+            )
             withBlock("while (hasNextElement()) {", "}") {
                 delegateListDeserialization(rootMemberShape, elementShape, nextNestingLevel, listName)
             }
@@ -569,12 +600,6 @@ open class DeserializeStructGenerator(
             else -> throw CodegenException("unknown deserializer for member: $shape; target: $target")
         }
     }
-
-    // Return the function to generate a mutable instance of collection type of input shape.
-    private fun MapShape.mutableCollectionType(): String =
-        ctx.symbolProvider.toSymbol(this).getProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION).get() as String
-
-    // Return the function to generate a mutable instance of collection type of input shape.
-    private fun CollectionShape.mutableCollectionType(): String =
-        ctx.symbolProvider.toSymbol(this).getProperty(SymbolProperty.MUTABLE_COLLECTION_FUNCTION).get() as String
 }
+
+private fun nullabilitySuffix(isSparse: Boolean): String = if (isSparse) "?" else ""
