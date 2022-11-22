@@ -100,7 +100,7 @@ internal class SdkStreamResponseHandler(
             // close is idempotent, if not previously closed then close with cause
             ch.close(cause)
         }
-        return object : HttpBody.Streaming() {
+        return object : HttpBody.ChannelContent() {
             override val contentLength: Long? = contentLength
             override fun readFrom(): SdkByteReadChannel = ch
         }

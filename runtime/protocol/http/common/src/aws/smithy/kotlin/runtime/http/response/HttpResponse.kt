@@ -70,7 +70,7 @@ public suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair
     if (dumpBody) {
         when (val body = response.body) {
             is HttpBody.Bytes -> buffer.write(body.bytes())
-            is HttpBody.Streaming -> {
+            is HttpBody.ChannelContent, is HttpBody.SourceContent -> {
                 // consume the stream and replace the body. There isn't much rewinding we can do here, most engines
                 // use a stream that reads right off the wire.
                 val content = body.readAll()

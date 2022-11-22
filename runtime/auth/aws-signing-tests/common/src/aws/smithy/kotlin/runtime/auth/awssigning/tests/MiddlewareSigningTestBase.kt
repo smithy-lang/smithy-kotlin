@@ -40,11 +40,10 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
                     headers.appendAll("x-amz-archive-description", listOf("test", "test"))
                     val requestBody = "{\"TableName\": \"foo\"}"
                     body = when (streaming) {
-                        true -> object : HttpBody.Streaming() {
+                        true -> object : HttpBody.ChannelContent() {
                             override val contentLength: Long = requestBody.length.toLong()
                             override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(requestBody.encodeToByteArray())
-                            override val isReplayable: Boolean = replayable
-                            override fun reset() { }
+                            override val isOneShot: Boolean = !replayable
                         }
                         false -> ByteArrayContent(requestBody.encodeToByteArray())
                     }

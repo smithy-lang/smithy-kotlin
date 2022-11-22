@@ -42,7 +42,7 @@ class HttpResponseTest {
     fun testDumpResponse() = runTest {
         val content = "Mom!...Dad!...Bingo!...Bluey!"
         val chan = SdkByteReadChannel(content.encodeToByteArray())
-        val stream = object : ByteStream.OneShotStream() {
+        val stream = object : ByteStream.ChannelStream() {
             override val contentLength: Long = content.length.toLong()
             override fun readFrom(): SdkByteReadChannel = chan
         }

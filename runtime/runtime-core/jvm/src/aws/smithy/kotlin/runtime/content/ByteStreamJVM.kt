@@ -5,11 +5,12 @@
 
 package aws.smithy.kotlin.runtime.content
 
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readAll
-import aws.smithy.kotlin.runtime.io.sink
+import aws.smithy.kotlin.runtime.io.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.use
 
 // JVM specific extensions for dealing with ByteStream's
 
@@ -60,17 +61,24 @@ public fun Path.asByteStream(range: LongRange): ByteStream = asByteStream(range.
  * Write the contents of this ByteStream to file and close it
  * @return the number of bytes written
  */
-public suspend fun ByteStream.writeToFile(file: File): Long {
-    val src = when (this) {
-        is ByteStream.Buffer -> SdkByteReadChannel(bytes())
-        is ByteStream.OneShotStream -> readFrom()
-        is ByteStream.ReplayableStream -> newReader()
+public suspend fun ByteStream.writeToFile(file: File): Long = withContext(Dispatchers.IO) {
+    val src = when (val stream = this@writeToFile) {
+        is ByteStream.ChannelStream -> return@withContext file.writeAll(stream.readFrom())
+        is ByteStream.Buffer -> stream.bytes().source()
+        is ByteStream.SourceStream -> stream.readFrom()
     }
 
-    return file.sink().use {
-        src.readAll(it)
+    file.sink().use {
+        it.buffer().use { bufferedSink ->
+            bufferedSink.writeAll(src)
+        }
     }
 }
+
+private suspend fun File.writeAll(chan: SdkByteReadChannel): Long =
+    sink().use {
+        chan.readAll(it)
+    }
 
 /**
  * Write the contents of this ByteStream to file at the given path

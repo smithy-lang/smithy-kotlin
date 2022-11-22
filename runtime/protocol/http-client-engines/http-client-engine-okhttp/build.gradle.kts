@@ -30,6 +30,12 @@ kotlin {
             }
         }
 
+        jvmTest {
+            dependencies {
+                implementation(project(":runtime:testing"))
+            }
+        }
+
         all {
             languageSettings.optIn("aws.smithy.kotlin.runtime.util.InternalApi")
         }

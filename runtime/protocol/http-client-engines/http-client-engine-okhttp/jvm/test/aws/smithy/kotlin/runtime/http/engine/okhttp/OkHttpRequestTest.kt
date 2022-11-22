@@ -119,7 +119,7 @@ class OkHttpRequestTest {
         val content = "Hello OkHttp from HttpBody.Streaming".repeat(1024)
         val contentBytes = content.encodeToByteArray()
         val chan = SdkByteReadChannel(contentBytes)
-        val body = object : HttpBody.Streaming() {
+        val body = object : HttpBody.ChannelContent() {
             override val contentLength: Long = contentBytes.size.toLong()
             override fun readFrom(): SdkByteReadChannel = chan
         }

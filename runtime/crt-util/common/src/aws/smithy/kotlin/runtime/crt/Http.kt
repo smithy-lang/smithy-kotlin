@@ -33,17 +33,15 @@ public suspend fun HttpRequestBuilder.toSignableCrtRequest(unsignedPayload: Bool
     return HttpRequestCrt(method.name, url.encodedPath, HttpHeadersCrt(headers), bodyStream)
 }
 
-private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? = when (body) {
-    is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-    is HttpBody.Streaming -> if (body.isReplayable) {
-        // FIXME: this is not particularly efficient since we have to launch a coroutine to fill it.
-        // see https://github.com/awslabs/smithy-kotlin/issues/436
-        ReadChannelBodyStream(body.readFrom(), coroutineContext)
-    } else {
-        // can only consume the stream once
-        null
+private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? {
+    if (body.isOneShot) return null // can only consume the stream once
+
+    return when (body) {
+        is HttpBody.Empty -> null
+        is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
+        is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), coroutineContext)
+        is HttpBody.SourceContent -> SdkSourceBodyStream(body.readFrom())
     }
-    else -> null
 }
 
 /**

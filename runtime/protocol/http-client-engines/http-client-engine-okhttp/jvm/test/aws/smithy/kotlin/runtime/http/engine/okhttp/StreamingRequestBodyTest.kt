@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.http.engine.okhttp
 import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.testing.RandomTempFile
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlinx.coroutines.*
 import kotlinx.coroutines.test.runTest
@@ -21,19 +22,19 @@ import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ByteChannelRequestBodyTest {
+class StreamingRequestBodyTest {
     @Test
     fun testWriteTo() = runTest {
         val content = ByteArray(1024 * 12 + 13) { it.toByte() }
         val expectedSha256 = content.sha256().encodeToHex()
         val chan = SdkByteReadChannel(content)
-        val body = object : HttpBody.Streaming() {
+        val body = object : HttpBody.ChannelContent() {
             override val contentLength: Long = content.size.toLong()
             override fun readFrom(): SdkByteReadChannel = chan
         }
 
         val callContext = coroutineContext + Job()
-        val actual = ByteChannelRequestBody(body, callContext)
+        val actual = StreamingRequestBody(body, callContext)
 
         assertEquals(body.contentLength, actual.contentLength())
         assertFalse(actual.isDuplex())
@@ -49,23 +50,23 @@ class ByteChannelRequestBodyTest {
     @Test
     fun testIsOneShot() {
         val chan = SdkByteReadChannel("test".encodeToByteArray())
-        val replayableBody = object : HttpBody.Streaming() {
-            override val isReplayable: Boolean = true
+        val replayableBody = object : HttpBody.ChannelContent() {
+            override val isOneShot: Boolean = false
             override val contentLength: Long = 4
             override fun readFrom(): SdkByteReadChannel = chan
         }
 
         val testContext = EmptyCoroutineContext + Job()
 
-        val actualReplayable = ByteChannelRequestBody(replayableBody, testContext)
+        val actualReplayable = StreamingRequestBody(replayableBody, testContext)
         assertFalse(actualReplayable.isOneShot())
 
-        val oneshotBody = object : HttpBody.Streaming() {
-            override val isReplayable: Boolean = false
+        val oneshotBody = object : HttpBody.ChannelContent() {
+            override val isOneShot: Boolean = true
             override val contentLength: Long = 4
             override fun readFrom(): SdkByteReadChannel = chan
         }
-        val actualOneshot = ByteChannelRequestBody(oneshotBody, testContext)
+        val actualOneshot = StreamingRequestBody(oneshotBody, testContext)
         assertTrue(actualOneshot.isOneShot())
     }
 
@@ -73,14 +74,14 @@ class ByteChannelRequestBodyTest {
     fun testChannelCancelled(): Unit = runBlocking {
         val content = ByteArray(1024) { it.toByte() }
         val chan = SdkByteChannel(autoFlush = true)
-        val body = object : HttpBody.Streaming() {
+        val body = object : HttpBody.ChannelContent() {
             override val contentLength: Long = content.size.toLong()
             override fun readFrom(): SdkByteReadChannel = chan
         }
 
         val callJob = Job()
         val callContext = coroutineContext + callJob
-        val actual = ByteChannelRequestBody(body, callContext)
+        val actual = StreamingRequestBody(body, callContext)
 
         val job = launch(Dispatchers.IO) {
             val buffer = Buffer()
@@ -100,14 +101,14 @@ class ByteChannelRequestBodyTest {
     fun testJobCancelled(): Unit = runBlocking {
         val content = ByteArray(1024) { it.toByte() }
         val chan = SdkByteChannel(autoFlush = true)
-        val body = object : HttpBody.Streaming() {
+        val body = object : HttpBody.ChannelContent() {
             override val contentLength: Long = content.size.toLong()
             override fun readFrom(): SdkByteReadChannel = chan
         }
 
         val job = launch(Dispatchers.IO) {
             val callContext = coroutineContext + Job(coroutineContext.job)
-            val actual = ByteChannelRequestBody(body, callContext)
+            val actual = StreamingRequestBody(body, callContext)
             val buffer = Buffer()
             // see https://github.com/awslabs/aws-sdk-kotlin/issues/733 for why we expect
             // this to be an IOException
@@ -133,7 +134,7 @@ class ByteChannelRequestBodyTest {
         val content = ByteArray(1024 * 12 + 13) { it.toByte() }
         val expectedSha256 = content.sha256().encodeToHex()
         val chan = SdkByteChannel()
-        val body = object : HttpBody.Streaming() {
+        val body = object : HttpBody.ChannelContent() {
             override val contentLength: Long? = null
             override val isDuplex: Boolean = true
             override fun readFrom(): SdkByteReadChannel = chan
@@ -143,7 +144,7 @@ class ByteChannelRequestBodyTest {
 
         val callJob = Job()
         val callContext = coroutineContext + callJob
-        val actual = ByteChannelRequestBody(body, callContext)
+        val actual = StreamingRequestBody(body, callContext)
 
         assertTrue(actual.isDuplex())
 
@@ -165,6 +166,25 @@ class ByteChannelRequestBodyTest {
 
         val actualSha256 = sink.buffer.sha256().hex()
         assertEquals(expectedSha256, actualSha256)
+    }
+
+    @Test
+    fun testSdkSourceBody() = runTest {
+        val file = RandomTempFile(32 * 1024)
+
+        val body = object : HttpBody.SourceContent() {
+            override val contentLength: Long = file.length()
+            override val isOneShot: Boolean = false
+            override fun readFrom(): SdkSource = file.source()
+        }
+
+        val callContext = coroutineContext + Job()
+        val actual = StreamingRequestBody(body, callContext)
+
+        val sink = TestSink()
+        actual.writeTo(sink)
+
+        assertContentEquals(file.readBytes(), sink.buffer.readByteArray())
     }
 }
 

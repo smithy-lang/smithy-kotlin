@@ -107,8 +107,8 @@ class SdkStreamResponseHandlerTest {
         assertEquals(HttpStatusCode.OK, resp.status)
 
         assertEquals(72, resp.body.contentLength)
-        assertTrue(resp.body is HttpBody.Streaming)
-        val respChan = (resp.body as HttpBody.Streaming).readFrom()
+        assertTrue(resp.body is HttpBody.ChannelContent)
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
         assertFalse(respChan.isClosedForWrite)
 
         assertFalse(mockConn.isClosed)
@@ -137,8 +137,8 @@ class SdkStreamResponseHandlerTest {
         assertEquals(HttpStatusCode.OK, resp.status)
 
         assertEquals(data.length.toLong(), resp.body.contentLength)
-        assertTrue(resp.body is HttpBody.Streaming)
-        val respChan = (resp.body as HttpBody.Streaming).readFrom()
+        assertTrue(resp.body is HttpBody.ChannelContent)
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
 
         assertTrue(respChan.isClosedForWrite)
 
@@ -166,7 +166,7 @@ class SdkStreamResponseHandlerTest {
         assertEquals(HttpStatusCode.OK, resp.status)
 
         assertEquals(data.length.toLong(), resp.body.contentLength)
-        val respChan = (resp.body as HttpBody.Streaming).readFrom()
+        val respChan = (resp.body as HttpBody.ChannelContent).readFrom()
 
         assertTrue(respChan.isClosedForWrite)
         assertFailsWith<CancellationException> {
