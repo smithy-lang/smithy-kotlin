@@ -130,13 +130,13 @@ class ByteChannelRequestBodyTest {
                     // If the job used in the implementation isn't tied to the parent coroutine correctly
                     // it will block forever
                     job.join()
-                    val totalMs = System.currentTimeMillis() - startMs
-                    println("Completed after $tryCount tries, $totalMs millseconds")
                 }
             } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
                 println("Tried $tryCount times so far, still not done...")
             }
         }
+        val totalMs = System.currentTimeMillis() - startMs
+        println("Completed after $tryCount tries, $totalMs millseconds")
         assertEquals(1, tryCount, "Took more than one second for job to finish. No es bueno.")
     }
 
