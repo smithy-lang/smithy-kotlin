@@ -61,22 +61,7 @@ public class AwsChunkedByteReadChannel(
         // check if the current chunk is still valid
         if (chunk.size > 0L) return true
 
-        // // if not, try to fetch a new chunk
-        // val nextChunk = if (delegate.isClosedForRead && hasLastChunkBeenSent) {
-        //     null
-        // } else if (delegate.isClosedForRead && !hasLastChunkBeenSent) {
-        //     hasLastChunkBeenSent = true
-        //     // empty chunk
-        //     val lastChunk = checkNotNull(getSignedChunk(SdkBuffer()))
-        //     if (!trailingHeaders.isEmpty()) {
-        //         val trailingHeaderChunk = getTrailingHeadersChunk(trailingHeaders)
-        //         lastChunk.writeAll(trailingHeaderChunk)
-        //     }
-        //     lastChunk
-        // } else {
-        //     getSignedChunk()
-        // }
-
+        // if not, try to fetch a new chunk
         val nextChunk = when {
             delegate.isClosedForRead && hasLastChunkBeenSent -> null
             else -> {
@@ -117,18 +102,26 @@ public class AwsChunkedByteReadChannel(
     /**
      * Get an aws-chunked encoding of [data].
      * If [data] is not set, read the next chunk from [delegate] and add hex-formatted chunk size and chunk signature to the front.
-     * Note that this function will suspend until the whole chunk has been read.
+     * Note that this function will suspend until the whole chunk has been read OR the channel is exhausted.
      * The chunk structure is: `string(IntHexBase(chunk-size)) + ";chunk-signature=" + signature + \r\n + chunk-data + \r\n`
      *
-     * @param data the ByteArray of data which will be encoded to aws-chunked. if not provided, will default to
+     * @param data the data which will be encoded to aws-chunked. if not provided, will default to
      * reading up to [CHUNK_SIZE_BYTES] from [delegate].
-     * @return a ByteArray containing the chunked data or null if no data is available
+     * @return a buffer containing the chunked data or null if no data is available (channel is closed)
      */
     private suspend fun getSignedChunk(data: SdkBuffer? = null): SdkBuffer? {
         val bodyBuffer = if (data == null) {
             val sink = SdkBuffer()
-            when (delegate.read(sink, CHUNK_SIZE_BYTES.toLong())) {
-                -1L -> null
+
+            // fill up to chunk size bytes
+            var remaining = CHUNK_SIZE_BYTES.toLong()
+            while (remaining > 0L) {
+                val rc = delegate.read(sink, remaining)
+                if (rc == -1L) break
+                remaining -= rc
+            }
+            when (sink.size) {
+                0L -> null // delegate closed without reading any data
                 else -> sink
             }
         } else {
@@ -166,7 +159,7 @@ public class AwsChunkedByteReadChannel(
      * x-amz-trailer-signature:signature_value CRLF
      *
      * @param trailingHeaders a list of [Headers] which will be sent
-     * @return a [ByteArray] containing the trailing headers in aws-chunked encoding, ready to send on the wire
+     * @return a [SdkBuffer] containing the trailing headers in aws-chunked encoding, ready to send on the wire
      */
     private suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): SdkBuffer {
         val trailerSignature = signer.signChunkTrailer(trailingHeaders, previousSignature, signingConfig).signature
