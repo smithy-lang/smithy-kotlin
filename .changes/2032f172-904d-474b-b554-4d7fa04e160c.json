@@ -1,5 +1,0 @@
-{
-    "id": "2032f172-904d-474b-b554-4d7fa04e160c",
-    "type": "bugfix",
-    "description": "Fix deserialization error for shapes with lists of document types"
-}

@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.13.1] - 11/23/2022
+
+### Fixes
+* Fix deserialization error for shapes with lists of document types
+
 ## [0.13.0] - 11/22/2022
 
 ### Features
