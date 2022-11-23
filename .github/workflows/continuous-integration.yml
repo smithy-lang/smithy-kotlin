@@ -41,7 +41,7 @@ jobs:
       - name: Checkout sources
         uses: actions/checkout@v2
       - name: Build and Test ${{ env.PACKAGE_NAME }}
-        run: gradlew.bat :runtime:protocol:http-client-engines:http-client-engine-okhttp:jvmTest --tests aws.smithy.kotlin.runtime.http.engine.okhttp.ByteChannelRequestBodyTest.testJobCancelled
+        run: ./gradlew :runtime:protocol:http-client-engines:http-client-engine-okhttp:jvmTest --tests aws.smithy.kotlin.runtime.http.engine.okhttp.ByteChannelRequestBodyTest.testJobCancelled
 
   downstream:
     runs-on: ubuntu-latest
