@@ -43,6 +43,7 @@ internal inline fun SdkBuffer.commonReadUtf8(): String = inner.readUtf8()
 internal inline fun SdkBuffer.commonReadUtf8(byteCount: Long): String = inner.readUtf8(byteCount)
 
 internal inline fun SdkBuffer.commonPeek(): SdkBufferedSource = inner.peek().toSdk().buffer()
+internal inline fun SdkBuffer.commonExhausted(): Boolean = inner.exhausted()
 internal inline fun SdkBuffer.commonRequest(byteCount: Long): Boolean = inner.request(byteCount)
 
 internal inline fun SdkBuffer.commonRequire(byteCount: Long): Unit = inner.require(byteCount)

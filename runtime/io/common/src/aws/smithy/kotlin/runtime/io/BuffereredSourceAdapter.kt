@@ -53,7 +53,7 @@ internal abstract class AbstractBufferedSourceAdapter(
 
     override fun peek(): SdkBufferedSource =
         delegate.peek().toSdk().buffer()
-
+    override fun exhausted(): Boolean = delegate.exhausted()
     override fun request(byteCount: Long): Boolean = delegate.request(byteCount)
 
     override fun require(byteCount: Long): Unit = delegate.require(byteCount)
