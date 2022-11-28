@@ -8,7 +8,7 @@ This project contains benchmarks for the [HTTP engine implementations](../../../
 ./gradlew :tests:benchmarks:http-benchmarks:benchmark
 ```
 
-Baseline `0.13.0-SNAPSHOT` on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-types/m5/)** with **Corretto-11.0.15.9.1**:
+Baseline `0.14.0-SNAPSHOT` on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-types/m5/)** with **Corretto-11.0.15.9.1**:
 
 The download/upload throughput benchmarks are an approximation of how much data in MB/s we are able to process.
 
