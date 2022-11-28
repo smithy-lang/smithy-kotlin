@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-// TODO - decide if we want to expose any readFully() methods
-
 /**
  * A source that keeps a buffer internally such that small reads are
  * performant. It also allows peeking ahead, buffering data as necessary,
@@ -104,6 +102,12 @@ public expect sealed interface SdkBufferedSource : SdkSource {
      * read or closed.
      */
     public fun peek(): SdkBufferedSource
+
+    /**
+     * Returns true if there are no more bytes in this source. This will block until there are bytes
+     * to read or the source is definitely exhausted.
+     */
+    public fun exhausted(): Boolean
 
     /**
      * Returns true when the buffer contains at least [byteCount] bytes. False if the source

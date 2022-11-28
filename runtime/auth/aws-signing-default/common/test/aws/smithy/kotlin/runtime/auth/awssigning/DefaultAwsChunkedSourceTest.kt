@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning
 
-import aws.smithy.kotlin.runtime.auth.awssigning.tests.AwsChunkedByteReadChannelJVMTestBase
+import aws.smithy.kotlin.runtime.auth.awssigning.tests.AwsChunkedSourceTestBase
 
-class AwsChunkedByteReadChannelJVMTest : AwsChunkedByteReadChannelJVMTestBase() {
+class DefaultAwsChunkedSourceTest : AwsChunkedSourceTestBase() {
     override val signer: AwsSigner = DefaultAwsSigner
 }

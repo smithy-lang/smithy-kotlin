@@ -71,6 +71,7 @@ public actual class SdkBuffer : SdkBufferedSource, SdkBufferedSink {
 
     override fun peek(): SdkBufferedSource = commonPeek()
 
+    override fun exhausted(): Boolean = commonExhausted()
     override fun request(byteCount: Long): Boolean = commonRequest(byteCount)
 
     override fun require(byteCount: Long): Unit = commonRequire(byteCount)

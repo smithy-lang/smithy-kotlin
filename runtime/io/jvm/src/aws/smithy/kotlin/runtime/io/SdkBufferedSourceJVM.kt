@@ -121,6 +121,12 @@ public actual sealed interface SdkBufferedSource : SdkSource, ReadableByteChanne
     public actual fun peek(): SdkBufferedSource
 
     /**
+     * Returns true if there are no more bytes in this source. This will block until there are bytes
+     * to read or the source is definitely exhausted.
+     */
+    public actual fun exhausted(): Boolean
+
+    /**
      * Returns true when the buffer contains at least [byteCount] bytes. False if the source
      * is exhausted before the requested number of bytes could be read
      */

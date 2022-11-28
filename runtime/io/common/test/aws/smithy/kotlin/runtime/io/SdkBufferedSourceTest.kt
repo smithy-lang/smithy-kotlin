@@ -65,9 +65,10 @@ abstract class BufferedSourceTest(
         sink.flush()
         assertEquals(0xde.toByte(), source.readByte())
         assertEquals(0xad.toByte(), source.readByte())
-        // TODO - exhausted check
+        assertFalse(source.exhausted())
         assertEquals(0xbe.toByte(), source.readByte())
         assertEquals(0xef.toByte(), source.readByte())
+        assertTrue(source.exhausted())
     }
 
     @Test
@@ -204,12 +205,6 @@ abstract class BufferedSourceTest(
         }
     }
 
-    @Ignore
-    @Test
-    fun testTimeout() {
-        TODO("test wrapped okio source with timeout still works/times out correctly")
-    }
-
     @Test
     fun testSkip() {
         val content = ByteArray(16 * 1024) { it.toByte() }
@@ -276,10 +271,10 @@ abstract class BufferedSourceTest(
         peek.skip(1024 * 16)
         assertEquals("89", peek.readUtf8(2))
 
-        // FIXME - request/require
         assertEquals("456", source.readUtf8(3))
         source.skip(1024 * 16)
         assertEquals("89", source.readUtf8(2))
+        assertTrue(source.exhausted())
     }
 
     @Test
