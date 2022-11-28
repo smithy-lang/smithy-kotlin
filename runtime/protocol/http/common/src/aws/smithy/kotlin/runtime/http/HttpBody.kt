@@ -99,6 +99,7 @@ public fun String.toHttpBody(): HttpBody = encodeToByteArray().toHttpBody()
 /**
  * Convert a [ByteStream] to the equivalent [HttpBody] variant
  */
+@InternalApi
 public fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
     is ByteStream.Buffer -> object : HttpBody.Bytes() {
         override val contentLength: Long? = byteStream.contentLength

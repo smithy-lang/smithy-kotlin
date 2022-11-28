@@ -5,8 +5,6 @@
 
 package aws.smithy.kotlin.runtime.io
 
-// TODO - decide if we want to expose any readFully() methods
-
 /**
  * A source that keeps a buffer internally such that small reads are
  * performant. It also allows peeking ahead, buffering data as necessary,

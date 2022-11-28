@@ -52,7 +52,6 @@ private class OkioSink(
 
     override fun flush() = delegate.flush()
 
-    // FIXME - is this what we want?
     override fun timeout(): okio.Timeout = okio.Timeout.NONE
 
     override fun write(source: okio.Buffer, byteCount: Long) {
@@ -68,7 +67,6 @@ private class OkioSource(
 ) : okio.Source {
     override fun close() = delegate.close()
 
-    // FIXME is this what we want?
     override fun timeout(): okio.Timeout = okio.Timeout.NONE
 
     override fun read(sink: okio.Buffer, byteCount: Long): Long =
