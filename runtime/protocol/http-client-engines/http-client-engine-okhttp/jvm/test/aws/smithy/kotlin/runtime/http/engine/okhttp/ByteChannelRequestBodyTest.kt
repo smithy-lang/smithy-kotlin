@@ -120,24 +120,12 @@ class ByteChannelRequestBodyTest {
         delay(100.milliseconds)
 
         job.cancel()
-        var tryCount = 0
-        val startMs = System.currentTimeMillis()
-        while (!job.isCompleted && tryCount < 120) {
-            tryCount++
-            try {
-                withTimeout(1.seconds) {
-                    // writeTo() should end up blocked waiting for data that will never come.
-                    // If the job used in the implementation isn't tied to the parent coroutine correctly
-                    // it will block forever
-                    job.join()
-                }
-            } catch (e: kotlinx.coroutines.TimeoutCancellationException) {
-                println("Tried $tryCount times so far, still not done...")
-            }
+        withTimeout(2.seconds) { // See https://github.com/awslabs/smithy-kotlin/issues/739
+            // writeTo() should end up blocked waiting for data that will never come.
+            // If the job used in the implementation isn't tied to the parent coroutine correctly
+            // it will block forever
+            job.join()
         }
-        val totalMs = System.currentTimeMillis() - startMs
-        println("Completed after $tryCount tries, $totalMs millseconds")
-        assertEquals(1, tryCount, "Took more than one second for job to finish. No es bueno.")
     }
 
     @Test
