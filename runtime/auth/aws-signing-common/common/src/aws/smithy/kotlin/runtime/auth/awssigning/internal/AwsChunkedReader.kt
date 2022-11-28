@@ -11,37 +11,38 @@ import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
 /**
- * Common interface abstracting over [SdkSource] and [SdkByteReadChannel]
- */
-internal interface Reader {
-    fun isClosedForRead(): Boolean
-
-    /**
-     * Read data from the underlying IO source.
-     * NOTE: Implementations may or may not suspend/block. The suspend coloring of this function
-     * is to gloss over differences between underlying IO abstractions and share aws-chunked encoding
-     * internals.
-     */
-    suspend fun read(sink: SdkBuffer, limit: Long): Long
-}
-
-/**
  * Common implementation of aws-chunked content encoding. Operations on this class can not be invoked concurrently.
- * This class wraps a [Reader] which actually provides the raw bytes.
+ * This class wraps a [Stream] which actually provides the raw bytes.
  * @see <a href="https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html">SigV4 Streaming</a>
- * @param reader the underlying IO abstraction which will have its data encoded in aws-chunked format
+ * @param stream the underlying IO abstraction which will have its data encoded in aws-chunked format
  * @param signer the signer to use to sign chunks and (optionally) chunk trailer
  * @param signingConfig the config to use for signing
  * @param previousSignature the previous signature to use for signing. in most cases, this should be the seed signature
  * @param trailingHeaders the optional trailing headers to include in the final chunk
  */
 internal class AwsChunkedReader(
-    private val reader: Reader,
+    private val stream: Stream,
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
     private var previousSignature: ByteArray,
     private val trailingHeaders: Headers = Headers.Empty,
 ) {
+
+    /**
+     * Common interface abstracting over [SdkSource] and [SdkByteReadChannel]
+     */
+    internal interface Stream {
+        fun isClosedForRead(): Boolean
+
+        /**
+         * Read data from the underlying IO source.
+         * NOTE: Implementations may or may not suspend/block. The suspend coloring of this function
+         * is to gloss over differences between underlying IO abstractions and share aws-chunked encoding
+         * internals.
+         */
+        suspend fun read(sink: SdkBuffer, limit: Long): Long
+    }
+
     /**
      * The current chunk to read from
      */
@@ -64,11 +65,11 @@ internal class AwsChunkedReader(
 
         // if not, try to fetch a new chunk
         val nextChunk = when {
-            reader.isClosedForRead() && hasLastChunkBeenSent -> null
+            stream.isClosedForRead() && hasLastChunkBeenSent -> null
             else -> {
                 var next = getSignedChunk()
                 if (next == null) {
-                    check(reader.isClosedForRead()) { "Expected underlying reader to be closed" }
+                    check(stream.isClosedForRead()) { "Expected underlying reader to be closed" }
                     next = getFinalChunk()
                     hasLastChunkBeenSent = true
                 }
@@ -117,7 +118,7 @@ internal class AwsChunkedReader(
             // fill up to chunk size bytes
             var remaining = CHUNK_SIZE_BYTES.toLong()
             while (remaining > 0L) {
-                val rc = reader.read(sink, remaining)
+                val rc = stream.read(sink, remaining)
                 if (rc == -1L) break
                 remaining -= rc
             }
@@ -129,9 +130,9 @@ internal class AwsChunkedReader(
             data
         }
 
+        // signer takes a ByteArray unfortunately...
         val chunkBody = bodyBuffer?.readByteArray() ?: return null
 
-        // signer takes a ByteArray unfortunately...
         val chunkSignature = signer.signChunk(chunkBody, previousSignature, signingConfig).signature
         previousSignature = chunkSignature
 

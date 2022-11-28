@@ -13,8 +13,10 @@ import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withTimeout
 import kotlin.random.Random
 import kotlin.test.*
+import kotlin.time.Duration.Companion.seconds
 
 interface AwsChunkedTestReader {
     // This may modify the chunked reader state and cause loss of data!
@@ -99,7 +101,7 @@ abstract class AwsChunkedTestBase(
     }.toList()
 
     /**
-     * Given a string representation of aws-chunked encoded bytes, return the value of the x-amz-chunk-trailer trailing header.
+     * Given a string representation of aws-chunked encoded bytes, return the value of the x-amz-trailer-signature trailing header.
      */
     fun getChunkTrailerSignature(bytes: String): String? {
         val re = Regex("x-amz-trailer-signature:[a-zA-Z0-9]{64}")
@@ -310,17 +312,16 @@ abstract class AwsChunkedTestBase(
 
         var bytesRead = 0L
 
-        // read all the underlying data plus any chunk signature overhead
-        val readLimit = CHUNK_SIZE_BYTES + (dataLengthBytes.toString(16).length + 1 + "chunk-signature=".length + 64 + 4)
+        // Use small reads to exercise we aren't too dependent on exact read limit sizes
+        val readLimit = 64L
 
-        for (chunk in 0 until numChunks - 1) {
-            bytesRead += awsChunked.read(sink, readLimit.toLong())
+        withTimeout(30.seconds) {
+            while (true) {
+                val rc = awsChunked.read(sink, readLimit)
+                if (rc == -1L) break
+                bytesRead += rc
+            }
         }
-        // read the last chunk, which is smaller in size
-        bytesRead += awsChunked.read(sink, readLimit.toLong())
-
-        // read the terminal chunk
-        bytesRead += awsChunked.read(sink, readLimit.toLong())
 
         val bytesAsString = sink.readUtf8()
 

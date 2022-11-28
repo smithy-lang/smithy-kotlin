@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AwsChunkedReader
-import aws.smithy.kotlin.runtime.auth.awssigning.internal.Reader
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
@@ -37,7 +36,7 @@ public class AwsChunkedSource(
     trailingHeaders: Headers = Headers.Empty,
 ) : SdkSource {
     private val chunkReader = AwsChunkedReader(
-        delegate.asReader(),
+        delegate.asStream(),
         signer,
         signingConfig,
         previousSignature,
@@ -57,8 +56,8 @@ public class AwsChunkedSource(
     override fun close() { delegate.close() }
 }
 
-private fun SdkSource.asReader(): Reader = object : Reader {
-    private val delegate = this@asReader.buffer()
+private fun SdkSource.asStream(): AwsChunkedReader.Stream = object : AwsChunkedReader.Stream {
+    private val delegate = this@asStream.buffer()
 
     override fun isClosedForRead(): Boolean =
         delegate.exhausted()
