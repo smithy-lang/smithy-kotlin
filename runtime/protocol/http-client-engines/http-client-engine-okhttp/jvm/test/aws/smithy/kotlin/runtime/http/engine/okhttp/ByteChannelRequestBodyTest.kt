@@ -120,7 +120,7 @@ class ByteChannelRequestBodyTest {
         delay(100.milliseconds)
 
         job.cancel()
-        withTimeout(1.seconds) {
+        withTimeout(2.seconds) { // See https://github.com/awslabs/smithy-kotlin/issues/739
             // writeTo() should end up blocked waiting for data that will never come.
             // If the job used in the implementation isn't tied to the parent coroutine correctly
             // it will block forever
