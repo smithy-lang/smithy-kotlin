@@ -34,19 +34,6 @@ fun interface AwsChunkedReaderFactory {
                 override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
             }
         }
-
-        val Source = AwsChunkedReaderFactory { data, signer, signingConfig, previousSignature, trailingHeaders ->
-            val source = data.source()
-            val chunked = AwsChunkedSource(source, signer, signingConfig, previousSignature, trailingHeaders)
-            object : AwsChunkedTestReader {
-                override fun isClosedForRead(): Boolean {
-                    val sink = SdkBuffer()
-                    val rc = chunked.read(sink, Long.MAX_VALUE)
-                    return rc == -1L
-                }
-                override suspend fun read(sink: SdkBuffer, limit: Long): Long = chunked.read(sink, limit)
-            }
-        }
     }
 
     fun create(
