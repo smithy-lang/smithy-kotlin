@@ -28,7 +28,7 @@ public class SdkSourceBodyStream(
     override fun resetPosition(): Boolean = true
 
     override fun sendRequestBody(buffer: MutableBuffer): Boolean {
-        if (!source.request(1)) return true
+        if (source.exhausted()) return true
 
         val sink = ByteArray(minOf(buffer.writeRemaining, source.buffer.size.toInt()))
         val rc = source.read(sink)
@@ -39,6 +39,6 @@ public class SdkSourceBodyStream(
         check(rc == wc) { "Expected to write $rc bytes but wrote $wc bytes" }
 
         // if any data is still available from the underlying source then we aren't done
-        return !source.request(1)
+        return source.exhausted()
     }
 }
