@@ -41,6 +41,7 @@ kotlin {
             dependencies {
                 val ktorVersion: String by project
                 implementation(project(":runtime:io"))
+                implementation(project(":runtime:utils"))
                 implementation("io.ktor:ktor-io:$ktorVersion")
             }
         }
