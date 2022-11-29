@@ -105,7 +105,7 @@ public suspend fun SdkByteReadChannel.readToBuffer(): SdkBuffer {
  * Read all bytes from this channel into [sink]. Returns the total number of bytes written.
  */
 public suspend fun SdkByteReadChannel.readAll(sink: SdkSink): Long = withContext(SdkDispatchers.IO) {
-    val bufferedSink = if (sink is SdkBuffer) sink else sink.buffer()
+    val bufferedSink = sink.buffer()
     var totalWritten = 0L
     while (true) {
         val rc = read(bufferedSink.buffer, DEFAULT_BYTE_CHANNEL_MAX_BUFFER_SIZE.toLong())
