@@ -6,12 +6,14 @@
 package aws.smithy.kotlin.runtime.io
 
 import aws.smithy.kotlin.runtime.io.internal.JobChannel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class JobChannelTest {
     @Test
     fun testClose() = runTest {

@@ -9,12 +9,14 @@ import aws.sdk.kotlin.crt.io.MutableBuffer
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.source
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SdkSourceBodyStreamTest {
     private fun mutableBuffer(capacity: Int): Pair<MutableBuffer, ByteArray> {
         val dest = ByteArray(capacity)
