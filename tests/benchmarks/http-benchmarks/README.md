@@ -8,26 +8,23 @@ This project contains benchmarks for the [HTTP engine implementations](../../../
 ./gradlew :tests:benchmarks:http-benchmarks:benchmark
 ```
 
-Baseline `0.10.3-SNAPSHOT` on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-types/m5/)** with **Corretto-11.0.15.9.1**:
+Baseline `0.14.0-SNAPSHOT` on EC2 **[m5.4xlarge](https://aws.amazon.com/ec2/instance-types/m5/)** with **Corretto-11.0.15.9.1**:
 
 The download/upload throughput benchmarks are an approximation of how much data in MB/s we are able to process.
 
 ```
 jvm summary:
-Benchmark                                      (httpClientName)   Mode  Cnt      Score     Error  Units
-HttpEngineBenchmarks.downloadThroughputNoTls             OkHttp  thrpt    5    129.300 ±   1.796  ops/s
-HttpEngineBenchmarks.downloadThroughputNoTls                CRT  thrpt    5    377.234 ±  10.801  ops/s
-HttpEngineBenchmarks.downloadThroughputNoTls        Ktor_OkHttp  thrpt    5    169.366 ±   2.480  ops/s
-HttpEngineBenchmarks.roundTripConcurrentNoTls            OkHttp  thrpt    5  33225.814 ± 209.392  ops/s
-HttpEngineBenchmarks.roundTripConcurrentNoTls               CRT  thrpt    5  28013.919 ± 455.085  ops/s
-HttpEngineBenchmarks.roundTripConcurrentNoTls       Ktor_OkHttp  thrpt    5  14736.287 ± 867.559  ops/s
-HttpEngineBenchmarks.roundTripSequentialNoTls            OkHttp  thrpt    5   7801.946 ± 527.743  ops/s
-HttpEngineBenchmarks.roundTripSequentialNoTls               CRT  thrpt    5   8712.930 ± 800.754  ops/s
-HttpEngineBenchmarks.roundTripSequentialNoTls       Ktor_OkHttp  thrpt    5   4373.179 ±  90.326  ops/s
-HttpEngineBenchmarks.uploadThroughputNoTls               OkHttp  thrpt    5    198.005 ±   5.032  ops/s
-HttpEngineBenchmarks.uploadThroughputNoTls                  CRT  thrpt    5    206.829 ±   5.680  ops/s
-HttpEngineBenchmarks.uploadThroughputNoTls          Ktor_OkHttp  thrpt    5    194.655 ±   4.665  ops/s
+Benchmark                                                 (httpClientName)   Mode  Cnt      Score     Error  Units
+HttpEngineBenchmarks.downloadThroughputNoTls                        OkHttp  thrpt    5    613.108 ±  23.914  ops/s
+HttpEngineBenchmarks.downloadThroughputNoTls                           CRT  thrpt    5    406.408 ±  13.481  ops/s
+HttpEngineBenchmarks.roundTripConcurrentNoTls                       OkHttp  thrpt    5  36524.268 ± 186.314  ops/s
+HttpEngineBenchmarks.roundTripConcurrentNoTls                          CRT  thrpt    5  19593.107 ± 561.276  ops/s
+HttpEngineBenchmarks.roundTripSequentialNoTls                       OkHttp  thrpt    5   8377.427 ± 533.683  ops/s
+HttpEngineBenchmarks.roundTripSequentialNoTls                          CRT  thrpt    5   7352.441 ± 661.062  ops/s
+HttpEngineBenchmarks.uploadThroughputChannelContentNoTls            OkHttp  thrpt    5    202.921 ±   4.127  ops/s
+HttpEngineBenchmarks.uploadThroughputChannelContentNoTls               CRT  thrpt    5    115.932 ±   0.241  ops/s
+HttpEngineBenchmarks.uploadThroughputNoTls                          OkHttp  thrpt    5    196.034 ±   5.392  ops/s
+HttpEngineBenchmarks.uploadThroughputNoTls                             CRT  thrpt    5    206.827 ±   3.650  ops/s
+HttpEngineBenchmarks.uploadThroughputSourceContentNoTls             OkHttp  thrpt    5    216.396 ±   7.071  ops/s
+HttpEngineBenchmarks.uploadThroughputSourceContentNoTls                CRT  thrpt    5    211.232 ±  17.247  ops/s
 ```
-
-The `Ktor_OkHttp` engine is the Ktor wrapped OkHttp engine whereas the `OkHttp` engine is the raw binding to OkHttp
-without Ktor.

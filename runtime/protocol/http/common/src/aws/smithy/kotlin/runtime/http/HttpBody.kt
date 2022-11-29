@@ -6,7 +6,7 @@ package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 /**
@@ -20,9 +20,23 @@ public sealed class HttpBody {
     public open val contentLength: Long? = null
 
     /**
+     * Flag indicating the body can be consumed only once
+     */
+    public open val isOneShot: Boolean = true
+
+    /**
+     * Flag indicating that this request body should be handled as a duplex stream by the underlying engine.
+     *
+     * Most request bodies are sent completely before the response is received. In full duplex mode the request
+     * and response bodies may be interleaved. Only HTTP/2 calls support duplex streaming.
+     */
+    public open val isDuplex: Boolean = false
+
+    /**
      * Variant of a [HttpBody] without a payload
      */
     public object Empty : HttpBody() {
+        final override val isOneShot: Boolean = false
         override val contentLength: Long = 0
     }
 
@@ -32,6 +46,10 @@ public sealed class HttpBody {
      * Useful for content that can be fully realized in memory (e.g. most text/JSON payloads)
      */
     public abstract class Bytes : HttpBody() {
+        // implementations MUST be idempotent and replayable or else they should be modeled differently
+        // this is meant for simple in-memory representations only
+        final override val isOneShot: Boolean = false
+
         /**
          * Provides [ByteArray] to be sent to peer
          */
@@ -39,36 +57,25 @@ public sealed class HttpBody {
     }
 
     /**
-     * Variant of an [HttpBody] with a streaming payload. Content is read from the given source
+     * Variant of an [HttpBody] with a streaming payload read from an [SdkSource]
      */
-    public abstract class Streaming : HttpBody() {
+    public abstract class SourceContent : HttpBody() {
         /**
-         * Provides [SdkByteReadChannel] for the content. Implementations MUST provide the same channel
-         * every time [readFrom] is invoked until a call to [reset]. Replayable streams that support reset
-         * MUST provide fresh channels after [reset] is invoked.
+         * Provides [SdkSource] that will be sent to peer. Replayable streams ([HttpBody.isOneShot] = `false`)
+         * MUST provide a fresh channel every time [readFrom] is invoked.
+         */
+        public abstract fun readFrom(): SdkSource
+    }
+
+    /**
+     * Variant of an [HttpBody] with a streaming payload read from an [SdkByteReadChannel]
+     */
+    public abstract class ChannelContent : HttpBody() {
+        /**
+         * Provides [SdkByteReadChannel] that will be sent to peer. Replayable streams ([HttpBody.isOneShot] = `false`)
+         * MUST provide a fresh channel every time [readFrom] is invoked.
          */
         public abstract fun readFrom(): SdkByteReadChannel
-
-        /**
-         * Flag indicating the stream can be consumed multiple times. If `false` [reset] will throw an
-         * [UnsupportedOperationException].
-         */
-        public open val isReplayable: Boolean = false
-
-        /**
-         * Flag indicating that this request body should be handled as a duplex stream by the underlying engine.
-         *
-         * Most request bodies are sent completely before the response is received. In full duplex mode the request
-         * and response bodies may be interleaved. Only HTTP/2 calls support duplex streaming.
-         */
-        public open val isDuplex: Boolean = false
-
-        /**
-         * Reset the stream such that the next call to [readFrom] provides a fresh channel.
-         * @throws UnsupportedOperationException if the stream can only be consumed once. Consumers can check
-         * [isReplayable] before calling
-         */
-        public open fun reset() { throw UnsupportedOperationException("${this::class.simpleName} can only be consumed once") }
     }
 
     public companion object {
@@ -85,26 +92,29 @@ public sealed class HttpBody {
 public fun ByteArray.toHttpBody(): HttpBody = HttpBody.fromBytes(this)
 
 /**
+ * Convert a [String] into an [HttpBody]
+ */
+public fun String.toHttpBody(): HttpBody = encodeToByteArray().toHttpBody()
+
+/**
  * Convert a [ByteStream] to the equivalent [HttpBody] variant
  */
+@InternalApi
 public fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
     is ByteStream.Buffer -> object : HttpBody.Bytes() {
         override val contentLength: Long? = byteStream.contentLength
         override fun bytes(): ByteArray = byteStream.bytes()
     }
-    is ByteStream.OneShotStream -> object : HttpBody.Streaming() {
+
+    is ByteStream.ChannelStream -> object : HttpBody.ChannelContent() {
         override val contentLength: Long? = byteStream.contentLength
+        override val isOneShot: Boolean = byteStream.isOneShot
         override fun readFrom(): SdkByteReadChannel = byteStream.readFrom()
     }
-    is ByteStream.ReplayableStream -> object : HttpBody.Streaming() {
-        private var channel: SdkByteReadChannel? = null
+    is ByteStream.SourceStream -> object : HttpBody.SourceContent() {
         override val contentLength: Long? = byteStream.contentLength
-        override fun readFrom(): SdkByteReadChannel = channel ?: byteStream.newReader().also { channel = it }
-        override val isReplayable: Boolean = true
-        override fun reset() {
-            channel?.close()
-            channel = null
-        }
+        override val isOneShot: Boolean = byteStream.isOneShot
+        override fun readFrom(): SdkSource = byteStream.readFrom()
     }
 }
 
@@ -115,13 +125,14 @@ public fun ByteStream.toHttpBody(): HttpBody = when (val byteStream = this) {
 @InternalApi
 public fun SdkByteReadChannel.toHttpBody(contentLength: Long? = null): HttpBody {
     val ch = this
-    return object : HttpBody.Streaming() {
+    return object : HttpBody.ChannelContent() {
         override val contentLength: Long? = contentLength
-        override val isReplayable: Boolean = false
+        override val isOneShot: Boolean = true
         override fun readFrom(): SdkByteReadChannel = ch
     }
 }
 
+// FIXME - replace/move to reading to SdkBuffer instead
 /**
  * Consume the [HttpBody] and pull the entire contents into memory as a [ByteArray].
  * Only do this if you are sure the contents fit in-memory as this will read the entire contents
@@ -130,25 +141,13 @@ public fun SdkByteReadChannel.toHttpBody(contentLength: Long? = null): HttpBody 
 public suspend fun HttpBody.readAll(): ByteArray? = when (this) {
     is HttpBody.Empty -> null
     is HttpBody.Bytes -> this.bytes()
-    is HttpBody.Streaming -> {
+    is HttpBody.ChannelContent -> {
         val readChan = readFrom()
-        val bytes = readChan.readRemaining()
-        // readRemaining will read up to `limit` bytes (which is defaulted to Int.MAX_VALUE) or until
-        // the stream is closed and no more bytes remain.
-        // This is usually sufficient to consume the stream but technically that's not what it's doing.
-        // Save us a painful debug session later in the very rare chance this were to occur.
-        //
-        // TODO this check isn't right since it relies on multiple atomics which may be out of sync. We should replace
-        // this logic with something else or remove the ability to [readAll] to a [ByteArray] altogether.
-        val isClosedForRead = readChan.isClosedForRead
-        val isClosedForWrite = readChan.isClosedForWrite
-        val availableForRead = readChan.availableForRead
-        check(readChan.isClosedForRead || isClosedForWrite && availableForRead == 0) {
-            "failed to read all HttpBody bytes from stream: isClosedForRead: $isClosedForRead/${readChan.isClosedForRead}; isClosedForWrite: $isClosedForWrite/${readChan.isClosedForWrite}; availableForRead: $availableForRead/${readChan.availableForRead}: ${bytes.decodeToString()}"
-        }
-
+        val bytes = readChan.readToBuffer().readByteArray()
         bytes
     }
+
+    is HttpBody.SourceContent -> readFrom().readToByteArray()
 }
 
 /**
@@ -160,9 +159,15 @@ public fun HttpBody.toByteStream(): ByteStream? = when (val body = this) {
         override val contentLength: Long? = body.contentLength
         override fun bytes(): ByteArray = body.bytes()
     }
-    is HttpBody.Streaming -> object : ByteStream.OneShotStream() {
+    is HttpBody.ChannelContent -> object : ByteStream.ChannelStream() {
         override val contentLength: Long? = body.contentLength
+        override val isOneShot: Boolean = body.isOneShot
         override fun readFrom(): SdkByteReadChannel = body.readFrom()
+    }
+    is HttpBody.SourceContent -> object : ByteStream.SourceStream() {
+        override val contentLength: Long? = body.contentLength
+        override val isOneShot: Boolean = body.isOneShot
+        override fun readFrom(): SdkSource = body.readFrom()
     }
 }
 
@@ -173,5 +178,6 @@ public fun HttpBody.toByteStream(): ByteStream? = when (val body = this) {
 public fun HttpBody.toSdkByteReadChannel(): SdkByteReadChannel? = when (val body = this) {
     is HttpBody.Empty -> null
     is HttpBody.Bytes -> SdkByteReadChannel(body.bytes())
-    is HttpBody.Streaming -> body.readFrom()
+    is HttpBody.ChannelContent -> body.readFrom()
+    is HttpBody.SourceContent -> body.readFrom().toSdkByteReadChannel()
 }

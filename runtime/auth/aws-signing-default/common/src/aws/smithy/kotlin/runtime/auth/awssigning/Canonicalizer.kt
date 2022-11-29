@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
+import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.hashing.hash
@@ -14,10 +15,13 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.util.encodeLabel
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.*
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
+import aws.smithy.kotlin.runtime.io.internal.SdkSinkObserver
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.*
 import aws.smithy.kotlin.runtime.util.text.*
+import kotlinx.coroutines.withContext
 
 /**
  * The data for a canonical request.
@@ -133,13 +137,21 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
      * non-replayable stream.
      * @return The hash as a hex string
      */
-    private suspend fun HttpBody.calculateHash(): String = when (this) {
-        is HttpBody.Empty -> HashSpecification.EmptyBody.hash
-        is HttpBody.Bytes -> bytes().hash(sha256Supplier).encodeToHex()
-        is HttpBody.Streaming -> {
-            require(isReplayable) { "Stream must be replayable to calculate a body hash" }
-            val reader = readFrom()
-            reader.sha256().encodeToHex().also { reset() }
+    private suspend fun HttpBody.calculateHash(): String {
+        require(!isOneShot) { "Stream must be replayable to calculate a body hash" }
+        return when (this) {
+            is HttpBody.Empty -> HashSpecification.EmptyBody.hash
+            is HttpBody.Bytes -> bytes().hash(sha256Supplier).encodeToHex()
+            is HttpBody.ChannelContent -> {
+                val reader = readFrom()
+                reader.sha256().encodeToHex()
+            }
+            is HttpBody.SourceContent -> {
+                val source = readFrom()
+                withContext(SdkDispatchers.IO) {
+                    source.sha256().encodeToHex()
+                }
+            }
         }
     }
 
@@ -149,15 +161,30 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
      */
     private suspend fun SdkByteReadChannel.sha256(): ByteArray {
         val hash = sha256Supplier()
-
-        val sink = ByteArray(STREAM_CHUNK_BYTES)
-        while (!isClosedForRead || availableForRead > 0) {
-            val bytesRead = readAvailable(sink)
-            if (bytesRead <= 0) break
-            hash.update(sink, offset = 0, length = bytesRead)
-        }
-
+        val sink = HashingSink(hash)
+        readAll(sink)
         return hash.digest()
+    }
+
+    private fun SdkSource.sha256(): ByteArray {
+        val hash = sha256Supplier()
+        val source = this
+        val sink = HashingSink(hash)
+        sink.buffer().use { bufferedSink ->
+            source.use {
+                bufferedSink.writeAll(source)
+            }
+        }
+        return hash.digest()
+    }
+}
+
+private class HashingSink(
+    val hash: HashFunction,
+    sink: SdkSink = SdkSink.blackhole(),
+) : SdkSinkObserver(sink) {
+    override fun observe(data: ByteArray, offset: Int, length: Int) {
+        hash.update(data, offset, length)
     }
 }
 

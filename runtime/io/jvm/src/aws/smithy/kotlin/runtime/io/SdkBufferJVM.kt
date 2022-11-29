@@ -5,44 +5,115 @@
 
 package aws.smithy.kotlin.runtime.io
 
-import io.ktor.utils.io.bits.*
+import aws.smithy.kotlin.runtime.io.internal.*
+import java.io.InputStream
+import java.io.OutputStream
 import java.nio.ByteBuffer
 
-internal fun SdkByteBuffer.hasArray() = memory.buffer.hasArray() && !memory.buffer.isReadOnly
+public actual class SdkBuffer : SdkBufferedSource, SdkBufferedSink {
+    public actual constructor() : this(okio.Buffer())
 
-public actual fun SdkByteBuffer.bytes(): ByteArray = when (hasArray()) {
-    true -> memory.buffer.array().sliceArray(readPosition.toInt() until readRemaining.toInt())
-    false -> ByteArray(readRemaining.toInt()).apply { readFully(this) }
-}
+    internal actual val inner: okio.Buffer
 
-internal actual fun Memory.Companion.ofByteArray(src: ByteArray, offset: Int, length: Int): Memory =
-    Memory.of(src, offset, length)
-
-/**
- * Create a new SdkBuffer using the given [ByteBuffer] as the contents
- */
-public fun SdkByteBuffer.Companion.of(byteBuffer: ByteBuffer): SdkByteBuffer = SdkByteBuffer(Memory.of(byteBuffer))
-
-/**
- * Read the buffer's content to the [dst] buffer moving its position.
- */
-public fun SdkByteBuffer.readFully(dst: ByteBuffer) {
-    val length = dst.remaining().toLong()
-    read { memory, readStart, _ ->
-        memory.copyTo(dst, readStart)
-        length
+    internal actual constructor(buffer: okio.Buffer) {
+        this.inner = buffer
     }
-}
 
-/**
- * Read as much from this buffer as possible to [dst] buffer moving its position
- */
-public fun SdkByteBuffer.readAvailable(dst: ByteBuffer) {
-    val wc = minOf(readRemaining.toInt(), dst.remaining())
-    if (wc == 0) return
-    val dstCopy = dst.duplicate().apply {
-        limit(position() + wc)
+    public actual val size: Long
+        get() = inner.size
+
+    actual override val buffer: SdkBuffer
+        get() = this
+
+    override fun toString(): String = inner.toString()
+
+    override fun hashCode(): Int = inner.hashCode()
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is SdkBuffer) return false
+        return inner == other.inner
     }
-    readFully(dstCopy)
-    dst.position(dst.position() + wc)
+
+    override fun skip(byteCount: Long): Unit = commonSkip(byteCount)
+
+    override fun readByte(): Byte = commonReadByte()
+
+    override fun readShort(): Short = commonReadShort()
+
+    override fun readShortLe(): Short = commonReadShortLe()
+
+    override fun readLong(): Long = commonReadLong()
+
+    override fun readLongLe(): Long = commonReadLongLe()
+
+    override fun readInt(): Int = commonReadInt()
+
+    override fun readIntLe(): Int = commonReadIntLe()
+
+    override fun readAll(sink: SdkSink): Long = commonReadAll(sink)
+
+    override fun read(sink: ByteArray, offset: Int, limit: Int): Int =
+        commonRead(sink, offset, limit)
+
+    override fun read(sink: SdkBuffer, limit: Long): Long =
+        commonRead(sink, limit)
+
+    override fun read(dst: ByteBuffer): Int = inner.read(dst)
+
+    override fun readByteArray(): ByteArray = commonReadByteArray()
+
+    override fun readByteArray(byteCount: Long): ByteArray = commonReadByteArray(byteCount)
+
+    override fun readUtf8(): String = commonReadUtf8()
+
+    override fun readUtf8(byteCount: Long): String = commonReadUtf8(byteCount)
+
+    override fun peek(): SdkBufferedSource = commonPeek()
+
+    override fun exhausted(): Boolean = commonExhausted()
+    override fun request(byteCount: Long): Boolean = commonRequest(byteCount)
+
+    override fun require(byteCount: Long): Unit = commonRequire(byteCount)
+
+    override fun write(source: ByteArray, offset: Int, limit: Int): Unit =
+        commonWrite(source, offset, limit)
+
+    override fun write(source: SdkSource, byteCount: Long): Unit =
+        commonWrite(source, byteCount)
+
+    override fun write(source: SdkBuffer, byteCount: Long): Unit =
+        commonWrite(source, byteCount)
+
+    override fun write(src: ByteBuffer): Int = inner.write(src)
+
+    override fun writeAll(source: SdkSource): Long = commonWriteAll(source)
+
+    override fun writeUtf8(string: String, start: Int, endExclusive: Int): Unit =
+        commonWriteUtf8(string, start, endExclusive)
+
+    override fun writeByte(x: Byte): Unit = commonWriteByte(x)
+
+    override fun writeShort(x: Short): Unit = commonWriteShort(x)
+
+    override fun writeShortLe(x: Short): Unit = commonWriteShortLe(x)
+
+    override fun writeInt(x: Int): Unit = commonWriteInt(x)
+
+    override fun writeIntLe(x: Int): Unit = commonWriteIntLe(x)
+
+    override fun writeLong(x: Long): Unit = commonWriteLong(x)
+
+    override fun writeLongLe(x: Long): Unit = commonWriteLongLe(x)
+
+    override fun flush(): Unit = commonFlush()
+
+    override fun emit() {
+        inner.emit()
+    }
+    override fun close(): Unit = commonClose()
+    override fun isOpen(): Boolean = inner.isOpen
+
+    override fun inputStream(): InputStream = inner.inputStream()
+    override fun outputStream(): OutputStream = inner.outputStream()
 }

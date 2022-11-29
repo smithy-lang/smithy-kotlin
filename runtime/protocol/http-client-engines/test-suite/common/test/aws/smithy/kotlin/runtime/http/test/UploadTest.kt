@@ -8,40 +8,62 @@ package aws.smithy.kotlin.runtime.http.test
 import aws.smithy.kotlin.runtime.content.ByteStream
 import aws.smithy.kotlin.runtime.hashing.sha256
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.http.test.util.AbstractEngineTest
 import aws.smithy.kotlin.runtime.http.test.util.test
 import aws.smithy.kotlin.runtime.http.test.util.testSetup
-import aws.smithy.kotlin.runtime.io.SdkByteChannel
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
+import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.encodeToHex
 import kotlinx.coroutines.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class UploadTest : AbstractEngineTest() {
-    @Test
-    fun testUploadIntegrity() = testEngines {
+    private val largeBodyData = ByteArray(32 * 1024 * 1024) { it.toByte() }
+    private val largeBodySha = largeBodyData.sha256().encodeToHex()
+    private fun testUploadIntegrity(
+        expectedSha: String = largeBodySha,
+        block: () -> HttpBody,
+    ) = testEngines {
         // test that what we write the entire contents given to us
         test { env, client ->
-            val data = ByteArray(16 * 1024 * 1024) { it.toByte() }
-            val sha = data.sha256().encodeToHex()
 
             val req = HttpRequest {
                 method = HttpMethod.POST
                 testSetup(env)
                 url.path = "/upload/content"
-                body = ByteArrayContent(data)
+                body = block()
             }
 
             val call = client.call(req)
             call.complete()
             assertEquals(HttpStatusCode.OK, call.response.status)
-            assertEquals(sha, call.response.headers["content-sha256"])
+            assertEquals(expectedSha, call.response.headers["content-sha256"])
         }
+    }
+
+    @Test
+    fun testUploadIntegrityBufferContent() = testUploadIntegrity { HttpBody.fromBytes(largeBodyData) }
+
+    @Test
+    fun testUploadIntegrityChannelContent() = testUploadIntegrity {
+        val ch = SdkByteReadChannel(largeBodyData)
+        val body = object : HttpBody.ChannelContent() {
+            override val contentLength: Long = largeBodyData.size.toLong()
+            override fun readFrom(): SdkByteReadChannel = ch
+        }
+        body
+    }
+
+    @Test
+    fun testUploadIntegritySourceContent() = testUploadIntegrity {
+        val body = object : HttpBody.SourceContent() {
+            override val contentLength: Long = largeBodyData.size.toLong()
+            override fun readFrom(): SdkSource = largeBodyData.source()
+        }
+        body
     }
 
     @Test
@@ -50,7 +72,7 @@ class UploadTest : AbstractEngineTest() {
             val data = ByteArray(16 * 1024 * 1024) { it.toByte() }
             val sha = data.sha256().encodeToHex()
             val ch = SdkByteChannel(autoFlush = true)
-            val content = object : HttpBody.Streaming() {
+            val content = object : HttpBody.ChannelContent() {
                 override val contentLength: Long = data.size.toLong()
                 override fun readFrom(): SdkByteReadChannel = ch
             }
@@ -66,9 +88,9 @@ class UploadTest : AbstractEngineTest() {
                 launch {
                     val end = data.size / 3
                     val slice = data.sliceArray(0 until end)
-                    ch.writeFully(slice, 0, end)
+                    ch.write(slice, 0, end)
                     delay(1000)
-                    ch.writeFully(data, offset = end)
+                    ch.write(data, offset = end)
                     ch.close()
                 }
                 val call = client.call(req)
@@ -85,7 +107,7 @@ class UploadTest : AbstractEngineTest() {
             val data = ByteArray(16) { it.toByte() }
             val sha = data.sha256().encodeToHex()
             val ch = SdkByteChannel(autoFlush = true)
-            val content = object : HttpBody.Streaming() {
+            val content = object : HttpBody.ChannelContent() {
                 override val contentLength: Long = data.size.toLong()
                 override fun readFrom(): SdkByteReadChannel = ch
             }
@@ -99,7 +121,7 @@ class UploadTest : AbstractEngineTest() {
 
             coroutineScope {
                 launch {
-                    ch.writeFully(data)
+                    ch.write(data)
                     delay(1000)
                     // CRT will have stopped polling by now
                     ch.close()
@@ -120,9 +142,9 @@ class UploadTest : AbstractEngineTest() {
             val data = ByteArray(1024 * 1024) { it.toByte() }
             val sha = data.sha256().encodeToHex()
 
-            val wrappedStream = object : ByteStream.ReplayableStream() {
+            val wrappedStream = object : ByteStream.ChannelStream() {
                 override val contentLength: Long = data.size.toLong()
-                override fun newReader(): SdkByteReadChannel {
+                override fun readFrom(): SdkByteReadChannel {
                     val underlying = SdkByteReadChannel(data)
                     return object : SdkByteReadChannel by underlying {}
                 }
@@ -184,7 +206,7 @@ class UploadTest : AbstractEngineTest() {
 
             val writeJob = GlobalScope.launch {
                 val seedData = ByteArray(6017) { it.toByte() }
-                chan.writeFully(seedData)
+                chan.write(seedData)
             }
 
             val req = HttpRequest {

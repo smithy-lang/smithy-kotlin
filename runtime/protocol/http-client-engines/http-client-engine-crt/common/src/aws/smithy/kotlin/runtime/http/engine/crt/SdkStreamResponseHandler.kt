@@ -8,16 +8,19 @@ package aws.smithy.kotlin.runtime.http.engine.crt
 import aws.sdk.kotlin.crt.CRT
 import aws.sdk.kotlin.crt.http.*
 import aws.sdk.kotlin.crt.io.Buffer
-import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.HeadersBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.internal.derivedName
+import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.logging.Logger
 import kotlinx.atomicfu.locks.reentrantLock
 import kotlinx.atomicfu.locks.withLock
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Implements the CRT stream response interface which proxies the response from the CRT to the SDK
@@ -26,6 +29,7 @@ import kotlinx.coroutines.channels.Channel
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class SdkStreamResponseHandler(
     private val conn: HttpClientConnection,
+    private val callContext: CoroutineContext,
 ) : HttpStreamResponseHandler {
     // TODO - need to cancel the stream when the body is closed from the caller side early.
     // There is no great way to do that currently without either (1) closing the connection or (2) throwing an
@@ -35,7 +39,8 @@ internal class SdkStreamResponseHandler(
     private val responseReady = Channel<HttpResponse>(1)
     private val headers = HeadersBuilder()
 
-    private var sdkBody: BufferedReadChannel? = null
+    // in practice only WINDOW_SIZE bytes will ever be in-flight
+    private val bodyChan = Channel<SdkBuffer>(Channel.UNLIMITED)
 
     private val lock = reentrantLock() // protects crtStream and cancelled state
     private var crtStream: HttpStream? = null
@@ -75,12 +80,29 @@ internal class SdkStreamResponseHandler(
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun createHttpResponseBody(contentLength: Long?): HttpBody {
-        sdkBody = bufferedReadChannel(::onDataConsumed)
-        return object : HttpBody.Streaming() {
+        val ch = SdkByteChannel(true)
+        val writerContext = callContext + callContext.derivedName("response-body-writer")
+        val job = GlobalScope.launch(writerContext) {
+            for (buffer in bodyChan) {
+                val wc = buffer.size.toInt()
+                ch.write(buffer)
+                // increment window
+                onDataConsumed(wc)
+            }
+
+            // immediately close when done to signal end of body stream
+            ch.close()
+        }
+
+        job.invokeOnCompletion { cause ->
+            // close is idempotent, if not previously closed then close with cause
+            ch.close(cause)
+        }
+        return object : HttpBody.ChannelContent() {
             override val contentLength: Long? = contentLength
-            override fun readFrom(): SdkByteReadChannel =
-                sdkBody!!
+            override fun readFrom(): SdkByteReadChannel = ch
         }
     }
 
@@ -128,12 +150,14 @@ internal class SdkStreamResponseHandler(
         // short circuit, stop buffering data and discard remaining incoming bytes
         if (isCancelled) return bodyBytesIn.len
 
-        // we should have created a response channel if we expected a body
-        val sdkRespChan = checkNotNull(sdkBody) { "unexpected response body" }
-        sdkRespChan.write(bodyBytesIn)
+        val buffer = SdkBuffer().apply {
+            val bytes = bodyBytesIn.readAll()
+            write(bytes)
+        }
 
-        // explicit window management is done in BufferedReadChannel which calls `onDataConsumed`
-        // as data is read from the channel
+        bodyChan.trySend(buffer).getOrThrow()
+
+        // explicit window management is handled by `onDataConsumed` as data is read from the channel
         return 0
     }
 
@@ -148,12 +172,12 @@ internal class SdkStreamResponseHandler(
         // close the body channel
         if (errorCode != 0) {
             val errorDescription = CRT.errorString(errorCode)
-            val ex = ClientException("CrtHttpEngine::response failed: ec=$errorCode; description=$errorDescription")
+            val ex = CancellationException("CrtHttpEngine::response failed: ec=$errorCode; description=$errorDescription")
             responseReady.close(ex)
-            sdkBody?.cancel(ex)
+            bodyChan.cancel(ex)
         } else {
             // closing the channel to indicate no more data will be sent
-            sdkBody?.close()
+            bodyChan.close()
             // ensure a response was signalled (will close the channel on it's own if it wasn't already sent)
             signalResponse(stream)
         }

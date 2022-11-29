@@ -6,9 +6,8 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
-import aws.smithy.kotlin.runtime.io.SdkByteBuffer
-import aws.smithy.kotlin.runtime.io.readAvailable
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 
-internal actual fun transferRequestBody(outgoing: SdkByteBuffer, dest: MutableBuffer) {
-    outgoing.readAvailable(dest.buffer)
+internal actual fun transferRequestBody(outgoing: SdkBuffer, dest: MutableBuffer) {
+    outgoing.read(dest.buffer)
 }

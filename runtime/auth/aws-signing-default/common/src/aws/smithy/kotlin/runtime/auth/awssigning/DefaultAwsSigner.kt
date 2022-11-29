@@ -69,6 +69,7 @@ internal class DefaultAwsSignerImpl(
     ): AwsSigningResult<Unit> {
         val logger = coroutineContext.getLogger<DefaultAwsSignerImpl>()
 
+        // FIXME - can we share canonicalization code more than we are..., also this reduce is inefficient.
         // canonicalize the headers
         val trailingHeadersBytes = trailingHeaders.entries().sortedBy { e -> e.key.lowercase() }
             .map { e ->

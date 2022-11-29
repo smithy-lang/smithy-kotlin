@@ -81,34 +81,34 @@ public fun HttpRequestBuilder.header(name: String, value: String): Unit = header
  */
 @InternalApi
 public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): String {
-    val buffer = SdkByteBuffer(256u)
+    val buffer = SdkBuffer()
 
     // TODO - we have no way to know the http version at this level to set HTTP/x.x
-    buffer.write("${request.method} ${request.url.encodedPath}\r\n")
-    buffer.write("Host: ${request.url.host}\r\n")
+    buffer.writeUtf8("${request.method} ${request.url.encodedPath}\r\n")
+    buffer.writeUtf8("Host: ${request.url.host}\r\n")
 
     val contentLength = request.headers["Content-Length"]?.toLongOrNull() ?: (request.body.contentLength ?: 0)
     if (contentLength > 0) {
-        buffer.write("Content-Length: $contentLength\r\n")
+        buffer.writeUtf8("Content-Length: $contentLength\r\n")
     }
 
     val skip = setOf("Host", "Content-Length")
     request.headers.entries()
         .filterNot { it.key in skip }
         .forEach {
-            buffer.write(it.value.joinToString(separator = ";", prefix = "${it.key}: ", postfix = "\r\n"))
+            buffer.writeUtf8(it.value.joinToString(separator = ";", prefix = "${it.key}: ", postfix = "\r\n"))
         }
 
-    buffer.write("\r\n")
+    buffer.writeUtf8("\r\n")
 
     if (dumpBody) {
         when (val body = request.body) {
-            is HttpBody.Bytes -> buffer.writeFully(body.bytes())
-            is HttpBody.Streaming -> {
+            is HttpBody.Bytes -> buffer.write(body.bytes())
+            is HttpBody.ChannelContent, is HttpBody.SourceContent -> {
                 // consume the stream and replace the body
                 val content = body.readAll()
                 if (content != null) {
-                    buffer.writeFully(content)
+                    buffer.write(content)
                     request.body = ByteArrayContent(content)
                 }
             }
@@ -116,5 +116,5 @@ public suspend fun dumpRequest(request: HttpRequestBuilder, dumpBody: Boolean): 
         }
     }
 
-    return buffer.decodeToString()
+    return buffer.readUtf8()
 }

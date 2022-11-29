@@ -8,7 +8,7 @@ package aws.smithy.kotlin.runtime.io
 /**
  * A channel for writing a sequence of bytes asynchronously. This is a **single writer channel**.
  */
-public expect interface SdkByteWriteChannel : Closeable {
+public interface SdkByteWriteChannel : Closeable {
 
     /**
      * Returns the number of bytes that can be written without suspension. Write operations do not
@@ -21,6 +21,12 @@ public expect interface SdkByteWriteChannel : Closeable {
      * Returns true if channel has been closed. Attempting to write to the channel will throw an exception
      */
     public val isClosedForWrite: Boolean
+
+    /**
+     * Returns the underlying cause the channel was closed with or `null` if closed successfully or not yet closed.
+     * A failed channel will have a closed cause.
+     */
+    public val closedCause: Throwable?
 
     /**
      * Total number of bytes written to the channel.
@@ -36,19 +42,22 @@ public expect interface SdkByteWriteChannel : Closeable {
     public val autoFlush: Boolean
 
     /**
-     * Writes all [src] bytes and suspends until all bytes written.
+     * Removes exactly [byteCount] bytes from [source] and appends them to this. Suspends until all bytes
+     * have been written. **It is not safe to modify [source] until this function returns**
+     * Throws [ClosedWriteChannelException] if this channel was already closed.
+     *
+     * @param source the buffer data will be read from and written to this channel
+     * @param byteCount the number of bytes to read from source
      */
-    public suspend fun writeFully(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): Unit
-
-    /**
-     * Writes as much as possible and only suspends if buffer is full
-     * Returns the byte count written.
-     */
-    public suspend fun writeAvailable(src: ByteArray, offset: Int = 0, length: Int = src.size - offset): Int
+    public suspend fun write(source: SdkBuffer, byteCount: Long = source.size)
 
     /**
      * Closes this channel with an optional exceptional [cause]. All pending bytes are flushed.
      * This is an idempotent operation — subsequent invocations of this function have no effect and return false
+     *
+     * @param cause the reason the channel is closed, a non-null cause will result in a "failed" channel whereas a
+     * `null` cause will result in a closed channel (no more data will be written).
+     * @return true if the channel was cancelled/closed by this invocation, false if the channel was already closed
      */
     public fun close(cause: Throwable?): Boolean
 
@@ -60,19 +69,22 @@ public expect interface SdkByteWriteChannel : Closeable {
 }
 
 /**
- * Write the UTF-8 bytes of [str] fully to the channel
+ * Convenience function to write as many bytes from [source] as possible without suspending. Returns
+ * the number of bytes that could be written.
+ *
+ * @param source the buffer to read data from and write to this channel
+ * @return the number of bytes that could be written
  */
-public suspend fun SdkByteWriteChannel.writeUtf8(str: String) {
-    writeFully(str.encodeToByteArray())
+public suspend fun SdkByteWriteChannel.writeAvailable(source: SdkBuffer): Long {
+    val wc = minOf(availableForWrite.toLong(), source.size)
+    write(source, wc)
+    return wc
 }
 
 /**
- * Writes byte and suspends until written
+ * Write [limit] bytes from [source] starting at [offset]. Suspends until all bytes can be written.
  */
-public suspend fun SdkByteWriteChannel.writeByte(value: Byte) {
-    if (this is KtorWriteChannel) {
-        chan.writeByte(value)
-        return
-    }
-    writeFully(byteArrayOf(value))
+public suspend fun SdkByteWriteChannel.write(source: ByteArray, offset: Int = 0, limit: Int = source.size - offset) {
+    val buffer = SdkBuffer().apply { write(source, offset, limit) }
+    write(buffer)
 }

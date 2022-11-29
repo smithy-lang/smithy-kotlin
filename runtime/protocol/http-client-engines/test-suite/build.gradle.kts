@@ -23,6 +23,7 @@ kotlin {
                 implementation(project(":runtime:protocol:http"))
                 implementation(project(":runtime:protocol:http-test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+                implementation(project(":runtime:testing"))
             }
         }
 
@@ -32,10 +33,6 @@ kotlin {
 
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-default"))
                 implementation(project(":runtime:protocol:http-client-engines:http-client-engine-crt"))
-
-                implementation(project(":runtime:protocol:http-client-engines:http-client-engine-ktor"))
-                // concrete implementation for testing KtorEngine as part of the test suite
-                implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
 
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }

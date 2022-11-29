@@ -6,9 +6,9 @@
 package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.io.MutableBuffer
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteChannel
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.writeUtf8
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
@@ -99,8 +99,10 @@ class ReadChannelBodyStreamTest {
         val n = 10_000
         launch {
             val result = runCatching {
+                val source = SdkBuffer()
                 repeat(n) {
-                    chan.writeUtf8(data)
+                    source.writeUtf8(data)
+                    chan.write(source)
                 }
             }
 

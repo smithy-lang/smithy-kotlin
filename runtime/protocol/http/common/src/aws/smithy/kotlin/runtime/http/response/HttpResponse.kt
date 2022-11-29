@@ -59,23 +59,23 @@ public fun ProtocolResponse.statusCode(): HttpStatusCode? {
  */
 @InternalApi
 public suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair<HttpResponse, String> {
-    val buffer = SdkByteBuffer(256u)
-    buffer.write("HTTP ${response.status}\r\n")
+    val buffer = SdkBuffer()
+    buffer.writeUtf8("HTTP ${response.status}\r\n")
     response.headers.forEach { key, values ->
-        buffer.write(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
+        buffer.writeUtf8(values.joinToString(separator = ";", prefix = "$key: ", postfix = "\r\n"))
     }
-    buffer.write("\r\n")
+    buffer.writeUtf8("\r\n")
 
     var respCopy = response
     if (dumpBody) {
         when (val body = response.body) {
-            is HttpBody.Bytes -> buffer.writeFully(body.bytes())
-            is HttpBody.Streaming -> {
+            is HttpBody.Bytes -> buffer.write(body.bytes())
+            is HttpBody.ChannelContent, is HttpBody.SourceContent -> {
                 // consume the stream and replace the body. There isn't much rewinding we can do here, most engines
                 // use a stream that reads right off the wire.
                 val content = body.readAll()
                 if (content != null) {
-                    buffer.writeFully(content)
+                    buffer.write(content)
                     val newBody = ByteArrayContent(content)
                     respCopy = response.copy(body = newBody)
                 }
@@ -84,5 +84,5 @@ public suspend fun dumpResponse(response: HttpResponse, dumpBody: Boolean): Pair
         }
     }
 
-    return respCopy to buffer.decodeToString()
+    return respCopy to buffer.readUtf8()
 }

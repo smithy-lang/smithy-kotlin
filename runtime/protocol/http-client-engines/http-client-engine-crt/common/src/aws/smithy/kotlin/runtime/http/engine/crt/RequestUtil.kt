@@ -11,8 +11,10 @@ import aws.sdk.kotlin.crt.io.Protocol
 import aws.sdk.kotlin.crt.io.Uri
 import aws.sdk.kotlin.crt.io.UserInfo
 import aws.smithy.kotlin.runtime.crt.ReadChannelBodyStream
+import aws.smithy.kotlin.runtime.crt.SdkSourceBodyStream
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import kotlinx.coroutines.job
 import kotlin.coroutines.CoroutineContext
 
 private const val CONTENT_LENGTH_HEADER: String = "Content-Length"
@@ -31,13 +33,18 @@ internal val HttpRequest.uri: Uri
 
 internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.kotlin.crt.http.HttpRequest {
     val body = this.body
+    check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
     val bodyStream = when (body) {
-        is HttpBody.Streaming -> {
-            check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
-            ReadChannelBodyStream(body.readFrom(), callContext)
-        }
+        is HttpBody.Empty -> null
         is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-        else -> null
+        is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), callContext)
+        is HttpBody.SourceContent -> {
+            val source = body.readFrom()
+            callContext.job.invokeOnCompletion {
+                source.close()
+            }
+            SdkSourceBodyStream(source)
+        }
     }
 
     val crtHeaders = HeadersBuilder()

@@ -7,9 +7,8 @@ package aws.smithy.kotlin.runtime.crt
 
 import aws.sdk.kotlin.crt.http.HttpRequestBodyStream
 import aws.sdk.kotlin.crt.io.MutableBuffer
-import aws.smithy.kotlin.runtime.io.SdkByteBuffer
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readAvailable
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.*
@@ -22,7 +21,7 @@ private val POLLING_DELAY = 100.milliseconds
 /**
  * write as much of [outgoing] to [dest] as possible
  */
-internal expect fun transferRequestBody(outgoing: SdkByteBuffer, dest: MutableBuffer)
+internal expect fun transferRequestBody(outgoing: SdkBuffer, dest: MutableBuffer)
 
 /**
  * Implement's [HttpRequestBodyStream] which proxies an SDK request body channel [SdkByteReadChannel]
@@ -37,8 +36,8 @@ public class ReadChannelBodyStream(
     private val producerJob = Job(callContext.job)
     override val coroutineContext: CoroutineContext = callContext + producerJob
 
-    private val currBuffer = atomic<SdkByteBuffer?>(null)
-    private val bufferChan = Channel<SdkByteBuffer>(Channel.UNLIMITED)
+    private val currBuffer = atomic<SdkBuffer?>(null)
+    private val bufferChan = Channel<SdkBuffer>(Channel.UNLIMITED)
 
     init {
         producerJob.invokeOnCompletion { cause ->
@@ -84,15 +83,12 @@ public class ReadChannelBodyStream(
             // the dispatcher and not allow other coroutines to make progress.
             // see: https://github.com/awslabs/aws-sdk-kotlin/issues/282
             //
-            // TODO - we could get rid of this extra copy + coroutine if readAvailable() had a non-suspend version
-            // see: https://youtrack.jetbrains.com/issue/KTOR-2772
-            //
             // To get around this, if there is data to read we launch a coroutine UNDISPATCHED so that it runs
             // immediately in the current thread. The coroutine will fill the buffer but won't suspend because
             // we know data is available.
             launch(start = CoroutineStart.UNDISPATCHED) {
-                val sdkBuffer = SdkByteBuffer(bodyChan.availableForRead.toULong())
-                bodyChan.readAvailable(sdkBuffer)
+                val sdkBuffer = SdkBuffer()
+                bodyChan.read(sdkBuffer, bodyChan.availableForRead.toLong())
                 bufferChan.send(sdkBuffer)
             }.invokeOnCompletion { cause ->
                 if (cause != null) {
@@ -116,7 +112,7 @@ public class ReadChannelBodyStream(
 
         transferRequestBody(outgoing, buffer)
 
-        if (outgoing.readRemaining > 0u) {
+        if (outgoing.size > 0L) {
             currBuffer.value = outgoing
         }
 

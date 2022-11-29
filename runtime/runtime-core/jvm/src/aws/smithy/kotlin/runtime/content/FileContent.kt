@@ -5,8 +5,8 @@
 
 package aws.smithy.kotlin.runtime.content
 
-import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readChannel
+import aws.smithy.kotlin.runtime.io.*
+import kotlinx.coroutines.*
 import java.io.File
 
 /**
@@ -16,10 +16,10 @@ public class FileContent(
     public val file: File,
     public val start: Long = 0,
     public val endInclusive: Long = file.length() - 1,
-) : ByteStream.ReplayableStream() {
+) : ByteStream.SourceStream() {
 
+    override val isOneShot: Boolean = false
     override val contentLength: Long
         get() = endInclusive - start + 1
-
-    override fun newReader(): SdkByteReadChannel = file.readChannel(start, endInclusive)
+    override fun readFrom(): SdkSource = file.source(start, endInclusive)
 }

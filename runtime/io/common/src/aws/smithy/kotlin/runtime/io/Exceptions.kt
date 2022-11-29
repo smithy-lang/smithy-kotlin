@@ -5,28 +5,15 @@
 
 package aws.smithy.kotlin.runtime.io
 
-/**
- * Exception thrown when a content-mutation method such as `write` is invoked upon a read-only buffer.
- */
-public class ReadOnlyBufferException : UnsupportedOperationException {
-    public constructor() : super()
-
-    public constructor(message: String?) : super(message)
-
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    public constructor(cause: Throwable?) : super(cause)
+public expect open class IOException(message: String?, cause: Throwable?) : Exception {
+    public constructor(message: String? = null)
 }
 
+public expect open class EOFException(message: String? = null) : IOException
+
 /**
- * Exception thrown when a content-mutation method such as `write` is invoked upon a buffer that cannot grow
+ * Indicates attempt to write on a closed channel (i.e. [SdkByteWriteChannel.isClosedForWrite] == true)
+ * that was closed without a cause. A _failed_ channel rethrows the original [SdkByteWriteChannel.close] cause
+ * exception on send attempts.
  */
-public class FixedBufferSizeException : UnsupportedOperationException {
-    public constructor() : super()
-
-    public constructor(message: String?) : super(message)
-
-    public constructor(message: String?, cause: Throwable?) : super(message, cause)
-
-    public constructor(cause: Throwable?) : super(cause)
-}
+public class ClosedWriteChannelException(message: String? = null) : IOException(message)
