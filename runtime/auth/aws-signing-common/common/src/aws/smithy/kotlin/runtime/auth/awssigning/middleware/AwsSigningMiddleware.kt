@@ -6,16 +6,17 @@ package aws.smithy.kotlin.runtime.auth.awssigning.middleware
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.*
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.*
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunkedStreaming
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
+import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.tracing.warn
-import aws.smithy.kotlin.runtime.http.toHttpBody
-import aws.smithy.kotlin.runtime.http.toSdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
-import kotlin.coroutines.coroutineContext
 import kotlin.time.Duration
 
 /**
@@ -183,35 +184,4 @@ private fun HttpRequestBuilder.update(signedRequest: HttpRequest) {
     }
 }
 
-/**
- * @return a boolean representing if this HttpBody is eligible to send via aws-chunked content encoding
- */
-private val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
-    get() = this is HttpBody.Streaming && (!isReplayable || (contentLength != null && contentLength!! > AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD))
 
-/**
- * @return a boolean representing if the signing configuration is configured (via [HashSpecification]) for aws-chunked content encoding
- */
-private val AwsSigningConfig.useAwsChunkedEncoding: Boolean
-    get() = when (hashSpecification) {
-        is HashSpecification.StreamingAws4HmacSha256Payload, is HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers -> true
-        else -> false
-    }
-
-/**
- * Set the HTTP headers required for the aws-chunked content encoding
- * // FIXME move to AwsChunkedUtil when sdkio-redux is shipped
- */
-private fun HttpRequestBuilder.setAwsChunkedHeaders() {
-    headers.setMissing("Content-Encoding", "aws-chunked")
-    headers.setMissing("Transfer-Encoding", "chunked")
-    headers.setMissing("X-Amz-Decoded-Content-Length", (body.contentLength ?: 0).toString())
-}
-
-/**
- * Update the HTTP body to use aws-chunked content encoding
- * // FIXME move to AwsChunkedUtil when sdkio-redux is shipped
- */
-private fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
-    body = AwsChunkedByteReadChannel(checkNotNull(body.toSdkByteReadChannel()), signer, signingConfig, signature).toHttpBody(-1)
-}
