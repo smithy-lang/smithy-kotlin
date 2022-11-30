@@ -42,8 +42,8 @@ internal fun SdkBuffer.writeTrailers(
  * @return a boolean representing if this HttpBody is eligible to send via aws-chunked content encoding
  */
 internal val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
-    get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent)
-            && (isOneShot || (contentLength != null && contentLength!! > AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD))
+    get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) &&
+        (isOneShot || (contentLength != null && contentLength!! > AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD))
 
 /**
  * @return a boolean representing if the signing configuration is configured (via [HashSpecification]) for aws-chunked content encoding
