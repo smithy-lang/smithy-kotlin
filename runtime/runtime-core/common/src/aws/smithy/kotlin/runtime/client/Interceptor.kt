@@ -3,14 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-package aws.smithy.kotlin.runtime.http.interceptors
+package aws.smithy.kotlin.runtime.client
 
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.util.Attributes
-
-
-public typealias HttpInterceptor<I, O> = Interceptor<I, O, HttpRequestBuilder, HttpResponse>
 
 
 /**
@@ -21,8 +16,10 @@ public typealias HttpInterceptor<I, O> = Interceptor<I, O, HttpRequestBuilder, H
  * * `attempt` - a single attempt at performing an execution, executions may be retired multiple times
  * based on the client's retry strategy.
  * * `hook` - a single method on the interceptor allowing injection of code into a specific part of the execution
- * pipeline. Hooks are either "read" hooks, which make it possible to read in-flight request or response messages, or
- * `read/write` hooks, which make it possible to modify in-flight request or response messages.
+ * pipeline. Hooks are either "read-only" hooks, which make it possible to read in-flight request or response messages,
+ * or `read/write` hooks, which make it possible to modify in-flight request or response messages. Read only hooks
+ * MUST not modify state even if it is possible to do so (it is not always possible or performant to provide an
+ * immutable view of every type).
  */
 public interface Interceptor<I, O, TReq, TResp> {
 
@@ -356,6 +353,9 @@ public interface Interceptor<I, O, TReq, TResp> {
 
 }
 
+/**
+ * [Interceptor] context used for all phases that only have access to the operation input (request)
+ */
 public interface RequestInterceptorContext<I>: Attributes {
 
     /**
@@ -365,6 +365,10 @@ public interface RequestInterceptorContext<I>: Attributes {
 }
 
 
+/**
+ * [Interceptor] context used for all phases that have access to the operation input (request) and the
+ * serialized protocol specific request (e.g. HttpRequest).
+ */
 public interface ProtocolRequestInterceptorContext<I, TReq>: RequestInterceptorContext<I> {
     /**
      * Retrieve the transmittable (protocol specific) request for the operation being invoked.
@@ -372,6 +376,10 @@ public interface ProtocolRequestInterceptorContext<I, TReq>: RequestInterceptorC
     public val transmitRequest: TReq?
 }
 
+/**
+ * [Interceptor] context used for all phases that have access to the operation input (request), the
+ * serialized protocol specific request (e.g. HttpRequest), and the protocol specific response (e.g. HttpResponse).
+ */
 public interface ProtocolResponseInterceptorContext<I, TReq, TResp>:
     ProtocolRequestInterceptorContext<I, TReq>
 {
@@ -381,10 +389,15 @@ public interface ProtocolResponseInterceptorContext<I, TReq, TResp>:
     public val transmitResponse: TResp?
 }
 
+/**
+ * [Interceptor] context used for all phases that have access to the operation input (request), the
+ * serialized protocol specific request (e.g. HttpRequest), the protocol specific response (e.g. HttpResponse),m
+ * and the deserialized operation output (response).
+ */
 public interface ResponseInterceptorContext<I, O, TReq, TResp>: ProtocolResponseInterceptorContext<I, TReq, TResp> {
 
     /**
-     * Retrieve the modeled response for the operation being invoked
+     * Retrieve the modeled response or exception for the operation being invoked
      */
     public val response: Result<O>
 }
@@ -411,4 +424,13 @@ private fun <I, TReq, TResp> testReadTransmitResp(ctx: ProtocolResponseIntercept
 
 private fun <I, O, TReq, TResp> testReadResp(ctx: ResponseInterceptorContext<I, O, TReq, TResp>) {
 
+}
+
+private fun <TReq, TResp> takeInterceptor(interceptor: Interceptor<Any, Any, TReq, TResp>) {
+
+}
+
+private fun <TReq , TResp > testTakeInterceptor(interceptor: Interceptor<String, Int, TReq, TResp>) {
+    takeInterceptor(interceptor as Interceptor<Any, Any, TReq, TResp>)
+    val x = interceptor as Interceptor<Any, Any, TReq, TResp>
 }
