@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.14.0] - 12/01/2022
+
+### Miscellaneous
+* **BREAKING** Refactor SDK I/O types. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/768) for more information
+
 ## [0.13.1] - 11/23/2022
 
 ### Fixes

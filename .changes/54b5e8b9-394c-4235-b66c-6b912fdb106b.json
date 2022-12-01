@@ -1,5 +1,0 @@
-{
-    "id": "54b5e8b9-394c-4235-b66c-6b912fdb106b",
-    "type": "misc",
-    "description": "**BREAKING** Refactor SDK I/O types. See [this discussion post](https://github.com/awslabs/aws-sdk-kotlin/discussions/768) for more information"
-}
