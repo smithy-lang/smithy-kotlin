@@ -132,6 +132,18 @@ public fun SdkByteReadChannel.toHttpBody(contentLength: Long? = null): HttpBody 
     }
 }
 
+/**
+ * Convert an [SdkSource] to an [HttpBody]
+ * @param contentLength the total content length of the source, if known
+ */
+@InternalApi
+public fun SdkSource.toHttpBody(contentLength: Long? = null): HttpBody =
+    object : HttpBody.SourceContent() {
+        override val contentLength: Long? = contentLength
+        override val isOneShot: Boolean = true
+        override fun readFrom(): SdkSource = this@toHttpBody
+    }
+
 // FIXME - replace/move to reading to SdkBuffer instead
 /**
  * Consume the [HttpBody] and pull the entire contents into memory as a [ByteArray].

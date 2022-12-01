@@ -59,12 +59,22 @@ abstract class AwsChunkedTestBase(
     val CHUNK_SIGNATURE_REGEX = Regex("chunk-signature=[a-zA-Z0-9]{64}") // alphanumeric, length of 64
     val CHUNK_SIZE_REGEX = Regex("[0-9a-f]+;chunk-signature=") // hexadecimal, any length, immediately followed by the chunk signature
 
-    val testSigningConfig = AwsSigningConfig {
+    val testChunkSigningConfig = AwsSigningConfig {
         region = "foo"
         service = "bar"
         signingDate = Instant.fromIso8601("20220427T012345Z")
         credentialsProvider = testCredentialsProvider
         signatureType = AwsSignatureType.HTTP_REQUEST_CHUNK
+        hashSpecification = HashSpecification.CalculateFromPayload
+    }
+
+    val testTrailingHeadersSigningConfig = AwsSigningConfig {
+        region = "foo"
+        service = "bar"
+        signingDate = Instant.fromIso8601("20220427T012345Z")
+        credentialsProvider = testCredentialsProvider
+        signatureType = AwsSignatureType.HTTP_REQUEST_TRAILING_HEADERS
+        hashSpecification = HashSpecification.CalculateFromPayload
     }
 
     /**
@@ -137,11 +147,11 @@ abstract class AwsChunkedTestBase(
     }
 
     @Test
-    public fun testReadNegativeOffset(): TestResult = runTest {
+    fun testReadNegativeOffset(): TestResult = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = factory.create(data, signer, testSigningConfig, previousSignature)
+        val awsChunked = factory.create(data, signer, testChunkSigningConfig, previousSignature)
 
         val sink = SdkBuffer()
         assertFailsWith<IllegalArgumentException> {
@@ -150,11 +160,11 @@ abstract class AwsChunkedTestBase(
     }
 
     @Test
-    public fun testReadExactBytes(): TestResult = runTest {
+    fun testReadExactBytes(): TestResult = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = factory.create(data, signer, testSigningConfig, previousSignature)
+        val awsChunked = factory.create(data, signer, testChunkSigningConfig, previousSignature)
 
         // read (up to) all of the chunk data plus all bytes from header
         val readLimit = encodedChunkLength(dataLengthBytes) + encodedChunkLength(0) + "\r\n".length
@@ -168,9 +178,9 @@ abstract class AwsChunkedTestBase(
 
         val chunkSignatures = getChunkSignatures(bytesAsString)
         assertEquals(2, chunkSignatures.size) // chunk of data plus an empty chunk
-        var expectedChunkSignature = signer.signChunk(data, previousSignature, testSigningConfig).signature
+        var expectedChunkSignature = signer.signChunk(data, previousSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
-        expectedChunkSignature = signer.signChunk(byteArrayOf(), expectedChunkSignature, testSigningConfig).signature
+        expectedChunkSignature = signer.signChunk(byteArrayOf(), expectedChunkSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[1])
 
         val chunkSizes = getChunkSizes(bytesAsString)
@@ -183,11 +193,11 @@ abstract class AwsChunkedTestBase(
     }
 
     @Test
-    public fun testReadExcessiveBytes(): TestResult = runTest {
+    fun testReadExcessiveBytes(): TestResult = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = factory.create(data, signer, testSigningConfig, previousSignature)
+        val awsChunked = factory.create(data, signer, testChunkSigningConfig, previousSignature)
 
         val readLimit = encodedChunkLength(dataLengthBytes * 2) + encodedChunkLength(0) + "\r\n".length
         val sink = SdkBuffer()
@@ -197,9 +207,9 @@ abstract class AwsChunkedTestBase(
         val bytesAsString = sink.readUtf8()
         val chunkSignatures = getChunkSignatures(bytesAsString)
         assertEquals(2, chunkSignatures.size) // chunk of data plus an empty chunk
-        var expectedChunkSignature = signer.signChunk(data, previousSignature, testSigningConfig).signature
+        var expectedChunkSignature = signer.signChunk(data, previousSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
-        expectedChunkSignature = signer.signChunk(byteArrayOf(), expectedChunkSignature, testSigningConfig).signature
+        expectedChunkSignature = signer.signChunk(byteArrayOf(), expectedChunkSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[1])
 
         val chunkSizes = getChunkSizes(bytesAsString)
@@ -212,11 +222,11 @@ abstract class AwsChunkedTestBase(
     }
 
     @Test
-    public fun testReadFewerBytes(): TestResult = runTest {
+    fun testReadFewerBytes(): TestResult = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = factory.create(data, signer, testSigningConfig, previousSignature)
+        val awsChunked = factory.create(data, signer, testChunkSigningConfig, previousSignature)
 
         val readLimit = encodedChunkLength(dataLengthBytes / 2) + encodedChunkLength(0) + "\r\n".length
 
@@ -227,7 +237,7 @@ abstract class AwsChunkedTestBase(
         val bytesAsString = sink.readUtf8()
         val chunkSignatures = getChunkSignatures(bytesAsString)
         assertEquals(1, chunkSignatures.size)
-        val expectedChunkSignature = signer.signChunk(data, previousSignature, testSigningConfig).signature
+        val expectedChunkSignature = signer.signChunk(data, previousSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
 
         val chunkSizes = getChunkSizes(bytesAsString)
@@ -238,12 +248,12 @@ abstract class AwsChunkedTestBase(
     }
 
     @Test
-    public fun testReadMultipleFullChunks(): TestResult = runTest {
+    fun testReadMultipleFullChunks(): TestResult = runTest {
         val numChunks = 5
         val dataLengthBytes = CHUNK_SIZE_BYTES * numChunks
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = factory.create(data, signer, testSigningConfig, previousSignature)
+        val awsChunked = factory.create(data, signer, testChunkSigningConfig, previousSignature)
 
         val totalBytesExpected = encodedChunkLength(CHUNK_SIZE_BYTES) * numChunks + encodedChunkLength(0) + "\r\n".length
         val sink = SdkBuffer()
@@ -268,7 +278,7 @@ abstract class AwsChunkedTestBase(
             val expectedChunkSignature = signer.signChunk(
                 data.slice(CHUNK_SIZE_BYTES * chunk until (CHUNK_SIZE_BYTES * (chunk + 1))).toByteArray(),
                 previousSignature,
-                testSigningConfig,
+                testChunkSigningConfig,
             ).signature
             previousSignature = expectedChunkSignature
 
@@ -277,7 +287,7 @@ abstract class AwsChunkedTestBase(
         }
 
         // validate the terminal chunk
-        val expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
+        val expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures.last())
         assertEquals(0, chunkSizes.last())
 
@@ -285,13 +295,13 @@ abstract class AwsChunkedTestBase(
     }
 
     @Test
-    public fun testReadMultipleChunksLastChunkNotFull(): TestResult = runTest {
+    fun testReadMultipleChunksLastChunkNotFull(): TestResult = runTest {
         val numChunks = 6
         val dataLengthBytes = CHUNK_SIZE_BYTES * (numChunks - 1) + CHUNK_SIZE_BYTES / 2 // 5 full chunks, 1 half-full chunk
 
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = factory.create(data, signer, testSigningConfig, previousSignature)
+        val awsChunked = factory.create(data, signer, testChunkSigningConfig, previousSignature)
 
         val totalBytesExpected = encodedChunkLength(CHUNK_SIZE_BYTES) * (numChunks - 1) +
             encodedChunkLength(CHUNK_SIZE_BYTES / 2) + encodedChunkLength(0) + "\r\n".length
@@ -325,7 +335,7 @@ abstract class AwsChunkedTestBase(
             val expectedChunkSignature = signer.signChunk(
                 data.slice(CHUNK_SIZE_BYTES * chunk until (CHUNK_SIZE_BYTES * (chunk + 1))).toByteArray(),
                 previousSignature,
-                testSigningConfig,
+                testChunkSigningConfig,
             ).signature
             previousSignature = expectedChunkSignature
 
@@ -337,20 +347,20 @@ abstract class AwsChunkedTestBase(
         var expectedChunkSignature = signer.signChunk(
             data.slice(CHUNK_SIZE_BYTES * (numChunks - 1) until data.size).toByteArray(),
             previousSignature,
-            testSigningConfig,
+            testChunkSigningConfig,
         ).signature
         previousSignature = expectedChunkSignature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[chunkSignatures.size - 2])
         assertEquals(CHUNK_SIZE_BYTES / 2, chunkSizes[chunkSizes.size - 2])
 
         // validate terminal chunk
-        expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
+        expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures.last())
         assertEquals(0, chunkSizes.last())
     }
 
     @Test
-    public fun testReadWithTrailingHeaders(): TestResult = runTest {
+    fun testReadWithTrailingHeaders(): TestResult = runTest {
         val dataLengthBytes = CHUNK_SIZE_BYTES
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         var previousSignature: ByteArray = byteArrayOf()
@@ -362,7 +372,7 @@ abstract class AwsChunkedTestBase(
 
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
 
-        val awsChunked = factory.create(data, signer, testSigningConfig, previousSignature, trailingHeaders)
+        val awsChunked = factory.create(data, signer, testChunkSigningConfig, previousSignature, trailingHeaders)
 
         val totalBytesExpected = encodedChunkLength(CHUNK_SIZE_BYTES) + encodedChunkLength(0) + trailingHeadersLength + "\r\n".length
         val sink = SdkBuffer()
@@ -380,12 +390,12 @@ abstract class AwsChunkedTestBase(
 
         val chunkSignatures = getChunkSignatures(bytesAsString)
         assertEquals(chunkSignatures.size, 2) // chunk of data plus an empty chunk
-        var expectedChunkSignature = signer.signChunk(data, previousSignature, testSigningConfig).signature
+        var expectedChunkSignature = signer.signChunk(data, previousSignature, testChunkSigningConfig).signature
         previousSignature = expectedChunkSignature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[0])
 
         // the second chunk signature should come from the chunk of zero length
-        expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
+        expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testChunkSigningConfig).signature
         previousSignature = expectedChunkSignature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[1])
 
@@ -394,7 +404,7 @@ abstract class AwsChunkedTestBase(
         assertEquals(chunkSizes[0], CHUNK_SIZE_BYTES)
         assertEquals(chunkSizes[1], 0)
 
-        val expectedTrailerSignature = signer.signChunkTrailer(trailingHeaders, previousSignature, testSigningConfig).signature
+        val expectedTrailerSignature = signer.signChunkTrailer(trailingHeaders, previousSignature, testTrailingHeadersSigningConfig).signature
         val trailerSignature = getChunkTrailerSignature(bytesAsString)
         assertEquals(expectedTrailerSignature.decodeToString(), trailerSignature)
     }

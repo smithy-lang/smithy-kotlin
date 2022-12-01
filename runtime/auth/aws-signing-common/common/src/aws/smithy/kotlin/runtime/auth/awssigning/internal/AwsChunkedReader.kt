@@ -5,8 +5,10 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.internal
 
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignatureType
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
+import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
@@ -133,7 +135,7 @@ internal class AwsChunkedReader(
         // signer takes a ByteArray unfortunately...
         val chunkBody = bodyBuffer?.readByteArray() ?: return null
 
-        val chunkSignature = signer.signChunk(chunkBody, previousSignature, signingConfig).signature
+        val chunkSignature = signer.signChunk(chunkBody, previousSignature, signingConfig.toChunkSigningConfig()).signature
         previousSignature = chunkSignature
 
         val signedChunk = SdkBuffer()
@@ -164,11 +166,31 @@ internal class AwsChunkedReader(
      * @return a [SdkBuffer] containing the trailing headers in aws-chunked encoding, ready to send on the wire
      */
     private suspend fun getTrailingHeadersChunk(trailingHeaders: Headers): SdkBuffer {
-        val trailerSignature = signer.signChunkTrailer(trailingHeaders, previousSignature, signingConfig).signature
+        val trailerSignature = signer.signChunkTrailer(trailingHeaders, previousSignature, signingConfig.toTrailingHeadersSigningConfig()).signature
         previousSignature = trailerSignature
 
         val trailerBody = SdkBuffer()
         trailerBody.writeTrailers(trailingHeaders, trailerSignature.decodeToString())
         return trailerBody
     }
+
+    /**
+     * Make a copy of the signing config, changing the signatureType and hashSpecification configuration values
+     * to specify chunk signing.
+     * @return an [AwsSigningConfig] which can be used by a signer to sign chunks
+     */
+    private fun AwsSigningConfig.toChunkSigningConfig(): AwsSigningConfig = this.toBuilder().apply {
+        signatureType = AwsSignatureType.HTTP_REQUEST_CHUNK // signature is for a chunk
+        hashSpecification = HashSpecification.CalculateFromPayload // calculate the hash from the chunk payload
+    }.build()
+
+    /**
+     * Make a copy of the signing config, changing the signatureType and hashSpecification configuration values
+     * to specify trailing headers signing.
+     * @return an [AwsSigningConfig] which can be used by a signer to sign trailing headers
+     */
+    private fun AwsSigningConfig.toTrailingHeadersSigningConfig(): AwsSigningConfig = this.toBuilder().apply {
+        signatureType = AwsSignatureType.HTTP_REQUEST_TRAILING_HEADERS // signature is for trailing headers
+        hashSpecification = HashSpecification.CalculateFromPayload // calculate the hash from the trailing headers payload
+    }.build()
 }

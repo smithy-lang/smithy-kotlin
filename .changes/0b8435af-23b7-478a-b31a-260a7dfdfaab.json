@@ -1,0 +1,5 @@
+{
+    "id": "0b8435af-23b7-478a-b31a-260a7dfdfaab",
+    "type": "feature",
+    "description": "Use `aws-chunked` content encoding for streaming requests"
+}

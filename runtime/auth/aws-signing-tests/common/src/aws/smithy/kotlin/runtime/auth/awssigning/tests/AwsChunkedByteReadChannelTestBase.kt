@@ -18,16 +18,16 @@ import kotlin.test.*
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
-public abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunkedReaderFactory.Channel) {
+abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(AwsChunkedReaderFactory.Channel) {
     @Test
-    public fun testSlowProducerMultipleChunksPartialLast(): TestResult = runTest {
+    fun testSlowProducerMultipleChunksPartialLast(): TestResult = runTest {
         val numChunks = 6
         val dataLengthBytes = CHUNK_SIZE_BYTES * (numChunks - 1) + CHUNK_SIZE_BYTES / 2 // 5 full chunks, 1 half-full chunk
 
         val data = ByteArray(dataLengthBytes) { Random.Default.nextBytes(1)[0] }
         val chan = SdkByteChannel(true)
         var previousSignature: ByteArray = byteArrayOf()
-        val awsChunked = AwsChunkedByteReadChannel(chan, signer, testSigningConfig, previousSignature)
+        val awsChunked = AwsChunkedByteReadChannel(chan, signer, testChunkSigningConfig, previousSignature)
 
         // launch a coroutine and fill the channel slowly
         val writeJob = launch {
@@ -66,7 +66,7 @@ public abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(Aws
             val expectedChunkSignature = signer.signChunk(
                 data.slice(CHUNK_SIZE_BYTES * chunk until (CHUNK_SIZE_BYTES * (chunk + 1))).toByteArray(),
                 previousSignature,
-                testSigningConfig,
+                testChunkSigningConfig,
             ).signature
             previousSignature = expectedChunkSignature
 
@@ -78,14 +78,14 @@ public abstract class AwsChunkedByteReadChannelTestBase : AwsChunkedTestBase(Aws
         var expectedChunkSignature = signer.signChunk(
             data.slice(CHUNK_SIZE_BYTES * (numChunks - 1) until data.size).toByteArray(),
             previousSignature,
-            testSigningConfig,
+            testChunkSigningConfig,
         ).signature
         previousSignature = expectedChunkSignature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures[chunkSignatures.size - 2])
         assertEquals(CHUNK_SIZE_BYTES / 2, chunkSizes[chunkSizes.size - 2])
 
         // validate terminal chunk
-        expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testSigningConfig).signature
+        expectedChunkSignature = signer.signChunk(byteArrayOf(), previousSignature, testChunkSigningConfig).signature
         assertEquals(expectedChunkSignature.decodeToString(), chunkSignatures.last())
         assertEquals(0, chunkSizes.last())
     }
