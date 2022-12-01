@@ -10,7 +10,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.toHttpBody
 import aws.smithy.kotlin.runtime.http.toSdkByteReadChannel
 
-internal actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
+internal actual fun HttpRequestBuilder.internalSetAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
     body = when (body) {
         is HttpBody.ChannelContent -> AwsChunkedByteReadChannel(checkNotNull(body.toSdkByteReadChannel()), signer, signingConfig, signature).toHttpBody(-1)
         is HttpBody.SourceContent -> AwsChunkedSource((body as HttpBody.SourceContent).readFrom(), signer, signingConfig, signature).toHttpBody(-1)

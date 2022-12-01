@@ -63,4 +63,8 @@ internal fun HttpRequestBuilder.setAwsChunkedHeaders() {
 /**
  * Update the HTTP body to use aws-chunked content encoding
  */
-internal expect fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray)
+internal expect fun HttpRequestBuilder.internalSetAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray)
+
+internal fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
+    this.internalSetAwsChunkedBody(signer, signingConfig, signature)
+}
