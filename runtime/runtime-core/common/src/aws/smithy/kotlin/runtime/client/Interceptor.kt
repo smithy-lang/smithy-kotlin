@@ -24,9 +24,7 @@ public interface Interceptor<
     Input,
     Output,
     ProtocolRequest,
-    MutableProtocolRequest,
     ProtocolResponse,
-    MutableProtocolResponse,
     > {
 
     /**
@@ -103,8 +101,8 @@ public interface Interceptor<
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
     public fun modifyBeforeRetryLoop(
-        context: ProtocolRequestInterceptorContext<Input, MutableProtocolRequest>,
-    ): MutableProtocolRequest =
+        context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
+    ): ProtocolRequest =
         context.protocolRequest
 
     /**
@@ -142,8 +140,8 @@ public interface Interceptor<
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
     public fun modifyBeforeSigning(
-        context: ProtocolRequestInterceptorContext<Input, MutableProtocolRequest>,
-    ): MutableProtocolRequest =
+        context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
+    ): ProtocolRequest =
         context.protocolRequest
 
     /**
@@ -195,8 +193,8 @@ public interface Interceptor<
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
     public fun modifyBeforeTransmit(
-        context: ProtocolRequestInterceptorContext<Input, MutableProtocolRequest>,
-    ): MutableProtocolRequest =
+        context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
+    ): ProtocolRequest =
         context.protocolRequest
 
     /**
@@ -251,8 +249,8 @@ public interface Interceptor<
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
     public fun modifyBeforeDeserialization(
-        context: ProtocolResponseInterceptorContext<Input, ProtocolRequest, MutableProtocolResponse>,
-    ): MutableProtocolResponse =
+        context: ProtocolResponseInterceptorContext<Input, ProtocolRequest, ProtocolResponse>,
+    ): ProtocolResponse =
         context.protocolResponse
 
     /**
@@ -307,7 +305,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [readAfterAttempt]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest, MutableProtocolResponse?>): Result<Output> =
+    public fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest, ProtocolResponse?>): Result<Output> =
         context.response
 
     /**
