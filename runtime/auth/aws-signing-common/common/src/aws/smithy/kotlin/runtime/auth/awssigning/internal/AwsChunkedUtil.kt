@@ -60,11 +60,7 @@ internal fun HttpRequestBuilder.setAwsChunkedHeaders() {
     headers.setMissing("X-Amz-Decoded-Content-Length", body.contentLength!!.toString())
 }
 
-internal expect fun HttpRequestBuilder.internalSetAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray)
-
 /**
  * Update the HTTP body to use aws-chunked content encoding
  */
-internal fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
-    this.internalSetAwsChunkedBody(signer, signingConfig, signature)
-}
+internal expect fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray)
