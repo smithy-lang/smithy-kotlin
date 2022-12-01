@@ -5,7 +5,6 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.internal
 
-import aws.smithy.kotlin.runtime.auth.awssigning.AwsChunkedByteReadChannel
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
@@ -13,8 +12,6 @@ import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsSigningMiddleware
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.toHttpBody
-import aws.smithy.kotlin.runtime.http.toSdkByteReadChannel
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
 /**
@@ -66,6 +63,4 @@ internal fun HttpRequestBuilder.setAwsChunkedHeaders() {
 /**
  * Update the HTTP body to use aws-chunked content encoding
  */
-internal fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
-    body = AwsChunkedByteReadChannel(checkNotNull(body.toSdkByteReadChannel()), signer, signingConfig, signature).toHttpBody(-1)
-}
+internal expect fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray)
