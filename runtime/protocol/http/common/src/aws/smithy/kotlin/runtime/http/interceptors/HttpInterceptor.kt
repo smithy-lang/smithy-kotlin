@@ -6,8 +6,8 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.client.Interceptor
+import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 
-
-public typealias HttpInterceptor<I, O> = Interceptor<I, O, HttpRequestBuilder, HttpResponse>
+public typealias HttpInterceptor = Interceptor<Any, Any, HttpRequest, HttpRequestBuilder, HttpResponse, HttpResponse>
