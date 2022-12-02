@@ -12,6 +12,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":runtime:utils"))
+                implementation(project(":runtime:io"))
             }
         }
 
