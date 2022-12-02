@@ -13,7 +13,7 @@ import aws.smithy.kotlin.runtime.io.internal.SdkSourceObserver
  * @param hash The [HashFunction] to hash data with
  * @param source the [SdkSource] to hash
  */
-public open class HashingSource(public val hash: HashFunction, source: SdkSource) : HashFunction by hash, SdkSourceObserver(source) {
+public class HashingSource(public val hash: HashFunction, source: SdkSource) : HashFunction by hash, SdkSourceObserver(source) {
     override fun observe(data: ByteArray, offset: Int, length: Int) {
         update(data, offset, length)
     }

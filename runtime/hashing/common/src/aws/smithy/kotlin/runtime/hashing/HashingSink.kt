@@ -13,7 +13,7 @@ import aws.smithy.kotlin.runtime.io.internal.SdkSinkObserver
  * @param hash The [HashFunction] to hash data with
  * @param sink the [SdkSink] to hash
  */
-public open class HashingSink(public val hash: HashFunction, sink: SdkSink) : HashFunction by hash, SdkSinkObserver(sink) {
+public class HashingSink(public val hash: HashFunction, sink: SdkSink) : HashFunction by hash, SdkSinkObserver(sink) {
     override fun observe(data: ByteArray, offset: Int, length: Int) {
         update(data, offset, length)
     }
