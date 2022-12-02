@@ -17,7 +17,7 @@ import aws.smithy.kotlin.runtime.util.InternalApi
  * @param sink the [SdkSink] to hash
  */
 @InternalApi
-public class HashingSink(private val hash: HashFunction, sink: SdkSink) : SdkSinkObserver(sink) {
+public class HashingSink(private val hash: HashFunction, sink: SdkSink = SdkSink.blackhole()) : SdkSinkObserver(sink) {
     override fun observe(data: ByteArray, offset: Int, length: Int) {
         hash.update(data, offset, length)
     }
@@ -35,7 +35,7 @@ public class HashingSink(private val hash: HashFunction, sink: SdkSink) : SdkSin
  * @param sink the [SdkSink] to hash
  */
 @InternalApi
-public class CrcSink(sink: SdkSink, private val hash: Crc32Base = Crc32()) : SdkSinkObserver(sink) {
+public class CrcSink(sink: SdkSink = SdkSink.blackhole(), private val hash: Crc32Base = Crc32()) : SdkSinkObserver(sink) {
     override fun observe(data: ByteArray, offset: Int, length: Int) {
         hash.update(data, offset, length)
     }
