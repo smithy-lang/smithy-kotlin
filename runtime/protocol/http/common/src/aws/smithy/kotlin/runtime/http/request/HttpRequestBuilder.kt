@@ -36,6 +36,23 @@ public class HttpRequestBuilder private constructor(
     }
 }
 
+internal data class ImmutableHttpRequestBuilder(
+    internal val builder: HttpRequestBuilder,
+) : HttpRequest {
+    override val method: HttpMethod = builder.method
+
+    private var _url: Url? = null
+    override val url: Url
+        get() = _url ?: builder.url.build().also { _url = it }
+
+    override val headers: Headers
+        get() = builder.headers.build()
+
+    override val body: HttpBody = builder.body
+}
+
+internal fun HttpRequestBuilder.immutableView(): HttpRequest = ImmutableHttpRequestBuilder(this)
+
 // convenience extensions
 
 /**

@@ -9,12 +9,27 @@ import aws.smithy.kotlin.runtime.http.*
 /**
  * Immutable representation of an HTTP request
  */
-public data class HttpRequest(
-    public val method: HttpMethod,
-    public val url: Url,
-    public val headers: Headers,
-    public val body: HttpBody,
-) {
+public sealed interface HttpRequest {
+    /**
+     * The HTTP method (verb) to use when sending the request
+     */
+    public val method: HttpMethod
+
+    /**
+     * The endpoint to send the request to
+     */
+    public val url: Url
+
+    /**
+     * The headers to send with the request
+     */
+    public val headers: Headers
+
+    /**
+     * The request payload
+     */
+    public val body: HttpBody
+
     public companion object {
         public operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest =
             HttpRequestBuilder().apply(block).build()
@@ -22,23 +37,43 @@ public data class HttpRequest(
 }
 
 /**
+ * Create a new [HttpRequest]
+ */
+public fun HttpRequest(
+    method: HttpMethod,
+    url: Url,
+    headers: Headers,
+    body: HttpBody,
+): HttpRequest = RealHttpRequest(method, url, headers, body)
+
+private data class RealHttpRequest(
+    override val method: HttpMethod,
+    override val url: Url,
+    override val headers: Headers,
+    override val body: HttpBody,
+) : HttpRequest
+
+/**
  * Convert an HttpRequest back to an [HttpRequestBuilder]
  */
-public fun HttpRequest.toBuilder(): HttpRequestBuilder {
-    val req = this
-    return HttpRequestBuilder().apply {
-        method = req.method
-        headers.appendAll(req.headers)
-        url {
-            scheme = req.url.scheme
-            host = req.url.host
-            port = req.url.port
-            path = req.url.path
-            parameters.appendAll(req.url.parameters)
-            fragment = req.url.fragment
-            userInfo = req.url.userInfo
-            forceQuery = req.url.forceQuery
+public fun HttpRequest.toBuilder(): HttpRequestBuilder = when (this) {
+    is ImmutableHttpRequestBuilder -> builder
+    is RealHttpRequest -> {
+        val req = this
+        HttpRequestBuilder().apply {
+            method = req.method
+            headers.appendAll(req.headers)
+            url {
+                scheme = req.url.scheme
+                host = req.url.host
+                port = req.url.port
+                path = req.url.path
+                parameters.appendAll(req.url.parameters)
+                fragment = req.url.fragment
+                userInfo = req.url.userInfo
+                forceQuery = req.url.forceQuery
+            }
+            body = req.body
         }
-        body = req.body
     }
 }
