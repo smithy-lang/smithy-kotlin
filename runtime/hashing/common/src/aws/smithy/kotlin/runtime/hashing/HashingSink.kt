@@ -13,8 +13,14 @@ import aws.smithy.kotlin.runtime.io.internal.SdkSinkObserver
  * @param hash The [HashFunction] to hash data with
  * @param sink the [SdkSink] to hash
  */
-public class HashingSink(public val hash: HashFunction, sink: SdkSink) : HashFunction by hash, SdkSinkObserver(sink) {
+public class HashingSink(private val hash: HashFunction, sink: SdkSink) : SdkSinkObserver(sink) {
     override fun observe(data: ByteArray, offset: Int, length: Int) {
-        update(data, offset, length)
+        hash.update(data, offset, length)
     }
+
+    /**
+     * Provides the digest value as an unsigned integer for the CRC32 function family.
+     * @return unsigned integer representing the value of the digest, if the [HashFunction] is [Crc32] or [Crc32c], and null otherwise.
+     */
+    public fun digestValue() : UInt? = (hash as Crc32?)?.digestValue()
 }
