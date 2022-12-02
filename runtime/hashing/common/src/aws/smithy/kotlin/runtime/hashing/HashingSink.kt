@@ -22,5 +22,5 @@ public class HashingSink(private val hash: HashFunction, sink: SdkSink) : SdkSin
      * Provides the digest value as an unsigned integer for the CRC32 function family.
      * @return unsigned integer representing the value of the digest, if the [HashFunction] is [Crc32] or [Crc32c], and null otherwise.
      */
-    public fun digestValue() : UInt? = (hash as Crc32?)?.digestValue()
+    public fun digestValue(): UInt? = (hash as Crc32?)?.digestValue()
 }
