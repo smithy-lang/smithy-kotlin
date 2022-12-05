@@ -46,17 +46,30 @@ public suspend inline fun <R> CoroutineContext.withChildTraceSpan(
 }
 
 @InternalApi
+public class WrappedRootSpan(
+    private val rootSpan: TraceSpan,
+    override val parent: TraceSpan,
+) : TraceSpan by rootSpan
+
+@InternalApi
 public suspend inline fun <R> CoroutineContext.withRootTraceSpan(
     rootSpan: TraceSpan,
     crossinline block: suspend CoroutineScope.() -> R,
 ): R =
     try {
         val existingSpan = get(TraceSpanContextElement)?.traceSpan
-        check(existingSpan == null || existingSpan == rootSpan.parent) {
+        check(existingSpan == null || rootSpan.parent == null || existingSpan == rootSpan.parent) {
             "This method may only be called when no current span exists or the new span is a child of the active span"
         }
 
-        withContext(TraceSpanContextElement(rootSpan)) {
+        val newRoot = if (existingSpan != null && rootSpan.parent == null) {
+            // we are in some nested context, the existing span becomes this root's parent
+            WrappedRootSpan(rootSpan, existingSpan)
+        } else {
+            rootSpan
+        }
+
+        withContext(TraceSpanContextElement(newRoot)) {
             block()
         }
     } finally {

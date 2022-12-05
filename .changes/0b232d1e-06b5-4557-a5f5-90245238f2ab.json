@@ -1,0 +1,8 @@
+{
+    "id": "0b232d1e-06b5-4557-a5f5-90245238f2ab",
+    "type": "bugfix",
+    "description": "Allow root trace spans to inherit their parent from current context",
+    "issues": [
+        "awslabs/aws-sdk-kotlin#759"
+    ]
+}
