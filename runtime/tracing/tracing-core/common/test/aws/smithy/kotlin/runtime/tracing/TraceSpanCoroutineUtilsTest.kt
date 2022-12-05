@@ -14,7 +14,7 @@ import kotlin.test.assertFailsWith
 import kotlin.test.assertNull
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class TraceSpanTest {
+class TraceSpanCoroutineUtilsTest {
     @Test
     fun testRootSpanNoExisting() = runTest {
         val tracer = DefaultTracer(NoOpTraceProbe, "test")
