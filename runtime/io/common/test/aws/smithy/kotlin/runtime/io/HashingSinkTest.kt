@@ -56,38 +56,4 @@ class HashingSinkTest {
         expectedHash.update(byteArray, 512, 512)
         assertEquals(expectedHash.digest().decodeToString(), hashingSink.digest().decodeToString())
     }
-
-    @ParameterizedTest
-    @ValueSource(strings = ["crc32", "crc32c"])
-    fun testCrcSinkDigest(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
-        val buffer = SdkBuffer()
-        buffer.write(byteArray)
-
-        val hashingSink = CrcSink(SdkSink.blackhole(), getHashFunction(hashFunctionName) as Crc32Base)
-
-        val expectedHash = getHashFunction(hashFunctionName)
-
-        assertEquals(expectedHash.digest().decodeToString(), hashingSink.digest().decodeToString())
-        hashingSink.write(buffer, buffer.size)
-        expectedHash.update(byteArray)
-        assertEquals(expectedHash.digest().decodeToString(), hashingSink.digest().decodeToString())
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = ["crc32", "crc32c"])
-    fun testCrcSinkDigestValue(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
-        val buffer = SdkBuffer()
-        buffer.write(byteArray)
-
-        val hashingSink = CrcSink(SdkSink.blackhole(), getHashFunction(hashFunctionName) as Crc32Base)
-
-        val expectedHash = getHashFunction(hashFunctionName) as Crc32Base
-
-        assertEquals(expectedHash.digestValue(), hashingSink.digestValue())
-        hashingSink.write(buffer, buffer.size)
-        expectedHash.update(byteArray)
-        assertEquals(expectedHash.digestValue(), hashingSink.digestValue())
-    }
 }

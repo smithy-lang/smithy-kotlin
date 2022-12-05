@@ -58,40 +58,4 @@ class HashingSourceTest {
         expectedHash.update(byteArray, 512, 512)
         assertEquals(expectedHash.digest().decodeToString(), hashingSource.digest().decodeToString())
     }
-
-    @ParameterizedTest
-    @ValueSource(strings = ["crc32", "crc32c"])
-    fun testCrcSourceDigest(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
-        val source = byteArray.source()
-        val hashingSource = CrcSource(source, getHashFunction(hashFunctionName) as Crc32Base)
-
-        val sink = SdkBuffer()
-
-        val expectedHash = getHashFunction(hashFunctionName)
-        assertEquals(expectedHash.digest().decodeToString(), hashingSource.digest().decodeToString())
-
-        hashingSource.read(sink, 1024)
-        expectedHash.update(byteArray)
-
-        assertEquals(expectedHash.digest().decodeToString(), hashingSource.digest().decodeToString())
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = ["crc32", "crc32c"])
-    fun testCrcSourceDigestValue(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
-        val source = byteArray.source()
-        val hashingSource = CrcSource(source, getHashFunction(hashFunctionName) as Crc32Base)
-
-        val sink = SdkBuffer()
-
-        val expectedHash = getHashFunction(hashFunctionName) as Crc32Base
-        assertEquals(expectedHash.digestValue(), hashingSource.digestValue())
-
-        hashingSource.read(sink, 1024)
-        expectedHash.update(byteArray)
-
-        assertEquals(expectedHash.digestValue(), hashingSource.digestValue())
-    }
 }
