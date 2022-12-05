@@ -57,7 +57,6 @@ class TraceSpanCoroutineUtilsTest {
         }
 
         coroutineContext.withRootTraceSpan(rootSpan1) {
-            val outerSpan = coroutineContext.traceSpan
             assertFailsWith<IllegalStateException> {
                 coroutineContext.withRootTraceSpan(illegalRoot) { Unit }
             }.message.shouldContain("when no current span exists or the new span is a child of the active span")
