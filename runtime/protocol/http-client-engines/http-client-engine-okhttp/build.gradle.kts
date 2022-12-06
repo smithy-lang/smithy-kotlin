@@ -59,4 +59,6 @@ tasks.register<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shad
             it.moduleGroup == "com.squareup.okhttp3"
         }
     }
+
+    relocate("okhttp3", "aws.smithy.kotlin.shaded.okhttp3")
 }
