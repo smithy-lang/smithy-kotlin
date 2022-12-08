@@ -51,8 +51,6 @@ kotlin {
 val shadowTask = tasks.register<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar>("shadowJar") {
     group = "shadow"
     // strip the default '-all' classifier, we won't need it since we publish this as a separate artifact
-    // to get the right dependencies in the generated pom file (if they shared GAV coordinates they
-    // would share the same POM file with the shaded deps in it)
     archiveClassifier.set("")
     archiveAppendix.set("shaded")
     val main by kotlin.jvm().compilations
@@ -121,6 +119,10 @@ publishing {
             // }
 
             artifact(shadowTask)
+
+            // Create a new artifact rather than using a classifier. We do this to get the right dependencies
+            // in the generated pom file (if they shared GAV coordinates they would share the same POM file with
+            // the shaded deps in it)
             artifactId = "$artifactId-shaded"
             pom.packaging = "jar"
 
