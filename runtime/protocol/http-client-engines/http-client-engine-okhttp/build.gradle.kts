@@ -16,8 +16,6 @@ val coroutinesVersion: String by project
 val okHttpVersion: String by project
 
 kotlin {
-    jvm()
-
     sourceSets {
         commonMain {
             dependencies {
