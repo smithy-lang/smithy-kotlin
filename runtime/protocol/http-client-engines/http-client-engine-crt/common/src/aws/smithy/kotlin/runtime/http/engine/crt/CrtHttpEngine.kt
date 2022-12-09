@@ -103,7 +103,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         val stream = conn.makeRequest(engineRequest, respHandler)
         stream.activate()
 
-        if (request.isAwsChunked) {
+        if (request.isChunked) {
             val bytesToRead = 65536L
 
             when (request.body) {
