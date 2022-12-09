@@ -115,7 +115,7 @@ class RequestConversionTest {
             object : HttpBody.ChannelContent() {
                 override val contentLength: Long = testData.size.toLong()
                 override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(testData)
-            }
+            },
         )
 
         val testContext = EmptyCoroutineContext + Job()
@@ -135,7 +135,7 @@ class RequestConversionTest {
             object : HttpBody.SourceContent() {
                 override val contentLength: Long = testData.size.toLong()
                 override fun readFrom(): SdkSource = testData.source()
-            }
+            },
         )
 
         val testContext = EmptyCoroutineContext + Job()
@@ -143,5 +143,4 @@ class RequestConversionTest {
         assertNotNull(request.body)
         assertNull(crtRequest.body)
     }
-
 }
