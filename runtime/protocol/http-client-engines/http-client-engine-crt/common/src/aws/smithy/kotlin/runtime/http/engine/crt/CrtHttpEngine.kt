@@ -10,6 +10,7 @@ import aws.sdk.kotlin.crt.io.*
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
+import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
@@ -17,6 +18,7 @@ import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.job
@@ -99,6 +101,53 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
         val stream = conn.makeRequest(engineRequest, respHandler)
         stream.activate()
+
+        if (request.isAwsChunked) {
+            when (request.body) {
+                is HttpBody.SourceContent -> {
+                    val source = (request.body as HttpBody.SourceContent).readFrom()
+
+                    val bytesToRead = 65536L
+                    val buffer = SdkBuffer()
+
+                    while (true) {
+                        val bytesRead = source.read(buffer, bytesToRead)
+                        check(bytesRead != -1L) { "unexpected exhaustion of source" }
+
+                        if (bytesRead < bytesToRead) {
+                            // we've read fewer bytes than expected. try to read again.
+                            val nextBytesRead = source.read(buffer, bytesToRead)
+
+                            // if we read -1, that means we've truly exhausted the underlying source
+                            if (nextBytesRead == -1L) {
+                                stream.writeChunk(buffer.readByteArray(bytesRead), true)
+                                break
+                            }
+
+                            stream.writeChunk(buffer.readByteArray(bytesRead + nextBytesRead), isFinalChunk = nextBytesRead < bytesToRead)
+
+                            // if we read fewer bytes than expected _again_, that means we just fully consumed the final chunk
+                            if (nextBytesRead < bytesToRead) { break }
+                        } else {
+                            // if we read some more bytes, that means there are still more chunks available
+                            stream.writeChunk(buffer.readByteArray(bytesRead), false)
+                        }
+                    }
+                }
+                is HttpBody.ChannelContent -> {
+                    val chan = (request.body as HttpBody.ChannelContent).readFrom()
+                    val bytesToRead = 65536L
+                    val buffer = SdkBuffer()
+
+                    while (!chan.isClosedForRead) {
+                        val bytesRead = chan.read(buffer, bytesToRead)
+                        check(bytesRead != -1L) { "unexpected exhaustion of channel" }
+                        stream.writeChunk(buffer.readByteArray(bytesRead), isFinalChunk = chan.isClosedForRead)
+                    }
+                }
+                else -> {}
+            }
+        }
 
         val resp = respHandler.waitForResponse()
 

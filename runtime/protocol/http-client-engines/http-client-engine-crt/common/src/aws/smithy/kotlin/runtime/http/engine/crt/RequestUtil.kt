@@ -34,17 +34,19 @@ internal val HttpRequest.uri: Uri
 internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.kotlin.crt.http.HttpRequest {
     val body = this.body
     check(!body.isDuplex) { "CrtHttpEngine does not yet support full duplex streams" }
-    val bodyStream = when (body) {
-        is HttpBody.Empty -> null
-        is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
-        is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), callContext)
-        is HttpBody.SourceContent -> {
+    val bodyStream = when {
+        body is HttpBody.Empty -> null
+        body is HttpBody.Bytes -> HttpRequestBodyStream.fromByteArray(body.bytes())
+        body is HttpBody.ChannelContent -> ReadChannelBodyStream(body.readFrom(), callContext)
+        body is HttpBody.SourceContent && this.isAwsChunked -> null // aws-chunked bodies must be null
+        body is HttpBody.SourceContent -> {
             val source = body.readFrom()
             callContext.job.invokeOnCompletion {
                 source.close()
             }
             SdkSourceBodyStream(source)
         }
+        else -> null
     }
 
     val crtHeaders = HeadersBuilder()
@@ -61,3 +63,9 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
 
     return aws.sdk.kotlin.crt.http.HttpRequest(method.name, url.encodedPath, crtHeaders.build(), bodyStream)
 }
+
+/**
+ * @return whether this HttpRequest is an aws-chunked request.
+ * Specifically, this means return `true` if a request contains a `Transfer-Encoding` header with the value `chunked`.
+ */
+internal val HttpRequest.isAwsChunked: Boolean get() = this.headers.getAll("Transfer-Encoding")?.contains("chunked") == true
