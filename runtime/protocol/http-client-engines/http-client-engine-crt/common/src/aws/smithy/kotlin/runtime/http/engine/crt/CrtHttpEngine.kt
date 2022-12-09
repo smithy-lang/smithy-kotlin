@@ -120,8 +120,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
                         stream.writeChunk(buffer.readToByteArray(), isFinalChunk)
 
-                        if (isFinalChunk) { break }
-                        else { buffer = nextBuffer }
+                        if (isFinalChunk) break else buffer = nextBuffer
                     }
                 }
                 is HttpBody.ChannelContent -> {

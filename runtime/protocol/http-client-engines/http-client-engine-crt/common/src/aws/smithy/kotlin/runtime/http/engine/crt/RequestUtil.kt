@@ -68,4 +68,4 @@ internal fun HttpRequest.toCrtRequest(callContext: CoroutineContext): aws.sdk.ko
  * Specifically, this means return `true` if a request contains a `Transfer-Encoding` header with the value `chunked`.
  */
 internal val HttpRequest.isAwsChunked: Boolean get() = (this.body is HttpBody.SourceContent || this.body is HttpBody.ChannelContent) &&
-        this.headers.getAll("Transfer-Encoding")?.contains("chunked") == true
+    this.headers.getAll("Transfer-Encoding")?.contains("chunked") == true
