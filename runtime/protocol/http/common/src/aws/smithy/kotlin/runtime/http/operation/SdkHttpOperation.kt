@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
+import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.Uuid
@@ -18,14 +19,18 @@ import kotlinx.coroutines.job
  * A (Smithy) HTTP based operation.
  * @property execution Phases used to execute the operation request and get a response instance
  * @property context An [ExecutionContext] instance scoped to this operation
+ * @property serializer The component responsible for serializing the input type `I` into an HTTP request builder
+ * @property deserializer The component responsible for deserializing an HTTP response into the output type `O`
+ * @property signer The component responsible for signing the request
  */
 @OptIn(Uuid.WeakRng::class)
 @InternalApi
-public class SdkHttpOperation<I, O>(
+public class SdkHttpOperation<I, O> internal constructor(
     public val execution: SdkOperationExecution<I, O>,
     public val context: ExecutionContext,
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
+    internal val signer: HttpSigner,
 ) {
     init {
         val sdkRequestId = Uuid.random().toString()
@@ -78,7 +83,7 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     input: I,
     block: suspend (O) -> R,
 ): R {
-    val handler = execution.decorate(httpHandler, serializer, deserializer)
+    val handler = execution.decorate(httpHandler, this)
     val request = OperationRequest(context, input)
     try {
         val output = handler.call(request)
@@ -94,11 +99,12 @@ public class SdkHttpOperationBuilder<I, O> {
     public var deserializer: HttpDeserialize<O>? = null
     public val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
     public val context: HttpOperationContext.Builder = HttpOperationContext.Builder()
+    public var signer: HttpSigner = HttpSigner.NONE
 
     public fun build(): SdkHttpOperation<I, O> {
         val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
         val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
-        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer)
+        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer, signer)
     }
 }
 

@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkLogMode
 import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
+import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -69,18 +70,18 @@ public class SdkOperationExecution<Request, Response> {
  */
 internal fun <Request, Response> SdkOperationExecution<Request, Response>.decorate(
     handler: HttpHandler,
-    serializer: HttpSerialize<Request>,
-    deserializer: HttpDeserialize<Response>,
+    op: SdkHttpOperation<Request, Response>,
 ): Handler<OperationRequest<Request>, Response> {
     // ensure http calls are tracked
     receive.register(HttpCallMiddleware())
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(handler, receive)
-    val deserializeHandler = deserializer.decorate(receiveHandler)
+    val authHandler = HttpAuthHandler(receiveHandler, op.signer)
+    val deserializeHandler = op.deserializer.decorate(authHandler)
     val finalizeHandler = decorateHandler(FinalizeHandler(deserializeHandler), finalize)
     val mutateHandler = decorateHandler(MutateHandler(finalizeHandler), mutate)
-    val serializeHandler = serializer.decorate(mutateHandler)
+    val serializeHandler = op.serializer.decorate(mutateHandler)
     return decorateHandler(InitializeHandler(serializeHandler), initialize)
 }
 
@@ -120,6 +121,16 @@ private class MutateHandler<Output> (
     private val inner: Handler<SdkHttpRequest, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
+}
+
+private class HttpAuthHandler<Output>(
+    private val inner: Handler<SdkHttpRequest, Output>,
+    private val signer: HttpSigner,
+) : Handler<SdkHttpRequest, Output> {
+    override suspend fun call(request: SdkHttpRequest): Output {
+        signer.sign(request.context, request.subject)
+        return inner.call(request)
+    }
 }
 
 private class FinalizeHandler<Output> (
