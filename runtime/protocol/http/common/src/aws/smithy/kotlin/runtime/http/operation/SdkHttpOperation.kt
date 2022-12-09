@@ -7,6 +7,7 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
+import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.Uuid
@@ -34,6 +35,13 @@ public class SdkHttpOperation<I, O> internal constructor(
         val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
     }
+
+    /**
+     * Interceptors that will be executed as part of this operation. The difference between phases and interceptors
+     * is the former is internal only whereas the latter is external customer facing. Middleware is also allowed to
+     * suspend whereas interceptors are meant to be executed quickly.
+     */
+    internal val interceptors = mutableListOf<HttpInterceptor>()
 
     /**
      * Install a middleware into this operation's execution stack
