@@ -23,7 +23,7 @@ class HashingSourceTest {
     @ParameterizedTest
     @ValueSource(strings = ["crc32", "crc32c", "md5", "sha1", "sha256"])
     fun testHashingSourceDigest(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
+        val byteArray = ByteArray(19456) { 0xf }
         val source = byteArray.source()
         val hashingSource = HashingSource(getHashFunction(hashFunctionName), source)
 
@@ -32,7 +32,7 @@ class HashingSourceTest {
         val expectedHash = getHashFunction(hashFunctionName)
         assertEquals(expectedHash.digest().decodeToString(), hashingSource.digest().decodeToString())
 
-        hashingSource.read(sink, 1024)
+        hashingSource.read(sink, 19456)
         expectedHash.update(byteArray)
 
         assertEquals(expectedHash.digest().decodeToString(), hashingSource.digest().decodeToString())
@@ -41,7 +41,7 @@ class HashingSourceTest {
     @ParameterizedTest
     @ValueSource(strings = ["crc32", "crc32c", "md5", "sha1", "sha256"])
     fun testHashingSourcePartialRead(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
+        val byteArray = ByteArray(19456) { 0xf }
         val source = byteArray.source()
         val hashingSource = HashingSource(getHashFunction(hashFunctionName), source)
 

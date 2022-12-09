@@ -23,7 +23,7 @@ class HashingSinkTest {
     @ParameterizedTest
     @ValueSource(strings = ["crc32", "crc32c", "md5", "sha1", "sha256"])
     fun testHashingSinkDigest(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
+        val byteArray = ByteArray(19456) { 0xf }
         val buffer = SdkBuffer()
         buffer.write(byteArray)
 
@@ -40,7 +40,7 @@ class HashingSinkTest {
     @ParameterizedTest
     @ValueSource(strings = ["crc32", "crc32c", "md5", "sha1", "sha256"])
     fun testHashingSinkPartialWrite(hashFunctionName: String) = run {
-        val byteArray = ByteArray(1024) { 0xf }
+        val byteArray = ByteArray(19456) { 0xf }
         val buffer = SdkBuffer()
         buffer.write(byteArray)
 
