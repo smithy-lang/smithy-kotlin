@@ -28,6 +28,7 @@ class SdkStreamResponseHandlerTest {
         override fun activate() {}
         override fun close() { closed = true }
         override fun incrementWindow(size: Int) {}
+        override fun writeChunk(chunkData: ByteArray, isFinalChunk: Boolean) {}
     }
 
     private class MockHttpClientConnection : HttpClientConnection {
