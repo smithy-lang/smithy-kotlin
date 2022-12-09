@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.io.readToByteArray
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.job
@@ -103,40 +104,28 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         stream.activate()
 
         if (request.isAwsChunked) {
+            val bytesToRead = 65536L
+
             when (request.body) {
                 is HttpBody.SourceContent -> {
                     val source = (request.body as HttpBody.SourceContent).readFrom()
-
-                    val bytesToRead = 65536L
-                    val buffer = SdkBuffer()
+                    val nextBuffer = SdkBuffer()
+                    var buffer = SdkBuffer()
 
                     while (true) {
-                        val bytesRead = source.read(buffer, bytesToRead)
-                        check(bytesRead != -1L) { "unexpected exhaustion of source" }
+                        source.read(buffer, bytesToRead)
 
-                        if (bytesRead < bytesToRead) {
-                            // we've read fewer bytes than expected. try to read again.
-                            val nextBytesRead = source.read(buffer, bytesToRead)
+                        // read another set of bytes into a second buffer -- this is how we can "peek" to decide if this is the final chunk or not
+                        val isFinalChunk = source.read(nextBuffer, bytesToRead) == -1L
 
-                            // if we read -1, that means we've truly exhausted the underlying source
-                            if (nextBytesRead == -1L) {
-                                stream.writeChunk(buffer.readByteArray(bytesRead), true)
-                                break
-                            }
+                        stream.writeChunk(buffer.readToByteArray(), isFinalChunk)
 
-                            stream.writeChunk(buffer.readByteArray(bytesRead + nextBytesRead), isFinalChunk = nextBytesRead < bytesToRead)
-
-                            // if we read fewer bytes than expected _again_, that means we just fully consumed the final chunk
-                            if (nextBytesRead < bytesToRead) { break }
-                        } else {
-                            // if we read some more bytes, that means there are still more chunks available
-                            stream.writeChunk(buffer.readByteArray(bytesRead), false)
-                        }
+                        if (isFinalChunk) { break }
+                        else { buffer = nextBuffer }
                     }
                 }
                 is HttpBody.ChannelContent -> {
                     val chan = (request.body as HttpBody.ChannelContent).readFrom()
-                    val bytesToRead = 65536L
                     val buffer = SdkBuffer()
 
                     while (!chan.isClosedForRead) {
