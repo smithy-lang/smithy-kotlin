@@ -30,7 +30,12 @@ import kotlin.test.assertEquals
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
 public abstract class MiddlewareSigningTestBase : HasSigner {
-    private fun buildOperationWithChannel(streaming: Boolean = false, replayable: Boolean = true, requestBody: String = "{\"TableName\": \"foo\"}"): Pair<SdkHttpOperation<Unit, HttpResponse>, SdkByteReadChannel?> {
+    private fun buildOperationWithChannel(
+        requestBody: String,
+        streaming: Boolean = false,
+        replayable: Boolean = true,
+        unsigned: Boolean = false,
+    ): Pair<SdkHttpOperation<Unit, HttpResponse>, SdkByteReadChannel?> {
         val channel: SdkByteReadChannel? = if (streaming) SdkByteReadChannel(requestBody.encodeToByteArray()) else null
 
         val operation: SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
@@ -67,15 +72,25 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             }
         }
 
+        operation.signer = AwsSigningMiddleware {
+            signer = this@MiddlewareSigningTestBase.signer
+            credentialsProvider = testCredentialsProvider
+            service = "demo"
+            isUnsignedPayload = unsigned
+        }
+
         return Pair(operation, channel)
     }
 
-    private fun buildOperation(streaming: Boolean = false, replayable: Boolean = true, requestBody: String = "{\"TableName\": \"foo\"}") =
-        buildOperationWithChannel(streaming, replayable, requestBody).first
+    private fun buildOperation(
+        requestBody: String = "{\"TableName\": \"foo\"}",
+        streaming: Boolean = false,
+        replayable: Boolean = true,
+        unsigned: Boolean = false,
+    ) = buildOperationWithChannel(requestBody, streaming, replayable, unsigned).first
 
     private suspend fun getSignedRequest(
         operation: SdkHttpOperation<Unit, HttpResponse>,
-        unsigned: Boolean = false,
     ): HttpRequest {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
@@ -85,15 +100,6 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             }
         }
         val client = sdkHttpClient(mockEngine)
-
-        operation.install(
-            AwsSigningMiddleware {
-                signer = this@MiddlewareSigningTestBase.signer
-                credentialsProvider = testCredentialsProvider
-                service = "demo"
-                isUnsignedPayload = unsigned
-            },
-        )
 
         operation.roundTrip(client, Unit)
         return operation.context[HttpOperationContext.HttpCallList].last().request
@@ -114,13 +120,13 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testUnsignedRequest(): TestResult = runTest {
-        val op = buildOperation()
+        val op = buildOperation(unsigned = true)
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-length;host;x-amz-archive-description;x-amz-date;x-amz-security-token, " +
             "Signature=6c0cc11630692e2c98f28003c8a0349b56011361e0bab6545f1acee01d1d211e"
 
-        val signed = getSignedRequest(op, unsigned = true)
+        val signed = getSignedRequest(op)
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
     }

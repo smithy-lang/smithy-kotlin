@@ -11,19 +11,21 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunke
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
+import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.operation.*
+import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
+// FIXME - rename
 /**
- * HTTP request pipeline middleware that signs outgoing requests
+ * AWS SigV4 [HttpSigner] that signs outgoing requests using the given [config]
  */
 @InternalApi
-public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMiddleware {
+public class AwsSigningMiddleware(private val config: Config) : HttpSigner {
     public companion object {
         public inline operator fun invoke(block: Config.() -> Unit): AwsSigningMiddleware {
             val config = Config().apply(block)
@@ -105,24 +107,20 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
         public var expiresAfter: Duration? = null
     }
 
-    override fun install(op: SdkHttpOperation<*, *>) {
-        op.execution.finalize.register(this)
-    }
-
-    override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
-        val body = req.subject.body
+    override suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder) {
+        val body = request.body
 
         // favor attributes from the current request context
-        val contextHashSpecification = req.context.getOrNull(AwsSigningAttributes.HashSpecification)
-        val contextSignedBodyHeader = req.context.getOrNull(AwsSigningAttributes.SignedBodyHeader)
+        val contextHashSpecification = context.getOrNull(AwsSigningAttributes.HashSpecification)
+        val contextSignedBodyHeader = context.getOrNull(AwsSigningAttributes.SignedBodyHeader)
 
         // operation signing config is baseConfig + operation specific config/overrides
         val signingConfig = AwsSigningConfig {
-            region = req.context[AwsSigningAttributes.SigningRegion]
-            service = req.context.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
+            region = context[AwsSigningAttributes.SigningRegion]
+            service = context.getOrNull(AwsSigningAttributes.SigningService) ?: checkNotNull(config.service)
             credentialsProvider = checkNotNull(config.credentialsProvider)
             algorithm = config.algorithm
-            signingDate = req.context.getOrNull(AwsSigningAttributes.SigningDate)
+            signingDate = context.getOrNull(AwsSigningAttributes.SigningDate)
 
             signatureType = config.signatureType
             omitSessionToken = config.omitSessionToken
@@ -140,7 +138,7 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
                 config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body.isEligibleForAwsChunkedStreaming -> {
-                    if (req.subject.headers.contains("x-amz-trailer")) {
+                    if (request.headers.contains("x-amz-trailer")) {
                         HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {
                         HashSpecification.StreamingAws4HmacSha256Payload
@@ -152,21 +150,20 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
         }
 
         if (signingConfig.useAwsChunkedEncoding) {
-            req.subject.setAwsChunkedHeaders()
+            request.setAwsChunkedHeaders()
         }
 
-        val signingResult = checkNotNull(config.signer).sign(req.subject.build(), signingConfig)
+        val signingResult = checkNotNull(config.signer).sign(request.build(), signingConfig)
         val signedRequest = signingResult.output
 
         // Add the signature to the request context
-        req.context[AwsSigningAttributes.RequestSignature] = signingResult.signature
+        context[AwsSigningAttributes.RequestSignature] = signingResult.signature
 
-        req.subject.update(signedRequest)
+        request.update(signedRequest)
 
         if (signingConfig.useAwsChunkedEncoding) {
-            req.subject.setAwsChunkedBody(checkNotNull(config.signer), signingConfig, signingResult.signature)
+            request.setAwsChunkedBody(checkNotNull(config.signer), signingConfig, signingResult.signature)
         }
-        return req
     }
 }
 

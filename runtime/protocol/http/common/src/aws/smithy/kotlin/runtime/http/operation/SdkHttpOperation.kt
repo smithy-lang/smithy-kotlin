@@ -30,8 +30,11 @@ public class SdkHttpOperation<I, O> internal constructor(
     public val context: ExecutionContext,
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
-    internal val signer: HttpSigner,
 ) {
+
+    // FIXME - this is temporary until we refactor identity/auth APIs
+    public var signer: HttpSigner = HttpSigner.NONE
+
     init {
         val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
@@ -99,12 +102,11 @@ public class SdkHttpOperationBuilder<I, O> {
     public var deserializer: HttpDeserialize<O>? = null
     public val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
     public val context: HttpOperationContext.Builder = HttpOperationContext.Builder()
-    public var signer: HttpSigner = HttpSigner.NONE
 
     public fun build(): SdkHttpOperation<I, O> {
         val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
         val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
-        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer, signer)
+        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer)
     }
 }
 

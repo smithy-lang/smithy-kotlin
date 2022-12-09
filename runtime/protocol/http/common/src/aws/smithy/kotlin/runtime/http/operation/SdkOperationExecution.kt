@@ -58,6 +58,8 @@ public class SdkOperationExecution<Request, Response> {
      */
     public val finalize: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
+    // TODO - remove finalize?
+
     /**
      * First chance to intercept before deserialization into operation output type [Response].
      */
