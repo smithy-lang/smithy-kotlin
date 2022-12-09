@@ -455,27 +455,29 @@ The `Interceptor` interface defined above is generic over:
 
 Observations:
 
-* Every interceptor method has a default implementation. This allows customers to override only the hooks they are interested in as well
-as allowing future hooks to be defined without breaking API or binary compatibility.
-* Multiple context types are defined that restrict the set of information available to a particular hook (e.g. you can't access the operation'output in any hook until *after* the first deserialization hook). Additionally the hooks are specific about the nullability of particular context
-information (e.g. the `modifyBeforeCompletion` hook may or may not have a protocol request or response available depending on how far the
-operation execution made it.
+* Every interceptor method has a default implementation. This allows customers to override only the hooks they are 
+interested in as well as allowing future hooks to be defined without breaking API or binary compatibility.
+* Multiple context types are defined that restrict the set of information available to a particular hook (e.g. you can't
+access the operation'output in any hook until *after* the first deserialization hook). Additionally the hooks are 
+specific about the nullability of particular context information (e.g. the `modifyBeforeCompletion` hook may or may not
+have a protocol request or response available depending on how far the operation execution made it.
 * Hooks are non-blocking (note no `suspend` in any hook method) and implementators are expected to respect this
-* Despite being generic over the input and output type, the `Input` and `Output` types of an `Interceptor` are expected to be `Any` in practice.
-This is because interceptors can be registered at the *client* level. Such an interceptor would be executed for every operation and
-would not be able to know the specific input or output type at compile time. Interceptors that execute for any operation are common and
-expected (e.g. add a header to every outgoing request). The downside to this flexibility is that customers will have to cast the input or
-output type from the context to the specific operation type. 
-    * NOTE: The modeled operation name will be available in the context (it is already available in the execution context) which can be used
-    on interceptors registered at the client level that want to deal with specific operations.
+* Despite being generic over the input and output type, the `Input` and `Output` types of an `Interceptor` are expected
+to be `Any` in practice. This is because interceptors can be registered at the *client* level. Such an interceptor would
+be executed for every operation and would not be able to know the specific input or output type at compile time. 
+Interceptors that execute for any operation are common and expected (e.g. add a header to every outgoing request). 
+The downside to this flexibility is that customers will have to cast the input or output type from the context to the 
+specific operation type. 
+  * NOTE: The modeled operation name will be available in the context (it is already available in the execution context)
+  which can be used on interceptors registered at the client level that want to deal with specific operations.
 
 
 ### HTTP Interceptor
 
 
-The `Interceptor` interface defined above would not be useful to a customer without specific types. Each protocol will get it's own
-`typealias` that fills in the generics that make sense for a particular protocol. For instance HTTP based protocol clients would
-be generated to reference the more specific interceptor type:
+The `Interceptor` interface defined above would not be useful to a customer without specific types. Each protocol will
+get it's own `typealias` that fills in the generics that make sense for a particular protocol. For instance HTTP based 
+protocol clients would be generated to reference the more specific interceptor type:
 
 ```kotlin
 typealias HttpInterceptor = Interceptor<Any, Any, HttpRequest, HttpResponse>
@@ -484,26 +486,58 @@ typealias HttpInterceptor = Interceptor<Any, Any, HttpRequest, HttpResponse>
 
 #### Alternative 1
 
-Alternatively the `Interceptor` interface could hard code `Any` for `Input` and `Output` types. This would simplify some of the runtime
-type definitions by removing the propagation of those generics. The end result to the customer would be the same (a protocol specific
-interceptor `typealias` is still expected). 
+Alternatively the `Interceptor` interface could hard code `Any` for `Input` and `Output` types. This would simplify 
+some of the runtime type definitions by removing the propagation of those generics. The end result to the customer would
+be the same (a protocol specific interceptor `typealias` is still expected). 
 
 
 ## Interceptor Registration
 
-TODO
+Interceptors will be able to be registered at client creation time as well as through runtime plugins (TBD).
+
+
+Generated client config will be modified to include a list of interceptors that can be appended to:
+
+```kotlin
+
+public interface FooClient : SdkClient {
+  public class Config private constructor(builder: Builder) {
+    val interceptors: List<HttpInterceptor> = builder.interceptors
+
+    public class Builder {
+        var interceptors: MutableList<HttpInterceptor> = mutableListOf()
+    }
+  }
+} 
+
+```
+
+Usage
+
+```kotlin
+
+val client = FooClient {
+  interceptors += CustomInterceptor1()
+  interceptors += CustomInterceptor2()
+}
+
+class CustomInterceptor1 : HttpInterceptor { ... }
+class CustomInterceptor2 : HttpInterceptor { ... }
+```
+
 
 ## Interceptor Priority
 
-Interceptors may be registered directly or via runtime plugins (TBD). Interceptors will be registered and executed in a deterministic order:
+Interceptors may be registered directly or via runtime plugins (TBD). Interceptors will be registered and executed 
+in a deterministic order:
 
-• Interceptors registered via. smithy default plugins
-• (AWS Services) Interceptors registered via AWS default plugins (AWS SDKs only)
-• Interceptors registered via. service-customization plugins
-• Interceptors registered via. client-level plugins
-• Interceptors registered via. client-level configuration
-• Interceptors registered via. operation-level plugins
-• Interceptors registered via operation-level configuration
+* Interceptors registered via. smithy default plugins
+* (AWS Services) Interceptors registered via AWS default plugins (AWS SDKs only)
+* Interceptors registered via. service-customization plugins
+* Interceptors registered via. client-level plugins
+* Interceptors registered via. client-level configuration
+* Interceptors registered via. operation-level plugins
+* Interceptors registered via operation-level configuration
 
 
 ## Example Usage
@@ -560,59 +594,66 @@ class DefaultFooOperationMemberInterceptor : HttpInterceptor {
 
 **Why do interceptors have separate read and read/write hooks?**
 
-If all hooks were read/write (modify) hooks, then any interceptor invoked before "later" interceptors would not necessarily
-get the actual value the SDK sees for a particular phase. If all hooks were read only hooks, then the value of interceptors would
-be greatly diminished.
+If all hooks were read/write (modify) hooks, then any interceptor invoked before "later" interceptors would not 
+necessarily get the actual value the SDK sees for a particular phase. If all hooks were read only hooks, then the value 
+of interceptors would be greatly diminished.
 
 
-**The SDK has an internal middleware stack with predefined phases already with capabilities similar to the proposed interface. Why not expose that directly instead?**
+**The SDK has an internal middleware stack with predefined phases already with capabilities similar to the proposed 
+interface. Why not expose that directly instead?**
 
-Middleware is a good abstraction for the internals of the SDK but it is too flexible to safely reason about as the public abstraction. Ordering
-of middleware is more loosely defined and not guaranteed. It is also allowed to `suspend` and do any number of other things we don't
-necessarily want a user to be doing (e.g. defining a custom retry layer as opposed to using the provided abstractions).
+Middleware is a good abstraction for the internals of the SDK but it is too flexible to safely reason about as the 
+public abstraction. Ordering of middleware is more loosely defined and not guaranteed. It is also allowed to `suspend`
+and do any number of other things we don't necessarily want a user to be doing (e.g. defining a custom retry layer as 
+opposed to using the provided abstractions).
 
-Finally it is desirable to have a stable external abstraction while still being able to modify the internals of the SDK as necessary in the future. The separation of the two allows for this evolution.
+Finally, it is desirable to have a stable external abstraction while still being able to modify the internals of the SDK
+as necessary in the future. The separation of the two allows for this evolution.
 
 **Should existing internal middleware components be re-written as interceptors**?
 
-No. While some of the existing middleware may be possible to convert to an equivalent interceptor there is no reason to do so. Middleware isn't
-going anywhere and is the preferred internal abstraction for customizing SDK behavior. 
+No. While some existing middleware may be possible to convert to an equivalent interceptor there is no reason to do so.
+Middleware isn't going anywhere and is the preferred internal abstraction for customizing SDK behavior. 
 
 **Why not add additional generics to handle mutablity of input/output types?**
 
-Input and output types of an operation are already immutable (see [Kotlin Smithy SDK](kotlin-smithy-sdk.md)) and require an explicit `copy`
-to mutate. The assumption of immutability of these types is baked into the interface.
+Input and output types of an operation are already immutable (see [Kotlin Smithy SDK](kotlin-smithy-sdk.md)) and 
+require an explicit `copy` to mutate. The assumption of immutability of these types is baked into the interface.
 
 
 ## Implementation Details
 
 ### Retry and Signing Middleware
 
-Every hook defined in the `Interceptor` interface can be implemented as part of [SdkOperationExecution](TODO) with the exception of the
-retry (attempt) and signing related hooks. These two capabilities are currently implemented in terms of [Middleware](TODO). The anticipation 
-is that these middleware components will be pulled into `SdkOperationExecution` as explicit phases (similar to serialization and 
-deserialization). The middleware as it exists today will be removed and relocated to these new explicit phases. This should be safe to do as 
-every operation typically has a retry and signing middleware and those that don't can have no-op implementations. 
+Every hook defined in the `Interceptor` interface can be implemented as part of 
+[SdkOperationExecution](https://github.com/awslabs/smithy-kotlin/blob/v0.14.0/runtime/protocol/http/common/src/aws/smithy/kotlin/runtime/http/operation/SdkOperationExecution.kt#L36)
+with the exception of the retry (attempt) and signing related hooks. These two capabilities are currently implemented in
+terms of [Middleware](https://github.com/awslabs/smithy-kotlin/blob/v0.14.0/runtime/io/common/src/aws/smithy/kotlin/runtime/io/middleware/Middleware.kt#L13). 
+The anticipation is that these middleware components will be pulled into `SdkOperationExecution` as explicit phases 
+(similar to serialization and deserialization). The middleware as it exists today will be removed and relocated to these
+new explicit phases. This should be safe to do as every operation typically has a retry and signing middleware and those
+that don't can have no-op implementations. 
 
-The alternative would be to pass around interceptors to these mdidleware components. This works but has the downside of making it harder
-to understand and see all the interceptor hook points in one place. It will also be harder to guarantee hook ordering since middleware 
-phases are ordered but the order within a phase is depeendent on *when* a middelware is registered for an operation. Making the phases
-explicit will guarantee the order.
+The alternative would be to pass around interceptors to these mdidleware components. This works but has the downside of
+making it harder to understand and see all the interceptor hook points in one place. It will also be harder to guarantee 
+hook ordering since middleware phases are ordered but the order within a phase is dependent on *when* a middleware is
+registered for an operation. Making the phases explicit will guarantee the order.
 
 
 ## Progress Listeners
 
-There has been some customer [demand](TODO) for the ability to implement a progress listener abstraction on top of an SDK operation.
-This is *sort of* possible today by wrapping an operation input or output `ByteStream` type and responding to when data is read from the
-stream. This has huge footguns though as it is not well defined when or how many times a stream will be consumed (e.g. AWS SigV4 signing
-typically consumes a stream to calculate the payload hash. The payload is then consumed a second time when being sent out on the wire to
+There has been some customer [demand](https://github.com/awslabs/aws-sdk-kotlin/issues/490) for the ability to implement
+a progress listener abstraction on top of an SDK operation. This is *sort of* possible today by wrapping an operation 
+input or output `ByteStream` type and responding to when data is read from the stream. This has huge footguns though as
+it is not well defined when or how many times a stream will be consumed (e.g. AWS SigV4 signing typically consumes a
+stream to calculate the payload hash. The payload is then consumed a second time when being sent out on the wire to
 the remote service). 
 
 The ability to implement a progress listener will be enabled by [per operation config](TODO) and interceptors.
 
-A user wishing to monitor upload progress would simply need to wrap the outgoing response body in the `modifyBeforeTransmit` hook (which
-is guaranteed to be the last hook before the request is transmitted). A download progress listener could similarly be implemented 
-in `modifyBeforeDeserialization`. 
+A user wishing to monitor upload progress would simply need to wrap the outgoing response body in the 
+`modifyBeforeTransmit` hook (which is guaranteed to be the last hook before the request is transmitted). A download
+progress listener could similarly be implemented in `modifyBeforeDeserialization`. 
 
 
 Example upload listener
@@ -636,12 +677,14 @@ class AddUploadProgressListenerInterceptor(
 
 ```
 
-NOTE: A content length is required to implement a meaningful progress listener. Customers will likely need to disable `aws-chunked` signing and
-any other SDK abstraction that results in `Transfer-Encoding: chunked` with no concrete stream length.
+NOTE: A content length is required to implement a meaningful progress listener. Customers will likely need to disable 
+`aws-chunked` signing and any other SDK abstraction that results in `Transfer-Encoding: chunked` with no concrete 
+stream length.
 
 ## Additional References
 
-TODO
+* [Kotlin Smithy SDK](kotlin-smithy-sdk.md)
+* [Binary Streaming](binary-streaming.md)
 
 # Revision history
 
