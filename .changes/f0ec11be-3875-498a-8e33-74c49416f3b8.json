@@ -1,0 +1,8 @@
+{
+    "id": "f0ec11be-3875-498a-8e33-74c49416f3b8",
+    "type": "bugfix",
+    "description": "Fix `aws-chunked` requests in the CRT HTTP engine",
+    "issues": [
+        "https://github.com/awslabs/smithy-kotlin/issues/759"
+    ]
+}

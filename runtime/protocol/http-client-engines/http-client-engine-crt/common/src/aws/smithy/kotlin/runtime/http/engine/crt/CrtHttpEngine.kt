@@ -17,14 +17,17 @@ import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
+import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.job
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 
 internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
+internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
 
 /**
  * [HttpClientEngine] based on the AWS Common Runtime HTTP client
@@ -99,6 +102,12 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
 
         val stream = conn.makeRequest(engineRequest, respHandler)
         stream.activate()
+
+        if (request.isChunked) {
+            withContext(SdkDispatchers.IO) {
+                stream.sendChunkedBody(request.body)
+            }
+        }
 
         val resp = respHandler.waitForResponse()
 
