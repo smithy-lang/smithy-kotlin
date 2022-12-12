@@ -29,6 +29,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation(project(":runtime:utils"))
+                implementation(project(":runtime:hashing"))
 
                 implementation("com.squareup.okio:okio:$okioVersion")
                 implementation("org.jetbrains.kotlinx:atomicfu:$atomicFuVersion")

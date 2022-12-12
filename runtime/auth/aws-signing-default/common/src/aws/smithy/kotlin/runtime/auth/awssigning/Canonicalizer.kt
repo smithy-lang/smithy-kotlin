@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
-import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.hashing.HashSupplier
 import aws.smithy.kotlin.runtime.hashing.Sha256
 import aws.smithy.kotlin.runtime.hashing.hash
@@ -17,7 +16,6 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.util.encodeLabel
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
-import aws.smithy.kotlin.runtime.io.internal.SdkSinkObserver
 import aws.smithy.kotlin.runtime.time.TimestampFormat
 import aws.smithy.kotlin.runtime.util.*
 import aws.smithy.kotlin.runtime.util.text.*
@@ -176,15 +174,6 @@ internal class DefaultCanonicalizer(private val sha256Supplier: HashSupplier = :
             }
         }
         return hash.digest()
-    }
-}
-
-private class HashingSink(
-    val hash: HashFunction,
-    sink: SdkSink = SdkSink.blackhole(),
-) : SdkSinkObserver(sink) {
-    override fun observe(data: ByteArray, offset: Int, length: Int) {
-        hash.update(data, offset, length)
     }
 }
 
