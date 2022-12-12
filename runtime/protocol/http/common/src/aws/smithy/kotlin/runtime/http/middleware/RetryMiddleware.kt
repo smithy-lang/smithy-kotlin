@@ -9,6 +9,7 @@ import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.operation.deepCopy
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.Handler
+import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.retries.RetryStrategy
 import aws.smithy.kotlin.runtime.retries.getOrThrow
 import aws.smithy.kotlin.runtime.retries.policy.RetryDirective
@@ -26,11 +27,10 @@ import kotlin.coroutines.coroutineContext
  * @param policy the [RetryPolicy] used to determine when to retry
  */
 @InternalApi
-public open class Retry<O>(
+public open class RetryMiddleware<O>(
     protected val strategy: RetryStrategy,
-    protected val policy: RetryPolicy<Any?>,
-) : MutateMiddleware<O> {
-
+    protected val policy: RetryPolicy<O>,
+) : Middleware<SdkHttpRequest, O> {
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
         if (request.subject.isRetryable) {
             var attempt = 1
@@ -42,7 +42,7 @@ public open class Retry<O>(
             val outcome = strategy.retry(wrappedPolicy) {
                 coroutineContext.withChildTraceSpan("Attempt-$attempt") {
                     if (attempt > 1) {
-                        coroutineContext.debug<Retry<*>> { "retrying request, attempt $attempt" }
+                        coroutineContext.debug<RetryMiddleware<*>> { "retrying request, attempt $attempt" }
                     }
 
                     // Deep copy the request because later middlewares (e.g., signing) mutate it
@@ -73,13 +73,13 @@ public open class Retry<O>(
 /**
  * Wrapper around [policy] that logs termination decisions
  */
-private class PolicyLogger(
-    private val policy: RetryPolicy<Any?>,
+private class PolicyLogger<O>(
+    private val policy: RetryPolicy<O>,
     private val traceSpan: TraceSpan,
-) : RetryPolicy<Any?> {
-    override fun evaluate(result: Result<Any?>): RetryDirective = policy.evaluate(result).also {
+) : RetryPolicy<O> {
+    override fun evaluate(result: Result<O>): RetryDirective = policy.evaluate(result).also {
         if (it is RetryDirective.TerminateAndFail) {
-            traceSpan.debug<Retry<*>> { "request failed with non-retryable error" }
+            traceSpan.debug<RetryMiddleware<*>> { "request failed with non-retryable error" }
         }
     }
 }

@@ -10,6 +10,7 @@ import aws.smithy.kotlin.runtime.client.SdkLogMode
 import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -19,6 +20,10 @@ import aws.smithy.kotlin.runtime.http.response.dumpResponse
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.io.middleware.Middleware
 import aws.smithy.kotlin.runtime.io.middleware.Phase
+import aws.smithy.kotlin.runtime.retries.RetryStrategy
+import aws.smithy.kotlin.runtime.retries.StandardRetryStrategy
+import aws.smithy.kotlin.runtime.retries.policy.RetryPolicy
+import aws.smithy.kotlin.runtime.retries.policy.StandardRetryPolicy
 import aws.smithy.kotlin.runtime.tracing.trace
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.coroutines.coroutineContext
@@ -52,6 +57,7 @@ public class SdkOperationExecution<Request, Response> {
      */
     public val mutate: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
+    // TODO - remove finalize
     /**
      * Last chance to intercept before requests are sent (e.g. signing, retries, etc).
      * First chance to intercept after deserialization.
@@ -62,6 +68,22 @@ public class SdkOperationExecution<Request, Response> {
      * First chance to intercept before deserialization into operation output type [Response].
      */
     public val receive: Phase<SdkHttpRequest, HttpCall> = Phase<SdkHttpRequest, HttpCall>()
+
+    /**
+     * The [HttpSigner] to sign the request with
+     */
+    // FIXME - this is temporary until we refactor identity/auth APIs
+    public var signer: HttpSigner = HttpSigner.Anonymous
+
+    /**
+     * The retry strategy to use. Defaults to [StandardRetryStrategy]
+     */
+    public var retryStrategy: RetryStrategy = StandardRetryStrategy()
+
+    /**
+     * The retry policy to use. Defaults to [StandardRetryPolicy]
+     */
+    public var retryPolicy: RetryPolicy<Response> = StandardRetryPolicy.Default
 }
 
 /**
@@ -77,9 +99,12 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(handler, receive)
-    val authHandler = HttpAuthHandler(receiveHandler, op.signer)
+    val authHandler = HttpAuthHandler(receiveHandler, signer)
     val deserializeHandler = op.deserializer.decorate(authHandler)
-    val finalizeHandler = decorateHandler(FinalizeHandler(deserializeHandler), finalize)
+    val retryHandler = decorateHandler(deserializeHandler, RetryMiddleware(retryStrategy, retryPolicy))
+
+    val finalizeHandler = decorateHandler(FinalizeHandler(retryHandler), finalize)
+
     val mutateHandler = decorateHandler(MutateHandler(finalizeHandler), mutate)
     val serializeHandler = op.serializer.decorate(mutateHandler)
     return decorateHandler(InitializeHandler(serializeHandler), initialize)

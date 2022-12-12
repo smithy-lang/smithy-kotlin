@@ -15,26 +15,12 @@ import kotlin.coroutines.coroutineContext
 import aws.sdk.kotlin.crt.http.Headers as HeadersCrt
 import aws.sdk.kotlin.crt.http.HttpRequest as HttpRequestCrt
 
-/**
- * Convert an [HttpRequestBuilder] into a CRT HttpRequest for the purpose of signing.
- */
-@InternalApi
-public suspend fun HttpRequestBuilder.toSignableCrtRequest(unsignedPayload: Boolean = false): HttpRequestCrt {
-    // Streams that implement HttpBody.Streaming and are not replayable are not signable without consuming the stream
-    // and would need to go through chunked signing or unsigned payload
-    // see: https://github.com/awslabs/smithy-kotlin/issues/296
-
-    val bodyStream = if (!unsignedPayload) {
-        signableBodyStream(body)
-    } else {
-        null
-    }
-
-    return HttpRequestCrt(method.name, url.encodedPath, HttpHeadersCrt(headers), bodyStream)
-}
-
-private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? {
-    if (body.isOneShot) return null // can only consume the stream once
+private suspend fun signableBodyStream(
+    body: HttpBody,
+    unsignedPayload: Boolean = false,
+    awsChunked: Boolean = false,
+): HttpRequestBodyStream? {
+    if (body.isOneShot || unsignedPayload || awsChunked) return null // can only consume stream once OR unsigned/chunked payload
 
     return when (body) {
         is HttpBody.Empty -> null
@@ -48,12 +34,15 @@ private suspend fun signableBodyStream(body: HttpBody): HttpRequestBodyStream? {
  * Convert an [HttpRequest] into a CRT HttpRequest for the purposes of signing
  */
 @InternalApi
-public suspend fun HttpRequest.toSignableCrtRequest(): HttpRequestCrt =
+public suspend fun HttpRequest.toSignableCrtRequest(
+    unsignedPayload: Boolean = false,
+    awsChunked: Boolean = false,
+): HttpRequestCrt =
     HttpRequestCrt(
         method = method.name,
         encodedPath = url.encodedPath,
         headers = headers.toCrtHeaders(),
-        body = signableBodyStream(body),
+        body = signableBodyStream(body, unsignedPayload, awsChunked),
     )
 
 // proxy the smithy-client-rt version of Headers to CRT (which is based on our client-rt version in the first place)

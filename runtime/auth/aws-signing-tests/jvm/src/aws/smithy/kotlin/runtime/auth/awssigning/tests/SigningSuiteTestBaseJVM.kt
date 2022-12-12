@@ -459,7 +459,7 @@ private fun buildOperation(
         }
     }
 
-    op.signer = AwsHttpSigner {
+    op.execution.signer = AwsHttpSigner {
         signer = awsSigner
         credentialsProvider = config.credentialsProvider
         service = config.service

@@ -41,7 +41,7 @@ open class AwsSignatureVersion4(private val service: String) : ProtocolMiddlewar
     final override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         writer.addImport(RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner)
 
-        writer.withBlock("op.signer = #T {", "}", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner) {
+        writer.withBlock("op.execution.signer = #T {", "}", RuntimeTypes.Auth.Signing.AwsSigningCommon.AwsHttpSigner) {
             renderSigningConfig(op, writer)
         }
     }
