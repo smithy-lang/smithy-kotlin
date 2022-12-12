@@ -9,7 +9,7 @@ import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.client.SdkLogMode
 import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
-import aws.smithy.kotlin.runtime.http.middleware.HttpAuthMiddleware
+import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -58,8 +58,6 @@ public class SdkOperationExecution<Request, Response> {
      */
     public val finalize: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
-    // TODO - remove finalize?
-
     /**
      * First chance to intercept before deserialization into operation output type [Response].
      */
@@ -79,7 +77,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(handler, receive)
-    val authHandler = HttpAuthMiddleware(receiveHandler, op.signer)
+    val authHandler = HttpAuthHandler(receiveHandler, op.signer)
     val deserializeHandler = op.deserializer.decorate(authHandler)
     val finalizeHandler = decorateHandler(FinalizeHandler(deserializeHandler), finalize)
     val mutateHandler = decorateHandler(MutateHandler(finalizeHandler), mutate)
@@ -123,6 +121,16 @@ private class MutateHandler<Output> (
     private val inner: Handler<SdkHttpRequest, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
+}
+
+private class HttpAuthHandler<Output>(
+    private val inner: Handler<SdkHttpRequest, Output>,
+    private val signer: HttpSigner,
+) : Handler<SdkHttpRequest, Output> {
+    override suspend fun call(request: SdkHttpRequest): Output {
+        signer.sign(request.context, request.subject)
+        return inner.call(request)
+    }
 }
 
 private class FinalizeHandler<Output> (
