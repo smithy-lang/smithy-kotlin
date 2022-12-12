@@ -172,7 +172,7 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
     private fun testSigv4Middleware(test: Sigv4TestSuiteTest): Unit = runBlocking {
         try {
             val op = buildOperation(test.config, signer, test.request)
-            val actual = getSignedRequest(test.config, op)
+            val actual = getSignedRequest(op)
             assertRequestsEqual(test.signedRequest.build(), actual, "actual signed request for ${test.path} not equal")
         } catch (ex: Exception) {
             println("failed to get a signed request for ${test.path}: $ex")
@@ -251,7 +251,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
      */
     @OptIn(InternalApi::class)
     private suspend fun getSignedRequest(
-        config: AwsSigningConfig,
         operation: SdkHttpOperation<Unit, HttpResponse>,
     ): HttpRequest {
         val mockEngine = object : HttpClientEngineBase("test") {
