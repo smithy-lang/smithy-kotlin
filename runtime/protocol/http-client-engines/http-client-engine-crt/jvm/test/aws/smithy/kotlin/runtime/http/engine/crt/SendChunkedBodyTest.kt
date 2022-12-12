@@ -1,3 +1,8 @@
+/*
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 package aws.smithy.kotlin.runtime.http.engine.crt
 
 import aws.sdk.kotlin.crt.http.HttpStream
@@ -8,7 +13,6 @@ import aws.smithy.kotlin.runtime.io.source
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.*
-
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class SendChunkedBodyTest {
@@ -98,6 +102,4 @@ class SendChunkedBodyTest {
         // there should definitely be more than 1 call to `writeChunk`, but in practice we don't care how many there are
         assertTrue(stream.numChunksWritten > 1)
     }
-
-
 }
