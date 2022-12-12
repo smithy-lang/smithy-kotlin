@@ -18,7 +18,6 @@ import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.debug
 import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.tracing.withChildTraceSpan
-import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -26,10 +25,9 @@ import kotlin.coroutines.coroutineContext
  * @param strategy the [RetryStrategy] to retry failed requests with
  * @param policy the [RetryPolicy] used to determine when to retry
  */
-@InternalApi
-public open class RetryMiddleware<O>(
-    protected val strategy: RetryStrategy,
-    protected val policy: RetryPolicy<O>,
+internal class RetryMiddleware<O>(
+    private val strategy: RetryStrategy,
+    private val policy: RetryPolicy<O>,
 ) : Middleware<SdkHttpRequest, O> {
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O =
         if (request.subject.isRetryable) {
@@ -48,8 +46,6 @@ public open class RetryMiddleware<O>(
                     // Deep copy the request because later middlewares (e.g., signing) mutate it
                     val requestCopy = request.deepCopy()
 
-                    onAttempt(requestCopy, attempt)
-
                     attempt++
                     next.call(requestCopy)
                 }
@@ -61,13 +57,6 @@ public open class RetryMiddleware<O>(
                 next.call(request)
             }
         }
-
-    /**
-     * Hook for subclasses to intercept on attempt start
-     * @param request the request for this attempt
-     * @param attempt the current attempt number (1 based)
-     */
-    protected open fun onAttempt(request: SdkHttpRequest, attempt: Int) {}
 }
 
 /**
