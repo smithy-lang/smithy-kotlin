@@ -19,7 +19,7 @@ import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.readToByteArray
+import aws.smithy.kotlin.runtime.io.buffer
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.job
@@ -28,6 +28,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withTimeoutOrNull
 
 internal const val DEFAULT_WINDOW_SIZE_BYTES: Int = 16 * 1024
+internal const val CHUNK_BUFFER_SIZE: Long = 64 * 1024
 
 /**
  * [HttpClientEngine] based on the AWS Common Runtime HTTP client
@@ -104,23 +105,14 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         stream.activate()
 
         if (request.isChunked) {
-            val bytesToRead = 65536L
-
             when (request.body) {
                 is HttpBody.SourceContent -> {
                     val source = (request.body as HttpBody.SourceContent).readFrom()
-                    val nextBuffer = SdkBuffer()
-                    var buffer = SdkBuffer()
+                    val bufferedSource = source.buffer()
 
-                    while (true) {
-                        source.read(buffer, bytesToRead)
-
-                        // read another set of bytes into a second buffer -- this is how we can "peek" to decide if this is the final chunk or not
-                        val isFinalChunk = source.read(nextBuffer, bytesToRead) == -1L
-
-                        stream.writeChunk(buffer.readToByteArray(), isFinalChunk)
-
-                        if (isFinalChunk) break else buffer = nextBuffer
+                    while (!bufferedSource.exhausted()) {
+                        bufferedSource.request(CHUNK_BUFFER_SIZE)
+                        stream.writeChunk(bufferedSource.buffer.readByteArray(), isFinalChunk = bufferedSource.exhausted())
                     }
                 }
                 is HttpBody.ChannelContent -> {
@@ -128,7 +120,7 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
                     val buffer = SdkBuffer()
 
                     while (!chan.isClosedForRead) {
-                        val bytesRead = chan.read(buffer, bytesToRead)
+                        val bytesRead = chan.read(buffer, CHUNK_BUFFER_SIZE)
                         check(bytesRead != -1L) { "unexpected exhaustion of channel" }
                         stream.writeChunk(buffer.readByteArray(bytesRead), isFinalChunk = chan.isClosedForRead)
                     }
