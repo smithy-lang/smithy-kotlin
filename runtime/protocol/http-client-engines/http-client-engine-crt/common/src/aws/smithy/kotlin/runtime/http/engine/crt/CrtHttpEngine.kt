@@ -10,7 +10,6 @@ import aws.sdk.kotlin.crt.io.*
 import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.crt.SdkDefaultIO
-import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.engine.ProxyConfig
@@ -18,10 +17,7 @@ import aws.smithy.kotlin.runtime.http.engine.callContext
 import aws.smithy.kotlin.runtime.http.operation.getLogger
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.io.SdkBuffer
-import aws.smithy.kotlin.runtime.io.buffer
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
-import aws.smithy.kotlin.runtime.io.readToByteArray
 import aws.smithy.kotlin.runtime.logging.Logger
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.job
@@ -142,34 +138,5 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
             }.build()
             HttpClientConnectionManager(connOpts)
         }
-    }
-}
-
-internal suspend fun HttpStream.sendChunkedBody(body: HttpBody) {
-    when (body) {
-        is HttpBody.SourceContent -> {
-            val source = body.readFrom()
-            val bufferedSource = source.buffer()
-
-            while (!bufferedSource.exhausted()) {
-                bufferedSource.request(CHUNK_BUFFER_SIZE)
-                this.writeChunk(bufferedSource.buffer.readByteArray(), isFinalChunk = bufferedSource.exhausted())
-            }
-        }
-        is HttpBody.ChannelContent -> {
-            val chan = body.readFrom()
-            var buffer = SdkBuffer()
-            val nextBuffer = SdkBuffer()
-
-            while (!chan.isClosedForRead) {
-                chan.read(buffer, CHUNK_BUFFER_SIZE)
-
-                val isFinalChunk = chan.read(nextBuffer, CHUNK_BUFFER_SIZE) == -1L
-
-                this.writeChunk(buffer.readToByteArray(), isFinalChunk)
-                if (isFinalChunk) break else buffer = nextBuffer
-            }
-        }
-        else -> {}
     }
 }
