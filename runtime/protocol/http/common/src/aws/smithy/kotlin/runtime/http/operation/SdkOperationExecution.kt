@@ -51,18 +51,18 @@ public class SdkOperationExecution<Request, Response> {
     public val initialize: Phase<OperationRequest<Request>, Response> = Phase<OperationRequest<Request>, Response>()
 
     /**
-     * Modify the outgoing HTTP request
+     * Modify the outgoing HTTP request. This phase runs BEFORE the retry loop and is suitable for any
+     * middleware that only needs to run once and does not need to modify the outgoing request per/attempt.
      *
      * At this phase the [Request] (operation input) has been serialized to an HTTP request.
      */
     public val mutate: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
-    // TODO - remove finalize
     /**
-     * Last chance to intercept before requests are sent (e.g. signing, retries, etc).
-     * First chance to intercept after deserialization.
+     * Modify the outgoing HTTP request. This phase runs on every attempt.
      */
-    public val finalize: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
+    // FIXME - this is temporary until we can refactor to interceptors
+    public val onEachAttempt: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
     /**
      * First chance to intercept before deserialization into operation output type [Response].
@@ -89,6 +89,25 @@ public class SdkOperationExecution<Request, Response> {
 /**
  * Decorate the "raw" [HttpHandler] with the execution phases (middleware) of this operation and
  * return a handler to be used specifically for the given operation.
+ *
+ * Initialize ---> Serialize ---> Mutate ---> Retry
+ *                                             |
+ *                                             v
+ *                                     +----------------+
+ *                                     |  OnEachAttempt |
+ *                                     |      |         |
+ *                                     |      v         |
+ *                                     |  Deserialize   |
+ *                                     |      |         |
+ *                                     |      v         |
+ *                                     |   Signing      |
+ *                                     |      |         |
+ *                                     |      v         |
+ *                                     |   Receive      |
+ *                                     |      |         |
+ *                                     |      v         |
+ *                                     |   HttpClient   |
+ *                                     +----------------+
  */
 internal fun <Request, Response> SdkOperationExecution<Request, Response>.decorate(
     handler: HttpHandler,
@@ -101,11 +120,10 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     val receiveHandler = decorateHandler(handler, receive)
     val authHandler = HttpAuthHandler(receiveHandler, signer)
     val deserializeHandler = op.deserializer.decorate(authHandler)
-    val retryHandler = decorateHandler(deserializeHandler, RetryMiddleware(retryStrategy, retryPolicy))
+    val onEachAttemptHandler = decorateHandler(deserializeHandler, onEachAttempt)
+    val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy))
 
-    val finalizeHandler = decorateHandler(FinalizeHandler(retryHandler), finalize)
-
-    val mutateHandler = decorateHandler(MutateHandler(finalizeHandler), mutate)
+    val mutateHandler = decorateHandler(MutateHandler(retryHandler), mutate)
     val serializeHandler = op.serializer.decorate(mutateHandler)
     return decorateHandler(InitializeHandler(serializeHandler), initialize)
 }

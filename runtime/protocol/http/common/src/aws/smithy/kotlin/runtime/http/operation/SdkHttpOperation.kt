@@ -44,7 +44,6 @@ public class SdkHttpOperation<I, O> internal constructor(
     // NOTE: Using install isn't strictly necessary, it's just a pattern for self registration
     public fun install(middleware: InitializeMiddleware<I, O>) { middleware.install(this) }
     public fun install(middleware: MutateMiddleware<O>) { middleware.install(this) }
-    public fun install(middleware: FinalizeMiddleware<O>) { middleware.install(this) }
     public fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
     public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
