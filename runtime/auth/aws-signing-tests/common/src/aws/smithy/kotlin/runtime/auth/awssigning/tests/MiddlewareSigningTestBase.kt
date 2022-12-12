@@ -5,7 +5,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningAttributes
-import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsSigningMiddleware
+import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsHttpSigner
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
@@ -72,7 +72,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             }
         }
 
-        operation.signer = AwsSigningMiddleware {
+        operation.signer = AwsHttpSigner {
             signer = this@MiddlewareSigningTestBase.signer
             credentialsProvider = testCredentialsProvider
             service = "demo"
@@ -146,7 +146,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testSignAwsChunkedStreamNonReplayable(): TestResult = runTest {
-        val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD + 1))
+        val op = buildOperation(streaming = true, replayable = false, requestBody = "a".repeat(AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
@@ -159,7 +159,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testSignAwsChunkedStreamReplayable(): TestResult = runTest {
-        val (op, channel) = buildOperationWithChannel(streaming = true, replayable = true, requestBody = "a".repeat(AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD + 1))
+        val (op, channel) = buildOperationWithChannel(streaming = true, replayable = true, requestBody = "a".repeat(AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +

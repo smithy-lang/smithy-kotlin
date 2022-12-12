@@ -7,7 +7,7 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.*
-import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsSigningMiddleware
+import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsHttpSigner
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
@@ -461,7 +461,7 @@ private fun buildOperation(
         }
     }
 
-    op.signer = AwsSigningMiddleware {
+    op.signer = AwsHttpSigner {
         signer = awsSigner
         credentialsProvider = config.credentialsProvider
         service = config.service

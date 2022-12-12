@@ -20,19 +20,18 @@ import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
-// FIXME - rename
 /**
  * AWS SigV4 [HttpSigner] that signs outgoing requests using the given [config]
  */
 @InternalApi
-public class AwsSigningMiddleware(private val config: Config) : HttpSigner {
+public class AwsHttpSigner(private val config: Config) : HttpSigner {
     public companion object {
-        public inline operator fun invoke(block: Config.() -> Unit): AwsSigningMiddleware {
+        public inline operator fun invoke(block: Config.() -> Unit): AwsHttpSigner {
             val config = Config().apply(block)
             requireNotNull(config.credentialsProvider) { "A credentials provider must be specified for the middleware" }
             requireNotNull(config.service) { "A service must be specified for the middleware" }
             requireNotNull(config.signer) { "A signer must be specified for the middleware" }
-            return AwsSigningMiddleware(config)
+            return AwsHttpSigner(config)
         }
 
         @InternalApi
