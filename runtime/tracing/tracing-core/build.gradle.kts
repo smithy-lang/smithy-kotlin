@@ -8,6 +8,7 @@ extra["displayName"] = "Smithy :: Kotlin :: Tracing :: Core"
 extra["moduleName"] = "aws.smithy.kotlin.runtime.tracing"
 
 val kotlinLoggingVersion: String by project
+val coroutinesVersion: String by project
 
 kotlin {
     sourceSets {
@@ -26,6 +27,12 @@ kotlin {
                 api(project(":runtime:logging"))
 
                 implementation("io.github.microutils:kotlin-logging:$kotlinLoggingVersion")
+            }
+        }
+
+        commonTest {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
             }
         }
 
