@@ -33,7 +33,7 @@ public class SdkHttpOperation<I, O> internal constructor(
 ) {
 
     // FIXME - this is temporary until we refactor identity/auth APIs
-    public var signer: HttpSigner = HttpSigner.NONE
+    public var signer: HttpSigner = HttpSigner.Anonymous
 
     init {
         val sdkRequestId = Uuid.random().toString()

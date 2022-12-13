@@ -18,7 +18,7 @@ public interface HttpSigner {
         /**
          * A no-op signer that does nothing with the request
          */
-        public val NONE: HttpSigner = object : HttpSigner {
+        public val Anonymous: HttpSigner = object : HttpSigner {
             override suspend fun sign(context: ExecutionContext, request: HttpRequestBuilder) { }
         }
     }

@@ -2,10 +2,9 @@
  * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0
  */
-package aws.smithy.kotlin.runtime.auth.awssigning.middleware
+package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
-import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.isEligibleForAwsChunkedStreaming
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
@@ -21,7 +20,7 @@ import aws.smithy.kotlin.runtime.util.get
 import kotlin.time.Duration
 
 /**
- * AWS SigV4 [HttpSigner] that signs outgoing requests using the given [config]
+ * AWS SigV4/SigV4a [HttpSigner] that signs outgoing requests using the given [config]
  */
 @InternalApi
 public class AwsHttpSigner(private val config: Config) : HttpSigner {

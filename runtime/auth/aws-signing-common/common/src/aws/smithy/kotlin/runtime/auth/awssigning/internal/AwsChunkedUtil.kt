@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.internal
 
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsHttpSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
-import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsHttpSigner
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
