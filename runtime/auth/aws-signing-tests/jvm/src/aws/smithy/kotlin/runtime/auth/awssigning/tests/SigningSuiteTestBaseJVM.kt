@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 import aws.smithy.kotlin.runtime.auth.awscredentials.Credentials
 import aws.smithy.kotlin.runtime.auth.awscredentials.CredentialsProvider
 import aws.smithy.kotlin.runtime.auth.awssigning.*
-import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsSigningMiddleware
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.content.ByteArrayContent
@@ -171,8 +170,8 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
      */
     private fun testSigv4Middleware(test: Sigv4TestSuiteTest): Unit = runBlocking {
         try {
-            val op = buildOperation(test.config, test.request)
-            val actual = getSignedRequest(test.config, op)
+            val op = buildOperation(test.config, signer, test.request)
+            val actual = getSignedRequest(op)
             assertRequestsEqual(test.signedRequest.build(), actual, "actual signed request for ${test.path} not equal")
         } catch (ex: Exception) {
             println("failed to get a signed request for ${test.path}: $ex")
@@ -251,7 +250,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
      */
     @OptIn(InternalApi::class)
     private suspend fun getSignedRequest(
-        config: AwsSigningConfig,
         operation: SdkHttpOperation<Unit, HttpResponse>,
     ): HttpRequest {
         val mockEngine = object : HttpClientEngineBase("test") {
@@ -262,20 +260,6 @@ public actual abstract class SigningSuiteTestBase : HasSigner {
             }
         }
         val client = sdkHttpClient(mockEngine)
-
-        operation.install(
-            AwsSigningMiddleware {
-                signer = this@SigningSuiteTestBase.signer
-                credentialsProvider = config.credentialsProvider
-                service = config.service
-                useDoubleUriEncode = config.useDoubleUriEncode
-                normalizeUriPath = config.normalizeUriPath
-                omitSessionToken = config.omitSessionToken
-                signedBodyHeader = config.signedBodyHeader
-                signatureType = config.signatureType
-                expiresAfter = config.expiresAfter
-            },
-        )
 
         operation.roundTrip(client, Unit)
         return operation.context[HttpOperationContext.HttpCallList].last().request
@@ -455,22 +439,39 @@ private fun Request.parsePath(): String {
 @OptIn(InternalApi::class)
 private fun buildOperation(
     config: AwsSigningConfig,
+    awsSigner: AwsSigner,
     serialized: HttpRequestBuilder,
-): SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
-    serializer = object : HttpSerialize<Unit> {
-        override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = serialized
-    }
-    deserializer = IdentityDeserializer
-
-    context {
-        operationName = "testSigningOperation"
-        service = config.service
-        set(AwsSigningAttributes.SigningRegion, config.region)
-        config.signingDate.let {
-            set(AwsSigningAttributes.SigningDate, it)
+): SdkHttpOperation<Unit, HttpResponse> {
+    val op = SdkHttpOperation.build<Unit, HttpResponse> {
+        serializer = object : HttpSerialize<Unit> {
+            override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder = serialized
         }
-        set(AwsSigningAttributes.SigningService, config.service)
+        deserializer = IdentityDeserializer
+
+        context {
+            operationName = "testSigningOperation"
+            service = config.service
+            set(AwsSigningAttributes.SigningRegion, config.region)
+            config.signingDate.let {
+                set(AwsSigningAttributes.SigningDate, it)
+            }
+            set(AwsSigningAttributes.SigningService, config.service)
+        }
     }
+
+    op.signer = AwsHttpSigner {
+        signer = awsSigner
+        credentialsProvider = config.credentialsProvider
+        service = config.service
+        useDoubleUriEncode = config.useDoubleUriEncode
+        normalizeUriPath = config.normalizeUriPath
+        omitSessionToken = config.omitSessionToken
+        signedBodyHeader = config.signedBodyHeader
+        signatureType = config.signatureType
+        expiresAfter = config.expiresAfter
+    }
+
+    return op
 }
 
 private val irregularLineEndings = """\r\n?""".toRegex()
