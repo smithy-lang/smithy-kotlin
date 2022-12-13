@@ -60,7 +60,7 @@ public fun ByteArray.hash(hashSupplier: HashSupplier): ByteArray = hash(hashSupp
 
 @InternalApi
 /**
- * Return the [HashFunction] which is represented by the current [String], or null if none match.
+ * Return the [HashFunction] which is represented by this string, or null if none match.
  */
 public fun String.toHashFunction(): HashFunction? {
     return when (this.lowercase()) {
