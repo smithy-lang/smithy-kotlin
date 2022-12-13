@@ -107,7 +107,8 @@ class StructureGeneratorTest {
                 append("byteValue=${'$'}byteValue,")
                 append("foo=${'$'}foo,")
                 append("object=${'$'}`object`,")
-                append("quux=${'$'}quux)")
+                append("quux=${'$'}quux")
+                append(")")
             }
         """.formatForTest()
 
@@ -273,10 +274,60 @@ class StructureGeneratorTest {
                 append("Foo(")
                 append("bar=*** Sensitive Data Redacted ***,")
                 append("baz=*** Sensitive Data Redacted ***,")
-                append("qux=${'$'}qux)")
+                append("qux=${'$'}qux")
+                append(")")
             }
         """.formatForTest()
         generated.shouldContainOnlyOnceWithDiff(expected)
+    }
+
+    @Test
+    fun testSensitiveTraitOnParent() {
+        val model = """           
+            string Baz
+            
+            @sensitive
+            structure Foo {
+                bar: Baz,
+                @documentation("Member documentation")
+                baz: Baz,
+                qux: String
+            }
+            
+            structure Parent {
+                foo: Foo
+            }
+        """.prependNamespaceAndService().toSmithyModel()
+
+        val provider: SymbolProvider = KotlinCodegenPlugin.createSymbolProvider(model)
+        val writer = KotlinWriter(TestModelDefault.NAMESPACE)
+        val struct = model.expectShape<StructureShape>("com.test#Foo")
+        val renderingCtx = RenderingContext(writer, struct, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx).render()
+
+        val generated = writer.toString()
+        val expected = """
+            override fun toString(): kotlin.String = buildString {
+                append("Foo(")
+                append("*** Sensitive Data Redacted ***")
+                append(")")
+            }
+        """.formatForTest()
+        generated.shouldContainOnlyOnceWithDiff(expected)
+
+        val writer2 = KotlinWriter(TestModelDefault.NAMESPACE)
+        val struct2 = model.expectShape<StructureShape>("com.test#Parent")
+        val renderingCtx2 = RenderingContext(writer2, struct2, model, provider, model.defaultSettings())
+        StructureGenerator(renderingCtx2).render()
+        val generated2 = writer2.toString()
+        val expected2 = """
+            override fun toString(): kotlin.String = buildString {
+                append("Parent(")
+                append("foo=*** Sensitive Data Redacted ***")
+                append(")")
+            }
+        """.formatForTest()
+        generated2.shouldContainOnlyOnceWithDiff(expected2)
     }
 
     @Test
