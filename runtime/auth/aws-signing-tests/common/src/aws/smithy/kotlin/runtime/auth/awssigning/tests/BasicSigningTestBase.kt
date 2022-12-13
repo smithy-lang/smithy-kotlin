@@ -21,6 +21,7 @@ import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 // based on: https://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-streaming.html#example-signature-calculations-streaming
@@ -47,6 +48,14 @@ private const val EXPECTED_FINAL_CHUNK_SIGNATURE = "b6c6ea8a5354eaf15b3cb7646744
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
 public abstract class BasicSigningTestBase : HasSigner {
+    private val defaultSigningConfig = AwsSigningConfig {
+        region = "us-east-1"
+        service = "demo"
+        signatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
+        signingDate = Instant.fromIso8601("2020-10-16T19:56:00Z")
+        credentialsProvider = testCredentialsProvider
+    }
+
     @Test
     public fun testSignRequestSigV4(): TestResult = runTest {
         // sanity test
@@ -62,15 +71,7 @@ public abstract class BasicSigningTestBase : HasSigner {
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }.build()
 
-        val config = AwsSigningConfig {
-            region = "us-east-1"
-            service = "demo"
-            signatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
-            signingDate = Instant.fromIso8601("2020-10-16T19:56:00Z")
-            credentialsProvider = testCredentialsProvider
-        }
-
-        val result = signer.sign(request, config)
+        val result = signer.sign(request, defaultSigningConfig)
 
         val expectedDate = "20201016T195600Z"
         val expectedSig = "e60a4adad4ae15e05c96a0d8ac2482fbcbd66c88647c4457db74e4dad1648608"
@@ -98,14 +99,12 @@ public abstract class BasicSigningTestBase : HasSigner {
             headers.append("Content-Length", body.contentLength?.toString() ?: "0")
         }.build()
 
-        val config = AwsSigningConfig {
-            region = "us-east-1"
-            service = "service"
-            signatureType = AwsSignatureType.HTTP_REQUEST_VIA_HEADERS
-            algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
-            signingDate = Instant.fromIso8601("2015-08-30T12:36:00Z")
-            credentialsProvider = testCredentialsProvider
-        }
+        val config = defaultSigningConfig.toBuilder()
+            .apply {
+                service = "service"
+                algorithm = AwsSigningAlgorithm.SIGV4_ASYMMETRIC
+                signingDate = Instant.fromIso8601("2015-08-30T12:36:00Z")
+            }.build()
 
         val result = signer.sign(request, config)
 
@@ -189,5 +188,43 @@ public abstract class BasicSigningTestBase : HasSigner {
         // TODO - do we want 0 byte data like this or just allow null?
         val finalChunkResult = signer.signChunk(ByteArray(0), prevSignature, chunkedSigningConfig)
         assertEquals(EXPECTED_FINAL_CHUNK_SIGNATURE, finalChunkResult.signature.decodeToString())
+    }
+
+    @Test
+    public fun testSigningCopiesInput(): TestResult = runTest {
+        // sanity test the signer doesn't mutate the input and instead copies to a new request
+        val requestBuilder = HttpRequestBuilder().apply {
+            method = HttpMethod.POST
+            url.scheme = Protocol.HTTP
+            url.host = Host.Domain("test.amazonaws.com")
+            url.path = "/"
+            headers.append("Host", "test.amazonaws.com")
+            headers.appendAll("x-amz-archive-description", listOf("test", "test"))
+            body = ByteArrayContent("body".encodeToByteArray())
+            headers.append("Content-Length", body.contentLength?.toString() ?: "0")
+        }
+
+        val request = requestBuilder.build()
+
+        val result = signer.sign(request, defaultSigningConfig)
+
+        val originalHeaders = listOf("Content-Length", "Host", "x-amz-archive-description")
+        val updatedHeaders = listOf("X-Amz-Date", "X-Amz-Security-Token", "Authorization")
+
+        assertEquals(originalHeaders.size, requestBuilder.headers.names().size)
+        assertEquals(originalHeaders.size, request.headers.names().size)
+        assertEquals(originalHeaders.size + updatedHeaders.size, result.output.headers.names().size)
+
+        originalHeaders.forEach { name ->
+            assertTrue(requestBuilder.headers.contains(name), "${requestBuilder.headers} did not contain $name")
+            assertTrue(request.headers.contains(name), "${request.headers} did not contain $name")
+            assertTrue(result.output.headers.contains(name), "${result.output.headers} did not contain $name")
+        }
+
+        updatedHeaders.forEach { name ->
+            assertFalse(requestBuilder.headers.contains(name), "${requestBuilder.headers} contained $name")
+            assertFalse(request.headers.contains(name), "${request.headers} contained $name")
+            assertTrue(result.output.headers.contains(name), "${result.output.headers} did not contain $name")
+        }
     }
 }
