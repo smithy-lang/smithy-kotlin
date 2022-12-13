@@ -47,8 +47,12 @@ class UnionGeneratorTest {
              * Documentation for MyUnion
              */
             public sealed class MyUnion {
-                public data class Bar(val value: kotlin.Int) : test.model.MyUnion()
-                public data class Baz(val value: kotlin.Int) : test.model.MyUnion()
+                public data class Bar(val value: kotlin.Int) : test.model.MyUnion() {
+                }
+            
+                public data class Baz(val value: kotlin.Int) : test.model.MyUnion() {
+                }
+            
                 public data class Blz(val value: kotlin.ByteArray) : test.model.MyUnion() {
             
                     override fun hashCode(): kotlin.Int {
@@ -66,12 +70,18 @@ class UnionGeneratorTest {
                         return true
                     }
                 }
+            
                 /**
                  * Documentation for foo
                  */
-                public data class Foo(val value: kotlin.String) : test.model.MyUnion()
-                public data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion()
-                public object SdkUnknown : test.model.MyUnion()
+                public data class Foo(val value: kotlin.String) : test.model.MyUnion() {
+                }
+            
+                public data class MyStruct(val value: test.model.MyStruct) : test.model.MyUnion() {
+                }
+            
+                public object SdkUnknown : test.model.MyUnion() {
+                }
             
                 /**
                  * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
@@ -219,8 +229,11 @@ class UnionGeneratorTest {
 
         val expectedClassDecl = """
             public sealed class MyUnion {
-                public data class Foo(val value: test.model.MyStruct) : test.model.MyUnion()
-                public object SdkUnknown : test.model.MyUnion()
+                public data class Foo(val value: test.model.MyStruct) : test.model.MyUnion() {
+                }
+            
+                public object SdkUnknown : test.model.MyUnion() {
+                }
             
                 /**
                  * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Throws an exception if the [MyUnion] is not a
@@ -232,6 +245,79 @@ class UnionGeneratorTest {
                  * Casts this [MyUnion] as a [Foo] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [Foo].
                  */
                 public fun asFooOrNull(): test.model.MyStruct? = (this as? MyUnion.Foo)?.value
+            }
+        """.trimIndent()
+
+        contents.shouldContainWithDiff(expectedClassDecl)
+    }
+
+    @Test
+    fun `it generates sensitive unions`() {
+        val contents = generateUnion(
+            """
+                @sensitive
+                union MyUnion {
+                    foo: String,
+                    bar: Integer,
+                    baz: MyStruct
+                }
+
+                structure MyStruct {
+                    qux: String
+                }
+            """,
+        )
+
+        val expectedClassDecl = """
+            public sealed class MyUnion {
+                public data class Bar(val value: kotlin.Int) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                }
+            
+                public data class Baz(val value: test.model.MyStruct) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                }
+            
+                public data class Foo(val value: kotlin.String) : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                }
+            
+                public object SdkUnknown : test.model.MyUnion() {
+                    override fun toString(): kotlin.String = "MyUnion(*** Sensitive Data Redacted ***)"
+                }
+            
+                /**
+                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Throws an exception if the [MyUnion] is not a
+                 * [Bar].
+                 */
+                public fun asBar(): kotlin.Int = (this as MyUnion.Bar).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Bar] and retrieves its [kotlin.Int] value. Returns null if the [MyUnion] is not a [Bar].
+                 */
+                public fun asBarOrNull(): kotlin.Int? = (this as? MyUnion.Bar)?.value
+            
+                /**
+                 * Casts this [MyUnion] as a [Baz] and retrieves its [test.model.MyStruct] value. Throws an exception if the [MyUnion] is not a
+                 * [Baz].
+                 */
+                public fun asBaz(): test.model.MyStruct = (this as MyUnion.Baz).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Baz] and retrieves its [test.model.MyStruct] value. Returns null if the [MyUnion] is not a [Baz].
+                 */
+                public fun asBazOrNull(): test.model.MyStruct? = (this as? MyUnion.Baz)?.value
+            
+                /**
+                 * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Throws an exception if the [MyUnion] is not a
+                 * [Foo].
+                 */
+                public fun asFoo(): kotlin.String = (this as MyUnion.Foo).value
+            
+                /**
+                 * Casts this [MyUnion] as a [Foo] and retrieves its [kotlin.String] value. Returns null if the [MyUnion] is not a [Foo].
+                 */
+                public fun asFooOrNull(): kotlin.String? = (this as? MyUnion.Foo)?.value
             }
         """.trimIndent()
 
