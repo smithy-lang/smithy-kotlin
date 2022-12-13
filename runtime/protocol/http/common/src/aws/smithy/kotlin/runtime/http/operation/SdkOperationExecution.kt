@@ -34,38 +34,86 @@ import aws.smithy.kotlin.runtime.io.middleware.decorate as decorateHandler
 public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
 
 /**
- * Configure the execution of an operation from [Request] to [Response]
+ * Configure the execution of an operation from [Request] to [Response].
  *
  * An operation has several "phases" of its lifecycle that can be intercepted and customized.
+ * Technically any phase can act on the request or the response. The phases are named with their intended use; however,
+ * nothing prevents e.g. registering something in [initialize] that acts on the output type though.
+ *
+ * ## Middleware Phases
+ *
+ * ```
+ * Initialize ---> <Serialize> ---> Mutate
+ *                                     |
+ *                                     v
+ *                                  <Retry>
+ *                                     |
+ *                                     v
+ *                              +----------------+
+ *                              |  OnEachAttempt |
+ *                              |      |         |
+ *                              |      v         |
+ *                              | <Deserialize>  |
+ *                              |      |         |
+ *                              |      v         |
+ *                              |   <Signing>    |
+ *                              |      |         |
+ *                              |      v         |
+ *                              |   Receive      |
+ *                              |      |         |
+ *                              |      v         |
+ *                              |  <HttpClient>  |
+ *                              +----------------+
+ * ```
+ *
+ * In the above diagram the phase relationships and sequencing are shown. Requests start at [initialize] and proceed
+ * until the actual HTTP client engine call. The response then is returned up the call stack and traverses the phases
+ * in reverse.
+ *
+ * Phases enclosed in brackets `<>` are implicit phases that are always present and cannot be intercepted directly
+ * (only one is allowed to exist). These are usually configured directly when the operation is built.
+ *
+ * ### Default Behaviors
+ *
+ * By default, every operation is:
+ * * Retried by default using the configured [retryStrategy] and [retryPolicy].
+ * * Signed using the configured [signer]
  */
 @InternalApi
 public class SdkOperationExecution<Request, Response> {
 
-    // technically any phase can act as on the request or the response. The phases
-    // are described with their intended use, nothing prevents e.g. registering
-    // something in "initialize" that acts on the output type though.
-
     /**
-     * Prepare the input [Request] (or finalize the [Response]) e.g. set any default parameters if needed
+     * **Request Middlewares**: Prepare the input [Request] (e.g. set any default parameters if needed) before
+     * serialization
+     *
+     * **Response Middlewares**: Finalize the [Response] before returning it to the caller
      */
     public val initialize: Phase<OperationRequest<Request>, Response> = Phase<OperationRequest<Request>, Response>()
 
     /**
-     * Modify the outgoing HTTP request. This phase runs BEFORE the retry loop and is suitable for any
-     * middleware that only needs to run once and does not need to modify the outgoing request per/attempt.
+     * **Request Middlewares**: Modify the outgoing HTTP request. This phase runs BEFORE the retry loop and
+     * is suitable for any middleware that only needs to run once and does not need to modify the outgoing request
+     * per/attempt.
      *
      * At this phase the [Request] (operation input) has been serialized to an HTTP request.
+     *
+     * **Response Middlewares**: Modify the output after deserialization
      */
     public val mutate: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
     /**
-     * Modify the outgoing HTTP request. This phase runs on every attempt.
+     * **Request Middlewares**: Modify the outgoing HTTP request. This phase is conceptually the same as [mutate]
+     * but it runs on every attempt. Each attempt will not see modifications made by previous attempts.
+     *
+     * **Response Middlewares**: Modify the output after deserialization on a per/attempt basis.
      */
-    // FIXME - this is temporary until we can refactor to interceptors
     public val onEachAttempt: Phase<SdkHttpRequest, Response> = Phase<SdkHttpRequest, Response>()
 
     /**
-     * First chance to intercept before deserialization into operation output type [Response].
+     * **Request Middlewares**: First chance to intercept after signing (and last chance before the final request is sent).
+     *
+     * **Response Middlewares**: First chance to intercept after the raw HTTP response is received and before deserialization
+     * into operation output type [Response].
      */
     public val receive: Phase<SdkHttpRequest, HttpCall> = Phase<SdkHttpRequest, HttpCall>()
 
@@ -89,25 +137,6 @@ public class SdkOperationExecution<Request, Response> {
 /**
  * Decorate the "raw" [HttpHandler] with the execution phases (middleware) of this operation and
  * return a handler to be used specifically for the given operation.
- *
- * Initialize ---> Serialize ---> Mutate ---> Retry
- *                                             |
- *                                             v
- *                                     +----------------+
- *                                     |  OnEachAttempt |
- *                                     |      |         |
- *                                     |      v         |
- *                                     |  Deserialize   |
- *                                     |      |         |
- *                                     |      v         |
- *                                     |   Signing      |
- *                                     |      |         |
- *                                     |      v         |
- *                                     |   Receive      |
- *                                     |      |         |
- *                                     |      v         |
- *                                     |   HttpClient   |
- *                                     +----------------+
  */
 internal fun <Request, Response> SdkOperationExecution<Request, Response>.decorate(
     handler: HttpHandler,
@@ -174,12 +203,6 @@ private class HttpAuthHandler<Output>(
         signer.sign(request.context, request.subject)
         return inner.call(request)
     }
-}
-
-private class FinalizeHandler<Output> (
-    private val inner: Handler<SdkHttpRequest, Output>,
-) : Handler<SdkHttpRequest, Output> {
-    override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
 private class DeserializeHandler<Output>(

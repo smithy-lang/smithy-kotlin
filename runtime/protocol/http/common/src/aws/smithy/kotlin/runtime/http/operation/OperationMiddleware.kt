@@ -33,7 +33,8 @@ public interface MutateMiddleware<Response> : Middleware<SdkHttpRequest, Respons
 /**
  * A middleware that only mutates the outgoing [SdkHttpRequest].
  *
- * NOTE: This can be applied to any phase that uses [SdkHttpRequest] as it's input type (e.g. mutate, finalize, receive)
+ * NOTE: This can be applied to any phase that uses [SdkHttpRequest] as it's input type
+ * (e.g. mutate, onEachAttempt, receive)
  */
 @InternalApi
 public interface ModifyRequestMiddleware : ModifyRequest<SdkHttpRequest> {
