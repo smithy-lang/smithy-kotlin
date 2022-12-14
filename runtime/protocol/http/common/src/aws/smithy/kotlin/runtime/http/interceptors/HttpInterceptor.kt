@@ -11,6 +11,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.util.Attributes
+import kotlin.reflect.cast
 
 public typealias HttpInterceptor = Interceptor<Any, Any, HttpRequest, HttpResponse>
 
@@ -28,20 +29,28 @@ private data class HttpInputInterceptorContext<I>(
 ) : RequestInterceptorContext<I>, Attributes by executionContext
 
 private data class HttpProtocolRequestInterceptorContext<I>(
-    override var request: I,
-    override val protocolRequest: HttpRequest,
+    override val request: I,
+    override var protocolRequest: HttpRequest,
     private val executionContext: ExecutionContext,
 ) : ProtocolRequestInterceptorContext<I, HttpRequest>, Attributes by executionContext
 
 private data class HttpProtocolResponseInterceptorContext<I>(
-    override var request: I,
+    override val request: I,
     override val protocolRequest: HttpRequest,
-    override val protocolResponse: HttpResponse,
+    override var protocolResponse: HttpResponse,
     private val executionContext: ExecutionContext,
 ) : ProtocolResponseInterceptorContext<I, HttpRequest, HttpResponse>, Attributes by executionContext
 
+private data class HttpAttemptInterceptorContext<I, O>(
+    override val request: I,
+    override var response: Result<O>,
+    override val protocolRequest: HttpRequest,
+    override val protocolResponse: HttpResponse?,
+    private val executionContext: ExecutionContext,
+) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse?>, Attributes by executionContext
+
 private data class HttpInputOutputInterceptorContext<I, O>(
-    override var request: I,
+    override val request: I,
     override var response: Result<O>,
     private val call: HttpCall,
     private val executionContext: ExecutionContext,
@@ -52,7 +61,7 @@ private data class HttpInputOutputInterceptorContext<I, O>(
 }
 
 private data class HttpFinalInterceptorContext<I, O>(
-    override var request: I,
+    override val request: I,
     override var response: Result<O>,
     private val call: HttpCall?,
     private val executionContext: ExecutionContext,
@@ -66,12 +75,15 @@ private data class HttpFinalInterceptorContext<I, O>(
 //         Input and output can never be null but this will require changing a bunch of generics elsewhere to
 //         add similar bounds.
 // FIXME - don't love this type name
+// FIXME - kdoc
 internal class InterceptorExecutor<I, O>(
     private val execContext: ExecutionContext,
     private val interceptors: List<HttpInterceptor>,
 ) {
 
     // this changes as execution progresses, it represents the most up-to-date version of the operation input
+    // if we begin executing an operation at all it is guaranteed to exist because `readBeforeExecution` is the first
+    // thing invoked when executing a request
     private var _lastInput: I? = null
 
     private fun <T> assertType(phase: String, result: Result<Any>): Result<T> {
@@ -91,11 +103,12 @@ internal class InterceptorExecutor<I, O>(
                 block(interceptor)
             }
 
-            if (prev.isFailure) {
-                val prevEx = prev.exceptionOrNull()!!
-                curr.exceptionOrNull()?.addSuppressed(prevEx)
-            }
-            curr
+            curr.fold({ prev }, {
+                if (prev.isFailure) {
+                    it.addSuppressed(prev.exceptionOrNull()!!)
+                }
+                Result.failure(it)
+            },)
         }
 
     fun readBeforeExecution(input: I): Result<I> {
@@ -108,16 +121,19 @@ internal class InterceptorExecutor<I, O>(
         return Result.success(input)
     }
 
-    fun modifyBeforeSerialization(input: I): Result<I> {
+    fun modifyBeforeSerialization(input: I): I {
+        val ktype = checkNotNull(input)::class
         val context = HttpInputInterceptorContext(input as Any, execContext)
-        val modified = runCatching {
-            interceptors.fold(context) { ctx, interceptor ->
-                context.request = interceptor.modifyBeforeSerialization(ctx)
-                ctx
-            }.request
-        }
+        val modified = interceptors.fold(context) { ctx, interceptor ->
+            val modified = interceptor.modifyBeforeSerialization(ctx)
+            check(ktype.isInstance(modified)) {
+                "modifyBeforeSerialization invalid type conversion: found ${modified::class}; expected $ktype"
+            }
+            context.request = modified
+            ctx
+        }.request
 
-        return assertType("modifyBeforeSerialization", modified)
+        return ktype.cast(modified)
     }
 
     fun readBeforeSerialization(input: I) {
@@ -145,23 +161,40 @@ internal class InterceptorExecutor<I, O>(
         interceptors.forEach { block(it, context) }
     }
 
+    private inline fun modifyHttpRequestHook(
+        request: HttpRequest,
+        block: (HttpInterceptor, context: HttpProtocolRequestInterceptorContext<Any>) -> HttpRequest,
+    ): HttpRequest {
+        val input = checkNotNull(_lastInput)
+        val context = HttpProtocolRequestInterceptorContext(input as Any, request, execContext)
+        val modified = runCatching {
+            interceptors.fold(context) { ctx, interceptor ->
+                context.protocolRequest = block(interceptor, context)
+                ctx
+            }
+        }
+        return modified.getOrThrow().protocolRequest
+    }
+
     fun readAfterSerialization(request: HttpRequest) = readHttpHook(request) {
             interceptor, context ->
         interceptor.readAfterSerialization(context)
     }
 
-    fun modifyBeforeRetryLoop(): HttpRequest {
-        TODO()
-    }
+    fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest =
+        modifyHttpRequestHook(request) { interceptor, context ->
+            interceptor.modifyBeforeRetryLoop(context)
+        }
 
-    fun readBeforeAttempt(request: HttpRequest) = readHttpHook(request) {
-            interceptor, context ->
-        interceptor.readBeforeAttempt(context)
-    }
+    fun readBeforeAttempt(request: HttpRequest) =
+        readHttpHook(request) { interceptor, context ->
+            interceptor.readBeforeAttempt(context)
+        }
 
-    fun modifyBeforeSigning(): HttpRequest {
-        TODO()
-    }
+    fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
+        modifyHttpRequestHook(request) { interceptor, context ->
+            interceptor.modifyBeforeSigning(context)
+        }
 
     fun readBeforeSigning(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
         interceptor.readBeforeSigning(context)
@@ -171,9 +204,10 @@ internal class InterceptorExecutor<I, O>(
         interceptor.readAfterSigning(context)
     }
 
-    fun modifyBeforeTransmit(request: HttpRequest): HttpRequest {
-        TODO()
-    }
+    fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
+        modifyHttpRequestHook(request) { interceptor, context ->
+            interceptor.modifyBeforeSigning(context)
+        }
 
     fun readBeforeTransmit(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
         interceptor.readBeforeTransmit(context)
@@ -184,8 +218,16 @@ internal class InterceptorExecutor<I, O>(
             interceptor.readAfterTransmit(context)
         }
 
-    fun modifyBeforeDeserialization() {
-        TODO()
+    fun modifyBeforeDeserialization(call: HttpCall): HttpResponse {
+        val input = checkNotNull(_lastInput)
+        val context = HttpProtocolResponseInterceptorContext(input as Any, call.request, call.response, execContext)
+        val modified = runCatching {
+            interceptors.fold(context) { ctx, interceptor ->
+                context.protocolResponse = interceptor.modifyBeforeDeserialization(context)
+                ctx
+            }
+        }
+        return modified.getOrThrow().protocolResponse
     }
 
     fun readBeforeDeserialization(call: HttpCall) =
@@ -200,12 +242,34 @@ internal class InterceptorExecutor<I, O>(
         interceptors.forEach { interceptor -> interceptor.readAfterDeserialization(context) }
     }
 
-    fun modifyBeforeAttemptCompletion() {
-        TODO()
+    fun modifyBeforeAttemptCompletion(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?): Result<O> {
+        val input = checkNotNull(_lastInput)
+
+        @Suppress("UNCHECKED_CAST")
+        val context = HttpAttemptInterceptorContext(input as Any, result as Result<Any>, httpRequest, httpResponse, execContext)
+
+        val modified = runCatching {
+            interceptors.fold(context) { ctx, interceptor ->
+                val modified = interceptor.modifyBeforeAttemptCompletion(ctx)
+                assertType<O>("modifyBeforeAttemptCompletion", modified)
+                ctx.response = modified
+                ctx
+            }
+        }.getOrThrow().response
+
+        return assertType("modifyBeforeAttemptCompletion", modified)
     }
 
-    fun readAfterAttempt() {
-        TODO()
+    fun readAfterAttempt(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?) {
+        val input = checkNotNull(_lastInput)
+
+        @Suppress("UNCHECKED_CAST")
+        val context = HttpAttemptInterceptorContext(input as Any, result as Result<Any>, httpRequest, httpResponse, execContext)
+        val readResult = executeAll { interceptor ->
+            interceptor.readAfterAttempt(context)
+        }
+
+        return readResult.getOrThrow()
     }
 
     fun modifyBeforeCompletion(result: Result<O>): Result<O> {
