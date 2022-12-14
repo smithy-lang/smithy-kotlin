@@ -9,6 +9,7 @@ import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.KotlinCodegenPlugin
 import software.amazon.smithy.kotlin.codegen.KotlinSettings
 import software.amazon.smithy.kotlin.codegen.core.*
+import software.amazon.smithy.kotlin.codegen.inferService
 import software.amazon.smithy.kotlin.codegen.model.OperationNormalizer
 import software.amazon.smithy.kotlin.codegen.model.shapes
 import software.amazon.smithy.kotlin.codegen.rendering.protocol.ProtocolGenerator
@@ -21,12 +22,8 @@ import software.amazon.smithy.model.shapes.SmithyIdlModelSerializer
 import software.amazon.smithy.model.validation.ValidatedResultException
 import java.net.URL
 
-/**
- * This file houses classes and functions to help with testing with Smithy models.
- *
- * These functions should be relatively low-level and deal directly with types provided
- * by smithy-codegen.
- */
+// This file houses classes and functions to help with testing with Smithy models.
+// These functions should be relatively low-level and deal directly with types provided by smithy-codegen.
 
 /**
  * Unless necessary to deviate for test reasons, the following literals should be used in test models:
@@ -35,7 +32,7 @@ import java.net.URL
  *  namespace: TestDefault.NAMESPACE
  *  service name: "Test"
  */
-internal object TestModelDefault {
+object TestModelDefault {
     const val SMITHY_IDL_VERSION = "1"
     const val MODEL_VERSION = "1.0.0"
     const val NAMESPACE = "com.test"
@@ -64,7 +61,7 @@ private fun Model.applyKotlinCodegenTransforms(serviceShapeId: String?): Model {
 /**
  * Load and initialize a model from a Java resource URL
  */
-internal fun URL.toSmithyModel(serviceShapeId: String? = null): Model {
+fun URL.toSmithyModel(serviceShapeId: String? = null): Model {
     val model = Model.assembler()
         .addImport(this)
         .discoverModels()
@@ -98,7 +95,7 @@ fun String.toSmithyModel(sourceLocation: String? = null, serviceShapeId: String?
  *
  * NOTE: this is used for debugging / unit test generation, please don't remove.
  */
-internal fun Model.toSmithyIDL(): String {
+fun Model.toSmithyIDL(): String {
     val builtInModelIds = setOf("smithy.test.smithy", "aws.auth.smithy", "aws.protocols.smithy", "aws.api.smithy")
     val ms: SmithyIdlModelSerializer = SmithyIdlModelSerializer.builder().build()
     val node = ms.serialize(this)
@@ -167,7 +164,7 @@ fun Model.defaultSettings(
     generateDefaultBuildFiles: Boolean = false,
 ): KotlinSettings {
     val serviceId = if (serviceName == null) {
-        KotlinSettings.inferService(this)
+        this.inferService()
     } else {
         this.getShape(ShapeId.from("$packageName#$serviceName")).getOrNull()?.id
             ?: error("Unable to find service '$serviceName' in model.")
@@ -193,8 +190,8 @@ fun Model.defaultSettings(
     )
 }
 
-// Generate a Smithy IDL model based on input parameters and source string
-internal fun String.generateTestModel(
+/** Generate a Smithy IDL model based on input parameters and source string */
+fun String.generateTestModel(
     protocol: String,
     namespace: String = TestModelDefault.NAMESPACE,
     serviceName: String = TestModelDefault.SERVICE_NAME,
@@ -256,5 +253,5 @@ fun String.prependNamespaceAndService(
         
 
         """.trimIndent() + this.trimIndent()
-        )
+    )
 }

@@ -76,7 +76,7 @@ data class KotlinSettings(
 
             val serviceId = config.getStringMember(SERVICE)
                 .map(StringNode::expectShapeId)
-                .orElseGet { inferService(model) }
+                .orElseGet { model.inferService().also { LOGGER.info("Inferring service to generate as $it") } }
 
             val packageNode = config.expectObjectMember(PACKAGE_SETTINGS)
 
@@ -97,34 +97,6 @@ data class KotlinSettings(
                 sdkId,
                 BuildSettings.fromNode(build),
             )
-        }
-
-        // infer the service to generate from a model
-        internal fun inferService(model: Model): ShapeId {
-            val services = model.shapes(ServiceShape::class.java)
-                .map(Shape::getId)
-                .sorted()
-                .toList()
-
-            when {
-                services.isEmpty() -> {
-                    throw CodegenException(
-                        "Cannot infer a service to generate because the model does not " +
-                            "contain any service shapes",
-                    )
-                }
-                services.size > 1 -> {
-                    throw CodegenException(
-                        "Cannot infer service to generate because the model contains " +
-                            "multiple service shapes: " + services,
-                    )
-                }
-                else -> {
-                    val service = services[0]
-                    LOGGER.info("Inferring service to generate as: $service")
-                    return service
-                }
-            }
         }
     }
 
@@ -149,6 +121,29 @@ data class KotlinSettings(
             "The ${service.id} service supports the following unsupported protocols $resolvedProtocols. " +
                 "The following protocol generators were found on the class path: $supportedProtocolTraits",
         )
+    }
+}
+
+fun Model.inferService(): ShapeId {
+    val services = shapes(ServiceShape::class.java)
+        .map(Shape::getId)
+        .sorted()
+        .toList()
+
+    return when {
+        services.isEmpty() -> {
+            throw CodegenException(
+                "Cannot infer a service to generate because the model does not " +
+                        "contain any service shapes",
+            )
+        }
+        services.size > 1 -> {
+            throw CodegenException(
+                "Cannot infer service to generate because the model contains " +
+                        "multiple service shapes: " + services,
+            )
+        }
+        else -> services.single()
     }
 }
 

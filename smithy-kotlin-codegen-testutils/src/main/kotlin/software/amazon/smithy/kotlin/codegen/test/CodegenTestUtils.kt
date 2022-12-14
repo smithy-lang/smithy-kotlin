@@ -21,12 +21,9 @@ import software.amazon.smithy.model.shapes.*
 import software.amazon.smithy.model.traits.TimestampFormatTrait
 import software.amazon.smithy.utils.StringUtils
 
-/**
- * This file houses test classes and functions relating to the code generator (protocols, serializers, etc)
- *
- * Items contained here should be relatively high-level, utilizing all members of codegen classes, Smithy, and
- * anything else necessary for test functionality.
- */
+// This file houses test classes and functions relating to the code generator (protocols, serializers, etc)
+// Items contained here should be relatively high-level, utilizing all members of codegen classes, Smithy, and
+// anything else necessary for test functionality.
 
 /**
  * Container for type instances necessary for tests
@@ -37,8 +34,8 @@ data class TestContext(
     val generator: ProtocolGenerator,
 )
 
-// Execute the codegen and return the generated output
-internal fun testRender(
+/** Execute the codegen and return the generated output */
+fun testRender(
     members: List<MemberShape>,
     renderFn: (List<MemberShape>, KotlinWriter) -> Unit,
 ): String {
@@ -47,8 +44,8 @@ internal fun testRender(
     return writer.toString()
 }
 
-// Drive codegen for serialization of a given shape
-internal fun codegenSerializerForShape(model: Model, shapeId: String, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): String {
+/** Drive codegen for serialization of a given shape */
+fun codegenSerializerForShape(model: Model, shapeId: String, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): String {
     val ctx = model.newTestContext()
 
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
@@ -62,8 +59,8 @@ internal fun codegenSerializerForShape(model: Model, shapeId: String, location: 
     }
 }
 
-// Drive codegen for deserialization of a given shape
-internal fun codegenDeserializerForShape(model: Model, shapeId: String, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): String {
+/** Drive codegen for deserialization of a given shape */
+fun codegenDeserializerForShape(model: Model, shapeId: String, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): String {
     val ctx = model.newTestContext()
     val op = ctx.generationCtx.model.expectShape(ShapeId.from(shapeId))
 
@@ -77,8 +74,8 @@ internal fun codegenDeserializerForShape(model: Model, shapeId: String, location
     }
 }
 
-// Drive codegen for serializer of a union of a given shape
-internal fun codegenUnionSerializerForShape(model: Model, shapeId: String): String {
+/** Drive codegen for serializer of a union of a given shape */
+fun codegenUnionSerializerForShape(model: Model, shapeId: String): String {
     val ctx = model.newTestContext()
 
     val bindingIndex = HttpBindingIndex.of(ctx.generationCtx.model)
@@ -98,8 +95,8 @@ internal fun codegenUnionSerializerForShape(model: Model, shapeId: String): Stri
     }
 }
 
-// Retrieves Response Document members for HttpTrait-enabled protocols
-internal fun TestContext.responseMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
+/** Retrieves response document members for HttpTrait-enabled protocols */
+fun TestContext.responseMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getResponseBindings(shape)
 
@@ -109,8 +106,8 @@ internal fun TestContext.responseMembers(shape: Shape, location: HttpBinding.Loc
         .map { it.member }
 }
 
-// Retrieves Request Document members for HttpTrait-enabled protocols
-internal fun TestContext.requestMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
+/** Retrieves Request Document members for HttpTrait-enabled protocols */
+fun TestContext.requestMembers(shape: Shape, location: HttpBinding.Location = HttpBinding.Location.DOCUMENT): List<MemberShape> {
     val bindingIndex = HttpBindingIndex.of(this.generationCtx.model)
     val responseBindings = bindingIndex.getRequestBindings(shape)
 
@@ -120,21 +117,21 @@ internal fun TestContext.requestMembers(shape: Shape, location: HttpBinding.Loca
         .map { it.member }
 }
 
-internal fun TestContext.toGenerationContext(): GenerationContext =
+fun TestContext.toGenerationContext(): GenerationContext =
     GenerationContext(generationCtx.model, generationCtx.symbolProvider, generationCtx.settings, generator)
 
 fun <T : Shape> TestContext.toRenderingContext(writer: KotlinWriter, forShape: T? = null): RenderingContext<T> =
     toGenerationContext().toRenderingContext(writer, forShape)
 
-// A HttpProtocolClientGenerator for testing
-internal class TestProtocolClientGenerator(
+/** An HttpProtocolClientGenerator for testing */
+class TestProtocolClientGenerator(
     ctx: ProtocolGenerator.GenerationContext,
     features: List<ProtocolMiddleware>,
     httpBindingResolver: HttpBindingResolver,
 ) : HttpProtocolClientGenerator(ctx, features, httpBindingResolver)
 
-// A HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies)
-internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
+/** An HttpBindingProtocolGenerator for testing (nothing is rendered for serializing/deserializing payload bodies) */
+class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     override val defaultTimestampFormat: TimestampFormatTrait.Format = TimestampFormatTrait.Format.EPOCH_SECONDS
     override fun getProtocolHttpBindingResolver(model: Model, serviceShape: ServiceShape): HttpBindingResolver =
         HttpTraitResolver(model, serviceShape, ProtocolContentTypes.consistent("application/json"))
@@ -192,7 +189,7 @@ internal class MockHttpProtocolGenerator : HttpBindingProtocolGenerator() {
     }
 }
 
-// Create a test harness with all necessary codegen types
+/** Create a test harness with all necessary codegen types */
 fun codegenTestHarnessForModelSnippet(
     generator: ProtocolGenerator,
     namespace: String = TestModelDefault.NAMESPACE,
@@ -219,8 +216,10 @@ data class CodegenTestHarness(
     val protocol: String,
 )
 
-// Create and use a writer to drive codegen from a function taking a writer.
-// Strip off comment and package preamble.
+/**
+ * Create and use a writer to drive codegen from a function taking a writer.
+ * Strip off comment and package preamble.
+ */
 fun generateCode(generator: (KotlinWriter) -> Unit): String {
     val packageDeclaration = "some-unique-thing-that-will-never-be-codegened"
     val writer = KotlinWriter(packageDeclaration)
