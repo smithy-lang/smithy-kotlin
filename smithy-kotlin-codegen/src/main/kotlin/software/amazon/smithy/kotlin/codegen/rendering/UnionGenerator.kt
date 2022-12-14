@@ -4,6 +4,7 @@
  */
 package software.amazon.smithy.kotlin.codegen.rendering
 
+import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.codegen.core.SymbolProvider
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.lang.KotlinTypes
@@ -12,6 +13,7 @@ import software.amazon.smithy.kotlin.codegen.model.hasTrait
 import software.amazon.smithy.kotlin.codegen.model.isBoxed
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.*
+import software.amazon.smithy.model.traits.SensitiveTrait
 import software.amazon.smithy.model.traits.StreamingTrait
 
 /**
@@ -23,13 +25,13 @@ class UnionGenerator(
     private val writer: KotlinWriter,
     private val shape: UnionShape,
 ) {
+    val symbol: Symbol = symbolProvider.toSymbol(shape)
 
     /**
      * Renders a Smithy union to a Kotlin sealed class
      */
     fun render() {
         check(!shape.allMembers.values.any { memberShape -> memberShape.memberName.equals("SdkUnknown", true) }) { "generating SdkUnknown would cause duplicate variant for union shape: $shape" }
-        val symbol = symbolProvider.toSymbol(shape)
         writer.renderDocumentation(shape)
         writer.renderAnnotations(shape)
         writer.openBlock("public sealed class #T {", symbol)
@@ -44,20 +46,21 @@ class UnionGenerator(
             writer.renderAnnotations(it)
             val variantName = it.unionVariantName()
             val variantSymbol = symbolProvider.toSymbol(it)
-            writer.writeInline("public data class #L(val value: #Q) : #Q()", variantName, variantSymbol, symbol)
-            when (model.expectShape(it.target).type) {
-                ShapeType.BLOB -> {
-                    writer.withBlock(" {", "}") {
-                        renderHashCode(model, listOf(it), symbolProvider, this)
-                        renderEquals(model, listOf(it), variantName, this)
-                    }
+            writer.withBlock("public data class #L(val value: #Q) : #Q() {", "}", variantName, variantSymbol, symbol) {
+                if (model.expectShape(it.target).type == ShapeType.BLOB) {
+                    renderHashCode(model, listOf(it), symbolProvider, this)
+                    renderEquals(model, listOf(it), variantName, this)
                 }
-                else -> writer.write("")
+
+                renderToString()
             }
+            writer.write("")
         }
 
         // generate the unknown which will always be last
-        writer.write("public object SdkUnknown : #Q()", symbol)
+        writer.withBlock("public object SdkUnknown : #Q() {", "}", symbol) {
+            renderToString()
+        }
 
         members.sortedBy { it.memberName }.forEach {
             val variantName = it.unionVariantName()
@@ -171,5 +174,15 @@ class UnionGenerator(
             write("")
             write("return true")
         }
+    }
+
+    private fun renderToString() {
+        if (shape.hasTrait<SensitiveTrait>()) {
+            writer.write(
+                """override fun toString(): #Q = "#T(*** Sensitive Data Redacted ***)"""",
+                KotlinTypes.String,
+                symbol,
+            )
+        } // else just use regular data class toString implementation
     }
 }
