@@ -86,6 +86,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFoo"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFoo-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -104,6 +105,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoInput"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooNoInput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -122,6 +124,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoOutput"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooNoOutput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -140,6 +143,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInput"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -158,6 +162,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutput"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -176,6 +181,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingOutputNoInput"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutputNoInput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -194,6 +200,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooStreamingInputNoOutput"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInputNoOutput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -212,6 +219,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooNoRequired"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooNoRequired-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
@@ -230,6 +238,7 @@ class HttpProtocolClientGeneratorTest {
                 operationName = "GetFooSomeRequired"
             }
         }
+        op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
         val rootSpan = config.tracer.createRootSpan("GetFooSomeRequired-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {

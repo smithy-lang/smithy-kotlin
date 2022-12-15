@@ -15,9 +15,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
-import aws.smithy.kotlin.runtime.io.readRemaining
 import aws.smithy.kotlin.runtime.time.Instant
 import aws.smithy.kotlin.runtime.util.get
 import aws.smithy.kotlin.runtime.util.net.Host
@@ -30,14 +28,12 @@ import kotlin.test.assertEquals
 @Suppress("HttpUrlsUsage")
 @OptIn(ExperimentalCoroutinesApi::class)
 public abstract class MiddlewareSigningTestBase : HasSigner {
-    private fun buildOperationWithChannel(
-        requestBody: String,
+    private fun buildOperation(
+        requestBody: String = "{\"TableName\": \"foo\"}",
         streaming: Boolean = false,
         replayable: Boolean = true,
         unsigned: Boolean = false,
-    ): Pair<SdkHttpOperation<Unit, HttpResponse>, SdkByteReadChannel?> {
-        val channel: SdkByteReadChannel? = if (streaming) SdkByteReadChannel(requestBody.encodeToByteArray()) else null
-
+    ): SdkHttpOperation<Unit, HttpResponse> {
         val operation: SdkHttpOperation<Unit, HttpResponse> = SdkHttpOperation.build {
             serializer = object : HttpSerialize<Unit> {
                 override suspend fun serialize(context: ExecutionContext, input: Unit): HttpRequestBuilder =
@@ -52,7 +48,7 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
                             true -> {
                                 object : HttpBody.ChannelContent() {
                                     override val contentLength: Long = requestBody.length.toLong()
-                                    override fun readFrom(): SdkByteReadChannel = channel as SdkByteReadChannel
+                                    override fun readFrom(): SdkByteReadChannel = SdkByteReadChannel(requestBody.encodeToByteArray())
                                     override val isOneShot: Boolean = !replayable
                                 }
                             }
@@ -72,22 +68,15 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
             }
         }
 
-        operation.signer = AwsHttpSigner {
+        operation.execution.signer = AwsHttpSigner {
             signer = this@MiddlewareSigningTestBase.signer
             credentialsProvider = testCredentialsProvider
             service = "demo"
             isUnsignedPayload = unsigned
         }
 
-        return Pair(operation, channel)
+        return operation
     }
-
-    private fun buildOperation(
-        requestBody: String = "{\"TableName\": \"foo\"}",
-        streaming: Boolean = false,
-        replayable: Boolean = true,
-        unsigned: Boolean = false,
-    ) = buildOperationWithChannel(requestBody, streaming, replayable, unsigned).first
 
     private suspend fun getSignedRequest(
         operation: SdkHttpOperation<Unit, HttpResponse>,
@@ -159,20 +148,13 @@ public abstract class MiddlewareSigningTestBase : HasSigner {
 
     @Test
     public fun testSignAwsChunkedStreamReplayable(): TestResult = runTest {
-        val (op, channel) = buildOperationWithChannel(
-            streaming = true,
-            replayable = true,
-            requestBody = "a".repeat(
-                AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1,
-            ),
-        )
+        val op = buildOperation(streaming = true, replayable = true, requestBody = "a".repeat(AwsHttpSigner.AWS_CHUNKED_THRESHOLD + 1))
         val expectedDate = "20201016T195600Z"
         val expectedSig = "AWS4-HMAC-SHA256 Credential=AKID/20201016/us-east-1/demo/aws4_request, " +
             "SignedHeaders=content-encoding;content-length;host;transfer-encoding;x-amz-archive-description;x-amz-date;x-amz-decoded-content-length;x-amz-security-token, " +
             "Signature=dec1a06b61f953afe430ce4a0f10ee8d5ad3d29696516c4ccda23a0aab6664d5"
 
         val signed = getSignedRequest(op)
-        channel?.readRemaining(SdkBuffer())
         assertEquals(expectedDate, signed.headers["X-Amz-Date"])
         assertEquals(expectedSig, signed.headers["Authorization"])
     }

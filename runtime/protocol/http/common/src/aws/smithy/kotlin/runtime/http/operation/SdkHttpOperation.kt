@@ -7,7 +7,6 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
-import aws.smithy.kotlin.runtime.http.auth.HttpSigner
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.Uuid
@@ -31,10 +30,6 @@ public class SdkHttpOperation<I, O> internal constructor(
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
 ) {
-
-    // FIXME - this is temporary until we refactor identity/auth APIs
-    public var signer: HttpSigner = HttpSigner.Anonymous
-
     init {
         val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
@@ -49,7 +44,6 @@ public class SdkHttpOperation<I, O> internal constructor(
     // NOTE: Using install isn't strictly necessary, it's just a pattern for self registration
     public fun install(middleware: InitializeMiddleware<I, O>) { middleware.install(this) }
     public fun install(middleware: MutateMiddleware<O>) { middleware.install(this) }
-    public fun install(middleware: FinalizeMiddleware<O>) { middleware.install(this) }
     public fun install(middleware: ReceiveMiddleware) { middleware.install(this) }
     public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
