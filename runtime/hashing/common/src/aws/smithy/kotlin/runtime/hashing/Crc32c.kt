@@ -101,7 +101,7 @@ private class CRC32CImpl {
         crc = localCrc
     }
 
-    fun getValue(): Int = crc.inv() and 0xffffffff.toInt()
+    fun getValue(): Int = crc.inv()
 
     fun update(b: Int) {
         crc = crc ushr 8 xor T[(T8_0_start + ((crc xor b) and 0xff))].toInt()
