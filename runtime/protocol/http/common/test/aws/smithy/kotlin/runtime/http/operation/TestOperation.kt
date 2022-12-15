@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
+import aws.smithy.kotlin.runtime.ErrorMetadata
+import aws.smithy.kotlin.runtime.ServiceErrorMetadata
+import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
@@ -29,3 +32,8 @@ fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): Sd
             service = "TestService"
         }
     }
+
+val RetryableServiceTestException = ServiceException("test exception").apply {
+    sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
+    sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ServiceException.ErrorType.Server
+}

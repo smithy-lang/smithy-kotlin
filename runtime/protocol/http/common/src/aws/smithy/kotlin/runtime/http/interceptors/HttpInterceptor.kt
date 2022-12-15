@@ -111,14 +111,12 @@ internal class InterceptorExecutor<I, O>(
             },)
         }
 
-    fun readBeforeExecution(input: I): Result<I> {
+    fun readBeforeExecution(input: I): Result<Unit> {
         _lastInput = input
         val context = HttpInputInterceptorContext(input as Any, execContext)
-        val readResult = executeAll { interceptor ->
+        return executeAll { interceptor ->
             interceptor.readBeforeExecution(context)
         }
-        readResult.getOrThrow()
-        return Result.success(input)
     }
 
     fun modifyBeforeSerialization(input: I): I {
@@ -140,7 +138,7 @@ internal class InterceptorExecutor<I, O>(
         // FIXME how important is it that modifyBeforeCompletion sees partial results (e.g. from modifyBeforeSerialization)?
         _lastInput = input
         val context = HttpInputInterceptorContext(input as Any, execContext)
-        interceptors.forEach { it.readBeforeExecution(context) }
+        interceptors.forEach { it.readBeforeSerialization(context) }
     }
 
     private inline fun readHttpHook(
@@ -206,7 +204,7 @@ internal class InterceptorExecutor<I, O>(
 
     fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
-            interceptor.modifyBeforeSigning(context)
+            interceptor.modifyBeforeTransmit(context)
         }
 
     fun readBeforeTransmit(request: HttpRequest) = readHttpHook(request) { interceptor, context ->
@@ -284,14 +282,16 @@ internal class InterceptorExecutor<I, O>(
         @Suppress("UNCHECKED_CAST")
         val context = HttpFinalInterceptorContext(input as Any, result as Result<Any>, lastCall, execContext)
 
-        return runCatching {
+        val modifyResult = runCatching {
             val modified = interceptors.fold(context) { ctx, interceptor ->
                 context.response = interceptor.modifyBeforeCompletion(ctx)
                 ctx
             }.response
 
             assertType<O>("modifyBeforeCompletion", modified)
-        }.getOrThrow()
+        }
+
+        return modifyResult.fold({ it }, { Result.failure(it) })
     }
 
     fun readAfterExecution(result: Result<O>) {
