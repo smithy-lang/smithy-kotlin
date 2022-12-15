@@ -145,7 +145,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     handler: HttpHandler,
     op: SdkHttpOperation<Request, Response>,
 ): Handler<OperationRequest<Request>, Response> {
-    val interceptors = InterceptorExecutor<Request, Response>(op.context, op.interceptors)
+    val interceptors = InterceptorExecutor<Request, Response>(op.context, op.interceptors, op.typeInfo)
     // ensure http calls are tracked
     receive.register(HttpCallMiddleware())
     // run before trace middleware because interceptors can modify right before sending to an engine

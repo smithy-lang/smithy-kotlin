@@ -16,7 +16,7 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
  * Create a new test operation using [serialized] as the already serialized version of the input type [I]
  * and [deserialized] as the result of "deserialization" from an HTTP response.
  */
-fun <I, O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): SdkHttpOperation<I, O> =
+inline fun <reified I, reified O> newTestOperation(serialized: HttpRequestBuilder, deserialized: O): SdkHttpOperation<I, O> =
     SdkHttpOperation.build<I, O> {
         serializer = object : HttpSerialize<I> {
             override suspend fun serialize(context: ExecutionContext, input: I): HttpRequestBuilder = serialized

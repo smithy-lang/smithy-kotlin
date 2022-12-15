@@ -16,15 +16,15 @@ import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.time.Instant
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.collections.shouldNotContain
+import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.IllegalStateException
-import kotlin.test.Ignore
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.*
 
 private class TestException(override val message: String?) : IllegalStateException()
+private data class TestInput(val value: String)
+private data class TestOutput(val value: String)
 
 @ExperimentalCoroutinesApi
 class HttpOperationInterceptorTest {
@@ -199,7 +199,7 @@ class HttpOperationInterceptorTest {
         return sdkHttpClient(mockEngine)
     }
 
-    private suspend fun <I, O> roundTripWithInterceptors(
+    private suspend fun <I : Any, O : Any> roundTripWithInterceptors(
         input: I,
         op: SdkHttpOperation<I, O>,
         client: SdkHttpClient,
@@ -429,5 +429,67 @@ class HttpOperationInterceptorTest {
         )
 
         hooksFired.shouldContainInOrder(expected)
+    }
+
+    @Test
+    fun testModifyBeforeSerializationTypeFailure() = runTest {
+        val i1 = object : HttpInterceptor {
+            override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
+                val input = assertIs<TestInput>(context.request)
+                assertEquals("initial", input.value)
+                return TestInput("modified")
+            }
+        }
+
+        val i2 = object : HttpInterceptor {
+            override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
+                val input = assertIs<TestInput>(context.request)
+                assertEquals("modified", input.value)
+                return TestOutput("wrong")
+            }
+        }
+
+        val input = TestInput("initial")
+        val op = newTestOperation<TestInput, Unit>(HttpRequestBuilder(), Unit)
+        val client = newMockHttpClient()
+        val ex = assertFailsWith<IllegalStateException> {
+            roundTripWithInterceptors(input, op, client, i1, i2)
+        }
+
+        ex.message.shouldContain("modifyBeforeSerialization invalid type conversion: found class aws.smithy.kotlin.runtime.http.operation.TestOutput; expected class aws.smithy.kotlin.runtime.http.operation.TestInput")
+    }
+
+    @Ignore
+    @Test
+    fun testModifyBeforeAttemptCompletion() = runTest {
+        // modifyBeforeAttemptCompletion (output can change)
+        TODO()
+    }
+
+    @Test
+    fun testModifyBeforeCompletionTypeFailure() = runTest {
+        val i1 = object : HttpInterceptor {
+            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+                assertIs<TestOutput>(context.response.getOrThrow())
+                return Result.success(TestOutput("modified"))
+            }
+        }
+
+        val i2 = object : HttpInterceptor {
+            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+                val output = assertIs<TestOutput>(context.response.getOrThrow())
+                assertEquals("modified", output.value)
+                return Result.success("wrong")
+            }
+        }
+
+        val output = TestOutput("initial")
+        val op = newTestOperation<Unit, TestOutput>(HttpRequestBuilder(), output)
+        val client = newMockHttpClient()
+        val ex = assertFailsWith<IllegalStateException> {
+            roundTripWithInterceptors(Unit, op, client, i1, i2)
+        }
+
+        ex.message.shouldContain("modifyBeforeCompletion invalid type conversion: found class kotlin.String; expected class aws.smithy.kotlin.runtime.http.operation.TestOutput")
     }
 }

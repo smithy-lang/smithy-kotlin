@@ -7,19 +7,22 @@ package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.client.*
 import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
+import aws.smithy.kotlin.runtime.http.operation.OperationTypeInfo
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.util.Attributes
-import kotlin.reflect.cast
+import kotlin.reflect.KClass
 
 public typealias HttpInterceptor = Interceptor<Any, Any, HttpRequest, HttpResponse>
 
-//  Various contexts for each hook based on available information
+//  Various contexts for each hook based on available information.
+// NOTE: `Output` is a result type and may represent failure
 //
 // HttpInputInterceptorContext - Input only
 // HttpProtocolRequestInterceptorContext - Input + HttpRequest
 // HttpProtocolResponseInterceptorContext - Input + HttpRequest + HttpResponse
+// HttpAttemptInterceptorContext - Input + HttpRequest + maybe(HttpResponse) + Output
 // HttpInputOutputInterceptorContext - Input + HttpRequest + HttpResponse + Output
 // HttpFinalProtocolInterceptorContext - Input + maybe(HttpRequest) + maybe(HttpResponse) + Output
 
@@ -71,14 +74,13 @@ private data class HttpFinalInterceptorContext<I, O>(
     override val protocolResponse: HttpResponse? = call?.response
 }
 
-// FIXME - propagate `Any` bounds to I and O generics to remove unchecked casts to Result<Any>.
-//         Input and output can never be null but this will require changing a bunch of generics elsewhere to
-//         add similar bounds.
+// FIXME - investigate propagating Any as upper bounds for SdkHttpOperation <I,O> generics
 // FIXME - don't love this type name
 // FIXME - kdoc
 internal class InterceptorExecutor<I, O>(
     private val execContext: ExecutionContext,
     private val interceptors: List<HttpInterceptor>,
+    private val typeInfo: OperationTypeInfo,
 ) {
 
     // this changes as execution progresses, it represents the most up-to-date version of the operation input
@@ -86,10 +88,13 @@ internal class InterceptorExecutor<I, O>(
     // thing invoked when executing a request
     private var _lastInput: I? = null
 
-    private fun <T> assertType(phase: String, result: Result<Any>): Result<T> {
+    private fun <T> checkType(phase: String, expected: KClass<*>, actual: Any): T {
+        check(expected.isInstance(actual)) { "$phase invalid type conversion: found ${actual::class}; expected $expected" }
         @Suppress("UNCHECKED_CAST")
-        return result as? Result<T> ?: error("$phase invalid type conversion: found ${result::class}")
+        return actual as T
     }
+    private fun <T> checkResultType(phase: String, result: Result<Any>, expected: KClass<*>): Result<T> =
+        result.map { checkType(phase, expected, it) }
 
     /**
      * Execute all interceptors and return a [Result]. If the result is success then
@@ -120,18 +125,16 @@ internal class InterceptorExecutor<I, O>(
     }
 
     fun modifyBeforeSerialization(input: I): I {
-        val ktype = checkNotNull(input)::class
         val context = HttpInputInterceptorContext(input as Any, execContext)
         val modified = interceptors.fold(context) { ctx, interceptor ->
             val modified = interceptor.modifyBeforeSerialization(ctx)
-            check(ktype.isInstance(modified)) {
-                "modifyBeforeSerialization invalid type conversion: found ${modified::class}; expected $ktype"
-            }
+            checkType<I>("modifyBeforeSerialization", typeInfo.inputType, modified)
             context.request = modified
             ctx
         }.request
 
-        return ktype.cast(modified)
+        @Suppress("UNCHECKED_CAST")
+        return modified as I
     }
 
     fun readBeforeSerialization(input: I) {
@@ -246,16 +249,14 @@ internal class InterceptorExecutor<I, O>(
         @Suppress("UNCHECKED_CAST")
         val context = HttpAttemptInterceptorContext(input as Any, result as Result<Any>, httpRequest, httpResponse, execContext)
 
-        val modified = runCatching {
-            interceptors.fold(context) { ctx, interceptor ->
-                val modified = interceptor.modifyBeforeAttemptCompletion(ctx)
-                assertType<O>("modifyBeforeAttemptCompletion", modified)
-                ctx.response = modified
-                ctx
-            }
-        }.getOrThrow().response
+        val modified = interceptors.fold(context) { ctx, interceptor ->
+            val modified = interceptor.modifyBeforeAttemptCompletion(ctx)
+            checkResultType<O>("modifyBeforeAttemptCompletion", modified, typeInfo.outputType)
+            ctx.response = modified
+            ctx
+        }.response
 
-        return assertType("modifyBeforeAttemptCompletion", modified)
+        return checkResultType("modifyBeforeAttemptCompletion", modified, typeInfo.outputType)
     }
 
     fun readAfterAttempt(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?) {
@@ -283,15 +284,18 @@ internal class InterceptorExecutor<I, O>(
         val context = HttpFinalInterceptorContext(input as Any, result as Result<Any>, lastCall, execContext)
 
         val modifyResult = runCatching {
-            val modified = interceptors.fold(context) { ctx, interceptor ->
-                context.response = interceptor.modifyBeforeCompletion(ctx)
+            interceptors.fold(context) { ctx, interceptor ->
+                val modified = interceptor.modifyBeforeCompletion(ctx)
+                checkResultType<O>("modifyBeforeCompletion", modified, typeInfo.outputType)
+                ctx.response = modified
                 ctx
             }.response
-
-            assertType<O>("modifyBeforeCompletion", modified)
         }
 
-        return modifyResult.fold({ it }, { Result.failure(it) })
+        return modifyResult.fold(
+            { checkResultType("modifyBeforeCompletion", it, typeInfo.outputType) },
+            { Result.failure(it) },
+        )
     }
 
     fun readAfterExecution(result: Result<O>) {
