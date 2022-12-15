@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.14.1] - 12/15/2022
+
+### Features
+* Add HashingSource and HashingSink
+* Use `aws-chunked` content encoding for streaming requests
+
+### Fixes
+* [#759](https://github.com/awslabs/aws-sdk-kotlin/issues/759) Allow root trace spans to inherit their parent from current context
+* [#763](https://github.com/awslabs/smithy-kotlin/issues/763) Respect @sensitive trait when applied to container shape
+* [#759](https://github.com/awslabs/smithy-kotlin/issues/759) Fix `aws-chunked` requests in the CRT HTTP engine
+
 ## [0.14.0] - 12/01/2022
 
 ### Miscellaneous

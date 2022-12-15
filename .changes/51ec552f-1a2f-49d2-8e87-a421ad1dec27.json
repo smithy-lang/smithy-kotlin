@@ -1,8 +1,0 @@
-{
-    "id": "51ec552f-1a2f-49d2-8e87-a421ad1dec27",
-    "type": "bugfix",
-    "description": "Respect @sensitive trait when applied to container shape",
-    "issues": [
-        "awslabs/smithy-kotlin#763"
-    ]
-}
