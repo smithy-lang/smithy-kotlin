@@ -76,7 +76,7 @@ public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  * ### Default Behaviors
  *
  * By default, every operation is:
- * * Retried by default using the configured [retryStrategy] and [retryPolicy].
+ * * Retried using the configured [retryStrategy] and [retryPolicy].
  * * Signed using the configured [signer]
  */
 @InternalApi
@@ -129,7 +129,7 @@ public class SdkOperationExecution<Request, Response> {
     public var retryStrategy: RetryStrategy = StandardRetryStrategy()
 
     /**
-     * The retry policy to use. Defaults to [StandardRetryPolicy]
+     * The retry policy to use. Defaults to [StandardRetryPolicy.Default]
      */
     public var retryPolicy: RetryPolicy<Response> = StandardRetryPolicy.Default
 }
