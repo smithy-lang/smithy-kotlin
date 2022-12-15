@@ -1,0 +1,6 @@
+{
+    "id": "4c3348fe-3e51-411b-98e6-6ac2e6a2bba0",
+    "type": "bugfix",
+    "description": "Fix incorrect CRC32c output when trying to hash more than 7 bytes",
+    "module": "runtime"
+}
