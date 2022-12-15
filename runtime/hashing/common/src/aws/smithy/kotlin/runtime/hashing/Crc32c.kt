@@ -6,7 +6,6 @@ package aws.smithy.kotlin.runtime.hashing
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.experimental.and
-import kotlin.experimental.xor
 
 /**
  * Compute the CRC32C hash of the current [ByteArray]
@@ -64,9 +63,9 @@ public class Crc32c : Crc32Base() {
  */
 private class CRC32CImpl {
     /** the current CRC value, bit-flipped */
-    var crc = 0xffffffff
+    var crc = 0xffffffff.toInt()
 
-    fun reset() { crc = 0xffffffff }
+    fun reset() { crc = 0xffffffff.toInt() }
 
     fun update(b: ByteArray, offset: Int, length: Int) {
         var localCrc = crc
@@ -74,38 +73,38 @@ private class CRC32CImpl {
         var len = length
 
         while (len > 7) {
-            val c0 = (b[off + 0] xor localCrc.toByte()) and 0xff.toByte()
-            val c1 = (b[off + 1] xor ((localCrc ushr 8).toByte())) and 0xff.toByte()
+            val c0 = (b[off + 0].toInt() xor localCrc) and 0xff
             localCrc = localCrc ushr 8
-            val c2 = (b[off + 2] xor ((localCrc ushr 8).toByte())) and 0xff.toByte()
+            val c1 = (b[off + 1].toInt() xor localCrc) and 0xff
             localCrc = localCrc ushr 8
-            val c3 = (b[off + 3] xor ((localCrc ushr 8).toByte())) and 0xff.toByte()
-            localCrc = (T[T8_7_start + c0] xor T[T8_6_start + c1]) xor (T[T8_5_start + c2] xor T[T8_4_start + c3])
+            val c2 = (b[off + 2].toInt() xor localCrc) and 0xff
+            localCrc = localCrc ushr 8
+            val c3 = (b[off + 3].toInt() xor localCrc) and 0xff
+            localCrc = (T[T8_7_start + c0] xor T[T8_6_start + c1] xor T[T8_5_start + c2] xor T[T8_4_start + c3]).toInt()
 
             val c4 = b[off + 4] and 0xff.toByte()
             val c5 = b[off + 5] and 0xff.toByte()
             val c6 = b[off + 6] and 0xff.toByte()
             val c7 = b[off + 7] and 0xff.toByte()
 
-            localCrc = localCrc xor (T[T8_3_start + c4] xor T[T8_2_start + c5]) xor (T[T8_1_start + c6] xor T[T8_0_start + c7])
+            localCrc = localCrc xor (T[T8_3_start + c4] xor T[T8_2_start + c5] xor T[T8_1_start + c6] xor T[T8_0_start + c7]).toInt()
 
             off += 8
             len -= 8
         }
 
-        for (i in 1..len) {
-            localCrc = ((localCrc ushr 8) xor T[((T8_0_start + ((localCrc xor b[off].toLong()) and 0xff)).toInt())])
+        for (i in 0 until len) {
+            localCrc = (localCrc ushr 8 xor T[T8_0_start + (localCrc xor b[off].toInt() and 0xff)].toInt())
             off += 1
         }
 
-        // Publish localCrc out to object
         crc = localCrc
     }
 
-    fun getValue(): Long = crc.inv() and 0xffffffffL
+    fun getValue(): Int = crc.inv() and 0xffffffff.toInt()
 
     fun update(b: Int) {
-        crc = (crc ushr 8) xor (T[(T8_0_start + ((crc xor b.toLong()) and 0xff)).toInt()])
+        crc = crc ushr 8 xor T[(T8_0_start + ((crc xor b) and 0xff))].toInt()
     }
 
     companion object {
