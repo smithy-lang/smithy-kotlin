@@ -57,22 +57,16 @@ private data class RealHttpRequest(
  * Convert an HttpRequest back to an [HttpRequestBuilder]
  */
 public fun HttpRequest.toBuilder(): HttpRequestBuilder = when (this) {
-    is ImmutableHttpRequestBuilder -> builder
+    is ImmutableHttpRequestBuilder -> {
+        check(allowToBuilder) { "This is an immutable HttpRequest that should not be converted to a builder" }
+        builder
+    }
     is RealHttpRequest -> {
         val req = this
         HttpRequestBuilder().apply {
             method = req.method
             headers.appendAll(req.headers)
-            url {
-                scheme = req.url.scheme
-                host = req.url.host
-                port = req.url.port
-                path = req.url.path
-                parameters.appendAll(req.url.parameters)
-                fragment = req.url.fragment
-                userInfo = req.url.userInfo
-                forceQuery = req.url.forceQuery
-            }
+            url(req.url)
             body = req.body
         }
     }

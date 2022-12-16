@@ -243,7 +243,7 @@ private class HttpAuthHandler<Input, Output>(
     private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
-        val modified = interceptors.modifyBeforeSigning(request.subject.immutableView())
+        val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))
             .let { request.copy(subject = it.toBuilder()) }
 
         interceptors.readBeforeSigning(modified.subject.immutableView())
@@ -333,7 +333,7 @@ private class InterceptorTransmitMiddleware<I, O>(
     private val interceptors: InterceptorExecutor<I, O>,
 ) : Middleware<SdkHttpRequest, HttpCall> {
     override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {
-        val modified = interceptors.modifyBeforeTransmit(request.subject.immutableView())
+        val modified = interceptors.modifyBeforeTransmit(request.subject.immutableView(true))
             .let { request.copy(subject = it.toBuilder()) }
         interceptors.readBeforeTransmit(modified.subject.immutableView())
         val call = next.call(modified)

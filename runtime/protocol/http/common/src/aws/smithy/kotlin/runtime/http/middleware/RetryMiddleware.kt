@@ -21,7 +21,6 @@ import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.debug
 import aws.smithy.kotlin.runtime.tracing.traceSpan
 import aws.smithy.kotlin.runtime.tracing.withChildTraceSpan
-import aws.smithy.kotlin.runtime.util.get
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -36,7 +35,7 @@ internal class RetryMiddleware<I, O>(
     private val interceptors: InterceptorExecutor<I, O>,
 ) : Middleware<SdkHttpRequest, O> {
     override suspend fun <H : Handler<SdkHttpRequest, O>> handle(request: SdkHttpRequest, next: H): O {
-        val modified = interceptors.modifyBeforeRetryLoop(request.subject.immutableView())
+        val modified = interceptors.modifyBeforeRetryLoop(request.subject.immutableView(true))
             .let { request.copy(subject = it.toBuilder()) }
 
         var attempt = 1

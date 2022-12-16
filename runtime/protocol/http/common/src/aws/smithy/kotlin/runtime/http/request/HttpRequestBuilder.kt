@@ -36,10 +36,9 @@ public class HttpRequestBuilder private constructor(
     }
 }
 
-// TODO - calling `build()` on a request builder in an interceptor is going to result in multiple conversions back to a builder which is what we wanted to avoid...need to think about this more. Perhaps we define `build()` on `HttpRequestBuilder` interface or something?
-
 internal data class ImmutableHttpRequestBuilder(
     internal val builder: HttpRequestBuilder,
+    internal val allowToBuilder: Boolean,
 ) : HttpRequest {
     override val method: HttpMethod = builder.method
 
@@ -53,8 +52,18 @@ internal data class ImmutableHttpRequestBuilder(
     override val body: HttpBody = builder.body
 }
 
-// TODO - can we add a flag controlling if `toBuilder()` is allowed. This would force read-only hooks to stay read-only
-internal fun HttpRequestBuilder.immutableView(): HttpRequest = ImmutableHttpRequestBuilder(this)
+/**
+ * Create a read-only view of a builder. Often, we need a read-only view of a builder that _may_ get modified.
+ * This would normally require a round trip invoking [HttpRequestBuilder.build] and then converting that back
+ * to a builder using [HttpRequest.toBuilder]. Instead, we can create an immutable view of a builder that
+ * is cheap to convert to a builder.
+ *
+ * @param allowToBuilder flag controlling how this type will behave when [HttpRequest.toBuilder] is invoked. When
+ * false an exception will be thrown, otherwise it will succeed.
+ */
+internal fun HttpRequestBuilder.immutableView(
+    allowToBuilder: Boolean = false,
+): HttpRequest = ImmutableHttpRequestBuilder(this, allowToBuilder)
 
 // convenience extensions
 
