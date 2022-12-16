@@ -6,7 +6,6 @@
 package aws.smithy.kotlin.runtime.http.interceptors
 
 import aws.smithy.kotlin.runtime.client.*
-import aws.smithy.kotlin.runtime.http.operation.HttpOperationContext
 import aws.smithy.kotlin.runtime.http.operation.OperationTypeInfo
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -16,7 +15,7 @@ import kotlin.reflect.KClass
 
 public typealias HttpInterceptor = Interceptor<Any, Any, HttpRequest, HttpResponse>
 
-//  Various contexts for each hook based on available information.
+// Various contexts for each hook based on available information.
 // NOTE: `Output` is a result type and may represent failure
 //
 // HttpInputInterceptorContext - Input only
@@ -66,27 +65,35 @@ private data class HttpInputOutputInterceptorContext<I, O>(
 private data class HttpFinalInterceptorContext<I, O>(
     override val request: I,
     override var response: Result<O>,
-    private val call: HttpCall?,
+    override val protocolRequest: HttpRequest?,
+    override val protocolResponse: HttpResponse?,
     private val executionContext: ExecutionContext,
-) : ResponseInterceptorContext<I, O, HttpRequest?, HttpResponse?>, Attributes by executionContext {
+) : ResponseInterceptorContext<I, O, HttpRequest?, HttpResponse?>, Attributes by executionContext
 
-    override val protocolRequest: HttpRequest? = call?.request
-    override val protocolResponse: HttpResponse? = call?.response
-}
-
-// FIXME - investigate propagating Any as upper bounds for SdkHttpOperation <I,O> generics
-// FIXME - don't love this type name
-// FIXME - kdoc
+// TODO - investigate propagating Any as upper bounds for SdkHttpOperation <I,O> generics
+/**
+ * Fan-out facade over raw interceptors that adapts the internal view of an operation execution to the public facing
+ * view interceptor hooks see.
+ *
+ * @param execContext the operation [ExecutionContext]
+ * @param interceptors the list of interceptors to execute
+ * @param typeInfo the expected input/output type info used to keep hook implementations honest
+ */
 internal class InterceptorExecutor<I, O>(
     private val execContext: ExecutionContext,
     private val interceptors: List<HttpInterceptor>,
     private val typeInfo: OperationTypeInfo,
 ) {
 
-    // this changes as execution progresses, it represents the most up-to-date version of the operation input
-    // if we begin executing an operation at all it is guaranteed to exist because `readBeforeExecution` is the first
+    // This changes as execution progresses, it represents the most up-to-date version of the operation input.
+    // If we begin executing an operation at all it is guaranteed to exist because `readBeforeExecution` is the first
     // thing invoked when executing a request
     private var _lastInput: I? = null
+
+    // Track most up to date http request and response. The final two hooks do not have easy access to this data
+    // so we store it as execution progresses
+    private var _lastHttpRequest: HttpRequest? = null
+    private var _lastHttpResponse: HttpResponse? = null
 
     private fun <T> checkType(phase: String, expected: KClass<*>, actual: Any): T {
         check(expected.isInstance(actual)) { "$phase invalid type conversion: found ${actual::class}; expected $expected" }
@@ -138,7 +145,6 @@ internal class InterceptorExecutor<I, O>(
     }
 
     fun readBeforeSerialization(input: I) {
-        // FIXME how important is it that modifyBeforeCompletion sees partial results (e.g. from modifyBeforeSerialization)?
         _lastInput = input
         val context = HttpInputInterceptorContext(input as Any, execContext)
         interceptors.forEach { it.readBeforeSerialization(context) }
@@ -148,6 +154,7 @@ internal class InterceptorExecutor<I, O>(
         request: HttpRequest,
         block: (HttpInterceptor, context: HttpProtocolRequestInterceptorContext<Any>) -> Unit,
     ) {
+        _lastHttpRequest = request
         val input = checkNotNull(_lastInput)
         val context = HttpProtocolRequestInterceptorContext(input as Any, request, execContext)
         interceptors.forEach { block(it, context) }
@@ -188,6 +195,8 @@ internal class InterceptorExecutor<I, O>(
         }
 
     fun readBeforeAttempt(request: HttpRequest): Result<Unit> {
+        // reset http response on attempt to prevent an invalid final context
+        _lastHttpResponse = null
         val input = checkNotNull(_lastInput)
         val context = HttpProtocolRequestInterceptorContext(input as Any, request, execContext)
         return executeAll { interceptor ->
@@ -269,6 +278,8 @@ internal class InterceptorExecutor<I, O>(
 
     fun readAfterAttempt(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?) {
         val input = checkNotNull(_lastInput)
+        _lastHttpRequest = httpRequest
+        _lastHttpResponse = httpResponse
 
         @Suppress("UNCHECKED_CAST")
         val context = HttpAttemptInterceptorContext(input as Any, result as Result<Any>, httpRequest, httpResponse, execContext)
@@ -280,16 +291,11 @@ internal class InterceptorExecutor<I, O>(
     }
 
     fun modifyBeforeCompletion(result: Result<O>): Result<O> {
-        // FIXME - this is technically wrong because call implies we actually got a protocol response so a failure in any interceptor/middleware prior
-        // to getting a response would not have InterceptorContext.protocolRequest set. I'm not sure how much we care about that or not...what would you do with a request that
-        // wasn't actually sent in this final hook?
-        val lastCall = execContext.getOrNull(HttpOperationContext.HttpCallList)?.last()
-
         // SAFETY: If we started executing an operation at all the input will be set at least once
         val input = checkNotNull(_lastInput)
 
         @Suppress("UNCHECKED_CAST")
-        val context = HttpFinalInterceptorContext(input as Any, result as Result<Any>, lastCall, execContext)
+        val context = HttpFinalInterceptorContext(input as Any, result as Result<Any>, _lastHttpRequest, _lastHttpResponse, execContext)
 
         val modifyResult = runCatching {
             interceptors.fold(context) { ctx, interceptor ->
@@ -307,16 +313,11 @@ internal class InterceptorExecutor<I, O>(
     }
 
     fun readAfterExecution(result: Result<O>) {
-        // FIXME - this is technically wrong because call implies we actually got a protocol response so a failure in any interceptor/middleware prior
-        // to getting a response would not have InterceptorContext.protocolRequest set. I'm not sure how much we care about that or not...what would you do with a request that
-        // wasn't actually sent in this final hook?
-        val lastCall = execContext.getOrNull(HttpOperationContext.HttpCallList)?.last()
-
         // SAFETY: If we started executing an operation at all input will be set at least once
         val input = checkNotNull(_lastInput)
 
         @Suppress("UNCHECKED_CAST")
-        val context = HttpFinalInterceptorContext(input as Any, result as Result<Any>, lastCall, execContext)
+        val context = HttpFinalInterceptorContext(input as Any, result as Result<Any>, _lastHttpRequest, _lastHttpResponse, execContext)
         val readResult = executeAll { interceptor ->
             interceptor.readAfterExecution(context)
         }

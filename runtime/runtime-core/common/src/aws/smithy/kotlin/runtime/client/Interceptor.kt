@@ -7,8 +7,6 @@ package aws.smithy.kotlin.runtime.client
 
 import aws.smithy.kotlin.runtime.util.Attributes
 
-// TODO - rename to `SdkInterceptor` and `SdkHttpInterceptor`?
-
 /**
  * An interceptor allows injecting code into the request execution pipeline of a generated SDK client.
  *
@@ -32,10 +30,7 @@ public interface Interceptor<
     /**
      * A hook called at the start of an execution, before the SDK does anything else.
      *
-     * **When**: This will ALWAYS be called once per execution. The duration between
-     * invocation of this hook and [readAfterExecution] is very close to full duration of the execution
-     *
-     * **Available Information**: [RequestInterceptorContext.request] is always available.
+     * **When**: This will ALWAYS be called once per execution.
      *
      * **Error Behavior**: Errors raised by this hook will be stored until all interceptors have had their
      * `readBeforeExecution` hook invoked. Other hooks will then be skipped and execution will jump to
@@ -52,8 +47,8 @@ public interface Interceptor<
      * **When**: This will ALWAYS be called once per execution, except when a failure occurs earlier in the
      * request pipeline.
      *
-     * **Available Information**: [RequestInterceptorContext.request] is ALWAYS available. This request may have been
-     * modified by earlier [modifyBeforeSerialization] hooks, and may be modified further by later ones.
+     * **Modifications**: This request may have been  modified by earlier [modifyBeforeSerialization] hooks, and may
+     * be modified further by later ones.
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -67,8 +62,6 @@ public interface Interceptor<
      * request pipeline. The duration between invocation of this hook and [readAfterSerialization] is very
      * close to the amount of time spent marshalling the request.
      *
-     * **Available Information**: [RequestInterceptorContext.request] is ALWAYS available.
-     *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
@@ -81,9 +74,6 @@ public interface Interceptor<
      * request pipeline. The duration between invocation of this hook and [readBeforeDeserialization] is very
      * close to the amount of time spent marshalling the request.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available.
-     *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
@@ -95,9 +85,6 @@ public interface Interceptor<
      *
      * **When**: This will ALWAYS be called once per execution, except when a failure occurs earlier in the
      * request pipeline.
-     *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available.
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -113,9 +100,8 @@ public interface Interceptor<
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
      * request pipeline. This method may be invoked multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available. In the event of retries,
-     * the context will not include changes made in previous attempts (e.g. by request signers or other interceptors).
+     * **Modifications**: In the event of retries, the context will not include changes made in previous attempts
+     * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: Errors raised by this hook will be stored until all interceptors have had their
      * `readBeforeAttempt` hook invoked. Other hooks will then be skipped and execution will jump to
@@ -132,11 +118,9 @@ public interface Interceptor<
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
      * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available. The
-     * [ProtocolRequestInterceptorContext.protocolRequest] may have been modified by earlier `modifyBeforeSigning` hooks
-     * and may be modified further by later hooks. In the event of retries, the context will not include changes made
-     * in previous attempts (e.g. by request signers or other interceptors).
+     * **Modifications**: The [ProtocolRequestInterceptorContext.protocolRequest] may have been modified by earlier
+     * `modifyBeforeSigning` hooks and may be modified further by later hooks. In the event of retries, the context
+     * will not include changes made in previous attempts (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -150,12 +134,10 @@ public interface Interceptor<
      * A hook called before the transport request message is signed.
      *
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
-     * request pipeline. This method may be called multiple times in the event of retries. The duration between
-     * invocation of this hook and [readAfterSigning] is very close to the amount of time spent signing the request.
+     * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available. In the event of retries, the context
-     * will not include changes made in previous attempts (e.g. by request signers or other interceptors).
+     * **Modifications**: In the event of retries, the context  will not include changes made in previous attempts
+     * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -166,12 +148,10 @@ public interface Interceptor<
      * A hook called after the transport request message is signed.
      *
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
-     * request pipeline. This method may be called multiple times in the event of retries. The duration between
-     * invocation of this hook and [readBeforeSigning] is very close to the amount of time spent signing the request.
+     * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available. In the event of retries, the context
-     * will not include changes made in previous attempts (e.g. by request signers or other interceptors).
+     * **Modifications**: In the event of retries, the context * will not include changes made in previous attempts
+     * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -185,11 +165,9 @@ public interface Interceptor<
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
      * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available. The
-     * [ProtocolRequestInterceptorContext.protocolRequest] may have been modified by earlier `modifyBeforeSigning` hooks
-     * and may be modified further by later hooks. In the event of retries, the context will not include changes made
-     * in previous attempts (e.g. by request signers or other interceptors).
+     * **Modifications**: The [ProtocolRequestInterceptorContext.protocolRequest] may have been modified by earlier
+     * `modifyBeforeSigning` hooks and may be modified further by later hooks. In the event of retries, the context
+     * will not include changes made in previous attempts (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -203,13 +181,10 @@ public interface Interceptor<
      * A hook called before the transport request message is sent to the service.
      *
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
-     * request pipeline. This method may be called multiple times in the event of retries. The duration between
-     * invocation of this hook and [readAfterTransmit] is very close to the amount of time it took to send
-     * a request and receive a response from the service.
+     * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and
-     * [ProtocolRequestInterceptorContext.protocolRequest] are ALWAYS available. In the event of retries, the context
-     * will not include changes made in previous attempts (e.g. by request signers or other interceptors).
+     * **Modifications**: In the event of retries, the context will not include changes made in previous attempts
+     * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -220,13 +195,9 @@ public interface Interceptor<
      * A hook called after the transport response message is received from the service.
      *
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
-     * request pipeline. This method may be called multiple times in the event of retries. The duration between
-     * invocation of this hook and [readBeforeTransmit] is very close to the amount of time it took to send
-     * a request and receive a response from the service.
+     * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request],
-     * [ProtocolRequestInterceptorContext.protocolRequest], and [ProtocolResponseInterceptorContext.protocolResponse]
-     * are ALWAYS available. In the event of retries, the context will not include changes made in previous attempts
+     * **Modifications**: In the event of retries, the context will not include changes made in previous attempts
      * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
@@ -241,9 +212,7 @@ public interface Interceptor<
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
      * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request],
-     * [ProtocolRequestInterceptorContext.protocolRequest], and [ProtocolResponseInterceptorContext.protocolResponse]
-     * are ALWAYS available. The [ProtocolResponseInterceptorContext.protocolResponse] may have been modified by earlier
+     * **Modifications**: The [ProtocolResponseInterceptorContext.protocolResponse] may have been modified by earlier
      * `modifyBeforeDeserialization` hooks and may be modified further by later hooks. In the event of retries, the
      * context will not include changes made in previous attempts (e.g. by request signers or other interceptors).
      *
@@ -259,13 +228,9 @@ public interface Interceptor<
      * A hook called before the transport request message is deserialized into the output response type.
      *
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
-     * request pipeline. This method may be called multiple times in the event of retries. The duration between
-     * invocation of this hook and [readAfterDeserialization] is very close to the amount of time spent deserializing
-     * the protocol response into the modeled operation response.
+     * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request],
-     * [ProtocolRequestInterceptorContext.protocolRequest], and [ProtocolResponseInterceptorContext.protocolResponse]
-     * are ALWAYS available. In the event of retries, the context will not include changes made in previous attempts
+     * **Modifications**: In the event of retries, the context will not include changes made in previous attempts
      * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
@@ -277,14 +242,10 @@ public interface Interceptor<
      * A hook called after the transport request message is deserialized into the output response type.
      *
      * **When**: This will ALWAYS be called once per _attempt_, except when a failure occurs earlier in the
-     * request pipeline. This method may be called multiple times in the event of retries. The duration between
-     * invocation of this hook and [readBeforeDeserialization] is very close to the amount of time spent deserializing
-     * the protocol response into the modeled operation response.
+     * request pipeline. This method may be called multiple times in the event of retries.
      *
-     * **Available Information**: [RequestInterceptorContext.request],
-     * [ProtocolRequestInterceptorContext.protocolRequest], [ProtocolResponseInterceptorContext.protocolResponse],
-     * and [ResponseInterceptorContext.response] are ALWAYS available. In the event of retries, the context will not
-     * include changes made in previous attempts (e.g. by request signers or other interceptors).
+     * **Modifications**: In the event of retries, the context will not  include changes made in previous attempts
+     * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
@@ -301,7 +262,8 @@ public interface Interceptor<
      * **Available Information**: [RequestInterceptorContext.request],
      * [ProtocolRequestInterceptorContext.protocolRequest], [ProtocolResponseInterceptorContext.protocolResponse]
      * are ALWAYS available. [ResponseInterceptorContext.response] is available if execution made it that far.
-     * In the event of retries, the context will not include changes made in previous attempts
+     *
+     * **Modifications**: In the event of retries, the context will not include changes made in previous attempts
      * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [readAfterAttempt]
@@ -318,8 +280,10 @@ public interface Interceptor<
      * **Available Information**: [RequestInterceptorContext.request],
      * [ProtocolRequestInterceptorContext.protocolRequest], and [ResponseInterceptorContext.response] are ALWAYS
      * available. [ProtocolResponseInterceptorContext.protocolResponse] is available if a response was received
-     * by the service for this attempt. In the event of retries, the context will not include changes made in previous
-     * attempts (e.g. by request signers or other interceptors).
+     * by the service for this attempt.
+     *
+     * **Modifications**: In the event of retries, the context will not include changes made in previous attempts
+     * (e.g. by request signers or other interceptors).
      *
      * **Error Behavior**: Errors raised by this hook will be stored until all interceptors have had their
      * `readAfterAttempt` hook invoked. If multiple interceptors raise an error in `readAfterAttempt` then the latest
@@ -349,13 +313,11 @@ public interface Interceptor<
     /**
      * A hook called when an attempt is completed.
      *
-     * **When**: This will ALWAYS be called once per execution. The duration between invocation of this hook
-     * and [readBeforeExecution] is very close to the full duration of the execution.
+     * **When**: This will ALWAYS be called once per execution.
      *
-     * **Available Information**: [RequestInterceptorContext.request] and [ResponseInterceptorContext.response]
-     * are ALWAYS available. [ProtocolRequestInterceptorContext.protocolRequest] and
-     * [ProtocolResponseInterceptorContext.protocolResponse] are available if the execution proceeded far enough for
-     * them to be generated.
+     * **Available Information**: [ProtocolRequestInterceptorContext.protocolRequest] and
+     * [ProtocolResponseInterceptorContext.protocolResponse] are only available if the execution proceeded far enough
+     * for them to be generated.
      *
      * **Error Behavior**: Errors raised by this hook will be stored until all interceptors have had their
      * `readAfterExecution` hook invoked. If multiple interceptors raise an error in `readAfterExecution` then the
