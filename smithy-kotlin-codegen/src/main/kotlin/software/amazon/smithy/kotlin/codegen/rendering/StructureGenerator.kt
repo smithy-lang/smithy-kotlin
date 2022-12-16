@@ -128,11 +128,11 @@ class StructureGenerator(
             write("append(\"#T(\")", symbol)
 
             when {
-                sortedMembers.isEmpty() -> write("append(\")\")")
+                shape.hasTrait<SensitiveTrait>() -> write("append(#S)", "*** Sensitive Data Redacted ***")
                 else -> {
                     sortedMembers.forEachIndexed { index, memberShape ->
                         val (memberName, _) = memberNameSymbolIndex[memberShape]!!
-                        val separator = if (index < sortedMembers.size - 1) "," else ")"
+                        val separator = if (index < sortedMembers.size - 1) "," else ""
 
                         val targetShape = model.expectShape(memberShape.target)
                         if (targetShape.hasTrait<SensitiveTrait>()) {
@@ -143,6 +143,8 @@ class StructureGenerator(
                     }
                 }
             }
+
+            write("append(\")\")")
         }
     }
 
