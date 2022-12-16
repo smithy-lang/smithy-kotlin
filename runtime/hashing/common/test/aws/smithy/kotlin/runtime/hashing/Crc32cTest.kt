@@ -60,4 +60,24 @@ class Crc32cTest {
         crc.digest()
         assertEquals(0U, crc.digestValue()) // checksum should be reset
     }
+
+    @Test
+    fun testNonAsciiInput() {
+        val crc = Crc32c()
+        val input = byteArrayOf(0)
+        crc.update(input, 0, 1)
+        val bytes = crc.digest()
+
+        assertEquals("Un1TUQ==", bytes.encodeBase64String())
+    }
+
+    @Test
+    fun testLargeInput() {
+        val crc = Crc32c()
+        val input = ByteArray(1024) { 0 }
+        crc.update(input, 0, input.size)
+
+        val bytes = crc.digest()
+        assertEquals("7q7efA==", bytes.encodeBase64String())
+    }
 }
