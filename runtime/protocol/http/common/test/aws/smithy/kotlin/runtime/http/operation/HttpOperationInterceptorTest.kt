@@ -22,7 +22,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.IllegalStateException
 import kotlin.test.*
 
-private class TestException(override val message: String?) : IllegalStateException()
 private data class TestInput(val value: String)
 private data class TestOutput(val value: String)
 
@@ -50,131 +49,8 @@ class HttpOperationInterceptorTest {
         "readAfterExecution",
     )
 
-    // private val hooksInRetryLoop = setOf(
-    //     "readBeforeAttempt",
-    //     "modifyBeforeSigning",
-    //     "readBeforeSigning",
-    //     "readAfterSigning",
-    //     "modifyBeforeTransmit",
-    //     "readBeforeTransmit",
-    //     "readAfterTransmit",
-    //     "modifyBeforeDeserialization",
-    //     "readBeforeDeserialization",
-    //     "readAfterDeserialization",
-    //     "modifyBeforeAttemptCompletion",
-    //     "readAfterAttempt",
-    // )
-    //
     private val hooksFiredEveryExecution = setOf("readBeforeExecution", "readAfterExecution")
     private val hooksFiredEveryAttempt = setOf("readBeforeAttempt", "readAfterAttempt")
-
-    open class TestInterceptor(
-        val id: String,
-        val hooksFired: MutableList<String> = mutableListOf<String>(),
-        val failOnHooks: Set<String> = emptySet(),
-    ) : HttpInterceptor {
-
-        private fun trace(hook: String) {
-            hooksFired.add("$id:$hook")
-            if (hook in failOnHooks) {
-                throw TestException("interceptor $id failed on $hook")
-            }
-        }
-
-        override fun readBeforeExecution(context: RequestInterceptorContext<Any>) {
-            trace("readBeforeExecution")
-        }
-
-        override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
-            trace("modifyBeforeSerialization")
-            return super.modifyBeforeSerialization(context)
-        }
-
-        override fun readBeforeSerialization(context: RequestInterceptorContext<Any>) {
-            trace("readBeforeSerialization")
-            super.readBeforeSerialization(context)
-        }
-
-        override fun readAfterSerialization(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-            trace("readAfterSerialization")
-            super.readAfterSerialization(context)
-        }
-
-        override fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-            trace("modifyBeforeRetryLoop")
-            return super.modifyBeforeRetryLoop(context)
-        }
-
-        override fun readBeforeAttempt(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-            trace("readBeforeAttempt")
-            super.readBeforeAttempt(context)
-        }
-
-        override fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-            trace("modifyBeforeSigning")
-            return super.modifyBeforeSigning(context)
-        }
-
-        override fun readBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-            trace("readBeforeSigning")
-            super.readBeforeSigning(context)
-        }
-
-        override fun readAfterSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-            trace("readAfterSigning")
-            super.readAfterSigning(context)
-        }
-
-        override fun modifyBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-            trace("modifyBeforeTransmit")
-            return super.modifyBeforeTransmit(context)
-        }
-
-        override fun readBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>) {
-            trace("readBeforeTransmit")
-            super.readBeforeTransmit(context)
-        }
-
-        override fun readAfterTransmit(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
-            trace("readAfterTransmit")
-            super.readAfterTransmit(context)
-        }
-
-        override fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
-            trace("modifyBeforeDeserialization")
-            return super.modifyBeforeDeserialization(context)
-        }
-
-        override fun readBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>) {
-            trace("readBeforeDeserialization")
-            super.readBeforeDeserialization(context)
-        }
-
-        override fun readAfterDeserialization(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse>) {
-            trace("readAfterDeserialization")
-            super.readAfterDeserialization(context)
-        }
-
-        override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
-            trace("modifyBeforeAttemptCompletion")
-            return super.modifyBeforeAttemptCompletion(context)
-        }
-
-        override fun readAfterAttempt(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>) {
-            trace("readAfterAttempt")
-            super.readAfterAttempt(context)
-        }
-
-        override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
-            trace("modifyBeforeCompletion")
-            return super.modifyBeforeCompletion(context)
-        }
-
-        override fun readAfterExecution(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>) {
-            trace("readAfterExecution")
-            super.readAfterExecution(context)
-        }
-    }
 
     private class MockHttpClientOptions {
         var failWithRetryableError: Boolean = false
@@ -239,42 +115,38 @@ class HttpOperationInterceptorTest {
         val firstAttemptHookIdx = allHooks.indexOf("readBeforeAttempt")
         val madeItToRetryLoop = failHookIdx >= firstAttemptHookIdx
         val modifyBeforeCompletionIdx = allHooks.indexOf("modifyBeforeCompletion")
-        val afterExecutionHooks = allHooks.subList(modifyBeforeCompletionIdx, allHooks.size)
-            .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
 
-        val expected = if (!madeItToRetryLoop) {
-            // if we fail before first attempt then none of the retry hooks will fire
-            // we expect:
-            // * every hook for each interceptor before the failure
-            // * i1 and i2 hooks for the hook that fails
-            // * every hook for modifyBeforeCompletion and readAfterExecution
-            val beforeFailHooks = allHooks.subList(0, failHookIdx)
-                .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
+        val readBeforeExecutionHooks = allInterceptors.map { "${it.id}:readBeforeExecution" }
+        val readAfterExecutionHooks = allInterceptors.map { "${it.id}:readAfterExecution" }
 
-            beforeFailHooks + listOf("1:$failOnHook", "2:$failOnHook") + afterExecutionHooks
+        val failHooks = if (failOnHook !in (hooksFiredEveryExecution + hooksFiredEveryAttempt)) {
+            listOf("1:$failOnHook", "2:$failOnHook")
         } else {
-            // if we reach the retry loop we expect
-            // * every hook up to the readBeforeAttempt
-            // * readBeforeAttempt for every interceptor
-            // * sublist between readBeforeAttempt and the failure hook
-            // * failure hook for i1 and i2
-            // * modifyBeforeAttemptCompletion + readAfterAttempt for every interceptor
+            emptyList()
+        }
 
-            val beforeAttemptHooks = allHooks.subList(0, firstAttemptHookIdx)
+        val modifyBeforeCompletionHooks = if (failHookIdx == modifyBeforeCompletionIdx) {
+            // accounted for in fail hooks
+            emptyList()
+        } else {
+            allInterceptors.map { "${it.id}:modifyBeforeCompletion" }
+        }
+
+        val beforeRetryLoopHooks = if (failHookIdx > 0) {
+            allHooks.subList(0, minOf(failHookIdx, firstAttemptHookIdx))
                 .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
+        } else {
+            readBeforeExecutionHooks
+        }
 
+        val retryLoopHooks = if (madeItToRetryLoop) {
             val readAttemptHooks = allInterceptors.map { "${it.id}:readBeforeAttempt" }
-
+            val readAfterAttemptHooks = allInterceptors.map { "${it.id}:readAfterAttempt" }
             val modifyBeforeAttemptCompletionIdx = allHooks.indexOf("modifyBeforeAttemptCompletion")
-            val perAttemptHooks = if (failHookIdx in (firstAttemptHookIdx + 1)..modifyBeforeAttemptCompletionIdx) {
-                allHooks.subList(firstAttemptHookIdx + 1, failHookIdx)
-                    .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
-            } else {
-                emptyList()
-            }
 
-            val failHooks = if (failOnHook !in hooksFiredEveryAttempt) {
-                listOf("1:$failOnHook", "2:$failOnHook")
+            val perAttemptHooks = if (failHookIdx in (firstAttemptHookIdx + 1)..modifyBeforeAttemptCompletionIdx || failHookIdx > modifyBeforeAttemptCompletionIdx) {
+                allHooks.subList(firstAttemptHookIdx + 1, minOf(failHookIdx, modifyBeforeAttemptCompletionIdx))
+                    .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
             } else {
                 emptyList()
             }
@@ -286,16 +158,25 @@ class HttpOperationInterceptorTest {
                 allInterceptors.map { "${it.id}:modifyBeforeAttemptCompletion" }
             }
 
-            // val modifyBeforeAttemptCompletionHooks = if (failHookIdx == modifyBeforeAttemptCompletionIdx) {
-            //     listOf(i1, i2).map{"${it.id}:modifyBeforeAttemptCompletion"}
-            // }else {
-            //     allInterceptors.map{"${it.id}:modifyBeforeAttemptCompletion"}
-            // }
-            val readAfterAttemptHooks = allInterceptors.map { "${it.id}:readAfterAttempt" }
-            val afterAttemptHooks = modifyBeforeAttemptCompletionHooks + readAfterAttemptHooks
-
-            beforeAttemptHooks + readAttemptHooks + perAttemptHooks + failHooks + afterAttemptHooks + afterExecutionHooks
+            if (failHookIdx in firstAttemptHookIdx..modifyBeforeAttemptCompletionIdx) {
+                readAttemptHooks + perAttemptHooks + failHooks + modifyBeforeAttemptCompletionHooks + readAfterAttemptHooks
+            } else {
+                readAttemptHooks + perAttemptHooks + modifyBeforeAttemptCompletionHooks + readAfterAttemptHooks
+            }
+        } else {
+            emptyList()
         }
+
+        val middle = when {
+            // fail hooks came before retry loop
+            failHookIdx < firstAttemptHookIdx -> failHooks
+            // fail hook accounted for by retry loop
+            failHookIdx in firstAttemptHookIdx until modifyBeforeCompletionIdx -> retryLoopHooks
+            // fail hook after retry loop
+            else -> retryLoopHooks + failHooks
+        }
+
+        val expected = beforeRetryLoopHooks + middle + modifyBeforeCompletionHooks + readAfterExecutionHooks
 
         if (failOnHook !in (hooksFiredEveryExecution + hooksFiredEveryAttempt)) {
             hooksFired.shouldNotContain("3:$failOnHook")
@@ -321,28 +202,7 @@ class HttpOperationInterceptorTest {
 
     @Test
     fun testReadBeforeExecutionErrors() = runTest {
-        val hooksFired = mutableListOf<String>()
-        val i1 = TestInterceptor("1", hooksFired, failOnHooks = setOf("readBeforeExecution"))
-        val i2 = TestInterceptor("2", hooksFired)
-        val i3 = TestInterceptor("3", hooksFired)
-
-        assertFailsWith<TestException> {
-            simpleOrderTest(i1, i2, i3)
-        }
-
-        val expected = listOf(
-            "1:readBeforeExecution",
-            "2:readBeforeExecution",
-            "3:readBeforeExecution",
-            "1:modifyBeforeCompletion",
-            "2:modifyBeforeCompletion",
-            "3:modifyBeforeCompletion",
-            "1:readAfterExecution",
-            "2:readAfterExecution",
-            "3:readAfterExecution",
-        )
-
-        hooksFired.shouldContainInOrder(expected)
+        simpleFailOrderTest("readBeforeExecution")
     }
 
     @Test
@@ -422,45 +282,12 @@ class HttpOperationInterceptorTest {
 
     @Test
     fun testModifyBeforeCompletionErrors() = runTest {
-        val hooksFired = mutableListOf<String>()
-        val i1 = TestInterceptor("1", hooksFired)
-        val i2 = TestInterceptor("2", hooksFired, failOnHooks = setOf("modifyBeforeCompletion"))
-        val i3 = TestInterceptor("3", hooksFired)
-
-        assertFailsWith<TestException> {
-            simpleOrderTest(i1, i2, i3)
-        }
-
-        val expected = listOf(
-            "1:modifyBeforeCompletion",
-            "2:modifyBeforeCompletion",
-            "1:readAfterExecution",
-            "2:readAfterExecution",
-            "3:readAfterExecution",
-        )
-
-        hooksFired.shouldNotContain("3:modifyBeforeCompletion")
-        hooksFired.shouldContainInOrder(expected)
+        simpleFailOrderTest("modifyBeforeCompletion")
     }
 
     @Test
     fun testReadAfterExecutionErrors() = runTest {
-        val hooksFired = mutableListOf<String>()
-        val i1 = TestInterceptor("1", hooksFired, failOnHooks = setOf("readAfterExecution"))
-        val i2 = TestInterceptor("2", hooksFired)
-        val i3 = TestInterceptor("3", hooksFired)
-
-        assertFailsWith<TestException> {
-            simpleOrderTest(i1, i2, i3)
-        }
-
-        val expected = listOf(
-            "1:readAfterExecution",
-            "2:readAfterExecution",
-            "3:readAfterExecution",
-        )
-
-        hooksFired.shouldContainInOrder(expected)
+        simpleFailOrderTest("readAfterExecution")
     }
 
     @Test
