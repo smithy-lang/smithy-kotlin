@@ -172,4 +172,66 @@ class HttpInterceptorTest {
 
         assertEquals("final", output.value)
     }
+
+    @Test
+    fun testInterceptorModificationsWithRetries() = runTest {
+        val serialized = HttpRequestBuilder().apply {
+            headers["req-header"] = "modified"
+        }
+
+        val op = newTestOperation<TestInput, TestOutput>(serialized, TestOutput("deserialized"))
+        val interceptors = listOf(
+            TestReadHook(),
+            TestWriteHook(),
+        )
+        op.interceptors.addAll(interceptors)
+
+        val client = newMockHttpClient {
+            failOnAttempts = setOf(1)
+            failWithRetryableError = true
+            responseHeaders = Headers { set("resp-header", "transmit") }
+        }
+
+        val output = op.roundTrip(client, TestInput("initial"))
+
+        assertEquals("final", output.value)
+    }
+
+    private suspend fun testMapFailure(interceptor: HttpInterceptor) {
+        val serialized = HttpRequestBuilder()
+        val op = newTestOperation<TestInput, TestOutput>(serialized, TestOutput("deserialized"))
+        op.interceptors.add(interceptor)
+
+        val client = newMockHttpClient {
+            failOnAttempts = setOf(1)
+            failWithRetryableError = false
+        }
+
+        val output = op.roundTrip(client, TestInput("initial"))
+        assertEquals("ignore-failure", output.value)
+    }
+
+    @Test
+    fun testMapFailureOnAttempt() = runTest {
+        val interceptor = object : HttpInterceptor {
+            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+                assertTrue(context.response.isFailure)
+                return Result.success(TestOutput("ignore-failure"))
+            }
+        }
+
+        testMapFailure(interceptor)
+    }
+
+    @Test
+    fun testMapFailureOnCompletion() = runTest {
+        val interceptor = object : HttpInterceptor {
+            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+                assertTrue(context.response.isFailure)
+                return Result.success(TestOutput("ignore-failure"))
+            }
+        }
+
+        testMapFailure(interceptor)
+    }
 }

@@ -22,7 +22,7 @@ data class TestOutput(val value: String)
 
 class MockHttpClientOptions {
     var failWithRetryableError: Boolean = false
-    var failAfterAttempt: Int = -1
+    var failOnAttempts: Set<Int> = emptySet()
     var statusCode: HttpStatusCode = HttpStatusCode.OK
     var responseHeaders: Headers = Headers.Empty
     var responseBody: HttpBody = HttpBody.Empty
@@ -34,7 +34,7 @@ fun newMockHttpClient(block: MockHttpClientOptions.() -> Unit = {}): SdkHttpClie
         private var attempt = 0
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             attempt++
-            if (attempt == options.failAfterAttempt) {
+            if (attempt in options.failOnAttempts) {
                 val ex = if (options.failWithRetryableError) RetryableServiceTestException else TestException("non-retryable exception")
                 throw ex
             }
