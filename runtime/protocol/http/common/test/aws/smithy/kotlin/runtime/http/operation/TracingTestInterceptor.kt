@@ -5,17 +5,58 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.client.ProtocolRequestInterceptorContext
-import aws.smithy.kotlin.runtime.client.ProtocolResponseInterceptorContext
-import aws.smithy.kotlin.runtime.client.RequestInterceptorContext
-import aws.smithy.kotlin.runtime.client.ResponseInterceptorContext
+import aws.smithy.kotlin.runtime.client.*
+import aws.smithy.kotlin.runtime.http.*
+import aws.smithy.kotlin.runtime.http.SdkHttpClient
+import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
+import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
+import aws.smithy.kotlin.runtime.http.sdkHttpClient
+import aws.smithy.kotlin.runtime.time.Instant
 
 class TestException(override val message: String?) : IllegalStateException()
+data class TestInput(val value: String)
+data class TestOutput(val value: String)
 
-open class TestInterceptor(
+class MockHttpClientOptions {
+    var failWithRetryableError: Boolean = false
+    var failAfterAttempt: Int = -1
+    var statusCode: HttpStatusCode = HttpStatusCode.OK
+    var responseHeaders: Headers = Headers.Empty
+    var responseBody: HttpBody = HttpBody.Empty
+}
+
+fun newMockHttpClient(block: MockHttpClientOptions.() -> Unit = {}): SdkHttpClient {
+    val options = MockHttpClientOptions().apply(block)
+    val mockEngine = object : HttpClientEngineBase("test engine") {
+        private var attempt = 0
+        override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
+            attempt++
+            if (attempt == options.failAfterAttempt) {
+                val ex = if (options.failWithRetryableError) RetryableServiceTestException else TestException("non-retryable exception")
+                throw ex
+            }
+
+            val resp = HttpResponse(options.statusCode, options.responseHeaders, options.responseBody)
+            return HttpCall(request, resp, Instant.now(), Instant.now())
+        }
+    }
+    return sdkHttpClient(mockEngine)
+}
+
+suspend fun <I : Any, O : Any> roundTripWithInterceptors(
+    input: I,
+    op: SdkHttpOperation<I, O>,
+    client: SdkHttpClient,
+    vararg interceptors: HttpInterceptor,
+): O {
+    op.interceptors.addAll(interceptors.toList())
+    return op.roundTrip(client, input)
+}
+
+open class TracingTestInterceptor(
     val id: String,
     val hooksFired: MutableList<String> = mutableListOf<String>(),
     val failOnHooks: Set<String> = emptySet(),

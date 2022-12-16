@@ -5,28 +5,17 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.client.*
 import aws.smithy.kotlin.runtime.http.*
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
 import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
-import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
-import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.time.Instant
 import io.kotest.matchers.collections.shouldContainInOrder
 import io.kotest.matchers.collections.shouldNotContain
-import io.kotest.matchers.string.shouldContain
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import kotlin.IllegalStateException
 import kotlin.test.*
 
-private data class TestInput(val value: String)
-private data class TestOutput(val value: String)
-
 @ExperimentalCoroutinesApi
-class HttpOperationInterceptorTest {
+class HttpInterceptorOrderTest {
     private val allHooks = listOf(
         "readBeforeExecution",
         "modifyBeforeSerialization",
@@ -52,42 +41,6 @@ class HttpOperationInterceptorTest {
     private val hooksFiredEveryExecution = setOf("readBeforeExecution", "readAfterExecution")
     private val hooksFiredEveryAttempt = setOf("readBeforeAttempt", "readAfterAttempt")
 
-    private class MockHttpClientOptions {
-        var failWithRetryableError: Boolean = false
-        var failAfterAttempt: Int = -1
-        var statusCode: HttpStatusCode = HttpStatusCode.OK
-        var responseHeaders: Headers = Headers.Empty
-        var responseBody: HttpBody = HttpBody.Empty
-    }
-
-    private fun newMockHttpClient(block: MockHttpClientOptions.() -> Unit = {}): SdkHttpClient {
-        val options = MockHttpClientOptions().apply(block)
-        val mockEngine = object : HttpClientEngineBase("test engine") {
-            private var attempt = 0
-            override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
-                attempt++
-                if (attempt == options.failAfterAttempt) {
-                    val ex = if (options.failWithRetryableError) RetryableServiceTestException else TestException("non-retryable exception")
-                    throw ex
-                }
-
-                val resp = HttpResponse(options.statusCode, options.responseHeaders, options.responseBody)
-                return HttpCall(request, resp, Instant.now(), Instant.now())
-            }
-        }
-        return sdkHttpClient(mockEngine)
-    }
-
-    private suspend fun <I : Any, O : Any> roundTripWithInterceptors(
-        input: I,
-        op: SdkHttpOperation<I, O>,
-        client: SdkHttpClient,
-        vararg interceptors: HttpInterceptor,
-    ): O {
-        op.interceptors.addAll(interceptors.toList())
-        return op.roundTrip(client, input)
-    }
-
     private suspend fun simpleOrderTest(
         client: SdkHttpClient,
         vararg interceptors: HttpInterceptor,
@@ -101,9 +54,9 @@ class HttpOperationInterceptorTest {
 
     private suspend fun simpleFailOrderTest(failOnHook: String) {
         val hooksFired = mutableListOf<String>()
-        val i1 = TestInterceptor("1", hooksFired)
-        val i2 = TestInterceptor("2", hooksFired, failOnHooks = setOf(failOnHook))
-        val i3 = TestInterceptor("3", hooksFired)
+        val i1 = TracingTestInterceptor("1", hooksFired)
+        val i2 = TracingTestInterceptor("2", hooksFired, failOnHooks = setOf(failOnHook))
+        val i3 = TracingTestInterceptor("3", hooksFired)
         val allInterceptors = listOf(i1, i2, i3)
 
         assertFailsWith<TestException> {
@@ -188,8 +141,8 @@ class HttpOperationInterceptorTest {
     fun testInterceptorOrderSuccess() = runTest {
         // sanity test all hooks fire in order
         val hooksFired = mutableListOf<String>()
-        val i1 = TestInterceptor("1", hooksFired)
-        val i2 = TestInterceptor("2", hooksFired)
+        val i1 = TracingTestInterceptor("1", hooksFired)
+        val i2 = TracingTestInterceptor("2", hooksFired)
 
         simpleOrderTest(i1, i2)
 
@@ -288,87 +241,5 @@ class HttpOperationInterceptorTest {
     @Test
     fun testReadAfterExecutionErrors() = runTest {
         simpleFailOrderTest("readAfterExecution")
-    }
-
-    @Test
-    fun testModifyBeforeSerializationTypeFailure() = runTest {
-        val i1 = object : HttpInterceptor {
-            override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
-                val input = assertIs<TestInput>(context.request)
-                assertEquals("initial", input.value)
-                return TestInput("modified")
-            }
-        }
-
-        val i2 = object : HttpInterceptor {
-            override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
-                val input = assertIs<TestInput>(context.request)
-                assertEquals("modified", input.value)
-                return TestOutput("wrong")
-            }
-        }
-
-        val input = TestInput("initial")
-        val op = newTestOperation<TestInput, Unit>(HttpRequestBuilder(), Unit)
-        val client = newMockHttpClient()
-        val ex = assertFailsWith<IllegalStateException> {
-            roundTripWithInterceptors(input, op, client, i1, i2)
-        }
-
-        ex.message.shouldContain("modifyBeforeSerialization invalid type conversion: found class aws.smithy.kotlin.runtime.http.operation.TestOutput; expected class aws.smithy.kotlin.runtime.http.operation.TestInput")
-    }
-
-    @Test
-    fun testModifyBeforeAttemptCompletionTypeFailure() = runTest {
-        val i1 = object : HttpInterceptor {
-            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
-                assertIs<TestOutput>(context.response.getOrThrow())
-                return Result.success(TestOutput("modified"))
-            }
-        }
-
-        val i2 = object : HttpInterceptor {
-            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
-                val output = assertIs<TestOutput>(context.response.getOrThrow())
-                assertEquals("modified", output.value)
-                return Result.success("wrong")
-            }
-        }
-
-        val output = TestOutput("initial")
-        val op = newTestOperation<Unit, TestOutput>(HttpRequestBuilder(), output)
-        val client = newMockHttpClient()
-        val ex = assertFailsWith<IllegalStateException> {
-            roundTripWithInterceptors(Unit, op, client, i1, i2)
-        }
-
-        ex.message.shouldContain("modifyBeforeAttemptCompletion invalid type conversion: found class kotlin.String; expected class aws.smithy.kotlin.runtime.http.operation.TestOutput")
-    }
-
-    @Test
-    fun testModifyBeforeCompletionTypeFailure() = runTest {
-        val i1 = object : HttpInterceptor {
-            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
-                assertIs<TestOutput>(context.response.getOrThrow())
-                return Result.success(TestOutput("modified"))
-            }
-        }
-
-        val i2 = object : HttpInterceptor {
-            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
-                val output = assertIs<TestOutput>(context.response.getOrThrow())
-                assertEquals("modified", output.value)
-                return Result.success("wrong")
-            }
-        }
-
-        val output = TestOutput("initial")
-        val op = newTestOperation<Unit, TestOutput>(HttpRequestBuilder(), output)
-        val client = newMockHttpClient()
-        val ex = assertFailsWith<IllegalStateException> {
-            roundTripWithInterceptors(Unit, op, client, i1, i2)
-        }
-
-        ex.message.shouldContain("modifyBeforeCompletion invalid type conversion: found class kotlin.String; expected class aws.smithy.kotlin.runtime.http.operation.TestOutput")
     }
 }
