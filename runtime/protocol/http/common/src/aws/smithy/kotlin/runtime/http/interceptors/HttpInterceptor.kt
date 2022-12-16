@@ -187,10 +187,13 @@ internal class InterceptorExecutor<I, O>(
             interceptor.modifyBeforeRetryLoop(context)
         }
 
-    fun readBeforeAttempt(request: HttpRequest) =
-        readHttpHook(request) { interceptor, context ->
+    fun readBeforeAttempt(request: HttpRequest): Result<Unit> {
+        val input = checkNotNull(_lastInput)
+        val context = HttpProtocolRequestInterceptorContext(input as Any, request, execContext)
+        return executeAll { interceptor ->
             interceptor.readBeforeAttempt(context)
         }
+    }
 
     fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
@@ -249,14 +252,19 @@ internal class InterceptorExecutor<I, O>(
         @Suppress("UNCHECKED_CAST")
         val context = HttpAttemptInterceptorContext(input as Any, result as Result<Any>, httpRequest, httpResponse, execContext)
 
-        val modified = interceptors.fold(context) { ctx, interceptor ->
-            val modified = interceptor.modifyBeforeAttemptCompletion(ctx)
-            checkResultType<O>("modifyBeforeAttemptCompletion", modified, typeInfo.outputType)
-            ctx.response = modified
-            ctx
-        }.response
+        val modified = runCatching {
+            interceptors.fold(context) { ctx, interceptor ->
+                val modified = interceptor.modifyBeforeAttemptCompletion(ctx)
+                checkResultType<O>("modifyBeforeAttemptCompletion", modified, typeInfo.outputType)
+                ctx.response = modified
+                ctx
+            }.response
+        }
 
-        return checkResultType("modifyBeforeAttemptCompletion", modified, typeInfo.outputType)
+        return modified.fold(
+            { checkResultType("modifyBeforeCompletion", it, typeInfo.outputType) },
+            { Result.failure(it) },
+        )
     }
 
     fun readAfterAttempt(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?) {

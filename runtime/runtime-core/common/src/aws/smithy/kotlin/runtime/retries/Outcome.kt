@@ -5,6 +5,8 @@
 
 package aws.smithy.kotlin.runtime.retries
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+
 /**
  * Represents the outcome of a repeated operation. This type is similar to a [Result] except it is a union type and has
  * no flag for "success" since exceptional outcomes do not necessarily represent "failure".
@@ -38,4 +40,13 @@ public sealed class Outcome<out T> {
 public fun <T> Outcome<T>.getOrThrow(): T = when (this) {
     is Outcome.Response -> response
     is Outcome.Exception -> throw exception
+}
+
+/**
+ * Convert an outcome to a [Result]
+ */
+@InternalApi
+public fun <T> Outcome<T>.toResult(): Result<T> = when (this) {
+    is Outcome.Response -> Result.success(response)
+    is Outcome.Exception -> Result.failure(exception)
 }

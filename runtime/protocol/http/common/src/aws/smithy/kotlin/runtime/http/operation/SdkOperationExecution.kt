@@ -156,7 +156,7 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
     val authHandler = HttpAuthHandler(deserializeHandler, signer, interceptors)
     val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
-    val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy))
+    val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
     val mutateHandler = decorateHandler(MutateHandler(retryHandler), mutate)
     val serializeHandler = op.serializer.decorate(mutateHandler, interceptors)

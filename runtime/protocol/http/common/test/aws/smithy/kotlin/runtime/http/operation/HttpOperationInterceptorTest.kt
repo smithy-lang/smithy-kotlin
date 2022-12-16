@@ -33,24 +33,7 @@ class HttpOperationInterceptorTest {
         "modifyBeforeSerialization",
         "readBeforeSerialization",
         "readAfterSerialization",
-        // "readBeforeRetryLoop",
-        // "readBeforeAttempt",
-        "modifyBeforeSigning",
-        "readBeforeSigning",
-        "readAfterSigning",
-        "modifyBeforeTransmit",
-        "readBeforeTransmit",
-        "readAfterTransmit",
-        "modifyBeforeDeserialization",
-        "readBeforeDeserialization",
-        "readAfterDeserialization",
-        // "modifyBeforeAttemptCompletion",
-        // "readAfterAttempt",
-        "modifyBeforeCompletion",
-        "readAfterExecution",
-    )
-
-    private val hooksInRetryLoop = setOf(
+        "modifyBeforeRetryLoop",
         "readBeforeAttempt",
         "modifyBeforeSigning",
         "readBeforeSigning",
@@ -63,7 +46,27 @@ class HttpOperationInterceptorTest {
         "readAfterDeserialization",
         "modifyBeforeAttemptCompletion",
         "readAfterAttempt",
+        "modifyBeforeCompletion",
+        "readAfterExecution",
     )
+
+    // private val hooksInRetryLoop = setOf(
+    //     "readBeforeAttempt",
+    //     "modifyBeforeSigning",
+    //     "readBeforeSigning",
+    //     "readAfterSigning",
+    //     "modifyBeforeTransmit",
+    //     "readBeforeTransmit",
+    //     "readAfterTransmit",
+    //     "modifyBeforeDeserialization",
+    //     "readBeforeDeserialization",
+    //     "readAfterDeserialization",
+    //     "modifyBeforeAttemptCompletion",
+    //     "readAfterAttempt",
+    // )
+    //
+    private val hooksFiredEveryExecution = setOf("readBeforeExecution", "readAfterExecution")
+    private val hooksFiredEveryAttempt = setOf("readBeforeAttempt", "readAfterAttempt")
 
     open class TestInterceptor(
         val id: String,
@@ -98,7 +101,7 @@ class HttpOperationInterceptorTest {
         }
 
         override fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
-            trace("readBeforeRetryLoop")
+            trace("modifyBeforeRetryLoop")
             return super.modifyBeforeRetryLoop(context)
         }
 
@@ -225,36 +228,78 @@ class HttpOperationInterceptorTest {
         val i1 = TestInterceptor("1", hooksFired)
         val i2 = TestInterceptor("2", hooksFired, failOnHooks = setOf(failOnHook))
         val i3 = TestInterceptor("3", hooksFired)
+        val allInterceptors = listOf(i1, i2, i3)
 
         assertFailsWith<TestException> {
             simpleOrderTest(i1, i2, i3)
         }
 
         val failHookIdx = allHooks.indexOf(failOnHook)
-        val beforeFailHooks = allHooks.subList(0, failHookIdx)
-            .flatMap {
-                listOf("1:$it", "2:$it", "3:$it")
+
+        val firstAttemptHookIdx = allHooks.indexOf("readBeforeAttempt")
+        val madeItToRetryLoop = failHookIdx >= firstAttemptHookIdx
+        val modifyBeforeCompletionIdx = allHooks.indexOf("modifyBeforeCompletion")
+        val afterExecutionHooks = allHooks.subList(modifyBeforeCompletionIdx, allHooks.size)
+            .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
+
+        val expected = if (!madeItToRetryLoop) {
+            // if we fail before first attempt then none of the retry hooks will fire
+            // we expect:
+            // * every hook for each interceptor before the failure
+            // * i1 and i2 hooks for the hook that fails
+            // * every hook for modifyBeforeCompletion and readAfterExecution
+            val beforeFailHooks = allHooks.subList(0, failHookIdx)
+                .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
+
+            beforeFailHooks + listOf("1:$failOnHook", "2:$failOnHook") + afterExecutionHooks
+        } else {
+            // if we reach the retry loop we expect
+            // * every hook up to the readBeforeAttempt
+            // * readBeforeAttempt for every interceptor
+            // * sublist between readBeforeAttempt and the failure hook
+            // * failure hook for i1 and i2
+            // * modifyBeforeAttemptCompletion + readAfterAttempt for every interceptor
+
+            val beforeAttemptHooks = allHooks.subList(0, firstAttemptHookIdx)
+                .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
+
+            val readAttemptHooks = allInterceptors.map { "${it.id}:readBeforeAttempt" }
+
+            val modifyBeforeAttemptCompletionIdx = allHooks.indexOf("modifyBeforeAttemptCompletion")
+            val perAttemptHooks = if (failHookIdx in (firstAttemptHookIdx + 1)..modifyBeforeAttemptCompletionIdx) {
+                allHooks.subList(firstAttemptHookIdx + 1, failHookIdx)
+                    .flatMap { hook -> allInterceptors.map { "${it.id}:$hook" } }
+            } else {
+                emptyList()
             }
 
-        // TODO - define set of hooks that are inside the retry loop and modify expected based on that
+            val failHooks = if (failOnHook !in hooksFiredEveryAttempt) {
+                listOf("1:$failOnHook", "2:$failOnHook")
+            } else {
+                emptyList()
+            }
 
-        // we expect:
-        // * every hook for each interceptor before the failure
-        // * i1 and i2 hooks for the hook that fails
-        // * every hook for modifyBeforeCompletion and readAfterExecution
-        val expected = beforeFailHooks + listOf(
-            "1:$failOnHook",
-            "2:$failOnHook",
-            // always run
-            "1:modifyBeforeCompletion",
-            "2:modifyBeforeCompletion",
-            "3:modifyBeforeCompletion",
-            "1:readAfterExecution",
-            "2:readAfterExecution",
-            "3:readAfterExecution",
-        )
+            val modifyBeforeAttemptCompletionHooks = if (failHookIdx == modifyBeforeAttemptCompletionIdx) {
+                // accounted for in fail hooks
+                emptyList()
+            } else {
+                allInterceptors.map { "${it.id}:modifyBeforeAttemptCompletion" }
+            }
 
-        hooksFired.shouldNotContain("3:$failOnHook")
+            // val modifyBeforeAttemptCompletionHooks = if (failHookIdx == modifyBeforeAttemptCompletionIdx) {
+            //     listOf(i1, i2).map{"${it.id}:modifyBeforeAttemptCompletion"}
+            // }else {
+            //     allInterceptors.map{"${it.id}:modifyBeforeAttemptCompletion"}
+            // }
+            val readAfterAttemptHooks = allInterceptors.map { "${it.id}:readAfterAttempt" }
+            val afterAttemptHooks = modifyBeforeAttemptCompletionHooks + readAfterAttemptHooks
+
+            beforeAttemptHooks + readAttemptHooks + perAttemptHooks + failHooks + afterAttemptHooks + afterExecutionHooks
+        }
+
+        if (failOnHook !in (hooksFiredEveryExecution + hooksFiredEveryAttempt)) {
+            hooksFired.shouldNotContain("3:$failOnHook")
+        }
         hooksFired.shouldContainInOrder(expected)
     }
 
@@ -315,74 +360,61 @@ class HttpOperationInterceptorTest {
         simpleFailOrderTest("readAfterSerialization")
     }
 
-    // FIXME - re-enable when we wire up retries
-    @Ignore
     @Test
     fun testModifyBeforeRetryLoopErrors() = runTest {
         simpleFailOrderTest("modifyBeforeRetryLoop")
     }
 
-    @Ignore
     @Test
     fun testReadBeforeAttemptErrors() = runTest {
         simpleFailOrderTest("readBeforeAttempt")
     }
 
-    @Ignore
     @Test
     fun testModifyBeforeSigningErrors() = runTest {
         simpleFailOrderTest("modifyBeforeSigning")
     }
 
-    @Ignore
     @Test
     fun testReadBeforeSigningErrors() = runTest {
         simpleFailOrderTest("readBeforeSigning")
     }
 
-    @Ignore
     @Test
     fun testReadAfterSigningErrors() = runTest {
         simpleFailOrderTest("readAfterSigning")
     }
 
-    @Ignore
     @Test
     fun testModifyBeforeTransmitErrors() = runTest {
         simpleFailOrderTest("modifyBeforeTransmit")
     }
 
-    @Ignore
     @Test
     fun testReadBeforeTransmitErrors() = runTest {
         simpleFailOrderTest("readBeforeTransmit")
     }
 
-    @Ignore
     @Test
     fun testReadAfterTransmitErrors() = runTest {
         simpleFailOrderTest("readAfterTransmit")
     }
 
-    @Ignore
     @Test
     fun testReadBeforeDeserializationErrors() = runTest {
         simpleFailOrderTest("readBeforeDeserialization")
     }
 
-    @Ignore
     @Test
     fun testReadAfterDeserializationErrors() = runTest {
         simpleFailOrderTest("readAfterDeserialization")
     }
 
-    @Ignore
     @Test
     fun testReadAfterAttemptErrors() = runTest {
         simpleFailOrderTest("readAfterAttempt")
     }
 
-    @Ignore
     @Test
     fun testModifyBeforeAttemptCompletionErrors() = runTest {
         simpleFailOrderTest("modifyBeforeAttemptCompletion")
@@ -459,11 +491,31 @@ class HttpOperationInterceptorTest {
         ex.message.shouldContain("modifyBeforeSerialization invalid type conversion: found class aws.smithy.kotlin.runtime.http.operation.TestOutput; expected class aws.smithy.kotlin.runtime.http.operation.TestInput")
     }
 
-    @Ignore
     @Test
-    fun testModifyBeforeAttemptCompletion() = runTest {
-        // modifyBeforeAttemptCompletion (output can change)
-        TODO()
+    fun testModifyBeforeAttemptCompletionTypeFailure() = runTest {
+        val i1 = object : HttpInterceptor {
+            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+                assertIs<TestOutput>(context.response.getOrThrow())
+                return Result.success(TestOutput("modified"))
+            }
+        }
+
+        val i2 = object : HttpInterceptor {
+            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+                val output = assertIs<TestOutput>(context.response.getOrThrow())
+                assertEquals("modified", output.value)
+                return Result.success("wrong")
+            }
+        }
+
+        val output = TestOutput("initial")
+        val op = newTestOperation<Unit, TestOutput>(HttpRequestBuilder(), output)
+        val client = newMockHttpClient()
+        val ex = assertFailsWith<IllegalStateException> {
+            roundTripWithInterceptors(Unit, op, client, i1, i2)
+        }
+
+        ex.message.shouldContain("modifyBeforeAttemptCompletion invalid type conversion: found class kotlin.String; expected class aws.smithy.kotlin.runtime.http.operation.TestOutput")
     }
 
     @Test
