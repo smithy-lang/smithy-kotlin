@@ -8,9 +8,9 @@ plugins {
     `maven-publish`
 }
 
-description = "Generates Kotlin code from Smithy models"
-extra["displayName"] = "Smithy :: Kotlin :: Codegen"
-extra["moduleName"] = "software.amazon.smithy.kotlin.codegen"
+description = "Provides common test utilities for Smithy-Kotlin code generation"
+extra["displayName"] = "Smithy :: Kotlin :: Codegen Utils"
+extra["moduleName"] = "software.amazon.smithy.kotlin.codegen.test"
 
 val sdkVersion: String by project
 group = "software.amazon.smithy.kotlin"
@@ -24,40 +24,20 @@ val jsoupVersion: String by project
 
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
-    api("software.amazon.smithy:smithy-codegen-core:$smithyVersion")
-    api("software.amazon.smithy:smithy-waiters:$smithyVersion")
-    implementation("software.amazon.smithy:smithy-rules-engine:$smithyVersion")
     implementation("software.amazon.smithy:smithy-aws-traits:$smithyVersion")
-    implementation("software.amazon.smithy:smithy-protocol-test-traits:$smithyVersion")
-    implementation("org.jsoup:jsoup:$jsoupVersion")
+    api(project(":smithy-kotlin-codegen"))
 
     // Test dependencies
-    testImplementation("org.junit.jupiter:junit-jupiter:$junitVersion")
-    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
-    testImplementation(project(":smithy-kotlin-codegen-testutils"))
-}
-
-val generateSdkRuntimeVersion by tasks.registering {
-    // generate the version of the runtime to use as a resource.
-    // this keeps us from having to manually change version numbers in multiple places
-    val resourcesDir = "$buildDir/resources/main/software/amazon/smithy/kotlin/codegen/core"
-    val versionFile = file("$resourcesDir/sdk-version.txt")
-    val gradlePropertiesFile = rootProject.file("gradle.properties")
-    inputs.file(gradlePropertiesFile)
-    outputs.file(versionFile)
-    sourceSets.main.get().output.dir(resourcesDir)
-    doLast {
-        versionFile.writeText("$version")
-    }
+    implementation("org.junit.jupiter:junit-jupiter:$junitVersion")
+    implementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    implementation("org.jetbrains.kotlin:kotlin-test:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
 // unlike the runtime, smithy-kotlin codegen package is not expected to run on Android...we can target 1.8
 tasks.compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
-    dependsOn(generateSdkRuntimeVersion)
 }
 
 tasks.compileTestKotlin {
@@ -97,21 +77,9 @@ tasks.test {
     }
 }
 
-// Configure jacoco (code coverage) to generate an HTML report
-tasks.jacocoTestReport {
-    reports {
-        xml.isEnabled = false
-        csv.isEnabled = false
-        html.destination = file("$buildDir/reports/jacoco")
-    }
-}
-
-// Always run the jacoco test report after testing.
-tasks["test"].finalizedBy(tasks["jacocoTestReport"])
-
 publishing {
     publications {
-        create<MavenPublication>("codegen") {
+        create<MavenPublication>("codegen-testutils") {
             from(components["java"])
             artifact(sourcesJar)
         }

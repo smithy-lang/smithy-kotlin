@@ -1,0 +1,5 @@
+{
+    "id": "9ab15fa5-76b7-4bf0-9931-eaa50fd57a19",
+    "type": "misc",
+    "description": "Move test utilities out of **smithy-kotlin-codegen** package into new **smithy-kotlin-codegen-testutils** package. This eliminates the need for the codegen package to declare runtime dependencies on JUnit and other test packages."
+}
