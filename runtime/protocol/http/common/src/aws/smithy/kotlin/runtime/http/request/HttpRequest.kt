@@ -57,7 +57,7 @@ private data class RealHttpRequest(
  * Convert an HttpRequest back to an [HttpRequestBuilder]
  */
 public fun HttpRequest.toBuilder(): HttpRequestBuilder = when (this) {
-    is ImmutableHttpRequestBuilder -> {
+    is HttpRequestBuilderView -> {
         check(allowToBuilder) { "This is an immutable HttpRequest that should not be converted to a builder" }
         builder
     }

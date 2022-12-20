@@ -113,11 +113,9 @@ internal class InterceptorExecutor<I, O>(
                 block(interceptor)
             }
 
-            curr.fold({ prev }, {
-                if (prev.isFailure) {
-                    it.addSuppressed(prev.exceptionOrNull()!!)
-                }
-                Result.failure(it)
+            curr.fold({ prev }, { currEx ->
+                prev.exceptionOrNull()?.let { currEx.addSuppressed(it) }
+                Result.failure(currEx)
             },)
         }
 
@@ -157,6 +155,7 @@ internal class InterceptorExecutor<I, O>(
         val context = HttpProtocolRequestInterceptorContext(input as Any, request, execContext)
         interceptors.forEach { block(it, context) }
     }
+
     private inline fun readHttpHook(
         request: HttpRequest,
         response: HttpResponse,
@@ -269,14 +268,13 @@ internal class InterceptorExecutor<I, O>(
         }
 
         return modified.fold(
-            { checkResultType("modifyBeforeCompletion", it, typeInfo.outputType) },
+            { checkResultType("modifyBeforeAttemptCompletion", it, typeInfo.outputType) },
             { Result.failure(it) },
         )
     }
 
     fun readAfterAttempt(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?) {
         val input = checkNotNull(_lastInput)
-        _lastHttpRequest = httpRequest
         _lastHttpResponse = httpResponse
 
         @Suppress("UNCHECKED_CAST")

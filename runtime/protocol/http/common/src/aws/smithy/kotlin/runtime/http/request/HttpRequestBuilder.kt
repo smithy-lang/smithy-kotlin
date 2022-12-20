@@ -36,19 +36,13 @@ public class HttpRequestBuilder private constructor(
     }
 }
 
-internal data class ImmutableHttpRequestBuilder(
+internal data class HttpRequestBuilderView(
     internal val builder: HttpRequestBuilder,
     internal val allowToBuilder: Boolean,
 ) : HttpRequest {
     override val method: HttpMethod = builder.method
-
-    private var _url: Url? = null
-    override val url: Url
-        get() = _url ?: builder.url.build().also { _url = it }
-
-    override val headers: Headers
-        get() = builder.headers.build()
-
+    override val url: Url by lazy { builder.url.build() }
+    override val headers: Headers by lazy { builder.headers.build() }
     override val body: HttpBody = builder.body
 }
 
@@ -63,7 +57,7 @@ internal data class ImmutableHttpRequestBuilder(
  */
 internal fun HttpRequestBuilder.immutableView(
     allowToBuilder: Boolean = false,
-): HttpRequest = ImmutableHttpRequestBuilder(this, allowToBuilder)
+): HttpRequest = HttpRequestBuilderView(this, allowToBuilder)
 
 // convenience extensions
 
