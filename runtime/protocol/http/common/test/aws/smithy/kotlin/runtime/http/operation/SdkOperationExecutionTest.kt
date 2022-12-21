@@ -5,9 +5,6 @@
 
 package aws.smithy.kotlin.runtime.http.operation
 
-import aws.smithy.kotlin.runtime.ErrorMetadata
-import aws.smithy.kotlin.runtime.ServiceErrorMetadata
-import aws.smithy.kotlin.runtime.ServiceException
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
@@ -30,11 +27,6 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class SdkOperationExecutionTest {
 
-    val retryableTestException = ServiceException("test exception").apply {
-        sdkErrorMetadata.attributes[ErrorMetadata.Retryable] = true
-        sdkErrorMetadata.attributes[ServiceErrorMetadata.ErrorType] = ServiceException.ErrorType.Server
-    }
-
     @Test
     fun testOperationMiddlewareOrder() = runTest {
         // sanity test middleware flows the way we expect
@@ -45,7 +37,7 @@ class SdkOperationExecutionTest {
             private var attempt = 0
             override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
                 attempt++
-                if (attempt == 1) throw retryableTestException
+                if (attempt == 1) throw RetryableServiceTestException
                 val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
                 return HttpCall(request, resp, Instant.now(), Instant.now())
             }

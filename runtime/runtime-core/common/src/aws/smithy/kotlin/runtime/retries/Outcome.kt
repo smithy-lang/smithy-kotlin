@@ -39,3 +39,11 @@ public fun <T> Outcome<T>.getOrThrow(): T = when (this) {
     is Outcome.Response -> response
     is Outcome.Exception -> throw exception
 }
+
+/**
+ * Convert an outcome to a [Result]
+ */
+public fun <T> Outcome<T>.toResult(): Result<T> = when (this) {
+    is Outcome.Response -> Result.success(response)
+    is Outcome.Exception -> Result.failure(exception)
+}
