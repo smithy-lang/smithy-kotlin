@@ -192,8 +192,9 @@ private class OperationHandler<Input, Output>(
             .let {
                 interceptors.modifyBeforeCompletion(it)
             }
-
-        interceptors.readAfterExecution(result)
+            .let {
+                interceptors.readAfterExecution(it)
+            }
 
         return result.getOrThrow()
     }

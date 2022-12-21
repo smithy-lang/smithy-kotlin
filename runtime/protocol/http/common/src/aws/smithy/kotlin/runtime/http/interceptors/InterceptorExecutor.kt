@@ -308,7 +308,7 @@ internal class InterceptorExecutor<I, O>(
         )
     }
 
-    fun readAfterExecution(result: Result<O>) {
+    fun readAfterExecution(result: Result<O>): Result<O> {
         // SAFETY: If we started executing an operation at all input will be set at least once
         val input = checkNotNull(_lastInput)
 
@@ -319,6 +319,13 @@ internal class InterceptorExecutor<I, O>(
         }
 
         // if an error was encountered it's going to be the result of the operation
-        readResult.getOrThrow()
+        return readResult.fold(
+            { checkResultType("readAfterExecution", context.response, typeInfo.outputType) },
+            { currEx ->
+                // add the original exception as a suppressed exception
+                result.exceptionOrNull()?.let { currEx.addSuppressed(it) }
+                Result.failure(currEx)
+            },
+        )
     }
 }

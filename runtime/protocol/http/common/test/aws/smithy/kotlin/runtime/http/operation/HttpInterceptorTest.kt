@@ -14,6 +14,7 @@ import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlin.IllegalStateException
 import kotlin.test.*
 
 /**
@@ -233,5 +234,35 @@ class HttpInterceptorTest {
         }
 
         testMapFailure(interceptor)
+    }
+
+    @Test
+    fun testReadAfterExecutionSuppressedException() = runTest {
+        val interceptor = object : HttpInterceptor {
+            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+                assertTrue(context.response.isFailure)
+                return super.modifyBeforeCompletion(context)
+            }
+
+            override fun readAfterExecution(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>) {
+                throw IllegalStateException("modified exception")
+            }
+        }
+
+        val serialized = HttpRequestBuilder()
+        val op = newTestOperation<Unit, Unit>(serialized, Unit)
+        op.interceptors.add(interceptor)
+
+        val client = newMockHttpClient {
+            failOnAttempts = setOf(1)
+            failWithRetryableError = false
+        }
+
+        val ex = assertFailsWith<IllegalStateException> {
+            op.roundTrip(client, Unit)
+        }
+
+        assertEquals(1, ex.suppressed.size)
+        assertIs<TestException>(ex.suppressed.last())
     }
 }
