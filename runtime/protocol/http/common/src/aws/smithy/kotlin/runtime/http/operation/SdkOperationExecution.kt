@@ -10,9 +10,12 @@ import aws.smithy.kotlin.runtime.client.SdkLogMode
 import aws.smithy.kotlin.runtime.client.sdkLogMode
 import aws.smithy.kotlin.runtime.http.HttpHandler
 import aws.smithy.kotlin.runtime.http.auth.HttpSigner
+import aws.smithy.kotlin.runtime.http.interceptors.InterceptorExecutor
 import aws.smithy.kotlin.runtime.http.middleware.RetryMiddleware
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.dumpRequest
+import aws.smithy.kotlin.runtime.http.request.immutableView
+import aws.smithy.kotlin.runtime.http.request.toBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
 import aws.smithy.kotlin.runtime.http.response.complete
@@ -53,10 +56,10 @@ public typealias SdkHttpRequest = OperationRequest<HttpRequestBuilder>
  *                              |  OnEachAttempt |
  *                              |      |         |
  *                              |      v         |
- *                              | <Deserialize>  |
+ *                              |   <Signing>    |
  *                              |      |         |
  *                              |      v         |
- *                              |   <Signing>    |
+ *                              | <Deserialize>  |
  *                              |      |         |
  *                              |      v         |
  *                              |   Receive      |
@@ -142,30 +145,60 @@ internal fun <Request, Response> SdkOperationExecution<Request, Response>.decora
     handler: HttpHandler,
     op: SdkHttpOperation<Request, Response>,
 ): Handler<OperationRequest<Request>, Response> {
+    val interceptors = InterceptorExecutor<Request, Response>(op.context, op.interceptors, op.typeInfo)
     // ensure http calls are tracked
     receive.register(HttpCallMiddleware())
+    // run before trace middleware because interceptors can modify right before sending to an engine
+    receive.register(InterceptorTransmitMiddleware(interceptors))
     receive.intercept(Phase.Order.After, ::httpTraceMiddleware)
 
     val receiveHandler = decorateHandler(handler, receive)
-    val authHandler = HttpAuthHandler(receiveHandler, signer)
-    val deserializeHandler = op.deserializer.decorate(authHandler)
-    val onEachAttemptHandler = decorateHandler(deserializeHandler, onEachAttempt)
-    val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy))
+    val deserializeHandler = op.deserializer.decorate(receiveHandler, interceptors)
+    val authHandler = HttpAuthHandler(deserializeHandler, signer, interceptors)
+    val onEachAttemptHandler = decorateHandler(authHandler, onEachAttempt)
+    val retryHandler = decorateHandler(onEachAttemptHandler, RetryMiddleware(retryStrategy, retryPolicy, interceptors))
 
     val mutateHandler = decorateHandler(MutateHandler(retryHandler), mutate)
-    val serializeHandler = op.serializer.decorate(mutateHandler)
-    return decorateHandler(InitializeHandler(serializeHandler), initialize)
+    val serializeHandler = op.serializer.decorate(mutateHandler, interceptors)
+    val initializeHandler = decorateHandler(InitializeHandler(serializeHandler), initialize)
+    return OperationHandler(initializeHandler, interceptors)
 }
 
 private fun <I, O> HttpSerialize<I>.decorate(
     inner: Handler<SdkHttpRequest, O>,
-): Handler<OperationRequest<I>, O> = SerializeHandler(inner, ::serialize)
+    interceptors: InterceptorExecutor<I, O>,
+): Handler<OperationRequest<I>, O> = SerializeHandler(inner, ::serialize, interceptors)
 
-private fun <O> HttpDeserialize<O>.decorate(
+private fun <I, O> HttpDeserialize<O>.decorate(
     inner: Handler<SdkHttpRequest, HttpCall>,
-): Handler<SdkHttpRequest, O> = DeserializeHandler(inner, ::deserialize)
+    interceptors: InterceptorExecutor<I, O>,
+): Handler<SdkHttpRequest, O> = DeserializeHandler(inner, ::deserialize, interceptors)
 
 // internal glue used to marry one phase to another
+
+/**
+ * Outermost handler that wraps the entire middleware pipeline and handles interceptor hooks related
+ * to the start/end of an operation
+ */
+private class OperationHandler<Input, Output>(
+    private val inner: Handler<OperationRequest<Input>, Output>,
+    private val interceptors: InterceptorExecutor<Input, Output>,
+) : Handler<OperationRequest<Input>, Output> {
+    override suspend fun call(request: OperationRequest<Input>): Output {
+        val result = interceptors.readBeforeExecution(request.subject)
+            .mapCatching {
+                inner.call(request)
+            }
+            .let {
+                interceptors.modifyBeforeCompletion(it)
+            }
+            .let {
+                interceptors.readAfterExecution(it)
+            }
+
+        return result.getOrThrow()
+    }
+}
 
 private class InitializeHandler<Input, Output>(
     private val inner: Handler<Input, Output>,
@@ -176,16 +209,26 @@ private class InitializeHandler<Input, Output>(
 private class SerializeHandler<Input, Output> (
     private val inner: Handler<SdkHttpRequest, Output>,
     private val mapRequest: suspend (ExecutionContext, Input) -> HttpRequestBuilder,
+    private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<OperationRequest<Input>, Output> {
 
     @OptIn(ExperimentalTime::class)
     override suspend fun call(request: OperationRequest<Input>): Output {
+        val modified = interceptors.modifyBeforeSerialization(request.subject)
+            .let { request.copy(subject = it) }
+
+        interceptors.readBeforeSerialization(modified.subject)
+
+        // FIXME - remove timed value to fix 1.6.x compat?
         val tv = measureTimedValue {
-            mapRequest(request.context, request.subject)
+            mapRequest(modified.context, modified.subject)
         }
 
+        val requestBuilder = tv.value
+        interceptors.readAfterSerialization(requestBuilder.immutableView())
+
         coroutineContext.trace<SerializeHandler<*, *>> { "request serialized in ${tv.duration}" }
-        return inner.call(SdkHttpRequest(request.context, tv.value))
+        return inner.call(SdkHttpRequest(modified.context, requestBuilder))
     }
 }
 
@@ -195,29 +238,47 @@ private class MutateHandler<Output> (
     override suspend fun call(request: SdkHttpRequest): Output = inner.call(request)
 }
 
-private class HttpAuthHandler<Output>(
+private class HttpAuthHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, Output>,
     private val signer: HttpSigner,
+    private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
     override suspend fun call(request: SdkHttpRequest): Output {
-        signer.sign(request.context, request.subject)
-        return inner.call(request)
+        val modified = interceptors.modifyBeforeSigning(request.subject.immutableView(true))
+            .let { request.copy(subject = it.toBuilder()) }
+
+        interceptors.readBeforeSigning(modified.subject.immutableView())
+        signer.sign(modified.context, modified.subject)
+        interceptors.readAfterSigning(modified.subject.immutableView())
+        return inner.call(modified)
     }
 }
 
-private class DeserializeHandler<Output>(
+private class DeserializeHandler<Input, Output>(
     private val inner: Handler<SdkHttpRequest, HttpCall>,
     private val mapResponse: suspend (ExecutionContext, HttpResponse) -> Output,
+    private val interceptors: InterceptorExecutor<Input, Output>,
 ) : Handler<SdkHttpRequest, Output> {
 
     @OptIn(ExperimentalTime::class)
     override suspend fun call(request: SdkHttpRequest): Output {
         val call = inner.call(request)
+
+        val modified = interceptors.modifyBeforeDeserialization(call)
+            .let { call.copy(response = it) }
+
+        interceptors.readBeforeDeserialization(modified)
+
         val tv = measureTimedValue {
-            mapResponse(request.context, call.response)
+            mapResponse(request.context, modified.response)
         }
-        coroutineContext.trace<DeserializeHandler<*>> { "response deserialized in: ${tv.duration}" }
-        return tv.value
+
+        coroutineContext.trace<DeserializeHandler<*, *>> { "response deserialized in: ${tv.duration}" }
+
+        val output = tv.value
+        interceptors.readAfterDeserialization(output, modified)
+
+        return output
     }
 }
 
@@ -264,4 +325,20 @@ private suspend fun httpTraceMiddleware(request: SdkHttpRequest, next: Handler<S
     }
 
     return call
+}
+
+/**
+ * Default middleware that handles interceptor hooks for before/after transmit
+ */
+private class InterceptorTransmitMiddleware<I, O>(
+    private val interceptors: InterceptorExecutor<I, O>,
+) : Middleware<SdkHttpRequest, HttpCall> {
+    override suspend fun <H : Handler<SdkHttpRequest, HttpCall>> handle(request: SdkHttpRequest, next: H): HttpCall {
+        val modified = interceptors.modifyBeforeTransmit(request.subject.immutableView(true))
+            .let { request.copy(subject = it.toBuilder()) }
+        interceptors.readBeforeTransmit(modified.subject.immutableView())
+        val call = next.call(modified)
+        interceptors.readAfterTransmit(call)
+        return call
+    }
 }

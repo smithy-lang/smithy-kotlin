@@ -7,12 +7,14 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
+import aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor
 import aws.smithy.kotlin.runtime.http.response.complete
 import aws.smithy.kotlin.runtime.util.InternalApi
 import aws.smithy.kotlin.runtime.util.Uuid
 import aws.smithy.kotlin.runtime.util.get
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
+import kotlin.reflect.KClass
 
 /**
  * A (Smithy) HTTP based operation.
@@ -29,11 +31,19 @@ public class SdkHttpOperation<I, O> internal constructor(
     public val context: ExecutionContext,
     internal val serializer: HttpSerialize<I>,
     internal val deserializer: HttpDeserialize<O>,
+    internal val typeInfo: OperationTypeInfo,
 ) {
     init {
         val sdkRequestId = Uuid.random().toString()
         context[HttpOperationContext.SdkRequestId] = sdkRequestId
     }
+
+    /**
+     * Interceptors that will be executed as part of this operation. The difference between phases and interceptors
+     * is the former is internal only whereas the latter is external customer facing. Middleware is also allowed to
+     * suspend whereas interceptors are meant to be executed quickly.
+     */
+    internal val interceptors = mutableListOf<HttpInterceptor>()
 
     /**
      * Install a middleware into this operation's execution stack
@@ -48,8 +58,11 @@ public class SdkHttpOperation<I, O> internal constructor(
     public fun install(middleware: InlineMiddleware<I, O>) { middleware.install(this) }
 
     public companion object {
-        public inline fun <I, O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
-            SdkHttpOperationBuilder<I, O>().apply(block).build()
+        public inline fun <reified I, reified O> build(block: SdkHttpOperationBuilder<I, O>.() -> Unit): SdkHttpOperation<I, O> =
+            SdkHttpOperationBuilder<I, O>(
+                I::class,
+                O::class,
+            ).apply(block).build()
     }
 }
 
@@ -90,8 +103,16 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
     }
 }
 
+internal data class OperationTypeInfo(
+    val inputType: KClass<*>,
+    val outputType: KClass<*>,
+)
+
 @InternalApi
-public class SdkHttpOperationBuilder<I, O> {
+public class SdkHttpOperationBuilder<I, O> (
+    private val inputType: KClass<*>,
+    private val outputType: KClass<*>,
+) {
     public var serializer: HttpSerialize<I>? = null
     public var deserializer: HttpDeserialize<O>? = null
     public val execution: SdkOperationExecution<I, O> = SdkOperationExecution()
@@ -100,13 +121,15 @@ public class SdkHttpOperationBuilder<I, O> {
     public fun build(): SdkHttpOperation<I, O> {
         val opSerializer = requireNotNull(serializer) { "SdkHttpOperation.serializer must not be null" }
         val opDeserializer = requireNotNull(deserializer) { "SdkHttpOperation.deserializer must not be null" }
-        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer)
+        val typeInfo = OperationTypeInfo(inputType, outputType)
+        return SdkHttpOperation(execution, context.build(), opSerializer, opDeserializer, typeInfo)
     }
 }
 
 /**
  * Configure HTTP operation context elements
  */
+@InternalApi
 public inline fun <I, O> SdkHttpOperationBuilder<I, O>.context(block: HttpOperationContext.Builder.() -> Unit) {
     context.apply(block)
 }
