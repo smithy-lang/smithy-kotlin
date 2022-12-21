@@ -38,6 +38,9 @@ object SymbolProperty {
 
     // controls whether the property type is `var` vs `val` when formatted as a property
     const val PROPERTY_TYPE_MUTABILITY: String = "propertyTypeMutability"
+
+    // Denotes whether a symbol represents an extension function
+    const val IS_EXTENSION: String = "isExtension"
 }
 
 /**
@@ -172,3 +175,9 @@ val Symbol.shape: Shape?
  * Get the nullable version of a symbol
  */
 fun Symbol.asNullable(): Symbol = toBuilder().boxed().build()
+
+/**
+ * Check whether a symbol represents an extension
+ */
+val Symbol.isExtension: Boolean
+    get() = getProperty(SymbolProperty.IS_EXTENSION).getOrNull() == true

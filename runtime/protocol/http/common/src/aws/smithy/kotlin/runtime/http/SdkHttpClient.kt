@@ -5,8 +5,7 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngine
-import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineClosedException
+import aws.smithy.kotlin.runtime.http.engine.*
 import aws.smithy.kotlin.runtime.http.engine.SdkRequestContextElement
 import aws.smithy.kotlin.runtime.http.engine.createCallContext
 import aws.smithy.kotlin.runtime.http.operation.SdkHttpRequest
@@ -23,12 +22,10 @@ public typealias HttpHandler = Handler<SdkHttpRequest, HttpCall>
 
 /**
  * Create an [SdkHttpClient] with the given engine, and optionally configure it
- * This will **not** manage the engine lifetime, the caller is expected to close it.
  */
 public fun sdkHttpClient(
     engine: HttpClientEngine,
-    manageEngine: Boolean = false,
-): SdkHttpClient = SdkHttpClient(engine, manageEngine)
+): SdkHttpClient = SdkHttpClient(engine)
 
 /**
  * An HTTP client capable of round tripping requests and responses
@@ -37,7 +34,6 @@ public fun sdkHttpClient(
  */
 public class SdkHttpClient(
     public val engine: HttpClientEngine,
-    private val manageEngine: Boolean = false,
 ) : HttpHandler, Closeable {
     private val closed = atomic(false)
 
@@ -60,8 +56,6 @@ public class SdkHttpClient(
      */
     override fun close() {
         if (!closed.compareAndSet(false, true)) return
-        if (manageEngine) {
-            engine.close()
-        }
+        engine.close()
     }
 }

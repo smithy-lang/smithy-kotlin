@@ -144,7 +144,7 @@ open class HttpEngineBenchmarks {
         println("benchmark test server listening on: localhost:$serverPort")
         server.start(false)
         val engine = engines[httpClientName]!!.create()
-        httpClient = sdkHttpClient(engine, manageEngine = true)
+        httpClient = sdkHttpClient(engine)
     }
 
     @TearDown(Level.Trial)

@@ -100,6 +100,11 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             .closeBlock("}")
             .write("")
 
+        if (ctx.protocolGenerator != null) { // returns default impl, which only exists if there's a protocol generator
+            renderWithConfig()
+            writer.write("")
+        }
+
         operations.forEach { renderOperationDslOverload(operationsIndex, it) }
     }
 
@@ -179,6 +184,17 @@ class ServiceClientGenerator(private val ctx: RenderingContext<ServiceShape>) {
             writer.addImport(it)
         }
         writer.write("public #L", signature)
+    }
+
+    private fun renderWithConfig() {
+        writer.dokka {
+            write("Create a new subclient starting from the current one's config.")
+            write("Defaulted closeable resources are shared between clients.")
+            write("This method allows the caller to perform scoped config overrides for one or more client operations.")
+        }
+        writer.withBlock("public fun #1T.withConfig(block: #1T.Config.Builder.() -> Unit): #1T =", "", serviceSymbol) {
+            write("Default#L(config.toBuilder().apply(block).build())", serviceSymbol.name)
+        }
     }
 
     private fun renderOperationDslOverload(opIndex: OperationIndex, op: OperationShape) {

@@ -5,6 +5,9 @@
 
 package aws.smithy.kotlin.runtime.io
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+import kotlinx.atomicfu.atomic
+
 // this really should live in the stdlib...
 // https://youtrack.jetbrains.com/issue/KT-31066
 
@@ -17,6 +20,34 @@ public expect interface Closeable {
      * Release any resources held by this object
      */
     public fun close()
+}
+
+/**
+ * A [Closeable] resource that may be shared by multiple consumers.
+ *
+ * A user invokes the [share] method to indicate that they're using the resource, and calls [close] to release like with
+ * a standard [Closeable], but the entity is only truly closed once the final user has released it.
+ */
+public interface SharedCloseable : Closeable {
+    public fun share()
+}
+
+/**
+ * Wraps a [Closeable], implementing share count logic to expose the delegate as a [SharedCloseable].
+ */
+@InternalApi
+public class SharedCloseableImpl<T : Closeable>(private val delegate: T) : SharedCloseable {
+    private val shareCount = atomic(0)
+
+    public override fun share() {
+        shareCount.incrementAndGet()
+    }
+
+    public override fun close() {
+        if (shareCount.decrementAndGet() <= 0) {
+            delegate.close()
+        }
+    }
 }
 
 /**

@@ -4,12 +4,18 @@
  */
 package aws.smithy.kotlin.runtime.auth.awscredentials
 
+import aws.smithy.kotlin.runtime.io.SharedCloseable
+
 /**
  * Represents a producer/source of AWS credentials
  */
-public interface CredentialsProvider {
+public interface CredentialsProvider : SharedCloseable {
     /**
      * Request credentials from the provider
      */
     public suspend fun getCredentials(): Credentials
+
+    public override fun share() {}
+
+    public override fun close() {}
 }

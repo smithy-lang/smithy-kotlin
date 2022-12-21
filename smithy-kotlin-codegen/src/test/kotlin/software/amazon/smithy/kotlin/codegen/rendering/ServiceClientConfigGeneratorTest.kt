@@ -45,7 +45,7 @@ public class Config private constructor(builder: Builder) : HttpClientConfig, Id
         contents.shouldContainWithDiff(expectedCtor)
 
         val expectedProps = """
-    override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
+    override val httpClientEngine: HttpClientEngine = builder.httpClientEngine?.borrow() ?: DefaultHttpEngine().manage()
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider = builder.idempotencyTokenProvider ?: IdempotencyTokenProvider.Default
     override val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors

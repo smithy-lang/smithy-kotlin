@@ -12,10 +12,7 @@ import software.amazon.smithy.codegen.core.SymbolReference
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionWriter
 import software.amazon.smithy.kotlin.codegen.lang.isBuiltIn
-import software.amazon.smithy.kotlin.codegen.model.defaultValue
-import software.amazon.smithy.kotlin.codegen.model.getTrait
-import software.amazon.smithy.kotlin.codegen.model.isBoxed
-import software.amazon.smithy.kotlin.codegen.model.isDeprecated
+import software.amazon.smithy.kotlin.codegen.model.*
 import software.amazon.smithy.kotlin.codegen.utils.getOrNull
 import software.amazon.smithy.model.Model
 import software.amazon.smithy.model.shapes.MemberShape
@@ -91,7 +88,9 @@ class KotlinWriter(
         if (symbol.namespace.isNotEmpty() && symbol.namespace != fullPackageName) {
             // Check to see if another symbol with the same name but different namespace
             // is already contained in imports.  If so, in codegen it will be fully qualified
-            if (imports.symbolCollides(symbol.namespace, symbol.name)) {
+            // Note that the compiler can resolve same-name extensions from what they're called on, the qualification
+            // isn't needed
+            if (!symbol.isExtension && imports.symbolCollides(symbol.namespace, symbol.name)) {
                 fullyQualifiedSymbols.add(symbol.toFullyQualifiedSymbolName())
             } else {
                 imports.addImport(symbol.namespace, symbol.name, alias)

@@ -39,7 +39,7 @@ public abstract class AbstractEngineTest {
             .filter { it.name !in skipEngines }
             .forEach { engineFactory ->
                 val engine = engineFactory.create(builder.engineConfig)
-                sdkHttpClient(engine, manageEngine = true).use { client ->
+                sdkHttpClient(engine).use { client ->
                     testWithClient(client, builder = builder)
                 }
             }

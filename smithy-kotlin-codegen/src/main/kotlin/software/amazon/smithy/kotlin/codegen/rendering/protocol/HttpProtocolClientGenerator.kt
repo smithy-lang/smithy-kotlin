@@ -5,7 +5,6 @@
 package software.amazon.smithy.kotlin.codegen.rendering.protocol
 
 import software.amazon.smithy.aws.traits.HttpChecksumTrait
-import software.amazon.smithy.codegen.core.Symbol
 import software.amazon.smithy.kotlin.codegen.core.*
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
 import software.amazon.smithy.kotlin.codegen.integration.SectionKey
@@ -47,7 +46,9 @@ abstract class HttpProtocolClientGenerator(
 
         writer.openBlock("internal class Default${symbol.name}(override val config: ${symbol.name}.Config) : ${symbol.name} {")
             .call { renderProperties(writer) }
+            .write("")
             .call { renderInit(writer) }
+            .write("")
             .call {
                 // allow middleware to write properties that can be re-used
                 val appliedMiddleware = mutableSetOf<ProtocolMiddleware>()
@@ -63,7 +64,9 @@ abstract class HttpProtocolClientGenerator(
                     renderOperationBody(writer, operationsIndex, op)
                 }
             }
+            .write("")
             .call { renderClose(writer) }
+            .write("")
             .call { renderAdditionalMethods(writer) }
             .closeBlock("}")
             .write("")
@@ -90,26 +93,23 @@ abstract class HttpProtocolClientGenerator(
         writer.dependencies.addAll(KotlinDependency.HTTP.dependencies)
     }
 
-    //  defaults to Ktor since it's the only available engine in smithy-kotlin runtime
     /**
-     * The client engine to default to when one is not given in config. This type *MUST* be default constructable
-     * or else you need to override [renderInit] and construct it manually
+     * Render the class initialization block, the base behavior of which is to accept and configure the HTTP client engine.
+     * Use [renderAdditionalInit] to add logic within this block.
      */
-    protected open val defaultHttpClientEngineSymbol: Symbol = buildSymbol {
-        name = "DefaultHttpEngine"
-        namespace(KotlinDependency.DEFAULT_HTTP_ENGINE)
-    }
+    private fun renderInit(writer: KotlinWriter) {
+        writer.withBlock("init {", "}") {
+            withBlock("if (config.httpClientEngine.#T()) {", "}", RuntimeTypes.Http.Engine.isManaged) {
+                write("config.httpClientEngine.share()")
+            }
+            write("client = #T(config.httpClientEngine)", RuntimeTypes.Http.SdkHttpClientFn)
 
-    /**
-     * Render the class initialization block. By default this configures the HTTP client
-     */
-    protected open fun renderInit(writer: KotlinWriter) {
-        writer.addImport(defaultHttpClientEngineSymbol)
-        writer.openBlock("init {", "}") {
-            writer.write("val httpClientEngine = config.httpClientEngine ?: #T()", defaultHttpClientEngineSymbol)
-            writer.write("client = sdkHttpClient(httpClientEngine, manageEngine = config.httpClientEngine == null)")
+            write("")
+            renderAdditionalInit(writer)
         }
     }
+
+    protected open fun renderAdditionalInit(writer: KotlinWriter) { }
 
     /**
      * Render the full operation body (signature, setup, execute)
@@ -272,11 +272,9 @@ abstract class HttpProtocolClientGenerator(
     }
 
     protected open fun renderClose(writer: KotlinWriter) {
-        writer.write("")
-            .openBlock("override fun close() {")
-            .write("client.close()")
-            .closeBlock("}")
-            .write("")
+        writer.withBlock("override fun close() {", "}") {
+            write("client.close()")
+        }
     }
 
     /**

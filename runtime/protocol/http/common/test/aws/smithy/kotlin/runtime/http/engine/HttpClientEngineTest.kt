@@ -54,7 +54,7 @@ class HttpClientEngineTest {
     }
 
     private val engine = MockEngine()
-    private val client = sdkHttpClient(engine, manageEngine = true)
+    private val client = sdkHttpClient(engine)
 
     private val HttpCall.job: Job
         get() = callContext.job
@@ -165,12 +165,5 @@ class HttpClientEngineTest {
             client.call(SdkHttpRequest(HttpRequestBuilder()))
         }
         Unit
-    }
-
-    @Test
-    fun testCloseUnmanagedEngine() = runTest {
-        val client = sdkHttpClient(engine, manageEngine = false)
-        client.close()
-        assertFalse(engine.coroutineContext.job.isCompleted)
     }
 }
