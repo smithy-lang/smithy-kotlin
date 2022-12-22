@@ -121,6 +121,7 @@ abstract class HttpProtocolClientGenerator(
         writer.openBlock("override #L {", signature)
             .call { renderOperationSetup(writer, opIndex, op) }
             .call { renderOperationMiddleware(op, writer) }
+            .call { renderFinalizeBeforeExecute(writer, opIndex, op) }
             .call { renderOperationExecute(writer, opIndex, op) }
             .closeBlock("}")
     }
@@ -198,9 +199,12 @@ abstract class HttpProtocolClientGenerator(
             }
         }
 
-        writer.write("op.interceptors.addAll(config.interceptors)")
-
         writer.write("op.execution.retryStrategy = config.retryStrategy")
+    }
+
+    protected open fun renderFinalizeBeforeExecute(writer: KotlinWriter, opIndex: OperationIndex, op: OperationShape) {
+        // add config interceptors last (after all middleware and SDK defaults have had a chance to register)
+        writer.write("op.interceptors.addAll(config.interceptors)")
     }
 
     /**

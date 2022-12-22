@@ -47,6 +47,7 @@ object RuntimeTypes {
             val HttpRequestBuilder = runtimeSymbol("HttpRequestBuilder", KotlinDependency.HTTP, "request")
             val url = runtimeSymbol("url", KotlinDependency.HTTP, "request")
             val headers = runtimeSymbol("headers", KotlinDependency.HTTP, "request")
+            val toBuilder = runtimeSymbol("toBuilder", KotlinDependency.HTTP, "request")
         }
 
         object Response {
@@ -65,6 +66,7 @@ object RuntimeTypes {
             val HttpDeserialize = runtimeSymbol("HttpDeserialize", KotlinDependency.HTTP, "operation")
             val HttpSerialize = runtimeSymbol("HttpSerialize", KotlinDependency.HTTP, "operation")
             val SdkHttpOperation = runtimeSymbol("SdkHttpOperation", KotlinDependency.HTTP, "operation")
+            val SdkHttpRequest = runtimeSymbol("SdkHttpRequest", KotlinDependency.HTTP, "operation")
             val OperationRequest = runtimeSymbol("OperationRequest", KotlinDependency.HTTP, "operation")
             val context = runtimeSymbol("context", KotlinDependency.HTTP, "operation")
             val roundTrip = runtimeSymbol("roundTrip", KotlinDependency.HTTP, "operation")
@@ -144,6 +146,11 @@ object RuntimeTypes {
         object Smithy {
             val Document = runtimeSymbol("Document", KotlinDependency.CORE, "smithy")
             val buildDocument = runtimeSymbol("buildDocument", KotlinDependency.CORE, "smithy")
+        }
+
+        object Client {
+            val RequestInterceptorContext = runtimeSymbol("RequestInterceptorContext", KotlinDependency.CORE, "client")
+            val ProtocolRequestInterceptorContext = runtimeSymbol("ProtocolRequestInterceptorContext", KotlinDependency.CORE, "client")
         }
     }
 
@@ -245,11 +252,12 @@ object RuntimeTypes {
 
     object Tracing {
         object Core {
-            val DefaultTracer = runtimeSymbol("DefaultTracer", KotlinDependency.CORE, "tracing")
-            val LoggingTraceProbe = runtimeSymbol("LoggingTraceProbe", KotlinDependency.CORE, "tracing")
-            val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.CORE, "tracing")
-            val Tracer = runtimeSymbol("Tracer", KotlinDependency.CORE, "tracing")
-            val withRootTraceSpan = runtimeSymbol("withRootTraceSpan", KotlinDependency.CORE, "tracing")
+            val debug = runtimeSymbol("debug", KotlinDependency.TRACING_CORE)
+            val DefaultTracer = runtimeSymbol("DefaultTracer", KotlinDependency.TRACING_CORE)
+            val LoggingTraceProbe = runtimeSymbol("LoggingTraceProbe", KotlinDependency.TRACING_CORE)
+            val TraceProbe = runtimeSymbol("TraceProbe", KotlinDependency.TRACING_CORE)
+            val Tracer = runtimeSymbol("Tracer", KotlinDependency.TRACING_CORE)
+            val withRootTraceSpan = runtimeSymbol("withRootTraceSpan", KotlinDependency.TRACING_CORE)
         }
     }
 

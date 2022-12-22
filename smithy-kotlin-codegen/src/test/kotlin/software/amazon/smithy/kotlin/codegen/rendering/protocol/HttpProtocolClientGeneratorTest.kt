@@ -88,6 +88,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFoo-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
@@ -107,6 +108,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooNoInput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
@@ -126,6 +128,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooNoOutput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
@@ -145,6 +148,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
@@ -164,6 +168,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.execute(client, input, block)
@@ -183,6 +188,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingOutputNoInput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.execute(client, input, block)
@@ -202,6 +208,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooStreamingInputNoOutput-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
@@ -221,6 +228,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooNoRequired-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)
@@ -240,6 +248,7 @@ class HttpProtocolClientGeneratorTest {
         }
         op.execution.retryStrategy = config.retryStrategy
         op.install(MockMiddleware(configurationField1 = "testing"))
+        op.interceptors.addAll(config.interceptors)
         val rootSpan = config.tracer.createRootSpan("GetFooSomeRequired-${'$'}{op.context.sdkRequestId}")
         return coroutineContext.withRootTraceSpan(rootSpan) {
             op.roundTrip(client, input)

@@ -153,23 +153,23 @@ public class Config private constructor(builder: Builder) {
         contents.shouldContain(expectedCtor)
 
         val expectedProps = """
-        public var boolProp: Boolean? = null
-        /**
-         * non-null-int
-         */
-        public var intProp: Int = 1
-        public var nullIntProp: Int? = null
-        public var stringProp: String? = null
+    public val boolProp: Boolean? = builder.boolProp
+    public val intProp: Int = builder.intProp
+    public val nullIntProp: Int? = builder.nullIntProp
+    public val stringProp: String? = builder.stringProp
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilderProps = """
         public var boolProp: Boolean? = null
+
         /**
          * non-null-int
          */
         public var intProp: Int = 1
+
         public var nullIntProp: Int? = null
+
         public var stringProp: String? = null
 """
         contents.shouldContainWithDiff(expectedBuilderProps)
@@ -342,9 +342,13 @@ public class Config private constructor(builder: Builder) {
 
         val expectedImplProps = """
         public var defaultFoo: Foo = DefaultFoo
+
         public var nullFoo: Foo? = null
+
         public var requiredDefaultedFoo: Foo? = null
+
         public var requiredFoo: Foo? = null
+
         public var requiredFoo2: Foo? = null
 """
         contents.shouldContainWithDiff(expectedImplProps)
