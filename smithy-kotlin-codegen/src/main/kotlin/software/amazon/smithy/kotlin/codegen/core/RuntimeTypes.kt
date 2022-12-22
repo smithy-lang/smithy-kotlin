@@ -92,6 +92,9 @@ object RuntimeTypes {
             val HttpClientEngine = runtimeSymbol("HttpClientEngine", KotlinDependency.HTTP, "engine")
             val HttpClientEngineConfig = runtimeSymbol("HttpClientEngineConfig", KotlinDependency.HTTP, "engine")
         }
+        object Interceptors {
+            val HttpInterceptor = runtimeSymbol("HttpInterceptor", KotlinDependency.HTTP, "interceptors")
+        }
     }
 
     object Core {
