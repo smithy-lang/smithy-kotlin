@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.14.2] - 12/22/2022
+
+### Fixes
+* (**runtime**) Fix incorrect CRC32c output when trying to hash more than 7 bytes
+
+### Miscellaneous
+* Move test utilities out of **smithy-kotlin-codegen** package into new **smithy-kotlin-codegen-testutils** package. This eliminates the need for the codegen package to declare runtime dependencies on JUnit and other test packages.
+
 ## [0.14.1] - 12/15/2022
 
 ### Features
