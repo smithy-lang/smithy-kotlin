@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.http.operation.OperationTypeInfo
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.util.Attributes
 import kotlin.reflect.KClass
 
 // Various contexts for each hook based on available information.
@@ -25,36 +24,36 @@ import kotlin.reflect.KClass
 
 private data class HttpInputInterceptorContext<I>(
     override var request: I,
-    private val executionContext: ExecutionContext,
-) : RequestInterceptorContext<I>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : RequestInterceptorContext<I>
 
 private data class HttpProtocolRequestInterceptorContext<I>(
     override val request: I,
     override var protocolRequest: HttpRequest,
-    private val executionContext: ExecutionContext,
-) : ProtocolRequestInterceptorContext<I, HttpRequest>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ProtocolRequestInterceptorContext<I, HttpRequest>
 
 private data class HttpProtocolResponseInterceptorContext<I>(
     override val request: I,
     override val protocolRequest: HttpRequest,
     override var protocolResponse: HttpResponse,
-    private val executionContext: ExecutionContext,
-) : ProtocolResponseInterceptorContext<I, HttpRequest, HttpResponse>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ProtocolResponseInterceptorContext<I, HttpRequest, HttpResponse>
 
 private data class HttpAttemptInterceptorContext<I, O>(
     override val request: I,
     override var response: Result<O>,
     override val protocolRequest: HttpRequest,
     override val protocolResponse: HttpResponse?,
-    private val executionContext: ExecutionContext,
-) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse?>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse?>
 
 private data class HttpInputOutputInterceptorContext<I, O>(
     override val request: I,
     override var response: Result<O>,
     private val call: HttpCall,
-    private val executionContext: ExecutionContext,
-) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse>, Attributes by executionContext {
+    override val executionContext: ExecutionContext,
+) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse> {
 
     override val protocolRequest: HttpRequest = call.request
     override val protocolResponse: HttpResponse = call.response
@@ -65,8 +64,8 @@ private data class HttpFinalInterceptorContext<I, O>(
     override var response: Result<O>,
     override val protocolRequest: HttpRequest?,
     override val protocolResponse: HttpResponse?,
-    private val executionContext: ExecutionContext,
-) : ResponseInterceptorContext<I, O, HttpRequest?, HttpResponse?>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ResponseInterceptorContext<I, O, HttpRequest?, HttpResponse?>
 
 // TODO - investigate propagating Any as upper bounds for SdkHttpOperation <I,O> generics
 /**
