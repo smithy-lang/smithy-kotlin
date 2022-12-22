@@ -29,31 +29,31 @@ import kotlin.test.*
 class HttpInterceptorTest {
 
     class TestWriteHook : HttpInterceptor {
-        override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
+        override suspend fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
             val input = assertIs<TestInput>(context.request)
             return input.copy(value = "modified")
         }
 
-        override fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+        override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
             val builder = context.protocolRequest.toBuilder()
             assertEquals(context.protocolRequest.headers["req-header"], "modified")
             builder.headers["req-header"] = "modify-before-retry-loop"
             return builder.build()
         }
 
-        override fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+        override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
             val builder = context.protocolRequest.toBuilder()
             builder.headers["req-header"] = "modify-before-signing"
             return builder.build()
         }
 
-        override fun modifyBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+        override suspend fun modifyBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
             val builder = context.protocolRequest.toBuilder()
             builder.headers["req-header"] = "modify-before-transmit"
             return builder.build()
         }
 
-        override fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
+        override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
             val modifiedHeaders = Headers {
                 appendAll(context.protocolResponse.headers)
                 set("resp-header", "modify-before-deserialization")
@@ -61,14 +61,14 @@ class HttpInterceptorTest {
             return context.protocolResponse.copy(headers = modifiedHeaders)
         }
 
-        override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+        override suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
             val output = assertIs<TestOutput>(context.response.getOrThrow())
             assertEquals("deserialized", output.value)
             val modified = output.copy(value = "modified")
             return Result.success(modified)
         }
 
-        override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+        override suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
             val output = assertIs<TestOutput>(context.response.getOrThrow())
             assertNotNull(context.protocolRequest)
             assertNotNull(context.protocolResponse)
@@ -215,7 +215,7 @@ class HttpInterceptorTest {
     @Test
     fun testMapFailureOnAttempt() = runTest {
         val interceptor = object : HttpInterceptor {
-            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+            override suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
                 assertTrue(context.response.isFailure)
                 return Result.success(TestOutput("ignore-failure"))
             }
@@ -227,7 +227,7 @@ class HttpInterceptorTest {
     @Test
     fun testMapFailureOnCompletion() = runTest {
         val interceptor = object : HttpInterceptor {
-            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+            override suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
                 assertTrue(context.response.isFailure)
                 return Result.success(TestOutput("ignore-failure"))
             }
@@ -239,7 +239,7 @@ class HttpInterceptorTest {
     @Test
     fun testReadAfterExecutionSuppressedException() = runTest {
         val interceptor = object : HttpInterceptor {
-            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+            override suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
                 assertTrue(context.response.isFailure)
                 return super.modifyBeforeCompletion(context)
             }

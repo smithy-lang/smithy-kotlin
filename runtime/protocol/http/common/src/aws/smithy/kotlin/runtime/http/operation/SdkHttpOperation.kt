@@ -43,7 +43,7 @@ public class SdkHttpOperation<I, O> internal constructor(
      * is the former is internal only whereas the latter is external customer facing. Middleware is also allowed to
      * suspend whereas interceptors are meant to be executed quickly.
      */
-    internal val interceptors = mutableListOf<HttpInterceptor>()
+    public val interceptors: MutableList<HttpInterceptor> = mutableListOf()
 
     /**
      * Install a middleware into this operation's execution stack

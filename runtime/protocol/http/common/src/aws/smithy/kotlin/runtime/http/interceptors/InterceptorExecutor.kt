@@ -127,7 +127,7 @@ internal class InterceptorExecutor<I, O>(
         }
     }
 
-    fun modifyBeforeSerialization(input: I): I {
+    suspend fun modifyBeforeSerialization(input: I): I {
         val context = HttpInputInterceptorContext(input as Any, execContext)
         val modified = interceptors.fold(context) { ctx, interceptor ->
             val modified = interceptor.modifyBeforeSerialization(ctx)
@@ -186,7 +186,7 @@ internal class InterceptorExecutor<I, O>(
         interceptor.readAfterSerialization(context)
     }
 
-    fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest =
+    suspend fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
             interceptor.modifyBeforeRetryLoop(context)
         }
@@ -201,7 +201,7 @@ internal class InterceptorExecutor<I, O>(
         }
     }
 
-    fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
+    suspend fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
             interceptor.modifyBeforeSigning(context)
         }
@@ -214,7 +214,7 @@ internal class InterceptorExecutor<I, O>(
         interceptor.readAfterSigning(context)
     }
 
-    fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
+    suspend fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
             interceptor.modifyBeforeTransmit(context)
         }
@@ -228,7 +228,7 @@ internal class InterceptorExecutor<I, O>(
             interceptor.readAfterTransmit(context)
         }
 
-    fun modifyBeforeDeserialization(call: HttpCall): HttpResponse {
+    suspend fun modifyBeforeDeserialization(call: HttpCall): HttpResponse {
         val input = checkNotNull(_lastInput)
         val context = HttpProtocolResponseInterceptorContext(input as Any, call.request, call.response, execContext)
         val modified = runCatching {
@@ -252,7 +252,7 @@ internal class InterceptorExecutor<I, O>(
         interceptors.forEach { interceptor -> interceptor.readAfterDeserialization(context) }
     }
 
-    fun modifyBeforeAttemptCompletion(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?): Result<O> {
+    suspend fun modifyBeforeAttemptCompletion(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?): Result<O> {
         val input = checkNotNull(_lastInput)
 
         @Suppress("UNCHECKED_CAST")
@@ -286,7 +286,7 @@ internal class InterceptorExecutor<I, O>(
         return readResult.getOrThrow()
     }
 
-    fun modifyBeforeCompletion(result: Result<O>): Result<O> {
+    suspend fun modifyBeforeCompletion(result: Result<O>): Result<O> {
         // SAFETY: If we started executing an operation at all the input will be set at least once
         val input = checkNotNull(_lastInput)
 

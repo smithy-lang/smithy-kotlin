@@ -53,7 +53,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeSerialization(context: RequestInterceptorContext<Input>): Input = context.request
+    public suspend fun modifyBeforeSerialization(context: RequestInterceptorContext<Input>): Input = context.request
 
     /**
      * A hook called before the input message is marshalled into a (protocol) transport message.
@@ -89,7 +89,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeRetryLoop(
+    public suspend fun modifyBeforeRetryLoop(
         context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
     ): ProtocolRequest =
         context.protocolRequest
@@ -125,7 +125,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeSigning(
+    public suspend fun modifyBeforeSigning(
         context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
     ): ProtocolRequest =
         context.protocolRequest
@@ -172,7 +172,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeTransmit(
+    public suspend fun modifyBeforeTransmit(
         context: ProtocolRequestInterceptorContext<Input, ProtocolRequest>,
     ): ProtocolRequest =
         context.protocolRequest
@@ -219,7 +219,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [modifyBeforeAttemptCompletion]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeDeserialization(
+    public suspend fun modifyBeforeDeserialization(
         context: ProtocolResponseInterceptorContext<Input, ProtocolRequest, ProtocolResponse>,
     ): ProtocolResponse =
         context.protocolResponse
@@ -269,7 +269,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [readAfterAttempt]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest, ProtocolResponse?>): Result<Output> =
+    public suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest, ProtocolResponse?>): Result<Output> =
         context.response
 
     /**
@@ -307,7 +307,7 @@ public interface Interceptor<
      * **Error Behavior**: If errors are raised by this hook, execution will jump to [readAfterExecution]
      * with the raised error as the [ResponseInterceptorContext.response] result.
      */
-    public fun modifyBeforeCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest?, ProtocolResponse?>): Result<Output> =
+    public suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Input, Output, ProtocolRequest?, ProtocolResponse?>): Result<Output> =
         context.response
 
     /**

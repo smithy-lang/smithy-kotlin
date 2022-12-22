@@ -198,6 +198,8 @@ abstract class HttpProtocolClientGenerator(
             }
         }
 
+        writer.write("op.interceptors.addAll(config.interceptors)")
+
         writer.write("op.execution.retryStrategy = config.retryStrategy")
     }
 
