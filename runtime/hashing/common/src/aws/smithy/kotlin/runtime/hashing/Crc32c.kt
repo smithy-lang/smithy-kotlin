@@ -5,7 +5,6 @@
 package aws.smithy.kotlin.runtime.hashing
 
 import aws.smithy.kotlin.runtime.util.InternalApi
-import kotlin.experimental.and
 
 /**
  * Compute the CRC32C hash of the current [ByteArray]
@@ -82,10 +81,10 @@ private class CRC32CImpl {
             val c3 = (b[off + 3].toInt() xor localCrc) and 0xff
             localCrc = (T[T8_7_start + c0] xor T[T8_6_start + c1] xor T[T8_5_start + c2] xor T[T8_4_start + c3]).toInt()
 
-            val c4 = b[off + 4] and 0xff.toByte()
-            val c5 = b[off + 5] and 0xff.toByte()
-            val c6 = b[off + 6] and 0xff.toByte()
-            val c7 = b[off + 7] and 0xff.toByte()
+            val c4 = b[off + 4].toInt() and 0xff
+            val c5 = b[off + 5].toInt() and 0xff
+            val c6 = b[off + 6].toInt() and 0xff
+            val c7 = b[off + 7].toInt() and 0xff
 
             localCrc = localCrc xor (T[T8_3_start + c4] xor T[T8_2_start + c5] xor T[T8_1_start + c6] xor T[T8_0_start + c7]).toInt()
 
@@ -102,10 +101,6 @@ private class CRC32CImpl {
     }
 
     fun getValue(): Int = crc.inv()
-
-    fun update(b: Int) {
-        crc = crc ushr 8 xor T[(T8_0_start + ((crc xor b) and 0xff))].toInt()
-    }
 
     companion object {
         private const val T8_0_start: Int = 0 * 256

@@ -80,4 +80,14 @@ class Crc32cTest {
         val bytes = crc.digest()
         assertEquals("7q7efA==", bytes.encodeBase64String())
     }
+
+    @Test
+    fun testNegativeByteInput() {
+        val crc = Crc32c()
+        val input = ByteArray(1024) { -1 }
+        crc.update(input)
+
+        val bytes = crc.digest()
+        assertEquals("R+XN5A==", bytes.encodeBase64String())
+    }
 }

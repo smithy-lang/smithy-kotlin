@@ -8,12 +8,9 @@ import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldContainOnlyOnce
 import kotlin.test.assertNotNull
 
-/**
- * This file houses miscellaneous test functions that do not fall under other
- * test categories specified in this package.
- */
+// This file houses miscellaneous test functions that do not fall under other test categories specified in this package.
 
-// Will generate an IDE diff in the case of a test assertion failure.
+/** Generate an IDE diff in the case of a test assertion failure. */
 fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
     try {
         this.shouldContainOnlyOnce(expected)
@@ -22,8 +19,8 @@ fun String?.shouldContainOnlyOnceWithDiff(expected: String) {
     }
 }
 
-// Will generate an IDE diff in the case of a test assertion failure.
-internal fun String?.shouldContainWithDiff(expected: String) {
+/** Generate an IDE diff in the case of a test assertion failure. */
+fun String?.shouldContainWithDiff(expected: String) {
     try {
         this.shouldContain(expected)
     } catch (originalException: AssertionError) {
@@ -46,7 +43,7 @@ fun String.shouldContain(expectedStart: String, expectedEnd: String) {
 fun <T> List<T>.indexOfSublistOrNull(sublist: List<T>, startFrom: Int = 0): Int? =
     drop(startFrom).windowed(sublist.size).indexOf(sublist)
 
-// Format a multi-line string suitable for comparison with codegen, defaults to one level of indention.
+/** Format a multi-line string suitable for comparison with codegen, defaults to one level of indention. */
 fun String.formatForTest(indent: String = "    ") =
     trimIndent()
         .prependIndent(indent)
@@ -54,7 +51,7 @@ fun String.formatForTest(indent: String = "    ") =
         .map { if (it.isBlank()) "" else it }
         .joinToString(separator = "\n") { it }
 
-internal fun String.stripCodegenPrefix(packageName: String = "test"): String {
+fun String.stripCodegenPrefix(packageName: String = "test"): String {
     val packageDirective = "package $packageName"
     return this.substring(this.indexOf(packageDirective) + packageDirective.length).trim()
 }

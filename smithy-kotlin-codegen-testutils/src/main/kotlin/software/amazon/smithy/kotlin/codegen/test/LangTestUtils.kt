@@ -6,11 +6,9 @@ package software.amazon.smithy.kotlin.codegen.test
 
 import kotlin.test.assertEquals
 
-/**
- * This file houses test functions specific to Kotlin language particulars.
- */
+// This file houses test functions specific to Kotlin language particulars.
 
-internal fun String.assertBalancedBracesAndParens() {
+fun String.assertBalancedBracesAndParens() {
     // sanity check since we are testing fragments
     var openBraces = 0
     var closedBraces = 0
