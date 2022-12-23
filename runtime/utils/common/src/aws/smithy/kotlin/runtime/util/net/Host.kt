@@ -6,6 +6,9 @@ package aws.smithy.kotlin.runtime.util.net
 
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
+// FIXME - update Host and usage to take advantage of IpAddr (and relocate parsing, etc)
+// TODO - consider moving this out of utils and into core
+
 /**
  * A [Host] represents a parsed internet host. This may be an internet address (IPv4, IPv6) or a domain name.
  */
