@@ -17,6 +17,7 @@ import software.amazon.smithy.model.knowledge.OperationIndex
 import software.amazon.smithy.model.knowledge.TopDownIndex
 import software.amazon.smithy.model.shapes.OperationShape
 import software.amazon.smithy.model.traits.EndpointTrait
+import software.amazon.smithy.model.traits.HttpChecksumRequiredTrait
 
 /**
  * Renders an implementation of a service interface for HTTP protocol
@@ -255,10 +256,8 @@ abstract class HttpProtocolClientGenerator(
             .forEach { middleware ->
                 middleware.render(ctx, op, writer)
             }
-        if (op.isMD5ChecksumRequired()) {
-            writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
-            writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
-        }
+
+        op.renderIsMd5ChecksumRequired(writer)
     }
 
     protected open fun renderClose(writer: KotlinWriter) {
@@ -273,11 +272,33 @@ abstract class HttpProtocolClientGenerator(
      * Render any additional methods to support client operation
      */
     protected open fun renderAdditionalMethods(writer: KotlinWriter) { }
-}
 
-// TODO https://github.com/awslabs/aws-sdk-kotlin/issues/557
-// Only send MD5 checksums when a request checksum is required and the user has not opted-in to flexible checksums
-private fun OperationShape.isMD5ChecksumRequired(): Boolean {
-    val httpChecksumTrait = getTrait<HttpChecksumTrait>()
-    return httpChecksumTrait?.isRequestChecksumRequired == true && httpChecksumTrait.requestAlgorithmMember == null
+    /**
+     * Render optionally installing Md5ChecksumMiddleware.
+     * The Md5 middleware will only be installed if the operation requires a checksum and the user has not opted-in to flexible checksums.
+     */
+    private fun OperationShape.renderIsMd5ChecksumRequired(writer: KotlinWriter) {
+        val httpChecksumTrait = getTrait<HttpChecksumTrait>()
+
+        // the checksum requirement can be modeled in either HttpChecksumTrait's `requestChecksumRequired` or the HttpChecksumRequired trait
+        if (!hasTrait<HttpChecksumRequiredTrait>() && httpChecksumTrait == null) {
+            return
+        }
+
+        val checksumAlgorithm = ctx.model.getShape(input.get()).getOrNull()
+            ?.members()
+            ?.firstOrNull { it.memberName == httpChecksumTrait?.requestAlgorithmMember?.getOrNull() }
+
+        if (hasTrait<HttpChecksumRequiredTrait>() || httpChecksumTrait?.isRequestChecksumRequired == true) {
+            writer.addImport(RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+
+            checksumAlgorithm?.let {
+                writer.withBlock("if (input.#L == null) {", "}", checksumAlgorithm.defaultName()) {
+                    writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+                }
+            } ?: run {
+                writer.write("op.install(#T())", RuntimeTypes.Http.Middlware.Md5ChecksumMiddleware)
+            }
+        }
+    }
 }

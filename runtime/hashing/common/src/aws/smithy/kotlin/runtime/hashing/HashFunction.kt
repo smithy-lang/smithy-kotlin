@@ -62,13 +62,11 @@ public fun ByteArray.hash(hashSupplier: HashSupplier): ByteArray = hash(hashSupp
 /**
  * Return the [HashFunction] which is represented by this string, or null if none match.
  */
-public fun String.toHashFunction(): HashFunction {
-    return when (this.lowercase()) {
-        "crc32" -> Crc32()
-        "crc32c" -> Crc32c()
-        "sha1" -> Sha1()
-        "sha256" -> Sha256()
-        "md5" -> Md5()
-        else -> throw RuntimeException("$this is not a supported hash function")
-    }
+public fun String.toHashFunction(): HashFunction? = when (this.lowercase()) {
+    "crc32" -> Crc32()
+    "crc32c" -> Crc32c()
+    "sha1" -> Sha1()
+    "sha256" -> Sha256()
+    "md5" -> Md5()
+    else -> null
 }

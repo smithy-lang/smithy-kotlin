@@ -59,6 +59,8 @@ object RuntimeTypes {
             val MutateHeadersMiddleware = runtimeSymbol("MutateHeaders", KotlinDependency.HTTP, "middleware")
             val Retry = runtimeSymbol("Retry", KotlinDependency.HTTP, "middleware")
             val ResolveEndpoint = runtimeSymbol("ResolveEndpoint", KotlinDependency.HTTP, "middleware")
+            val FlexibleChecksumsRequestMiddleware = runtimeSymbol("FlexibleChecksumsRequestMiddleware", KotlinDependency.HTTP, "middleware")
+            val FlexibleChecksumsResponseMiddleware = runtimeSymbol("FlexibleChecksumsResponseMiddleware", KotlinDependency.HTTP, "middleware")
         }
 
         object Operation {

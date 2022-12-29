@@ -12,18 +12,14 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 
-internal actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray) {
-    val trailingHeaders = Headers {
-        headers["x-amz-trailer"]?.split(",")?.forEach { header -> append(header, "") }
-    }
-
+internal actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray, trailingHeaders: LazyHeaders) {
     body = when (body) {
         is HttpBody.ChannelContent -> AwsChunkedByteReadChannel(
             checkNotNull(body.toSdkByteReadChannel()),
             signer,
             signingConfig,
             signature,
-            trailingHeaders
+            trailingHeaders,
         ).toHttpBody(-1)
 
         is HttpBody.SourceContent -> AwsChunkedSource(
@@ -31,7 +27,7 @@ internal actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, sign
             signer,
             signingConfig,
             signature,
-            trailingHeaders
+            trailingHeaders,
         ).toHttpBody(-1)
 
         else -> throw ClientException("HttpBody type is not supported")

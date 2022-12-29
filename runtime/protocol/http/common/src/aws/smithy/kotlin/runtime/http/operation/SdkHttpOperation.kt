@@ -7,10 +7,10 @@ package aws.smithy.kotlin.runtime.http.operation
 
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.HttpHandler
+import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ExpectedResponseChecksum
+import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ResponseChecksum
 import aws.smithy.kotlin.runtime.http.response.complete
-import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.Uuid
-import aws.smithy.kotlin.runtime.util.get
+import aws.smithy.kotlin.runtime.util.*
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
 
@@ -84,7 +84,26 @@ public suspend fun <I, O, R> SdkHttpOperation<I, O>.execute(
         val output = handler.call(request)
         return block(output)
     } finally {
+        validateResponseChecksum(context)
         context.cleanup()
+    }
+}
+
+/**
+ * Validate the response checksum if flexible checksums response validation is enabled.
+ * If flexible checksums is not enabled, this is a no-op.
+ * @param context the execution context of the HTTP operation
+ * @throws RuntimeException if there is a checksum mismatch
+ */
+internal suspend fun validateResponseChecksum(context: ExecutionContext) {
+    val lazyResponseChecksum: LazyAsyncValue<String>? = context.getOrNull(ResponseChecksum)
+    val responseChecksum = lazyResponseChecksum?.get()
+
+    responseChecksum?.let {
+        val expectedResponseChecksum: String = context[ExpectedResponseChecksum]
+        if (responseChecksum != expectedResponseChecksum) {
+            throw RuntimeException("Checksum mismatch: $responseChecksum != $expectedResponseChecksum")
+        }
     }
 }
 

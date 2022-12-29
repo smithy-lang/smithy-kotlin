@@ -10,6 +10,8 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
 import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.LazyHeaders
+import aws.smithy.kotlin.runtime.http.LazyHeaders.Companion.toHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
 /**
@@ -27,7 +29,7 @@ internal class AwsChunkedReader(
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
     private var previousSignature: ByteArray,
-    private val trailingHeaders: Headers = Headers.Empty,
+    private val trailingHeaders: LazyHeaders = LazyHeaders.Empty,
 ) {
 
     /**
@@ -97,7 +99,7 @@ internal class AwsChunkedReader(
 
         // + any trailers
         if (!trailingHeaders.isEmpty()) {
-            val trailingHeaderChunk = getTrailingHeadersChunk(trailingHeaders)
+            val trailingHeaderChunk = getTrailingHeadersChunk(trailingHeaders.toHeaders())
             lastChunk.writeAll(trailingHeaderChunk)
         }
         return lastChunk

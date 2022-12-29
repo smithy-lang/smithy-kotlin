@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AwsChunkedReader
-import aws.smithy.kotlin.runtime.http.Headers
+import aws.smithy.kotlin.runtime.http.LazyHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkByteReadChannel
 import aws.smithy.kotlin.runtime.util.InternalApi
@@ -28,7 +28,7 @@ public class AwsChunkedByteReadChannel(
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
     private var previousSignature: ByteArray,
-    private val trailingHeaders: Headers = Headers.Empty,
+    private val trailingHeaders: LazyHeaders = LazyHeaders.Empty,
 ) : SdkByteReadChannel by delegate {
 
     private val chunkReader = AwsChunkedReader(

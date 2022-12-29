@@ -11,25 +11,16 @@ import org.junit.jupiter.params.provider.ValueSource
 import kotlin.test.assertEquals
 
 class HashingSourceTest {
-    private fun getHashFunction(name: String): HashFunction = when (name) {
-        "crc32" -> Crc32()
-        "crc32c" -> Crc32c()
-        "md5" -> Md5()
-        "sha1" -> Sha1()
-        "sha256" -> Sha256()
-        else -> throw RuntimeException("HashFunction $name is not supported")
-    }
-
     @ParameterizedTest
     @ValueSource(strings = ["crc32", "crc32c", "md5", "sha1", "sha256"])
     fun testHashingSourceDigest(hashFunctionName: String) = run {
         val byteArray = ByteArray(19456) { 0xf }
         val source = byteArray.source()
-        val hashingSource = HashingSource(getHashFunction(hashFunctionName), source)
+        val hashingSource = HashingSource(hashFunctionName.toHashFunction()!!, source)
 
         val sink = SdkBuffer()
 
-        val expectedHash = getHashFunction(hashFunctionName)
+        val expectedHash = hashFunctionName.toHashFunction()!!
         assertEquals(expectedHash.digest().decodeToString(), hashingSource.digest().decodeToString())
 
         hashingSource.read(sink, 19456)
@@ -43,11 +34,11 @@ class HashingSourceTest {
     fun testHashingSourcePartialRead(hashFunctionName: String) = run {
         val byteArray = ByteArray(19456) { 0xf }
         val source = byteArray.source()
-        val hashingSource = HashingSource(getHashFunction(hashFunctionName), source)
+        val hashingSource = HashingSource(hashFunctionName.toHashFunction()!!, source)
 
         val sink = SdkBuffer()
 
-        val expectedHash = getHashFunction(hashFunctionName)
+        val expectedHash = hashFunctionName.toHashFunction()!!
         assertEquals(expectedHash.digest().decodeToString(), hashingSource.digest().decodeToString())
 
         hashingSource.read(sink, 512)
