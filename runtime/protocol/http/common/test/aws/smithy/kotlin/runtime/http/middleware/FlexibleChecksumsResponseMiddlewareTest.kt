@@ -8,10 +8,10 @@ package aws.smithy.kotlin.runtime.http.middleware
 import aws.smithy.kotlin.runtime.client.ExecutionContext
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.engine.HttpClientEngineBase
+import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ExpectedResponseChecksum
 import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsResponseMiddleware.Companion.ResponseChecksum
 import aws.smithy.kotlin.runtime.http.operation.execute
 import aws.smithy.kotlin.runtime.http.operation.newTestOperation
-import aws.smithy.kotlin.runtime.http.operation.roundTrip
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.response.HttpCall
@@ -33,7 +33,7 @@ class FlexibleChecksumsResponseMiddlewareTest {
         val mockEngine = object : HttpClientEngineBase("test") {
             override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
                 val body = object : HttpBody.SourceContent() {
-                    override val contentLength: Long = 1024 * 1024 * 128
+                    override val contentLength: Long = response.size.toLong()
                     override fun readFrom(): SdkSource = response.source()
                     override val isOneShot: Boolean get() = false
                 }
@@ -142,6 +142,9 @@ class FlexibleChecksumsResponseMiddlewareTest {
 
         val client = getMockClient(response, responseHeaders)
 
-        op.roundTrip(client, Unit)
+        op.execute(client, Unit) {
+            assertNull(op.context.getOrNull(ResponseChecksum))
+            assertNull(op.context.getOrNull(ExpectedResponseChecksum))
+        }
     }
 }
