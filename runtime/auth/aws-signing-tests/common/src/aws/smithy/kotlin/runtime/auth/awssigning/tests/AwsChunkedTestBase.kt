@@ -107,7 +107,8 @@ abstract class AwsChunkedTestBase(
     fun getChunkSizes(bytes: String, isUnsignedChunk: Boolean = false): List<Int> =
         if (isUnsignedChunk) {
             UNSIGNED_CHUNK_SIZE_REGEX.findAll(bytes).map {
-                result -> result.value.split("\r\n")[0].toInt(16)
+                    result ->
+                result.value.split("\r\n")[0].toInt(16)
             }.toList()
         } else {
             CHUNK_SIZE_REGEX.findAll(bytes).map {
@@ -139,7 +140,7 @@ abstract class AwsChunkedTestBase(
             append("\r\n")
         }.length
     }.reduce { acc, len -> acc + len } +
-            if (!isUnsignedChunk) "x-amz-trailer-signature:".length + 64 + "\r\n".length else 0
+        if (!isUnsignedChunk) "x-amz-trailer-signature:".length + 64 + "\r\n".length else 0
 
     /**
      * Given the length of the chunk body, returns the length of the entire encoded chunk.

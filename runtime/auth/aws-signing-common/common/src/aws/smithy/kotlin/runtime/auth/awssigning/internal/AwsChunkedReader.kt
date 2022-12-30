@@ -95,10 +95,7 @@ internal class AwsChunkedReader(
      */
     private suspend fun getFinalChunk(): SdkBuffer {
         // empty chunk
-        val lastChunk = checkNotNull(
-            if (signingConfig.isUnsigned) getUnsignedChunk(SdkBuffer())
-            else getSignedChunk(SdkBuffer())
-        )
+        val lastChunk = checkNotNull(if (signingConfig.isUnsigned) getUnsignedChunk(SdkBuffer()) else getSignedChunk(SdkBuffer()))
 
         // + any trailers
         if (!trailingHeaders.isEmpty()) {
