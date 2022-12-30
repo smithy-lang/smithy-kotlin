@@ -140,15 +140,16 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
 
             hashSpecification = when {
                 contextHashSpecification != null -> contextHashSpecification
-                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 body is HttpBody.Empty -> HashSpecification.EmptyBody
                 body.isEligibleForAwsChunkedStreaming -> {
                     if (req.subject.headers.contains("x-amz-trailer")) {
-                        HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
+                        if (config.isUnsignedPayload) HashSpecification.StreamingUnsignedPayloadWithTrailers
+                        else HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers
                     } else {
                         HashSpecification.StreamingAws4HmacSha256Payload
                     }
                 }
+                config.isUnsignedPayload -> HashSpecification.UnsignedPayload
                 // use the payload to compute the hash
                 else -> HashSpecification.CalculateFromPayload
             }
