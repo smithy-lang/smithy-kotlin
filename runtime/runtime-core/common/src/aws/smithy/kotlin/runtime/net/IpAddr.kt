@@ -8,6 +8,7 @@ package aws.smithy.kotlin.runtime.net
 import aws.smithy.kotlin.runtime.util.InternalApi
 
 // TODO - String.toIpAddr(), toIpv4Addr(), toIpv6Addr(), toIpAddrOrNull() etc
+// TODO - Ipv6 scope ID
 
 /**
  * An IP Address (either IPv4 or IPv6)
