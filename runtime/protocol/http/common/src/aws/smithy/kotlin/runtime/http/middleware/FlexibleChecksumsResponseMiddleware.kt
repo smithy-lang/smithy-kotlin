@@ -85,9 +85,6 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
         return call
     }
 
-    // TODO try to share this with request middleware
-
-
     /**
      * Returns the Base64 encoded checksum of an HttpBody
      * To use this, the HttpBody's underlying data source *must* be either a [HashingSource] or [HashingByteReadChannel],
