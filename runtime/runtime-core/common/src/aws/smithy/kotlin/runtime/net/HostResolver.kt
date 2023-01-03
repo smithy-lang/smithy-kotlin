@@ -39,6 +39,16 @@ public interface HostResolver {
      * of addresses
      */
     public suspend fun resolve(hostname: String): List<HostAddress>
+
+    /**
+     * Reports a failure on an address so that the cache can de-prioritize returning the address until it recovers
+     */
+    public fun reportFailure(addr: HostAddress): Unit
+
+    /**
+     * Purge the cache for all addresses or a specific address when [addr] is given
+     */
+    public fun purgeCache(addr: HostAddress? = null): Unit
 }
 
 internal expect object DefaultHostResolver : HostResolver

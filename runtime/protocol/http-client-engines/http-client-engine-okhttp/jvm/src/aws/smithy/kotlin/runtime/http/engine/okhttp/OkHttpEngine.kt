@@ -85,7 +85,7 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         connectionPool(pool)
 
         // Log events coming from okhttp. Allocate a new listener per-call to facilitate dedicated trace spans.
-        eventListenerFactory { call -> HttpEngineEventListener(pool, call) }
+        eventListenerFactory { call -> HttpEngineEventListener(pool, config.hostResolver, call) }
 
         // map protocols
         if (config.alpn.isNotEmpty()) {
@@ -102,7 +102,6 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
         proxySelector(OkHttpProxySelector(config.proxySelector))
         proxyAuthenticator(OkHttpProxyAuthenticator(config.proxySelector))
 
-        // TODO - we can thread connect failures back to the host resolver in the event listener callbacks
         dns(OkHttpDns(config.hostResolver))
     }.build()
 }
