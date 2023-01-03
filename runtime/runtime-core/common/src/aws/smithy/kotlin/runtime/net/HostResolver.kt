@@ -39,19 +39,6 @@ public interface HostResolver {
      * of addresses
      */
     public suspend fun resolve(hostname: String): List<HostAddress>
-
-    // TODO - these feel like separate concerns (caching could/should probably wrap HostResolver rather than be integrated)
-    // e.g. DnsCache(val resolver: HostResolver): HostResolver { ... }
-    // /**
-    //  * Report a failure to connect on an address so that the cache can de-prioritize
-    //  * returning the address until it recovers
-    //  */
-    // public fun reportFailure(addr: IpAddr)
-    //
-    // /**
-    //  * Purge the cache for all addresses or a specific address when [addr] is given
-    //  */
-    // public fun purgeCache(addr: IpAddr? = null)
 }
 
 internal expect object DefaultHostResolver : HostResolver
