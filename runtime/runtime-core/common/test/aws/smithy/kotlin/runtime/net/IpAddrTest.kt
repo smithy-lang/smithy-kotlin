@@ -5,10 +5,7 @@
 
 package aws.smithy.kotlin.runtime.net
 
-import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertTrue
+import kotlin.test.*
 
 class IpAddrTest {
     private fun ipv4(a: Int, b: Int, c: Int, d: Int): IpAddr.Ipv4 = IpAddr.Ipv4(a.toUByte(), b.toUByte(), c.toUByte(), d.toUByte())
@@ -202,5 +199,51 @@ class IpAddrTest {
 
         // w/zone id
         assertEquals("2001:db8::2:1%eth0", IpAddr.Ipv6(0x2001u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u, "eth0").toString())
+    }
+
+    @Test
+    fun testIpv6Properties() {
+        assertFalse(
+            IpAddr.Ipv6(0x2001u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).isMulticast,
+        )
+
+        assertTrue(
+            IpAddr.Ipv6(0xff01u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).isMulticast,
+        )
+
+        assertEquals(
+            Ipv6MulticastScope.InterfaceLocal,
+            IpAddr.Ipv6(0xff01u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).multicastScope,
+        )
+
+        assertEquals(
+            Ipv6MulticastScope.LinkLocal,
+            IpAddr.Ipv6(0xff02u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).multicastScope,
+        )
+
+        assertEquals(
+            Ipv6MulticastScope.RealmLocal,
+            IpAddr.Ipv6(0xff03u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).multicastScope,
+        )
+
+        assertEquals(
+            Ipv6MulticastScope.AdminLocal,
+            IpAddr.Ipv6(0xff04u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).multicastScope,
+        )
+
+        assertEquals(
+            Ipv6MulticastScope.SiteLocal,
+            IpAddr.Ipv6(0xff05u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).multicastScope,
+        )
+
+        assertEquals(
+            Ipv6MulticastScope.OrganizationLocal,
+            IpAddr.Ipv6(0xff08u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).multicastScope,
+        )
+
+        assertEquals(
+            Ipv6MulticastScope.Global,
+            IpAddr.Ipv6(0xff0eu, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u).multicastScope,
+        )
     }
 }

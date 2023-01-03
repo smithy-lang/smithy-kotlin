@@ -311,7 +311,26 @@ public sealed class IpAddr {
          * Returns the multicast scope of the address if it is a multicast address
          */
         public val multicastScope: Ipv6MulticastScope?
-            get() = TODO("not implemented yet")
+            get() = when (isMulticast) {
+                false -> null
+                true -> when ((segments[0] and 0x000fu).toUInt()) {
+                    1u -> Ipv6MulticastScope.InterfaceLocal
+                    2u -> Ipv6MulticastScope.LinkLocal
+                    3u -> Ipv6MulticastScope.RealmLocal
+                    4u -> Ipv6MulticastScope.AdminLocal
+                    5u -> Ipv6MulticastScope.SiteLocal
+                    8u -> Ipv6MulticastScope.OrganizationLocal
+                    14u -> Ipv6MulticastScope.Global
+                    else -> null
+                }
+            }
+
+        /**
+         * Returns true if this is a multicast address as defined by
+         * [RFC 4291 2.7](https://www.rfc-editor.org/rfc/rfc4291#section-2.7).
+         */
+        public val isMulticast: Boolean
+            get() = segments[0] and 0xff00u == 0xff00u.toUShort()
 
         override fun toString(): String = address
 
