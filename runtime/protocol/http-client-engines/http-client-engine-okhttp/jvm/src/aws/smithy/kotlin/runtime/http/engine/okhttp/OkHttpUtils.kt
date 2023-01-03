@@ -14,9 +14,9 @@ import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.traceSpan
-import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.*
 import okhttp3.Authenticator
 import okhttp3.Credentials

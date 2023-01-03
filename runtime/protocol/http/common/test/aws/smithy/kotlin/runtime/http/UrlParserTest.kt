@@ -4,7 +4,7 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import aws.smithy.kotlin.runtime.util.net.Host
+import aws.smithy.kotlin.runtime.net.Host
 import kotlin.test.*
 import kotlin.test.Test
 

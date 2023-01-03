@@ -7,8 +7,8 @@ package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.Url
+import aws.smithy.kotlin.runtime.net.Host
 import aws.smithy.kotlin.runtime.util.*
-import aws.smithy.kotlin.runtime.util.net.Host
 
 /**
  * Select a proxy via environment. This selector will look for

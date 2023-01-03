@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.http.parameters
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
-import aws.smithy.kotlin.runtime.util.net.Host
+import aws.smithy.kotlin.runtime.net.Host
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue

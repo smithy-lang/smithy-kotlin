@@ -15,7 +15,7 @@ import aws.smithy.kotlin.runtime.http.Protocol
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.headers
 import aws.smithy.kotlin.runtime.http.request.url
-import aws.smithy.kotlin.runtime.util.net.Host
+import aws.smithy.kotlin.runtime.net.Host
 import kotlinx.benchmark.*
 import kotlinx.coroutines.runBlocking
 
