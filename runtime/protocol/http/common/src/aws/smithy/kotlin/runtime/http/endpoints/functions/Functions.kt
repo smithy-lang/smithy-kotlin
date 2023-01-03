@@ -51,7 +51,7 @@ public fun parseUrl(value: String?): Url? =
             authority,
             path = sdkUrl.path,
             normalizedPath = sdkUrl.path.ensureSuffix("/"),
-            isIp = sdkUrl.host is Host.IPv4 || sdkUrl.host is Host.IPv6,
+            isIp = sdkUrl.host is Host.IpAddress,
         )
     }
 

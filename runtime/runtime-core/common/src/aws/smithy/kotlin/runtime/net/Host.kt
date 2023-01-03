@@ -6,9 +6,6 @@ package aws.smithy.kotlin.runtime.net
 
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
 
-// FIXME - update Host and usage to take advantage of IpAddr (and relocate parsing, etc)
-// TODO - consider moving this out of utils and into core
-
 /**
  * A [Host] represents a parsed internet host. This may be an internet address (IPv4, IPv6) or a domain name.
  */
@@ -17,17 +14,10 @@ public sealed class Host {
         public fun parse(host: String): Host = hostParseImpl(host)
     }
 
-    public data class IPv4(
-        public val address: String,
+    public data class IpAddress(
+        public val address: IpAddr,
     ) : Host() {
-        public override fun toString(): String = address
-    }
-
-    public data class IPv6(
-        public val address: String,
-        public val scopeId: String? = null,
-    ) : Host() {
-        public override fun toString(): String = if (scopeId == null) address else "$address%$scopeId"
+        override fun toString(): String = address.toString()
     }
 
     public data class Domain(
@@ -37,23 +27,27 @@ public sealed class Host {
     }
 }
 
-private fun hostParseImpl(host: String): Host =
-    when {
-        host.isIpv4() -> Host.IPv4(host)
-        host.isIpv6() -> {
-            val components = host.split('%')
-            Host.IPv6(
-                components[0],
-                if (components.size > 1) components[1] else null,
-            )
-        }
+private fun hostParseImpl(host: String): Host {
+    val ip = host.parseIpv4OrNull() ?: host.parseIpv6OrNull()
+    return when {
+        ip != null -> Host.IpAddress(ip)
         host.split('.').all(String::isValidHostname) -> Host.Domain(host)
         else -> throw IllegalArgumentException("$host is not a valid inet host")
     }
+}
 
 public fun Host.toUrlString(): String =
     when (this) {
-        is Host.IPv4 -> address
-        is Host.IPv6 -> if (scopeId == null) "[$address]" else "[$address%25${scopeId.urlEncodeComponent()}]"
+        is Host.IpAddress -> when (address) {
+            is IpAddr.Ipv6 -> {
+                if (address.zoneId == null) {
+                    "[$address]"
+                } else {
+                    val withoutZoneId = address.copy(zoneId = null)
+                    "[$withoutZoneId%25${address.zoneId.urlEncodeComponent()}]"
+                }
+            }
+            else -> address.toString()
+        }
         is Host.Domain -> name
     }

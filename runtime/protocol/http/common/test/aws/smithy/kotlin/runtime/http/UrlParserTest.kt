@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.IpAddr
 import kotlin.test.*
 import kotlin.test.Test
 
@@ -35,31 +36,31 @@ class UrlParserTest {
 
     @Test
     fun testHostIPv4() {
-        assertEquals(Host.IPv4("127.0.0.1"), Url.parse("https://127.0.0.1").host)
-        assertEquals(Host.IPv4("127.0.00.1"), Url.parse("https://127.0.00.1").host)
-        assertEquals(Host.IPv4("255.192.64.0"), Url.parse("https://255.192.64.0").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("127.0.0.1")), Url.parse("https://127.0.0.1").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("127.0.00.1")), Url.parse("https://127.0.00.1").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("255.192.64.0")), Url.parse("https://255.192.64.0").host)
     }
 
     @Test
     fun testHostIPv6() {
-        assertEquals(Host.IPv6("::"), Url.parse("https://[::]").host)
-        assertEquals(Host.IPv6("1:1:1:1:1:1:1:1"), Url.parse("https://[1:1:1:1:1:1:1:1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::")), Url.parse("https://[::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1:1:1:1:1:1:1:1")), Url.parse("https://[1:1:1:1:1:1:1:1]").host)
 
-        assertEquals(Host.IPv6("1::"), Url.parse("https://[1::]").host)
-        assertEquals(Host.IPv6("1:1::"), Url.parse("https://[1:1::]").host)
-        assertEquals(Host.IPv6("1:1:1::"), Url.parse("https://[1:1:1::]").host)
-        assertEquals(Host.IPv6("1:1:1:1::"), Url.parse("https://[1:1:1:1::]").host)
-        assertEquals(Host.IPv6("1:1:1:1:1::"), Url.parse("https://[1:1:1:1:1::]").host)
-        assertEquals(Host.IPv6("1:1:1:1:1:1::"), Url.parse("https://[1:1:1:1:1:1::]").host)
-        assertEquals(Host.IPv6("1:1:1:1:1:1:1::"), Url.parse("https://[1:1:1:1:1:1:1::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1::")), Url.parse("https://[1::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1:1::")), Url.parse("https://[1:1::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1:1:1::")), Url.parse("https://[1:1:1::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1:1:1:1::")), Url.parse("https://[1:1:1:1::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1:1:1:1:1::")), Url.parse("https://[1:1:1:1:1::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1:1:1:1:1:1::")), Url.parse("https://[1:1:1:1:1:1::]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("1:1:1:1:1:1:1::")), Url.parse("https://[1:1:1:1:1:1:1::]").host)
 
-        assertEquals(Host.IPv6("::1"), Url.parse("https://[::1]").host)
-        assertEquals(Host.IPv6("::1:1"), Url.parse("https://[::1:1]").host)
-        assertEquals(Host.IPv6("::1:1:1"), Url.parse("https://[::1:1:1]").host)
-        assertEquals(Host.IPv6("::1:1:1:1"), Url.parse("https://[::1:1:1:1]").host)
-        assertEquals(Host.IPv6("::1:1:1:1:1"), Url.parse("https://[::1:1:1:1:1]").host)
-        assertEquals(Host.IPv6("::1:1:1:1:1:1"), Url.parse("https://[::1:1:1:1:1:1]").host)
-        assertEquals(Host.IPv6("::1:1:1:1:1:1:1"), Url.parse("https://[::1:1:1:1:1:1:1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::1")), Url.parse("https://[::1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::1:1")), Url.parse("https://[::1:1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::1:1:1")), Url.parse("https://[::1:1:1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::1:1:1:1")), Url.parse("https://[::1:1:1:1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::1:1:1:1:1")), Url.parse("https://[::1:1:1:1:1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::1:1:1:1:1:1")), Url.parse("https://[::1:1:1:1:1:1]").host)
+        assertEquals(Host.IpAddress(IpAddr.parse("::1:1:1:1:1:1:1")), Url.parse("https://[::1:1:1:1:1:1:1]").host)
     }
 
     @Test

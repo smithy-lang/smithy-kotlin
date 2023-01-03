@@ -31,13 +31,7 @@ internal fun String.parseIpv4OrNull(): IpAddr.Ipv4? {
  * The address MAY include a scope ID which is validated per [RFC 4007](https://www.rfc-editor.org/rfc/rfc4007#section-11.2).
  */
 @InternalApi
-public fun String.isIpv6(): Boolean {
-    val components = split('%')
-
-    if (components.size > 2) return false
-    if (components.size == 2 && !components[1].isIpv6ZoneId()) return false
-    return components[0].isIpv6Address()
-}
+public fun String.isIpv6(): Boolean = parseIpv6OrNull() != null
 
 private const val IPV6_SEGMENT_COUNT = 8
 private const val IPV4_MAPPED_IPV6_SEGMENT_COUNT = 7
@@ -68,10 +62,16 @@ private fun String.getIpv6AddressSegments(): List<String>? {
     }
 }
 
-private fun String.isIpv6Address(): Boolean = parseIpv6OrNull() != null
+/**
+ * Parse the current string as an IPv6 address
+ */
+internal fun String.parseIpv6OrNull(): IpAddr.Ipv6? {
+    val components = split('%')
+    if (components.size > 2) return null
+    if (components.size == 2 && !components[1].isIpv6ZoneId()) return null
+    val zoneId = if (components.size == 2) components[1] else null
 
-internal fun String.parseIpv6OrNull(zoneId: String? = null): IpAddr.Ipv6? {
-    val segments = getIpv6AddressSegments() ?: return null
+    val segments = components[0].getIpv6AddressSegments() ?: return null
     if (segments.size < IPV4_MAPPED_IPV6_SEGMENT_COUNT) return null
 
     // the "common" segments MUST be valid IPv6

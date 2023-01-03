@@ -7,14 +7,21 @@ package aws.smithy.kotlin.runtime.net
 
 import aws.smithy.kotlin.runtime.util.InternalApi
 
-// TODO - String.toIpAddr(), toIpv4Addr(), toIpv6Addr(), toIpAddrOrNull() etc
-// TODO - Ipv6 scope ID
-
 /**
  * An IP Address (either IPv4 or IPv6)
  */
 @InternalApi
 public sealed class IpAddr {
+    public companion object {
+        /**
+         * Parse a string into an [IpAddr]. Fails if [s] is not a valid IP address
+         */
+        public fun parse(s: String): IpAddr = when {
+            s.isIpv4() -> Ipv4.parse(s)
+            else -> Ipv6.parse(s)
+        }
+    }
+
     /**
      * The raw numerical address
      */
@@ -221,13 +228,7 @@ public sealed class IpAddr {
              *
              * NOTE: This does not handle zone identifiers
              */
-            public fun parse(s: String): Ipv6 {
-                val components = s.split('%')
-                require(components.size <= 2) { "Invalid IPv6 address: $s" }
-                val zoneId = if (components.size == 2) components[1] else null
-                require(zoneId == null || zoneId.isIpv6ZoneId()) { "Invalid IPv6 zone identifier: ${components[1]} for address: $s" }
-                return requireNotNull(components[0].parseIpv6OrNull(zoneId)) { "Invalid Ipv6 address: $s" }
-            }
+            public fun parse(s: String): Ipv6 = requireNotNull(s.parseIpv6OrNull()) { "Invalid Ipv6 address: $s" }
         }
 
         /**
