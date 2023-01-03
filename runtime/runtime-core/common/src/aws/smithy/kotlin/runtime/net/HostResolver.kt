@@ -5,6 +5,11 @@
 
 package aws.smithy.kotlin.runtime.net
 
+import aws.smithy.kotlin.runtime.util.InternalApi
+
+/**
+ * A resolved (hostname, address) pair
+ */
 public data class HostAddress(
     /**
      * The name that [address] was resolved from
@@ -20,6 +25,7 @@ public data class HostAddress(
 /**
  * Component capable of resolving host names to one or more internet addresses
  */
+@InternalApi
 public interface HostResolver {
     public companion object {
         /**

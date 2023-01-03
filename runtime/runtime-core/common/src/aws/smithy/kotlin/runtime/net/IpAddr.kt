@@ -5,13 +5,14 @@
 
 package aws.smithy.kotlin.runtime.net
 
-import aws.smithy.kotlin.runtime.io.SdkBuffer
+import aws.smithy.kotlin.runtime.util.InternalApi
 
 // TODO - String.toIpAddr(), toIpv4Addr(), toIpv6Addr(), toIpAddrOrNull() etc
 
 /**
  * An IP Address (either IPv4 or IPv6)
  */
+@InternalApi
 public sealed class IpAddr {
     /**
      * The raw numerical address
@@ -143,9 +144,8 @@ public sealed class IpAddr {
          * Return the eight 16-bit segments that make up this address
          */
         public val segments: UShortArray by lazy {
-            val buffer = SdkBuffer().apply { write(octets) }
             UShortArray(octets.size / 2) {
-                buffer.readShort().toUShort()
+                octets.readUShort(it * 2)
             }
         }
 
@@ -256,16 +256,29 @@ private fun ipv6SegmentsToOctets(
     f: UShort,
     g: UShort,
     h: UShort,
-): ByteArray {
-    // TODO - have to drop SdkBuffer if we want to decouple core and io modules
-    val buffer = SdkBuffer()
-    buffer.writeShort(a.toShort())
-    buffer.writeShort(b.toShort())
-    buffer.writeShort(c.toShort())
-    buffer.writeShort(d.toShort())
-    buffer.writeShort(e.toShort())
-    buffer.writeShort(f.toShort())
-    buffer.writeShort(g.toShort())
-    buffer.writeShort(h.toShort())
-    return buffer.readByteArray()
+): ByteArray = ByteArray(16).apply {
+    writeUShort(a, 0)
+    writeUShort(b, 2)
+    writeUShort(c, 4)
+    writeUShort(d, 6)
+    writeUShort(e, 8)
+    writeUShort(f, 10)
+    writeUShort(g, 12)
+    writeUShort(h, 14)
+}
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun ByteArray.writeUShort(value: UShort, startIdx: Int) {
+    val data = this
+    val x = value.toInt()
+    data[startIdx] = (x ushr 8 and 0xff).toByte()
+    data[startIdx + 1] = (x and 0xff).toByte()
+}
+
+@Suppress("NOTHING_TO_INLINE")
+private inline fun ByteArray.readUShort(idx: Int): UShort {
+    val data = this
+    check(idx <= data.size - 2)
+    val s = data[idx].toInt() and 0xff shl 8 or (data[idx + 1].toInt() and 0xff)
+    return s.toUShort()
 }
