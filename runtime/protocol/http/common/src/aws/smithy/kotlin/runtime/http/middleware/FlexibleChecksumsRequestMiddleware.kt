@@ -9,7 +9,6 @@ import aws.smithy.kotlin.runtime.ClientException
 import aws.smithy.kotlin.runtime.hashing.*
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.operation.*
-import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.*
@@ -62,7 +61,7 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
             } else {
                 logger.debug { "Calculating checksum asynchronously" }
 
-                req.subject.setHashingBody(checksumAlgorithm)
+                req.subject.body = req.subject.body.toHashingBody(checksumAlgorithm, req.subject.body.contentLength)
                 val body = req.subject.body
                 asyncLazy { body.checksum }
             }
@@ -74,10 +73,13 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         } else if (req.subject.headers[headerName] == null) {
             logger.debug { "Calculating checksum" }
 
-            val checksum = req.subject.body.calculateChecksum(checksumAlgorithm)
-            req.subject.header(headerName, checksum)
-
-            logger.debug { "Calculated checksum: $checksum" }
+            val checksum = req.subject.body.readAll()?.hash(checksumAlgorithm)?.encodeBase64String()
+            checksum ?.let {
+                logger.debug { "Calculated checksum: $checksum" }
+                req.subject.header(headerName, checksum)
+            } ?: run {
+                logger.warn { "Failed to calculate checksum" }
+            }
         }
 
         return req
@@ -87,29 +89,6 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
     private val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
         get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) && contentLength != null &&
             (isOneShot || contentLength!! > 65536 * 16)
-
-    /**
-     * Wrap the HttpRequestBuilder's body with a hashing body, which will observe the data as it's being consumed and maintain
-     * an internal hash.
-     * @param hashFunction the hash function to apply to this body
-     * @throws ClientException when the HttpBody is not supported for hashing bodies
-     */
-    private fun HttpRequestBuilder.setHashingBody(hashFunction: HashFunction) {
-        body = when (body) {
-            is HttpBody.SourceContent ->
-                HashingSource(
-                    hashFunction,
-                    (body as HttpBody.SourceContent).readFrom(),
-                ).toHttpBody(body.contentLength)
-
-            is HttpBody.ChannelContent -> HashingByteReadChannel(
-                hashFunction,
-                (body as HttpBody.ChannelContent).readFrom(),
-            ).toHttpBody(body.contentLength)
-
-            else -> throw ClientException("HttpBody type is not supported")
-        }
-    }
 
     /**
      * @return if the [HashFunction] is supported by flexible checksums
@@ -130,18 +109,6 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         is HttpBody.SourceContent -> { (readFrom() as HashingSource).digest().encodeBase64String() }
         is HttpBody.ChannelContent -> { (readFrom() as HashingByteReadChannel).digest().encodeBase64String() }
         else -> throw ClientException("HttpBody type is not supported")
-    }
-
-    /**
-     * Calculate the checksum synchronously. This will suspend until the entire body has been hashed.
-     * @param hash the [HashFunction] used to calculate the checksum
-     * @return the checksum of the body as a Base64 encoded string
-     */
-    private suspend fun HttpBody.calculateChecksum(hash: HashFunction): String = when (this) {
-        is HttpBody.SourceContent -> readFrom().readToByteArray().hash(hash).encodeBase64String()
-        is HttpBody.ChannelContent -> readFrom().readToBuffer().readToByteArray().hash(hash).encodeBase64String()
-        is HttpBody.Bytes -> bytes().hash(hash).encodeBase64String()
-        is HttpBody.Empty -> throw RuntimeException("can't calculate checksum of an empty body")
     }
 
     /**

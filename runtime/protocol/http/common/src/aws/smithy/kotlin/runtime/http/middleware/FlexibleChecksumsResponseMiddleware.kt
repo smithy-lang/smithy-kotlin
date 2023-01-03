@@ -6,13 +6,12 @@
 package aws.smithy.kotlin.runtime.http.middleware
 
 import aws.smithy.kotlin.runtime.ClientException
-import aws.smithy.kotlin.runtime.hashing.HashFunction
 import aws.smithy.kotlin.runtime.hashing.toHashFunction
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.isSuccess
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.response.HttpCall
-import aws.smithy.kotlin.runtime.http.toHttpBody
+import aws.smithy.kotlin.runtime.http.toHashingBody
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.*
 import kotlin.coroutines.coroutineContext
@@ -74,7 +73,7 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
         logger.debug { "Setting hashing body" }
         call = call.copy(
             response = call.response.copy(
-                body = call.response.body.toHashingBody(checksumAlgorithm),
+                body = call.response.body.toHashingBody(checksumAlgorithm, call.response.body.contentLength),
             ),
         )
 
@@ -87,18 +86,7 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
     }
 
     // TODO try to share this with request middleware
-    private fun HttpBody.toHashingBody(hashFunction: HashFunction): HttpBody = when (this) {
-        is HttpBody.SourceContent ->
-            HashingSource(
-                hashFunction,
-                readFrom(),
-            ).toHttpBody(contentLength)
-        is HttpBody.ChannelContent -> HashingByteReadChannel(
-            hashFunction,
-            readFrom(),
-        ).toHttpBody(contentLength)
-        else -> throw ClientException("HttpBody type is not supported")
-    }
+
 
     /**
      * Returns the Base64 encoded checksum of an HttpBody
