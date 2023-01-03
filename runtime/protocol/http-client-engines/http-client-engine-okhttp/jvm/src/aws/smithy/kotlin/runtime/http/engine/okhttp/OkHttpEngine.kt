@@ -101,5 +101,8 @@ private fun OkHttpEngineConfig.buildClient(): OkHttpClient {
 
         proxySelector(OkHttpProxySelector(config.proxySelector))
         proxyAuthenticator(OkHttpProxyAuthenticator(config.proxySelector))
+
+        // TODO - we can thread connect failures back to the host resolver in the event listener callbacks
+        dns(OkHttpDns(config.hostResolver))
     }.build()
 }

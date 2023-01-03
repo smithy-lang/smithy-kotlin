@@ -19,6 +19,7 @@ import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.io.internal.SdkDispatchers
 import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.net.HostResolver
 import aws.smithy.kotlin.runtime.time.Instant
 import kotlinx.coroutines.job
 import kotlinx.coroutines.sync.Mutex
@@ -58,6 +59,11 @@ public class CrtHttpEngine(public val config: CrtHttpEngineConfig) : HttpClientE
         }
         if (config.socketWriteTimeout != CrtHttpEngineConfig.Default.socketWriteTimeout) {
             logger.warn { "CrtHttpEngine does not support socketWriteTimeout(${config.socketWriteTimeout}); ignoring" }
+        }
+
+        if (config.hostResolver !== HostResolver.Default) {
+            // FIXME - there is no way to currently plugin a JVM based host resolver to CRT. (see V804672153)
+            logger.warn { "CrtHttpEngine does not support custom HostResolver implementations; ignoring" }
         }
     }
 
