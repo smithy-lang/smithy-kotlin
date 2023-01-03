@@ -7,15 +7,92 @@ package aws.smithy.kotlin.runtime.net
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class IpAddrTest {
+    private fun ipv4(a: Int, b: Int, c: Int, d: Int): IpAddr.Ipv4 = IpAddr.Ipv4(a.toUByte(), b.toUByte(), c.toUByte(), d.toUByte())
+
     @Test
     fun testIpv4Ctor() {
         val fromOctets = IpAddr.Ipv4(byteArrayOf(0x11, 0x22, 0x33, 0x44))
         val fromSegments = IpAddr.Ipv4(0x11u, 0x22u, 0x33u, 0x44u)
 
         assertEquals(fromOctets, fromSegments)
+    }
+
+    @Test
+    fun testIpv4Parse() {
+        assertEquals(ipv4(192, 168, 0, 1), IpAddr.Ipv4.parse("192.168.0.1"))
+        assertEquals(ipv4(127, 0, 0, 1), IpAddr.Ipv4.parse("127.0.0.1"))
+        assertEquals(ipv4(255, 255, 255, 255), IpAddr.Ipv4.parse("255.255.255.255"))
+
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv4.parse("256.0.0.1")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv4.parse("255.0.0")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv4.parse("255.0.0.1.2")
+        }
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv4.parse("255.0..255")
+        }
+    }
+
+    @Test
+    fun testIpv4MappedIpv6() {
+        val v4 = ipv4(192, 168, 0, 1)
+        val v6 = IpAddr.Ipv6(0u, 0u, 0u, 0u, 0u, 0xffffu, 0xc0a8u, 0x1u)
+        assertEquals(v6, v4.toMappedIpv6())
+    }
+
+    @Test
+    fun testIpv6Parse() {
+        assertEquals(IpAddr.Ipv6(0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u), IpAddr.Ipv6.parse("0:0:0:0:0:0:0:0"))
+        assertEquals(IpAddr.Ipv6(0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u), IpAddr.Ipv6.parse("::"))
+        assertEquals(IpAddr.Ipv6(0u, 0u, 0u, 0u, 0u, 0u, 0u, 1u), IpAddr.Ipv6.parse("0:0:0:0:0:0:0:1"))
+        assertEquals(IpAddr.Ipv6(0u, 0u, 0u, 0u, 0u, 0u, 0u, 1u), IpAddr.Ipv6.parse("::1"))
+
+        assertEquals(
+            IpAddr.Ipv6(0x2001u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u),
+            IpAddr.Ipv6.parse("2001:db8::2:1"),
+        )
+
+        assertEquals(
+            IpAddr.Ipv6(0x2001u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u),
+            IpAddr.Ipv6.parse("2001:db8:0:0:0:0:2:1"),
+        )
+
+        // w/zone id
+        assertEquals(
+            IpAddr.Ipv6(0x2001u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u, "eth0"),
+            IpAddr.Ipv6.parse("2001:db8::2:1%eth0"),
+        )
+
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv6.parse("1:2:3:4:5:6:7")
+        }
+
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv6.parse("1:2:3:4:5:6:7:8:9")
+        }
+
+        // triple colon
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv6.parse("1:2:::6:7:8")
+        }
+
+        // two double colon
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv6.parse("1:2::6::8")
+        }
+
+        // zero group of zeroes
+        assertFailsWith<IllegalArgumentException> {
+            IpAddr.Ipv6.parse("1:2:3::4:5:6:7:8")
+        }
     }
 
     @Test
@@ -116,5 +193,14 @@ class IpAddrTest {
 
         // ends in zeros
         assertEquals("1::", IpAddr.Ipv6(1u, 0u, 0u, 0u, 0u, 0u, 0u, 0u).toString())
+
+        // IPv4 mapped
+        assertEquals("::ffff:192.0.7.128", IpAddr.Ipv6(0u, 0u, 0u, 0u, 0u, 0xffffu, 0xc000u, 0x780u).toString())
+
+        // IPv4 compatible - we don't support the special syntax (only for mapped)
+        assertEquals("::c000:780", IpAddr.Ipv6(0u, 0u, 0u, 0u, 0u, 0u, 0xc000u, 0x780u).toString())
+
+        // w/zone id
+        assertEquals("2001:db8::2:1%eth0", IpAddr.Ipv6(0x2001u, 0xdb8u, 0u, 0u, 0u, 0u, 2u, 1u, "eth0").toString())
     }
 }

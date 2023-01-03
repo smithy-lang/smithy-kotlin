@@ -48,8 +48,8 @@ class TextTest {
         assertFalse("fe80:fe80:fe80:fe80:fe80:fe80:fe80:fe80:1".isIpv6())
 
     @Test
-    fun testInvalidSegmentCountDualIpv6() =
-        assertFalse("fe80:fe80:fe80:fe80:fe80:fe80:fe80:127.0.0.1".isIpv6())
+    fun testInvalidSegmentCountMappedIpv6() =
+        assertFalse("0:0:0:0:0:0:ffff:127.0.0.1".isIpv6())
 
     @Test
     fun testInvalidEncodedScopeId() =
@@ -76,24 +76,17 @@ class TextTest {
         assertTrue("::".isIpv6())
 
     @Test
-    fun testValidExplicitDualIpv6() =
-        assertTrue("fe80:fe80:fe80:fe80:fe80:fe80:127.0.0.1".isIpv6())
+    fun testValidExplicitMappedIpv6() =
+        assertTrue("0:0:0:0:0:ffff:127.0.0.1".isIpv6())
 
     @Test
-    fun testValidLeadingImplicitDualIpv6() =
-        assertTrue("::1:127.0.0.1".isIpv6())
+    fun testValidLeadingImplicitMappedIpv6() =
+        assertTrue("::ffff:127.0.0.1".isIpv6())
 
+    // compatible addresses are deprecated
     @Test
-    fun testValidEmbeddedImplicitDualIpv6() =
-        assertTrue("fe80::1:127.0.0.1".isIpv6())
-
-    @Test
-    fun testValidTrailingImplicitDualIpv6() =
-        assertTrue("fe80::127.0.0.1".isIpv6())
-
-    @Test
-    fun testValidFullImplicitDualIpv6() =
-        assertTrue("::127.0.0.1".isIpv6())
+    fun testCompatibleIpv4AddressIsInvalid() =
+        assertFalse("::127.0.0.1".isIpv6())
 
     @Test
     fun testValidScopeIdIpv6() =

@@ -73,6 +73,11 @@ public sealed class IpAddr {
              * `INADDR_ANY`, see [ip7](https://man7.org/linux/man-pages/man7/ip.7.html)
              */
             public val UNSPECIFIED: Ipv4 = Ipv4(0u, 0u, 0u, 0u)
+
+            /**
+             * Parse an IPv4 address from a string. Fails with [IllegalArgumentException] when given an invalid IPv4 address
+             */
+            public fun parse(s: String): Ipv4 = requireNotNull(s.parseIpv4OrNull()) { "Invalid Ipv4 address: $s" }
         }
 
         /**
@@ -105,10 +110,66 @@ public sealed class IpAddr {
         }
 
         override fun hashCode(): Int = octets.contentHashCode()
+
+        /**
+         * Convert this IPv4 address to an "IPv4-mapped" IPV6 address as described by
+         * [RFC 4291 Section 2.5.5.2](https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2).
+         * e.g. `::ffff:a.b.c.d`.
+         *
+         * See [Ipv6] documentation for more details.
+         */
+        public fun toMappedIpv6(): Ipv6 {
+            val v6Octets = ByteArray(16)
+            v6Octets[10] = 0xff.toByte()
+            v6Octets[11] = 0xff.toByte()
+            v6Octets[12] = octets[0]
+            v6Octets[13] = octets[1]
+            v6Octets[14] = octets[2]
+            v6Octets[15] = octets[3]
+            return Ipv6(v6Octets)
+        }
     }
 
     /**
-     * An IPv6 address as defined by [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291)
+     * An IPv6 address as defined by [RFC 4291](https://www.rfc-editor.org/rfc/rfc4291).
+     *
+     * IPv6 addresses are defined as 128-bit integers represented as eight 16-bit segments.
+     *
+     * ## Textual representation
+     *
+     * ## IPv4-Mapped IPv6 Addresses
+     *
+     * IPv4-mapped IPv6 addresses are defined in
+     * [RFC 4291 Section 2.5.5.2](https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2).
+     *
+     * The RFC describes the format of an "IPv4-Mapped IPv6 address" as follows:
+     *
+     * ```
+     * |                80 bits               | 16 |      32 bits        |
+     * +--------------------------------------+--------------------------+
+     * |0000..............................0000|FFFF|    IPv4 address     |
+     * +--------------------------------------+----+---------------------+
+     * ```
+     * So `::ffff:a.b.c.d` would be an IPv4-mapped IPv6 address representing the IPv4 address `a.b.c.d`.
+     *
+     * To convert an IPv4-mapped IPV6 address to IPv4 use [toIpv4Mapped]
+     *
+     * ## IPv4-Compatible IPv6 Addresses
+     *
+     * **NOTE**: IPv4-compatible addresses have been officially deprecated.
+     *
+     * IPv4-compatible IPv6 addresses are defined in
+     * [RFC 4291 Section 2.5.5.1](https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.1).
+     *
+     * The RFC describes the format of an "IPv4-Compatible IPv6 address" as follows:
+     *
+     * ```text
+     * |                80 bits               | 16 |      32 bits        |
+     * +--------------------------------------+--------------------------+
+     * |0000..............................0000|0000|    IPv4 address     |
+     * +--------------------------------------+----+---------------------+
+     * ```
+     * So `::a.b.c.d` would be an IPv4-compatible IPv6 address representing the IPv4 address `a.b.c.d`.
      */
     @OptIn(ExperimentalUnsignedTypes::class)
     public data class Ipv6(
@@ -116,6 +177,12 @@ public sealed class IpAddr {
          * The sixteen eight-bit integers the IPv6 address consists of
          */
         override val octets: ByteArray,
+
+        /**
+         * Scoped IPv6 address zone identifier as defined in [RFC 6874](https://www.rfc-editor.org/rfc/rfc6874).
+         * Scoped IPv6 addresses are described in [RFC 4007](https://www.rfc-editor.org/rfc/rfc4007)
+         */
+        public val zoneId: String? = null,
     ) : IpAddr() {
 
         init {
@@ -123,11 +190,20 @@ public sealed class IpAddr {
         }
 
         /**
-         * Creates a new IPv6 address from eight 16-bit segments.
+         * Creates a new IPv6 address from eight 16-bit segments and an optional zone identifier.
          * The result will represent the IP address a:b:c:d:e:f:g:h.
          */
-        public constructor(a: UShort, b: UShort, c: UShort, d: UShort, e: UShort, f: UShort, g: UShort, h: UShort) :
-            this(ipv6SegmentsToOctets(a, b, c, d, e, f, g, h))
+        public constructor(
+            a: UShort,
+            b: UShort,
+            c: UShort,
+            d: UShort,
+            e: UShort,
+            f: UShort,
+            g: UShort,
+            h: UShort,
+            zoneId: String? = null,
+        ) : this(ipv6SegmentsToOctets(a, b, c, d, e, f, g, h), zoneId)
 
         public companion object {
             /**
@@ -139,6 +215,19 @@ public sealed class IpAddr {
              * An IPv6 address representing the unspecified address: `::`
              */
             public val UNSPECIFIED: Ipv6 = Ipv6(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
+
+            /**
+             * Parse an IPv6 address from a string. Fails with [IllegalArgumentException] when given an invalid IPv6 address
+             *
+             * NOTE: This does not handle zone identifiers
+             */
+            public fun parse(s: String): Ipv6 {
+                val components = s.split('%')
+                require(components.size <= 2) { "Invalid IPv6 address: $s" }
+                val zoneId = if (components.size == 2) components[1] else null
+                require(zoneId == null || zoneId.isIpv6ZoneId()) { "Invalid IPv6 zone identifier: ${components[1]} for address: $s" }
+                return requireNotNull(components[0].parseIpv6OrNull(zoneId)) { "Invalid Ipv6 address: $s" }
+            }
         }
 
         /**
@@ -151,10 +240,11 @@ public sealed class IpAddr {
         }
 
         override val address: String by lazy {
-            when {
+            val ipv4Mapped = toIpv4Mapped()
+            val formatted = when {
                 isLoopBack -> "::1"
                 isUnspecified -> "::"
-                // TODO - ipv4 compatible/mapped address
+                ipv4Mapped != null -> "::ffff:$ipv4Mapped"
                 else -> buildString {
 
                     // find first 0 segment
@@ -185,10 +275,16 @@ public sealed class IpAddr {
                     }
                 }
             }
+
+            if (zoneId != null) {
+                "$formatted%$zoneId"
+            } else {
+                formatted
+            }
         }
 
         private fun StringBuilder.formatSegments(range: IntRange) {
-            if (range.first >= segments.size) return
+            if (range.first >= segments.size || range.isEmpty()) return
             append(segments[range.first].toString(16))
             val tail = IntRange(range.first + 1, range.last)
             for (i in tail) {
@@ -230,6 +326,21 @@ public sealed class IpAddr {
         }
 
         override fun hashCode(): Int = octets.contentHashCode()
+
+        /**
+         * Try to convert this address to an [Ipv4] address if it is an
+         * [Ipv4-mapped](https://tools.ietf.org/html/rfc4291#section-2.5.5.2) address.
+         *
+         * Returns `null if this address is not an IPv4 mapped address.
+         */
+        public fun toIpv4Mapped(): Ipv4? {
+            val prefix = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff.toByte(), 0xff.toByte())
+            prefix.forEachIndexed { idx, byte ->
+                if (octets[idx] != byte) return null
+            }
+
+            return Ipv4(octets.sliceArray(prefix.size until octets.size))
+        }
     }
 }
 

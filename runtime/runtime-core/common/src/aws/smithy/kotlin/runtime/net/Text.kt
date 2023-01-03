@@ -14,9 +14,14 @@ public fun String.isValidHostname(): Boolean =
     length in 1..63 && this[0].isLetterOrDigit() && drop(1).all { it.isLetterOrDigit() || it == '-' }
 
 @InternalApi
-public fun String.isIpv4(): Boolean {
+public fun String.isIpv4(): Boolean = parseIpv4OrNull() != null
+
+internal fun String.parseIpv4OrNull(): IpAddr.Ipv4? {
     val segments = split('.')
-    return segments.size == 4 && segments.all { (it.toIntOrNull() ?: -1) in 0..255 }
+    if (segments.size != 4 || segments.any { (it.toIntOrNull() ?: -1) !in 0..255 }) return null
+    // NOTE: toByte() will fail range validation checks, need to go through UByte first
+    val octets = segments.map { it.toUByte().toByte() }.toByteArray()
+    return IpAddr.Ipv4(octets)
 }
 
 /**
@@ -30,12 +35,12 @@ public fun String.isIpv6(): Boolean {
     val components = split('%')
 
     if (components.size > 2) return false
-    if (components.size == 2 && !components[1].isIpv6ScopeId()) return false
+    if (components.size == 2 && !components[1].isIpv6ZoneId()) return false
     return components[0].isIpv6Address()
 }
 
-private const val ipv6StandardSegmentCount = 8
-private const val ipv6DualSegmentCount = 7
+private const val IPV6_SEGMENT_COUNT = 8
+private const val IPV4_MAPPED_IPV6_SEGMENT_COUNT = 7
 
 private fun String.getIpv6AddressSegments(): List<String>? {
     val explicitSegmentGroups = split("::")
@@ -46,10 +51,14 @@ private fun String.getIpv6AddressSegments(): List<String>? {
         return explicitSegmentGroups[0].split(":")
     }
 
-    val leftSegments = if (explicitSegmentGroups[0] == "") listOf() else explicitSegmentGroups[0].split(':')
-    val rightSegments = if (explicitSegmentGroups[1] == "") listOf() else explicitSegmentGroups[1].split(':')
+    val leftSegments = if (explicitSegmentGroups[0] == "") emptyList() else explicitSegmentGroups[0].split(':')
+    val rightSegments = if (explicitSegmentGroups[1] == "") emptyList() else explicitSegmentGroups[1].split(':')
 
-    val totalSegmentCount = if (rightSegments.lastOrNull()?.contains('.') == true) ipv6DualSegmentCount else ipv6StandardSegmentCount
+    // double colon with full explicit segments
+    if (explicitSegmentGroups.size == 2 && leftSegments.size + rightSegments.size == IPV6_SEGMENT_COUNT) return null
+
+    // IPv4-mapped address of form `::ffff:a.b.c.d` -> `0:0:0:0:0:ffff:a.b.c.d`
+    val totalSegmentCount = if (rightSegments.lastOrNull()?.contains('.') == true) IPV4_MAPPED_IPV6_SEGMENT_COUNT else IPV6_SEGMENT_COUNT
     val implicitSegmentCount = totalSegmentCount - leftSegments.size - rightSegments.size
 
     return buildList {
@@ -59,27 +68,48 @@ private fun String.getIpv6AddressSegments(): List<String>? {
     }
 }
 
-private fun String.isIpv6Address(): Boolean {
-    val segments = getIpv6AddressSegments() ?: return false
-    if (segments.size < ipv6DualSegmentCount) return false
+private fun String.isIpv6Address(): Boolean = parseIpv6OrNull() != null
+
+internal fun String.parseIpv6OrNull(zoneId: String? = null): IpAddr.Ipv6? {
+    val segments = getIpv6AddressSegments() ?: return null
+    if (segments.size < IPV4_MAPPED_IPV6_SEGMENT_COUNT) return null
 
     // the "common" segments MUST be valid IPv6
-    for (i in 0 until ipv6DualSegmentCount - 1) {
-        if (!segments[i].isIpv6AddressSegment()) return false
+    for (i in 0 until IPV4_MAPPED_IPV6_SEGMENT_COUNT - 1) {
+        if (!segments[i].isIpv6AddressSegment()) return null
     }
 
-    // if this is a dual address, the last segment MUST be IPv4
-    if (segments.size == ipv6DualSegmentCount) return segments[ipv6DualSegmentCount - 1].isIpv4()
+    // if this is an IPv4-mapped IPv6 address, the last segment MUST be IPv4 AND must contain the prefix
+    // see https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2
+    if (segments.size == IPV4_MAPPED_IPV6_SEGMENT_COUNT) {
+        val prefix = segments.subList(0, IPV4_MAPPED_IPV6_SEGMENT_COUNT - 1).map { it.toUShort(16) }
+        val mappedPrefixSegments: List<UShort> = listOf(0u, 0u, 0u, 0u, 0u, 0xffffu)
+        if (prefix != mappedPrefixSegments) return null
+        val ipv4 = segments[IPV4_MAPPED_IPV6_SEGMENT_COUNT - 1].parseIpv4OrNull() ?: return null
+        return ipv4.toMappedIpv6()
+    }
 
     // otherwise, we expect 2 more IPv6 segments
-    if (segments.size != ipv6StandardSegmentCount) return false
+    if (segments.size != IPV6_SEGMENT_COUNT) return null
+    if (!segments[IPV6_SEGMENT_COUNT - 2].isIpv6AddressSegment() || !segments[IPV6_SEGMENT_COUNT - 1].isIpv6AddressSegment()) return null
 
-    return segments[ipv6StandardSegmentCount - 2].isIpv6AddressSegment() && segments[ipv6StandardSegmentCount - 1].isIpv6AddressSegment()
+    val parsedSegments = segments.map { it.toUShort(16) }
+    return IpAddr.Ipv6(
+        parsedSegments[0],
+        parsedSegments[1],
+        parsedSegments[2],
+        parsedSegments[3],
+        parsedSegments[4],
+        parsedSegments[5],
+        parsedSegments[6],
+        parsedSegments[7],
+        zoneId,
+    )
 }
 
 private fun String.isIpv6AddressSegment(): Boolean = length in 1..4 && all(Char::isHexDigit)
 
-private fun String.isIpv6ScopeId(): Boolean = isNotEmpty() && '%' !in this
+internal fun String.isIpv6ZoneId(): Boolean = isNotEmpty() && '%' !in this
 
 private fun String.isValidPercentEncoded(): Boolean {
     forEachIndexed { index, char ->
