@@ -185,7 +185,7 @@ internal class AwsChunkedReader(
         }
 
         // append the body
-        unsignedChunk.write(bodyBuffer.readByteArray())
+        unsignedChunk.writeAll(bodyBuffer)
 
         return unsignedChunk
     }
