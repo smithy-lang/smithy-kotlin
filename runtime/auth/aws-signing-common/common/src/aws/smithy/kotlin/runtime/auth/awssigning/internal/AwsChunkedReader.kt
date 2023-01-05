@@ -173,8 +173,7 @@ internal class AwsChunkedReader(
      * @return a buffer containing the chunked data or null if no data is available (channel is closed)
      */
     private suspend fun getUnsignedChunk(data: SdkBuffer? = null): SdkBuffer? {
-        val bodyBuffer = data ?: stream.readChunk()
-        bodyBuffer ?: return null
+        val bodyBuffer = data ?: stream.readChunk() ?: return null
 
         val unsignedChunk = SdkBuffer()
 
@@ -182,10 +181,8 @@ internal class AwsChunkedReader(
         unsignedChunk.apply {
             writeUtf8(bodyBuffer.size.toString(16))
             writeUtf8("\r\n")
+            writeAll(bodyBuffer) // append the body
         }
-
-        // append the body
-        unsignedChunk.writeAll(bodyBuffer)
 
         return unsignedChunk
     }
