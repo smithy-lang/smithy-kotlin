@@ -20,10 +20,7 @@ import aws.smithy.kotlin.runtime.io.SdkBuffer
  */
 public const val CHUNK_SIZE_BYTES: Int = 65_536
 
-internal fun SdkBuffer.writeTrailers(
-    trailers: Headers,
-    signature: String,
-) {
+internal fun SdkBuffer.writeTrailers(trailers: Headers) {
     trailers
         .entries()
         .sortedBy { entry -> entry.key.lowercase() }
@@ -33,6 +30,9 @@ internal fun SdkBuffer.writeTrailers(
             writeUtf8(entry.value.joinToString(",") { v -> v.trim() })
             writeUtf8("\r\n")
         }
+}
+
+internal fun SdkBuffer.writeTrailerSignature(signature: String) {
     writeUtf8("x-amz-trailer-signature:${signature}\r\n")
 }
 
@@ -48,7 +48,9 @@ internal val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
  */
 internal val AwsSigningConfig.useAwsChunkedEncoding: Boolean
     get() = when (hashSpecification) {
-        is HashSpecification.StreamingAws4HmacSha256Payload, is HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers -> true
+        is HashSpecification.StreamingAws4HmacSha256Payload,
+        is HashSpecification.StreamingAws4HmacSha256PayloadWithTrailers,
+        is HashSpecification.StreamingUnsignedPayloadWithTrailers, -> true
         else -> false
     }
 
