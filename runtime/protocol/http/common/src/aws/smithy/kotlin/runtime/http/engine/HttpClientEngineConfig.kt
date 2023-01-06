@@ -5,6 +5,7 @@
 package aws.smithy.kotlin.runtime.http.engine
 
 import aws.smithy.kotlin.runtime.net.HostResolver
+import aws.smithy.kotlin.runtime.util.InternalApi
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -74,6 +75,7 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
     /**
      * The host name resolver (DNS)
      */
+    @InternalApi
     public val hostResolver: HostResolver = builder.hostResolver
 
     public open class Builder {
@@ -141,6 +143,7 @@ public open class HttpClientEngineConfig constructor(builder: Builder) {
         /**
          * The host name resolver (DNS) to be used by the client
          */
+        @InternalApi
         public var hostResolver: HostResolver = HostResolver.Default
     }
 }

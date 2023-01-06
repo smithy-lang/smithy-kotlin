@@ -28,7 +28,7 @@ public sealed class IpAddr {
     public abstract val octets: ByteArray
 
     /**
-     * The resolved numerical address represented as a string
+     * The formatted string representation of a numerical address
      */
     public abstract val address: String
 
@@ -38,16 +38,9 @@ public sealed class IpAddr {
     public abstract val isLoopBack: Boolean
 
     /**
-     * True if this is an [Ipv4] instance
+     * Returns true if this is the "any" address (e.g. `0.0.0.0` or `::`)
      */
-    public val isIpv4: Boolean
-        get() = this is Ipv4
-
-    /**
-     * True if this is an [Ipv6] instance
-     */
-    public val isIpv6: Boolean
-        get() = this is Ipv6
+    public abstract val isUnspecified: Boolean
 
     /**
      * An IPv4 address as defined by [RFC 791](https://www.rfc-editor.org/rfc/rfc791)
@@ -97,7 +90,7 @@ public sealed class IpAddr {
         /**
          * Returns true if this is the "any" address (`0.0.0.0`)
          */
-        public val isUnspecified: Boolean
+        public override val isUnspecified: Boolean
             get() = this == UNSPECIFIED
 
         override val address: String
@@ -224,6 +217,11 @@ public sealed class IpAddr {
             public val UNSPECIFIED: Ipv6 = Ipv6(byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0))
 
             /**
+             * The prefix all IPv4-mapped IPv6 address have
+             */
+            internal val IPV4_MAPPED_PREFIX_OCTETS: ByteArray = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff.toByte(), 0xff.toByte())
+
+            /**
              * Parse an IPv6 address from a string. Fails with [IllegalArgumentException] when given an invalid IPv6 address
              *
              * NOTE: This does not handle zone identifiers
@@ -284,15 +282,8 @@ public sealed class IpAddr {
             }
         }
 
-        private fun StringBuilder.formatSegments(range: IntRange) {
-            if (range.first >= segments.size || range.isEmpty()) return
-            append(segments[range.first].toString(16))
-            val tail = IntRange(range.first + 1, range.last)
-            for (i in tail) {
-                append(':')
-                append(segments[i].toString(16))
-            }
-        }
+        private fun StringBuilder.formatSegments(range: IntRange) =
+            range.joinTo(this, separator = ":") { segments[it].toString(16) }
 
         /**
          * Returns true if this is the loopback address (`::1`), as defined in
@@ -304,7 +295,7 @@ public sealed class IpAddr {
         /**
          * Returns true if this is the "any" address (`::`)
          */
-        public val isUnspecified: Boolean
+        public override val isUnspecified: Boolean
             get() = this == UNSPECIFIED
 
         /**
@@ -351,15 +342,14 @@ public sealed class IpAddr {
          * Try to convert this address to an [Ipv4] address if it is an
          * [Ipv4-mapped](https://tools.ietf.org/html/rfc4291#section-2.5.5.2) address.
          *
-         * Returns `null if this address is not an IPv4 mapped address.
+         * Returns `null` if this address is not an IPv4 mapped address.
          */
         public fun toIpv4Mapped(): Ipv4? {
-            val prefix = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xff.toByte(), 0xff.toByte())
-            prefix.forEachIndexed { idx, byte ->
+            IPV4_MAPPED_PREFIX_OCTETS.forEachIndexed { idx, byte ->
                 if (octets[idx] != byte) return null
             }
 
-            return Ipv4(octets.sliceArray(prefix.size until octets.size))
+            return Ipv4(octets.sliceArray(IPV4_MAPPED_PREFIX_OCTETS.size until octets.size))
         }
     }
 }

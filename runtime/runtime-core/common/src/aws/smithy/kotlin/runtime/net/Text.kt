@@ -49,7 +49,7 @@ private fun String.getIpv6AddressSegments(): List<String>? {
     val rightSegments = if (explicitSegmentGroups[1] == "") emptyList() else explicitSegmentGroups[1].split(':')
 
     // double colon with full explicit segments
-    if (explicitSegmentGroups.size == 2 && leftSegments.size + rightSegments.size == IPV6_SEGMENT_COUNT) return null
+    if (leftSegments.size + rightSegments.size == IPV6_SEGMENT_COUNT) return null
 
     // IPv4-mapped address of form `::ffff:a.b.c.d` -> `0:0:0:0:0:ffff:a.b.c.d`
     val totalSegmentCount = if (rightSegments.lastOrNull()?.contains('.') == true) IPV4_MAPPED_IPV6_SEGMENT_COUNT else IPV6_SEGMENT_COUNT
