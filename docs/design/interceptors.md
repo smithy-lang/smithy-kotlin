@@ -364,7 +364,12 @@ public interface Interceptor<
 /**
  * [Interceptor] context used for all phases that only have access to the operation input (request)
  */
-public interface RequestInterceptorContext<I> : Attributes {
+public interface RequestInterceptorContext<I> {
+  
+  /**
+   * The [ExecutionContext] used to drive the execution of a single request/response
+   */
+  public val executionContext: ExecutionContext
 
     /**
      * Retrieve the modeled request for the operation being invoked

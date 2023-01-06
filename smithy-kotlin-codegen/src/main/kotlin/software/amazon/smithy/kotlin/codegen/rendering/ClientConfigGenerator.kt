@@ -45,6 +45,7 @@ class ClientConfigGenerator(
             add(KotlinClientRuntimeConfigProperty.SdkLogMode)
             if (context.protocolGenerator?.applicationProtocol?.isHttpProtocol == true) {
                 add(KotlinClientRuntimeConfigProperty.HttpClientEngine)
+                add(KotlinClientRuntimeConfigProperty.HttpInterceptors)
             }
             if (context.shape != null && context.shape.hasIdempotentTokenMember(context.model)) {
                 add(KotlinClientRuntimeConfigProperty.IdempotencyTokenProvider)
@@ -205,8 +206,8 @@ class ClientConfigGenerator(
                     .forEach { prop ->
                         prop.documentation?.let { ctx.writer.dokka(it) }
                         write("public var #L: #D", prop.propertyName, prop.symbol)
+                        write("")
                     }
-                write("")
 
                 write("@PublishedApi")
                 write("internal fun build(): #configClass.name:L = #configClass.name:L(this)")

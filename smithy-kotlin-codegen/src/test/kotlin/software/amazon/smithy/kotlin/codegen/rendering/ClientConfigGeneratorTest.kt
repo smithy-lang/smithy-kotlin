@@ -46,6 +46,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
     override val httpClientEngine: HttpClientEngine? = builder.httpClientEngine
     public val endpointProvider: EndpointProvider = requireNotNull(builder.endpointProvider) { "endpointProvider is a required configuration property" }
     override val idempotencyTokenProvider: IdempotencyTokenProvider? = builder.idempotencyTokenProvider
+    public val interceptors: kotlin.collections.List<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = builder.interceptors
     public val retryStrategy: RetryStrategy = builder.retryStrategy ?: StandardRetryStrategy()
     override val sdkLogMode: SdkLogMode = builder.sdkLogMode
     override val tracer: Tracer = builder.tracer ?: DefaultTracer(LoggingTraceProbe, "${TestModelDefault.SERVICE_NAME}")
@@ -60,20 +61,32 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * client will not close it when the client is closed.
          */
         public var httpClientEngine: HttpClientEngine? = null
+
         /**
          * The endpoint provider used to determine where to make service requests.
          */
         public var endpointProvider: EndpointProvider? = null
+
         /**
          * Override the default idempotency token generator. SDK clients will generate tokens for members
          * that represent idempotent tokens when not explicitly set by the caller using this generator.
          */
         public var idempotencyTokenProvider: IdempotencyTokenProvider? = null
+
+        /**
+         * Add an [aws.smithy.kotlin.runtime.client.Interceptor] that will have access to read and modify
+         * the request and response objects as they are processed by the SDK.
+         * Interceptors added using this method are executed in the order they are configured and are always
+         * later than any added automatically by the SDK.
+         */
+        public var interceptors: kotlin.collections.MutableList<aws.smithy.kotlin.runtime.http.interceptors.HttpInterceptor> = kotlin.collections.mutableListOf()
+
         /**
          * The [RetryStrategy] implementation to use for service calls. All API calls will be wrapped by the
          * strategy.
          */
         public var retryStrategy: RetryStrategy? = null
+
         /**
          * Configure events that will be logged. By default clients will not output
          * raw requests or responses. Use this setting to opt-in to additional debug logging.
@@ -85,6 +98,7 @@ public class Config private constructor(builder: Builder): HttpClientConfig, Ide
          * debug purposes.
          */
         public var sdkLogMode: SdkLogMode = SdkLogMode.Default
+
         /**
          * The tracer that is responsible for creating trace spans and wiring them up to a tracing backend (e.g.,
          * a trace probe). By default, this will create a standard tracer that uses the service name for the root
@@ -139,23 +153,23 @@ public class Config private constructor(builder: Builder) {
         contents.shouldContain(expectedCtor)
 
         val expectedProps = """
-        public var boolProp: Boolean? = null
-        /**
-         * non-null-int
-         */
-        public var intProp: Int = 1
-        public var nullIntProp: Int? = null
-        public var stringProp: String? = null
+    public val boolProp: Boolean? = builder.boolProp
+    public val intProp: Int = builder.intProp
+    public val nullIntProp: Int? = builder.nullIntProp
+    public val stringProp: String? = builder.stringProp
 """
         contents.shouldContainWithDiff(expectedProps)
 
         val expectedBuilderProps = """
         public var boolProp: Boolean? = null
+
         /**
          * non-null-int
          */
         public var intProp: Int = 1
+
         public var nullIntProp: Int? = null
+
         public var stringProp: String? = null
 """
         contents.shouldContainWithDiff(expectedBuilderProps)
@@ -328,9 +342,13 @@ public class Config private constructor(builder: Builder) {
 
         val expectedImplProps = """
         public var defaultFoo: Foo = DefaultFoo
+
         public var nullFoo: Foo? = null
+
         public var requiredDefaultedFoo: Foo? = null
+
         public var requiredFoo: Foo? = null
+
         public var requiredFoo2: Foo? = null
 """
         contents.shouldContainWithDiff(expectedImplProps)

@@ -10,7 +10,6 @@ import aws.smithy.kotlin.runtime.http.operation.OperationTypeInfo
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.response.HttpCall
 import aws.smithy.kotlin.runtime.http.response.HttpResponse
-import aws.smithy.kotlin.runtime.util.Attributes
 import kotlin.reflect.KClass
 
 // Various contexts for each hook based on available information.
@@ -25,36 +24,36 @@ import kotlin.reflect.KClass
 
 private data class HttpInputInterceptorContext<I>(
     override var request: I,
-    private val executionContext: ExecutionContext,
-) : RequestInterceptorContext<I>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : RequestInterceptorContext<I>
 
 private data class HttpProtocolRequestInterceptorContext<I>(
     override val request: I,
     override var protocolRequest: HttpRequest,
-    private val executionContext: ExecutionContext,
-) : ProtocolRequestInterceptorContext<I, HttpRequest>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ProtocolRequestInterceptorContext<I, HttpRequest>
 
 private data class HttpProtocolResponseInterceptorContext<I>(
     override val request: I,
     override val protocolRequest: HttpRequest,
     override var protocolResponse: HttpResponse,
-    private val executionContext: ExecutionContext,
-) : ProtocolResponseInterceptorContext<I, HttpRequest, HttpResponse>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ProtocolResponseInterceptorContext<I, HttpRequest, HttpResponse>
 
 private data class HttpAttemptInterceptorContext<I, O>(
     override val request: I,
     override var response: Result<O>,
     override val protocolRequest: HttpRequest,
     override val protocolResponse: HttpResponse?,
-    private val executionContext: ExecutionContext,
-) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse?>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse?>
 
 private data class HttpInputOutputInterceptorContext<I, O>(
     override val request: I,
     override var response: Result<O>,
     private val call: HttpCall,
-    private val executionContext: ExecutionContext,
-) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse>, Attributes by executionContext {
+    override val executionContext: ExecutionContext,
+) : ResponseInterceptorContext<I, O, HttpRequest, HttpResponse> {
 
     override val protocolRequest: HttpRequest = call.request
     override val protocolResponse: HttpResponse = call.response
@@ -65,8 +64,8 @@ private data class HttpFinalInterceptorContext<I, O>(
     override var response: Result<O>,
     override val protocolRequest: HttpRequest?,
     override val protocolResponse: HttpResponse?,
-    private val executionContext: ExecutionContext,
-) : ResponseInterceptorContext<I, O, HttpRequest?, HttpResponse?>, Attributes by executionContext
+    override val executionContext: ExecutionContext,
+) : ResponseInterceptorContext<I, O, HttpRequest?, HttpResponse?>
 
 // TODO - investigate propagating Any as upper bounds for SdkHttpOperation <I,O> generics
 /**
@@ -127,7 +126,7 @@ internal class InterceptorExecutor<I, O>(
         }
     }
 
-    fun modifyBeforeSerialization(input: I): I {
+    suspend fun modifyBeforeSerialization(input: I): I {
         val context = HttpInputInterceptorContext(input as Any, execContext)
         val modified = interceptors.fold(context) { ctx, interceptor ->
             val modified = interceptor.modifyBeforeSerialization(ctx)
@@ -186,7 +185,7 @@ internal class InterceptorExecutor<I, O>(
         interceptor.readAfterSerialization(context)
     }
 
-    fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest =
+    suspend fun modifyBeforeRetryLoop(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
             interceptor.modifyBeforeRetryLoop(context)
         }
@@ -201,7 +200,7 @@ internal class InterceptorExecutor<I, O>(
         }
     }
 
-    fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
+    suspend fun modifyBeforeSigning(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
             interceptor.modifyBeforeSigning(context)
         }
@@ -214,7 +213,7 @@ internal class InterceptorExecutor<I, O>(
         interceptor.readAfterSigning(context)
     }
 
-    fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
+    suspend fun modifyBeforeTransmit(request: HttpRequest): HttpRequest =
         modifyHttpRequestHook(request) { interceptor, context ->
             interceptor.modifyBeforeTransmit(context)
         }
@@ -228,7 +227,7 @@ internal class InterceptorExecutor<I, O>(
             interceptor.readAfterTransmit(context)
         }
 
-    fun modifyBeforeDeserialization(call: HttpCall): HttpResponse {
+    suspend fun modifyBeforeDeserialization(call: HttpCall): HttpResponse {
         val input = checkNotNull(_lastInput)
         val context = HttpProtocolResponseInterceptorContext(input as Any, call.request, call.response, execContext)
         val modified = runCatching {
@@ -252,7 +251,7 @@ internal class InterceptorExecutor<I, O>(
         interceptors.forEach { interceptor -> interceptor.readAfterDeserialization(context) }
     }
 
-    fun modifyBeforeAttemptCompletion(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?): Result<O> {
+    suspend fun modifyBeforeAttemptCompletion(result: Result<O>, httpRequest: HttpRequest, httpResponse: HttpResponse?): Result<O> {
         val input = checkNotNull(_lastInput)
 
         @Suppress("UNCHECKED_CAST")
@@ -286,7 +285,7 @@ internal class InterceptorExecutor<I, O>(
         return readResult.getOrThrow()
     }
 
-    fun modifyBeforeCompletion(result: Result<O>): Result<O> {
+    suspend fun modifyBeforeCompletion(result: Result<O>): Result<O> {
         // SAFETY: If we started executing an operation at all the input will be set at least once
         val input = checkNotNull(_lastInput)
 

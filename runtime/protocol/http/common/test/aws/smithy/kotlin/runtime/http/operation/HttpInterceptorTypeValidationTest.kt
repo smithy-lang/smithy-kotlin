@@ -21,7 +21,7 @@ class HttpInterceptorTypeValidationTest {
     @Test
     fun testModifyBeforeSerializationTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {
-            override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
+            override suspend fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
                 val input = assertIs<TestInput>(context.request)
                 assertEquals("initial", input.value)
                 return TestInput("modified")
@@ -29,7 +29,7 @@ class HttpInterceptorTypeValidationTest {
         }
 
         val i2 = object : HttpInterceptor {
-            override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
+            override suspend fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
                 val input = assertIs<TestInput>(context.request)
                 assertEquals("modified", input.value)
                 return TestOutput("wrong")
@@ -49,14 +49,14 @@ class HttpInterceptorTypeValidationTest {
     @Test
     fun testModifyBeforeAttemptCompletionTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {
-            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+            override suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
                 assertIs<TestOutput>(context.response.getOrThrow())
                 return Result.success(TestOutput("modified"))
             }
         }
 
         val i2 = object : HttpInterceptor {
-            override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+            override suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
                 val output = assertIs<TestOutput>(context.response.getOrThrow())
                 assertEquals("modified", output.value)
                 return Result.success("wrong")
@@ -76,14 +76,14 @@ class HttpInterceptorTypeValidationTest {
     @Test
     fun testModifyBeforeCompletionTypeFailure() = runTest {
         val i1 = object : HttpInterceptor {
-            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+            override suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
                 assertIs<TestOutput>(context.response.getOrThrow())
                 return Result.success(TestOutput("modified"))
             }
         }
 
         val i2 = object : HttpInterceptor {
-            override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+            override suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
                 val output = assertIs<TestOutput>(context.response.getOrThrow())
                 assertEquals("modified", output.value)
                 return Result.success("wrong")

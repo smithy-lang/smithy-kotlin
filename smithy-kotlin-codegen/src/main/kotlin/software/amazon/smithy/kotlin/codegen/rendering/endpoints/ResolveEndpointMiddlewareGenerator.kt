@@ -34,7 +34,7 @@ class ResolveEndpointMiddlewareGenerator(
     private val renderPostResolution: () -> Unit = {},
 ) {
     companion object {
-        const val CLASS_NAME = "ResolveEndpointMiddleware"
+        const val CLASS_NAME = "ResolveEndpoint"
 
         fun getSymbol(settings: KotlinSettings): Symbol =
             buildSymbol {
@@ -44,12 +44,12 @@ class ResolveEndpointMiddlewareGenerator(
     }
 
     fun render() {
-        writer.openBlock("internal class #L<I, O>(", CLASS_NAME)
+        writer.openBlock("internal class #L<I>(", CLASS_NAME)
         renderConstructorParams()
-        writer.closeAndOpenBlock(") : #T<I, O> {", RuntimeTypes.Http.Operation.InlineMiddleware)
+        writer.closeAndOpenBlock("): #T {", RuntimeTypes.Http.Interceptors.HttpInterceptor)
         renderClassMembers()
         writer.write("")
-        renderInstall()
+        renderBody()
         writer.closeBlock("}")
     }
 
@@ -59,30 +59,34 @@ class ResolveEndpointMiddlewareGenerator(
     }
 
     private fun renderClassMembers() {
-        writer.write("private lateinit var endpoint: #T", RuntimeTypes.Http.Endpoints.Endpoint)
+        writer.write("private lateinit var params: #T", EndpointParametersGenerator.getSymbol(ctx.settings))
     }
 
-    private fun renderInstall() {
-        writer.withBlock("override fun install(op: #T<I, O>) {", "}", RuntimeTypes.Http.Operation.SdkHttpOperation) {
-            renderInitialize()
-            write("")
-            renderMutate()
+    private fun renderBody() {
+        writer.withBlock(
+            "override fun readBeforeSerialization(context: #T<Any>) {",
+            "}",
+            RuntimeTypes.Core.Client.RequestInterceptorContext,
+        ) {
+            write("@Suppress(#S)", "UNCHECKED_CAST")
+            write("val input = context.request as I")
+            write("params = #T { buildParams(input) }", EndpointParametersGenerator.getSymbol(ctx.settings))
         }
-    }
 
-    private fun renderInitialize() {
-        writer.withBlock("op.execution.initialize.intercept { req, next ->", "}") {
-            write("val params = #T { buildParams(req.subject) }", EndpointParametersGenerator.getSymbol(ctx.settings))
-            write("endpoint = endpointProvider.resolveEndpoint(params)")
-            write("next.call(req)")
-        }
-    }
-
-    private fun renderMutate() {
-        writer.withBlock("op.execution.mutate.intercept { req, next ->", "}") {
+        writer.write("")
+        writer.withBlock(
+            "override suspend fun modifyBeforeRetryLoop(context: #1T<Any, #2T>): #2T {",
+            "}",
+            RuntimeTypes.Core.Client.ProtocolRequestInterceptorContext,
+            RuntimeTypes.Http.Request.HttpRequest,
+        ) {
+            write("val endpoint = endpointProvider.resolveEndpoint(params)")
+            write("#T.#T<$CLASS_NAME<*>>{ \"resolved endpoint: \$endpoint\" }", RuntimeTypes.KotlinCoroutines.coroutineContext, RuntimeTypes.Tracing.Core.debug)
+            write("val reqBuilder = context.protocolRequest.#T()", RuntimeTypes.Http.Request.toBuilder)
+            write("val req = #T(context.executionContext, reqBuilder)", RuntimeTypes.Http.Operation.SdkHttpRequest)
             write("#T(req, endpoint)", RuntimeTypes.Http.Endpoints.setResolvedEndpoint)
             renderPostResolution()
-            write("next.call(req)")
+            write("return req.subject.build()")
         }
     }
 }

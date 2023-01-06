@@ -73,7 +73,7 @@ open class TracingTestInterceptor(
         trace("readBeforeExecution")
     }
 
-    override fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
+    override suspend fun modifyBeforeSerialization(context: RequestInterceptorContext<Any>): Any {
         trace("modifyBeforeSerialization")
         return super.modifyBeforeSerialization(context)
     }
@@ -88,7 +88,7 @@ open class TracingTestInterceptor(
         super.readAfterSerialization(context)
     }
 
-    override fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+    override suspend fun modifyBeforeRetryLoop(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         trace("modifyBeforeRetryLoop")
         return super.modifyBeforeRetryLoop(context)
     }
@@ -98,7 +98,7 @@ open class TracingTestInterceptor(
         super.readBeforeAttempt(context)
     }
 
-    override fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+    override suspend fun modifyBeforeSigning(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         trace("modifyBeforeSigning")
         return super.modifyBeforeSigning(context)
     }
@@ -113,7 +113,7 @@ open class TracingTestInterceptor(
         super.readAfterSigning(context)
     }
 
-    override fun modifyBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
+    override suspend fun modifyBeforeTransmit(context: ProtocolRequestInterceptorContext<Any, HttpRequest>): HttpRequest {
         trace("modifyBeforeTransmit")
         return super.modifyBeforeTransmit(context)
     }
@@ -128,7 +128,7 @@ open class TracingTestInterceptor(
         super.readAfterTransmit(context)
     }
 
-    override fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
+    override suspend fun modifyBeforeDeserialization(context: ProtocolResponseInterceptorContext<Any, HttpRequest, HttpResponse>): HttpResponse {
         trace("modifyBeforeDeserialization")
         return super.modifyBeforeDeserialization(context)
     }
@@ -143,7 +143,7 @@ open class TracingTestInterceptor(
         super.readAfterDeserialization(context)
     }
 
-    override fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
+    override suspend fun modifyBeforeAttemptCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest, HttpResponse?>): Result<Any> {
         trace("modifyBeforeAttemptCompletion")
         return super.modifyBeforeAttemptCompletion(context)
     }
@@ -153,7 +153,7 @@ open class TracingTestInterceptor(
         super.readAfterAttempt(context)
     }
 
-    override fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
+    override suspend fun modifyBeforeCompletion(context: ResponseInterceptorContext<Any, Any, HttpRequest?, HttpResponse?>): Result<Any> {
         trace("modifyBeforeCompletion")
         return super.modifyBeforeCompletion(context)
     }
