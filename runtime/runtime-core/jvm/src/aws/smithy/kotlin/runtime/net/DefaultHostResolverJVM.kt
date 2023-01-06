@@ -26,8 +26,8 @@ internal actual object DefaultHostResolver : HostResolver {
 @InternalApi
 public fun InetAddress.toHostAddress(): HostAddress {
     val ipAddr = when (this) {
-        is Inet4Address -> IpAddr.Ipv4(address)
-        is Inet6Address -> IpAddr.Ipv6(address)
+        is Inet4Address -> IpV4Addr(address)
+        is Inet6Address -> IpV6Addr(address)
         else -> error("unrecognized InetAddress $this")
     }
 

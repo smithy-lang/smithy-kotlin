@@ -16,12 +16,12 @@ public fun String.isValidHostname(): Boolean =
 @InternalApi
 public fun String.isIpv4(): Boolean = parseIpv4OrNull() != null
 
-internal fun String.parseIpv4OrNull(): IpAddr.Ipv4? {
+internal fun String.parseIpv4OrNull(): IpV4Addr? {
     val segments = split('.')
     if (segments.size != 4 || segments.any { (it.toIntOrNull() ?: -1) !in 0..255 }) return null
     // NOTE: toByte() will fail range validation checks, need to go through UByte first
     val octets = segments.map { it.toUByte().toByte() }.toByteArray()
-    return IpAddr.Ipv4(octets)
+    return IpV4Addr(octets)
 }
 
 /**
@@ -65,7 +65,7 @@ private fun String.getIpv6AddressSegments(): List<String>? {
 /**
  * Parse the current string as an IPv6 address
  */
-internal fun String.parseIpv6OrNull(): IpAddr.Ipv6? {
+internal fun String.parseIpv6OrNull(): IpV6Addr? {
     val components = split('%')
     if (components.size > 2) return null
     if (components.size == 2 && !components[1].isIpv6ZoneId()) return null
@@ -94,7 +94,7 @@ internal fun String.parseIpv6OrNull(): IpAddr.Ipv6? {
     if (!segments[IPV6_SEGMENT_COUNT - 2].isIpv6AddressSegment() || !segments[IPV6_SEGMENT_COUNT - 1].isIpv6AddressSegment()) return null
 
     val parsedSegments = segments.map { it.toUShort(16) }
-    return IpAddr.Ipv6(
+    return IpV6Addr(
         parsedSegments[0],
         parsedSegments[1],
         parsedSegments[2],

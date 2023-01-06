@@ -39,7 +39,7 @@ private fun hostParseImpl(host: String): Host {
 public fun Host.toUrlString(): String =
     when (this) {
         is Host.IpAddress -> when (address) {
-            is IpAddr.Ipv6 -> {
+            is IpV6Addr -> {
                 if (address.zoneId == null) {
                     "[$address]"
                 } else {
