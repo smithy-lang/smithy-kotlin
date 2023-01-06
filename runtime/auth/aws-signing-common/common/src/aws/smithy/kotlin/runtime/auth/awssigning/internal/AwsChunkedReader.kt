@@ -9,9 +9,9 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSignatureType
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
+import aws.smithy.kotlin.runtime.http.DeferredHeaders
+import aws.smithy.kotlin.runtime.http.DeferredHeaders.Companion.toHeaders
 import aws.smithy.kotlin.runtime.http.Headers
-import aws.smithy.kotlin.runtime.http.LazyHeaders
-import aws.smithy.kotlin.runtime.http.LazyHeaders.Companion.toHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
 /**
@@ -29,7 +29,7 @@ internal class AwsChunkedReader(
     private val signer: AwsSigner,
     private val signingConfig: AwsSigningConfig,
     private var previousSignature: ByteArray,
-    private val trailingHeaders: LazyHeaders = LazyHeaders.Empty,
+    private val trailingHeaders: DeferredHeaders,
 ) {
 
     /**
@@ -84,7 +84,10 @@ internal class AwsChunkedReader(
         nextChunk?.writeUtf8("\r\n") // terminating CRLF to signal end of chunk
 
         // transfer all segments to the working chunk
-        nextChunk?.let { chunk.writeAll(it) }
+        nextChunk?.let {
+            println(it.peek().readByteArray().decodeToString())
+            chunk.writeAll(it)
+        }
 
         return chunk.size > 0L
     }

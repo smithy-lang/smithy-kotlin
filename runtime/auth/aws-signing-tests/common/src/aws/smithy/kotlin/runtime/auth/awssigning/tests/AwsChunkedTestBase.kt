@@ -7,11 +7,11 @@ package aws.smithy.kotlin.runtime.auth.awssigning.tests
 
 import aws.smithy.kotlin.runtime.auth.awssigning.*
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.CHUNK_SIZE_BYTES
-import aws.smithy.kotlin.runtime.http.LazyHeaders
-import aws.smithy.kotlin.runtime.http.LazyHeaders.Companion.toHeaders
+import aws.smithy.kotlin.runtime.http.DeferredHeaders
+import aws.smithy.kotlin.runtime.http.DeferredHeaders.Companion.toHeaders
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.time.Instant
-import aws.smithy.kotlin.runtime.util.asyncLazy
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestResult
 import kotlinx.coroutines.test.runTest
@@ -43,7 +43,7 @@ fun interface AwsChunkedReaderFactory {
         signer: AwsSigner,
         signingConfig: AwsSigningConfig,
         previousSignature: ByteArray,
-        trailingHeaders: LazyHeaders,
+        trailingHeaders: DeferredHeaders,
     ): AwsChunkedTestReader
 }
 
@@ -52,7 +52,7 @@ fun AwsChunkedReaderFactory.create(
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
-): AwsChunkedTestReader = create(data, signer, signingConfig, previousSignature, LazyHeaders.Empty)
+): AwsChunkedTestReader = create(data, signer, signingConfig, previousSignature, DeferredHeaders.Empty)
 
 @OptIn(ExperimentalCoroutinesApi::class)
 abstract class AwsChunkedTestBase(
@@ -131,7 +131,7 @@ abstract class AwsChunkedTestBase(
      * Calculates the `aws-chunked` encoded trailing header length
      * Used to calculate how many bytes should be read for all the trailing headers to be consumed
      */
-    suspend fun getTrailingHeadersLength(trailingHeaders: LazyHeaders, isUnsignedChunk: Boolean = false) = trailingHeaders.toHeaders().entries().map {
+    suspend fun getTrailingHeadersLength(trailingHeaders: DeferredHeaders, isUnsignedChunk: Boolean = false) = trailingHeaders.toHeaders().entries().map {
             entry ->
         buildString {
             append(entry.key)
@@ -393,9 +393,9 @@ abstract class AwsChunkedTestBase(
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         var previousSignature: ByteArray = byteArrayOf()
 
-        val trailingHeaders = LazyHeaders {
-            append("x-amz-checksum-crc32", asyncLazy { "AAAAAA==" })
-            append("x-amz-arbitrary-header-with-value", asyncLazy { "UMM" })
+        val trailingHeaders = DeferredHeaders {
+            append("x-amz-checksum-crc32", CompletableDeferred("AAAAAA=="))
+            append("x-amz-arbitrary-header-with-value", CompletableDeferred("UMM"))
         }
 
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders)
@@ -474,9 +474,9 @@ abstract class AwsChunkedTestBase(
         val data = ByteArray(dataLengthBytes) { 0x7A.toByte() }
         val previousSignature: ByteArray = byteArrayOf()
 
-        val trailingHeaders = LazyHeaders {
-            append("x-amz-checksum-crc32", asyncLazy { "AAAAAA==" })
-            append("x-amz-arbitrary-header-with-value", asyncLazy { "UMM" })
+        val trailingHeaders = DeferredHeaders {
+            append("x-amz-checksum-crc32", CompletableDeferred("AAAAAA=="))
+            append("x-amz-arbitrary-header-with-value", CompletableDeferred("UMM"))
         }
         val trailingHeadersLength = getTrailingHeadersLength(trailingHeaders, isUnsignedChunk = true)
 

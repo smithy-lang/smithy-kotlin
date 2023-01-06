@@ -22,17 +22,18 @@ public class HttpRequestBuilder private constructor(
     public val url: UrlBuilder,
     public val headers: HeadersBuilder,
     public var body: HttpBody,
+    public val trailingHeaders: DeferredHeadersBuilder,
 ) : CanDeepCopy<HttpRequestBuilder> {
-    public constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty)
+    public constructor() : this(HttpMethod.GET, UrlBuilder(), HeadersBuilder(), HttpBody.Empty, DeferredHeadersBuilder())
 
     public fun build(): HttpRequest =
-        HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body)
+        HttpRequest(method, url.build(), if (headers.isEmpty()) Headers.Empty else headers.build(), body, if (trailingHeaders.isEmpty()) DeferredHeaders.Empty else trailingHeaders.build())
 
     override fun deepCopy(): HttpRequestBuilder =
-        HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body)
+        HttpRequestBuilder(method, url.deepCopy(), headers.deepCopy(), body, trailingHeaders.deepCopy())
 
     override fun toString(): String = buildString {
-        append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body)")
+        append("HttpRequestBuilder(method=$method, url=$url, headers=$headers, body=$body, trailingHeaders=$trailingHeaders)")
     }
 }
 

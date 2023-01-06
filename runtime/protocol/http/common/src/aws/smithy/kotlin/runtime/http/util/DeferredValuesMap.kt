@@ -5,12 +5,12 @@
 package aws.smithy.kotlin.runtime.http.util
 
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.LazyAsyncValue
+import kotlinx.coroutines.Deferred
 
 /**
  * Mapping of String to a List of lazy values
  */
-public interface LazyAsyncValuesMap<T : Any> {
+public interface DeferredValuesMap<T : Any> {
 
     /**
      * Flag indicating if this map compares keys ignoring case
@@ -20,12 +20,12 @@ public interface LazyAsyncValuesMap<T : Any> {
     /**
      * Gets first value from the list of values associated with a [name], or null if the name is not present
      */
-    public operator fun get(name: String): LazyAsyncValue<T>? = getAll(name)?.firstOrNull()
+    public operator fun get(name: String): Deferred<T>? = getAll(name)?.firstOrNull()
 
     /**
      * Gets all values associated with the [name], or null if the name is not present
      */
-    public fun getAll(name: String): List<LazyAsyncValue<T>>?
+    public fun getAll(name: String): List<Deferred<T>>?
 
     /**
      * Gets all names from the map
@@ -35,7 +35,7 @@ public interface LazyAsyncValuesMap<T : Any> {
     /**
      * Gets all entries from the map
      */
-    public fun entries(): Set<Map.Entry<String, List<LazyAsyncValue<T>>>>
+    public fun entries(): Set<Map.Entry<String, List<Deferred<T>>>>
 
     /**
      * Checks if the given [name] exists in the map
@@ -45,14 +45,14 @@ public interface LazyAsyncValuesMap<T : Any> {
     /**
      * Checks if the given [name] and [value] pair exists in the map
      */
-    public fun contains(name: String, value: LazyAsyncValue<T>): Boolean = getAll(name)?.contains(value) ?: false
+    public fun contains(name: String, value: Deferred<T>): Boolean = getAll(name)?.contains(value) ?: false
 
     /**
      * Iterates over all entries in this map and calls [body] for each pair
      *
      * Can be optimized in implementations
      */
-    public fun forEach(body: (String, List<LazyAsyncValue<T>>) -> Unit): Unit = entries().forEach { (k, v) -> body(k, v) }
+    public fun forEach(body: (String, List<Deferred<T>>) -> Unit): Unit = entries().forEach { (k, v) -> body(k, v) }
 
     /**
      * Checks if this map is empty
@@ -61,30 +61,30 @@ public interface LazyAsyncValuesMap<T : Any> {
 }
 
 @InternalApi
-internal open class LazyAsyncValuesMapImpl<T : Any> (
+internal open class DeferredValuesMapImpl<T : Any> (
     override val caseInsensitiveName: Boolean = false,
-    initialValues: Map<String, List<LazyAsyncValue<T>>> = emptyMap(),
-) : LazyAsyncValuesMap<T> {
-    protected val values: Map<String, List<LazyAsyncValue<T>>> = run {
+    initialValues: Map<String, List<Deferred<T>>> = emptyMap(),
+) : DeferredValuesMap<T> {
+    protected val values: Map<String, List<Deferred<T>>> = run {
         // Make a defensive copy so modifications to the initialValues don't mutate our internal copy
         val copiedValues = initialValues.deepCopy()
-        if (caseInsensitiveName) CaseInsensitiveMap<List<LazyAsyncValue<T>>>().apply { putAll(copiedValues) } else copiedValues
+        if (caseInsensitiveName) CaseInsensitiveMap<List<Deferred<T>>>().apply { putAll(copiedValues) } else copiedValues
     }
 
-    override fun getAll(name: String): List<LazyAsyncValue<T>>? = values[name]
+    override fun getAll(name: String): List<Deferred<T>>? = values[name]
 
     override fun names(): Set<String> = values.keys
 
-    override fun entries(): Set<Map.Entry<String, List<LazyAsyncValue<T>>>> = values.entries
+    override fun entries(): Set<Map.Entry<String, List<Deferred<T>>>> = values.entries
 
     override operator fun contains(name: String): Boolean = values.containsKey(name)
 
-    override fun contains(name: String, value: LazyAsyncValue<T>): Boolean = getAll(name)?.contains(value) ?: false
+    override fun contains(name: String, value: Deferred<T>): Boolean = getAll(name)?.contains(value) ?: false
 
     override fun isEmpty(): Boolean = values.isEmpty()
 
     override fun equals(other: Any?): Boolean =
-        other is StringValuesMap &&
+        other is DeferredValuesMap<*> &&
             caseInsensitiveName == other.caseInsensitiveName &&
             names().let { names ->
                 if (names.size != other.names().size) {
@@ -97,55 +97,55 @@ internal open class LazyAsyncValuesMapImpl<T : Any> (
      * Perform a deep copy of this map, specifically duplicating the value lists so that they're insulated from changes.
      * @return A new map instance with copied value lists.
      */
-    private fun Map<String, List<LazyAsyncValue<T>>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
+    private fun Map<String, List<Deferred<T>>>.deepCopy() = mapValues { (_, v) -> v.toMutableList() }
 }
 
 @InternalApi
-public open class LazyAsyncValuesMapBuilder<T : Any> (public val caseInsensitiveName: Boolean = false, size: Int = 8) {
-    protected val values: MutableMap<String, MutableList<LazyAsyncValue<T>>> =
+public open class DeferredValuesMapBuilder<T : Any> (public val caseInsensitiveName: Boolean = false, size: Int = 8) {
+    protected val values: MutableMap<String, MutableList<Deferred<T>>> =
         if (caseInsensitiveName) CaseInsensitiveMap() else LinkedHashMap(size)
 
-    public fun getAll(name: String): List<LazyAsyncValue<T>>? = values[name]
+    public fun getAll(name: String): List<Deferred<T>>? = values[name]
 
     public operator fun contains(name: String): Boolean = name in values
 
-    public fun contains(name: String, value: LazyAsyncValue<T>): Boolean = values[name]?.contains(value) ?: false
+    public fun contains(name: String, value: Deferred<T>): Boolean = values[name]?.contains(value) ?: false
 
     public fun names(): Set<String> = values.keys
 
     public fun isEmpty(): Boolean = values.isEmpty()
 
-    public fun entries(): Set<Map.Entry<String, List<LazyAsyncValue<T>>>> = values.entries
+    public fun entries(): Set<Map.Entry<String, List<Deferred<T>>>> = values.entries
 
-    public operator fun set(name: String, value: LazyAsyncValue<T>) {
+    public operator fun set(name: String, value: Deferred<T>) {
         val list = ensureListForKey(name, 1)
         list.clear()
         list.add(value)
     }
 
-    public fun setMissing(name: String, value: LazyAsyncValue<T>) {
+    public fun setMissing(name: String, value: Deferred<T>) {
         if (!this.values.containsKey(name)) set(name, value)
     }
 
-    public operator fun get(name: String): LazyAsyncValue<T>? = getAll(name)?.firstOrNull()
+    public operator fun get(name: String): Deferred<T>? = getAll(name)?.firstOrNull()
 
-    public fun append(name: String, value: LazyAsyncValue<T>) {
+    public fun append(name: String, value: Deferred<T>) {
         ensureListForKey(name, 1).add(value)
     }
 
-    public fun appendAll(lazyAsyncValues: LazyAsyncValuesMap<T>) {
-        lazyAsyncValues.forEach { name, values ->
+    public fun appendAll(deferredValues: DeferredValuesMap<T>) {
+        deferredValues.forEach { name, values ->
             appendAll(name, values)
         }
     }
 
-    public fun appendMissing(lazyAsyncValues: LazyAsyncValuesMap<T>) {
-        lazyAsyncValues.forEach { name, values ->
+    public fun appendMissing(deferredValues: DeferredValuesMap<T>) {
+        deferredValues.forEach { name, values ->
             appendMissing(name, values)
         }
     }
 
-    public fun appendAll(name: String, values: Iterable<LazyAsyncValue<T>>) {
+    public fun appendAll(name: String, values: Iterable<Deferred<T>>) {
         ensureListForKey(name, (values as? Collection)?.size ?: 2).let { list ->
             values.forEach { value ->
                 list.add(value)
@@ -153,13 +153,13 @@ public open class LazyAsyncValuesMapBuilder<T : Any> (public val caseInsensitive
         }
     }
 
-    public fun appendMissing(name: String, values: Iterable<LazyAsyncValue<T>>) {
+    public fun appendMissing(name: String, values: Iterable<Deferred<T>>) {
         val existing = this.values[name]?.toSet() ?: emptySet()
 
         appendAll(name, values.filter { it !in existing })
     }
 
-    public fun remove(name: String): MutableList<LazyAsyncValue<T>>? = values.remove(name)
+    public fun remove(name: String): MutableList<Deferred<T>>? = values.remove(name)
 
     public fun removeKeysWithNoEntries() {
         for ((k, _) in values.filter { it.value.isEmpty() }) {
@@ -167,12 +167,12 @@ public open class LazyAsyncValuesMapBuilder<T : Any> (public val caseInsensitive
         }
     }
 
-    public fun remove(name: String, value: LazyAsyncValue<T>): Boolean = values[name]?.remove(value) ?: false
+    public fun remove(name: String, value: Deferred<T>): Boolean = values[name]?.remove(value) ?: false
 
     public fun clear(): Unit = values.clear()
 
-    public open fun build(): LazyAsyncValuesMap<T> = LazyAsyncValuesMapImpl(caseInsensitiveName, values)
+    public open fun build(): DeferredValuesMap<T> = DeferredValuesMapImpl(caseInsensitiveName, values)
 
-    private fun ensureListForKey(name: String, size: Int): MutableList<LazyAsyncValue<T>> =
-        values[name] ?: ArrayList<LazyAsyncValue<T>>(size).also { values[name] = it }
+    private fun ensureListForKey(name: String, size: Int): MutableList<Deferred<T>> =
+        values[name] ?: ArrayList<Deferred<T>>(size).also { values[name] = it }
 }

@@ -12,7 +12,7 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.http.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 
-internal actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray, trailingHeaders: LazyHeaders) {
+internal actual fun HttpRequestBuilder.setAwsChunkedBody(signer: AwsSigner, signingConfig: AwsSigningConfig, signature: ByteArray, trailingHeaders: DeferredHeaders) {
     body = when (body) {
         is HttpBody.ChannelContent -> AwsChunkedByteReadChannel(
             checkNotNull(body.toSdkByteReadChannel()),

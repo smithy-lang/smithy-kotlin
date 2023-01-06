@@ -6,7 +6,7 @@
 package aws.smithy.kotlin.runtime.auth.awssigning
 
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.AwsChunkedReader
-import aws.smithy.kotlin.runtime.http.LazyHeaders
+import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.buffer
@@ -33,7 +33,7 @@ public class AwsChunkedSource(
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     previousSignature: ByteArray,
-    trailingHeaders: LazyHeaders = LazyHeaders.Empty,
+    trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
 ) : SdkSource {
     private val chunkReader = AwsChunkedReader(
         delegate.asStream(),

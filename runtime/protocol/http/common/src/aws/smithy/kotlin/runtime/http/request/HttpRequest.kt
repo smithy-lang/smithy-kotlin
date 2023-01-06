@@ -14,6 +14,7 @@ public data class HttpRequest(
     public val url: Url,
     public val headers: Headers,
     public val body: HttpBody,
+    public val trailingHeaders: DeferredHeaders = DeferredHeaders.Empty,
 ) {
     public companion object {
         public operator fun invoke(block: HttpRequestBuilder.() -> Unit): HttpRequest =
@@ -40,5 +41,6 @@ public fun HttpRequest.toBuilder(): HttpRequestBuilder {
             forceQuery = req.url.forceQuery
         }
         body = req.body
+        req.trailingHeaders?.let { trailingHeaders.appendAll(it) }
     }
 }

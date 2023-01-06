@@ -9,9 +9,9 @@ import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
 import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsSigningMiddleware
+import aws.smithy.kotlin.runtime.http.DeferredHeaders
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.LazyHeaders
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
 import aws.smithy.kotlin.runtime.io.SdkBuffer
 
@@ -70,5 +70,5 @@ internal expect fun HttpRequestBuilder.setAwsChunkedBody(
     signer: AwsSigner,
     signingConfig: AwsSigningConfig,
     signature: ByteArray,
-    trailingHeaders: LazyHeaders = LazyHeaders.Empty,
+    trailingHeaders: DeferredHeaders,
 )

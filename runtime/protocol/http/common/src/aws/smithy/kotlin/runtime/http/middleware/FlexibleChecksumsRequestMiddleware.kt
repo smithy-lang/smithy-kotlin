@@ -12,6 +12,7 @@ import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.header
 import aws.smithy.kotlin.runtime.io.*
 import aws.smithy.kotlin.runtime.util.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.coroutineContext
 
 /**
@@ -27,10 +28,6 @@ import kotlin.coroutines.coroutineContext
  */
 @InternalApi
 public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmName: String) : ModifyRequestMiddleware {
-    public companion object {
-        public val TrailingHeaders: AttributeKey<LazyHeadersBuilder> = AttributeKey("TrailingHeaders")
-    }
-
     public override suspend fun modifyRequest(req: SdkHttpRequest): SdkHttpRequest {
         val logger = coroutineContext.getLogger<FlexibleChecksumsRequestMiddleware>()
 
@@ -52,24 +49,24 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
             logger.debug { "Sending checksum as a trailing header" }
             req.subject.header("x-amz-trailer", headerName)
 
-            val lazyChecksum: LazyAsyncValue<String> = if (req.subject.headers[headerName] != null) {
+            val deferredChecksum = CompletableDeferred<String>()
+
+            if (req.subject.headers[headerName] != null) {
                 logger.debug { "User supplied a checksum, skipping asynchronous calculation" }
 
                 val checksum = req.subject.headers[headerName]!!
                 req.subject.headers.remove(headerName) // remove the checksum header because it will be sent as a trailing header
-                asyncLazy { checksum }
+
+                deferredChecksum.complete(checksum)
             } else {
                 logger.debug { "Calculating checksum asynchronously" }
 
-                req.subject.body = req.subject.body.toHashingBody(checksumAlgorithm, req.subject.body.contentLength)
-                val body = req.subject.body
-                asyncLazy { body.checksum }
+                req.subject.body = req.subject.body
+                    .toHashingBody(checksumAlgorithm, req.subject.body.contentLength)
+                    .toCompletingBody(deferredChecksum, req.subject.body.contentLength)
             }
 
-            // add the lazy checksum to the execution context
-            val trailingHeadersBuilder: LazyHeadersBuilder = req.context.getOrNull(TrailingHeaders) ?: LazyHeadersBuilder()
-            trailingHeadersBuilder.append(headerName, lazyChecksum)
-            req.context[TrailingHeaders] = trailingHeadersBuilder
+            req.subject.trailingHeaders.append(headerName, deferredChecksum)
         } else if (req.subject.headers[headerName] == null) {
             logger.debug { "Calculating checksum" }
 

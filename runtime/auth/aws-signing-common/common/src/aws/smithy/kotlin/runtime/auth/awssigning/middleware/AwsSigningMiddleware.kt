@@ -12,9 +12,6 @@ import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedBody
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.setAwsChunkedHeaders
 import aws.smithy.kotlin.runtime.auth.awssigning.internal.useAwsChunkedEncoding
 import aws.smithy.kotlin.runtime.http.HttpBody
-import aws.smithy.kotlin.runtime.http.LazyHeaders
-import aws.smithy.kotlin.runtime.http.LazyHeadersBuilder
-import aws.smithy.kotlin.runtime.http.middleware.FlexibleChecksumsRequestMiddleware.Companion.TrailingHeaders
 import aws.smithy.kotlin.runtime.http.operation.*
 import aws.smithy.kotlin.runtime.http.request.HttpRequest
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -167,14 +164,11 @@ public class AwsSigningMiddleware(private val config: Config) : ModifyRequestMid
         req.subject.update(signedRequest)
 
         if (signingConfig.useAwsChunkedEncoding) {
-            // fetch any trailing headers from execution context
-            val trailingHeadersBuilder: LazyHeadersBuilder? = req.context.getOrNull(TrailingHeaders)
-
             req.subject.setAwsChunkedBody(
                 checkNotNull(config.signer),
                 signingConfig,
                 signingResult.signature,
-                trailingHeadersBuilder?.build() ?: LazyHeaders.Empty,
+                req.subject.trailingHeaders.build(),
             )
         }
         return req
