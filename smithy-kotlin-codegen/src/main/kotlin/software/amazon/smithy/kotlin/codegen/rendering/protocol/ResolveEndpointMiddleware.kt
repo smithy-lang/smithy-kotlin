@@ -21,13 +21,13 @@ class ResolveEndpointMiddleware : ProtocolMiddleware {
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
         val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.inputShape))
         writer.withBlock(
-            "op.interceptors.add(#T<#T>(config.endpointProvider) {",
+            "op.interceptors.add(#T<#T>(config.endpointProvider) { ein -> ",
             "})",
             ResolveEndpointMiddlewareGenerator.getSymbol(ctx.settings),
             inputSymbol,
         ) {
             ctx.service.getEndpointRules()?.let { rules ->
-                EndpointParameterBindingGenerator(ctx.model, ctx.service, writer, op, rules, "it.").render()
+                EndpointParameterBindingGenerator(ctx.model, ctx.service, writer, op, rules, "ein.").render()
             }
         }
     }

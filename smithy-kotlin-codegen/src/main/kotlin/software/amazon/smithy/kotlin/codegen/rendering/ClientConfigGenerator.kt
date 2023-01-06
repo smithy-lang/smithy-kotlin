@@ -208,7 +208,6 @@ class ClientConfigGenerator(
                         write("public var #L: #D", prop.propertyName, prop.symbol)
                         write("")
                     }
-                write("")
 
                 write("@PublishedApi")
                 write("internal fun build(): #configClass.name:L = #configClass.name:L(this)")

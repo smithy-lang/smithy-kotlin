@@ -80,9 +80,8 @@ class ResolveEndpointMiddlewareGenerator(
             RuntimeTypes.Core.Client.ProtocolRequestInterceptorContext,
             RuntimeTypes.Http.Request.HttpRequest,
         ) {
-            // import aws.smithy.kotlin.runtime.tracing.debug
             write("val endpoint = endpointProvider.resolveEndpoint(params)")
-            write("#T.#T<$CLASS_NAME<*>>{ \"resolved endpoint: \$endpoint\"}", RuntimeTypes.KotlinCoroutines.coroutineContext, RuntimeTypes.Tracing.Core.debug)
+            write("#T.#T<$CLASS_NAME<*>>{ \"resolved endpoint: \$endpoint\" }", RuntimeTypes.KotlinCoroutines.coroutineContext, RuntimeTypes.Tracing.Core.debug)
             write("val reqBuilder = context.protocolRequest.#T()", RuntimeTypes.Http.Request.toBuilder)
             write("val req = #T(context.executionContext, reqBuilder)", RuntimeTypes.Http.Operation.SdkHttpRequest)
             write("#T(req, endpoint)", RuntimeTypes.Http.Endpoints.setResolvedEndpoint)
