@@ -79,7 +79,7 @@ public data class IpV4Addr(
      * [RFC 4291 Section 2.5.5.2](https://datatracker.ietf.org/doc/html/rfc4291#section-2.5.5.2).
      * e.g. `::ffff:a.b.c.d`.
      *
-     * See [Ipv6] documentation for more details.
+     * See [IpV6Addr] documentation for more details.
      */
     public fun toMappedIpv6(): IpV6Addr {
         val v6Octets = ByteArray(16)

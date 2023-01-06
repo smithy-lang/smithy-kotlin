@@ -189,7 +189,7 @@ public data class IpV6Addr(
     override fun hashCode(): Int = octets.contentHashCode()
 
     /**
-     * Try to convert this address to an [Ipv4] address if it is an
+     * Try to convert this address to an [IpV4Addr] address if it is an
      * [Ipv4-mapped](https://tools.ietf.org/html/rfc4291#section-2.5.5.2) address.
      *
      * Returns `null` if this address is not an IPv4 mapped address.
