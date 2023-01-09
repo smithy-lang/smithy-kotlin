@@ -36,10 +36,42 @@ object KotlinTypes {
 
     object Collections {
         val List: Symbol = builtInSymbol("List", "kotlin.collections")
+        val MutableList: Symbol = builtInSymbol("MutableList", "kotlin.collections")
         val Set: Symbol = builtInSymbol("Set", "kotlin.collections")
         val Map: Symbol = builtInSymbol("Map", "kotlin.collections")
         val mutableListOf: Symbol = builtInSymbol("mutableListOf", "kotlin.collections")
         val mutableMapOf: Symbol = builtInSymbol("mutableMapOf", "kotlin.collections")
+
+        private fun listType(
+            listType: Symbol,
+            target: Symbol,
+            isNullable: Boolean = false,
+            default: String? = null,
+        ): Symbol = buildSymbol {
+            name = "${listType.fullName}<${target.fullName}>"
+            nullable = isNullable
+            defaultValue = default
+            reference(listType)
+            reference(target)
+        }
+
+        /**
+         * Convenience function to get a `List<target>` as a symbol
+         */
+        fun list(
+            target: Symbol,
+            isNullable: Boolean = false,
+            default: String? = null,
+        ): Symbol = listType(List, target, isNullable, default)
+
+        /**
+         * Convenience function to get a `MutableList<target>` as a symbol
+         */
+        fun mutableList(
+            target: Symbol,
+            isNullable: Boolean = false,
+            default: String? = null,
+        ): Symbol = listType(MutableList, target, isNullable, default)
     }
 
     object Jvm {

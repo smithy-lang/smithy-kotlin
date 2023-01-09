@@ -34,7 +34,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class RetryTest {
+class RetryMiddlewareTest {
     private val mockEngine = object : HttpClientEngineBase("test") {
         override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
             val resp = HttpResponse(HttpStatusCode.OK, Headers.Empty, HttpBody.Empty)
@@ -66,7 +66,8 @@ class RetryTest {
             delayProvider,
         )
 
-        op.install(Retry(strategy, policy))
+        op.execution.retryStrategy = strategy
+        op.execution.retryPolicy = policy
 
         op.roundTrip(client, Unit)
         val attempts = op.context.attributes[HttpOperationContext.HttpCallList].size

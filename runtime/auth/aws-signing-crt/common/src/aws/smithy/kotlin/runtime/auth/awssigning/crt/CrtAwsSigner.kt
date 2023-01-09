@@ -24,7 +24,9 @@ import aws.sdk.kotlin.crt.http.Headers as CrtHeaders
 
 public object CrtAwsSigner : AwsSigner {
     override suspend fun sign(request: HttpRequest, config: AwsSigningConfig): AwsSigningResult<HttpRequest> {
-        val crtRequest = request.toSignableCrtRequest()
+        val isUnsigned = config.hashSpecification is HashSpecification.UnsignedPayload
+        val isAwsChunked = request.headers.contains("Content-Encoding", "aws-chunked")
+        val crtRequest = request.toSignableCrtRequest(isUnsigned, isAwsChunked)
         val crtConfig = config.toCrtSigningConfig()
 
         val crtResult = CrtSigner.sign(crtRequest, crtConfig)

@@ -45,7 +45,7 @@ public class RecordingEngine(private val wrapped: HttpClientEngine) : HttpClient
     override suspend fun roundTrip(context: ExecutionContext, request: HttpRequest): HttpCall {
         // copy request and response bodies to bytes content so that it can be read multiple times
         val reqBody = copyHttpBody("request", request.body)
-        val requestCopy = request.copy(body = reqBody)
+        val requestCopy = HttpRequest(method = request.method, url = request.url, headers = request.headers, body = reqBody)
         val call = wrapped.roundTrip(context, request)
         val respBody = copyHttpBody("response", call.response.body)
         val responseCopy = call.response.copy(body = respBody)

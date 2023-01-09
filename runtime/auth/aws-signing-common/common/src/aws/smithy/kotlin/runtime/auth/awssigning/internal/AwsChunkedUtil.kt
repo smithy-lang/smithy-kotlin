@@ -5,10 +5,10 @@
 
 package aws.smithy.kotlin.runtime.auth.awssigning.internal
 
+import aws.smithy.kotlin.runtime.auth.awssigning.AwsHttpSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigner
 import aws.smithy.kotlin.runtime.auth.awssigning.AwsSigningConfig
 import aws.smithy.kotlin.runtime.auth.awssigning.HashSpecification
-import aws.smithy.kotlin.runtime.auth.awssigning.middleware.AwsSigningMiddleware
 import aws.smithy.kotlin.runtime.http.Headers
 import aws.smithy.kotlin.runtime.http.HttpBody
 import aws.smithy.kotlin.runtime.http.request.HttpRequestBuilder
@@ -40,7 +40,7 @@ internal fun SdkBuffer.writeTrailers(
  */
 internal val HttpBody.isEligibleForAwsChunkedStreaming: Boolean
     get() = (this is HttpBody.SourceContent || this is HttpBody.ChannelContent) && contentLength != null &&
-        (isOneShot || contentLength!! > AwsSigningMiddleware.AWS_CHUNKED_THRESHOLD)
+        (isOneShot || contentLength!! > AwsHttpSigner.AWS_CHUNKED_THRESHOLD)
 
 /**
  * @return a boolean representing if the signing configuration is configured (via [HashSpecification]) for aws-chunked content encoding

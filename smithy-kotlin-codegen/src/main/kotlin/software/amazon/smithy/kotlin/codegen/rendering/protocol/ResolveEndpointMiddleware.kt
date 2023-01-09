@@ -19,10 +19,15 @@ class ResolveEndpointMiddleware : ProtocolMiddleware {
     override val name: String = "ResolveEndpoint"
 
     override fun render(ctx: ProtocolGenerator.GenerationContext, op: OperationShape, writer: KotlinWriter) {
-        val middlewareSymbol = ResolveEndpointMiddlewareGenerator.getSymbol(ctx.settings)
-        writer.withBlock("op.install(#T(config.endpointProvider) {", "})", middlewareSymbol) {
+        val inputSymbol = ctx.symbolProvider.toSymbol(ctx.model.expectShape(op.inputShape))
+        writer.withBlock(
+            "op.interceptors.add(#T<#T>(config.endpointProvider) { ein -> ",
+            "})",
+            ResolveEndpointMiddlewareGenerator.getSymbol(ctx.settings),
+            inputSymbol,
+        ) {
             ctx.service.getEndpointRules()?.let { rules ->
-                EndpointParameterBindingGenerator(ctx.model, ctx.service, writer, op, rules, "input.").render()
+                EndpointParameterBindingGenerator(ctx.model, ctx.service, writer, op, rules, "ein.").render()
             }
         }
     }
