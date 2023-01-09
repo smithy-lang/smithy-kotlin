@@ -14,12 +14,15 @@ import aws.smithy.kotlin.runtime.http.util.splitAsQueryParameters
 import aws.smithy.kotlin.runtime.io.SdkSource
 import aws.smithy.kotlin.runtime.io.internal.toSdk
 import aws.smithy.kotlin.runtime.logging.Logger
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.HostResolver
+import aws.smithy.kotlin.runtime.net.toInetAddress
 import aws.smithy.kotlin.runtime.tracing.TraceSpan
 import aws.smithy.kotlin.runtime.tracing.traceSpan
-import aws.smithy.kotlin.runtime.util.net.Host
 import kotlinx.coroutines.*
 import okhttp3.Authenticator
 import okhttp3.Credentials
+import okhttp3.Dns
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Route
 import okhttp3.internal.http.HttpMethod
@@ -121,6 +124,16 @@ internal class OkHttpProxyAuthenticator(
         }
 
         return null
+    }
+}
+
+internal class OkHttpDns(
+    private val hr: HostResolver,
+) : Dns {
+    // we assume OkHttp is calling us on an IO thread already
+    override fun lookup(hostname: String): List<InetAddress> = runBlocking {
+        val results = hr.resolve(hostname)
+        results.map { it.toInetAddress() }
     }
 }
 

@@ -4,8 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.http
 
-import aws.smithy.kotlin.runtime.util.net.Host
-import aws.smithy.kotlin.runtime.util.net.isIpv6
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.isIpv6
 import aws.smithy.kotlin.runtime.util.text.splitAsQueryString
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 

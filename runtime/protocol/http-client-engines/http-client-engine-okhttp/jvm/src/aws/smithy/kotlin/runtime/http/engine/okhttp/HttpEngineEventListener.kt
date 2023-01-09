@@ -4,6 +4,8 @@
  */
 package aws.smithy.kotlin.runtime.http.engine.okhttp
 
+import aws.smithy.kotlin.runtime.net.HostResolver
+import aws.smithy.kotlin.runtime.net.toHostAddress
 import aws.smithy.kotlin.runtime.tracing.NoOpTraceSpan
 import aws.smithy.kotlin.runtime.tracing.logger
 import okhttp3.*
@@ -12,7 +14,11 @@ import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Proxy
 
-internal class HttpEngineEventListener(private val pool: ConnectionPool, call: Call) : EventListener() {
+internal class HttpEngineEventListener(
+    private val pool: ConnectionPool,
+    private val hr: HostResolver,
+    call: Call,
+) : EventListener() {
     private val traceSpan = call.request().tag<SdkRequestTag>()?.traceSpan?.child("HTTP") ?: NoOpTraceSpan
     private val logger = traceSpan.logger<HttpEngineEventListener>()
 
@@ -50,7 +56,10 @@ internal class HttpEngineEventListener(private val pool: ConnectionPool, call: C
         proxy: Proxy,
         protocol: Protocol?,
         ioe: IOException,
-    ) = trace(ioe) { "connect failed: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
+    ) {
+        trace(ioe) { "connect failed: addr=$inetSocketAddress; proxy=$proxy; protocol=$protocol" }
+        hr.reportFailure(inetSocketAddress.address.toHostAddress())
+    }
 
     override fun connectionAcquired(call: Call, connection: Connection) {
         val connId = System.identityHashCode(connection)

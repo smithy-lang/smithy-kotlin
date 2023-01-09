@@ -5,9 +5,9 @@
 package aws.smithy.kotlin.runtime.http
 
 import aws.smithy.kotlin.runtime.http.util.CanDeepCopy
+import aws.smithy.kotlin.runtime.net.Host
+import aws.smithy.kotlin.runtime.net.toUrlString
 import aws.smithy.kotlin.runtime.util.InternalApi
-import aws.smithy.kotlin.runtime.util.net.Host
-import aws.smithy.kotlin.runtime.util.net.toUrlString
 import aws.smithy.kotlin.runtime.util.text.encodeUrlPath
 import aws.smithy.kotlin.runtime.util.text.urlDecodeComponent
 import aws.smithy.kotlin.runtime.util.text.urlEncodeComponent
