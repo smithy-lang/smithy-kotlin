@@ -7,11 +7,9 @@ package aws.smithy.kotlin.runtime.net
 
 /**
  * An IPv4 address as defined by [RFC 791](https://www.rfc-editor.org/rfc/rfc791)
+ * @param octets The four eight-bit integers that make up this address
  */
 public data class IpV4Addr(
-    /**
-     * The four eight-bit integers that make up this address
-     */
     override val octets: ByteArray,
 ) : IpAddr() {
 

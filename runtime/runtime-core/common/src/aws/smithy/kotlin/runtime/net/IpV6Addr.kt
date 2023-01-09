@@ -45,18 +45,14 @@ package aws.smithy.kotlin.runtime.net
  * +--------------------------------------+----+---------------------+
  * ```
  * So `::a.b.c.d` would be an IPv4-compatible IPv6 address representing the IPv4 address `a.b.c.d`.
+ *
+ * @param octets The sixteen eight-bit integers the IPv6 address consists of
+ * @param zoneId Scoped IPv6 address zone identifier as defined in [RFC 6874](https://www.rfc-editor.org/rfc/rfc6874).
+ * Scoped IPv6 addresses are described in [RFC 4007](https://www.rfc-editor.org/rfc/rfc4007)
  */
 @OptIn(ExperimentalUnsignedTypes::class)
 public data class IpV6Addr(
-    /**
-     * The sixteen eight-bit integers the IPv6 address consists of
-     */
     override val octets: ByteArray,
-
-    /**
-     * Scoped IPv6 address zone identifier as defined in [RFC 6874](https://www.rfc-editor.org/rfc/rfc6874).
-     * Scoped IPv6 addresses are described in [RFC 4007](https://www.rfc-editor.org/rfc/rfc4007)
-     */
     public val zoneId: String? = null,
 ) : IpAddr() {
 
