@@ -100,7 +100,6 @@ object RuntimeTypes {
     }
 
     object Core {
-        val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CORE, "client")
         val ExecutionContext = runtimeSymbol("ExecutionContext", KotlinDependency.CORE, "client")
         val ErrorMetadata = runtimeSymbol("ErrorMetadata", KotlinDependency.CORE)
         val ServiceErrorMetadata = runtimeSymbol("ServiceErrorMetadata", KotlinDependency.CORE)
@@ -149,8 +148,14 @@ object RuntimeTypes {
         }
 
         object Client {
+            val SdkClient = runtimeSymbol("SdkClient", KotlinDependency.CORE, "client")
+            val AbstractSdkClientBuilder = runtimeSymbol("AbstractSdkClientBuilder", KotlinDependency.CORE, "client")
+            val SdkLogMode = runtimeSymbol("SdkLogMode", KotlinDependency.CORE, "client")
+            val SdkClientConfig = runtimeSymbol("SdkClientConfig", KotlinDependency.CORE, "client")
+            val SdkClientFactory = runtimeSymbol("SdkClientFactory", KotlinDependency.CORE, "client")
             val RequestInterceptorContext = runtimeSymbol("RequestInterceptorContext", KotlinDependency.CORE, "client")
             val ProtocolRequestInterceptorContext = runtimeSymbol("ProtocolRequestInterceptorContext", KotlinDependency.CORE, "client")
+            val IdempotencyTokenProviderExt = runtimeSymbol("idempotencyTokenProvider", KotlinDependency.CORE, "client")
         }
     }
 

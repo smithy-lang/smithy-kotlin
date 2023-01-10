@@ -7,6 +7,7 @@ package software.amazon.smithy.kotlin.codegen.core
 
 import io.kotest.matchers.string.shouldNotContain
 import software.amazon.smithy.kotlin.codegen.integration.SectionId
+import software.amazon.smithy.kotlin.codegen.integration.SectionKey
 import software.amazon.smithy.kotlin.codegen.model.buildSymbol
 import software.amazon.smithy.kotlin.codegen.test.TestModelDefault
 import software.amazon.smithy.kotlin.codegen.test.shouldContainOnlyOnceWithDiff
@@ -129,7 +130,7 @@ class KotlinWriterTest {
     }
 
     object TestId : SectionId {
-        const val a = "a"
+        val a: SectionKey<String> = SectionKey("a")
     }
 
     @Test
@@ -137,7 +138,7 @@ class KotlinWriterTest {
         val unit = KotlinWriter(TestModelDefault.NAMESPACE)
 
         unit.registerSectionWriter(TestId) { writer, previousValue ->
-            val state = writer.getContext(TestId.a)
+            val state = writer.getContext(TestId.a.name)
             writer.write(previousValue)
             writer.write("// section with state $state")
         }
@@ -160,7 +161,7 @@ class KotlinWriterTest {
     }
 
     object NestedTestId : SectionId {
-        const val a = "a" // intentionally collides with [TestId]
+        val a: SectionKey<String> = SectionKey("a") // intentionally collides with [TestId]
     }
 
     @Test
@@ -168,13 +169,13 @@ class KotlinWriterTest {
         val unit = KotlinWriter(TestModelDefault.NAMESPACE)
 
         unit.registerSectionWriter(TestId) { writer, previousValue ->
-            val state = writer.getContext(TestId.a)
+            val state = writer.getContext(TestId.a.name)
             writer.write("// section with state $state")
             writer.write(previousValue)
         }
 
         unit.registerSectionWriter(NestedTestId) { writer, _ ->
-            val state = writer.getContext(NestedTestId.a)
+            val state = writer.getContext(NestedTestId.a.name)
             writer.write("// nested section with state $state")
         }
 
