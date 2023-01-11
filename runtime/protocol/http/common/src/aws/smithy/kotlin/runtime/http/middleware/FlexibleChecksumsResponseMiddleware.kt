@@ -75,7 +75,6 @@ public class FlexibleChecksumsResponseMiddleware : ReceiveMiddleware {
         val deferredChecksum = CompletableDeferred<String>()
 
         // Wrap the response body in a hashing body
-        logger.debug { "Setting hashing body" }
         call = call.copy(
             response = call.response.copy(
                 body = call.response.body

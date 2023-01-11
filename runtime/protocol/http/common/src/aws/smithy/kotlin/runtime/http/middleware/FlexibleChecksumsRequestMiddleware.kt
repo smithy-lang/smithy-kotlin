@@ -39,14 +39,12 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         req.subject.headers.removeAllChecksumHeadersExcept(headerName)
 
         val checksumAlgorithm = checksumAlgorithmName.toHashFunction() ?: throw ClientException("Could not parse checksum algorithm $checksumAlgorithmName")
-        logger.debug { "Resolved checksum algorithm: $checksumAlgorithm" }
 
         if (!checksumAlgorithm.isSupported) {
             throw ClientException("Checksum algorithm $checksumAlgorithmName is not supported for flexible checksums")
         }
 
         if (req.subject.body.isEligibleForAwsChunkedStreaming) {
-            logger.debug { "Sending checksum as a trailing header" }
             req.subject.header("x-amz-trailer", headerName)
 
             val deferredChecksum = CompletableDeferred<String>()
@@ -70,13 +68,10 @@ public class FlexibleChecksumsRequestMiddleware(private val checksumAlgorithmNam
         } else if (req.subject.headers[headerName] == null) {
             logger.debug { "Calculating checksum" }
 
-            val checksum = req.subject.body.readAll()?.hash(checksumAlgorithm)?.encodeBase64String()
-            checksum ?.let {
-                logger.debug { "Calculated checksum: $checksum" }
-                req.subject.header(headerName, checksum)
-            } ?: run {
-                logger.warn { "Failed to calculate checksum" }
-            }
+            val checksum = req.subject.body.readAll()?.hash(checksumAlgorithm)?.encodeBase64String() ?:
+                throw RuntimeException("Failed to calculate checksum")
+
+            req.subject.header(headerName, checksum)
         }
 
         return req
