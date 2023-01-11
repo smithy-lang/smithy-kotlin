@@ -85,7 +85,6 @@ internal class AwsChunkedReader(
 
         // transfer all segments to the working chunk
         nextChunk?.let {
-            println(it.peek().readByteArray().decodeToString())
             chunk.writeAll(it)
         }
 
